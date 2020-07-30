@@ -5,7 +5,7 @@ import os.path
 import unittest
 from datetime import datetime
 
-from client import Client
+from instagrapi import Client
 
 
 ACCOUNT_USERNAME = "instagrapi"
