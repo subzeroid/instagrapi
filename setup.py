@@ -10,7 +10,7 @@ setup(
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
-    install_requires=[line.strip() for line in open('requirements.txt').readlines()],
+    install_requires=[line.strip() for line in open(os.path.join(base, 'requirements.txt')).readlines()],
     # test_requires=[],
     keywords='instagram private api',
     description='Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver)',
