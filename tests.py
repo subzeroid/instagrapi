@@ -47,35 +47,16 @@ class ClientPublicTestCase(unittest.TestCase):
     api = Client()
 
     def test_user_info_gql(self):
-        user = self.api._user_info_gql(1903424587)
+        user = self.api.user_info_gql(1903424587)
         for key, value in {
             "biography": "Engineer: Python, JavaScript, Erlang...",
-            "blocked_by_viewer": False,
-            "restricted_by_viewer": None,
-            "country_block": False,
             "external_url": "https://adw0rd.com/",
-            "external_url_linkshimmed": "https://...",
-            "followed_by_viewer": False,
-            "follows_viewer": False,
             "full_name": "Mikhail Andreev",
-            "has_ar_effects": False,
-            "has_channel": False,
-            "has_blocked_viewer": False,
-            "highlight_reel_count": 35,
-            "has_requested_viewer": False,
-            "id": "1903424587",
-            "is_business_account": False,
-            "is_joined_recently": False,
-            "business_category_name": None,
-            "category_id": None,
-            "overall_category_name": None,
+            "pk": 1903424587,
             "is_private": False,
             "is_verified": False,
             "profile_pic_url": "https://...",
-            "profile_pic_url_hd": "https://...",
-            "requested_by_viewer": False,
             "username": "adw0rd",
-            "connected_fb_page": None,
         }.items():
             if isinstance(value, str) and "..." in value:
                 self.assertTrue(value.replace("...", "") in user[key])

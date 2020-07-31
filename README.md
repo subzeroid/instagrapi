@@ -8,4 +8,5 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 ### Tests
 
-    python -m unittest tests.py
+    python -m unittest tests
+    python -m unittest tests.ClientPublicTestCase
