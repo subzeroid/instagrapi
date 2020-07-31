@@ -9,14 +9,13 @@ class StoryBuilder:
     width = 720
     height = 1280
 
-    def __init__(self, filepath: str, caption: str = "", usertags: list = []):
+    def __init__(self, filepath: str, caption: str = "", usertags: list = [], bgpath: str = ""):
         self.filepath = filepath
         self.caption = caption
         self.usertags = usertags
-        self.bgpath = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "assets", "story", "bg1.png"
-        )
+        self.bgpath = bgpath
+        if bgpath:
+            assert os.path.exists(bgpath), 'Wrong path to background'
 
     def build_clip(self, clip, max_duration):
         background = ImageClip(self.bgpath)
