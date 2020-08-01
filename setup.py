@@ -5,16 +5,16 @@ base = os.path.abspath(os.path.dirname(__file__))
 
 setup(
     name='instagrapi',
-    version='1.0.5',
+    version='1.0.6',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
     install_requires=[
-        'pytz==2020.1',
-        'requests==2.24.0',
-        'moviepy==1.0.3',
-        'Pillow==7.2.0'
+        'pytz>=2020.1',
+        'requests>=2.24.0',
+        'moviepy>=1.0.3',
+        'Pillow>=7.2.0'
     ],
     # test_requires=[],
     keywords='instagram private api',
