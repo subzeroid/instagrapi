@@ -168,7 +168,7 @@ class User:
             )
             for user in result["users"]:
                 users.append(extract_user_short(user))
-            max_id = result["next_max_id"]
+            max_id = result.get("next_max_id")
             if not max_id or (amount and len(users) >= amount):
                 break
         if amount:
@@ -207,7 +207,7 @@ class User:
                     params={"rank_token": self.rank_token, "max_id": max_id},
                 )
                 users += result["users"]
-                max_id = result["next_max_id"]
+                max_id = result.get("next_max_id")
                 if not max_id:
                     break
             self._users_followers[user_id] = {
