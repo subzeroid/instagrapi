@@ -19,6 +19,7 @@ from .user import User
 from .insights import Insights
 from .collection import Collection
 from .account import Account
+from .direct import Direct
 
 
 class Client(
@@ -41,7 +42,8 @@ class Client(
     User,
     Insights,
     Collection,
-    Account
+    Account,
+    Direct
 ):
     proxy = None
     logger = logging.getLogger("Client")
