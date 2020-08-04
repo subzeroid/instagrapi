@@ -14,11 +14,11 @@ from .extractors import extract_media_v1, extract_media_gql, extract_user_short
 class Media:
     _medias_cache = {}  # pk -> object
 
-    def media_id(self, media_id: str) -> str:
+    def media_id(self, media_pk: str) -> str:
         """Return full media id
         Example: 2277033926878261772 -> 2277033926878261772_1903424587
         """
-        media_id = str(media_id)
+        media_id = str(media_pk)
         if "_" not in media_id:
             assert media_id.isdigit(), (
                 "media_id must been contain digits, now %s" % media_id
@@ -28,20 +28,22 @@ class Media:
         return media_id
 
     @staticmethod
-    def media_pk(media_pk: str) -> int:
+    def media_pk(media_id: str) -> int:
         """Return short media id
         Example: 2277033926878261772_1903424587 -> 2277033926878261772
         """
-        if "_" in str(media_pk):
-            media_pk, _ = media_pk.split("_")
+        media_pk = str(media_id)
+        if "_" in media_pk:
+            media_pk, _ = media_id.split("_")
         return int(media_pk)
 
     def media_pk_from_code(self, code: str) -> int:
         """Return media_pk from code
         Example: B1LbfVPlwIA -> 2110901750722920960
         Example: B-fKL9qpeab -> 2278584739065882267
+        Example: CCQQsCXjOaBfS3I2PpqsNkxElV9DXj61vzo5xs0 -> 2346448800803776129 (because: CCQQsCXjOaB -> 2346448800803776129)
         """
-        return InstagramIdCodec.decode(code)
+        return InstagramIdCodec.decode(code[:11])
 
     def media_pk_from_url(self, url: str) -> int:
         """Return media_pk from url

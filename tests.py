@@ -142,7 +142,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         )
         self.assertEqual(
             self.api.media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0"),
-            839509635015590664996804136478816097084804158656270576480243413301812,
+            2243811726252050162,
         )
 
     def test_media_pk_from_url(self):
