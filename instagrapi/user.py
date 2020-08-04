@@ -113,31 +113,83 @@ class User:
             self._usernames_cache[user["username"]] = user["pk"]
         return self._users_cache[user_id]
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> list:
-        """Get list of user_id of Following
+    def user_following_gql(self, user_id: int, amount: int = 0) -> list:
+        """Return list of following users (without authorization)
+        """
+        user_id = int(user_id)
+        end_cursor = None
+        users = []
+        variables = {
+            "id": user_id,
+            "include_reel": True,
+            "fetch_mutual": False,
+            "first": 24
+        }
+        while True:
+            if end_cursor:
+                variables["after"] = end_cursor
+            data = self.public_graphql_request(
+                variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
+            )
+            if not data["user"] and not users:
+                raise UserNotFound(user_id=user_id, **data)
+            page_info = json_value(
+                data, "user", "edge_follow", "page_info", default={}
+            )
+            edges = json_value(
+                data, "user", "edge_follow", "edges", default=[]
+            )
+            for edge in edges:
+                users.append(extract_user_short(edge["node"]))
+            end_cursor = page_info.get("end_cursor")
+            if not page_info.get("has_next_page") or not end_cursor:
+                break
+            if amount and len(users) >= amount:
+                break
+            # time.sleep(sleep)
+        if amount:
+            users = users[:amount]
+        return users
+
+    def user_following_v1(self, user_id: int, amount: int = 0) -> list:
+        """Return list of following users (with authorization)
+        """
+        user_id = int(user_id)
+        max_id = ""
+        users = []
+        while True:
+            result = self.private_request(
+                f"friendships/{user_id}/following/",
+                params={
+                    "max_id": max_id,
+                    "rank_token": self.rank_token,
+                    "ig_sig_key_version": config.SIG_KEY_VERSION,
+                },
+            )
+            for user in result["users"]:
+                users.append(extract_user_short(user))
+            max_id = result["next_max_id"]
+            if not max_id or (amount and len(users) >= amount):
+                break
+        if amount:
+            users = users[:amount]
+        return users
+
+    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+        """Return dict {user_id: user} of following users
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_following:
-            # TODO: to public
-            max_id = ""
-            users = []
-            while True:
-                result = self.private_request(
-                    f"friendships/{user_id}/following/",
-                    params={
-                        "max_id": max_id,
-                        "rank_token": self.rank_token,
-                        "ig_sig_key_version": config.SIG_KEY_VERSION,
-                    },
-                )
-                users += result["users"]
-                max_id = result["next_max_id"]
-                if not max_id or (amount and len(users) >= amount):
-                    break
-            if amount:
-                users = users[:amount]
+            # Temporary: Instagram Required Login for GQL request
+            # try:
+            #     users = self.user_following_gql(user_id, amount)
+            # except Exception as e:
+            #     if not isinstance(e, ClientError):
+            #         self.logger.exception(e)
+            #     users = self.user_following_v1(user_id, amount)
+            users = self.user_following_v1(user_id, amount)
             self._users_following[user_id] = {
-                user["pk"]: extract_user_short(user) for user in users
+                user["pk"]: user for user in users
             }
         return self._users_following[user_id]
 

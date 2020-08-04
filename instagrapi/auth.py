@@ -200,7 +200,7 @@ class Login(PreLoginFlow, LoginFlow):
 
     @property
     def rank_token(self):
-        return "{}_{}".format(self.user_id, self.uuid)
+        return "{s.user_id}_{s.uuid}".format(s=self)
 
     @property
     def user_id(self):
