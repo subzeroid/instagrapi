@@ -160,7 +160,7 @@ class PrivateRequest:
                 # data = json.dumps(data)
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
-                    data = generate_signature(data)
+                    data = generate_signature(json.dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(

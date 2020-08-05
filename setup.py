@@ -5,7 +5,7 @@ base = os.path.abspath(os.path.dirname(__file__))
 
 setup(
     name='instagrapi',
-    version='1.0.9',
+    version='1.0.10',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
