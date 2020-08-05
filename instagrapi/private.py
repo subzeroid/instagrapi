@@ -156,9 +156,10 @@ class PrivateRequest:
             raise Exception("User already login")
         try:
             if data:  # POST
-                data = json.dumps(data)
+                # Client.direct_answer raw dict
+                # data = json.dumps(data)
                 if with_signature:
-                    # Only `send_direct_item` doesn't need a signature
+                    # Client.direct_answer doesn't need a signature
                     data = generate_signature(data)
                     if extra_sig:
                         data += "&".join(extra_sig)

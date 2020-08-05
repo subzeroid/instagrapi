@@ -1,3 +1,4 @@
+import json
 from .decorators import check_login
 
 
@@ -60,3 +61,23 @@ class Direct:
         if amount:
             messages = messages[:amount]
         return messages
+
+    @check_login
+    def direct_answer(self, thread_id: int, message: str) -> dict:
+        """Send message
+        """
+        thread_id = int(thread_id)
+        token = self.generate_uuid()
+        data = {
+            "client_context": token,
+            "action": "send_item",
+            "thread_ids": json.dumps([thread_id]),
+            "recipient_users": "[[]]",
+            "text": message
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/text/",
+            data=self.with_default_data(data),
+            with_signature=False
+        )
+        return result["payload"]
