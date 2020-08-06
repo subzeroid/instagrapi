@@ -1,3 +1,4 @@
+import re
 import base64
 import time
 import uuid
@@ -147,12 +148,7 @@ class Login(PreLoginFlow, LoginFlow):
     relogin_attempt = 0
     device_settings = {}
 
-    def relogin(self):
-        return self.login(self.username, self.password, relogin=True)
-
-    def init(self, username, password):
-        self.username = username
-        self.password = password
+    def init(self):
         if "cookies" in self.settings:
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
@@ -162,8 +158,19 @@ class Login(PreLoginFlow, LoginFlow):
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
 
+    def login_by_sessionid(self, sessionid: str):
+        assert isinstance(sessionid, str) and len(sessionid) > 30, 'Invalid sessionid'
+        self.settings = {'cookies': {'sessionid': sessionid}}
+        self.init()
+        user_id = re.search(r'^\d+', sessionid).group()
+        user = self.user_info_v1(int(user_id))
+        self.username = user['username']
+        return True
+
     def login(self, username, password, relogin=False):
-        self.init(username, password)
+        self.username = username
+        self.password = password
+        self.init()
         if relogin:
             self.private.cookies.clear()
             if self.relogin_attempt > 1:
@@ -189,6 +196,11 @@ class Login(PreLoginFlow, LoginFlow):
             self.last_login = time.time()
             return True
         return False
+
+    def relogin(self):
+        """Relogin shortcut
+        """
+        return self.login(self.username, self.password, relogin=True)
 
     @property
     def cookie_dict(self):
