@@ -1,4 +1,5 @@
 import re
+import json
 import base64
 import time
 import uuid
@@ -126,7 +127,7 @@ class LoginFlow:
             data["recovered_from_crash"] = "1"
 
         return self.private_request(
-            "feed/timeline/", data, with_signature=False, headers=headers
+            "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
         )
 
     def get_reels_tray_feed(
