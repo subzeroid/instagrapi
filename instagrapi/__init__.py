@@ -52,6 +52,7 @@ class Client(
         super().__init__(**kwargs)
         self.settings = settings
         self.set_proxy(proxy)
+        self.init()
 
     def set_proxy(self, proxy):
         if proxy:

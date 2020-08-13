@@ -296,7 +296,7 @@ class Login(PreLoginFlow, LoginFlow):
         return dict(
             {
                 "_uuid": self.uuid,
-                "_uid": self.user_id,
+                "_uid": str(self.user_id),
                 "_csrftoken": self.token,
                 "device_id": self.device_id,
             },

@@ -1,5 +1,7 @@
-import json
+import re
+
 from .decorators import check_login
+from .utils import dumps
 
 
 class Direct:
@@ -66,17 +68,31 @@ class Direct:
     def direct_answer(self, thread_id: int, message: str) -> dict:
         """Send message
         """
-        thread_id = int(thread_id)
-        token = self.generate_uuid()
+        return self.direct_send(message, [], [int(thread_id)])
+
+    @check_login
+    def direct_send(self, message: str, users: list = [], threads: list = []) -> dict:
+        """Send message
+        """
+        method = "text"
+        kwargs = {}
+        if 'http' in message:
+            method = "link"
+            kwargs["link_text"] = message
+            kwargs["link_urls"] = dumps(re.findall(r"(https?://[^\s]+)", message))
+        else:
+            kwargs["text"] = message
+        if threads:
+            kwargs["thread_ids"] = dumps([int(tid) for tid in threads])
+        if users:
+            kwargs["recipient_users"] = dumps([[int(uid) for uid in users]])
         data = {
-            "client_context": token,
+            "client_context": self.generate_uuid(),
             "action": "send_item",
-            "thread_ids": json.dumps([thread_id]),
-            "recipient_users": "[[]]",
-            "text": message
+            **kwargs
         }
         result = self.private_request(
-            "direct_v2/threads/broadcast/text/",
+            "direct_v2/threads/broadcast/%s/" % method,
             data=self.with_default_data(data),
             with_signature=False
         )
