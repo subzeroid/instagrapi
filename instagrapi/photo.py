@@ -39,10 +39,10 @@ class DownloadPhoto:
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[1]) if filename else fname
         filepath = os.path.join(folder, filename)
         response = requests.get(url, stream=True)
-        if response.status_code == 200:
-            with open(filepath, "wb") as f:
-                response.raw.decode_content = True
-                shutil.copyfileobj(response.raw, f)
+        response.raise_for_status()
+        with open(filepath, "wb") as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)
         return os.path.abspath(filepath)
 
 

@@ -46,7 +46,7 @@ class Client(
     Direct
 ):
     proxy = None
-    logger = logging.getLogger("Client")
+    logger = logging.getLogger("instagrapi")
 
     def __init__(self, settings={}, proxy=None, **kwargs):
         super().__init__(**kwargs)
