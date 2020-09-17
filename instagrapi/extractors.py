@@ -10,6 +10,7 @@ def extract_media_v1(data):
         location = {"pk": int(location.get("pk")), "name": location.get("name")}
     video_url = ""
     if "video_versions" in data:
+        # Select Best Quality by Resolutiuon
         video_url = sorted(
             data["video_versions"], key=lambda o: o["height"] * o["width"]
         ).pop()["url"]

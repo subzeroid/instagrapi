@@ -18,7 +18,7 @@ class Insights:
         """Get insights for all medias from feed with page iteration with cursor and sleep timeout
         :param post_type:       Media type ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
         :param time_frame:      Time frame for media publishing date ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
-        :param data_ordering:   Data ordering in instagram response
+        :param data_ordering:   Data ordering in instagram response ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
         :param count:           Max media count for retrieving
         :param sleep:           Timeout between pages iterations
         :return: List with media insights
