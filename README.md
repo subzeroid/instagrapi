@@ -44,14 +44,23 @@ medias = cl.user_medias(user_id, 20)
 This is your authorized account
 
 | Method                   | Description   |
-| ------------------------ |:-------------:|
-| login_by_sessionid(sessionid: str) | Login by sessionid from instagram |
+| ------------------------ |-------------|
 | login(username: str, password: str, settings: dict = {}) | Login by username and password |
-| get_settings() | Return settings dict (more details below) |
-| set_proxy("socks5://127.0.0.1:30235") | socks proxy |
-| set_proxy("http://127.0.0.1:8080") | http/https proxy |
+| get_settings() -> dict | Return settings dict (more details below) |
+| set_proxy(dsn) | Support socks and http/https proxy |
+| login_by_sessionid(sessionid: str) | Login by sessionid from instagram |
 
-You can pass settings to the Client, it has the following format:
+
+```
+cl.login("instagrapi", "42")
+# cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
+cl.set_proxy("socks5://127.0.0.1:30235")
+# cl.set_proxy("http://127.0.0.1:8080")
+
+print(cl.get_settings())
+```
+
+You can pass settings to the Client (and save cookies), it has the following format:
 
 ```
 settings = {
@@ -79,7 +88,7 @@ settings = {
    "user_agent":"Instagram 117.0.0.28.123 Android (23/6.0.1; 640dpi; 1440x2392; LGE/lge; RS988; h1; h1; en_US; 168361634)"
 }
 
-cl = Client(username, password, settings)
+cl = Client(username, password, settings=settings)
 ```
 
 This values send to Instagram API.
@@ -93,27 +102,40 @@ This is Instagram terminology (media_id and media_pk):
 * `code` - Short code (slug for media), example `BjNLpA1AhXM` from `"https://www.instagram.com/p/BjNLpA1AhXM/"`
 * `url` - URL to media
 
-| Method                   | Description   | Example       |
-| ------------------------ |:-------------:|:-------------:|
+| Method                   | Description   |
+| ------------------------ | ------------- |
 | media_id(media_pk) | Return media_id by media_pk |
 | media_pk(media_id) | Return media_pk by media_id |
-| media_pk_from_code(short_code) | Return media_pk | media_pk_from_code("B-fKL9qpeab") -> 2278584739065882267 |
-| media_pk_from_code(full_code) | Return media_pk (by IGTV code) | media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0") -> 2243811726252050162 |
-| media_pk_from_url(url) | Return media_pk | media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/") -> 1787135824035452364 |
+| media_pk_from_code(short_code) | Return media_pk |
+| media_pk_from_code(full_code) | Return media_pk (by IGTV code) |
+| media_pk_from_url(url) | Return media_pk | 
 | media_info(media_pk) | media_info_gql or media_info_v1 |
 | media_delete(media_pk) | Delete media |
 | media_edit(media_pk, caption) | Change caption for media |
 | media_user(media_pk) | Get user info for media |
-| media_oembed(url) | Return short media info by media URL | media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/") |
-| media_comments(media_id) | Get all comments  |
+| media_oembed(url) | Return short media info by media URL | 
 | media_comment(media_id, message) | Write message to media | 
+| media_comments(media_id) | Get all comments |
+
+```
+cl.media_pk_from_code("B-fKL9qpeab")
+2278584739065882267
+
+cl.media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0")
+2243811726252050162
+
+cl.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
+1787135824035452364
+
+cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/")
+```
 
 #### User
 
 user_id - Integer ID of user, example `1903424587`
 
 | Method                   | Description   |
-| ------------------------ |:-------------:|
+| ------------------------ | ------------- |
 | user_medias(user_id, 20) | Get list of medias by user_id |
 | user_followers(user_id) | Get list of user_id of followers users |
 | user_following | Get list of user_id of following users |
@@ -127,7 +149,7 @@ user_id - Integer ID of user, example `1903424587`
 #### Upload
 
 | Method                   | Description   |
-| ------------------------ |:-------------:|
+| ------------------------ | ------------- |
 | photo_upload(path, caption)| Upload photo |
 | photo_download(media_pk) | Download photo |
 | video_upload(path, caption) | Upload video |
@@ -144,7 +166,7 @@ In the process of describing
 #### Collections
 
 | Method                   | Description   |
-| ------------------------ |:-------------:|
+| ------------------------ | ------------- |
 | collections() | Get all account collections |
 | collection_medias_by_name(name) | Get medias in collection by name |
 | collection_medias(collection_id, amount=21, last_media_pk=0) | Get medias in collection by collection_id |
