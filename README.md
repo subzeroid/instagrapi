@@ -150,18 +150,18 @@ cl.followers(cl.user_id)
 cl.following(cl.user_id)
 ```
 
-#### Upload
+#### Upload medias
 
 | Method                   | Description   |
 | ------------------------ | ------------- |
-| photo_upload(path, caption)| Upload photo |
-| photo_download(media_pk) | Download photo |
-| video_upload(path, caption) | Upload video |
-| video_download(media_pk) | Download video |
-| igtv_upload(path, title, caption) | Upload IGTV |
-| igtv_download(media_pk) | Download IGTV |
-| album_upload(paths, caption) | Upload Album |
-| album_download(media_pk) | Download Album |
+| photo_upload(path, caption)| Upload photo (Support JPG files) |
+| photo_download(media_pk) | Download photo (Return path to photo with best resoluton) |
+| video_upload(path, caption) | Upload video (Support mp4 files) |
+| video_download(media_pk) | Download video (Return path to video with best resoluton) |
+| igtv_upload(path, title, caption) | Upload IGTV (Support mp4 files) |
+| igtv_download(media_pk) | Download IGTV (Return path to video with best resoluton) |
+| album_upload(paths, caption) | Upload Album (Support JPG and mp4) |
+| album_download(media_pk) | Download Album (Return multiple paths to photo and video with best resolutons) |
 
 #### Stories
 
