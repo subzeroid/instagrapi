@@ -20,7 +20,6 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
     python -m unittest tests
     python -m unittest tests.ClientPublicTestCase
 
-
 ### Requests
 
 Public (anonymous) methods had suffix `_gql` (GraphQL) or `_a1` (`?__a=1`)
@@ -138,13 +137,18 @@ user_id - Integer ID of user, example `1903424587`
 | ------------------------ | ------------- |
 | user_medias(user_id, 20) | Get list of medias by user_id |
 | user_followers(user_id) | Get list of user_id of followers users |
-| user_following | Get list of user_id of following users |
+| user_following(user_id) | Get list of user_id of following users |
 | user_info(user_id) | Get user info dict. First call public request user_info_gql(user_id) and next private api request user_info_v1(user_id) |
 | user_info_by_username(username) | Get user info dict by username |
 | user_follow(user_id) | Follow user |
 | user_unfollow(user_id) | Unfollow user |
 | user_id_from_username(username) | Get user_id by username |
 | username_from_user_id(user_id) | Get username by user_id |
+
+```
+cl.followers(cl.user_id)
+cl.following(cl.user_id)
+```
 
 #### Upload
 
