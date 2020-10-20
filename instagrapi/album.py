@@ -68,7 +68,7 @@ class UploadAlbum:
         paths: list,
         caption: str,
         usertags: list = [],
-        configure_timeout: str = 3,
+        configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
         to_story=False

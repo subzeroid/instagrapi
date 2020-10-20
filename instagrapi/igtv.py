@@ -34,7 +34,7 @@ class UploadIGTV:
         caption: str,
         thumbnail: str = None,
         usertags: list = [],
-        configure_timeout: str = 10,
+        configure_timeout: int = 10,
     ) -> dict:
         """Upload IGTV to Instagram
 
