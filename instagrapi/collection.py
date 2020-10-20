@@ -46,7 +46,8 @@ class Collection:
             try:
                 result = self.private_request(
                     f"feed/collection/{collection_id}/",
-                    params={"include_igtv_preview": "false", "max_id": next_max_id},
+                    params={"include_igtv_preview": "false",
+                            "max_id": next_max_id},
                 )
             except Exception as e:
                 self.logger.exception(e)

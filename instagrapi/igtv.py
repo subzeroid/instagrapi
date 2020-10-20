@@ -47,7 +47,8 @@ class UploadIGTV:
 
         :return: Object with state of uploading to Instagram (or False)
         """
-        assert isinstance(filepath, str), "Filepath must been string, now %s" % filepath
+        assert isinstance(
+            filepath, str), "Filepath must been string, now %s" % filepath
         upload_id = str(int(time.time() * 1000))
         thumbnail, width, height, duration = analyze_video(filepath, thumbnail)
         waterfall_id = str(uuid4())
@@ -105,7 +106,8 @@ class UploadIGTV:
         # CONFIGURE
         self.igtv_composer_session_id = self.generate_uuid()
         for attempt in range(20):
-            self.logger.debug("Attempt #%d to configure IGTV: %s", attempt, filepath)
+            self.logger.debug(
+                "Attempt #%d to configure IGTV: %s", attempt, filepath)
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(

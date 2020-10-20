@@ -36,7 +36,8 @@ class DownloadPhoto:
 
     def photo_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[1]) if filename else fname
+        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
+                              1]) if filename else fname
         filepath = os.path.join(folder, filename)
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -61,7 +62,8 @@ class UploadPhoto:
 
         :return: Tuple (upload_id, width, height)
         """
-        assert isinstance(filepath, str), "Filepath must been string, now %s" % filepath
+        assert isinstance(
+            filepath, str), "Filepath must been string, now %s" % filepath
         upload_id = upload_id or str(int(time.time() * 1000))
         assert filepath, "Not specified filepath to photo"
         waterfall_id = str(uuid4())
@@ -139,7 +141,8 @@ class UploadPhoto:
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
-        raise (configure_exception or PhotoConfigureError)(response=self.last_response, **self.last_json)
+        raise (configure_exception or PhotoConfigureError)(
+            response=self.last_response, **self.last_json)
 
     def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list) -> bool:
         """Post Configure Photo (send caption to Instagram)

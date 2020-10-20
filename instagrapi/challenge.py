@@ -141,7 +141,8 @@ class ChallengeResolve:
                 break
             except ChallengeRedirection:
                 return True  # instagram redirect
-        assert result["challengeType"] in ('VerifyEmailCodeForm', 'VerifySMSCodeForm', 'VerifySMSCodeFormForSMSCaptcha'), result
+        assert result["challengeType"] in (
+            'VerifyEmailCodeForm', 'VerifySMSCodeForm', 'VerifySMSCodeFormForSMSCaptcha'), result
         wait_seconds = 5
         for retry_code in range(5):
             for attempt in range(1, 11):
@@ -149,7 +150,8 @@ class ChallengeResolve:
                 if code:
                     break
                 time.sleep(wait_seconds * attempt)
-            print('Enter code "%s" for %s (%d attempts, by %d seconds)' % (code, self.username, attempt, wait_seconds))
+            print('Enter code "%s" for %s (%d attempts, by %d seconds)' %
+                  (code, self.username, attempt, wait_seconds))
             # SEND CODE
             time.sleep(WAIT_SECONDS)
             result = session.post(challenge_url, {
@@ -163,7 +165,8 @@ class ChallengeResolve:
             if 'Please check the code we sent you and try again' not in (result.get("errors") or [''])[0]:
                 break
         # FORM TO APPROVE CONTACT DATA
-        assert result.get("challengeType") == "ReviewContactPointChangeForm", result
+        assert result.get(
+            "challengeType") == "ReviewContactPointChangeForm", result
         details = []
         for data in result["extraData"]["content"]:
             for entry in data.get("labeled_list_entries", []):
@@ -178,7 +181,8 @@ class ChallengeResolve:
             ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
         time.sleep(WAIT_SECONDS)
         result = session.post(
-            "https://i.instagram.com%s" % result.get("navigation").get("forward"),
+            "https://i.instagram.com%s" % result.get(
+                "navigation").get("forward"),
             {
                 "choice": 0,  # I AGREE
                 "enc_new_password1": enc_password,
@@ -239,7 +243,8 @@ class ChallengeResolve:
             if "errors" in challenge:
                 for error in challenge["errors"]:
                     messages.append(error)
-            raise SelectContactPointRecoveryForm(" ".join(messages), challenge=challenge)
+            raise SelectContactPointRecoveryForm(
+                " ".join(messages), challenge=challenge)
         elif challenge_type == "RecaptchaChallengeForm":
             """
             Example:
@@ -259,7 +264,8 @@ class ChallengeResolve:
             'type': 'CHALLENGE'},
             'status': 'fail'}
             """
-            raise RecaptchaChallengeForm(". ".join(challenge.get("errors", [])))
+            raise RecaptchaChallengeForm(
+                ". ".join(challenge.get("errors", [])))
         elif challenge_type in ('VerifyEmailCodeForm', 'VerifySMSCodeForm'):
             # Success. Next step
             return challenge
@@ -311,7 +317,8 @@ class ChallengeResolve:
                     'ChallengeResolve: You choice "email" not available to this account %s'
                     % self.last_json
                 )
-                self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
+                self._send_private_request(
+                    challenge_url, {"choice": CHOICE_EMAIL})
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, CHOICE_EMAIL)

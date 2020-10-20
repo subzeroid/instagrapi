@@ -24,7 +24,8 @@ class Insights:
         :return: List with media insights
         :rtype: list
         """
-        supported_post_types = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
+        supported_post_types = ("ALL", "CAROUSEL_V2",
+                                "IMAGE", "SHOPPING", "VIDEO")
         supported_time_frames = (
             "ONE_WEEK",
             "ONE_MONTH",
@@ -71,7 +72,8 @@ class Insights:
                 "business_manager",
                 default=None,
             ):
-                raise UserError("Account is not business account", **self.last_json)
+                raise UserError(
+                    "Account is not business account", **self.last_json)
 
             stats = result["data"]["shadow_instagram_user"]["business_manager"][
                 "top_posts_unit"
@@ -112,9 +114,11 @@ class Insights:
         result = self.private_request(
             "ads/graphql/", self.with_query_params(data, query_params),
         )
-        res = json_value(result, "data", "shadow_instagram_user", "business_manager")
+        res = json_value(
+            result, "data", "shadow_instagram_user", "business_manager")
         if not res:
-            raise UserError("Account is not business account", **self.last_json)
+            raise UserError("Account is not business account",
+                            **self.last_json)
         return res
 
     @check_login

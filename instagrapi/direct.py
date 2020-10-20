@@ -79,7 +79,8 @@ class Direct:
         if 'http' in message:
             method = "link"
             kwargs["link_text"] = message
-            kwargs["link_urls"] = dumps(re.findall(r"(https?://[^\s]+)", message))
+            kwargs["link_urls"] = dumps(
+                re.findall(r"(https?://[^\s]+)", message))
         else:
             kwargs["text"] = message
         if threads:

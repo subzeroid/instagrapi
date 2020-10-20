@@ -7,7 +7,8 @@ def extract_media_v1(data):
     user = data["user"]
     location = data.get("location")
     if location:
-        location = {"pk": int(location.get("pk")), "name": location.get("name")}
+        location = {"pk": int(location.get("pk")),
+                    "name": location.get("name")}
     video_url = ""
     if "video_versions" in data:
         # Select Best Quality by Resolutiuon
@@ -34,7 +35,8 @@ def extract_media_v1(data):
         "location": location,
         "user": extract_user_short(user),
         "comment_count": int(data.get("comment_count") or 0),
-        "like_count": int(data.get("like_count") or 0),  # the media just published has no like_count
+        # the media just published has no like_count
+        "like_count": int(data.get("like_count") or 0),
         "caption_text": json_value(data, "caption", "text", default=""),
         "usertags": sorted([
             extract_usertag(usertag)
@@ -69,8 +71,10 @@ def extract_media_gql(data):
         user["pk"] = user.pop("id")
     location = data.get("location")
     if location:
-        location = {"pk": int(location.get("id")), "name": location.get("name")}
-    media_type = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8}[data["__typename"]]
+        location = {"pk": int(location.get("id")),
+                    "name": location.get("name")}
+    media_type = {"GraphImage": 1, "GraphVideo": 2,
+                  "GraphSidecar": 8}[data["__typename"]]
     product_type = data.get("product_type", "")
     video_url = ""
     if media_type == 2:
@@ -88,7 +92,8 @@ def extract_media_gql(data):
         "product_type": product_type,
         "code": shortcode,
         "thumbnail_url": sorted(
-            data.get("display_resources", data.get('thumbnail_resources')),  # display_resources - user feed, thumbnail_resources - hashtag feed
+            # display_resources - user feed, thumbnail_resources - hashtag feed
+            data.get("display_resources", data.get('thumbnail_resources')),
             key=lambda o: o["config_width"] * o["config_height"],
         ).pop()["src"],
         "location": location,
@@ -139,7 +144,8 @@ def extract_resource_v1(data):
 
 
 def extract_resource_gql(data):
-    media_type = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8}[data["__typename"]]
+    media_type = {"GraphImage": 1, "GraphVideo": 2,
+                  "GraphSidecar": 8}[data["__typename"]]
     return {
         "video_url": data.get("video_url", ""),
         "thumbnail_url": data["display_url"],

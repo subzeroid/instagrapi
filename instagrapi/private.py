@@ -48,7 +48,8 @@ class PrivateRequest:
         self.private = requests.Session()
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
-        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop(
+            "request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -167,7 +168,8 @@ class PrivateRequest:
                     config.API_URL + endpoint, data=data, params=params
                 )
             else:  # GET
-                response = self.private.get(config.API_URL + endpoint, params=params)
+                response = self.private.get(
+                    config.API_URL + endpoint, params=params)
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text
             )
@@ -186,7 +188,8 @@ class PrivateRequest:
                 response.text,
             )
             raise ClientJSONDecodeError(
-                "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
+                "JSONDecodeError {0!s} while opening {1!s}".format(
+                    e, response.url),
                 response=response,
             )
         except requests.HTTPError as e:
@@ -224,20 +227,23 @@ class PrivateRequest:
                 self.logger.warning(
                     "Status 400: %s", message or "Maybe Two-factor auth?"
                 )
-                raise ClientBadRequestError(e, response=e.response, **last_json)
+                raise ClientBadRequestError(
+                    e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
                 # TODO: {'message': 'Please wait a few minutes before you try again.', 'status': 'fail'}
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
-                self.logger.warning("Status 404: Endpoint %s does not exists", endpoint)
+                self.logger.warning(
+                    "Status 404: Endpoint %s does not exists", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
                 raise ClientRequestTimeout(e, response=e.response, **last_json)
             raise ClientError(e, response=e.response, **last_json)
         except requests.ConnectionError as e:
-            raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
+            raise ClientConnectionError(
+                "{e.__class__.__name__} {e}".format(e=e))
         if last_json.get("status") == "fail":
             raise ClientError(response=response, **last_json)
         elif "error_title" in last_json:
@@ -260,7 +266,8 @@ class PrivateRequest:
             response.status_code,
             response.request.method,
             response.url,
-            "{app_version}, {manufacturer} {model}".format(**self.device_settings),
+            "{app_version}, {manufacturer} {model}".format(
+                **self.device_settings),
         )
 
     def private_request(

@@ -1,6 +1,5 @@
 import os
 import json
-import pytz
 import random
 import os.path
 import unittest
