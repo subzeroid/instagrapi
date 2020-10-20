@@ -465,8 +465,10 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.photo_download(media_pk)
         media = self.api.photo_upload(path, "Test caption for photo")
-        self.assertEqual(media["caption_text"], "Test caption for photo")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for photo")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_video_upload(self):
         media_pk = self.api.media_pk_from_url(
@@ -474,16 +476,20 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.video_download(media_pk)
         media = self.api.video_upload(path, "Test caption for video")
-        self.assertEqual(media["caption_text"], "Test caption for video")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for video")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_album_upload(self):
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
         paths = self.api.album_download(media_pk)
         media = self.api.album_upload(paths, "Test caption for album")
-        self.assertEqual(media["caption_text"], "Test caption for album")
-        self.assertEqual(len(media["resources"]), 3)
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for album")
+            self.assertEqual(len(media["resources"]), 3)
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_igtv_upload(self):
         media_pk = self.api.media_pk_from_url(
@@ -491,9 +497,11 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.igtv_download(media_pk)
         media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
-        self.assertEqual(media["title"], "Test title")
-        self.assertEqual(media["caption_text"], "Test caption for IGTV")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["title"], "Test title")
+            self.assertEqual(media["caption_text"], "Test caption for IGTV")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
 
 class ClientCollectionTestCase(ClientPrivateTestCase):
