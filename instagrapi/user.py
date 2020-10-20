@@ -1,4 +1,5 @@
 import time
+from copy import deepcopy
 
 from .exceptions import (
     ClientError,
@@ -111,7 +112,7 @@ class User:
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user["username"]] = user["pk"]
-        return self._users_cache[user_id]
+        return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> list:
         """Return list of following users (without authorization)
@@ -319,7 +320,8 @@ class User:
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.user_medias_gql(user_id, amount)  # get first 50 medias
+            medias = self.user_medias_gql(
+                user_id, amount)  # get first 50 medias
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)

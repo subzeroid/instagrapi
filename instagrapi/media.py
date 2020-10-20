@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from urllib.parse import urlparse
 
 from .utils import InstagramIdCodec
@@ -111,7 +112,7 @@ class Media:
                 # Or private account
                 media = self.media_info_v1(media_pk)
             self._medias_cache[media_pk] = media
-        return self._medias_cache[media_pk]
+        return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
 
     @check_login
     def media_delete(self, media_id: str, media_type: str = '') -> bool:
@@ -122,7 +123,8 @@ class Media:
         """
         media_id = self.media_id(media_id)
         result = self.private_request(
-            f"media/{media_id}/delete/", self.with_default_data({"media_id": media_id})
+            f"media/{media_id}/delete/", self.with_default_data(
+                {"media_id": media_id})
         )
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
