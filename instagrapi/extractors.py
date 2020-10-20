@@ -23,7 +23,7 @@ def extract_media_v1(data):
             data["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         ).pop()["url"]
-    return {
+    media = {
         "pk": int(data["pk"]),
         "taken_at": int(data["taken_at"]),
         "id": data["id"],
@@ -36,10 +36,10 @@ def extract_media_v1(data):
         "comment_count": int(data.get("comment_count") or 0),
         "like_count": int(data.get("like_count") or 0),  # the media just published has no like_count
         "caption_text": json_value(data, "caption", "text", default=""),
-        "usertags": [
+        "usertags": sorted([
             extract_usertag(usertag)
             for usertag in data.get("usertags", {}).get("in", [])
-        ],
+        ], key=lambda tag: tag['user']['pk']),
         "video_url": video_url,
         "view_count": int(data.get('view_count') or 0),
         "video_duration": data.get('video_duration'),
@@ -49,6 +49,12 @@ def extract_media_v1(data):
             for edge in data.get('carousel_media', [])
         ]
     }
+    if data["media_type"] == 8:
+        # remove thumbnail_url and video_url for albums
+        # see resources
+        media.pop('thumbnail_url')
+        media.pop('video_url')
+    return media
 
 
 def extract_media_gql(data):
@@ -74,7 +80,7 @@ def extract_media_gql(data):
     shortcode = ''
     if 'shortcode' in data:
         shortcode = data["shortcode"]
-    return {
+    media = {
         "pk": int(data["id"]),
         "taken_at": int(data["taken_at_timestamp"]),
         "id": media_id,
@@ -92,10 +98,10 @@ def extract_media_gql(data):
         "caption_text": json_value(
             data, "edge_media_to_caption", "edges", 0, "node", "text", default=""
         ),
-        "usertags": [
+        "usertags": sorted([
             extract_usertag(usertag['node'])
             for usertag in data.get("edge_media_to_tagged_user", {}).get("edges", [])
-        ],
+        ], key=lambda tag: tag['user']['pk']),
         "video_url": video_url,
         "view_count": int(data.get('video_view_count') or 0),
         "video_duration": data.get('video_duration'),
@@ -105,6 +111,12 @@ def extract_media_gql(data):
             for edge in data.get('edge_sidecar_to_children', {}).get('edges', [])
         ]
     }
+    if media_type == 8:
+        # remove thumbnail_url and video_url for albums
+        # see resources
+        media.pop('thumbnail_url')
+        media.pop('video_url')
+    return media
 
 
 def extract_resource_v1(data):
