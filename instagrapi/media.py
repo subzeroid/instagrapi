@@ -8,7 +8,6 @@ from .exceptions import (
     ClientNotFoundError,
     MediaNotFound,
 )
-from .decorators import check_login
 from .extractors import extract_media_v1, extract_media_gql, extract_user_short
 
 
@@ -114,13 +113,13 @@ class Media:
             self._medias_cache[media_pk] = media
         return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
 
-    @check_login
     def media_delete(self, media_id: str, media_type: str = '') -> bool:
         """Delete media
         Examples:
         https://i.instagram.com/api/v1/media/2277033926878261772_1903424587/delete/?media_type=PHOTO
         https://i.instagram.com/api/v1/media/2354534148830717883_1903424587/delete/?media_type=CAROUSEL
         """
+        assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         result = self.private_request(
             f"media/{media_id}/delete/", self.with_default_data(
@@ -129,7 +128,6 @@ class Media:
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
 
-    @check_login
     def media_edit(self, media_id: str, caption: str, title: str = "", usertags: list = []) -> bool:
         """Edit caption for media
         Example: https://i.instagram.com/api/v1/media/2154602296692269830_1903424587/edit_media/
@@ -158,6 +156,7 @@ class Media:
             'title': 'zr+trip,+crimea,+feb+2017.+Edit+by+@milashensky'
         }
         """
+        assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         media = self.media_info(media_id)  # from cache
         usertags = [
@@ -255,7 +254,6 @@ class Media:
                 raise e
         return comments
 
-    @check_login
     def media_comment(self, media_id: str, text: str) -> int:
         """Comment media
         Example: {
@@ -272,6 +270,7 @@ class Media:
             "feed_position": "0"
         }
         """
+        assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         result = self.private_request(
             f"media/{media_id}/comment/",

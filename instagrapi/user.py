@@ -6,7 +6,6 @@ from .exceptions import (
     ClientNotFoundError,
     UserNotFound,
 )
-from .decorators import check_login
 from .extractors import (
     extract_user_gql,
     extract_user_v1,
@@ -216,10 +215,10 @@ class User:
             }
         return self._users_followers[user_id]
 
-    @check_login
     def user_follow(self, user_id: int) -> bool:
         """Follow user by user_id
         """
+        assert self.user_id, "Login required"
         user_id = int(user_id)
         if user_id in self._users_following.get(self.user_id, []):
             self.logger.debug("User %s already followed", user_id)
@@ -230,10 +229,10 @@ class User:
             self._users_following.pop(self.user_id)  # reset
         return result["friendship_status"]["following"] is True
 
-    @check_login
     def user_unfollow(self, user_id: int) -> bool:
         """Unfollow user by user_id
         """
+        assert self.user_id, "Login required"
         user_id = int(user_id)
         data = self.with_action_data({"user_id": user_id})
         result = self.private_request(f"friendships/destroy/{user_id}/", data)

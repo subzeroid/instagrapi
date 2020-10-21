@@ -1,12 +1,11 @@
 import time
 
-from .decorators import check_login
 from .utils import json_value
 from .exceptions import UserError, ClientError, MediaError
 
 
 class Insights:
-    @check_login
+
     def insights_media_feed_all(
         self,
         post_type: str = "ALL",
@@ -24,6 +23,7 @@ class Insights:
         :return: List with media insights
         :rtype: list
         """
+        assert self.user_id, "Login required"
         supported_post_types = ("ALL", "CAROUSEL_V2",
                                 "IMAGE", "SHOPPING", "VIDEO")
         supported_time_frames = (
@@ -89,12 +89,12 @@ class Insights:
 
         return medias[:count]
 
-    @check_login
     def insights_account(self) -> dict:
         """Get insights for account
         :return: Dict with insights
         :rtype: dict
         """
+        assert self.user_id, "Login required"
         data = {
             "surface": "account",
             "doc_id": 2449243051851783,
@@ -121,13 +121,13 @@ class Insights:
                             **self.last_json)
         return res
 
-    @check_login
     def insights_media(self, media_pk: str) -> dict:
         """Get insights data for media
         :param media_pk:  Media id
         :return: Dict with insights data
         :rtype: dict
         """
+        assert self.user_id, "Login required"
         media_pk = self.media_pk(media_pk)
         data = {
             "surface": "post",
