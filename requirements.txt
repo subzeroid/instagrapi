@@ -1,0 +1,4 @@
+pytz>=2020.1
+requests>=2.24.0
+moviepy>=1.0.3
+Pillow>=7.2.0

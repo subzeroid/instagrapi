@@ -1,11 +1,11 @@
 import time
+from copy import deepcopy
 
 from .exceptions import (
     ClientError,
     ClientNotFoundError,
     UserNotFound,
 )
-from .decorators import check_login
 from .extractors import (
     extract_user_gql,
     extract_user_v1,
@@ -111,7 +111,7 @@ class User:
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user["username"]] = user["pk"]
-        return self._users_cache[user_id]
+        return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> list:
         """Return list of following users (without authorization)
@@ -215,10 +215,10 @@ class User:
             }
         return self._users_followers[user_id]
 
-    @check_login
     def user_follow(self, user_id: int) -> bool:
         """Follow user by user_id
         """
+        assert self.user_id, "Login required"
         user_id = int(user_id)
         if user_id in self._users_following.get(self.user_id, []):
             self.logger.debug("User %s already followed", user_id)
@@ -229,10 +229,10 @@ class User:
             self._users_following.pop(self.user_id)  # reset
         return result["friendship_status"]["following"] is True
 
-    @check_login
     def user_unfollow(self, user_id: int) -> bool:
         """Unfollow user by user_id
         """
+        assert self.user_id, "Login required"
         user_id = int(user_id)
         data = self.with_action_data({"user_id": user_id})
         result = self.private_request(f"friendships/destroy/{user_id}/", data)
@@ -319,7 +319,8 @@ class User:
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.user_medias_gql(user_id, amount)  # get first 50 medias
+            medias = self.user_medias_gql(
+                user_id, amount)  # get first 50 medias
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)

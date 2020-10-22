@@ -1,5 +1,5 @@
+import os
 import json
-import pytz
 import random
 import os.path
 import unittest
@@ -8,8 +8,8 @@ from datetime import datetime
 from instagrapi import Client
 
 
-ACCOUNT_USERNAME = "instagrapi"
-ACCOUNT_PASSWORD = "qwerty123456"
+ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
+ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
 
 
 class FakeClientTestCase(unittest.TestCase):
@@ -112,16 +112,16 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertNotIn(user_id, following)
 
     def test_user_info(self):
-        user_id = self.api.user_id_from_username("test_instagrapi")
+        user_id = self.api.user_id_from_username("adw0rd")
         user = self.api.user_info(user_id)
         self.assertTrue(user["pk"] == user_id)
-        self.assertTrue(user["full_name"] == "test instagrapi")
+        self.assertTrue(user["full_name"] == "Mikhail Andreev")
         self.assertTrue(not user["is_private"])
 
     def test_user_info_by_username(self):
-        user = self.api.user_info_by_username("test_instagrapi")
-        self.assertTrue(user["pk"] == 32459437900)
-        self.assertTrue(user["full_name"] == "test instagrapi")
+        user = self.api.user_info_by_username("adw0rd")
+        self.assertTrue(user["pk"] == 1903424587)
+        self.assertTrue(user["full_name"] == "Mikhail Andreev")
         self.assertTrue(not user["is_private"])
 
 
@@ -158,18 +158,27 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         )
 
     def test_media_edit(self):
-        media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/B-Xai_vnyew/"
-        )
+        # Upload photo
+        media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
+        path = self.api.photo_download(media_pk)
+        msg = "Test caption for photo"
+        media = self.api.photo_upload(path, msg)
+        self.assertEqual(media["caption_text"], msg)
+        # Change caption
+        media_pk = media['pk']
         msg = "New caption %s" % random.randint(1, 100)
         self.api.media_edit(media_pk, msg)
         media = self.api.media_info(media_pk)
         self.assertEqual(media["caption_text"], msg)
+        self.assertTrue(self.api.media_delete(media_pk))
 
     def test_media_edit_igtv(self):
         media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/B--LFQAHLeM/"
+            "https://www.instagram.com/tv/B91gKCcpnTk/"
         )
+        path = self.api.igtv_download(media_pk)
+        media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
+        media_pk = media['pk']
         # Enter title
         title = "Title %s" % random.randint(1, 100)
         msg = "New caption %s" % random.randint(1, 100)
@@ -190,6 +199,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         media = self.api.media_info(media_pk)
         self.assertEqual(media["title"], msg)
         self.assertEqual(media["caption_text"], msg)
+        self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_media_user(self):
         user = self.api.media_user(2154602296692269830)
@@ -199,7 +209,6 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             "full_name": "Mikhail Andreev",
             "is_private": False,
             "is_verified": False,
-            "is_unpublished": False,
         }.items():
             self.assertEqual(user[key], val)
         self.assertTrue(user["profile_pic_url"].startswith("https://"))
@@ -308,10 +317,14 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         media_v1 = self.api.media_info_v1(media_pk)
         media_gql = self.api.media_info_gql(media_pk)
         self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
-        self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
-        self.assertTrue(media_v1.pop("video_url").startswith("https://"))
-        self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
-        self.assertTrue(media_gql.pop("video_url").startswith("https://"))
+        for res in media_v1['resources']:
+            self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
+            if res['media_type'] == 2:
+                self.assertTrue(res.pop("video_url").startswith("https://"))
+        for res in media_gql['resources']:
+            self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
+            if res['media_type'] == 2:
+                self.assertTrue(res.pop("video_url").startswith("https://"))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_igtv(self):
@@ -332,60 +345,48 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/p/B3mr1-OlWMG/"
         )
         media = self.api.media_info(media_pk)
-        self.assertTrue(len(media["resources"]) == 1)
-        resource = media["resources"].pop()
-        self.assertTrue(media["comments_cnt"] > 5)
-        self.assertTrue(media["likes_cnt"] > 80)
+        self.assertTrue(len(media["resources"]) == 0)
+        self.assertTrue(media["comment_count"] > 5)
+        self.assertTrue(media["like_count"] > 80)
         for key, val in {
-            "text": "В гостях у ДК @delai_krasivo_kaifui",
-            "media_pk": 2154602296692269830,
-            "shortcode": "B3mr1-OlWMG",
-            "owner_id": 1903424587,
-            "owner_username": "adw0rd",
+            "caption_text": "В гостях у ДК @delai_krasivo_kaifui",
+            "thumbnail_url": "https://",
+            "pk": 2154602296692269830,
+            "code": "B3mr1-OlWMG",
             "media_type": 1,
-            "taken_at": datetime(2019, 10, 14, 15, 57, 10, tzinfo=pytz.UTC),
-        }.items():
-            self.assertEqual(media[key], val)
-        for key, val in {
-            "thumbnail_src": "https://",
-            "media_type": 1,
-            "media_pk": 2154602296692269830,
+            "taken_at": 1571068630
         }.items():
             if isinstance(val, str):
-                self.assertTrue(resource[key].startswith(val))
+                self.assertTrue(media[key].startswith(val))
             else:
-                self.assertEqual(resource[key], val)
+                self.assertEqual(media[key], val)
+        for key, val in {"pk": 1903424587, "username": "adw0rd"}.items():
+            self.assertEqual(media['user'][key], val)
 
     def test_extract_media_video(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/BgRIGUQFltp/"
         )
         media = self.api.media_info(media_pk)
-        self.assertTrue(len(media["resources"]) == 1)
-        resource = media["resources"].pop()
-        self.assertTrue(media["views_cnt"] > 150)
-        self.assertTrue(media["comments_cnt"] > 1)
-        self.assertTrue(media["likes_cnt"] > 40)
+        self.assertTrue(len(media["resources"]) == 0)
+        self.assertTrue(media["view_count"] > 150)
+        self.assertTrue(media["comment_count"] > 1)
+        self.assertTrue(media["like_count"] > 40)
         for key, val in {
-            "text": "Веселья ради\n\n@milashensky #dowhill #skateboarding #foros #crimea",
-            "media_pk": 1734202949948037993,
-            "shortcode": "BgRIGUQFltp",
-            "owner_id": 1903424587,
-            "owner_username": "adw0rd",
-            "media_type": 2,
-            "taken_at": datetime(2018, 3, 13, 14, 59, 23, tzinfo=pytz.UTC),
-        }.items():
-            self.assertEqual(media[key], val)
-        for key, val in {
+            "caption_text": "Веселья ради\n\n@milashensky #dowhill #skateboarding #foros #crimea",
+            "pk": 1734202949948037993,
+            "code": "BgRIGUQFltp",
             "video_url": "https://",
-            "thumbnail_src": "https://",
+            "thumbnail_url": "https://",
             "media_type": 2,
-            "media_pk": 1734202949948037993,
+            "taken_at": 1520953163
         }.items():
             if isinstance(val, str):
-                self.assertTrue(resource[key].startswith(val))
+                self.assertTrue(media[key].startswith(val))
             else:
-                self.assertEqual(resource[key], val)
+                self.assertEqual(media[key], val)
+        for key, val in {"pk": 1903424587, "username": "adw0rd"}.items():
+            self.assertEqual(media['user'][key], val)
 
     def test_extract_media_album(self):
         media_pk = self.api.media_pk_from_url('https://www.instagram.com/p/BjNLpA1AhXM/')
@@ -393,25 +394,25 @@ class ClientExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(len(media["resources"]) == 3)
         video_resource = media["resources"][0]
         photo_resource = media["resources"].pop()
-        self.assertTrue(media["views_cnt"] == 0)
-        self.assertTrue(media["comments_cnt"] == 0)
-        self.assertTrue(media["likes_cnt"] > 40)
+        self.assertTrue(media["view_count"] == 0)
+        self.assertTrue(media["comment_count"] == 0)
+        self.assertTrue(media["like_count"] > 40)
         for key, val in {
-            "text": "@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill #skateboarding #downhillskateboarding #crimea #foros #rememberwheels",
-            "media_pk": 1787135824035452364,
-            "shortcode": "BjNLpA1AhXM",
-            "owner_id": 1903424587,
-            "owner_username": "adw0rd",
+            "caption_text": "@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill #skateboarding #downhillskateboarding #crimea #foros #rememberwheels",
+            "pk": 1787135824035452364,
+            "code": "BjNLpA1AhXM",
             "media_type": 8,
-            "taken_at": datetime(2018, 5, 25, 15, 46, 53, tzinfo=pytz.UTC),
+            "taken_at": 1527263213,
             "product_type": "",
         }.items():
             self.assertEqual(media[key], val)
+        for key, val in {"pk": 1903424587, "username": "adw0rd"}.items():
+            self.assertEqual(media['user'][key], val)
         for key, val in {
             "video_url": "https://",
-            "thumbnail_src": "https://",
+            "thumbnail_url": "https://",
             "media_type": 2,
-            "media_pk": 1787135361353462176,
+            "pk": 1787135361353462176,
         }.items():
             if isinstance(val, str):
                 self.assertTrue(video_resource[key].startswith(val))
@@ -419,9 +420,9 @@ class ClientExtractTestCase(ClientPrivateTestCase):
                 self.assertEqual(video_resource[key], val)
         for key, val in {
             "video_url": "",
-            "thumbnail_src": "https://",
+            "thumbnail_url": "https://",
             "media_type": 1,
-            "media_pk": 1787133803186894424,
+            "pk": 1787133803186894424,
         }.items():
             if isinstance(val, str):
                 self.assertTrue(photo_resource[key].startswith(val))
@@ -433,33 +434,27 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/tv/ByYn5ZNlHWf/"
         )
         media = self.api.media_info(media_pk)
-        self.assertTrue(len(media["resources"]) == 1)
-        resource = media["resources"].pop()
-        self.assertTrue(media["views_cnt"] > 200)
-        self.assertTrue(media["comments_cnt"] > 10)
-        self.assertTrue(media["likes_cnt"] > 50)
+        self.assertTrue(len(media["resources"]) == 0)
+        self.assertTrue(media["view_count"] > 200)
+        self.assertTrue(media["comment_count"] > 10)
+        self.assertTrue(media["like_count"] > 50)
         for key, val in {
             "title": "zr trip, crimea, feb 2017. Edit by @milashensky",
-            "text": "Нашёл на диске неопубликованное в инсте произведение @milashensky",
-            "media_pk": 2060572297417487775,
-            "shortcode": "ByYn5ZNlHWf",
-            "owner_id": 1903424587,
-            "owner_username": "adw0rd",
-            "media_type": 99,
-            "taken_at": datetime(2019, 6, 6, 22, 22, 6, tzinfo=pytz.UTC),
+            "caption_text": "Нашёл на диске неопубликованное в инсте произведение @milashensky",
+            "pk": 2060572297417487775,
+            "video_url": "https://",
+            "thumbnail_url": "https://",
+            "code": "ByYn5ZNlHWf",
+            "media_type": 2,
+            "taken_at": 1559859726,
             "product_type": "igtv",
         }.items():
-            self.assertEqual(media[key], val)
-        for key, val in {
-            "video_url": "https://",
-            "thumbnail_src": "https://",
-            "media_type": 99,
-            "media_pk": 2060572297417487775,
-        }.items():
             if isinstance(val, str):
-                self.assertTrue(resource[key].startswith(val))
+                self.assertTrue(media[key].startswith(val))
             else:
-                self.assertEqual(resource[key], val)
+                self.assertEqual(media[key], val)
+        for key, val in {"pk": 1903424587, "username": "adw0rd"}.items():
+            self.assertEqual(media['user'][key], val)
 
 
 class ClienUploadTestCase(ClientPrivateTestCase):
@@ -469,8 +464,10 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.photo_download(media_pk)
         media = self.api.photo_upload(path, "Test caption for photo")
-        self.assertEqual(media["caption_text"], "Test caption for photo")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for photo")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_video_upload(self):
         media_pk = self.api.media_pk_from_url(
@@ -478,16 +475,20 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.video_download(media_pk)
         media = self.api.video_upload(path, "Test caption for video")
-        self.assertEqual(media["caption_text"], "Test caption for video")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for video")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_album_upload(self):
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
         paths = self.api.album_download(media_pk)
         media = self.api.album_upload(paths, "Test caption for album")
-        self.assertEqual(media["caption_text"], "Test caption for album")
-        self.assertEqual(len(media["resources"]), 3)
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["caption_text"], "Test caption for album")
+            self.assertEqual(len(media["resources"]), 3)
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_igtv_upload(self):
         media_pk = self.api.media_pk_from_url(
@@ -495,9 +496,11 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.igtv_download(media_pk)
         media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
-        self.assertEqual(media["title"], "Test title")
-        self.assertEqual(media["caption_text"], "Test caption for IGTV")
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            self.assertEqual(media["title"], "Test title")
+            self.assertEqual(media["caption_text"], "Test caption for IGTV")
+        finally:
+            self.assertTrue(self.api.media_delete(media["id"]))
 
 
 class ClientCollectionTestCase(ClientPrivateTestCase):

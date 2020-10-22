@@ -81,7 +81,8 @@ class LoginFlow:
         """
         check_flow = []
         chance = random.randint(1, 100) % 2 == 0
-        check_flow.append(self.get_timeline_feed([chance and "is_pull_to_refresh"]))
+        check_flow.append(self.get_timeline_feed(
+            [chance and "is_pull_to_refresh"]))
         check_flow.append(
             self.get_reels_tray_feed(
                 reason="pull_to_refresh" if chance else "cold_start"
@@ -160,7 +161,8 @@ class Login(PreLoginFlow, LoginFlow):
         self.set_uuids(self.settings.get("uuids", {}))
 
     def login_by_sessionid(self, sessionid: str):
-        assert isinstance(sessionid, str) and len(sessionid) > 30, 'Invalid sessionid'
+        assert isinstance(sessionid, str) and len(
+            sessionid) > 30, 'Invalid sessionid'
         self.settings = {'cookies': {'sessionid': sessionid}}
         self.init()
         user_id = re.search(r'^\d+', sessionid).group()
@@ -276,7 +278,8 @@ class Login(PreLoginFlow, LoginFlow):
     def set_uuids(self, uuids={}):
         self.phone_id = uuids.get("phone_id", self.generate_uuid())
         self.uuid = uuids.get("uuid", self.generate_uuid())
-        self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
+        self.client_session_id = uuids.get(
+            "client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
         self.device_id = uuids.get("device_id", self.generate_device_id())
 
@@ -285,11 +288,13 @@ class Login(PreLoginFlow, LoginFlow):
 
     def generate_device_id(self):
         return (
-            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))).hexdigest()[:16]
+            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))
+                                       ).hexdigest()[:16]
         )
 
     def expose(self):
-        data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
+        data = {"id": self.uuid,
+                "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
     def with_default_data(self, data):
@@ -309,7 +314,8 @@ class Login(PreLoginFlow, LoginFlow):
     def gen_user_breadcrumb(self, size):
         key = "iN4$aGr0m"
         dt = int(time.time() * 1000)
-        time_elapsed = random.randint(500, 1500) + size * random.randint(500, 1500)
+        time_elapsed = random.randint(
+            500, 1500) + size * random.randint(500, 1500)
         text_change_event_count = max(1, size / random.randint(3, 5))
         data = "{size!s} {elapsed!s} {count!s} {dt!s}".format(
             **{

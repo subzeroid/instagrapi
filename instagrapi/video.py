@@ -39,7 +39,8 @@ class DownloadVideo:
 
     def video_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[1]) if filename else fname
+        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
+                              1]) if filename else fname
         filepath = os.path.join(folder, filename)
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -72,7 +73,8 @@ class UploadVideo:
 
         :return: Tuple (upload_id, width, height, duration)
         """
-        assert isinstance(filepath, str), "Filepath must been string, now %s" % filepath
+        assert isinstance(
+            filepath, str), "Filepath must been string, now %s" % filepath
         upload_id = str(int(time.time() * 1000))
         width, height, duration, thumbnail = analyze_video(filepath, thumbnail)
         waterfall_id = str(uuid4())
@@ -118,7 +120,8 @@ class UploadVideo:
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise VideoNotUpload(response.text, response=response, **self.last_json)
+            raise VideoNotUpload(
+                response.text, response=response, **self.last_json)
         video_data = open(filepath, "rb").read()
         video_len = str(len(video_data))
         headers = {
@@ -138,7 +141,8 @@ class UploadVideo:
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise VideoNotUpload(response.text, response=response, **self.last_json)
+            raise VideoNotUpload(
+                response.text, response=response, **self.last_json)
         return upload_id, width, height, duration, thumbnail
 
     def video_upload(
@@ -147,7 +151,7 @@ class UploadVideo:
         caption: str,
         thumbnail: str = None,
         usertags: list = [],
-        configure_timeout: str = 3,
+        configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
         to_story: bool = False,
@@ -166,9 +170,11 @@ class UploadVideo:
 
         :return: Extracted media (Dict)
         """
-        upload_id, width, height, duration, thumbnail = self.video_rupload(filepath, thumbnail, to_story=to_story)
+        upload_id, width, height, duration, thumbnail = self.video_rupload(
+            filepath, thumbnail, to_story=to_story)
         for attempt in range(20):
-            self.logger.debug("Attempt #%d to configure Video: %s", attempt, filepath)
+            self.logger.debug(
+                "Attempt #%d to configure Video: %s", attempt, filepath)
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.video_configure)(
@@ -188,7 +194,8 @@ class UploadVideo:
                     media = configured.get("media")
                     self.expose()
                     return extract_media_v1(media)
-        raise (configure_exception or VideoConfigureError)(response=self.last_response, **self.last_json)
+        raise (configure_exception or VideoConfigureError)(
+            response=self.last_response, **self.last_json)
 
     def video_configure(
         self,
@@ -243,7 +250,7 @@ class UploadVideo:
         caption: str,
         thumbnail: str = None,
         usertags: list = [],
-        configure_timeout: str = 3,
+        configure_timeout: int = 3,
         links: list = []
     ) -> dict:
         """Upload video to feed

@@ -1,15 +1,14 @@
 import re
 
-from .decorators import check_login
 from .utils import dumps
 
 
 class Direct:
 
-    @check_login
     def direct_threads(self, amount: int = 20) -> list:
         """Return last threads
         """
+        assert self.user_id, "Login required"
         cursor = None
         threads = []
         self.private_request("direct_v2/get_presence/")
@@ -33,10 +32,10 @@ class Direct:
             threads = threads[:amount]
         return threads
 
-    @check_login
     def direct_thread(self, thread_id: int, cursor: int = 0) -> dict:
         """Return full information by thread
         """
+        assert self.user_id, "Login required"
         params = {
             "visual_message_return_type": "unseen",
             "direction": "older",
@@ -47,10 +46,10 @@ class Direct:
             params['cursor'] = cursor
         return self.private_request(f"direct_v2/threads/{thread_id}/", params=params)['thread']
 
-    @check_login
     def direct_messages(self, thread_id: int, amount: int = 20) -> list:
         """Fetch list of messages by thread
         """
+        assert self.user_id, "Login required"
         cursor = None
         messages = []
         while True:
@@ -64,22 +63,23 @@ class Direct:
             messages = messages[:amount]
         return messages
 
-    @check_login
     def direct_answer(self, thread_id: int, message: str) -> dict:
         """Send message
         """
+        assert self.user_id, "Login required"
         return self.direct_send(message, [], [int(thread_id)])
 
-    @check_login
     def direct_send(self, message: str, users: list = [], threads: list = []) -> dict:
         """Send message
         """
+        assert self.user_id, "Login required"
         method = "text"
         kwargs = {}
         if 'http' in message:
             method = "link"
             kwargs["link_text"] = message
-            kwargs["link_urls"] = dumps(re.findall(r"(https?://[^\s]+)", message))
+            kwargs["link_urls"] = dumps(
+                re.findall(r"(https?://[^\s]+)", message))
         else:
             kwargs["text"] = message
         if threads:
