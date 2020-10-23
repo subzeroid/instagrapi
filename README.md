@@ -164,7 +164,7 @@ Example:
  'width': 658,
  'height': None,
  'html': '<blockquote>...',
- 'thumbnail_url': 'https://instagram.frix7-1.fna.fbcdn.net/v....135355164531920_1445273950655800983_n.jpg',
+ 'thumbnail_url': 'https://instagram.frix7-1.fna.fbcdn.net/v...0655800983_n.jpg',
  'thumbnail_width': 640,
  'thumbnail_height': 480,
  'can_view': True}
@@ -235,7 +235,7 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 | igtv_upload(path, title, caption)                  | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
 | igtv_download(media_pk)                            | Str\[path]   | Download IGTV (Return path to video with best resoluton)                        |
 | album_upload(paths, caption)                       | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
-| album_download(media_pk)                           | List\[path]   | Download Album (Return multiple paths to photo and video with best resolutons) |
+| album_download(media_pk)                           | List\[path]  | Download Album (Return multiple paths to photo and video with best resolutons) |
 
 #### Upload Stories
 
@@ -263,7 +263,11 @@ cl.video_upload_to_story(
     path,
     "Credits @adw0rd",
     usertags=[
-        {'user': {'pk': 1903424587, 'name': 'adw0rd'}, 'x': 0.49892962, 'y': 0.703125, 'width': 0.8333333333333334, 'height': 0.125}
+        {
+            'user': {'pk': 1903424587, 'name': 'adw0rd'},
+            'x': 0.49892962, 'y': 0.703125,
+            'width': 0.8333333333333334, 'height': 0.125
+        }
     ],
     links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
 )
