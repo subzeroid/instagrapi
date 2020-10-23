@@ -276,19 +276,35 @@ cl.video_upload_to_story(
 | collections()                                                | List\[collection]  | Get all account collections                                   |
 | collection_medias_by_name(name)                              | List\[media]       | Get medias in collection by name                              |
 | collection_medias(collection_id, amount=21, last_media_pk=0) | List\[media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by delta |
->>>>>>> 0c1812131c3180b041ba1e82f5b18207a6c3e4a8
+
 
 #### Insights
 
-In the process of describing
+Get statistics by medias. Common arguments:
+
+* `post_type` - Media type: "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO".
+* `time_frame` - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".
+* `data_ordering` - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".
+
+| Method                                                        | Return             | Description                                                   |
+| ------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | list | Return medias with insights |
+| insights_account()                                            | dict               | Get statistics by your account
+| insights_media(media_pk: int)                                 | dict               | Get statistics by your media
 
 #### Direct
 
-In the process of describing
+| Method                                                          | Return            | Description                                                   |
+| --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------- |
+| direct_threads(amount: int = 20)                                | list              | Get all threads
+| direct_thread(thread_id: int, cursor: int = 0)                  | dict              | Get thread
+| direct_messages(thread_id: int, amount: int = 20)               | list              | Get messages in thread
+| direct_answer(thread_id: int, message: str)                     | dict              | Add message to exist thread
+| direct_send(message: str, users: list = [], threads: list = []) | dict              | Send message to users and threads
 
 #### Challenge
 
-In the process of describing
+All challenges solved in the module [challenge.py](/adw0rd/instagrapi/blob/master/instagrapi/challenge.py)
 
 ### Common Exceptions
 
