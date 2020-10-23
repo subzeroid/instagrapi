@@ -11,7 +11,7 @@ class Insights:
         post_type: str = "ALL",
         time_frame: str = "TWO_YEARS",
         data_ordering: str = "REACH_COUNT",
-        count: int = None,
+        count: int = 0,
         sleep: int = 2,
     ) -> list:
         """Get insights for all medias from feed with page iteration with cursor and sleep timeout
@@ -80,14 +80,14 @@ class Insights:
             ]["top_posts"]
             cursor = stats["page_info"]["end_cursor"]
             medias.extend(stats["edges"])
-
             if not stats["page_info"]["has_next_page"]:
                 break
-            if count is not None and len(medias) >= count:
+            if count and len(medias) >= count:
                 break
             time.sleep(sleep)
-
-        return medias[:count]
+        if count:
+            medias = medias[:count]
+        return medias
 
     def insights_account(self) -> dict:
         """Get insights for account
@@ -121,7 +121,7 @@ class Insights:
                             **self.last_json)
         return res
 
-    def insights_media(self, media_pk: str) -> dict:
+    def insights_media(self, media_pk: int) -> dict:
         """Get insights data for media
         :param media_pk:  Media id
         :return: Dict with insights data
