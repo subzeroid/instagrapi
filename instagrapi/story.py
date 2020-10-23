@@ -10,6 +10,12 @@ class StoryBuilder:
     height = 1280
 
     def __init__(self, filepath: str, caption: str = "", usertags: list = [], bgpath: str = ""):
+        """Init params
+        :filepath: path to cource video or photo file
+        :caption: text caption for story
+        :usertags: list of dicts with tags of users
+        :bgpath: path to background image (recommend jpg and 720x1280)
+        """
         self.filepath = filepath
         self.caption = caption
         self.usertags = usertags
@@ -17,7 +23,12 @@ class StoryBuilder:
         if bgpath:
             assert os.path.exists(bgpath), 'Wrong path to background'
 
-    def build_clip(self, clip, max_duration):
+    def build_clip(self, clip, max_duration: int = 0) -> dict:
+        """Build clip
+        :clip: Clip object (VideoFileClip, ImageClip)
+        :max_duration: Result duration in seconds
+        :return: Dict with new filepath, usertags and more
+        """
         background = ImageClip(self.bgpath)
         clip_left = (self.width - clip.size[0]) / 2
         clip_top = (self.height - clip.size[1]) / 2
@@ -58,16 +69,23 @@ class StoryBuilder:
         }
 
     def video(self, max_duration: int = 0):
+        """Build CompositeVideoClip from source video
+        :max_duration: Result duration in seconds
+        """
         clip = VideoFileClip(self.filepath, has_mask=True)
         return self.build_clip(clip, max_duration)
 
     def photo(self, max_duration: int = 0):
+        """Build CompositeVideoClip from source photo
+        :max_duration: Result duration in seconds
+        """
         clip = ImageClip(self.filepath).resize(width=self.width)
         return self.build_clip(clip, max_duration or 14)
 
     def photo_pil(self):
         """Unfinished
         """
+        raise NotImplementedError('Method unfinished')
         background = Image.open(self.bgpath)
         txt = Image.new('RGBA', background.size, (255, 255, 255, 0))
         fnt = ImageFont.load_default()
