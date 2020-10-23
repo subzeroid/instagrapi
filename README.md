@@ -269,6 +269,15 @@ cl.video_upload_to_story(
 )
 ```
 
+#### Build Story
+
+| Method                                                | Return             | Description                                                   |
+| ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
+| video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
+| photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
+
+
 #### Collections
 
 | Method                                                       | Return             | Description                                                   |
