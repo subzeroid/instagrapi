@@ -265,7 +265,39 @@ cl.video_upload_to_story(
     usertags=[
         {'user': {'pk': 1903424587, 'name': 'adw0rd'}, 'x': 0.49892962, 'y': 0.703125, 'width': 0.8333333333333334, 'height': 0.125}
     ],
-    links=[{'webUri': 'https://adw0rd.com/'}]
+    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
+)
+```
+
+#### Build Story
+
+| Method                                                | Return             | Description                                                   |
+| ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
+| video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
+| photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
+
+Example:
+
+```
+from instagrapi.story import StoryBuilder
+
+media_path = cl.video_download(
+    cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+)
+
+buildout = StoryBuilder(
+    media_path,
+    'Credits @adw0rd',
+    [{'user': {'pk': 1903424587, 'name': 'adw0rd'}}],
+    '/path/to/background_720x1280.jpg'
+).video(14)
+
+cl.video_upload_to_story(
+    buildout['filepath'],
+    "Credits @adw0rd",
+    usertags=buildout['usertags'],
+    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
 )
 ```
 
