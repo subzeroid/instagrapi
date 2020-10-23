@@ -1,32 +1,39 @@
-import pathlib
-import pkg_resources
+# import pathlib
+# import pkg_resources
 
 from setuptools import setup, find_packages
 
-install_requires = []
-with pathlib.Path('requirements.txt').open() as requirements_txt:
-    install_requires = [
-        str(requirement)
-        for requirement
-        in pkg_resources.parse_requirements(requirements_txt)
-    ]
+# install_requires = []
+# with pathlib.Path('requirements.txt').open() as requirements_txt:
+#     install_requires = [
+#         str(requirement)
+#         for requirement
+#         in pkg_resources.parse_requirements(requirements_txt)
+#     ]
 
-long_description = 'Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver)'
+long_description = '''
+Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver)
+'''
 # with pathlib.Path('README.md').open() as readme_md:
 #     long_description = readme_md.read()
 
 
 setup(
     name='instagrapi',
-    version='1.1.7',
+    version='1.1.8',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
-    install_requires=install_requires,
+    install_requires=[
+        'pytz>=2020.1',
+        'requests>=2.24.0',
+        'moviepy>=1.0.3',
+        'Pillow>=7.2.0'
+    ],
     # test_requires=[],
     keywords='instagram private api',
-    description='Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver)',
+    description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=find_packages(),
