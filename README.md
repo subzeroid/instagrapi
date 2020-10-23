@@ -65,7 +65,7 @@ This is your authorized account
 | get_settings()                                           | Dict     | Return settings dict (more details below)                     |
 | set_proxy(dsn: str)                                      | Dict     | Support socks and http/https proxy                            |
 | cookie_dict                                              | Dict     | Return cookies                                                |
-| user_id                                                  | Int      | Return you user_id (after login)                              |
+| user_id                                                  | Int      | Return your user_id (after login)                              |
 | device                                                   | Dict     | Return device dict which we pass to Instagram                 |
 | set_device(device: dict)                                 | None     | Change device settings                                        |
 | set_user_agent(user_agent: str)                          | None     | Change User-Agent header                                      |
@@ -94,7 +94,7 @@ settings = {
       "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
       "device_id": "android-e021b636049dc0e9"
    },
-   "cookies":  {},  # set here you saved cookies
+   "cookies":  {},  # set here your saved cookies
    "last_login": 1596069420.0000145,
    "device_settings": {
       "cpu": "h1",
@@ -237,9 +237,9 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 | album_upload(paths, caption)                       | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
 | album_download(media_pk)                           | List\[path]   | Download Album (Return multiple paths to photo and video with best resolutons) |
 
-#### Stories
+#### Upload Stories
 
-Upload medias to you stories. Common arguments:
+Upload medias to your stories. Common arguments:
 
 * `filepath` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
@@ -269,7 +269,7 @@ cl.video_upload_to_story(
 )
 ```
 
-#### Build Story
+#### Build Story to Upload
 
 | Method                                                | Return             | Description                                                   |
 | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
