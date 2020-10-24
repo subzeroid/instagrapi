@@ -4,6 +4,10 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 Instagram API valid for 27 September 2020 (last reverse-engineering check)
 Support Python>=3.6
 
+### Authors
+
+[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
+
 ### Features
 
 1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
