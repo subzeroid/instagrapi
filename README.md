@@ -346,6 +346,8 @@ Get statistics by medias. Common arguments:
 
 All challenges solved in the module [challenge.py](/adw0rd/instagrapi/blob/master/instagrapi/challenge.py)
 
+Automatic submission code from SMS/Email in examples [here](/adw0rd/instagrapi/blob/master/examples/challenge_resolvers.py)
+
 ### Common Exceptions
 
 | Exception                 | Base        | Description                          |
