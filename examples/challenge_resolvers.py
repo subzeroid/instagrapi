@@ -1,25 +1,22 @@
 """
-Django-based example to handle Email/SMS challenges
+Example to handle Email/SMS challenges
 """
 import re
-import time
 import email
 import imaplib
 
-from django.conf import settings
-
 from instagrapi import Client
 
-from .models import Account
+CHALLENGE_EMAIL = ''
+CHALLENGE_PASSWORD = ''
 
-
-CHOICE_SMS = 0
-CHOICE_EMAIL = 1
+IG_USERNAME = ''
+IG_PASSWORD = ''
 
 
 def get_code_from_email(username):
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
-    mail.login(settings.CHALLENGE_EMAIL, settings.CHALLENGE_PASSWORD)
+    mail.login(CHALLENGE_EMAIL, CHALLENGE_PASSWORD)
     mail.select("inbox")
     result, data = mail.search(None, "(UNSEEN)")
     assert result == "OK", "Error1 during get_code_from_email: %s" % result
@@ -51,27 +48,22 @@ def get_code_from_email(username):
 
 
 def get_code_from_sms(username):
-    account = Account.objects.get(username=username)
-    sms = account.sms_codes.last()
-    for retry in range(24):
-        # wait when user type sms code in Django Admin
-        sms.refresh_from_db()
-        if sms.code:
-            return sms.code
-        time.sleep(2)
-    return False
+    while True:
+        code = input(f"Enter code (6 digits) for {username}: ").strip()
+        if code and code.isdigit():
+            return code
+    return None
 
 
 def challenge_code_handler(username, choice):
-    if choice == CHOICE_SMS:
+    if choice == 0:
         return get_code_from_sms(username)
-    elif choice == CHOICE_EMAIL:
+    elif choice == 1:
         return get_code_from_email(username)
     return False
 
 
 if __name__ == '__main__':
-    account = Account.objects.first()
     cl = Client()
     cl.challenge_code_handler = challenge_code_handler
-    cl.login(account.username, account.password)
+    cl.login(IG_USERNAME, IG_PASSWORD)
