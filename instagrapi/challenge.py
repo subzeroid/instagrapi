@@ -313,12 +313,20 @@ class ChallengeResolve:
                 'user_id': 12060121299,
                 'status': 'ok'}
                 """
-                assert "email" in self.last_json["step_data"].keys(), (
-                    'ChallengeResolve: You choice "email" not available to this account %s'
-                    % self.last_json
-                )
-                self._send_private_request(
-                    challenge_url, {"choice": CHOICE_EMAIL})
+                steps = self.last_json["step_data"].keys()
+                if "email" in steps:
+                    self._send_private_request(
+                        challenge_url, {"choice": CHOICE_EMAIL}
+                    )
+                elif "phone_number" in steps:
+                    self._send_private_request(
+                        challenge_url, {"choice": CHOICE_SMS}
+                    )
+                else:
+                    raise ChallengeError(
+                        'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'
+                        % self.last_json
+                    )
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, CHOICE_EMAIL)
