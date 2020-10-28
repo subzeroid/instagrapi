@@ -131,8 +131,8 @@ Viewing and editing publications (medias)
 
 | Method                                             | Return             | Description                                                   |
 | -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_id(media_pk: int)                            | Str                | Return media_id by media_pk                                   |
-| media_pk(media_id: str)                            | Int                | Return media_pk by media_id                                   |
+| media_id(media_pk: int)                            | Str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
+| media_pk(media_id: str)                            | Int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
 | media_pk_from_code(code: str)                      | Int                | Return media_pk                                               |
 | media_pk_from_url(url: str)                        | Int                | Return media_pk                                               | 
 | media_info(media_pk: int)                          | Dict\[full media]  | Return media info                                             |
