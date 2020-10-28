@@ -1,9 +1,12 @@
 # instagrapi
-
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/).
 
 Instagram API valid for 27 September 2020 (last reverse-engineering check)
 Support Python>=3.6
+
+### Authors
+
+[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
 
 ### Features
 
@@ -13,6 +16,7 @@ Support Python>=3.6
 4. Support work with User, Media, Insights, Collections and Direct objects
 5. Insights by posts and stories
 6. Build stories with custom background and font animation
+
 
 ### Install
 
@@ -65,7 +69,7 @@ This is your authorized account
 | get_settings()                                           | Dict     | Return settings dict (more details below)                     |
 | set_proxy(dsn: str)                                      | Dict     | Support socks and http/https proxy                            |
 | cookie_dict                                              | Dict     | Return cookies                                                |
-| user_id                                                  | Int      | Return you user_id (after login)                              |
+| user_id                                                  | Int      | Return your user_id (after login)                              |
 | device                                                   | Dict     | Return device dict which we pass to Instagram                 |
 | set_device(device: dict)                                 | None     | Change device settings                                        |
 | set_user_agent(user_agent: str)                          | None     | Change User-Agent header                                      |
@@ -94,7 +98,7 @@ settings = {
       "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
       "device_id": "android-e021b636049dc0e9"
    },
-   "cookies":  {},  # set here you saved cookies
+   "cookies":  {},  # set here your saved cookies
    "last_login": 1596069420.0000145,
    "device_settings": {
       "cpu": "h1",
@@ -164,7 +168,7 @@ Example:
  'width': 658,
  'height': None,
  'html': '<blockquote>...',
- 'thumbnail_url': 'https://instagram.frix7-1.fna.fbcdn.net/v....135355164531920_1445273950655800983_n.jpg',
+ 'thumbnail_url': 'https://instagram.frix7-1.fna.fbcdn.net/v...0655800983_n.jpg',
  'thumbnail_width': 640,
  'thumbnail_height': 480,
  'can_view': True}
@@ -235,11 +239,11 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 | igtv_upload(path, title, caption)                  | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
 | igtv_download(media_pk)                            | Str\[path]   | Download IGTV (Return path to video with best resoluton)                        |
 | album_upload(paths, caption)                       | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
-| album_download(media_pk)                           | List\[path]   | Download Album (Return multiple paths to photo and video with best resolutons) |
+| album_download(media_pk)                           | List\[path]  | Download Album (Return multiple paths to photo and video with best resolutons) |
 
-#### Stories
+#### Upload Stories
 
-Upload medias to you stories. Common arguments:
+Upload medias to your stories. Common arguments:
 
 * `filepath` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
@@ -263,9 +267,45 @@ cl.video_upload_to_story(
     path,
     "Credits @adw0rd",
     usertags=[
-        {'user': {'pk': 1903424587, 'name': 'adw0rd'}, 'x': 0.49892962, 'y': 0.703125, 'width': 0.8333333333333334, 'height': 0.125}
+        {
+            'user': {'pk': 1903424587, 'name': 'adw0rd'},
+            'x': 0.49892962, 'y': 0.703125,
+            'width': 0.8333333333333334, 'height': 0.125
+        }
     ],
-    links=[{'webUri': 'https://adw0rd.com/'}]
+    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
+)
+```
+
+#### Build Story to Upload
+
+| Method                                                | Return             | Description                                                   |
+| ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
+| video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
+| photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
+
+Example:
+
+```
+from instagrapi.story import StoryBuilder
+
+media_path = cl.video_download(
+    cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+)
+
+buildout = StoryBuilder(
+    media_path,
+    'Credits @adw0rd',
+    [{'user': {'pk': 1903424587, 'name': 'adw0rd'}}],
+    '/path/to/background_720x1280.jpg'
+).video(14)
+
+cl.video_upload_to_story(
+    buildout['filepath'],
+    "Credits @adw0rd",
+    usertags=buildout['usertags'],
+    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
 )
 ```
 
@@ -277,17 +317,36 @@ cl.video_upload_to_story(
 | collection_medias_by_name(name)                              | List\[media]       | Get medias in collection by name                              |
 | collection_medias(collection_id, amount=21, last_media_pk=0) | List\[media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by delta |
 
+
 #### Insights
 
-In the process of describing
+Get statistics by medias. Common arguments:
+
+* `post_type` - Media type: "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO".
+* `time_frame` - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".
+* `data_ordering` - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".
+
+| Method                                                        | Return             | Description                                                   |
+| ------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | list | Return medias with insights |
+| insights_account()                                            | dict               | Get statistics by your account
+| insights_media(media_pk: int)                                 | dict               | Get statistics by your media
 
 #### Direct
 
-In the process of describing
+| Method                                                          | Return            | Description                                                   |
+| --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------- |
+| direct_threads(amount: int = 20)                                | list              | Get all threads
+| direct_thread(thread_id: int, cursor: int = 0)                  | dict              | Get thread
+| direct_messages(thread_id: int, amount: int = 20)               | list              | Get messages in thread
+| direct_answer(thread_id: int, message: str)                     | dict              | Add message to exist thread
+| direct_send(message: str, users: list = [], threads: list = []) | dict              | Send message to users and threads
 
 #### Challenge
 
-In the process of describing
+All challenges solved in the module [challenge.py](/instagrapi/challenge.py)
+
+Automatic submission code from SMS/Email in examples [here](/examples/challenge_resolvers.py)
 
 ### Common Exceptions
 
