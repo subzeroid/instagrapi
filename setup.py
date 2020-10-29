@@ -20,7 +20,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 setup(
     name='instagrapi',
-    version='1.1.8',
+    version='1.1.9',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',

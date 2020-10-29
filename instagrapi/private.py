@@ -154,7 +154,7 @@ class PrivateRequest:
         if not login:
             time.sleep(self.request_timeout)
         if self.user_id and login:
-            raise Exception("User already login")
+            raise Exception(f"User already login ({self.user_id})")
         try:
             if data:  # POST
                 # Client.direct_answer raw dict
@@ -303,8 +303,9 @@ class PrivateRequest:
                 self.challenge_resolve(self.last_json)
             else:
                 raise e
-            # if login:
-            #     return self.last_json
+            if login and self.user_id:
+                # After challenge resolve return last_json
+                return self.last_json
             return self._send_private_request(endpoint, **kwargs)
 
         return self.last_json
