@@ -23,6 +23,7 @@ from .exceptions import (
     SentryBlock,
     RateLimitError,
     BadPassword,
+    PleaseWaitFewMinutes,
     UnknownError,
 )
 
@@ -197,7 +198,7 @@ class PrivateRequest:
                 self.last_json = last_json = response.json()
             except JSONDecodeError:
                 pass
-            message = last_json.get("message")
+            message = last_json.get("message", "")
             if e.response.status_code == 403:
                 if message == "login_required":
                     raise LoginRequired(response=e.response, **last_json)
@@ -220,6 +221,8 @@ class PrivateRequest:
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
+                elif "Please wait a few minutes before you try again" in message:
+                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
@@ -231,7 +234,8 @@ class PrivateRequest:
                     e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
-                # TODO: {'message': 'Please wait a few minutes before you try again.', 'status': 'fail'}
+                if "Please wait a few minutes before you try again" in message:
+                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
                 self.logger.warning(

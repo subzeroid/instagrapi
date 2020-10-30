@@ -120,6 +120,10 @@ class BadPassword(PrivateError):
     pass
 
 
+class PleaseWaitFewMinutes(PrivateError):
+    pass
+
+
 class UnknownError(PrivateError):
     pass
 
