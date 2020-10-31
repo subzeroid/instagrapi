@@ -229,18 +229,27 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  
 ```
 
+#### Download Media
+
+| Method                                                                 | Return       | Description                                                                     |
+| ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| photo_download(media_pk: int, folder: str = '')                        | Str\[path]   | Download photo (return path to photo with best resoluton)                       |
+| photo_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download photo by URL (return path to photo with best resoluton)                |
+| video_download(media_pk: int, filder: str = '')                        | Str\[path]   | Download video (return path to video with best resoluton)                       |
+| video_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download Video by URL (return path to video with best resoluton)                |
+| igtv_download(media_pk: int, filter: str = '')                         | Str\[path]   | Download IGTV (return path to video with best resoluton)                        |
+| igtv_download_by_url(url: str, filename: str = '', folder: str = '')   | Str\[path]   | Download IGTV by URL                                                            |
+| album_download(media_pk: int, folder: str = '')                        | List\[path]  | Download Album (return multiple paths to photo and video with best resolutons)  |
+| album_download_by_urls(urls: list, folder: str = '')                   | List\[path]  | Download Album by URLs (return multiple paths...)                               |
+
 #### Upload Media as Post (to Feed)
 
-| Method                                             | Return       | Description                                                                     |
-| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| photo_upload(path, caption)                        | Dict\[media] | Upload photo (Support JPG files)                                                |
-| photo_download(media_pk)                           | Str\[path]   | Download photo (Return path to photo with best resoluton)                       |
-| video_upload(path, caption)                        | Dict\[media] | Upload video (Support mp4 files)                                                |
-| video_download(media_pk)                           | Str\[path]   | Download video (Return path to video with best resoluton)                       |
-| igtv_upload(path, title, caption)                  | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
-| igtv_download(media_pk)                            | Str\[path]   | Download IGTV (Return path to video with best resoluton)                        |
-| album_upload(paths, caption)                       | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
-| album_download(media_pk)                           | List\[path]  | Download Album (Return multiple paths to photo and video with best resolutons) |
+| Method                                                                | Return       | Description                                                                     |
+| --------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| photo_upload(filepath: str, caption: str)                             | Dict\[media] | Upload photo (Support JPG files)                                                |
+| video_upload(filepath: str, caption: str)                             | Dict\[media] | Upload video (Support mp4 files)                                                |
+| igtv_upload(path, title, caption)                                     | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
+| album_upload(paths: list, caption: str)                               | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
 
 #### Upload Stories
 

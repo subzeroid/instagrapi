@@ -19,10 +19,10 @@ class IGTVConfigureError(IGTVNotUpload):
 
 
 class DownloadIGTV:
-    def igtv_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def igtv_download(self, media_pk: int, folder: str = "") -> str:
         return self.video_download(media_pk, folder)
 
-    def igtv_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
+    def igtv_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         return self.video_download_by_url(url, filename, folder)
 
 

@@ -26,7 +26,7 @@ class PhotoConfigureStoryError(PhotoConfigureError):
 
 
 class DownloadPhoto:
-    def photo_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def photo_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
@@ -34,7 +34,7 @@ class DownloadPhoto:
         )
         return self.photo_download_by_url(media["thumbnail_url"], filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
+    def photo_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname

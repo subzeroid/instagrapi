@@ -29,7 +29,7 @@ class VideoConfigureStoryError(VideoConfigureError):
 
 
 class DownloadVideo:
-    def video_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def video_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 2, "Must been video"
         filename = "{username}_{media_pk}".format(
@@ -37,7 +37,7 @@ class DownloadVideo:
         )
         return self.video_download_by_url(media["video_url"], filename, folder)
 
-    def video_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
+    def video_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname

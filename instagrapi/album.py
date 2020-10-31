@@ -27,7 +27,7 @@ class AlbumConfigureStoryError(AlbumConfigureError):
 
 
 class DownloadAlbum:
-    def album_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def album_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 8, "Must been album"
         paths = []
@@ -51,7 +51,7 @@ class DownloadAlbum:
                     resource['media_type'], resource['pk']))
         return paths
 
-    def album_download_by_urls(self, urls: str, folder: str = "/tmp") -> str:
+    def album_download_by_urls(self, urls: list, folder: str = "") -> list:
         paths = []
         for url in urls:
             fname = urlparse(url).path.rsplit('/', 1)[1]
