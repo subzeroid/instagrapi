@@ -1,9 +1,12 @@
 # instagrapi
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/).
 
+Support **Python>=3.6**
+
 Instagram API valid for 29 October 2020 (last reverse-engineering check)
 
-Support **Python>=3.6**
+[Support Chat in Telegram](https://t.me/instagrapi)
+![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg)
 
 ### Authors
 
