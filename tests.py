@@ -306,6 +306,13 @@ class ClientMediaTestCase(ClientPrivateTestCase):
 
 
 class ClientCompareExtractTestCase(ClientPrivateTestCase):
+    def assertLocation(self, one, two):
+        for key, val in one.items():
+            gql = two[key]
+            if isinstance(val, float):
+                val, gql = round(val, 4), round(gql, 4)
+            self.assertEqual(val, gql)
+
     def test_two_extract_media_photo(self):
         # Photo with usertags
         media_pk = 2154602296692269830
@@ -314,9 +321,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
-        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
-        for key in ('name', 'pk'):
-            self.assertEqual(location_v1.get(key), location_gql.get(key))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_video(self):
@@ -328,9 +333,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
-        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
-        for key in ('name', 'pk'):
-            self.assertEqual(location_v1.get(key), location_gql.get(key))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_album(self):
@@ -346,9 +349,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
             self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
             if res['media_type'] == 2:
                 self.assertTrue(res.pop("video_url").startswith("https://"))
-        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
-        for key in ('name', 'pk'):
-            self.assertEqual(location_v1.get(key), location_gql.get(key))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_igtv(self):
@@ -360,9 +361,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
-        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
-        for key in ('name', 'pk'):
-            self.assertEqual(location_v1.get(key), location_gql.get(key))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
 

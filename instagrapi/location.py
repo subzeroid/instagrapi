@@ -1,5 +1,7 @@
 import json
 
+from .extractors import extract_location
+
 
 class Location:
 
@@ -43,3 +45,14 @@ class Location:
             except IndexError:
                 pass
         return json.dumps(location, separators=(",", ":"))
+
+    def location_info_a1(self, location_pk: int) -> dict:
+        """Return additonal info for location by ?__a=1
+        """
+        data = self.public_a1_request(f"/explore/locations/{location_pk}/")
+        return extract_location(data['location'])
+
+    def location_info(self, location_pk: int) -> dict:
+        """Return additonal info for location
+        """
+        return self.location_info_a1(location_pk)
