@@ -245,14 +245,21 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 | album_download(media_pk: int, folder: str = '')                        | List\[path]  | Download Album (return multiple paths to photo and video with best resolutons)  |
 | album_download_by_urls(urls: list, folder: str = '')                   | List\[path]  | Download Album by URLs (return multiple paths...)                               |
 
-#### Upload Media as Post (to Feed)
+#### Upload Media
 
-| Method                                                                | Return       | Description                                                                     |
-| --------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| photo_upload(filepath: str, caption: str)                             | Dict\[media] | Upload photo (Support JPG files)                                                |
-| video_upload(filepath: str, caption: str)                             | Dict\[media] | Upload video (Support mp4 files)                                                |
-| igtv_upload(path, title, caption)                                     | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
-| album_upload(paths: list, caption: str)                               | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
+Upload medias to your feed. Common arguments:
+
+* `filepath` - Path to source file
+* `caption`  - Text for you post
+* `usertags` - List[dict] of mention users (see `extract_usertag()` in `extractors.py`)
+* `location` - Location (e.g. `{"lat": 42.0, "lng": 42.0}`)
+
+| Method                                                                              | Return       | Description                        |
+| ----------------------------------------------------------------------------------- | ------------ | ---------------------------------- |
+| photo_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Dict\[media] | Upload photo (Support JPG files)   |
+| video_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Dict\[media] | Upload video (Support MP4 files)   |
+| igtv_upload(path, title, caption, usertags: list = [], location: dict = {})         | Dict\[media] | Upload IGTV (Support MP4 files)    |
+| album_upload(paths: list, caption: str, usertags: list = [], location: dict = {})   | Dict\[media] | Upload Album (Support JPG and MP4) |
 
 #### Upload Stories
 
@@ -268,7 +275,7 @@ Upload medias to your stories. Common arguments:
 | Method                                                                                                                                       | Return       | Description                      |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- |
 | photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Dict\[media] | Upload photo (Support JPG files) |
-| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Dict\[media] | Upload video (Support mp4 files).  |
+| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Dict\[media] | Upload video (Support MP4 files).  |
 
 Examples:
 
@@ -294,7 +301,7 @@ cl.video_upload_to_story(
 
 | Method                                                | Return             | Description                                                   |
 | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
 | video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
 | photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
 
@@ -326,7 +333,7 @@ cl.video_upload_to_story(
 
 | Method                                                | Return             | Description                                                   |
 | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
 | video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
 | photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
 
