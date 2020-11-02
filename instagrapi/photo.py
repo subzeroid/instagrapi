@@ -206,7 +206,7 @@ class UploadPhoto:
             configure_exception=PhotoConfigureStoryError
         )
 
-    def photo_configure_to_story(self, upload_id: str, width: int, height: int, caption: str, usertags: list) -> bool:
+    def photo_configure_to_story(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
         """Story Configure for Photo
 
         :param upload_id:  Unique upload_id (String)

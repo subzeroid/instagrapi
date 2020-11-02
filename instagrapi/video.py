@@ -288,6 +288,7 @@ class UploadVideo:
         thumbnail: str,
         caption: str,
         usertags: list,
+        location: dict,
         links: list = []
     ) -> bool:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
