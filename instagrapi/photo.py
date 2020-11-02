@@ -129,6 +129,7 @@ class UploadPhoto:
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
+        :param location:            Location (Dict)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -153,6 +154,7 @@ class UploadPhoto:
         :param height:     Height in px (Integer)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
+        :param location:   Location (Dict)
         """
         usertags = [
             {"user_id": tag['user']['pk'], "position": tag['position']}

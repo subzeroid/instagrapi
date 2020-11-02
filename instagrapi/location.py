@@ -25,6 +25,8 @@ class Location:
     def location_build(self, location):
         """Build correct location data
         """
+        if not location:
+            return '{}'
         assert 'lat' in location and 'lng' in location, f'lat and lng must been in location (now {location})'
         external_id = location.get('facebook_places_id', location.get('external_id'))
         if not external_id:

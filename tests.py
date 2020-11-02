@@ -464,7 +464,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
 
 
 class ClienUploadTestCase(ClientPrivateTestCase):
-    def test_photo_upload(self):
+    def test_photo_upload_without_location(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/BVDOOolFFxg/"
         )
@@ -472,6 +472,25 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         try:
             media = self.api.photo_upload(path, "Test caption for photo")
             self.assertEqual(media["caption_text"], "Test caption for photo")
+            self.assertFalse(media["location"])
+        finally:
+            os.remove(path)
+            self.assertTrue(self.api.media_delete(media["id"]))
+
+    def test_photo_upload(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/BVDOOolFFxg/"
+        )
+        path = self.api.photo_download(media_pk)
+        try:
+            media = self.api.photo_upload(
+                path,
+                "Test caption for photo",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
+            self.assertEqual(media["caption_text"], "Test caption for photo")
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
             os.remove(path)
             self.assertTrue(self.api.media_delete(media["id"]))
@@ -482,8 +501,14 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.video_download(media_pk)
         try:
-            media = self.api.video_upload(path, "Test caption for video")
+            media = self.api.video_upload(
+                path,
+                "Test caption for video",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["caption_text"], "Test caption for video")
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
             os.remove(path)
             self.assertTrue(self.api.media_delete(media["id"]))
@@ -492,9 +517,15 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
         paths = self.api.album_download(media_pk)
         try:
-            media = self.api.album_upload(paths, "Test caption for album")
+            media = self.api.album_upload(
+                paths,
+                "Test caption for album",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["caption_text"], "Test caption for album")
             self.assertEqual(len(media["resources"]), 3)
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
             for path in paths:
                 os.remove(path)
@@ -506,31 +537,16 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         )
         path = self.api.igtv_download(media_pk)
         try:
-            media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
+            media = self.api.igtv_upload(
+                path,
+                "Test title",
+                "Test caption for IGTV",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["title"], "Test title")
             self.assertEqual(media["caption_text"], "Test caption for IGTV")
-        finally:
-            os.remove(path)
-            self.assertTrue(self.api.media_delete(media["id"]))
-
-
-class ClienLocationTestCase(ClientPrivateTestCase):
-    def test_photo_upload_with_location(self):
-        media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/BVDOOolFFxg/"
-        )
-        path = self.api.photo_download(media_pk)
-        try:
-            media = self.api.photo_upload(
-                path, "Test caption for photo", location={
-                    'lat': 44.6,
-                    'lng': 33.5,
-                })
-            self.assertEqual(media["caption_text"], "Test caption for photo")
-            self.assertEqual(
-                media["location"],
-                {'pk': 516237688723540, 'name': 'Севастополь, Россия', 'lat': 44.60535, 'lng': 33.54005}
-            )
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
             os.remove(path)
             self.assertTrue(self.api.media_delete(media["id"]))

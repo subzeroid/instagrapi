@@ -34,6 +34,7 @@ class UploadIGTV:
         caption: str,
         thumbnail: str = None,
         usertags: list = [],
+        location: dict = {},
         configure_timeout: int = 10,
     ) -> dict:
         """Upload IGTV to Instagram
@@ -43,6 +44,8 @@ class UploadIGTV:
         :param caption:           Media description (String)
         :param thumbnail:         Path to thumbnail for IGTV (String). When None, then
                                   thumbnail is generate automatically
+        :param usertags:          Mentioned users (List)
+        :param location:          Location (Dict)
         :param configure_timeout: Timeout between attempt to configure media (set caption and title)
 
         :return: Object with state of uploading to Instagram (or False)
@@ -111,7 +114,7 @@ class UploadIGTV:
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(
-                    upload_id, thumbnail, width, height, duration, title, caption, usertags
+                    upload_id, thumbnail, width, height, duration, title, caption, usertags, location
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -138,7 +141,8 @@ class UploadIGTV:
         duration: int,
         title: str,
         caption: str,
-        usertags: list
+        usertags: list,
+        location: dict
     ) -> bool:
         """Post Configure IGTV (send caption, thumbnail and more to Instagram)
 
@@ -148,6 +152,8 @@ class UploadIGTV:
         :param height:     Height in px (Integer)
         :param duration:   Duration in seconds (Integer)
         :param caption:    Media description (String)
+        :param usertags:   Mentioned users (List)
+        :param location:   Location (Dict)
         """
         self.photo_rupload(thumbnail, upload_id)
         usertags = [
@@ -159,6 +165,7 @@ class UploadIGTV:
             "filter_type": "0",
             "timezone_offset": "10800",
             "media_folder": "ScreenRecorder",
+            "location": self.location_build(location),
             "source_type": "4",
             "title": title,
             "caption": caption,
