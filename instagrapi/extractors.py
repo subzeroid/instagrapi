@@ -45,7 +45,7 @@ def extract_media_v1(data):
         "product_type": product_type,
         "code": data["code"],
         "thumbnail_url": thumbnail_url,
-        "location": location,
+        "location": location or {},
         "user": extract_user_short(user),
         "comment_count": int(data.get("comment_count") or 0),
         # the media just published has no like_count
@@ -113,7 +113,7 @@ def extract_media_gql(data):
             data.get("display_resources", data.get('thumbnail_resources')),
             key=lambda o: o["config_width"] * o["config_height"],
         ).pop()["src"],
-        "location": location,
+        "location": location or {},
         "user": user,
         "comment_count": json_value(data, "edge_media_to_comment", "count"),
         "like_count": json_value(data, "edge_media_preview_like", "count"),

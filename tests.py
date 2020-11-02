@@ -12,6 +12,15 @@ ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
 
 
+def cleanup(*paths):
+    for path in paths:
+        try:
+            os.remove(path)
+            os.remove(f'{path}.jpg')
+        except FileNotFoundError:
+            continue
+
+
 class FakeClientTestCase(unittest.TestCase):
     api = None
 
@@ -173,7 +182,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             self.assertEqual(media["caption_text"], msg)
             self.assertTrue(self.api.media_delete(media_pk))
         finally:
-            os.remove(path)
+            cleanup(path)
 
     def test_media_edit_igtv(self):
         media_pk = self.api.media_pk_from_url(
@@ -205,7 +214,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             self.assertEqual(media["caption_text"], msg)
             self.assertTrue(self.api.media_delete(media["id"]))
         finally:
-            os.remove(path)
+            cleanup(path)
 
     def test_media_user(self):
         user = self.api.media_user(2154602296692269830)
@@ -305,6 +314,9 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
+        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
+        for key in ('name', 'pk'):
+            self.assertEqual(location_v1.get(key), location_gql.get(key))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_video(self):
@@ -316,6 +328,9 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
+        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
+        for key in ('name', 'pk'):
+            self.assertEqual(location_v1.get(key), location_gql.get(key))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_album(self):
@@ -331,6 +346,9 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
             self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
             if res['media_type'] == 2:
                 self.assertTrue(res.pop("video_url").startswith("https://"))
+        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
+        for key in ('name', 'pk'):
+            self.assertEqual(location_v1.get(key), location_gql.get(key))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_igtv(self):
@@ -342,6 +360,9 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
+        location_v1, location_gql = media_v1.pop('location'), media_gql.pop('location')
+        for key in ('name', 'pk'):
+            self.assertEqual(location_v1.get(key), location_gql.get(key))
         self.assertDictEqual(media_v1, media_gql)
 
 
@@ -474,7 +495,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             self.assertEqual(media["caption_text"], "Test caption for photo")
             self.assertFalse(media["location"])
         finally:
-            os.remove(path)
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_photo_upload(self):
@@ -492,7 +513,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
                 self.assertEqual(media["location"][key], val)
         finally:
-            os.remove(path)
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_video_upload(self):
@@ -510,7 +531,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
                 self.assertEqual(media["location"][key], val)
         finally:
-            os.remove(path)
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_album_upload(self):
@@ -527,8 +548,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
                 self.assertEqual(media["location"][key], val)
         finally:
-            for path in paths:
-                os.remove(path)
+            cleanup(*paths)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_igtv_upload(self):
@@ -548,7 +568,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
                 self.assertEqual(media["location"][key], val)
         finally:
-            os.remove(path)
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
 
