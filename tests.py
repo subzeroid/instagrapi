@@ -514,6 +514,28 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             self.assertTrue(self.api.media_delete(media["id"]))
 
 
+class ClienLocationTestCase(ClientPrivateTestCase):
+    def test_photo_upload_with_location(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/BVDOOolFFxg/"
+        )
+        path = self.api.photo_download(media_pk)
+        try:
+            media = self.api.photo_upload(
+                path, "Test caption for photo", location={
+                    'lat': 44.6,
+                    'lng': 33.5,
+                })
+            self.assertEqual(media["caption_text"], "Test caption for photo")
+            self.assertEqual(
+                media["location"],
+                {'pk': 516237688723540, 'name': 'Севастополь, Россия', 'lat': 44.60535, 'lng': 33.54005}
+            )
+        finally:
+            os.remove(path)
+            self.assertTrue(self.api.media_delete(media["id"]))
+
+
 class ClientCollectionTestCase(ClientPrivateTestCase):
     def test_collection_medias_by_name(self):
         medias = self.api.collection_medias_by_name("repost")

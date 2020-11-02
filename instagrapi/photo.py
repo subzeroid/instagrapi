@@ -117,6 +117,7 @@ class UploadPhoto:
         caption: str,
         upload_id: str = None,
         usertags: list = [],
+        location: dict = {},
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
@@ -137,14 +138,14 @@ class UploadPhoto:
         upload_id, width, height = self.photo_rupload(filepath, upload_id)
         for attempt in range(10):
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags):
+            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
         raise (configure_exception or PhotoConfigureError)(
             response=self.last_response, **self.last_json)
 
-    def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list) -> bool:
+    def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
         """Post Configure Photo (send caption to Instagram)
 
         :param upload_id:  Unique upload_id (String)
@@ -161,6 +162,7 @@ class UploadPhoto:
             "timezone_offset": "10800",
             "creation_logger_session_id": self.client_session_id,
             "multi_sharing": "1",
+            "location": self.location_build(location),
             "media_folder": "Camera",
             "source_type": "4",
             "caption": caption,

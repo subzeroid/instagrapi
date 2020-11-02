@@ -313,13 +313,3 @@ class PrivateRequest:
             return self._send_private_request(endpoint, **kwargs)
 
         return self.last_json
-
-    def build_location(self, name, lat, lng, address=""):
-        return json.dumps({
-            "name": name,
-            "address": address,
-            "lat": lat,
-            "lng": lng,
-            # "external_source": "facebook_places",
-            # "facebook_places_id" : "111123468912781"
-        }, separators=(",", ":"))

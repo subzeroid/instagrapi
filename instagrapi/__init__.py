@@ -20,6 +20,7 @@ from .insights import Insights
 from .collection import Collection
 from .account import Account
 from .direct import Direct
+from .location import Location
 
 
 class Client(
@@ -43,7 +44,8 @@ class Client(
     Insights,
     Collection,
     Account,
-    Direct
+    Direct,
+    Location
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")

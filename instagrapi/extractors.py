@@ -7,8 +7,21 @@ def extract_media_v1(data):
     user = data["user"]
     location = data.get("location")
     if location:
-        location = {"pk": int(location.get("pk")),
-                    "name": location.get("name")}
+        # {'pk': 262547125,
+        #  'name': 'NAME',
+        #  'address': 'ADDRESS',
+        #  'city': 'SANKT-PETERBURG',
+        #  'short_name': 'NAME',
+        #  'lng': 42.000000000001,
+        #  'lat': 42.000000000002,
+        #  'external_source': 'facebook_places',
+        #  'facebook_places_id': 232571358171010}
+        location = {
+            "pk": int(location.get("pk")),
+            "name": location.get("name"),
+            "lat": location.get("lat"),
+            "lng": location.get("lng"),
+        }
     video_url = ""
     if "video_versions" in data:
         # Select Best Quality by Resolutiuon
@@ -71,8 +84,12 @@ def extract_media_gql(data):
         user["pk"] = user.pop("id")
     location = data.get("location")
     if location:
-        location = {"pk": int(location.get("id")),
-                    "name": location.get("name")}
+        location = {
+            "pk": int(location.get("id")),
+            "name": location.get("name"),
+            "lat": location.get("lat"),
+            "lng": location.get("lng"),
+        }
     media_type = {"GraphImage": 1, "GraphVideo": 2,
                   "GraphSidecar": 8}[data["__typename"]]
     product_type = data.get("product_type", "")
