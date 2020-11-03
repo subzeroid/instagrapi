@@ -1,8 +1,16 @@
 # instagrapi
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/).
 
-Instagram API valid for 27 September 2020 (last reverse-engineering check)
-Support Python>=3.6
+Support **Python >= 3.6**
+
+Instagram API valid for 1 November 2020 (last reverse-engineering check)
+
+[Support Chat in Telegram](https://t.me/instagrapi)
+![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg)
+
+### Authors
+
+[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
 
 ### Authors
 
@@ -11,7 +19,7 @@ Support Python>=3.6
 ### Features
 
 1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
-2. Challenge Resolver have Email (as well as recipes for automating receive a code from email) and SMS handlers
+2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
 3. Support upload a Photo, Video, IGTV, Albums and Stories
 4. Support work with User, Media, Insights, Collections and Direct objects
 5. Insights by posts and stories
@@ -131,17 +139,17 @@ Viewing and editing publications (medias)
 
 | Method                                             | Return             | Description                                                   |
 | -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_id(media_pk: int)                            | Str                | Return media_id by media_pk                                   |
-| media_pk(media_id: str)                            | Int                | Return media_pk by media_id                                   |
+| media_id(media_pk: int)                            | Str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
+| media_pk(media_id: str)                            | Int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
 | media_pk_from_code(code: str)                      | Int                | Return media_pk                                               |
 | media_pk_from_url(url: str)                        | Int                | Return media_pk                                               | 
-| media_info(media_pk: int)                          | Dict\[full media]  | Return media info                                             |
+| media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | Bool               | Delete media                                                  |
 | media_edit(media_pk: int, caption: str)            | Bool               | Change caption for media                                      |
-| media_user(media_pk: int)                          | Dict\[user]        | Get user info for media                                       |
-| media_oembed(url: str)                             | Dict\[short media] | Return short media info by media URL                          | 
+| media_user(media_pk: int)                          | User               | Get user info for media                                       |
+| media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | Bool               | Write message to media                                        | 
-| media_comments(media_id: str)                      | List\[comment]     | Get all comments                                              |
+| media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 
 Example:
 
@@ -181,17 +189,17 @@ View a list of a user's medias, following and followers
 
 * `user_id` - Integer ID of user, example `1903424587`
 
-| Method                                             | Return       | Description                                                   |
-| -------------------------------------------------- | ------------ | ------------------------------------------------------------- |
-| user_medias(user_id: int, amount: int = 20)        | List\[media] | Get list of medias by user_id                                 |
-| user_followers(user_id: int)                       | Dict         | Get dict {user_id: user, ...} of followers users              |
-| user_following(user_id: int)                       | Dict         | Get dict {user_id: user, ...} of following users              |
-| user_info(user_id: int)                            | Dict\[user]  | Get user info                                                 |
-| user_info_by_username(username: str)               | Dict\[user]  | Get user info by username                                     |
-| user_follow(user_id: int)                          | Bool         | Follow user                                                   |
-| user_unfollow(user_id: int)                        | Bool         | Unfollow user                                                 |
-| user_id_from_username(username: str)               | Int          | Get user_id by username                                       |
-| username_from_user_id(user_id: int)                | Str          | Get username by user_id                                       |
+| Method                                             | Return              | Description                                      |
+| -------------------------------------------------- | ------------------- | ------------------------------------------------ |
+| user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
+| user_followers(user_id: int)                       | Dict{user_id: User} | Get dict {user_id: user, ...} of followers users |
+| user_following(user_id: int)                       | Dict{user_id: User} | Get dict {user_id: user, ...} of following users |
+| user_info(user_id: int)                            | Dict\[User]         | Get user info                                    |
+| user_info_by_username(username: str)               | Dict\[User]         | Get user info by username                        |
+| user_follow(user_id: int)                          | Bool                | Follow user                                      |
+| user_unfollow(user_id: int)                        | Bool                | Unfollow user                                    |
+| user_id_from_username(username: str)               | Int                 | Get user_id by username                          |
+| username_from_user_id(user_id: int)                | Str                 | Get username by user_id                          |
 
 Example:
 
@@ -228,18 +236,34 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  
 ```
 
-#### Upload Media as Post (to Feed)
+#### Download Media
 
-| Method                                             | Return       | Description                                                                     |
-| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| photo_upload(path, caption)                        | Dict\[media] | Upload photo (Support JPG files)                                                |
-| photo_download(media_pk)                           | Str\[path]   | Download photo (Return path to photo with best resoluton)                       |
-| video_upload(path, caption)                        | Dict\[media] | Upload video (Support mp4 files)                                                |
-| video_download(media_pk)                           | Str\[path]   | Download video (Return path to video with best resoluton)                       |
-| igtv_upload(path, title, caption)                  | Dict\[media] | Upload IGTV (Support mp4 files)                                                 |
-| igtv_download(media_pk)                            | Str\[path]   | Download IGTV (Return path to video with best resoluton)                        |
-| album_upload(paths, caption)                       | Dict\[media] | Upload Album (Support JPG and mp4)                                              |
-| album_download(media_pk)                           | List\[path]  | Download Album (Return multiple paths to photo and video with best resolutons) |
+| Method                                                                 | Return       | Description                                                                     |
+| ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| photo_download(media_pk: int, folder: str = '')                        | Str\[path]   | Download photo (return path to photo with best resoluton)                       |
+| photo_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download photo by URL (return path to photo with best resoluton)                |
+| video_download(media_pk: int, filder: str = '')                        | Str\[path]   | Download video (return path to video with best resoluton)                       |
+| video_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download Video by URL (return path to video with best resoluton)                |
+| igtv_download(media_pk: int, filter: str = '')                         | Str\[path]   | Download IGTV (return path to video with best resoluton)                        |
+| igtv_download_by_url(url: str, filename: str = '', folder: str = '')   | Str\[path]   | Download IGTV by URL                                                            |
+| album_download(media_pk: int, folder: str = '')                        | List\[path]  | Download Album (return multiple paths to photo and video with best resolutons)  |
+| album_download_by_urls(urls: list, folder: str = '')                   | List\[path]  | Download Album by URLs (return multiple paths...)                               |
+
+#### Upload Media
+
+Upload medias to your feed. Common arguments:
+
+* `filepath` - Path to source file
+* `caption`  - Text for you post
+* `usertags` - List[dict] of mention users (see `extract_usertag()` in `extractors.py`)
+* `location` - Location (e.g. `{"lat": 42.0, "lng": 42.0}`)
+
+| Method                                                                              | Return  | Description                        |
+| ----------------------------------------------------------------------------------- | ------- | ---------------------------------- |
+| photo_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Media   | Upload photo (Support JPG files)   |
+| video_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Media   | Upload video (Support MP4 files)   |
+| igtv_upload(path, title, caption, usertags: list = [], location: dict = {})         | Media   | Upload IGTV (Support MP4 files)    |
+| album_upload(paths: list, caption: str, usertags: list = [], location: dict = {})   | Media   | Upload Album (Support JPG and MP4) |
 
 #### Upload Stories
 
@@ -252,10 +276,10 @@ Upload medias to your stories. Common arguments:
 * `configure_timeout` - How long to wait in seconds for a response from Instagram when publishing a story
 * `links` - "Swipe Up" links (now use first)
 
-| Method                                                                                                                                       | Return       | Description                      |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | -------------------------------- |
-| photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Dict\[media] | Upload photo (Support JPG files) |
-| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Dict\[media] | Upload video (Support mp4 files).  |
+| Method                                                                         | Return   | Description                      |
+| ------------------------------------------------------------------------------ | -------- | -------------------------------- |
+| photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Media    | Upload photo (Support JPG files) |
+| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Media    | Upload video (Support MP4 files) |
 
 Examples:
 
@@ -281,9 +305,9 @@ cl.video_upload_to_story(
 
 | Method                                                | Return             | Description                                                   |
 | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| build_clip(clip: moviepy.Clip, max_duration: int = 0) | dict               | Build new CompositeVideoClip with background and mention of usertag. Return mp4 file and usertags with coordinates |
-| video(max_duration: int = 0)                          | dict               | Call build_clip(VideoClip, max_duration) | 
-| photo(max_duration: int = 0)                          | dict               | Call build_clip(ImageClip, max_duration) |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild         | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
+| video(max_duration: int = 0)                          | StoryBuild         | Call build_clip(VideoClip, max_duration) | 
+| photo(max_duration: int = 0)                          | StoryBuild         | Call build_clip(ImageClip, max_duration) |
 
 Example:
 
@@ -309,13 +333,14 @@ cl.video_upload_to_story(
 )
 ```
 
+
 #### Collections
 
 | Method                                                       | Return             | Description                                                   |
 | ------------------------------------------------------------ | ------------------ | ------------------------------------------------------------- |
-| collections()                                                | List\[collection]  | Get all account collections                                   |
-| collection_medias_by_name(name)                              | List\[media]       | Get medias in collection by name                              |
-| collection_medias(collection_id, amount=21, last_media_pk=0) | List\[media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by delta |
+| collections()                                                | List\[Collection]  | Get all account collections                                   |
+| collection_medias_by_name(name)                              | List\[Media]       | Get medias in collection by name                              |
+| collection_medias(collection_id, amount=21, last_media_pk=0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor |
 
 
 #### Insights

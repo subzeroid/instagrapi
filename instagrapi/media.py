@@ -84,7 +84,13 @@ class Media:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        return extract_media_gql(data["shortcode_media"])
+        media = extract_media_gql(data["shortcode_media"])
+        location = media.get('location')
+        if location:
+            location_pk = location.get('pk')
+            if not location.get('lat') and location_pk:
+                media['location'] = self.location_info(location_pk)
+        return media
 
     def media_info_v1(self, media_pk: int) -> dict:
         try:
@@ -128,7 +134,7 @@ class Media:
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
 
-    def media_edit(self, media_id: str, caption: str, title: str = "", usertags: list = []) -> bool:
+    def media_edit(self, media_id: str, caption: str, title: str = "", usertags: list = [], location: dict = {}) -> bool:
         """Edit caption for media
         Example: https://i.instagram.com/api/v1/media/2154602296692269830_1903424587/edit_media/
 
@@ -167,7 +173,7 @@ class Media:
             "caption_text": caption,
             "container_module": "edit_media_info",
             "feed_position": "0",
-            "location": "{}",
+            "location": self.location_build(location),
             "usertags": json.dumps({"in": usertags}),
             "is_carousel_bumped_post": "false",
         }

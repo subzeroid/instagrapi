@@ -29,7 +29,7 @@ class VideoConfigureStoryError(VideoConfigureError):
 
 
 class DownloadVideo:
-    def video_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def video_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 2, "Must been video"
         filename = "{username}_{media_pk}".format(
@@ -37,7 +37,7 @@ class DownloadVideo:
         )
         return self.video_download_by_url(media["video_url"], filename, folder)
 
-    def video_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
+    def video_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname
@@ -151,6 +151,7 @@ class UploadVideo:
         caption: str,
         thumbnail: str = None,
         usertags: list = [],
+        location: dict = {},
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
@@ -164,6 +165,7 @@ class UploadVideo:
         :param thumbnail:           Path to thumbnail for video (String). When None, then
                                         thumbnail is generate automatically
         :param usertags:            Mentioned users (List)
+        :param location:            Location (Dict)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -178,7 +180,7 @@ class UploadVideo:
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.video_configure)(
-                    upload_id, width, height, duration, thumbnail, caption, usertags, links
+                    upload_id, width, height, duration, thumbnail, caption, usertags, location, links
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -206,7 +208,8 @@ class UploadVideo:
         thumbnail: str,
         caption: str,
         usertags: list,
-        links: list = []
+        location: dict,
+        links: list
     ) -> bool:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
@@ -217,6 +220,8 @@ class UploadVideo:
         :param thumbnail:  Path to thumbnail for video (String)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
+        :param location:   Location (Dict)
+        :param links:      URLs for Swipe Up (List of dicts)
 
         :return: Media (Dict)
         """
@@ -230,6 +235,7 @@ class UploadVideo:
             "creation_logger_session_id": self.client_session_id,
             "upload_id": upload_id,
             "source_type": "4",
+            "location": self.location_build(location),
             "poster_frame_index": 0,
             "length": duration,
             "audio_muted": False,
@@ -282,6 +288,7 @@ class UploadVideo:
         thumbnail: str,
         caption: str,
         usertags: list,
+        location: dict,
         links: list = []
     ) -> bool:
         """Post Configure Video (send caption, thumbnail and more to Instagram)

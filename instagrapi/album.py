@@ -27,7 +27,7 @@ class AlbumConfigureStoryError(AlbumConfigureError):
 
 
 class DownloadAlbum:
-    def album_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def album_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 8, "Must been album"
         paths = []
@@ -51,7 +51,7 @@ class DownloadAlbum:
                     resource['media_type'], resource['pk']))
         return paths
 
-    def album_download_by_urls(self, urls: str, folder: str = "/tmp") -> str:
+    def album_download_by_urls(self, urls: list, folder: str = "") -> list:
         paths = []
         for url in urls:
             fname = urlparse(url).path.rsplit('/', 1)[1]
@@ -71,6 +71,7 @@ class UploadAlbum:
         paths: list,
         caption: str,
         usertags: list = [],
+        location: dict = {},
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
@@ -81,6 +82,7 @@ class UploadAlbum:
         :param paths:               Path to files (List)
         :param caption:             Media description (String)
         :param usertags:            Mentioned users (List)
+        :param location:            Location (Dict)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -123,7 +125,7 @@ class UploadAlbum:
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.album_configure)(
-                    childs, caption, usertags)
+                    childs, caption, usertags, location)
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
                     """
@@ -146,12 +148,14 @@ class UploadAlbum:
         childs: list,
         caption: str,
         usertags: list,
+        location: dict
     ) -> bool:
         """Post Configure Album
 
         :param childs:     Childs of album (List)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
+        :param location:   Location (Dict)
 
         :return: Media (Dict)
         """
@@ -166,6 +170,7 @@ class UploadAlbum:
             "timezone_offset": "10800",
             "source_type": "4",
             "creation_logger_session_id": self.client_session_id,
+            "location": self.location_build(location),
             "caption": caption,
             "client_sidecar_id": upload_id,
             "upload_id": upload_id,

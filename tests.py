@@ -12,6 +12,15 @@ ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
 
 
+def cleanup(*paths):
+    for path in paths:
+        try:
+            os.remove(path)
+            os.remove(f'{path}.jpg')
+        except FileNotFoundError:
+            continue
+
+
 class FakeClientTestCase(unittest.TestCase):
     api = None
 
@@ -32,7 +41,7 @@ class ClientPrivateTestCase(unittest.TestCase):
     api = None
 
     def __init__(self, *args, **kwargs):
-        filename = '/tmp/instagrapi_tests_client_settings.json'
+        filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
         settings = {}
         if os.path.exists(filename):
             settings = json.load(open(filename))
@@ -161,45 +170,51 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         # Upload photo
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
         path = self.api.photo_download(media_pk)
-        msg = "Test caption for photo"
-        media = self.api.photo_upload(path, msg)
-        self.assertEqual(media["caption_text"], msg)
-        # Change caption
-        media_pk = media['pk']
-        msg = "New caption %s" % random.randint(1, 100)
-        self.api.media_edit(media_pk, msg)
-        media = self.api.media_info(media_pk)
-        self.assertEqual(media["caption_text"], msg)
-        self.assertTrue(self.api.media_delete(media_pk))
+        try:
+            msg = "Test caption for photo"
+            media = self.api.photo_upload(path, msg)
+            self.assertEqual(media["caption_text"], msg)
+            # Change caption
+            media_pk = media['pk']
+            msg = "New caption %s" % random.randint(1, 100)
+            self.api.media_edit(media_pk, msg)
+            media = self.api.media_info(media_pk)
+            self.assertEqual(media["caption_text"], msg)
+            self.assertTrue(self.api.media_delete(media_pk))
+        finally:
+            cleanup(path)
 
     def test_media_edit_igtv(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/tv/B91gKCcpnTk/"
         )
         path = self.api.igtv_download(media_pk)
-        media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
-        media_pk = media['pk']
-        # Enter title
-        title = "Title %s" % random.randint(1, 100)
-        msg = "New caption %s" % random.randint(1, 100)
-        self.api.media_edit(media_pk, msg, title)
-        media = self.api.media_info(media_pk)
-        self.assertEqual(media["title"], title)
-        self.assertEqual(media["caption_text"], msg)
-        # Split caption to title and caption
-        title = "Title %s" % random.randint(1, 100)
-        msg = "New caption %s" % random.randint(1, 100)
-        self.api.media_edit(media_pk, f"{title}\n{msg}")
-        media = self.api.media_info(media_pk)
-        self.assertEqual(media["title"], title)
-        self.assertEqual(media["caption_text"], msg)
-        # Empty title (duplicate one-line caption)
-        msg = "New caption %s" % random.randint(1, 100)
-        self.api.media_edit(media_pk, msg, "")
-        media = self.api.media_info(media_pk)
-        self.assertEqual(media["title"], msg)
-        self.assertEqual(media["caption_text"], msg)
-        self.assertTrue(self.api.media_delete(media["id"]))
+        try:
+            media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
+            media_pk = media['pk']
+            # Enter title
+            title = "Title %s" % random.randint(1, 100)
+            msg = "New caption %s" % random.randint(1, 100)
+            self.api.media_edit(media_pk, msg, title)
+            media = self.api.media_info(media_pk)
+            self.assertEqual(media["title"], title)
+            self.assertEqual(media["caption_text"], msg)
+            # Split caption to title and caption
+            title = "Title %s" % random.randint(1, 100)
+            msg = "New caption %s" % random.randint(1, 100)
+            self.api.media_edit(media_pk, f"{title}\n{msg}")
+            media = self.api.media_info(media_pk)
+            self.assertEqual(media["title"], title)
+            self.assertEqual(media["caption_text"], msg)
+            # Empty title (duplicate one-line caption)
+            msg = "New caption %s" % random.randint(1, 100)
+            self.api.media_edit(media_pk, msg, "")
+            media = self.api.media_info(media_pk)
+            self.assertEqual(media["title"], msg)
+            self.assertEqual(media["caption_text"], msg)
+            self.assertTrue(self.api.media_delete(media["id"]))
+        finally:
+            cleanup(path)
 
     def test_media_user(self):
         user = self.api.media_user(2154602296692269830)
@@ -291,6 +306,13 @@ class ClientMediaTestCase(ClientPrivateTestCase):
 
 
 class ClientCompareExtractTestCase(ClientPrivateTestCase):
+    def assertLocation(self, one, two):
+        for key, val in one.items():
+            gql = two[key]
+            if isinstance(val, float):
+                val, gql = round(val, 4), round(gql, 4)
+            self.assertEqual(val, gql)
+
     def test_two_extract_media_photo(self):
         # Photo with usertags
         media_pk = 2154602296692269830
@@ -299,6 +321,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_video(self):
@@ -310,6 +333,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_album(self):
@@ -325,6 +349,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
             self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
             if res['media_type'] == 2:
                 self.assertTrue(res.pop("video_url").startswith("https://"))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
     def test_two_extract_media_igtv(self):
@@ -336,6 +361,7 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
+        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
 
 
@@ -458,15 +484,35 @@ class ClientExtractTestCase(ClientPrivateTestCase):
 
 
 class ClienUploadTestCase(ClientPrivateTestCase):
+    def test_photo_upload_without_location(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/BVDOOolFFxg/"
+        )
+        path = self.api.photo_download(media_pk)
+        try:
+            media = self.api.photo_upload(path, "Test caption for photo")
+            self.assertEqual(media["caption_text"], "Test caption for photo")
+            self.assertFalse(media["location"])
+        finally:
+            cleanup(path)
+            self.assertTrue(self.api.media_delete(media["id"]))
+
     def test_photo_upload(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/BVDOOolFFxg/"
         )
         path = self.api.photo_download(media_pk)
-        media = self.api.photo_upload(path, "Test caption for photo")
         try:
+            media = self.api.photo_upload(
+                path,
+                "Test caption for photo",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["caption_text"], "Test caption for photo")
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_video_upload(self):
@@ -474,20 +520,34 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/p/Bk2tOgogq9V/"
         )
         path = self.api.video_download(media_pk)
-        media = self.api.video_upload(path, "Test caption for video")
         try:
+            media = self.api.video_upload(
+                path,
+                "Test caption for video",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["caption_text"], "Test caption for video")
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_album_upload(self):
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
         paths = self.api.album_download(media_pk)
-        media = self.api.album_upload(paths, "Test caption for album")
         try:
+            media = self.api.album_upload(
+                paths,
+                "Test caption for album",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["caption_text"], "Test caption for album")
             self.assertEqual(len(media["resources"]), 3)
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
+            cleanup(*paths)
             self.assertTrue(self.api.media_delete(media["id"]))
 
     def test_igtv_upload(self):
@@ -495,11 +555,19 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/tv/B91gKCcpnTk/"
         )
         path = self.api.igtv_download(media_pk)
-        media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
         try:
+            media = self.api.igtv_upload(
+                path,
+                "Test title",
+                "Test caption for IGTV",
+                location={'lat': 59.939095, 'lng': 30.315868}
+            )
             self.assertEqual(media["title"], "Test title")
             self.assertEqual(media["caption_text"], "Test caption for IGTV")
+            for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+                self.assertEqual(media["location"][key], val)
         finally:
+            cleanup(path)
             self.assertTrue(self.api.media_delete(media["id"]))
 
 

@@ -26,7 +26,7 @@ class PhotoConfigureStoryError(PhotoConfigureError):
 
 
 class DownloadPhoto:
-    def photo_download(self, media_pk: int, folder: str = "/tmp") -> str:
+    def photo_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
         assert media["media_type"] == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
@@ -34,7 +34,7 @@ class DownloadPhoto:
         )
         return self.photo_download_by_url(media["thumbnail_url"], filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: str = "/tmp") -> str:
+    def photo_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname
@@ -117,6 +117,7 @@ class UploadPhoto:
         caption: str,
         upload_id: str = None,
         usertags: list = [],
+        location: dict = {},
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
@@ -128,6 +129,7 @@ class UploadPhoto:
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
+        :param location:            Location (Dict)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -137,14 +139,14 @@ class UploadPhoto:
         upload_id, width, height = self.photo_rupload(filepath, upload_id)
         for attempt in range(10):
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags):
+            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
         raise (configure_exception or PhotoConfigureError)(
             response=self.last_response, **self.last_json)
 
-    def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list) -> bool:
+    def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
         """Post Configure Photo (send caption to Instagram)
 
         :param upload_id:  Unique upload_id (String)
@@ -152,6 +154,7 @@ class UploadPhoto:
         :param height:     Height in px (Integer)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
+        :param location:   Location (Dict)
         """
         usertags = [
             {"user_id": tag['user']['pk'], "position": tag['position']}
@@ -161,6 +164,7 @@ class UploadPhoto:
             "timezone_offset": "10800",
             "creation_logger_session_id": self.client_session_id,
             "multi_sharing": "1",
+            "location": self.location_build(location),
             "media_folder": "Camera",
             "source_type": "4",
             "caption": caption,
@@ -202,7 +206,7 @@ class UploadPhoto:
             configure_exception=PhotoConfigureStoryError
         )
 
-    def photo_configure_to_story(self, upload_id: str, width: int, height: int, caption: str, usertags: list) -> bool:
+    def photo_configure_to_story(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
         """Story Configure for Photo
 
         :param upload_id:  Unique upload_id (String)

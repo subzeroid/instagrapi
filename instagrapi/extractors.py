@@ -6,9 +6,6 @@ def extract_media_v1(data):
     """
     user = data["user"]
     location = data.get("location")
-    if location:
-        location = {"pk": int(location.get("pk")),
-                    "name": location.get("name")}
     video_url = ""
     if "video_versions" in data:
         # Select Best Quality by Resolutiuon
@@ -32,7 +29,7 @@ def extract_media_v1(data):
         "product_type": product_type,
         "code": data["code"],
         "thumbnail_url": thumbnail_url,
-        "location": location,
+        "location": extract_location(location) if location else {},
         "user": extract_user_short(user),
         "comment_count": int(data.get("comment_count") or 0),
         # the media just published has no like_count
@@ -70,9 +67,6 @@ def extract_media_gql(data):
     else:
         user["pk"] = user.pop("id")
     location = data.get("location")
-    if location:
-        location = {"pk": int(location.get("id")),
-                    "name": location.get("name")}
     media_type = {"GraphImage": 1, "GraphVideo": 2,
                   "GraphSidecar": 8}[data["__typename"]]
     product_type = data.get("product_type", "")
@@ -96,7 +90,7 @@ def extract_media_gql(data):
             data.get("display_resources", data.get('thumbnail_resources')),
             key=lambda o: o["config_width"] * o["config_height"],
         ).pop()["src"],
-        "location": location,
+        "location": extract_location(location) if location else {},
         "user": user,
         "comment_count": json_value(data, "edge_media_to_comment", "count"),
         "like_count": json_value(data, "edge_media_preview_like", "count"),
@@ -227,4 +221,26 @@ def extract_user_v1(data):
         "biography": data["biography"],
         "external_url": data["external_url"],
         "is_business": data["is_business"],
+    }
+
+
+def extract_location(data):
+    """Extract location from v1/gql
+    v1 example: {
+         'pk': 262547125,
+         'name': 'NAME',
+         'address': 'ADDRESS',
+         'city': 'SANKT-PETERBURG',
+         'short_name': 'NAME',
+         'lng': 42.000000000001,
+         'lat': 42.000000000002,
+         'external_source': 'facebook_places',
+         'facebook_places_id': 232571358171010
+    }
+    """
+    return {
+        "pk": int(data.get("pk", data.get("id"))),
+        "name": data.get("name"),
+        "lat": data.get("lat"),
+        "lng": data.get("lng"),
     }

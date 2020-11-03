@@ -23,6 +23,7 @@ from .exceptions import (
     SentryBlock,
     RateLimitError,
     BadPassword,
+    PleaseWaitFewMinutes,
     UnknownError,
 )
 
@@ -154,7 +155,7 @@ class PrivateRequest:
         if not login:
             time.sleep(self.request_timeout)
         if self.user_id and login:
-            raise Exception("User already login")
+            raise Exception(f"User already login ({self.user_id})")
         try:
             if data:  # POST
                 # Client.direct_answer raw dict
@@ -197,7 +198,7 @@ class PrivateRequest:
                 self.last_json = last_json = response.json()
             except JSONDecodeError:
                 pass
-            message = last_json.get("message")
+            message = last_json.get("message", "")
             if e.response.status_code == 403:
                 if message == "login_required":
                     raise LoginRequired(response=e.response, **last_json)
@@ -220,6 +221,8 @@ class PrivateRequest:
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
+                elif "Please wait a few minutes before you try again" in message:
+                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
@@ -231,7 +234,8 @@ class PrivateRequest:
                     e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
-                # TODO: {'message': 'Please wait a few minutes before you try again.', 'status': 'fail'}
+                if "Please wait a few minutes before you try again" in message:
+                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
                 self.logger.warning(
@@ -303,18 +307,9 @@ class PrivateRequest:
                 self.challenge_resolve(self.last_json)
             else:
                 raise e
-            # if login:
-            #     return self.last_json
+            if login and self.user_id:
+                # After challenge resolve return last_json
+                return self.last_json
             return self._send_private_request(endpoint, **kwargs)
 
         return self.last_json
-
-    def build_location(self, name, lat, lng, address=""):
-        return json.dumps({
-            "name": name,
-            "address": address,
-            "lat": lat,
-            "lng": lng,
-            # "external_source": "facebook_places",
-            # "facebook_places_id" : "111123468912781"
-        }, separators=(",", ":"))
