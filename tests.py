@@ -8,8 +8,8 @@ from datetime import datetime
 
 from instagrapi import Client
 from instagrapi.types import (
-    User, UserShort, Media, MediaOembed, Comment,
-    Collection
+    User, UserShort, Media, MediaOembed, Comment, Collection,
+    DirectThread, DirectMessage
 )
 
 
@@ -600,6 +600,25 @@ class ClientCollectionTestCase(ClientPrivateTestCase):
         self.assertIsInstance(media, Media)
         for field in REQUIRED_MEDIA_FIELDS:
             self.assertTrue(hasattr(media, field))
+
+
+class ClientDirectTestCase(ClientPrivateTestCase):
+
+    def test_direct_thread(self):
+        # threads
+        threads = self.api.direct_threads()
+        self.assertTrue(len(threads) > 0)
+        thread = threads[0]
+        self.assertIsInstance(thread, DirectThread)
+        # messages
+        messages = self.api.direct_messages(thread.id, 2)
+        self.assertTrue(3 > len(messages) > 0)
+        message = messages[0]
+        self.assertIsInstance(message, DirectMessage)
+        adw0rd = self.api.user_id_from_username('adw0rd')
+        ping = self.api.direct_send('Ping', user_ids=[adw0rd])
+        pong = self.api.direct_answer(ping.thread_id, 'Pong')
+        self.assertEqual(ping.thread_id, pong.thread_id)
 
 
 if __name__ == '__main__':

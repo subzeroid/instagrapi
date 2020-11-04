@@ -1,30 +1,34 @@
 import re
+from typing import List
 
 from .utils import dumps
+from .types import DirectThread, DirectMessage
+from .exceptions import ClientNotFoundError, DirectThreadNotFound
+from .extractors import extract_direct_thread, extract_direct_message
 
 
 class Direct:
 
-    def direct_threads(self, amount: int = 20) -> list:
+    def direct_threads(self, amount: int = 20) -> List[DirectThread]:
         """Return last threads
         """
         assert self.user_id, "Login required"
+        params = {
+            "visual_message_return_type": "unseen",
+            "thread_message_limit": "10",
+            "persistentBadging": "true",
+            "limit": "20",
+        }
         cursor = None
         threads = []
         self.private_request("direct_v2/get_presence/")
         while True:
-            params = {
-                "visual_message_return_type": "unseen",
-                "thread_message_limit": "10",
-                "persistentBadging": "true",
-                "limit": "20",
-            }
             if cursor:
                 params['cursor'] = cursor
             result = self.private_request("direct_v2/inbox/", params=params)
             inbox = result.get("inbox", {})
             for thread in inbox.get("threads", []):
-                threads.append(thread)
+                threads.append(extract_direct_thread(thread))
             cursor = inbox.get("oldest_cursor")
             if not cursor or (amount and len(threads) >= amount):
                 break
@@ -32,7 +36,7 @@ class Direct:
             threads = threads[:amount]
         return threads
 
-    def direct_thread(self, thread_id: int, cursor: int = 0) -> dict:
+    def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """Return full information by thread
         """
         assert self.user_id, "Login required"
@@ -42,50 +46,55 @@ class Direct:
             "seq_id": "40065",  # 59663
             "limit": "20",
         }
-        if cursor:
-            params['cursor'] = cursor
-        return self.private_request(f"direct_v2/threads/{thread_id}/", params=params)['thread']
-
-    def direct_messages(self, thread_id: int, amount: int = 20) -> list:
-        """Fetch list of messages by thread
-        """
-        assert self.user_id, "Login required"
         cursor = None
-        messages = []
+        items = []
         while True:
-            thread = self.direct_thread(thread_id, cursor)
-            for message in thread.get("items", []):
-                messages.append(message)
+            if cursor:
+                params['cursor'] = cursor
+            try:
+                result = self.private_request(f"direct_v2/threads/{thread_id}/", params=params)
+            except ClientNotFoundError as e:
+                raise DirectThreadNotFound(e, thread_id=thread_id, **self.last_json)
+            thread = result['thread']
+            for item in thread['items']:
+                items.append(item)
             cursor = thread.get("oldest_cursor")
-            if not cursor or (amount and len(messages) >= amount):
+            if not cursor or (amount and len(items) >= amount):
                 break
         if amount:
-            messages = messages[:amount]
-        return messages
+            items = items[:amount]
+        thread['items'] = items
+        return extract_direct_thread(thread)
 
-    def direct_answer(self, thread_id: int, message: str) -> dict:
+    def direct_messages(self, thread_id: int, amount: int = 20) -> List[DirectMessage]:
+        """Fetch list of messages by thread (helper)
+        """
+        assert self.user_id, "Login required"
+        return self.direct_thread(thread_id, amount).messages
+
+    def direct_answer(self, thread_id: int, text: str) -> dict:
         """Send message
         """
         assert self.user_id, "Login required"
-        return self.direct_send(message, [], [int(thread_id)])
+        return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(self, message: str, users: list = [], threads: list = []) -> dict:
+    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> dict:
         """Send message
         """
         assert self.user_id, "Login required"
         method = "text"
         kwargs = {}
-        if 'http' in message:
+        if 'http' in text:
             method = "link"
-            kwargs["link_text"] = message
+            kwargs["link_text"] = text
             kwargs["link_urls"] = dumps(
-                re.findall(r"(https?://[^\s]+)", message))
+                re.findall(r"(https?://[^\s]+)", text))
         else:
-            kwargs["text"] = message
-        if threads:
-            kwargs["thread_ids"] = dumps([int(tid) for tid in threads])
-        if users:
-            kwargs["recipient_users"] = dumps([[int(uid) for uid in users]])
+            kwargs["text"] = text
+        if thread_ids:
+            kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        if user_ids:
+            kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         data = {
             "client_context": self.generate_uuid(),
             "action": "send_item",
@@ -96,4 +105,4 @@ class Direct:
             data=self.with_default_data(data),
             with_signature=False
         )
-        return result["payload"]
+        return extract_direct_message(result["payload"])

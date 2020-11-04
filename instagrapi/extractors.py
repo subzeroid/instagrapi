@@ -1,7 +1,8 @@
 from .utils import json_value
 from .types import (
     Media, Resource, User, UserShort, Usertag,
-    Location, Collection, Comment, MediaOembed
+    Location, Collection, Comment, MediaOembed,
+    DirectThread, DirectMessage
 )
 
 
@@ -36,14 +37,14 @@ def extract_media_v1(data):
     return Media(
         location=extract_location(location) if location else None,
         user=extract_user_short(data.pop("user")),
-        caption_text=data.pop("caption", {}).pop("text", ""),
+        caption_text=data.get("caption", {}).get("text", ""),
         usertags=sorted([
             extract_usertag(usertag)
-            for usertag in data.pop("usertags", {}).pop("in", [])
+            for usertag in data.pop("usertags", {}).get("in", [])
         ], key=lambda tag: tag.user.pk),
         resources=[
             extract_resource_v1(edge)
-            for edge in data.pop('carousel_media', [])
+            for edge in data.get('carousel_media', [])
         ],
         like_count=data.pop('like_count', 0),
         **data
@@ -75,11 +76,11 @@ def extract_media_gql(data):
     return Media(
         pk=data['id'],
         id=f"{data.pop('id')}_{user.pk}",
-        code=data.pop("shortcode"),
+        code=data.get("shortcode"),
         taken_at=data["taken_at_timestamp"],
         location=extract_location(location) if location else None,
         user=user,
-        view_count=data.pop('video_view_count', 0),
+        view_count=data.get('video_view_count', 0),
         comment_count=json_value(data, "edge_media_to_comment", "count"),
         like_count=json_value(data, "edge_media_preview_like", "count"),
         caption_text=json_value(
@@ -87,11 +88,11 @@ def extract_media_gql(data):
         ),
         usertags=sorted([
             extract_usertag(usertag['node'])
-            for usertag in data.pop("edge_media_to_tagged_user", {}).pop("edges", [])
+            for usertag in data.get("edge_media_to_tagged_user", {}).get("edges", [])
         ], key=lambda tag: tag.user.pk),
         resources=[
             extract_resource_gql(edge['node'])
-            for edge in data.pop('edge_sidecar_to_children', {}).get('edges', [])
+            for edge in data.get('edge_sidecar_to_children', {}).get('edges', [])
         ],
         **data
     )
@@ -134,7 +135,7 @@ def extract_usertag(data):
 def extract_user_short(data):
     """Extract User Short info
     """
-    data['pk'] = data.pop("id", data.pop("pk", None))
+    data['pk'] = data.get("id", data.get("pk", None))
     assert data['pk'], 'User without pk "%s"' % data
     return UserShort(**data)
 
@@ -155,14 +156,14 @@ def extract_user_gql(data):
 def extract_user_v1(data):
     """For Private API
     """
-    data['external_url'] = data.pop('external_url', None) or None
+    data['external_url'] = data.get('external_url') or None
     return User(**data)
 
 
 def extract_location(data):
     """Extract location info
     """
-    data['pk'] = data.pop("pk", data.pop("id", None))
+    data['pk'] = data.get("id", data.get("pk", None))
     return Location(**data)
 
 
@@ -185,7 +186,7 @@ def extract_collection(data):
         key.replace('collection_', ''): val
         for key, val in data.items()
     }
-    # data['pk'] = data.pop('id')
+    # data['pk'] = data.get('id')
     return Collection(**data)
 
 
@@ -193,3 +194,19 @@ def extract_media_oembed(data):
     """Return short version of Media
     """
     return MediaOembed(**data)
+
+
+def extract_direct_thread(data):
+    data['messages'] = [extract_direct_message(item) for item in data['items']]
+    data['users'] = [extract_user_short(u) for u in data['users']]
+    data['inviter'] = extract_user_short(data['inviter'])
+    data['pk'] = data.get('thread_v2_id')
+    data['id'] = data.get('thread_id')
+    return DirectThread(**data)
+
+
+def extract_direct_message(data):
+    data['id'] = data.get('item_id')
+    if 'media_share' in data:
+        data['media_share'] = extract_media_v1(data['media_share'])
+    return DirectMessage(**data)

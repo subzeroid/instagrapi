@@ -150,3 +150,15 @@ class CollectionError(PrivateError):
 
 class CollectionNotFound(CollectionError):
     pass
+
+
+class DirectError(PrivateError):
+    pass
+
+
+class DirectThreadNotFound(DirectError):
+    pass
+
+
+class DirectMessageNotFound(DirectError):
+    pass

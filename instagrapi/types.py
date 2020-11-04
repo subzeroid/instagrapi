@@ -113,3 +113,50 @@ class StoryMention(BaseModel):
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
+
+
+class DirectMessage(BaseModel):
+    id: int  # e.g. 28597946203914980615241927545176064
+    user_id: Optional[int]
+    thread_id: Optional[int]
+    timestamp: datetime
+    item_type: Optional[str]
+    is_shh_mode: Optional[bool]
+    reactions: Optional[dict]
+    text: Optional[str]
+    media_share: Optional[Media]
+    reel_share: Optional[dict]
+    story_share: Optional[dict]
+    felix_share: Optional[dict]
+    placeholder: Optional[dict]
+
+
+class DirectThread(BaseModel):
+    pk: int  # thread_v2_id, e.g. 17898572618026348
+    id: int  # thread_id, e.g. 340282366841510300949128268610842297468
+    messages: List[DirectMessage]
+    users: List[UserShort]
+    inviter: UserShort
+    left_users: List[UserShort]
+    admin_user_ids: list
+    last_activity_at: datetime
+    muted: bool
+    is_pin: bool
+    named: bool
+    canonical: bool
+    pending: bool
+    archived: bool
+    thread_type: str
+    thread_title: str
+    folder: int
+    vc_muted: bool
+    is_group: bool
+    mentions_muted: bool
+    approval_required_for_new_members: bool
+    input_mode: int
+    business_thread_folder: int
+    read_state: int
+    is_close_friend_thread: bool
+    assigned_admin_id: int
+    shh_mode_enabled: bool
+    last_seen_at: dict
