@@ -2,7 +2,8 @@ import os
 import tempfile
 
 from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip, ImageClip
-from PIL import Image, ImageFont, ImageDraw
+
+from .types import StoryBuild, StoryMention
 
 
 class StoryBuilder:
@@ -49,13 +50,15 @@ class StoryBuilder:
             text_clip_top -= offset + 90
         text_clip = text_clip.resize(width=600).set_position(
             (text_clip_left, text_clip_top)).fadein(3)
-        usertags = []
+        mentions = []
         if tag:
-            tag['x'] = 0.49892962  # approximately center
-            tag['y'] = (text_clip_top + text_clip.size[1] / 2) / self.height
-            tag['width'] = text_clip.size[0] / self.width
-            tag['height'] = text_clip.size[1] / self.height
-            usertags = [tag]
+            mention = StoryMention(
+                x=0.49892962,  # approximately center
+                y=(text_clip_top + text_clip.size[1] / 2) / self.height,
+                width=text_clip.size[0] / self.width,
+                height=text_clip.size[1] / self.height
+            )
+            mentions = [mention]
         duration = max_duration
         if max_duration and clip.duration and max_duration > clip.duration:
             duration = clip.duration
@@ -63,10 +66,10 @@ class StoryBuilder:
         CompositeVideoClip(
             [background, clip, text_clip], size=(self.width, self.height)
         ).set_fps(24).set_duration(duration).write_videofile(destination, codec='libx264', audio=True, audio_codec='aac')
-        return {
-            'usertags': usertags,
-            'filepath': destination
-        }
+        return StoryBuild(
+            mentions=mentions,
+            path=destination
+        )
 
     def video(self, max_duration: int = 0):
         """Build CompositeVideoClip from source video
@@ -81,26 +84,3 @@ class StoryBuilder:
         """
         clip = ImageClip(self.filepath).resize(width=self.width)
         return self.build_clip(clip, max_duration or 14)
-
-    def photo_pil(self):
-        """Unfinished
-        """
-        raise NotImplementedError('Method unfinished')
-        background = Image.open(self.bgpath)
-        txt = Image.new('RGBA', background.size, (255, 255, 255, 0))
-        fnt = ImageFont.load_default()
-        caption = self.caption
-        tag = None
-        if self.usertags:
-            tag = self.usertags[0]
-            caption = "@%s" % tag["user"]["name"]
-        draw = ImageDraw.Draw(txt)
-        draw.text((360, 640), caption, font=fnt, fill=(255, 255, 255, 128))
-        out = Image.alpha_composite(background, txt)
-        destination = tempfile.mktemp('.jpg')
-        # out.show()
-        out.convert('RGB').save(open(destination, 'w'))
-        return {
-            'usertags': self.usertags,
-            'filepath': destination
-        }

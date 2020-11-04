@@ -8,7 +8,7 @@ from .exceptions import (
     ClientNotFoundError,
     MediaNotFound,
 )
-from .extractors import extract_media_v1, extract_media_gql, extract_user_short
+from .extractors import extract_media_v1, extract_media_gql, extract_comment, extract_media_oembed
 
 
 class Media:
@@ -24,7 +24,7 @@ class Media:
                 "media_id must been contain digits, now %s" % media_id
             )
             user = self.media_user(media_id)
-            media_id = "%s_%s" % (media_id, user["pk"])
+            media_id = "%s_%s" % (media_id, user.pk)
         return media_id
 
     @staticmethod
@@ -85,11 +85,9 @@ class Media:
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
         media = extract_media_gql(data["shortcode_media"])
-        location = media.get('location')
-        if location:
-            location_pk = location.get('pk')
-            if not location.get('lat') and location_pk:
-                media['location'] = self.location_info(location_pk)
+        if media.location:
+            if not media.location.lat and media.location.pk:
+                media.location = self.location_info(media.location.pk)
         return media
 
     def media_info_v1(self, media_pk: int) -> dict:
@@ -166,7 +164,7 @@ class Media:
         media_id = self.media_id(media_id)
         media = self.media_info(media_id)  # from cache
         usertags = [
-            {"user_id": tag['user']['pk'], "position": tag['position']}
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
         ]
         data = {
@@ -177,7 +175,7 @@ class Media:
             "usertags": json.dumps({"in": usertags}),
             "is_carousel_bumped_post": "false",
         }
-        if media["product_type"] == "igtv":
+        if media.product_type == "igtv":
             if not title:
                 try:
                     title, caption = caption.split("\n", 1)
@@ -200,42 +198,17 @@ class Media:
         # return extract_user_short(
         #     self._media_info_a1(InstagramIdCodec.encode(media_pk))["owner"]
         # )
-        return self.media_info(media_pk)["user"]
+        return self.media_info(media_pk).user
 
     def media_oembed(self, url: str) -> dict:
         """Return info about media and user by post URL
-        Example: https://i.instagram.com/api/v1/oembed/?
-            url=https://instagram.com/p/B1LbfVPlwIA?
-            ig_mid=D68F44BF-2EDC-43AF-BB7F-D693BA0ABF05&
-            utm_source=instagramweb
-        Result: {
-            "version": "1.0",
-            "title": "",
-            "author_name": "mind__flowers",
-            "author_url": "https://www.instagram.com/mind__flowers",
-            "author_id": 8572539084,
-            "media_id": "2110901750722920960_8572539084",
-            "provider_name": "Instagram",
-            "provider_url": "https://www.instagram.com",
-            "type": "rich",
-            "width": 658,
-            "height": null,
-            "html": '...",
-            "thumbnail_width": 640,
-            "thumbnail_height": 799,
-            "can_view": true,
-        }
         """
-        return self.private_request(f"oembed?url={url}")
+        return extract_media_oembed(
+            self.private_request(f"oembed?url={url}")
+        )
 
     def media_comments(self, media_id: str) -> list:
         """Get list of comments for media
-        Example: https://i.instagram.com/api/v1/media/2277659671519488169_8530598273/comments/?
-        inventory_source=media_or_ad&
-        analytics_module=comments_v2_feed_timeline&
-        can_support_threading=true&
-        is_carousel_bumped_post=false&
-        feed_position=0
         """
         # TODO: to public or private
         media_id = self.media_id(media_id)
@@ -247,8 +220,7 @@ class Media:
                     f"media/{media_id}/comments/", params={"max_id": max_id}
                 )
                 for comment in result["comments"]:
-                    comment["user"] = extract_user_short(comment["user"])
-                    comments.append(comment)
+                    comments.append(extract_comment(comment))
                 if not result["has_more_comments"]:
                     break
                 max_id = result["next_max_id"]
@@ -262,19 +234,6 @@ class Media:
 
     def media_comment(self, media_id: str, text: str) -> int:
         """Comment media
-        Example: {
-            "user_breadcrumb": "u3QwgWYbhXMTf7nKhvpBYMyWxI9IScUmtUJ69TeTVwY=\nNCAxNDg5IDAgMTU4NjE5Mjg3MzI4NA==\n",
-            "delivery_class": "organic",
-            "idempotence_token": "9d68650c-bb63-4c09-a367-53d0bc177de4",
-            "_csrftoken": "H8Rk6Ry2ffWcUSwWIBblVK4hHHII2RMk",
-            "radio_type": "wifi-none",
-            "_uid": "8530598273",
-            "_uuid": "c642fece-8663-40d8-8ab7-112df0179e65",
-            "comment_text": "Test",
-            "is_carousel_bumped_post": "false",
-            "container_module": "self_comments_v2_feed_contextual_self_profile",
-            "feed_position": "0"
-        }
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
@@ -291,6 +250,4 @@ class Media:
                 }
             ),
         )
-        comment = result["comment"]
-        comment["user"] = extract_user_short(comment["user"])
-        return comment
+        return extract_comment(result["comment"])

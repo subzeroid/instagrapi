@@ -31,11 +31,11 @@ class VideoConfigureStoryError(VideoConfigureError):
 class DownloadVideo:
     def video_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
-        assert media["media_type"] == 2, "Must been video"
+        assert media.media_type == 2, "Must been video"
         filename = "{username}_{media_pk}".format(
-            username=media["user"]["username"], media_pk=media_pk
+            username=media.user.username, media_pk=media_pk
         )
-        return self.video_download_by_url(media["video_url"], filename, folder)
+        return self.video_download_by_url(media.video_url, filename, folder)
 
     def video_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
         fname = urlparse(url).path.rsplit('/', 1)[1]

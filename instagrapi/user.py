@@ -27,14 +27,14 @@ class User:
         """Get user_id by username
         Result: 'adw0rd' -> 1903424587
         """
-        return int(self.user_info_by_username(username)["pk"])
+        return int(self.user_info_by_username(username).pk)
 
     def username_from_user_id(self, user_id: int) -> str:
         """Get username by user_id
         Result: 1903424587 -> 'adw0rd'
         """
         user_id = int(user_id)
-        return self.user_info(user_id)["username"]
+        return self.user_info(user_id).username
 
     def user_info_by_username_gql(self, username: str) -> dict:
         """Return user object via GraphQL API
@@ -65,8 +65,8 @@ class User:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error
                 user = self.user_info_by_username_v1(username)
-            self._users_cache[user["pk"]] = user
-            self._usernames_cache[user["username"]] = user["pk"]
+            self._users_cache[user.pk] = user
+            self._usernames_cache[user.username] = user.pk
         return self.user_info(self._usernames_cache[username])
 
     def user_info_gql(self, user_id: int) -> dict:
@@ -110,7 +110,7 @@ class User:
                     self.logger.exception(e)
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
-            self._usernames_cache[user["username"]] = user["pk"]
+            self._usernames_cache[user.username] = user.pk
         return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> list:
@@ -189,29 +189,36 @@ class User:
             #     users = self.user_following_v1(user_id, amount)
             users = self.user_following_v1(user_id, amount)
             self._users_following[user_id] = {
-                user["pk"]: user for user in users
+                user.pk: user for user in users
             }
         return self._users_following[user_id]
 
-    def user_followers(self, user_id: int, use_cache: bool = True) -> list:
-        """Get list of user_id of Followers
+    def user_followers_v1(self, user_id: int, amount: int = 0) -> list:
+        """Return list of followers users (with auth)
+        """
+        user_id = int(user_id)
+        max_id = ""
+        users = []
+        while True:
+            result = self.private_request(
+                f"friendships/{user_id}/followers/",
+                params={"max_id": max_id, "rank_token": self.rank_token},
+            )
+            for user in result["users"]:
+                users.append(extract_user_short(user))
+            max_id = result.get("next_max_id")
+            if not max_id or (amount and len(users) >= amount):
+                break
+        return users
+
+    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+        """Return dict {user_id: user} of followers users
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_followers:
-            # TODO: to public
-            max_id = ""
-            users = []
-            while True:
-                result = self.private_request(
-                    f"friendships/{user_id}/followers/",
-                    params={"rank_token": self.rank_token, "max_id": max_id},
-                )
-                users += result["users"]
-                max_id = result.get("next_max_id")
-                if not max_id:
-                    break
+            users = self.user_followers_v1(user_id, amount)
             self._users_followers[user_id] = {
-                user["pk"]: extract_user_short(user) for user in users
+                user.pk: user for user in users
             }
         return self._users_followers[user_id]
 

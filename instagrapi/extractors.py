@@ -1,246 +1,195 @@
 from .utils import json_value
+from .types import (
+    Media, Resource, User, UserShort, Usertag,
+    Location, Collection, Comment, MediaOembed
+)
+
+
+MEDIA_TYPES_GQL = {
+    "GraphImage": 1,
+    "GraphVideo": 2,
+    "GraphSidecar": 8
+}
 
 
 def extract_media_v1(data):
     """Extract media from Private API
     """
-    user = data["user"]
-    location = data.get("location")
-    video_url = ""
     if "video_versions" in data:
         # Select Best Quality by Resolutiuon
-        video_url = sorted(
+        data['video_url'] = sorted(
             data["video_versions"], key=lambda o: o["height"] * o["width"]
         ).pop()["url"]
-    product_type = data.get("product_type", "")
-    if data["media_type"] == 2 and not product_type:
-        product_type = "feed"
-    thumbnail_url = ''
+    if data["media_type"] == 2 and not data.get("product_type"):
+        data["product_type"] = "feed"
     if 'image_versions2' in data:
-        thumbnail_url = sorted(
+        data['thumbnail_url'] = sorted(
             data["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         ).pop()["url"]
-    media = {
-        "pk": int(data["pk"]),
-        "taken_at": int(data["taken_at"]),
-        "id": data["id"],
-        "media_type": data["media_type"],
-        "product_type": product_type,
-        "code": data["code"],
-        "thumbnail_url": thumbnail_url,
-        "location": extract_location(location) if location else {},
-        "user": extract_user_short(user),
-        "comment_count": int(data.get("comment_count") or 0),
-        # the media just published has no like_count
-        "like_count": int(data.get("like_count") or 0),
-        "caption_text": json_value(data, "caption", "text", default=""),
-        "usertags": sorted([
-            extract_usertag(usertag)
-            for usertag in data.get("usertags", {}).get("in", [])
-        ], key=lambda tag: tag['user']['pk']),
-        "video_url": video_url,
-        "view_count": int(data.get('view_count') or 0),
-        "video_duration": data.get('video_duration'),
-        "title": data.get("title") or None,
-        "resources": [
-            extract_resource_v1(edge)
-            for edge in data.get('carousel_media', [])
-        ]
-    }
     if data["media_type"] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        media.pop('thumbnail_url')
-        media.pop('video_url')
-    return media
+        data.pop('thumbnail_url', '')
+        data.pop('video_url', '')
+    location = data.pop("location", None)
+    return Media(
+        location=extract_location(location) if location else None,
+        user=extract_user_short(data.pop("user")),
+        caption_text=data.pop("caption", {}).pop("text", ""),
+        usertags=sorted([
+            extract_usertag(usertag)
+            for usertag in data.pop("usertags", {}).pop("in", [])
+        ], key=lambda tag: tag.user.pk),
+        resources=[
+            extract_resource_v1(edge)
+            for edge in data.pop('carousel_media', [])
+        ],
+        like_count=data.pop('like_count', 0),
+        **data
+    )
 
 
 def extract_media_gql(data):
     """Extract media from GraphQL
     """
-    user = data["owner"]
-    media_id = "%s_%s" % (data["id"], user["id"])
-    if "full_name" in user:
-        # for hashtag user contain {'id': '2041641294'}
-        user = extract_user_short(user)
-    else:
-        user["pk"] = user.pop("id")
-    location = data.get("location")
-    media_type = {"GraphImage": 1, "GraphVideo": 2,
-                  "GraphSidecar": 8}[data["__typename"]]
-    product_type = data.get("product_type", "")
-    video_url = ""
-    if media_type == 2:
-        video_url = data["video_url"]
-        if not product_type:
-            product_type = "feed"
-    shortcode = ''
-    if 'shortcode' in data:
-        shortcode = data["shortcode"]
-    media = {
-        "pk": int(data["id"]),
-        "taken_at": int(data["taken_at_timestamp"]),
-        "id": media_id,
-        "media_type": media_type,
-        "product_type": product_type,
-        "code": shortcode,
-        "thumbnail_url": sorted(
-            # display_resources - user feed, thumbnail_resources - hashtag feed
-            data.get("display_resources", data.get('thumbnail_resources')),
-            key=lambda o: o["config_width"] * o["config_height"],
-        ).pop()["src"],
-        "location": extract_location(location) if location else {},
-        "user": user,
-        "comment_count": json_value(data, "edge_media_to_comment", "count"),
-        "like_count": json_value(data, "edge_media_preview_like", "count"),
-        "caption_text": json_value(
-            data, "edge_media_to_caption", "edges", 0, "node", "text", default=""
-        ),
-        "usertags": sorted([
-            extract_usertag(usertag['node'])
-            for usertag in data.get("edge_media_to_tagged_user", {}).get("edges", [])
-        ], key=lambda tag: tag['user']['pk']),
-        "video_url": video_url,
-        "view_count": int(data.get('video_view_count') or 0),
-        "video_duration": data.get('video_duration'),
-        "title": data.get("title") or None,
-        "resources": [
-            extract_resource_gql(edge['node'])
-            for edge in data.get('edge_sidecar_to_children', {}).get('edges', [])
-        ]
-    }
-    if media_type == 8:
+    user = extract_user_short(data["owner"])
+    # if "full_name" in user:
+    #     user = extract_user_short(user)
+    # else:
+    #     user["pk"] = user.pop("id")
+    data['media_type'] = MEDIA_TYPES_GQL[data["__typename"]]
+    if data['media_type'] == 2 and not data.get('product_type'):
+        data['product_type'] = "feed"
+    data["thumbnail_url"] = sorted(
+        # display_resources - user feed, thumbnail_resources - hashtag feed
+        data.get("display_resources", data.get('thumbnail_resources')),
+        key=lambda o: o["config_width"] * o["config_height"],
+    ).pop()["src"]
+    if data['media_type'] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        media.pop('thumbnail_url')
-        media.pop('video_url')
-    return media
+        data.pop('thumbnail_url', '')
+        data.pop('video_url', '')
+    location = data.pop("location", None)
+    return Media(
+        pk=data['id'],
+        id=f"{data.pop('id')}_{user.pk}",
+        code=data.pop("shortcode"),
+        taken_at=data["taken_at_timestamp"],
+        location=extract_location(location) if location else None,
+        user=user,
+        view_count=data.pop('video_view_count', 0),
+        comment_count=json_value(data, "edge_media_to_comment", "count"),
+        like_count=json_value(data, "edge_media_preview_like", "count"),
+        caption_text=json_value(
+            data, "edge_media_to_caption", "edges", 0, "node", "text", default=""
+        ),
+        usertags=sorted([
+            extract_usertag(usertag['node'])
+            for usertag in data.pop("edge_media_to_tagged_user", {}).pop("edges", [])
+        ], key=lambda tag: tag.user.pk),
+        resources=[
+            extract_resource_gql(edge['node'])
+            for edge in data.pop('edge_sidecar_to_children', {}).get('edges', [])
+        ],
+        **data
+    )
 
 
 def extract_resource_v1(data):
-    video_url = ""
     if 'video_versions' in data:
-        video_url = sorted(
+        data['video_url'] = sorted(
             data["video_versions"], key=lambda o: o["height"] * o["width"]
         ).pop()["url"]
-    thumbnail_url = sorted(
+    data['thumbnail_url'] = sorted(
         data["image_versions2"]["candidates"],
         key=lambda o: o["height"] * o["width"],
     ).pop()["url"]
-    return {
-        "video_url": video_url,
-        "thumbnail_url": thumbnail_url,
-        "media_type": data['media_type'],
-        "pk": int(data["pk"]),
-        # "video_duration": data.get('video_duration'),
-    }
+    return Resource(**data)
 
 
 def extract_resource_gql(data):
-    media_type = {"GraphImage": 1, "GraphVideo": 2,
-                  "GraphSidecar": 8}[data["__typename"]]
-    return {
-        "video_url": data.get("video_url", ""),
-        "thumbnail_url": data["display_url"],
-        "media_type": media_type,
-        "pk": int(data["id"]),
-        # "view_count": int(data.get("video_view_count") or 0),
-        # "shortcode": data["shortcode"],
-        # "accessibility_caption": data.get("accessibility_caption")
-    }
+    data['media_type'] = MEDIA_TYPES_GQL[data["__typename"]]
+    return Resource(
+        pk=data["id"],
+        thumbnail_url=data["display_url"],
+        **data
+    )
 
 
 def extract_usertag(data):
     """Extract user tag
     """
-    user = data['user']
-    position = data.get('position')
-    if not position:
-        position = [data['x'], data['y']]
-    return {
-        "user": {
-            "pk": int(user.get("id", user.get("pk"))),
-            "username": user["username"],
-            "full_name": user.get("full_name"),
-            "profile_pic_url": user.get("profile_pic_url"),
-            "is_verified": user.get("is_verified"),
-        },
-        "position": position
-    }
+    x, y = data.get('position', [
+        data.get('x'),
+        data.get('y')
+    ])
+    return Usertag(
+        user=extract_user_short(data['user']),
+        x=x, y=y
+    )
 
 
 def extract_user_short(data):
-    """For Public GraphQL API
+    """Extract User Short info
     """
-    user_pk = data.get("id", data.get("pk"))
-    assert user_pk, 'User without pk "%s"' % data
-    return {
-        "pk": int(user_pk),
-        "username": data["username"],
-        "full_name": data["full_name"],
-        "is_private": data.get("is_private"),
-        "profile_pic_url": data["profile_pic_url"],
-        "is_verified": data.get("is_verified"),
-        # "is_unpublished": data.get("is_unpublished"),
-    }
+    data['pk'] = data.pop("id", data.pop("pk", None))
+    assert data['pk'], 'User without pk "%s"' % data
+    return UserShort(**data)
 
 
 def extract_user_gql(data):
     """For Public GraphQL API
     """
-    return {
-        "pk": int(data["id"]),
-        "username": data["username"],
-        "full_name": data["full_name"],
-        "is_private": data["is_private"],
-        "profile_pic_url": data["profile_pic_url"],
-        "is_verified": data.get("is_verified"),
-        "media_count": data["edge_owner_to_timeline_media"]["count"],
-        "follower_count": data["edge_followed_by"]["count"],
-        "following_count": data["edge_follow"]["count"],
-        "biography": data["biography"],
-        "external_url": data["external_url"],
-        "is_business": data["is_business_account"],
-    }
+    return User(
+        pk=data["id"],
+        media_count=data["edge_owner_to_timeline_media"]["count"],
+        follower_count=data["edge_followed_by"]["count"],
+        following_count=data["edge_follow"]["count"],
+        is_business=data["is_business_account"],
+        **data
+    )
 
 
 def extract_user_v1(data):
     """For Private API
     """
-    return {
-        "pk": int(data["pk"]),
-        "username": data["username"],
-        "full_name": data["full_name"],
-        "is_private": data["is_private"],
-        "profile_pic_url": data["profile_pic_url"],
-        "is_verified": data.get("is_verified"),
-        "media_count": data["media_count"],
-        "follower_count": data["follower_count"],
-        "following_count": data["following_count"],
-        "biography": data["biography"],
-        "external_url": data["external_url"],
-        "is_business": data["is_business"],
-    }
+    data['external_url'] = data.pop('external_url', None) or None
+    return User(**data)
 
 
 def extract_location(data):
-    """Extract location from v1/gql
-    v1 example: {
-         'pk': 262547125,
-         'name': 'NAME',
-         'address': 'ADDRESS',
-         'city': 'SANKT-PETERBURG',
-         'short_name': 'NAME',
-         'lng': 42.000000000001,
-         'lat': 42.000000000002,
-         'external_source': 'facebook_places',
-         'facebook_places_id': 232571358171010
-    }
+    """Extract location info
     """
-    return {
-        "pk": int(data.get("pk", data.get("id"))),
-        "name": data.get("name"),
-        "lat": data.get("lat"),
-        "lng": data.get("lng"),
+    data['pk'] = data.pop("pk", data.pop("id", None))
+    return Location(**data)
+
+
+def extract_comment(data):
+    """Extract comment
+    """
+    return Comment(**data)
+
+
+def extract_collection(data):
+    """Extract collection for authorized account
+    Example:
+    {'collection_id': '17851406186124602',
+    'collection_name': 'Repost',
+    'collection_type': 'MEDIA',
+    'collection_media_count': 1,
+    'cover_media': {...}
+    """
+    data = {
+        key.replace('collection_', ''): val
+        for key, val in data.items()
     }
+    # data['pk'] = data.pop('id')
+    return Collection(**data)
+
+
+def extract_media_oembed(data):
+    """Return short version of Media
+    """
+    return MediaOembed(**data)

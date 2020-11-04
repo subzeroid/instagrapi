@@ -1,4 +1,5 @@
 from .exceptions import CollectionNotFound
+from .extractors import extract_media_v1, extract_collection
 
 
 class Collection:
@@ -19,7 +20,8 @@ class Collection:
             except Exception as e:
                 self.logger.exception(e)
                 return total_items
-            total_items.extend(result["items"])
+            for item in result["items"]:
+                total_items.append(extract_collection(item))
             if not result.get("more_available"):
                 return total_items
             next_max_id = result.get("next_max_id", "")
@@ -30,13 +32,13 @@ class Collection:
         """
         for item in self.collections():
             if item["collection_name"].lower() == name.lower():
-                return self.collection_medias(item["collection_id"])
+                return self.collection_medias(item.pk)
         raise CollectionNotFound()
 
-    def collection_medias(self, collection_id: int, amount: int = 21, last_media_pk: int = 0) -> list:
+    def collection_medias(self, collection_pk: int, amount: int = 21, last_media_pk: int = 0) -> list:
         """Return medias in collection
         """
-        collection_id = int(collection_id)
+        collection_pk = int(collection_pk)
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
         next_max_id = ""
@@ -45,9 +47,8 @@ class Collection:
                 return total_items[:amount]
             try:
                 result = self.private_request(
-                    f"feed/collection/{collection_id}/",
-                    params={"include_igtv_preview": "false",
-                            "max_id": next_max_id},
+                    f"feed/collection/{collection_pk}/",
+                    params={"include_igtv_preview": "false", "max_id": next_max_id},
                 )
             except Exception as e:
                 self.logger.exception(e)
@@ -55,7 +56,7 @@ class Collection:
             for item in result["items"]:
                 if last_media_pk and last_media_pk == item['media']['pk']:
                     return total_items
-                total_items.append(item["media"])
+                total_items.append(extract_media_v1(item["media"]))
             if not result.get("more_available"):
                 return total_items
             next_max_id = result.get("next_max_id", "")

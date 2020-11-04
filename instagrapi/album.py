@@ -29,26 +29,26 @@ class AlbumConfigureStoryError(AlbumConfigureError):
 class DownloadAlbum:
     def album_download(self, media_pk: int, folder: str = "") -> str:
         media = self.media_info(media_pk)
-        assert media["media_type"] == 8, "Must been album"
+        assert media.media_type == 8, "Must been album"
         paths = []
-        for resource in media['resources']:
+        for resource in media.resources:
             filename = "{username}_{media_pk}".format(
-                username=media["user"]["username"],
-                media_pk=resource['pk']
+                username=media.user.username,
+                media_pk=resource.pk
             )
-            if resource['media_type'] == 1:
+            if resource.media_type == 1:
                 paths.append(
                     self.photo_download_by_url(
-                        resource["thumbnail_url"], filename, folder)
+                        resource.thumbnail_url, filename, folder)
                 )
-            elif resource['media_type'] == 2:
+            elif resource.media_type == 2:
                 paths.append(
                     self.video_download_by_url(
-                        resource["video_url"], filename, folder)
+                        resource.video_url, filename, folder)
                 )
             else:
                 raise AlbumNotDownload('Media type "%s" unknown for album (resource.media_pk=%s)' % (
-                    resource['media_type'], resource['pk']))
+                    resource.media_type, resource.pk))
         return paths
 
     def album_download_by_urls(self, urls: list, folder: str = "") -> list:

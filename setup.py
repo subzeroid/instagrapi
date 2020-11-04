@@ -20,16 +20,18 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 setup(
     name='instagrapi',
-    version='1.2.2',
+    version='1.2.3',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
     install_requires=[
-        'pytz>=2020.1',
-        'requests>=2.24.0',
-        'moviepy>=1.0.3',
-        'Pillow>=7.2.0'
+        'pytz==2020.1',
+        'requests==2.24.0',
+        'PySocks==1.7.1',
+        'moviepy==1.0.3',
+        'Pillow==7.2.0',
+        'pydantic==1.7.2'
     ],
     # test_requires=[],
     keywords='instagram private api',
