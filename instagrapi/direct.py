@@ -72,13 +72,13 @@ class Direct:
         assert self.user_id, "Login required"
         return self.direct_thread(thread_id, amount).messages
 
-    def direct_answer(self, thread_id: int, text: str) -> dict:
+    def direct_answer(self, thread_id: int, text: str) -> DirectMessage:
         """Send message
         """
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> dict:
+    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """Send message
         """
         assert self.user_id, "Login required"

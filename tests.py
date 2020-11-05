@@ -630,7 +630,9 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         self.assertIsInstance(message, DirectMessage)
         adw0rd = self.api.user_id_from_username('adw0rd')
         ping = self.api.direct_send('Ping', user_ids=[adw0rd])
+        self.assertIsInstance(ping, DirectMessage)
         pong = self.api.direct_answer(ping.thread_id, 'Pong')
+        self.assertIsInstance(pong, DirectMessage)
         self.assertEqual(ping.thread_id, pong.thread_id)
 
 

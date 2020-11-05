@@ -60,7 +60,7 @@ user_id = cl.user_id_from_username("adw0rd")
 medias = cl.user_medias(user_id, 20)
 ```
 
-#### Types
+### Types
 
 The current types are in [types.py](/instagrapi/types.py):
 
@@ -86,17 +86,17 @@ This is your authorized account
 
 | Method                                                   | Return   | Description                                                   |
 | -------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| login(username: str, password: str, settings: dict = {}) | Bool     | Login by username and password                                |
-| relogin()                                                | Bool     | Relogin with clean cookies (required cl.username/cl.password) |
-| login_by_sessionid(sessionid: str)                       | Bool     | Login by sessionid from Instagram site                        |
-| get_settings()                                           | Dict     | Return settings dict (more details below)                     |
-| set_proxy(dsn: str)                                      | Dict     | Support socks and http/https proxy                            |
-| cookie_dict                                              | Dict     | Return cookies                                                |
-| user_id                                                  | Int      | Return your user_id (after login)                              |
-| device                                                   | Dict     | Return device dict which we pass to Instagram                 |
+| login(username: str, password: str, settings: dict = {}) | bool     | Login by username and password                                |
+| relogin()                                                | bool     | Relogin with clean cookies (required cl.username/cl.password) |
+| login_by_sessionid(sessionid: str)                       | bool     | Login by sessionid from Instagram site                        |
+| get_settings()                                           | dict     | Return settings dict (more details below)                     |
+| set_proxy(dsn: str)                                      | dict     | Support socks and http/https proxy                            |
+| cookie_dict                                              | dict     | Return cookies                                                |
+| user_id                                                  | int      | Return your user_id (after login)                              |
+| device                                                   | dict     | Return device dict which we pass to Instagram                 |
 | set_device(device: dict)                                 | None     | Change device settings                                        |
 | set_user_agent(user_agent: str)                          | None     | Change User-Agent header                                      |
-| base_headers                                             | Dict     | Base headers for Instagram                                    |
+| base_headers                                             | dict     | Base headers for Instagram                                    |
 
 Example:
 
@@ -154,16 +154,16 @@ Viewing and editing publications (medias)
 
 | Method                                             | Return             | Description                                                   |
 | -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_id(media_pk: int)                            | Str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
-| media_pk(media_id: str)                            | Int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
-| media_pk_from_code(code: str)                      | Int                | Return media_pk                                               |
-| media_pk_from_url(url: str)                        | Int                | Return media_pk                                               | 
+| media_id(media_pk: int)                            | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
+| media_pk(media_id: str)                            | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
+| media_pk_from_code(code: str)                      | int                | Return media_pk                                               |
+| media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
-| media_delete(media_pk: int)                        | Bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title, usertags: List[Usertag], location: Location) | Bool | Change caption for media           |
+| media_delete(media_pk: int)                        | bool               | Delete media                                                  |
+| media_edit(media_pk: int, caption: str, title, usertags: List[Usertag], location: Location) | bool | Change caption for media           |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
-| media_comment(media_id: str, message: str)         | Bool               | Write message to media                                        | 
+| media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
 | media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 
 Example:
@@ -207,14 +207,14 @@ View a list of a user's medias, following and followers
 | Method                                             | Return              | Description                                      |
 | -------------------------------------------------- | ------------------- | ------------------------------------------------ |
 | user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
-| user_followers(user_id: int)                       | Dict{user_id: User} | Get dict {user_id: user, ...} of followers users |
-| user_following(user_id: int)                       | Dict{user_id: User} | Get dict {user_id: user, ...} of following users |
-| user_info(user_id: int)                            | Dict\[User]         | Get user info                                    |
-| user_info_by_username(username: str)               | Dict\[User]         | Get user info by username                        |
-| user_follow(user_id: int)                          | Bool                | Follow user                                      |
-| user_unfollow(user_id: int)                        | Bool                | Unfollow user                                    |
-| user_id_from_username(username: str)               | Int                 | Get user_id by username                          |
-| username_from_user_id(user_id: int)                | Str                 | Get username by user_id                          |
+| user_followers(user_id: int)                       | Dict\[int: User]    | Get dict of followers users                      |
+| user_following(user_id: int)                       | Dict\[int: User]    | Get dict of following users                      |
+| user_info(user_id: int)                            | User                | Get user info                                    |
+| user_info_by_username(username: str)               | User                | Get user info by username                        |
+| user_follow(user_id: int)                          | bool                | Follow user                                      |
+| user_unfollow(user_id: int)                        | bool                | Unfollow user                                    |
+| user_id_from_username(username: str)               | int                 | Get user_id by username                          |
+| username_from_user_id(user_id: int)                | str                 | Get username by user_id                          |
 
 Example:
 
@@ -253,16 +253,16 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 #### Download Media
 
-| Method                                                                 | Return       | Description                                                                     |
-| ---------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| photo_download(media_pk: int, folder: str = '')                        | Str\[path]   | Download photo (return path to photo with best resoluton)                       |
-| photo_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download photo by URL (return path to photo with best resoluton)                |
-| video_download(media_pk: int, filder: str = '')                        | Str\[path]   | Download video (return path to video with best resoluton)                       |
-| video_download_by_url(url: str, filename: str = '', folder: str = '')  | Str\[path]   | Download Video by URL (return path to video with best resoluton)                |
-| igtv_download(media_pk: int, filter: str = '')                         | Str\[path]   | Download IGTV (return path to video with best resoluton)                        |
-| igtv_download_by_url(url: str, filename: str = '', folder: str = '')   | Str\[path]   | Download IGTV by URL                                                            |
-| album_download(media_pk: int, folder: str = '')                        | List\[path]  | Download Album (return multiple paths to photo and video with best resolutons)  |
-| album_download_by_urls(urls: list, folder: str = '')                   | List\[path]  | Download Album by URLs (return multiple paths...)                               |
+| Method                                                                 | Return  | Description                                                                     |
+| ---------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------- |
+| photo_download(media_pk: int, folder: str = '')                        | Path    | Download photo (return path to photo with best resoluton)                       |
+| photo_download_by_url(url: str, filename: str = '', folder: str = '')  | Path    | Download photo by URL (return path to photo with best resoluton)                |
+| video_download(media_pk: int, filder: str = '')                        | Path    | Download video (return path to video with best resoluton)                       |
+| video_download_by_url(url: str, filename: str = '', folder: str = '')  | Path    | Download Video by URL (return path to video with best resoluton)                |
+| igtv_download(media_pk: int, filter: str = '')                         | Path    | Download IGTV (return path to video with best resoluton)                        |
+| igtv_download_by_url(url: str, filename: str = '', folder: str = '')   | Path    | Download IGTV by URL                                                            |
+| album_download(media_pk: int, folder: str = '')                        | Path    | Download Album (return multiple paths to photo and video with best resolutons)  |
+| album_download_by_urls(urls: list, folder: str = '')                   | Path    | Download Album by URLs (return multiple paths...)                               |
 
 #### Upload Media
 
@@ -291,8 +291,8 @@ Upload medias to your stories. Common arguments:
 * `configure_timeout` - How long to wait in seconds for a response from Instagram when publishing a story
 * `links` - "Swipe Up" links (now use first)
 
-| Method                                                                         | Return   | Description                      |
-| ------------------------------------------------------------------------------ | -------- | -------------------------------- |
+| Method                                                                                                                                           | Return   | Description                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------- |
 | photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload photo (Support JPG files) |
 | video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload video (Support MP4 files) |
 
@@ -371,13 +371,13 @@ Get statistics by medias. Common arguments:
 
 #### Direct
 
-| Method                                                          | Return            | Description                                                   |
-| --------------------------------------------------------------- | ----------------- | ------------------------------------------------------------- |
-| direct_threads(amount: int = 20)                                | list              | Get all threads
-| direct_thread(thread_id: int, cursor: int = 0)                  | dict              | Get thread
-| direct_messages(thread_id: int, amount: int = 20)               | list              | Get messages in thread
-| direct_answer(thread_id: int, message: str)                     | dict              | Add message to exist thread
-| direct_send(message: str, users: list = [], threads: list = []) | dict              | Send message to users and threads
+| Method                                                                    | Return              | Description                                                   |
+| ------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------- |
+| direct_threads(amount: int = 20)                                          | List[DirectThread]  | Get all Threads                                               |
+| direct_thread(thread_id: int, amount: int = 20)                           | DirectThread        | Get Thread with Messages                                      |
+| direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread                                   |
+| direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread                                   |
+| direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads                              |
 
 #### Challenge
 
