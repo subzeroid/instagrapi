@@ -121,6 +121,10 @@ class StoryBuild(BaseModel):
     path: FilePath
 
 
+class StoryLink(BaseModel):
+    webUri: HttpUrl
+
+
 class DirectMessage(BaseModel):
     id: int  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]

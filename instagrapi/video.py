@@ -13,7 +13,7 @@ from .exceptions import (
     VideoNotDownload, VideoNotUpload, VideoConfigureError,
     VideoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, Media
+from .types import Usertag, Location, StoryMention, StoryLink, Media
 from .utils import dumps
 
 
@@ -142,11 +142,11 @@ class UploadVideo:
         thumbnail: Path = None,
         usertags: List[Usertag] = [],
         location: Location = None,
+        links: List[StoryLink] = [],
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
-        to_story: bool = False,
-        links: list = []
+        to_story: bool = False
     ) -> Media:
         """Upload video to feed
 
@@ -156,6 +156,7 @@ class UploadVideo:
                                         thumbnail is generate automatically
         :param usertags:            Mentioned users (List)
         :param location:            Location
+        :param links:               URLs for Swipe Up (List of dicts)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -202,7 +203,7 @@ class UploadVideo:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: list = []
+        links: List[StoryLink] = []
     ) -> dict:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
@@ -249,8 +250,8 @@ class UploadVideo:
         caption: str,
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
-        configure_timeout: int = 3,
-        links: list = []
+        links: List[StoryLink] = [],
+        configure_timeout: int = 3
     ) -> Media:
         """Upload video to feed
 
@@ -259,17 +260,17 @@ class UploadVideo:
         :param thumbnail:         Path to thumbnail for video. When None, then
                                   thumbnail is generate automatically
         :param mentions:          Mentioned users (List)
+        :param links:             URLs for Swipe Up (List of dicts)
         :param configure_timeout: Timeout between attempt to configure media (set caption, etc)
 
         :return: Media
         """
         return self.video_upload(
-            path, caption, thumbnail, mentions,
-            configure_timeout,
+            path, caption, thumbnail, mentions, links,
+            configure_timeout=configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
-            to_story=True,
-            links=links
+            to_story=True
         )
 
     def video_configure_to_story(
@@ -282,7 +283,7 @@ class UploadVideo:
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None,
-        links: list = []
+        links: List[StoryLink] = []
     ) -> dict:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
@@ -294,6 +295,7 @@ class UploadVideo:
         :param caption:    Media description (String)
         :param mentions:   Mentioned users (List)
         :param location:   Temporary unused
+        :param links:      URLs for Swipe Up (List of dicts)
 
         :return: Media (Dict)
         """
@@ -346,7 +348,7 @@ class UploadVideo:
             "poster_frame_index": 0
         }
         if links:
-            # TODO: Add StoryLink type
+            links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
         if mentions:
             reel_mentions = []

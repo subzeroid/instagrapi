@@ -254,16 +254,16 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 #### Download Media
 
-| Method                                                                 | Return  | Description                                                                     |
-| ---------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------- |
-| photo_download(media_pk: int, folder: str = '')                        | Path    | Download photo (return path to photo with best resoluton)                       |
-| photo_download_by_url(url: str, filename: str = '', folder: str = '')  | Path    | Download photo by URL (return path to photo with best resoluton)                |
-| video_download(media_pk: int, filder: str = '')                        | Path    | Download video (return path to video with best resoluton)                       |
-| video_download_by_url(url: str, filename: str = '', folder: str = '')  | Path    | Download Video by URL (return path to video with best resoluton)                |
-| igtv_download(media_pk: int, filter: str = '')                         | Path    | Download IGTV (return path to video with best resoluton)                        |
-| igtv_download_by_url(url: str, filename: str = '', folder: str = '')   | Path    | Download IGTV by URL                                                            |
-| album_download(media_pk: int, folder: str = '')                        | Path    | Download Album (return multiple paths to photo and video with best resolutons)  |
-| album_download_by_urls(urls: list, folder: str = '')                   | Path    | Download Album by URLs (return multiple paths...)                               |
+| Method                                                             | Return  | Description                                                                     |
+| ------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
+| photo_download(media_pk: int, folder: Path)                        | Path    | Download photo (return path to photo with best resoluton)                       |
+| photo_download_by_url(url: str, filename: str = '', folder: Path)  | Path    | Download photo by URL (return path to photo with best resoluton)                |
+| video_download(media_pk: int, folder: Path)                        | Path    | Download video (return path to video with best resoluton)                       |
+| video_download_by_url(url: str, filename: str = '', folder: Path)  | Path    | Download Video by URL (return path to video with best resoluton)                |
+| igtv_download(media_pk: int, folder: Path)                         | Path    | Download IGTV (return path to video with best resoluton)                        |
+| igtv_download_by_url(url: str, filename: str = '', folder: Path)   | Path    | Download IGTV by URL                                                            |
+| album_download(media_pk: int, folder: Path)                        | Path    | Download Album (return multiple paths to photo and video with best resolutons)  |
+| album_download_by_urls(urls: List[str], folder: Path)              | Path    | Download Album by URLs (return multiple paths...)                               |
 
 #### Upload Media
 
@@ -274,12 +274,12 @@ Upload medias to your feed. Common arguments:
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 
-| Method                                                                                                                              | Return  | Description                        |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Optional[Location])                       | Media   | Upload photo (Support JPG files)   |
-| video_upload(path: Path, caption: str, thumbnail: Optional[Path], usertags: List[Usertag], location: Optional[Location])            | Media   | Upload video (Support MP4 files)   |
-| igtv_upload(path: Path, title: str, caption: str, thumbnail: Optional[Path], usertags: List[Usertag], location: Optional[Location]) | Media   | Upload IGTV (Support MP4 files)    |
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Optional[Location])                                | Media   | Upload Album (Support JPG and MP4) |
+| Method                                                                                                                    | Return  | Description                        |
+| ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)                       | Media   | Upload photo (Support JPG files)   |
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)                      | Media   | Upload video (Support MP4 files)   |
+| igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)           | Media   | Upload IGTV (Support MP4 files)    |
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                                | Media   | Upload Album (Support JPG and MP4) |
 
 #### Upload Stories
 
@@ -295,7 +295,7 @@ Upload medias to your stories. Common arguments:
 | Method                                                                                                                      | Return   | Description                      |
 | --------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
 | photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag])                                    | Media    | Upload photo (Support JPG files) |
-| video_upload_to_story(path: Path, caption: str, thumbnail: Optional[Path], mentions: List[Usertag], links: List[StoryLink]) | Media    | Upload video (Support MP4 files) |
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], links: List[StoryLink])           | Media    | Upload video (Support MP4 files) |
 
 Examples:
 
@@ -309,7 +309,7 @@ cl.video_upload_to_story(
     media_path,
     "Credits @adw0rd",
     mentions=[StoryMention(user=adw0rd, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
-    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
+    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
 )
 ```
 
@@ -342,7 +342,7 @@ cl.video_upload_to_story(
     buildout.path,
     "Credits @adw0rd",
     mentions=buildout.mentions,
-    links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
+    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
 )
 ```
 

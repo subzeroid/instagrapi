@@ -1,4 +1,3 @@
-import os
 import tempfile
 from pathlib import Path
 from typing import List
@@ -19,10 +18,10 @@ class StoryBuilder:
         :mentions: list of StoryMention (see types.py)
         :bgpath: path to background image (recommend jpg and 720x1280)
         """
-        self.path = path
+        self.path = Path(path)
         self.caption = caption
         self.mentions = mentions
-        self.bgpath = bgpath
+        self.bgpath = Path(bgpath)
 
     def build_main(self, clip, max_duration: int = 0) -> StoryBuild:
         """Build clip
@@ -33,9 +32,9 @@ class StoryBuilder:
         clips = []
         # Background
         if self.bgpath:
-            assert os.path.exists(self.bgpath),\
+            assert self.bgpath.exists(),\
                 f'Wrong path to background {self.bgpath}'
-            background = ImageClip(self.bgpath)
+            background = ImageClip(str(self.bgpath))
             clips.append(background)
         # Media clip
         clip_left = (self.width - clip.size[0]) / 2
@@ -81,12 +80,12 @@ class StoryBuilder:
         """Build CompositeVideoClip from source video
         :max_duration: Result duration in seconds
         """
-        clip = VideoFileClip(self.path, has_mask=True)
+        clip = VideoFileClip(str(self.path), has_mask=True)
         return self.build_main(clip, max_duration)
 
     def photo(self, max_duration: int = 0):
         """Build CompositeVideoClip from source photo
         :max_duration: Result duration in seconds
         """
-        clip = ImageClip(self.path).resize(width=self.width)
+        clip = ImageClip(str(self.path)).resize(width=self.width)
         return self.build_main(clip, max_duration or 15)
