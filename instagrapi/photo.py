@@ -11,20 +11,10 @@ from urllib.parse import urlparse
 
 from . import config
 from .extractors import extract_media_v1
-from .exceptions import PrivateError
+from .exceptions import (
+    PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
+)
 from .types import Usertag, Location, StoryMention, Media
-
-
-class PhotoNotUpload(PrivateError):
-    pass
-
-
-class PhotoConfigureError(PhotoNotUpload):
-    pass
-
-
-class PhotoConfigureStoryError(PhotoConfigureError):
-    pass
 
 
 class DownloadPhoto:

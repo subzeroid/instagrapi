@@ -9,25 +9,12 @@ from urllib.parse import urlparse
 
 from . import config
 from .extractors import extract_media_v1
-from .exceptions import PrivateError
+from .exceptions import (
+    VideoNotDownload, VideoNotUpload, VideoConfigureError,
+    VideoConfigureStoryError
+)
 from .types import Usertag, Location, StoryMention, Media
 from .utils import dumps
-
-
-class VideoNotDownload(PrivateError):
-    pass
-
-
-class VideoNotUpload(PrivateError):
-    pass
-
-
-class VideoConfigureError(VideoNotUpload):
-    pass
-
-
-class VideoConfigureStoryError(VideoConfigureError):
-    pass
 
 
 class DownloadVideo:
@@ -122,7 +109,8 @@ class UploadVideo:
         self.request_log(response)
         if response.status_code != 200:
             raise VideoNotUpload(
-                response.text, response=response, **self.last_json)
+                response.text, response=response, **self.last_json
+            )
         video_data = open(path, "rb").read()
         video_len = str(len(video_data))
         headers = {
@@ -143,7 +131,8 @@ class UploadVideo:
         self.request_log(response)
         if response.status_code != 200:
             raise VideoNotUpload(
-                response.text, response=response, **self.last_json)
+                response.text, response=response, **self.last_json
+            )
         return upload_id, width, height, duration, Path(thumbnail)
 
     def video_upload(

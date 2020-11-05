@@ -9,16 +9,8 @@ import moviepy.editor as mp
 
 from . import config
 from .extractors import extract_media_v1
-from .exceptions import ClientError, PrivateError
+from .exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
 from .types import Usertag, Location, Media
-
-
-class IGTVNotUpload(PrivateError):
-    pass
-
-
-class IGTVConfigureError(IGTVNotUpload):
-    pass
 
 
 class DownloadIGTV:

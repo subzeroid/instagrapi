@@ -4,29 +4,12 @@ from typing import List
 from urllib.parse import urlparse
 
 from .extractors import extract_media_v1
-from .exceptions import PrivateError
+from .exceptions import (
+    AlbumNotDownload, UnknownFormat,
+    AlbumConfigureError
+)
 from .types import Usertag, Location, Media
 from .utils import dumps
-
-
-class AlbumNotDownload(PrivateError):
-    pass
-
-
-class AlbumNotUpload(PrivateError):
-    pass
-
-
-class UnknownFormat(AlbumNotUpload):
-    pass
-
-
-class AlbumConfigureError(AlbumNotUpload):
-    pass
-
-
-class AlbumConfigureStoryError(AlbumConfigureError):
-    pass
 
 
 class DownloadAlbum:

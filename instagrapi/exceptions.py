@@ -162,3 +162,51 @@ class DirectThreadNotFound(DirectError):
 
 class DirectMessageNotFound(DirectError):
     pass
+
+
+class VideoNotDownload(PrivateError):
+    pass
+
+
+class VideoNotUpload(PrivateError):
+    pass
+
+
+class VideoConfigureError(VideoNotUpload):
+    pass
+
+
+class VideoConfigureStoryError(VideoConfigureError):
+    pass
+
+
+class PhotoNotUpload(PrivateError):
+    pass
+
+
+class PhotoConfigureError(PhotoNotUpload):
+    pass
+
+
+class PhotoConfigureStoryError(PhotoConfigureError):
+    pass
+
+
+class IGTVNotUpload(PrivateError):
+    pass
+
+
+class IGTVConfigureError(IGTVNotUpload):
+    pass
+
+
+class AlbumNotDownload(PrivateError):
+    pass
+
+
+class UnknownFormat(PrivateError):
+    pass
+
+
+class AlbumConfigureError(PrivateError):
+    pass
