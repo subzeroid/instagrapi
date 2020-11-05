@@ -148,7 +148,7 @@ class UploadAlbum:
         self,
         childs: list,
         caption: str,
-        usertags: List[Usertag],
+        usertags: List[Usertag] = [],
         location: Location = None
     ) -> dict:
         """Post Configure Album

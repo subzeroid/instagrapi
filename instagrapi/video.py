@@ -65,7 +65,7 @@ class UploadVideo:
         path: Path,
         thumbnail: Path = None,
         to_album: bool = False,
-        to_story: bool = False,
+        to_story: bool = False
     ) -> tuple:
         """Upload video to Instagram
 

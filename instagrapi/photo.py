@@ -53,8 +53,8 @@ class UploadPhoto:
     def photo_rupload(
         self,
         path: Path,
-        upload_id: str = None,
-        to_album: bool = False,
+        upload_id: str = "",
+        to_album: bool = False
     ) -> tuple:
         """Upload photo to Instagram
 
@@ -116,7 +116,7 @@ class UploadPhoto:
         self,
         path: Path,
         caption: str,
-        upload_id: str = None,
+        upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 3,
@@ -195,9 +195,9 @@ class UploadPhoto:
         self,
         path: Path,
         caption: str,
-        upload_id: str = None,
+        upload_id: str = "",
         mentions: List[StoryMention] = [],
-        configure_timeout: int = 3,
+        configure_timeout: int = 3
     ) -> Media:
         """Upload photo and configure to story
 

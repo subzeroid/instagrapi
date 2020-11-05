@@ -268,33 +268,33 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 Upload medias to your feed. Common arguments:
 
-* `filepath` - Path to source file
+* `path` - Path to source file
 * `caption`  - Text for you post
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 
-| Method                                                                                 | Return  | Description                        |
-| -------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(filepath: str, caption: str, usertags: List[Usertag], location: Location) | Media   | Upload photo (Support JPG files)   |
-| video_upload(filepath: str, caption: str, usertags: List[Usertag], location: Location) | Media   | Upload video (Support MP4 files)   |
-| igtv_upload(filepath, title, caption, usertags: List[Usertag], location: Location)     | Media   | Upload IGTV (Support MP4 files)    |
-| album_upload(paths: list, caption: str, usertags: List[Usertag], location: Location)   | Media   | Upload Album (Support JPG and MP4) |
+| Method                                                                                                                              | Return  | Description                        |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Optional[Location])                       | Media   | Upload photo (Support JPG files)   |
+| video_upload(path: Path, caption: str, thumbnail: Optional[Path], usertags: List[Usertag], location: Optional[Location])            | Media   | Upload video (Support MP4 files)   |
+| igtv_upload(path: Path, title: str, caption: str, thumbnail: Optional[Path], usertags: List[Usertag], location: Optional[Location]) | Media   | Upload IGTV (Support MP4 files)    |
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Optional[Location])                                | Media   | Upload Album (Support JPG and MP4) |
 
 #### Upload Stories
 
 Upload medias to your stories. Common arguments:
 
-* `filepath` - Path to media file
+* `path` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
 * `thumbnail` - Thumbnail instead capture from source file
 * `usertags` - Specify usertags for mention users in story 
 * `configure_timeout` - How long to wait in seconds for a response from Instagram when publishing a story
 * `links` - "Swipe Up" links (now use first)
 
-| Method                                                                                                                                           | Return   | Description                      |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------------------------------- |
-| photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload photo (Support JPG files) |
-| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload video (Support MP4 files) |
+| Method                                                                                                                      | Return   | Description                      |
+| --------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag])                                    | Media    | Upload photo (Support JPG files) |
+| video_upload_to_story(path: Path, caption: str, thumbnail: Optional[Path], mentions: List[Usertag], links: List[StoryLink]) | Media    | Upload video (Support MP4 files) |
 
 Examples:
 
@@ -316,7 +316,7 @@ cl.video_upload_to_story(
 
 | Method                                                | Return     | Description                              |
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |
-| build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild | Build CompositeVideoClip with background and mentioned users. Return MP4 file and mentions with coordinates |
 | video(max_duration: int = 0)  # in seconds            | StoryBuild | Call build_clip(VideoClip, max_duration) |
 | photo(max_duration: int = 0)  # in seconds            | StoryBuild | Call build_clip(ImageClip, max_duration) |
 
@@ -334,11 +334,11 @@ buildout = StoryBuilder(
     media_path,
     'Credits @adw0rd',
     [StoryMention(user=adw0rd)],
-    '/path/to/background_720x1280.jpg'
+    Path('/path/to/background_720x1280.jpg')
 ).video(15)  # seconds
 
 cl.video_upload_to_story(
-    buildout.filepath,
+    buildout.path,
     "Credits @adw0rd",
     mentions=buildout.mentions,
     links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]

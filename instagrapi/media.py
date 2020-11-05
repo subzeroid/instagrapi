@@ -10,7 +10,7 @@ from .exceptions import (
     MediaNotFound,
 )
 from .extractors import extract_media_v1, extract_media_gql, extract_comment, extract_media_oembed
-from .types import Usertag, Location
+from .types import Usertag, Location, UserShort
 
 
 class Media:
@@ -134,7 +134,14 @@ class Media:
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
 
-    def media_edit(self, media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None) -> bool:
+    def media_edit(
+        self,
+        media_id: str,
+        caption: str,
+        title: str = "",
+        usertags: List[Usertag] = [],
+        location: Location = None
+    ) -> dict:
         """Edit caption for media
         Example: https://i.instagram.com/api/v1/media/2154602296692269830_1903424587/edit_media/
 
@@ -194,7 +201,7 @@ class Media:
         )
         return result
 
-    def media_user(self, media_pk: int) -> dict:
+    def media_user(self, media_pk: int) -> UserShort:
         """Get user object
         """
         # return extract_user_short(
