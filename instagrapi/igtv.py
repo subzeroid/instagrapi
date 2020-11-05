@@ -1,6 +1,7 @@
 import json
 import time
 import random
+from pathlib import Path
 from typing import List
 from uuid import uuid4
 from PIL import Image
@@ -9,7 +10,7 @@ import moviepy.editor as mp
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import ClientError, PrivateError
-from .types import Usertag, Location
+from .types import Usertag, Location, Media
 
 
 class IGTVNotUpload(PrivateError):
@@ -21,41 +22,42 @@ class IGTVConfigureError(IGTVNotUpload):
 
 
 class DownloadIGTV:
-    def igtv_download(self, media_pk: int, folder: str = "") -> str:
+    def igtv_download(self, media_pk: int, folder: Path = "") -> str:
         return self.video_download(media_pk, folder)
 
-    def igtv_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
+    def igtv_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
         return self.video_download_by_url(url, filename, folder)
 
 
 class UploadIGTV:
     def igtv_upload(
         self,
-        filepath: str,
+        path: Path,
         title: str,
         caption: str,
-        thumbnail: str = None,
+        thumbnail: Path = None,
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
-    ) -> dict:
+    ) -> Media:
         """Upload IGTV to Instagram
 
-        :param filepath:          Path to IGTV file (String)
+        :param path:              Path to IGTV file
         :param title:             Media title (String)
         :param caption:           Media description (String)
-        :param thumbnail:         Path to thumbnail for IGTV (String). When None, then
+        :param thumbnail:         Path to thumbnail for IGTV. When None, then
                                   thumbnail is generate automatically
         :param usertags:          Mentioned users (List)
         :param location:          Location
         :param configure_timeout: Timeout between attempt to configure media (set caption and title)
 
-        :return: Object with state of uploading to Instagram (or False)
+        :return: Media
         """
-        assert isinstance(
-            filepath, str), "Filepath must been string, now %s" % filepath
+        path = Path(path)
+        if thumbnail is not None:
+            thumbnail = Path(thumbnail)
         upload_id = str(int(time.time() * 1000))
-        thumbnail, width, height, duration = analyze_video(filepath, thumbnail)
+        thumbnail, width, height, duration = analyze_video(path, thumbnail)
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
         upload_name = "{upload_id}_0_{rand}".format(
@@ -89,7 +91,7 @@ class UploadIGTV:
         self.request_log(response)
         if response.status_code != 200:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
-        igtv_data = open(filepath, "rb").read()
+        igtv_data = open(path, "rb").read()
         igtv_len = str(len(igtv_data))
         headers = {
             "Offset": "0",
@@ -111,8 +113,7 @@ class UploadIGTV:
         # CONFIGURE
         self.igtv_composer_session_id = self.generate_uuid()
         for attempt in range(20):
-            self.logger.debug(
-                "Attempt #%d to configure IGTV: %s", attempt, filepath)
+            self.logger.debug(f"Attempt #{attempt} to configure IGTV: {path}")
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(
@@ -137,7 +138,7 @@ class UploadIGTV:
     def igtv_configure(
         self,
         upload_id: str,
-        thumbnail: str,
+        thumbnail: Path,
         width: int,
         height: int,
         duration: int,
@@ -145,11 +146,11 @@ class UploadIGTV:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None
-    ) -> bool:
+    ) -> dict:
         """Post Configure IGTV (send caption, thumbnail and more to Instagram)
 
         :param upload_id:  Unique upload_id (String)
-        :param thumbnail:  Path to thumbnail for igtv (String)
+        :param thumbnail:  Path to thumbnail for IGTV
         :param width:      Width in px (Integer)
         :param height:     Height in px (Integer)
         :param duration:   Duration in seconds (Integer)
@@ -157,7 +158,7 @@ class UploadIGTV:
         :param usertags:   Mentioned users (List)
         :param location:   Location
         """
-        self.photo_rupload(thumbnail, upload_id)
+        self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
@@ -190,29 +191,29 @@ class UploadIGTV:
         )
 
 
-def analyze_video(filepath: str, thumbnail: str = None) -> tuple:
+def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze and crop thumbnail if need
     """
-    print(f'Analizing IGTV file "{filepath}"')
-    video = mp.VideoFileClip(filepath)
+    print(f'Analizing IGTV file "{path}"')
+    video = mp.VideoFileClip(str(path))
     width, height = video.size
     if not thumbnail:
-        thumbnail = f"{filepath}.jpg"
+        thumbnail = f"{path}.jpg"
         print(f'Generating thumbnail "{thumbnail}"...')
         video.save_frame(thumbnail, t=(video.duration / 2))
         crop_thumbnail(thumbnail)
     return thumbnail, width, height, video.duration
 
 
-def crop_thumbnail(filepath):
+def crop_thumbnail(path: Path) -> bool:
     """Crop IGTV thumbnail with save height
     """
-    im = Image.open(filepath)
+    im = Image.open(str(path))
     width, height = im.size
     offset = (height / 1.78) / 2
     center = width / 2
     # Crop the center of the image
     im = im.crop((center - offset, 0, center + offset, height))
-    im.save(open(filepath, "w"))
+    im.save(open(path, "w"))
     im.close()
     return True

@@ -1,7 +1,7 @@
-import os
 import time
 import random
 import requests
+from pathlib import Path
 from typing import List
 from uuid import uuid4
 import moviepy.editor as mp
@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
-from .types import Usertag, Location, StoryMention
+from .types import Usertag, Location, StoryMention, Media
 from .utils import dumps
 
 
@@ -31,7 +31,7 @@ class VideoConfigureStoryError(VideoConfigureError):
 
 
 class DownloadVideo:
-    def video_download(self, media_pk: int, folder: str = "") -> str:
+    def video_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
         filename = "{username}_{media_pk}".format(
@@ -39,11 +39,11 @@ class DownloadVideo:
         )
         return self.video_download_by_url(media.video_url, filename, folder)
 
-    def video_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
+    def video_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname
-        filepath = os.path.join(folder, filename)
+        path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
         content_length = int(response.headers.get("Content-Length"))
@@ -51,34 +51,33 @@ class DownloadVideo:
         if content_length != file_length:
             raise VideoNotDownload(
                 'Broken file "%s" (Content-length=%s, but file length=%s)'
-                % (filepath, content_length, file_length)
+                % (path, content_length, file_length)
             )
-        with open(filepath, "wb") as f:
+        with open(path, "wb") as f:
             f.write(response.content)
             f.close()
-        return os.path.abspath(filepath)
+        return path.resolve()
 
 
 class UploadVideo:
     def video_rupload(
         self,
-        filepath: str,
-        thumbnail: str = None,
+        path: Path,
+        thumbnail: Path = None,
         to_album: bool = False,
         to_story: bool = False,
     ) -> tuple:
         """Upload video to Instagram
 
-        :param filepath:          Path to video file (String)
-        :param thumbnail:         Path to thumbnail for video (String). When None, then
-                                  thumbnail is generate automatically
+        :param path:          Path to video file
+        :param thumbnail:     Path to thumbnail for video. When None, then
+                              thumbnail is generate automatically
 
         :return: Tuple (upload_id, width, height, duration)
         """
-        assert isinstance(
-            filepath, str), "Filepath must been string, now %s" % filepath
+        assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = str(int(time.time() * 1000))
-        width, height, duration, thumbnail = analyze_video(filepath, thumbnail)
+        width, height, duration, thumbnail = analyze_video(path, thumbnail)
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
         upload_name = "{upload_id}_0_{rand}".format(
@@ -124,7 +123,7 @@ class UploadVideo:
         if response.status_code != 200:
             raise VideoNotUpload(
                 response.text, response=response, **self.last_json)
-        video_data = open(filepath, "rb").read()
+        video_data = open(path, "rb").read()
         video_len = str(len(video_data))
         headers = {
             "Offset": "0",
@@ -145,13 +144,13 @@ class UploadVideo:
         if response.status_code != 200:
             raise VideoNotUpload(
                 response.text, response=response, **self.last_json)
-        return upload_id, width, height, duration, thumbnail
+        return upload_id, width, height, duration, Path(thumbnail)
 
     def video_upload(
         self,
-        filepath: str,
+        path: Path,
         caption: str,
-        thumbnail: str = None,
+        thumbnail: Path = None,
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 3,
@@ -159,12 +158,12 @@ class UploadVideo:
         configure_exception=None,
         to_story: bool = False,
         links: list = []
-    ) -> dict:
+    ) -> Media:
         """Upload video to feed
 
-        :param filepath:            Path to video file (String)
+        :param path:                Path to video file
         :param caption:             Media description (String)
-        :param thumbnail:           Path to thumbnail for video (String). When None, then
+        :param thumbnail:           Path to thumbnail for video. When None, then
                                         thumbnail is generate automatically
         :param usertags:            Mentioned users (List)
         :param location:            Location
@@ -172,13 +171,16 @@ class UploadVideo:
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
 
-        :return: Extracted media (Dict)
+        :return: Media
         """
+        path = Path(path)
+        if thumbnail is not None:
+            thumbnail = Path(thumbnail)
         upload_id, width, height, duration, thumbnail = self.video_rupload(
-            filepath, thumbnail, to_story=to_story)
+            path, thumbnail, to_story=to_story
+        )
         for attempt in range(20):
-            self.logger.debug(
-                "Attempt #%d to configure Video: %s", attempt, filepath)
+            self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.video_configure)(
@@ -207,19 +209,19 @@ class UploadVideo:
         width: int,
         height: int,
         duration: int,
-        thumbnail: str,
+        thumbnail: Path,
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
         links: list = []
-    ) -> bool:
+    ) -> dict:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
         :param upload_id:  Unique upload_id (String)
         :param width:      Width in px (Integer)
         :param height:     Height in px (Integer)
         :param duration:   Duration in seconds (Integer)
-        :param thumbnail:  Path to thumbnail for video (String)
+        :param thumbnail:  Path to thumbnail for video
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
         :param location:   Location
@@ -227,7 +229,7 @@ class UploadVideo:
 
         :return: Media (Dict)
         """
-        self.photo_rupload(thumbnail, upload_id)
+        self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
@@ -254,26 +256,26 @@ class UploadVideo:
 
     def video_upload_to_story(
         self,
-        filepath: str,
+        path: Path,
         caption: str,
-        thumbnail: str = None,
+        thumbnail: Path = None,
         mentions: List[StoryMention] = [],
         configure_timeout: int = 3,
         links: list = []
-    ) -> dict:
+    ) -> Media:
         """Upload video to feed
 
-        :param filepath:          Path to video file (String)
+        :param path:              Path to video file
         :param caption:           Media description (String)
-        :param thumbnail:         Path to thumbnail for video (String). When None, then
+        :param thumbnail:         Path to thumbnail for video. When None, then
                                   thumbnail is generate automatically
         :param mentions:          Mentioned users (List)
         :param configure_timeout: Timeout between attempt to configure media (set caption, etc)
 
-        :return: Extracted media (Dict)
+        :return: Media
         """
         return self.video_upload(
-            filepath, caption, thumbnail, mentions,
+            path, caption, thumbnail, mentions,
             configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
@@ -287,16 +289,16 @@ class UploadVideo:
         width: int,
         height: int,
         duration: int,
-        thumbnail: str,
+        thumbnail: Path,
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None,
         links: list = []
-    ) -> bool:
+    ) -> dict:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
         :param upload_id:  Unique upload_id (String)
-        :param thumbnail:  Path to thumbnail for video (String)
+        :param thumbnail:  Path to thumbnail for video
         :param width:      Width in px (Integer)
         :param height:     Height in px (Integer)
         :param duration:   Duration in seconds (Integer)
@@ -376,14 +378,14 @@ class UploadVideo:
         return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
 
 
-def analyze_video(filepath: str, thumbnail: str = None) -> tuple:
+def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze video file
     """
-    print(f'Analizing video file "{filepath}"')
-    video = mp.VideoFileClip(filepath)
+    print(f'Analizing video file "{path}"')
+    video = mp.VideoFileClip(str(path))
     width, height = video.size
     if not thumbnail:
-        thumbnail = f"{filepath}.jpg"
+        thumbnail = f"{path}.jpg"
         print(f'Generating thumbnail "{thumbnail}"...')
         video.save_frame(thumbnail, t=(video.duration / 2))
     # duration = round(video.duration + 0.001, 3)

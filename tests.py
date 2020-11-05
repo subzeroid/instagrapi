@@ -4,6 +4,7 @@ import pytz
 import random
 import os.path
 import unittest
+from pathlib import Path
 from datetime import datetime
 
 from instagrapi import Client
@@ -183,6 +184,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         # Upload photo
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
         path = self.api.photo_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             msg = "Test caption for photo"
             media = self.api.photo_upload(path, msg)
@@ -203,6 +205,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/tv/B91gKCcpnTk/"
         )
         path = self.api.igtv_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             media = self.api.igtv_upload(path, "Test title", "Test caption for IGTV")
             self.assertIsInstance(media, Media)
@@ -515,6 +518,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/p/BVDOOolFFxg/"
         )
         path = self.api.photo_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             media = self.api.photo_upload(path, "Test caption for photo")
             self.assertIsInstance(media, Media)
@@ -529,6 +533,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/p/BVDOOolFFxg/"
         )
         path = self.api.photo_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             media = self.api.photo_upload(
                 path, "Test caption for photo",
@@ -546,6 +551,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/p/Bk2tOgogq9V/"
         )
         path = self.api.video_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             media = self.api.video_upload(
                 path, "Test caption for video",
@@ -561,6 +567,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
     def test_album_upload(self):
         media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
         paths = self.api.album_download(media_pk)
+        [self.assertIsInstance(path, Path) for path in paths]
         try:
             adw0rd = self.api.user_info_by_username('adw0rd')
             location = self.get_location()
@@ -582,6 +589,7 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             "https://www.instagram.com/tv/B91gKCcpnTk/"
         )
         path = self.api.igtv_download(media_pk)
+        self.assertIsInstance(path, Path)
         try:
             media = self.api.igtv_upload(
                 path, "Test title", "Test caption for IGTV",

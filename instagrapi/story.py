@@ -1,5 +1,6 @@
 import os
 import tempfile
+from pathlib import Path
 from typing import List
 
 from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip, ImageClip
@@ -11,14 +12,14 @@ class StoryBuilder:
     width = 720
     height = 1280
 
-    def __init__(self, filepath: str, caption: str = "", mentions: List[StoryMention] = [], bgpath: str = ""):
+    def __init__(self, path: Path, caption: str = "", mentions: List[StoryMention] = [], bgpath: Path = ""):
         """Init params
-        :filepath: path to cource video or photo file
+        :path: path to cource video or photo file
         :caption: text caption for story
         :mentions: list of StoryMention (see types.py)
         :bgpath: path to background image (recommend jpg and 720x1280)
         """
-        self.filepath = filepath
+        self.path = path
         self.caption = caption
         self.mentions = mentions
         self.bgpath = bgpath
@@ -27,7 +28,7 @@ class StoryBuilder:
         """Build clip
         :clip: Clip object (VideoFileClip, ImageClip)
         :max_duration: Result duration in seconds
-        :return: Dict with new filepath, mentions and more
+        :return: StoryBuild (with new path and mentions)
         """
         clips = []
         # Background
@@ -80,12 +81,12 @@ class StoryBuilder:
         """Build CompositeVideoClip from source video
         :max_duration: Result duration in seconds
         """
-        clip = VideoFileClip(self.filepath, has_mask=True)
+        clip = VideoFileClip(self.path, has_mask=True)
         return self.build_main(clip, max_duration)
 
     def photo(self, max_duration: int = 0):
         """Build CompositeVideoClip from source photo
         :max_duration: Result duration in seconds
         """
-        clip = ImageClip(self.filepath).resize(width=self.width)
+        clip = ImageClip(self.path).resize(width=self.width)
         return self.build_main(clip, max_duration or 15)

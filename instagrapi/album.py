@@ -1,10 +1,11 @@
 import time
+from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
-from .types import Usertag, Location
+from .types import Usertag, Location, Media
 from .utils import dumps
 
 
@@ -29,31 +30,31 @@ class AlbumConfigureStoryError(AlbumConfigureError):
 
 
 class DownloadAlbum:
-    def album_download(self, media_pk: int, folder: str = "") -> str:
+    def album_download(self, media_pk: int, folder: Path = "") -> List[Path]:
         media = self.media_info(media_pk)
         assert media.media_type == 8, "Must been album"
         paths = []
         for resource in media.resources:
-            filename = "{username}_{media_pk}".format(
-                username=media.user.username,
-                media_pk=resource.pk
-            )
+            filename = f"{media.user.username}_{resource.pk}"
             if resource.media_type == 1:
                 paths.append(
                     self.photo_download_by_url(
-                        resource.thumbnail_url, filename, folder)
+                        resource.thumbnail_url, filename, folder
+                    )
                 )
             elif resource.media_type == 2:
                 paths.append(
                     self.video_download_by_url(
-                        resource.video_url, filename, folder)
+                        resource.video_url, filename, folder
+                    )
                 )
             else:
-                raise AlbumNotDownload('Media type "%s" unknown for album (resource.media_pk=%s)' % (
-                    resource.media_type, resource.pk))
+                raise AlbumNotDownload(
+                    'Media type "{resource.media_type}" unknown for album (resource={resource.pk})'
+                )
         return paths
 
-    def album_download_by_urls(self, urls: list, folder: str = "") -> list:
+    def album_download_by_urls(self, urls: List[str], folder: Path = "") -> List[Path]:
         paths = []
         for url in urls:
             fname = urlparse(url).path.rsplit('/', 1)[1]
@@ -70,7 +71,7 @@ class UploadAlbum:
 
     def album_upload(
         self,
-        paths: list,
+        paths: List[Path],
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
@@ -78,7 +79,7 @@ class UploadAlbum:
         configure_handler=None,
         configure_exception=None,
         to_story=False
-    ) -> dict:
+    ) -> Media:
         """Upload album to feed
 
         :param paths:               Path to files (List)
@@ -89,13 +90,13 @@ class UploadAlbum:
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
 
-        :return: Extracted media (Dict)
+        :return: Media
         """
         childs = []
-        for filepath in paths:
-            if filepath.endswith('.jpg'):
-                upload_id, width, height = self.photo_rupload(
-                    filepath, to_album=True)
+        for path in paths:
+            path = Path(path)
+            if path.suffix == '.jpg':
+                upload_id, width, height = self.photo_rupload(path, to_album=True)
                 childs.append({
                     "upload_id": upload_id,
                     "edits": dumps({"crop_original_size": [width, height], "crop_center": [0.0, -0.0], "crop_zoom": 1.0}),
@@ -103,9 +104,8 @@ class UploadAlbum:
                     "scene_capture_type": "",
                     "scene_type": None
                 })
-            elif filepath.endswith('.mp4'):
-                upload_id, width, height, duration, thumbnail = self.video_rupload(
-                    filepath, to_album=True)
+            elif path.suffix == '.mp4':
+                upload_id, width, height, duration, thumbnail = self.video_rupload(path, to_album=True)
                 childs.append({
                     "upload_id": upload_id,
                     "clips": dumps([{"length": duration, "source_type": "4"}]),
@@ -122,8 +122,7 @@ class UploadAlbum:
                 raise UnknownFormat()
 
         for attempt in range(20):
-            self.logger.debug(
-                "Attempt #%d to configure Album: %s", attempt, filepath)
+            self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.album_configure)(
@@ -151,7 +150,7 @@ class UploadAlbum:
         caption: str,
         usertags: List[Usertag],
         location: Location = None
-    ) -> bool:
+    ) -> dict:
         """Post Configure Album
 
         :param childs:     Childs of album (List)

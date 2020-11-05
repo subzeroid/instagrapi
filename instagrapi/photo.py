@@ -1,9 +1,9 @@
-import os
 import shutil
 import json
 import time
 import random
 import requests
+from pathlib import Path
 from typing import List
 from uuid import uuid4
 from PIL import Image
@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
-from .types import Usertag, Location, StoryMention
+from .types import Usertag, Location, StoryMention, Media
 
 
 class PhotoNotUpload(PrivateError):
@@ -28,7 +28,7 @@ class PhotoConfigureStoryError(PhotoConfigureError):
 
 
 class DownloadPhoto:
-    def photo_download(self, media_pk: int, folder: str = "") -> str:
+    def photo_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
@@ -36,38 +36,37 @@ class DownloadPhoto:
         )
         return self.photo_download_by_url(media.thumbnail_url, filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: str = "") -> str:
+    def photo_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname
-        filepath = os.path.join(folder, filename)
+        path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        with open(filepath, "wb") as f:
+        with open(path, "wb") as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
-        return os.path.abspath(filepath)
+        return path.resolve()
 
 
 class UploadPhoto:
     def photo_rupload(
         self,
-        filepath: str,
+        path: Path,
         upload_id: str = None,
         to_album: bool = False,
     ) -> tuple:
         """Upload photo to Instagram
 
-        :param filepath:           Path to photo file (String)
-        :param upload_id:          Unique upload_id (String). When None, then generate
-                                   automatically. Example from video.video_configure
+        :param path:         Path to photo file
+        :param upload_id:    Unique upload_id (String). When None, then generate
+                             automatically. Example from video.video_configure
 
         :return: Tuple (upload_id, width, height)
         """
-        assert isinstance(
-            filepath, str), "Filepath must been string, now %s" % filepath
+        assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = upload_id or str(int(time.time() * 1000))
-        assert filepath, "Not specified filepath to photo"
+        assert path, "Not specified path to photo"
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
         upload_name = "{upload_id}_0_{rand}".format(
@@ -84,7 +83,7 @@ class UploadPhoto:
         }
         if to_album:
             rupload_params["is_sidecar"] = "1"
-        photo_data = open(filepath, "rb").read()
+        photo_data = open(path, "rb").read()
         photo_len = str(len(photo_data))
         headers = {
             "Accept-Encoding": "gzip",
@@ -110,12 +109,12 @@ class UploadPhoto:
             )
             last_json = self.last_json  # local variable for read in sentry
             raise PhotoNotUpload(response.text, response=response, **last_json)
-        width, height = Image.open(filepath).size
+        width, height = Image.open(path).size
         return upload_id, width, height
 
     def photo_upload(
         self,
-        filepath: str,
+        path: Path,
         caption: str,
         upload_id: str = None,
         usertags: List[Usertag] = [],
@@ -123,10 +122,10 @@ class UploadPhoto:
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
-    ) -> dict:
+    ) -> Media:
         """Upload photo and configure to feed
 
-        :param filepath:            Path to photo file (String)
+        :param path:                Path to photo file
         :param caption:             Media description (String)
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
@@ -136,10 +135,12 @@ class UploadPhoto:
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
 
-        :return: Extracted media (Dict)
+        :return: Media
         """
-        upload_id, width, height = self.photo_rupload(filepath, upload_id)
+        path = Path(path)
+        upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
+            self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(configure_timeout)
             if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location):
                 media = self.last_json.get("media")
@@ -156,7 +157,7 @@ class UploadPhoto:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None
-    ) -> bool:
+    ) -> dict:
         """Post Configure Photo (send caption to Instagram)
 
         :param upload_id:  Unique upload_id (String)
@@ -192,25 +193,25 @@ class UploadPhoto:
 
     def photo_upload_to_story(
         self,
-        filepath: str,
+        path: Path,
         caption: str,
         upload_id: str = None,
         mentions: List[StoryMention] = [],
         configure_timeout: int = 3,
-    ) -> dict:
+    ) -> Media:
         """Upload photo and configure to story
 
-        :param filepath:            Path to photo file (String)
+        :param path:                Path to photo file
         :param caption:             Media description (String)
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
         :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
 
-        :return: Extracted media (Dict)
+        :return: Media
         """
         return self.photo_upload(
-            filepath, caption, upload_id, mentions,
+            path, caption, upload_id, mentions,
             configure_timeout,
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
@@ -224,7 +225,7 @@ class UploadPhoto:
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None
-    ) -> bool:
+    ) -> dict:
         """Story Configure for Photo
 
         :param upload_id:  Unique upload_id (String)
