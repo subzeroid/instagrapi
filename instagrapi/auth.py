@@ -15,7 +15,7 @@ from .exceptions import ReloginAttemptExceeded
 
 
 class PreLoginFlow:
-    def pre_login_flow(self):
+    def pre_login_flow(self) -> bool:
         """Эмуляция работы приложения до логина
         """
         # /api/v1/accounts/get_prefill_candidates
@@ -26,8 +26,9 @@ class PreLoginFlow:
         self.sync_launcher(True)
         # /api/v1/accounts/contact_point_prefill/
         self.set_contact_point_prefill("prefill")
+        return True
 
-    def get_prefill_candidates(self, login=False):
+    def get_prefill_candidates(self, login: bool = False) -> dict:
         # "android_device_id":"android-f14b9731e4869eb",
         # "phone_id":"b4bd7978-ca2b-4ea0-a728-deb4180bd6ca",
         # "usages":"[\"account_recovery_omnibox\"]",
@@ -45,7 +46,7 @@ class PreLoginFlow:
             "accounts/get_prefill_candidates/", data, login=login
         )
 
-    def sync_device_features(self, login=False):
+    def sync_device_features(self, login: bool = False) -> dict:
         data = {
             "id": self.uuid,
             "server_config_retrieval": "1",
@@ -59,7 +60,7 @@ class PreLoginFlow:
             "qe/sync/", data, login=login, headers={"X-DEVICE-ID": self.uuid}
         )
 
-    def sync_launcher(self, login=False):
+    def sync_launcher(self, login: bool = False) -> dict:
         data = {
             "id": self.uuid,
             "server_config_retrieval": "1",
@@ -70,13 +71,13 @@ class PreLoginFlow:
             data["_csrftoken"] = self.token
         return self.private_request("launcher/sync/", data, login=login)
 
-    def set_contact_point_prefill(self, usage="prefill"):
+    def set_contact_point_prefill(self, usage: str = "prefill") -> dict:
         data = {"phone_id": self.phone_id, "usage": usage}
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
 class LoginFlow:
-    def login_flow(self):
+    def login_flow(self) -> bool:
         """Эмуляция работы приложения после логина
         """
         check_flow = []
@@ -90,7 +91,7 @@ class LoginFlow:
         )
         return all(check_flow)
 
-    def get_timeline_feed(self, options=[]):
+    def get_timeline_feed(self, options: list = []) -> dict:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
@@ -131,9 +132,10 @@ class LoginFlow:
             "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
         )
 
-    def get_reels_tray_feed(
-        self, reason="pull_to_refresh"
-    ):  # reason can be = cold_start, pull_to_refresh
+    def get_reels_tray_feed(self, reason: str = "pull_to_refresh") -> dict:
+        """
+        :param reason: can be = cold_start, pull_to_refresh
+        """
         data = {
             "supported_capabilities_new": config.SUPPORTED_CAPABILITIES,
             "reason": reason,
@@ -150,7 +152,7 @@ class Login(PreLoginFlow, LoginFlow):
     relogin_attempt = 0
     device_settings = {}
 
-    def init(self):
+    def init(self) -> bool:
         if "cookies" in self.settings:
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
@@ -159,8 +161,9 @@ class Login(PreLoginFlow, LoginFlow):
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
+        return True
 
-    def login_by_sessionid(self, sessionid: str):
+    def login_by_sessionid(self, sessionid: str) -> bool:
         assert isinstance(sessionid, str) and len(
             sessionid) > 30, 'Invalid sessionid'
         self.settings = {'cookies': {'sessionid': sessionid}}
@@ -170,7 +173,7 @@ class Login(PreLoginFlow, LoginFlow):
         self.username = user['username']
         return True
 
-    def login(self, username, password, relogin=False):
+    def login(self, username: str, password: str, relogin: bool = False) -> bool:
         self.username = username
         self.password = password
         self.init()
@@ -200,25 +203,25 @@ class Login(PreLoginFlow, LoginFlow):
             return True
         return False
 
-    def relogin(self):
+    def relogin(self) -> bool:
         """Relogin shortcut
         """
         return self.login(self.username, self.password, relogin=True)
 
     @property
-    def cookie_dict(self):
+    def cookie_dict(self) -> dict:
         return self.private.cookies.get_dict()
 
     @property
-    def token(self):
+    def token(self) -> str:
         return self.cookie_dict.get("csrftoken")
 
     @property
-    def rank_token(self):
-        return "{s.user_id}_{s.uuid}".format(s=self)
+    def rank_token(self) -> str:
+        return f"{self.user_id}_{self.uuid}"
 
     @property
-    def user_id(self):
+    def user_id(self) -> int:
         user_id = self.cookie_dict.get("ds_user_id")
         if user_id:
             return int(user_id)
@@ -229,18 +232,18 @@ class Login(PreLoginFlow, LoginFlow):
     #     return self.cookie_dict.get("ds_user")
 
     @property
-    def mid(self):
+    def mid(self) -> str:
         return self.cookie_dict.get("mid")
 
     @property
-    def device(self):
+    def device(self) -> dict:
         return {
             key: val
             for key, val in self.device_settings.items()
             if key in ["manufacturer", "model", "android_version", "android_release"]
         }
 
-    def get_settings(self):
+    def get_settings(self) -> dict:
         return {
             "uuids": {
                 "phone_id": self.phone_id,
@@ -255,7 +258,7 @@ class Login(PreLoginFlow, LoginFlow):
             "user_agent": self.user_agent,
         }
 
-    def set_device(self, device={}):
+    def set_device(self, device: dict = {}) -> bool:
         self.device_settings = device or {
             "app_version": "105.0.0.18.119",
             "android_version": 28,
@@ -268,36 +271,40 @@ class Login(PreLoginFlow, LoginFlow):
             "cpu": "samsungexynos9810",
             "version_code": "168361634",
         }
+        return True
 
-    def set_user_agent(self, user_agent=None):
+    def set_user_agent(self, user_agent: str = "") -> bool:
         self.user_agent = user_agent or config.USER_AGENT_BASE.format(
             **self.device_settings
         )
         self.private.headers.update({"User-Agent": self.user_agent})
+        return True
 
-    def set_uuids(self, uuids={}):
+    def set_uuids(self, uuids: dict = {}) -> bool:
         self.phone_id = uuids.get("phone_id", self.generate_uuid())
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get(
             "client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
         self.device_id = uuids.get("device_id", self.generate_device_id())
+        return True
 
-    def generate_uuid(self):
+    def generate_uuid(self) -> str:
         return str(uuid.uuid4())
 
-    def generate_device_id(self):
-        return (
-            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))
-                                       ).hexdigest()[:16]
-        )
+    def generate_device_id(self) -> str:
+        return "android-%s" % hashlib.md5(
+            bytes(random.randint(1, 1000))
+        ).hexdigest()[:16]
 
-    def expose(self):
-        data = {"id": self.uuid,
-                "experiment": "ig_android_profile_contextual_feed"}
+    def expose(self) -> dict:
+        data = {
+            "id": self.uuid,
+            "experiment": "ig_android_profile_contextual_feed"
+        }
         return self.private_request("qe/expose/", self.with_default_data(data))
 
-    def with_default_data(self, data):
+    def with_default_data(self, data: dict) -> dict:
         return dict(
             {
                 "_uuid": self.uuid,
@@ -308,14 +315,13 @@ class Login(PreLoginFlow, LoginFlow):
             **data
         )
 
-    def with_action_data(self, data):
+    def with_action_data(self, data: dict) -> dict:
         return dict(self.with_default_data({"radio_type": "wifi-none"}), **data)
 
-    def gen_user_breadcrumb(self, size):
+    def gen_user_breadcrumb(self, size: int) -> str:
         key = "iN4$aGr0m"
         dt = int(time.time() * 1000)
-        time_elapsed = random.randint(
-            500, 1500) + size * random.randint(500, 1500)
+        time_elapsed = random.randint(500, 1500) + size * random.randint(500, 1500)
         text_change_event_count = max(1, size / random.randint(3, 5))
         data = "{size!s} {elapsed!s} {count!s} {dt!s}".format(
             **{

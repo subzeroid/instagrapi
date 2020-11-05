@@ -50,18 +50,17 @@ class Client(
     proxy = None
     logger = logging.getLogger("instagrapi")
 
-    def __init__(self, settings={}, proxy=None, **kwargs):
+    def __init__(self, settings: dict = {}, proxy: str = None, **kwargs):
         super().__init__(**kwargs)
         self.settings = settings
         self.set_proxy(proxy)
         self.init()
 
-    def set_proxy(self, proxy):
-        if proxy:
-            assert isinstance(
-                proxy, str
-            ), 'Proxy must been string (URL), but now "%s" (%s)' % (proxy, type(proxy))
-            self.proxy = proxy
+    def set_proxy(self, dsn: str):
+        if dsn:
+            assert isinstance(dsn, str),\
+                f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
+            self.proxy = dsn
             proxy_href = "{scheme}{href}".format(
                 scheme="http://" if not urlparse(self.proxy).scheme else "",
                 href=self.proxy,

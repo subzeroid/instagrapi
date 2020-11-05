@@ -86,16 +86,17 @@ This is your authorized account
 
 | Method                                                   | Return   | Description                                                   |
 | -------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| login(username: str, password: str, settings: dict = {}) | bool     | Login by username and password                                |
+| Client(settings: dict = {}, proxy: str = "")             | bool     | Login by username and password                                |
+| login(username: str, password: str)                      | bool     | Login by username and password                                |
 | relogin()                                                | bool     | Relogin with clean cookies (required cl.username/cl.password) |
 | login_by_sessionid(sessionid: str)                       | bool     | Login by sessionid from Instagram site                        |
 | get_settings()                                           | dict     | Return settings dict (more details below)                     |
 | set_proxy(dsn: str)                                      | dict     | Support socks and http/https proxy                            |
 | cookie_dict                                              | dict     | Return cookies                                                |
-| user_id                                                  | int      | Return your user_id (after login)                              |
+| user_id                                                  | int      | Return your user_id (after login)                             |
 | device                                                   | dict     | Return device dict which we pass to Instagram                 |
-| set_device(device: dict)                                 | None     | Change device settings                                        |
-| set_user_agent(user_agent: str)                          | None     | Change User-Agent header                                      |
+| set_device(device: dict)                                 | bool     | Change device settings                                        |
+| set_user_agent(user_agent: str = "")                     | bool     | Change User-Agent header                                      |
 | base_headers                                             | dict     | Base headers for Instagram                                    |
 
 Example:
@@ -138,7 +139,7 @@ settings = {
    "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; ...US; 168361634)"
 }
 
-cl = Client(username, password, settings=settings)
+cl = Client(settings)
 ```
 
 This values send to Instagram API.
@@ -160,7 +161,7 @@ Viewing and editing publications (medias)
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title, usertags: List[Usertag], location: Location) | bool | Change caption for media           |
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
@@ -363,21 +364,21 @@ Get statistics by medias. Common arguments:
 * `time_frame` - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".
 * `data_ordering` - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".
 
-| Method                                                        | Return             | Description                                                   |
-| ------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| Method                                                                                             | Return             | Description                                                   |
+| -------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
 | insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | list | Return medias with insights |
-| insights_account()                                            | dict               | Get statistics by your account
-| insights_media(media_pk: int)                                 | dict               | Get statistics by your media
+| insights_account()                                                                                 | dict               | Get statistics by your account                                |
+| insights_media(media_pk: int)                                                                      | dict               | Get statistics by your media                                  |
 
 #### Direct
 
-| Method                                                                    | Return              | Description                                                   |
-| ------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------- |
-| direct_threads(amount: int = 20)                                          | List[DirectThread]  | Get all Threads                                               |
-| direct_thread(thread_id: int, amount: int = 20)                           | DirectThread        | Get Thread with Messages                                      |
-| direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread                                   |
-| direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread                                   |
-| direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads                              |
+| Method                                                                    | Return              | Description                        |
+| ------------------------------------------------------------------------- | ------------------- | ---------------------------------- |
+| direct_threads(amount: int = 20)                                          | List[DirectThread]  | Get all Threads                    |
+| direct_thread(thread_id: int, amount: int = 20)                           | DirectThread        | Get Thread with Messages           |
+| direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread        |
+| direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread        |
+| direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads   |
 
 #### Challenge
 
