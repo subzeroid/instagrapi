@@ -254,16 +254,16 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 #### Download Media
 
-| Method                                                             | Return  | Description                                                                     |
-| ------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------- |
-| photo_download(media_pk: int, folder: Path)                        | Path    | Download photo (return path to photo with best resoluton)                       |
-| photo_download_by_url(url: str, filename: str = '', folder: Path)  | Path    | Download photo by URL (return path to photo with best resoluton)                |
-| video_download(media_pk: int, folder: Path)                        | Path    | Download video (return path to video with best resoluton)                       |
-| video_download_by_url(url: str, filename: str = '', folder: Path)  | Path    | Download Video by URL (return path to video with best resoluton)                |
-| igtv_download(media_pk: int, folder: Path)                         | Path    | Download IGTV (return path to video with best resoluton)                        |
-| igtv_download_by_url(url: str, filename: str = '', folder: Path)   | Path    | Download IGTV by URL                                                            |
-| album_download(media_pk: int, folder: Path)                        | Path    | Download Album (return multiple paths to photo and video with best resolutons)  |
-| album_download_by_urls(urls: List[str], folder: Path)              | Path    | Download Album by URLs (return multiple paths...)                               |
+| Method                                                       | Return  | Description                                                         |
+| ------------------------------------------------------------ | ------- | ------------------------------------------------------------------- |
+| photo_download(media_pk: int, folder: Path)                  | Path    | Download photo (path to photo with best resoluton)                  |
+| photo_download_by_url(url: str, filename: str, folder: Path) | Path    | Download photo by URL (path to photo with best resoluton)           |
+| video_download(media_pk: int, folder: Path)                  | Path    | Download video (path to video with best resoluton)                  |
+| video_download_by_url(url: str, filename: str, folder: Path) | Path    | Download Video by URL (path to video with best resoluton)           |
+| igtv_download(media_pk: int, folder: Path)                   | Path    | Download IGTV (path to video with best resoluton)                   |
+| igtv_download_by_url(url: str, filename: str, folder: Path)  | Path    | Download IGTV by URL (path to video with best resoluton)            |
+| album_download(media_pk: int, folder: Path)                  | Path    | Download Album (multiple paths to photo/video with best resolutons) |
+| album_download_by_urls(urls: List[str], folder: Path)        | Path    | Download Album by URLs (multiple paths to photo/video)              |
 
 #### Upload Media
 
