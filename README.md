@@ -60,6 +60,26 @@ user_id = cl.user_id_from_username("adw0rd")
 medias = cl.user_medias(user_id, 20)
 ```
 
+#### Types
+
+The current types are in [types.py](/instagrapi/types.py):
+
+| Method         | Description                                                                            |
+| -------------- | -------------------------------------------------------------------------------------- |
+| Media          | Media (Photo, Video, Album, IGTV or Story)                                             |
+| Resource       | Part of Media (for albums)                                                             |
+| MediaOembed    | Short version of Media                                                                 |
+| User           | User data                                                                              |
+| UserShort      | Short user data (stored in Usertag, Comment, Media, Direct)                            |
+| Usertag        | Tag user in Media (coordinates + UserShort)                                            |
+| Location       | GEO location (GEO coordinates, name, address)                                          |
+| Collection     | Collection of medias (name, picture and list of medias)                                |
+| Comment        | Comments to Media                                                                      |
+| StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
+| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinates |
+| DirectThread   | Thread (topic) with messages in Direct                                                 |
+| DirectMessage  | Message in Direct                                                                      |
+
 #### Account
 
 This is your authorized account
@@ -250,7 +270,7 @@ Upload medias to your feed. Common arguments:
 
 * `filepath` - Path to source file
 * `caption`  - Text for you post
-* `usertags` - List[Usertag] of mention users (see `Usertag` in `types.py`)
+* `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 
 | Method                                                                                 | Return  | Description                        |
