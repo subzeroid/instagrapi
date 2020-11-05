@@ -41,11 +41,16 @@ class Usertag(BaseModel):
 
 
 class Location(BaseModel):
-    pk: int
+    pk: Optional[int]
     name: str
     address: Optional[str] = ''
-    lng: Optional[float] = None
-    lat: Optional[float] = None
+    lng: float
+    lat: float
+    external_id: Optional[int]
+    external_id_source: Optional[str]
+    # address_json: Optional[dict] = {}
+    # profile_pic_url: Optional[HttpUrl] = ''
+    # directory: Optional[dict] = {}
 
 
 class Media(BaseModel):
@@ -104,10 +109,11 @@ class Comment(BaseModel):
 
 
 class StoryMention(BaseModel):
-    x: float
-    y: float
-    width: float
-    height: float
+    user: UserShort
+    x: Optional[float]
+    y: Optional[float]
+    width: Optional[float]
+    height: Optional[float]
 
 
 class StoryBuild(BaseModel):

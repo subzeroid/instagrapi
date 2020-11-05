@@ -1,6 +1,7 @@
 import json
 import time
 import random
+from typing import List
 from uuid import uuid4
 from PIL import Image
 import moviepy.editor as mp
@@ -8,6 +9,7 @@ import moviepy.editor as mp
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import ClientError, PrivateError
+from .types import Usertag, Location
 
 
 class IGTVNotUpload(PrivateError):
@@ -33,8 +35,8 @@ class UploadIGTV:
         title: str,
         caption: str,
         thumbnail: str = None,
-        usertags: list = [],
-        location: dict = {},
+        usertags: List[Usertag] = [],
+        location: Location = None,
         configure_timeout: int = 10,
     ) -> dict:
         """Upload IGTV to Instagram
@@ -45,7 +47,7 @@ class UploadIGTV:
         :param thumbnail:         Path to thumbnail for IGTV (String). When None, then
                                   thumbnail is generate automatically
         :param usertags:          Mentioned users (List)
-        :param location:          Location (Dict)
+        :param location:          Location
         :param configure_timeout: Timeout between attempt to configure media (set caption and title)
 
         :return: Object with state of uploading to Instagram (or False)
@@ -141,8 +143,8 @@ class UploadIGTV:
         duration: int,
         title: str,
         caption: str,
-        usertags: list,
-        location: dict
+        usertags: List[Usertag] = [],
+        location: Location = None
     ) -> bool:
         """Post Configure IGTV (send caption, thumbnail and more to Instagram)
 
@@ -153,11 +155,11 @@ class UploadIGTV:
         :param duration:   Duration in seconds (Integer)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
-        :param location:   Location (Dict)
+        :param location:   Location
         """
         self.photo_rupload(thumbnail, upload_id)
         usertags = [
-            {"user_id": tag['user']['pk'], "position": tag['position']}
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
         ]
         data = {

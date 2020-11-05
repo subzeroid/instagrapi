@@ -4,6 +4,7 @@ import json
 import time
 import random
 import requests
+from typing import List
 from uuid import uuid4
 from PIL import Image
 from urllib.parse import urlparse
@@ -11,6 +12,7 @@ from urllib.parse import urlparse
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
+from .types import Usertag, Location, StoryMention
 
 
 class PhotoNotUpload(PrivateError):
@@ -116,8 +118,8 @@ class UploadPhoto:
         filepath: str,
         caption: str,
         upload_id: str = None,
-        usertags: list = [],
-        location: dict = {},
+        usertags: List[Usertag] = [],
+        location: Location = None,
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
@@ -129,7 +131,7 @@ class UploadPhoto:
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
-        :param location:            Location (Dict)
+        :param location:            Location
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -146,7 +148,15 @@ class UploadPhoto:
         raise (configure_exception or PhotoConfigureError)(
             response=self.last_response, **self.last_json)
 
-    def photo_configure(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
+    def photo_configure(
+        self,
+        upload_id: str,
+        width: int,
+        height: int,
+        caption: str,
+        usertags: List[Usertag] = [],
+        location: Location = None
+    ) -> bool:
         """Post Configure Photo (send caption to Instagram)
 
         :param upload_id:  Unique upload_id (String)
@@ -154,10 +164,10 @@ class UploadPhoto:
         :param height:     Height in px (Integer)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
-        :param location:   Location (Dict)
+        :param location:   Location
         """
         usertags = [
-            {"user_id": tag['user']['pk'], "position": tag['position']}
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
         ]
         data = {
@@ -185,7 +195,7 @@ class UploadPhoto:
         filepath: str,
         caption: str,
         upload_id: str = None,
-        usertags: list = [],
+        mentions: List[StoryMention] = [],
         configure_timeout: int = 3,
     ) -> dict:
         """Upload photo and configure to story
@@ -195,18 +205,26 @@ class UploadPhoto:
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
-        :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
+        :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
 
         :return: Extracted media (Dict)
         """
         return self.photo_upload(
-            filepath, caption, upload_id, usertags,
+            filepath, caption, upload_id, mentions,
             configure_timeout,
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
         )
 
-    def photo_configure_to_story(self, upload_id: str, width: int, height: int, caption: str, usertags: list, location: dict) -> bool:
+    def photo_configure_to_story(
+        self,
+        upload_id: str,
+        width: int,
+        height: int,
+        caption: str,
+        mentions: List[StoryMention] = [],
+        location: Location = None
+    ) -> bool:
         """Story Configure for Photo
 
         :param upload_id:  Unique upload_id (String)
@@ -214,6 +232,7 @@ class UploadPhoto:
         :param height:     Height in px (Integer)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
+        :param location:   Temporary unused
         """
         timestamp = int(time.time())
         data = {
@@ -249,13 +268,14 @@ class UploadPhoto:
             },
             "extra": {"source_width": width, "source_height": height},
         }
-        if usertags:
+        if mentions:
             mentions = [
                 {
                     "x": 0.5002546, "y": 0.8583542, "z": 0,
                     "width": 0.4712963, "height": 0.0703125, "rotation": 0.0,
-                    "type": "mention", "user_id": str(tag['user']['pk']), "is_sticker": False, "display_type": "mention_username"
-                } for tag in usertags
+                    "type": "mention", "user_id": str(mention.user.pk),
+                    "is_sticker": False, "display_type": "mention_username"
+                } for mention in mentions
             ]
             data["tap_models"] = data["reel_mentions"] = json.dumps(mentions)
         return self.private_request("media/configure_to_story/", self.with_default_data(data))

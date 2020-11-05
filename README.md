@@ -12,10 +12,6 @@ Instagram API valid for 1 November 2020 (last reverse-engineering check)
 
 [@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
 
-### Authors
-
-[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
-
 ### Features
 
 1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
@@ -24,7 +20,6 @@ Instagram API valid for 1 November 2020 (last reverse-engineering check)
 4. Support work with User, Media, Insights, Collections and Direct objects
 5. Insights by posts and stories
 6. Build stories with custom background and font animation
-
 
 ### Install
 
@@ -145,7 +140,7 @@ Viewing and editing publications (medias)
 | media_pk_from_url(url: str)                        | Int                | Return media_pk                                               | 
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | Bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str)            | Bool               | Change caption for media                                      |
+| media_edit(media_pk: int, caption: str, title, usertags: List[Usertag], location: Location) | Bool | Change caption for media           |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | Bool               | Write message to media                                        | 
@@ -255,15 +250,15 @@ Upload medias to your feed. Common arguments:
 
 * `filepath` - Path to source file
 * `caption`  - Text for you post
-* `usertags` - List[dict] of mention users (see `extract_usertag()` in `extractors.py`)
-* `location` - Location (e.g. `{"lat": 42.0, "lng": 42.0}`)
+* `usertags` - List[Usertag] of mention users (see `Usertag` in `types.py`)
+* `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 
-| Method                                                                              | Return  | Description                        |
-| ----------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Media   | Upload photo (Support JPG files)   |
-| video_upload(filepath: str, caption: str, usertags: list = [], location: dict = {}) | Media   | Upload video (Support MP4 files)   |
-| igtv_upload(path, title, caption, usertags: list = [], location: dict = {})         | Media   | Upload IGTV (Support MP4 files)    |
-| album_upload(paths: list, caption: str, usertags: list = [], location: dict = {})   | Media   | Upload Album (Support JPG and MP4) |
+| Method                                                                                 | Return  | Description                        |
+| -------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
+| photo_upload(filepath: str, caption: str, usertags: List[Usertag], location: Location) | Media   | Upload photo (Support JPG files)   |
+| video_upload(filepath: str, caption: str, usertags: List[Usertag], location: Location) | Media   | Upload video (Support MP4 files)   |
+| igtv_upload(filepath, title, caption, usertags: List[Usertag], location: Location)     | Media   | Upload IGTV (Support MP4 files)    |
+| album_upload(paths: list, caption: str, usertags: List[Usertag], location: Location)   | Media   | Upload Album (Support JPG and MP4) |
 
 #### Upload Stories
 
@@ -278,36 +273,32 @@ Upload medias to your stories. Common arguments:
 
 | Method                                                                         | Return   | Description                      |
 | ------------------------------------------------------------------------------ | -------- | -------------------------------- |
-| photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Media    | Upload photo (Support JPG files) |
-| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, usertags: list = [], configure_timeout: int = 3, links: list = []) | Media    | Upload video (Support MP4 files) |
+| photo_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload photo (Support JPG files) |
+| video_upload_to_story(filepath: str, caption: str, thumbnail: str = None, mentions: List[Usertag], configure_timeout: int = 3, links: list = []) | Media    | Upload video (Support MP4 files) |
 
 Examples:
 
 ```
-path = cl.video_download(
+media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
+adw0rd = cl.user_info_by_username('adw0rd')
+
 cl.video_upload_to_story(
-    path,
+    media_path,
     "Credits @adw0rd",
-    usertags=[
-        {
-            'user': {'pk': 1903424587, 'name': 'adw0rd'},
-            'x': 0.49892962, 'y': 0.703125,
-            'width': 0.8333333333333334, 'height': 0.125
-        }
-    ],
+    mentions=[StoryMention(user=adw0rd, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
     links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
 )
 ```
 
 #### Build Story to Upload
 
-| Method                                                | Return             | Description                                                   |
-| ----------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild         | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
-| video(max_duration: int = 0)                          | StoryBuild         | Call build_clip(VideoClip, max_duration) | 
-| photo(max_duration: int = 0)                          | StoryBuild         | Call build_clip(ImageClip, max_duration) |
+| Method                                                | Return     | Description                              |
+| ----------------------------------------------------- | ---------- | ---------------------------------------- |
+| build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild | Build new CompositeVideoClip with background and mention of usertag. Return MP4 file and usertags with coordinates |
+| video(max_duration: int = 0)  # in seconds            | StoryBuild | Call build_clip(VideoClip, max_duration) |
+| photo(max_duration: int = 0)  # in seconds            | StoryBuild | Call build_clip(ImageClip, max_duration) |
 
 Example:
 
@@ -317,18 +308,19 @@ from instagrapi.story import StoryBuilder
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
+adw0rd = cl.user_info_by_username('adw0rd')
 
 buildout = StoryBuilder(
     media_path,
     'Credits @adw0rd',
-    [{'user': {'pk': 1903424587, 'name': 'adw0rd'}}],
+    [StoryMention(user=adw0rd)],
     '/path/to/background_720x1280.jpg'
-).video(14)
+).video(15)  # seconds
 
 cl.video_upload_to_story(
-    buildout['filepath'],
+    buildout.filepath,
     "Credits @adw0rd",
-    usertags=buildout['usertags'],
+    mentions=buildout.mentions,
     links=[{'webUri': 'https://github.com/adw0rd/instagrapi'}]
 )
 ```

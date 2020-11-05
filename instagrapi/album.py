@@ -1,8 +1,10 @@
 import time
+from typing import List
 from urllib.parse import urlparse
 
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
+from .types import Usertag, Location
 from .utils import dumps
 
 
@@ -70,8 +72,8 @@ class UploadAlbum:
         self,
         paths: list,
         caption: str,
-        usertags: list = [],
-        location: dict = {},
+        usertags: List[Usertag] = [],
+        location: Location = None,
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
@@ -81,8 +83,8 @@ class UploadAlbum:
 
         :param paths:               Path to files (List)
         :param caption:             Media description (String)
-        :param usertags:            Mentioned users (List)
-        :param location:            Location (Dict)
+        :param usertags:            Mentioned users (List of Usertag)
+        :param location:            Location
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -147,22 +149,22 @@ class UploadAlbum:
         self,
         childs: list,
         caption: str,
-        usertags: list,
-        location: dict
+        usertags: List[Usertag],
+        location: Location = None
     ) -> bool:
         """Post Configure Album
 
         :param childs:     Childs of album (List)
         :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location (Dict)
+        :param usertags:   Mentioned users (List of Usertag)
+        :param location:   Location
 
         :return: Media (Dict)
         """
         upload_id = str(int(time.time() * 1000))
         if usertags:
             usertags = [
-                {"user_id": tag['user']['pk'], "position": tag['position']}
+                {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
                 for tag in usertags
             ]
             childs[0]["usertags"] = dumps({"in": usertags})

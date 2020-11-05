@@ -1,58 +1,73 @@
 import json
+from typing import List
 
 from .extractors import extract_location
+from .types import Location
 
 
-class Location:
+class LocationMixin:
 
-    def location_search(self, lat, lng):
+    def location_search(self, lat: float, lng: float) -> List[Location]:
         """Search location
-        :return: dict Example: {"name":"NAME",
-                                "external_id":234123489885123,
-                                "external_id_source":"facebook_places",
-                                "lat":42.0,
-                                "lng":42.0,
-                                "address":"ADDRESS",
-                                "minimum_age":0}
         """
         params = {
             'latitude': lat,
             'longitude': lng,
-            # rankToken=c544eea5-736b-4091-a916-a71a35a86474 - self.uuid?
+            # rankToken=c544eea5-726b-4091-a916-a71a35a76474 - self.uuid?
             # fb_access_token=EAABwzLixnjYBABK2YBFkT...pKrjju4cijEGYtcbIyCSJ0j4ZD
         }
         result = self.private_request("location_search/", params=params)
-        return result['venues']
+        locations = []
+        for venue in result['venues']:
+            if 'lat' not in venue:
+                venue['lat'] = lat
+                venue['lng'] = lng
+            locations.append(extract_location(venue))
+        return locations
 
-    def location_build(self, location):
+    def location_complete(self, data: dict) -> dict:
+        """Smart complete of location
+        """
+        if data and not data.get('lat') and data.get('id'):
+            loc = self.location_info(data['id'])
+            if not loc.external_id:
+                try:
+                    venue = self.location_search(loc.lat, loc.lng)[0]
+                    loc.external_id = venue.external_id
+                    loc.external_id_source = venue.external_id_source
+                except IndexError:
+                    pass
+            data = loc.dict()
+        return data
+
+    def location_build(self, location: Location) -> str:
         """Build correct location data
         """
         if not location:
             return '{}'
-        assert 'lat' in location and 'lng' in location, f'lat and lng must been in location (now {location})'
-        external_id = location.get('facebook_places_id', location.get('external_id'))
-        if not external_id:
+        assert location.lat and location.lng, f'Error! lat and lng must been in location (now {location})'
+        if not location.external_id:
             try:
-                location = self.location_search(location['lat'], location['lng'])[0]
-                location = {
-                    "name": location['name'],
-                    "address": location['address'],
-                    "lat": location['lat'],
-                    "lng": location['lng'],
-                    "external_source": location.get('external_source', location.get('external_id_source', 'facebook_places')),
-                    "facebook_places_id": location.get('facebook_places_id', location.get('external_id')),
-                }
+                location = self.location_search(location.lat, location.lng)[0]
             except IndexError:
                 pass
-        return json.dumps(location, separators=(",", ":"))
+        data = {
+            "name": location.name,
+            "address": location.address,
+            "lat": location.lat,
+            "lng": location.lng,
+            "external_source": location.external_id_source,
+            "facebook_places_id": location.external_id
+        }
+        return json.dumps(data, separators=(",", ":"))
 
-    def location_info_a1(self, location_pk: int) -> dict:
+    def location_info_a1(self, location_pk: int) -> Location:
         """Return additonal info for location by ?__a=1
         """
         data = self.public_a1_request(f"/explore/locations/{location_pk}/")
         return extract_location(data['location'])
 
-    def location_info(self, location_pk: int) -> dict:
+    def location_info(self, location_pk: int) -> Location:
         """Return additonal info for location
         """
         return self.location_info_a1(location_pk)

@@ -1,5 +1,6 @@
 import os
 import tempfile
+from typing import List
 
 from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip, ImageClip
 
@@ -10,39 +11,45 @@ class StoryBuilder:
     width = 720
     height = 1280
 
-    def __init__(self, filepath: str, caption: str = "", usertags: list = [], bgpath: str = ""):
+    def __init__(self, filepath: str, caption: str = "", mentions: List[StoryMention] = [], bgpath: str = ""):
         """Init params
         :filepath: path to cource video or photo file
         :caption: text caption for story
-        :usertags: list of dicts with tags of users
+        :mentions: list of StoryMention (see types.py)
         :bgpath: path to background image (recommend jpg and 720x1280)
         """
         self.filepath = filepath
         self.caption = caption
-        self.usertags = usertags
+        self.mentions = mentions
         self.bgpath = bgpath
-        if bgpath:
-            assert os.path.exists(bgpath), 'Wrong path to background'
 
-    def build_clip(self, clip, max_duration: int = 0) -> dict:
+    def build_main(self, clip, max_duration: int = 0) -> StoryBuild:
         """Build clip
         :clip: Clip object (VideoFileClip, ImageClip)
         :max_duration: Result duration in seconds
-        :return: Dict with new filepath, usertags and more
+        :return: Dict with new filepath, mentions and more
         """
-        background = ImageClip(self.bgpath)
+        clips = []
+        # Background
+        if self.bgpath:
+            assert os.path.exists(self.bgpath),\
+                f'Wrong path to background {self.bgpath}'
+            background = ImageClip(self.bgpath)
+            clips.append(background)
+        # Media clip
         clip_left = (self.width - clip.size[0]) / 2
         clip_top = (self.height - clip.size[1]) / 2
         if clip_top > 90:
             clip_top -= 50
-        clip = clip.set_position((clip_left, clip_top))
-        caption = self.caption
-        tag = None
-        if self.usertags:
-            tag = self.usertags[0]
-            caption = "@%s" % tag["user"]["name"]
-        text_clip = TextClip(caption, color="white", font="Arial",
-                             kerning=-1, fontsize=100, method="label")
+        media_clip = clip.set_position((clip_left, clip_top))
+        clips.append(media_clip)
+        mention = self.mentions[0] if self.mentions else None
+        # Text clip
+        caption = "@%s" % mention.user.username if mention.user.username else self.caption
+        text_clip = TextClip(
+            caption, color="white", font="Arial",
+            kerning=-1, fontsize=100, method="label"
+        )
         text_clip_left = (self.width - 600) / 2
         text_clip_top = clip_top + clip.size[1] + 50
         offset = (text_clip_top + text_clip.size[1]) - self.height
@@ -50,37 +57,35 @@ class StoryBuilder:
             text_clip_top -= offset + 90
         text_clip = text_clip.resize(width=600).set_position(
             (text_clip_left, text_clip_top)).fadein(3)
+        clips.append(text_clip)
+        # Mentions
         mentions = []
-        if tag:
-            mention = StoryMention(
-                x=0.49892962,  # approximately center
-                y=(text_clip_top + text_clip.size[1] / 2) / self.height,
-                width=text_clip.size[0] / self.width,
-                height=text_clip.size[1] / self.height
-            )
+        if mention:
+            mention.x = 0.49892962  # approximately center
+            mention.y = (text_clip_top + text_clip.size[1] / 2) / self.height
+            mention.width = text_clip.size[0] / self.width
+            mention.height = text_clip.size[1] / self.height
             mentions = [mention]
         duration = max_duration
         if max_duration and clip.duration and max_duration > clip.duration:
             duration = clip.duration
         destination = tempfile.mktemp('.mp4')
-        CompositeVideoClip(
-            [background, clip, text_clip], size=(self.width, self.height)
-        ).set_fps(24).set_duration(duration).write_videofile(destination, codec='libx264', audio=True, audio_codec='aac')
-        return StoryBuild(
-            mentions=mentions,
-            path=destination
-        )
+        CompositeVideoClip(clips, size=(self.width, self.height))\
+            .set_fps(24)\
+            .set_duration(duration)\
+            .write_videofile(destination, codec='libx264', audio=True, audio_codec='aac')
+        return StoryBuild(mentions=mentions, path=destination)
 
     def video(self, max_duration: int = 0):
         """Build CompositeVideoClip from source video
         :max_duration: Result duration in seconds
         """
         clip = VideoFileClip(self.filepath, has_mask=True)
-        return self.build_clip(clip, max_duration)
+        return self.build_main(clip, max_duration)
 
     def photo(self, max_duration: int = 0):
         """Build CompositeVideoClip from source photo
         :max_duration: Result duration in seconds
         """
         clip = ImageClip(self.filepath).resize(width=self.width)
-        return self.build_clip(clip, max_duration or 14)
+        return self.build_main(clip, max_duration or 15)

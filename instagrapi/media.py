@@ -1,4 +1,5 @@
 import json
+from typing import List
 from copy import deepcopy
 from urllib.parse import urlparse
 
@@ -9,6 +10,7 @@ from .exceptions import (
     MediaNotFound,
 )
 from .extractors import extract_media_v1, extract_media_gql, extract_comment, extract_media_oembed
+from .types import Usertag, Location
 
 
 class Media:
@@ -84,10 +86,10 @@ class Media:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
+        data['shortcode_media']['location'] = self.location_complete(
+            data['shortcode_media']['location']
+        )
         media = extract_media_gql(data["shortcode_media"])
-        if media.location:
-            if not media.location.lat and media.location.pk:
-                media.location = self.location_info(media.location.pk)
         return media
 
     def media_info_v1(self, media_pk: int) -> dict:
@@ -132,7 +134,7 @@ class Media:
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
 
-    def media_edit(self, media_id: str, caption: str, title: str = "", usertags: list = [], location: dict = {}) -> bool:
+    def media_edit(self, media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None) -> bool:
         """Edit caption for media
         Example: https://i.instagram.com/api/v1/media/2154602296692269830_1903424587/edit_media/
 

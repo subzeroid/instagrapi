@@ -1,3 +1,4 @@
+# import json
 from .utils import json_value
 from .types import (
     Media, Resource, User, UserShort, Usertag,
@@ -164,6 +165,12 @@ def extract_location(data):
     """Extract location info
     """
     data['pk'] = data.get("id", data.get("pk", None))
+    data['external_id'] = data.get('external_id', data.get('facebook_places_id'))
+    data['external_id_source'] = data.get('external_id_source', data.get('external_source'))
+    # address_json = data.get("address_json", "{}")
+    # if isinstance(address_json, str):
+    #     address_json = json.loads(address_json)
+    # data['address_json'] = address_json
     return Location(**data)
 
 

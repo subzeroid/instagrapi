@@ -31,8 +31,8 @@ class Collection:
         """Helper return medias by collection name
         """
         for item in self.collections():
-            if item["collection_name"].lower() == name.lower():
-                return self.collection_medias(item.pk)
+            if item.name.lower() == name.lower():
+                return self.collection_medias(item.id)
         raise CollectionNotFound()
 
     def collection_medias(self, collection_pk: int, amount: int = 21, last_media_pk: int = 0) -> list:

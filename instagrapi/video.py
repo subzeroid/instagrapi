@@ -2,6 +2,7 @@ import os
 import time
 import random
 import requests
+from typing import List
 from uuid import uuid4
 import moviepy.editor as mp
 from urllib.parse import urlparse
@@ -9,6 +10,7 @@ from urllib.parse import urlparse
 from . import config
 from .extractors import extract_media_v1
 from .exceptions import PrivateError
+from .types import Usertag, Location, StoryMention
 from .utils import dumps
 
 
@@ -150,8 +152,8 @@ class UploadVideo:
         filepath: str,
         caption: str,
         thumbnail: str = None,
-        usertags: list = [],
-        location: dict = {},
+        usertags: List[Usertag] = [],
+        location: Location = None,
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
@@ -165,7 +167,7 @@ class UploadVideo:
         :param thumbnail:           Path to thumbnail for video (String). When None, then
                                         thumbnail is generate automatically
         :param usertags:            Mentioned users (List)
-        :param location:            Location (Dict)
+        :param location:            Location
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -207,9 +209,9 @@ class UploadVideo:
         duration: int,
         thumbnail: str,
         caption: str,
-        usertags: list,
-        location: dict,
-        links: list
+        usertags: List[Usertag] = [],
+        location: Location = None,
+        links: list = []
     ) -> bool:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
 
@@ -220,14 +222,14 @@ class UploadVideo:
         :param thumbnail:  Path to thumbnail for video (String)
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
-        :param location:   Location (Dict)
+        :param location:   Location
         :param links:      URLs for Swipe Up (List of dicts)
 
         :return: Media (Dict)
         """
         self.photo_rupload(thumbnail, upload_id)
         usertags = [
-            {"user_id": tag['user']['pk'], "position": tag['position']}
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
             for tag in usertags
         ]
         data = {
@@ -255,7 +257,7 @@ class UploadVideo:
         filepath: str,
         caption: str,
         thumbnail: str = None,
-        usertags: list = [],
+        mentions: List[StoryMention] = [],
         configure_timeout: int = 3,
         links: list = []
     ) -> dict:
@@ -265,13 +267,13 @@ class UploadVideo:
         :param caption:           Media description (String)
         :param thumbnail:         Path to thumbnail for video (String). When None, then
                                   thumbnail is generate automatically
-        :param usertags:          Mentioned users (List)
+        :param mentions:          Mentioned users (List)
         :param configure_timeout: Timeout between attempt to configure media (set caption, etc)
 
         :return: Extracted media (Dict)
         """
         return self.video_upload(
-            filepath, caption, thumbnail, usertags,
+            filepath, caption, thumbnail, mentions,
             configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
@@ -287,8 +289,8 @@ class UploadVideo:
         duration: int,
         thumbnail: str,
         caption: str,
-        usertags: list,
-        location: dict,
+        mentions: List[StoryMention] = [],
+        location: Location = None,
         links: list = []
     ) -> bool:
         """Post Configure Video (send caption, thumbnail and more to Instagram)
@@ -299,7 +301,8 @@ class UploadVideo:
         :param height:     Height in px (Integer)
         :param duration:   Duration in seconds (Integer)
         :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
+        :param mentions:   Mentioned users (List)
+        :param location:   Temporary unused
 
         :return: Media (Dict)
         """
@@ -352,24 +355,24 @@ class UploadVideo:
             "poster_frame_index": 0
         }
         if links:
-            # [{"webUri": "https://adw0rd.com"}]
+            # TODO: Add StoryLink type
             data["story_cta"] = dumps([{"links": links}])
-        if usertags:
-            mentions = []
+        if mentions:
+            reel_mentions = []
             text_metadata = []
-            for tag in usertags:
-                mentions.append({
-                    "x": tag['x'], "y": tag['y'], "z": 0,
-                    "width": tag['width'], "height": tag['height'], "rotation": 0.0,
-                    "type": "mention", "user_id": str(tag['user']['pk']), "is_sticker": False, "display_type": "mention_username"
+            for mention in mentions:
+                reel_mentions.append({
+                    "x": mention.x, "y": mention.y, "z": 0,
+                    "width": mention.width, "height": mention.height, "rotation": 0.0,
+                    "type": "mention", "user_id": str(mention.user.pk), "is_sticker": False, "display_type": "mention_username"
                 })
                 text_metadata.append({
                     "font_size": 40.0, "scale": 1.2798771,
                     "width": 1017.50226, "height": 216.29922,
-                    "x": tag['x'], "y": tag['y'], "rotation": 0.0
+                    "x": mention.x, "y": mention.y, "rotation": 0.0
                 })
             data["text_metadata"] = dumps(text_metadata)
-            data["tap_models"] = data["reel_mentions"] = dumps(mentions)
+            data["tap_models"] = data["reel_mentions"] = dumps(reel_mentions)
         return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
 
 
