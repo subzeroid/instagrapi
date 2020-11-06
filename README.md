@@ -69,8 +69,9 @@ The current types are in [types.py](/instagrapi/types.py):
 | Media          | Media (Photo, Video, Album, IGTV or Story)                                             |
 | Resource       | Part of Media (for albums)                                                             |
 | MediaOembed    | Short version of Media                                                                 |
-| User           | User data                                                                              |
-| UserShort      | Short user data (stored in Usertag, Comment, Media, Direct)                            |
+| Account        | Full private info for your account (e.g. email, phone_number)                          |
+| User           | Full public user data                                                                  |
+| UserShort      | Short public user data (stored in Usertag, Comment, Media, Direct)                     |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
@@ -84,20 +85,23 @@ The current types are in [types.py](/instagrapi/types.py):
 
 This is your authorized account
 
-| Method                                                   | Return   | Description                                                   |
-| -------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| Client(settings: dict = {}, proxy: str = "")             | bool     | Login by username and password                                |
-| login(username: str, password: str)                      | bool     | Login by username and password                                |
-| relogin()                                                | bool     | Relogin with clean cookies (required cl.username/cl.password) |
-| login_by_sessionid(sessionid: str)                       | bool     | Login by sessionid from Instagram site                        |
-| get_settings()                                           | dict     | Return settings dict (more details below)                     |
-| set_proxy(dsn: str)                                      | dict     | Support socks and http/https proxy                            |
-| cookie_dict                                              | dict     | Return cookies                                                |
-| user_id                                                  | int      | Return your user_id (after login)                             |
-| device                                                   | dict     | Return device dict which we pass to Instagram                 |
-| set_device(device: dict)                                 | bool     | Change device settings                                        |
-| set_user_agent(user_agent: str = "")                     | bool     | Change User-Agent header                                      |
-| base_headers                                             | dict     | Base headers for Instagram                                    |
+| Method                                                   | Return    | Description                                                   |
+| -------------------------------------------------------- | --------- | ------------------------------------------------------------- |
+| Client(settings: dict = {}, proxy: str = "")             | bool      | Login by username and password                                |
+| login(username: str, password: str)                      | bool      | Login by username and password                                |
+| relogin()                                                | bool      | Relogin with clean cookies (required cl.username/cl.password) |
+| login_by_sessionid(sessionid: str)                       | bool      | Login by sessionid from Instagram site                        |
+| get_settings()                                           | dict      | Return settings dict (more details below)                     |
+| set_proxy(dsn: str)                                      | dict      | Support socks and http/https proxy                            |
+| cookie_dict                                              | dict      | Return cookies                                                |
+| user_id                                                  | int       | Return your user_id (after login)                             |
+| device                                                   | dict      | Return device dict which we pass to Instagram                 |
+| set_device(device: dict)                                 | bool      | Change device settings                                        |
+| set_user_agent(user_agent: str = "")                     | bool      | Change User-Agent header                                      |
+| base_headers                                             | dict      | Base headers for Instagram                                    |
+| account_info()                                           | Account   | Get private info for your account (e.g. email, phone_number)  |
+| account_edit(**data)                                     | Account   | Change profile data (e.g. external_url, phone_number, username, first_name (full_name), biography, email) |
+| account_change_picture(path: path)                       | UserShort | Change Profile picture                                        |
 
 Example:
 
@@ -163,7 +167,7 @@ Viewing and editing publications (medias)
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
 | media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
-| media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
+| media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
 | media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 
@@ -208,8 +212,8 @@ View a list of a user's medias, following and followers
 | Method                                             | Return              | Description                                      |
 | -------------------------------------------------- | ------------------- | ------------------------------------------------ |
 | user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
-| user_followers(user_id: int)                       | Dict\[int: User]    | Get dict of followers users                      |
-| user_following(user_id: int)                       | Dict\[int: User]    | Get dict of following users                      |
+| user_followers(user_id: int)                       | Dict\[int, User]    | Get dict of followers users                      |
+| user_following(user_id: int)                       | Dict\[int, User]    | Get dict of following users                      |
 | user_info(user_id: int)                            | User                | Get user info                                    |
 | user_info_by_username(username: str)               | User                | Get user info by username                        |
 | user_follow(user_id: int)                          | bool                | Follow user                                      |

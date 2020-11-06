@@ -177,7 +177,7 @@ class User:
             users = users[:amount]
         return users
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int: User]:
+    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
         """Return dict {user_id: user} of following users
         """
         user_id = int(user_id)
@@ -213,7 +213,7 @@ class User:
                 break
         return users
 
-    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int: User]:
+    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
         """Return dict {user_id: user} of followers users
         """
         user_id = int(user_id)

@@ -10,7 +10,7 @@ from datetime import datetime
 from instagrapi import Client
 from instagrapi.types import (
     User, UserShort, Media, MediaOembed, Comment, Collection,
-    DirectThread, DirectMessage, Usertag, Location
+    DirectThread, DirectMessage, Usertag, Location, Account
 )
 
 
@@ -642,6 +642,39 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         pong = self.api.direct_answer(ping.thread_id, 'Pong')
         self.assertIsInstance(pong, DirectMessage)
         self.assertEqual(ping.thread_id, pong.thread_id)
+
+
+class ClientAccountTestCase(ClientPrivateTestCase):
+
+    def test_account_edit(self):
+        # current
+        one = self.api.user_info(self.api.user_id)
+        self.assertIsInstance(one, User)
+        # change
+        url = 'https://trotiq.com/'
+        two = self.api.account_edit(external_url=url)
+        self.assertIsInstance(two, Account)
+        self.assertEqual(str(two.external_url), url)
+        # return back
+        three = self.api.account_edit(external_url=one.external_url)
+        self.assertIsInstance(three, Account)
+        self.assertEqual(one.external_url, three.external_url)
+
+    def test_account_change_picture(self):
+        # current
+        one = self.api.user_info(self.api.user_id)
+        self.assertIsInstance(one, User)
+        dhbastards = self.api.user_info_by_username('dhbastards')
+        # change
+        two = self.api.account_change_picture(
+            self.api.photo_download_by_url(dhbastards.profile_pic_url)
+        )
+        self.assertIsInstance(two, UserShort)
+        # return back
+        three = self.api.account_change_picture(
+            self.api.photo_download_by_url(one.profile_pic_url)
+        )
+        self.assertIsInstance(three, UserShort)
 
 
 if __name__ == '__main__':

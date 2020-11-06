@@ -25,6 +25,22 @@ class User(BaseModel):
     is_business: bool
 
 
+class Account(BaseModel):
+    pk: int
+    username: str
+    full_name: str
+    is_private: bool
+    profile_pic_url: HttpUrl
+    is_verified: bool
+    biography: Optional[str] = ''
+    external_url: Optional[HttpUrl]
+    is_business: bool
+    birthday: Optional[str]
+    phone_number: Optional[str]
+    gender: Optional[int]
+    email: Optional[str]
+
+
 class UserShort(BaseModel):
     pk: int
     username: str

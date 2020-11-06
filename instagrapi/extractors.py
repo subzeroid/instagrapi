@@ -3,7 +3,7 @@ from .utils import json_value
 from .types import (
     Media, Resource, User, UserShort, Usertag,
     Location, Collection, Comment, MediaOembed,
-    DirectThread, DirectMessage
+    DirectThread, DirectMessage, Account
 )
 
 
@@ -217,3 +217,7 @@ def extract_direct_message(data):
     if 'media_share' in data:
         data['media_share'] = extract_media_v1(data['media_share'])
     return DirectMessage(**data)
+
+
+def extract_account(data):
+    return Account(**data)
