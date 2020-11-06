@@ -10,7 +10,7 @@ from .exceptions import (
     MediaNotFound,
 )
 from .extractors import extract_media_v1, extract_media_gql, extract_comment, extract_media_oembed
-from .types import Usertag, Location, UserShort
+from .types import Usertag, Location, UserShort, Media, Comment
 
 
 class Media:
@@ -56,7 +56,7 @@ class Media:
         parts = [p for p in path.split("/") if p]
         return self.media_pk_from_code(parts.pop())
 
-    def media_info_a1(self, media_pk: int, max_id=None) -> dict:
+    def media_info_a1(self, media_pk: int, max_id=None) -> Media:
         media_pk = self.media_pk(media_pk)
         shortcode = InstagramIdCodec.encode(media_pk)
         """Use Client.media_info
@@ -69,7 +69,7 @@ class Media:
             raise MediaNotFound(media_pk=media_pk, **data)
         return extract_media_gql(data["shortcode_media"])
 
-    def media_info_gql(self, media_pk: int) -> dict:
+    def media_info_gql(self, media_pk: int) -> Media:
         media_pk = self.media_pk(media_pk)
         shortcode = InstagramIdCodec.encode(media_pk)
         """Use Client.media_info
@@ -89,10 +89,9 @@ class Media:
         data['shortcode_media']['location'] = self.location_complete(
             data['shortcode_media']['location']
         )
-        media = extract_media_gql(data["shortcode_media"])
-        return media
+        return extract_media_gql(data["shortcode_media"])
 
-    def media_info_v1(self, media_pk: int) -> dict:
+    def media_info_v1(self, media_pk: int) -> Media:
         try:
             result = self.private_request(f"media/{media_pk}/info/")
         except ClientNotFoundError as e:
@@ -103,7 +102,7 @@ class Media:
             raise e
         return extract_media_v1(result["items"].pop())
 
-    def media_info(self, media_pk: int, use_cache: bool = True) -> dict:
+    def media_info(self, media_pk: int, use_cache: bool = True) -> Media:
         """Return dict with media information
         """
         media_pk = self.media_pk(media_pk)
@@ -143,31 +142,6 @@ class Media:
         location: Location = None
     ) -> dict:
         """Edit caption for media
-        Example: https://i.instagram.com/api/v1/media/2154602296692269830_1903424587/edit_media/
-
-        Video:
-        {
-            "caption_text": "Repost",
-            "_csrftoken": "H8Rk6Ry2ffWcUSwWIBblVK4hHHII2RMk",
-            "usertags": "{\"in\":[]}",
-            "_uid": "8530598273",
-            "device_id": "android-7d8ad96cc1b71922",
-            "_uuid": "c642fece-8663-40d8-8ab7-112df0179e65",
-            "is_carousel_bumped_post": "false",
-            "container_module": "edit_media_info",
-            "feed_position": "0",
-            "location": "{}"
-        }
-
-        IGTV:
-        {
-            'igtv_ads_toggled_on': '0',
-            'caption_text': 'TEXT',
-            '_csrftoken': 'Bavik4rD52i0CvNqV1vDPNHBu4NcHQWB',
-            '_uid': '1903424587',
-            '_uuid': 'c642fece-8663-40d8-8ab7-112df0179e65',
-            'title': 'zr+trip,+crimea,+feb+2017.+Edit+by+@milashensky'
-        }
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
@@ -216,7 +190,7 @@ class Media:
             self.private_request(f"oembed?url={url}")
         )
 
-    def media_comments(self, media_id: str) -> list:
+    def media_comments(self, media_id: str) -> List[Comment]:
         """Get list of comments for media
         """
         # TODO: to public or private
@@ -241,7 +215,7 @@ class Media:
                 raise e
         return comments
 
-    def media_comment(self, media_id: str, text: str) -> int:
+    def media_comment(self, media_id: str, text: str) -> Comment:
         """Comment media
         """
         assert self.user_id, "Login required"

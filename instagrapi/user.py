@@ -1,4 +1,5 @@
 import time
+from typing import List, Dict
 from copy import deepcopy
 
 from .exceptions import (
@@ -14,6 +15,7 @@ from .extractors import (
     extract_media_v1,
 )
 from .utils import json_value
+from .types import User, Media
 from . import config
 
 
@@ -36,12 +38,12 @@ class User:
         user_id = int(user_id)
         return self.user_info(user_id).username
 
-    def user_info_by_username_gql(self, username: str) -> dict:
+    def user_info_by_username_gql(self, username: str) -> User:
         """Return user object via GraphQL API
         """
         return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
 
-    def user_info_by_username_v1(self, username: str) -> dict:
+    def user_info_by_username_v1(self, username: str) -> User:
         """Return user object via Private API
         """
         try:
@@ -54,7 +56,7 @@ class User:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info_by_username(self, username: str, use_cache: bool = True) -> dict:
+    def user_info_by_username(self, username: str, use_cache: bool = True) -> User:
         """Get user info by username
         Result as in self.user_info()
         """
@@ -69,7 +71,7 @@ class User:
             self._usernames_cache[user.username] = user.pk
         return self.user_info(self._usernames_cache[username])
 
-    def user_info_gql(self, user_id: int) -> dict:
+    def user_info_gql(self, user_id: int) -> User:
         """Return user object via GraphQL API
         """
         user_id = int(user_id)
@@ -84,7 +86,7 @@ class User:
             raise UserNotFound(user_id=user_id, **data)
         return self.user_info_by_username_gql(data["user"]["reel"]["user"]["username"])
 
-    def user_info_v1(self, user_id: int) -> dict:
+    def user_info_v1(self, user_id: int) -> User:
         """Return user object via Private API
         """
         user_id = int(user_id)
@@ -98,7 +100,7 @@ class User:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info(self, user_id: int, use_cache: bool = True) -> list:
+    def user_info(self, user_id: int, use_cache: bool = True) -> User:
         """Get user info by user_id
         """
         user_id = int(user_id)
@@ -175,7 +177,7 @@ class User:
             users = users[:amount]
         return users
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int: User]:
         """Return dict {user_id: user} of following users
         """
         user_id = int(user_id)
@@ -211,7 +213,7 @@ class User:
                 break
         return users
 
-    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int: User]:
         """Return dict {user_id: user} of followers users
         """
         user_id = int(user_id)
@@ -247,7 +249,7 @@ class User:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
-    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> list:
+    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> List[Media]:
         """
         !Use Client.user_medias instead!
         Return list with media of instagram profile by user id using graphql
@@ -287,7 +289,7 @@ class User:
             time.sleep(sleep)
         return [extract_media_gql(media) for media in medias[:amount]]
 
-    def user_medias_v1(self, user_id: int, amount: int = 18) -> list:
+    def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
         """Get all medias by user_id via Private API
         :user_id: User ID
         :amount: By default instagram return 18 items by each request
@@ -319,15 +321,14 @@ class User:
             next_max_id = self.last_json.get("next_max_id", "")
         return [extract_media_v1(media) for media in medias[:amount]]
 
-    def user_medias(self, user_id: int, amount: int = 50) -> list:
+    def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
         """Get all medias by user_id
         First, through the Public API, then through the Private API
         """
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.user_medias_gql(
-                user_id, amount)  # get first 50 medias
+            medias = self.user_medias_gql(user_id, amount)
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
