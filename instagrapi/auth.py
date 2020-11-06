@@ -16,7 +16,7 @@ from .exceptions import ReloginAttemptExceeded
 
 class PreLoginFlow:
     def pre_login_flow(self) -> bool:
-        """Эмуляция работы приложения до логина
+        """Emulation mobile app behaivor before login
         """
         # /api/v1/accounts/get_prefill_candidates
         self.get_prefill_candidates(True)
@@ -76,9 +76,9 @@ class PreLoginFlow:
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
-class LoginFlow:
+class PostLoginFlow:
     def login_flow(self) -> bool:
-        """Эмуляция работы приложения после логина
+        """Emulation mobile app behaivor after login
         """
         check_flow = []
         chance = random.randint(1, 100) % 2 == 0
@@ -145,12 +145,17 @@ class LoginFlow:
         return self.private_request("feed/reels_tray/", data)
 
 
-class Login(PreLoginFlow, LoginFlow):
+class Login(PreLoginFlow, PostLoginFlow):
     username = None
     password = None
     last_login = None
     relogin_attempt = 0
     device_settings = {}
+    client_session_id = ""
+    advertising_id = ""
+    device_id = ""
+    phone_id = ""
+    uuid = ""
 
     def init(self) -> bool:
         if "cookies" in self.settings:

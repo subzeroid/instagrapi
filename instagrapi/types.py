@@ -5,7 +5,7 @@ from pydantic import BaseModel, HttpUrl, FilePath
 
 class Resource(BaseModel):
     pk: int
-    video_url: Optional[HttpUrl] = ''  # for Video and IGTV
+    video_url: Optional[HttpUrl]  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
 
@@ -21,7 +21,7 @@ class User(BaseModel):
     follower_count: int
     following_count: int
     biography: Optional[str] = ''
-    external_url: Optional[HttpUrl] = ''
+    external_url: Optional[HttpUrl]
     is_business: bool
 
 
@@ -29,7 +29,7 @@ class UserShort(BaseModel):
     pk: int
     username: str
     full_name: Optional[str] = ''
-    profile_pic_url: Optional[HttpUrl] = ''
+    profile_pic_url: Optional[HttpUrl]
     # is_private: bool
     # is_verified: bool
 
@@ -49,7 +49,7 @@ class Location(BaseModel):
     external_id: Optional[int]
     external_id_source: Optional[str]
     # address_json: Optional[dict] = {}
-    # profile_pic_url: Optional[HttpUrl] = ''
+    # profile_pic_url: Optional[HttpUrl]
     # directory: Optional[dict] = {}
 
 
@@ -60,14 +60,14 @@ class Media(BaseModel):
     taken_at: datetime
     media_type: int
     product_type: Optional[str] = ''  # only for IGTV
-    thumbnail_url: Optional[HttpUrl] = ''
+    thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
     comment_count: int
     like_count: int
     caption_text: str
     usertags: List[Usertag]
-    video_url: Optional[HttpUrl] = ''  # for Video and IGTV
+    video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ''

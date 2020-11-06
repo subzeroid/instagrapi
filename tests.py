@@ -464,7 +464,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             else:
                 self.assertEqual(getattr(video_resource, key), val)
         for key, val in {
-            "video_url": "",
+            "video_url": None,
             "thumbnail_url": "https://",
             "media_type": 1,
             "pk": 1787133803186894424,
