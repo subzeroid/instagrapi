@@ -1,6 +1,7 @@
-from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, HttpUrl, FilePath
+from .validators import (
+    BaseModel, HttpUrl, FilePath, Datetime
+)
 
 
 class Resource(BaseModel):
@@ -57,7 +58,7 @@ class Media(BaseModel):
     pk: int
     id: str
     code: str
-    taken_at: datetime
+    taken_at: Datetime
     media_type: int
     product_type: Optional[str] = ''  # only for IGTV
     thumbnail_url: Optional[HttpUrl]
@@ -103,7 +104,7 @@ class Comment(BaseModel):
     pk: int
     text: str
     user: UserShort
-    created_at_utc: datetime
+    created_at_utc: Datetime
     content_type: str
     status: str
 
@@ -129,7 +130,7 @@ class DirectMessage(BaseModel):
     id: int  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
     thread_id: Optional[int]
-    timestamp: datetime
+    timestamp: Datetime
     item_type: Optional[str]
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
@@ -149,7 +150,7 @@ class DirectThread(BaseModel):
     inviter: UserShort
     left_users: List[UserShort]
     admin_user_ids: list
-    last_activity_at: datetime
+    last_activity_at: Datetime
     muted: bool
     is_pin: bool
     named: bool
