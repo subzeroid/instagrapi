@@ -76,26 +76,26 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         super().__init__(*args, **kwargs)
 
 
-# class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
-#     api = None
+class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
+    api = None
 
-#     def test_user_info_gql(self):
-#         user = self.api.user_info_gql(1903424587)
-#         self.assertIsInstance(user, User)
-#         for key, value in {
-#             "biography": "Engineer: Python, JavaScript, Erlang...",
-#             "external_url": "https://adw0rd.com/",
-#             "full_name": "Mikhail Andreev",
-#             "pk": 1903424587,
-#             "is_private": False,
-#             "is_verified": False,
-#             "profile_pic_url": "https://...",
-#             "username": "adw0rd",
-#         }.items():
-#             if isinstance(value, str) and "..." in value:
-#                 self.assertTrue(value.replace("...", "") in getattr(user, key))
-#             else:
-#                 self.assertEqual(value, getattr(user, key))
+    def test_user_info_gql(self):
+        user = self.api.user_info_gql(1903424587)
+        self.assertIsInstance(user, User)
+        for key, value in {
+            "biography": "Engineer: Python, JavaScript, Erlang...",
+            "external_url": "https://adw0rd.com/",
+            "full_name": "Mikhail Andreev",
+            "pk": 1903424587,
+            "is_private": False,
+            "is_verified": False,
+            "profile_pic_url": "https://...",
+            "username": "adw0rd",
+        }.items():
+            if isinstance(value, str) and "..." in value:
+                self.assertTrue(value.replace("...", "") in getattr(user, key))
+            else:
+                self.assertEqual(value, getattr(user, key))
 
 
 class ClientUserTestCase(ClientPrivateTestCase):
