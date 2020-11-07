@@ -100,7 +100,7 @@ This is your authorized account
 | set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header                                                          |
 | base_headers                                 | dict      | Base headers for Instagram                                                        |
 | account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)                      |
-| account_edit(\**data)                        | Account   | Change profile data (e.g. external_url, phone_number, username, first_name (full_name), biography, email) |
+| account_edit(\**data)                        | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url) |
 | account_change_picture(path: path)           | UserShort | Change Profile picture                                                            |
 
 Example:

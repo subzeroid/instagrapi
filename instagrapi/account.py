@@ -42,14 +42,15 @@ class Account:
     def account_edit(self, **data) -> Account:
         """Edit your profile (authorized account)
         """
-        fields = ("external_url", "phone_number", "username", "first_name", "biography", "email")
+        fields = ("external_url", "phone_number", "username", "full_name", "biography", "email")
         data = {key: val for key, val in data.items() if key in fields}
         if 'email' not in data and 'phone_number' not in data:
             # Instagram Error: You need an email or confirmed phone number.
             user_data = self.account_info().dict()
-            user_data['first_name'] = user_data.pop('full_name')  # instagram :)
             user_data = {field: user_data[field] for field in fields}
             data = dict(user_data, **data)
+        # Instagram original field-name for full user name is "first_name"
+        data['first_name'] = data.pop('full_name')
         result = self.private_request(
             "accounts/edit_profile/",
             self.with_default_data(data)

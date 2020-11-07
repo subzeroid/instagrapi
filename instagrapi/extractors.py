@@ -220,4 +220,5 @@ def extract_direct_message(data):
 
 
 def extract_account(data):
+    data['external_url'] = data.get('external_url') or None
     return Account(**data)
