@@ -266,7 +266,8 @@ class UploadVideo:
         :return: Media
         """
         return self.video_upload(
-            path, caption, thumbnail, mentions, links,
+            path, caption, thumbnail, mentions,
+            links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
