@@ -6,6 +6,7 @@ import os.path
 import unittest
 from pathlib import Path
 from datetime import datetime
+from json.decoder import JSONDecodeError
 
 from instagrapi import Client
 from instagrapi.types import (
@@ -66,9 +67,14 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
-        settings = {}
-        if os.path.exists(filename):
+        try:
             settings = json.load(open(filename))
+        except FileNotFoundError:
+            settings = {}
+        except JSONDecodeError as e:
+            print('JSONDecodeError when read stored client settings. Use empty settings')
+            print(str(e))
+            settings = {}
         self.api = Client(settings)
         self.set_proxy_if_exists()
         self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
@@ -76,26 +82,28 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         super().__init__(*args, **kwargs)
 
 
-class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
-    api = None
-
-    def test_user_info_gql(self):
-        user = self.api.user_info_gql(1903424587)
-        self.assertIsInstance(user, User)
-        for key, value in {
-            "biography": "Engineer: Python, JavaScript, Erlang...",
-            "external_url": "https://adw0rd.com/",
-            "full_name": "Mikhail Andreev",
-            "pk": 1903424587,
-            "is_private": False,
-            "is_verified": False,
-            "profile_pic_url": "https://...",
-            "username": "adw0rd",
-        }.items():
-            if isinstance(value, str) and "..." in value:
-                self.assertTrue(value.replace("...", "") in getattr(user, key))
-            else:
-                self.assertEqual(value, getattr(user, key))
+# ERROR: instagrapi.exceptions.ClientLoginRequired
+# Move this test to ClientUserTestCase.test_user_info
+# class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
+#     api = None
+#
+#     def test_user_info_gql(self):
+#         user = self.api.user_info_gql(1903424587)
+#         self.assertIsInstance(user, User)
+#         for key, value in {
+#             "biography": "Engineer: Python, JavaScript, Erlang...",
+#             "external_url": "https://adw0rd.com/",
+#             "full_name": "Mikhail Andreev",
+#             "pk": 1903424587,
+#             "is_private": False,
+#             "is_verified": False,
+#             "profile_pic_url": "https://...",
+#             "username": "adw0rd",
+#         }.items():
+#             if isinstance(value, str) and "..." in value:
+#                 self.assertTrue(value.replace("...", "") in getattr(user, key))
+#             else:
+#                 self.assertEqual(value, getattr(user, key))
 
 
 class ClientUserTestCase(ClientPrivateTestCase):
@@ -136,9 +144,20 @@ class ClientUserTestCase(ClientPrivateTestCase):
         user_id = self.api.user_id_from_username("adw0rd")
         user = self.api.user_info(user_id)
         self.assertIsInstance(user, User)
-        self.assertEqual(user.pk, user_id)
-        self.assertEqual(user.full_name, "Mikhail Andreev")
-        self.assertFalse(user.is_private)
+        for key, value in {
+            "biography": "Engineer: Python, JavaScript, Erlang...",
+            "external_url": "https://adw0rd.com/",
+            "full_name": "Mikhail Andreev",
+            "pk": 1903424587,
+            "is_private": False,
+            "is_verified": False,
+            "profile_pic_url": "https://...",
+            "username": "adw0rd",
+        }.items():
+            if isinstance(value, str) and "..." in value:
+                self.assertTrue(value.replace("...", "") in getattr(user, key))
+            else:
+                self.assertEqual(value, getattr(user, key))
 
     def test_user_info_by_username(self):
         user = self.api.user_info_by_username("adw0rd")
@@ -378,6 +397,14 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
         self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
         self.assertDictEqual(media_v1, media_gql)
+
+    # ERROR: instagrapi.exceptions.ClientLoginRequired:
+    # def test_two_extract_user(self):
+    #     user_v1 = self.api.user_info_v1(1903424587)
+    #     user_gql = self.api.user_info_gql(1903424587)
+    #     self.assertIsInstance(user_v1, User)
+    #     self.assertIsInstance(user_gql, User)
+    #     self.assertDictEqual(media_v1.dict(), media_gql.dict())
 
 
 class ClientExtractTestCase(ClientPrivateTestCase):

@@ -85,23 +85,23 @@ The current types are in [types.py](/instagrapi/types.py):
 
 This is your authorized account
 
-| Method                                                   | Return    | Description                                                   |
-| -------------------------------------------------------- | --------- | ------------------------------------------------------------- |
-| Client(settings: dict = {}, proxy: str = "")             | bool      | Login by username and password                                |
-| login(username: str, password: str)                      | bool      | Login by username and password                                |
-| relogin()                                                | bool      | Relogin with clean cookies (required cl.username/cl.password) |
-| login_by_sessionid(sessionid: str)                       | bool      | Login by sessionid from Instagram site                        |
-| get_settings()                                           | dict      | Return settings dict (more details below)                     |
-| set_proxy(dsn: str)                                      | dict      | Support socks and http/https proxy                            |
-| cookie_dict                                              | dict      | Return cookies                                                |
-| user_id                                                  | int       | Return your user_id (after login)                             |
-| device                                                   | dict      | Return device dict which we pass to Instagram                 |
-| set_device(device: dict)                                 | bool      | Change device settings                                        |
-| set_user_agent(user_agent: str = "")                     | bool      | Change User-Agent header                                      |
-| base_headers                                             | dict      | Base headers for Instagram                                    |
-| account_info()                                           | Account   | Get private info for your account (e.g. email, phone_number)  |
-| account_edit(\**data)                                     | Account   | Change profile data (e.g. external_url, phone_number, username, first_name (full_name), biography, email) |
-| account_change_picture(path: path)                       | UserShort | Change Profile picture                                        |
+| Method                                       | Return    | Description                                                                       |
+| -------------------------------------------- | --------- | --------------------------------------------------------------------------------- |
+| Client(settings: dict = {}, proxy: str = "") | bool      | Init instagrapi client (settings example below)                                   |
+| login(username: str, password: str)          | bool      | Login by username and password (get new cookies if it does not exist in settings) |
+| relogin()                                    | bool      | Relogin with clean cookies (required cl.username/cl.password)                     |
+| login_by_sessionid(sessionid: str)           | bool      | Login by sessionid from Instagram site                                            |
+| get_settings()                               | dict      | Return settings dict (more details below)                                         |
+| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy                                                |
+| cookie_dict                                  | dict      | Return cookies                                                                    |
+| user_id                                      | int       | Return your user_id (after login)                                                 |
+| device                                       | dict      | Return device dict which we pass to Instagram                                     |
+| set_device(device: dict)                     | bool      | Change device settings                                                            |
+| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header                                                          |
+| base_headers                                 | dict      | Base headers for Instagram                                                        |
+| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)                      |
+| account_edit(\**data)                        | Account   | Change profile data (e.g. external_url, phone_number, username, first_name (full_name), biography, email) |
+| account_change_picture(path: path)           | UserShort | Change Profile picture                                                            |
 
 Example:
 
