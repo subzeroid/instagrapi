@@ -14,7 +14,8 @@ from .extractors import extract_media_v1
 from .exceptions import (
     PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, Media
+from .types import Usertag, Location, StoryMention, StoryLink, Media
+from .utils import dumps
 
 
 class DownloadPhoto:
@@ -109,6 +110,7 @@ class UploadPhoto:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
+        links: List[StoryLink] = [],
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
@@ -121,6 +123,7 @@ class UploadPhoto:
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
         :param location:            Location
+        :param links:               URLs for Swipe Up (List of dicts)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -132,7 +135,7 @@ class UploadPhoto:
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location):
+            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
@@ -146,7 +149,8 @@ class UploadPhoto:
         height: int,
         caption: str,
         usertags: List[Usertag] = [],
-        location: Location = None
+        location: Location = None,
+        links: List[StoryLink] = []
     ) -> dict:
         """Post Configure Photo (send caption to Instagram)
 
@@ -156,6 +160,9 @@ class UploadPhoto:
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
         :param location:   Location
+        :param links:      URLs for Swipe Up (List of dicts)
+
+        :return: Media (Dict)
         """
         usertags = [
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
@@ -187,6 +194,7 @@ class UploadPhoto:
         caption: str,
         upload_id: str = "",
         mentions: List[StoryMention] = [],
+        links: List[StoryLink] = [],
         configure_timeout: int = 3
     ) -> Media:
         """Upload photo and configure to story
@@ -195,14 +203,16 @@ class UploadPhoto:
         :param caption:             Media description (String)
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
-        :param usertags:            Mentioned users (List)
+        :param mentions:            Mentioned users (List)
+        :param links:               URLs for Swipe Up (List of dicts)
         :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
 
         :return: Media
         """
         return self.photo_upload(
             path, caption, upload_id, mentions,
-            configure_timeout,
+            links=links,
+            configure_timeout=configure_timeout,
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
         )
@@ -214,7 +224,8 @@ class UploadPhoto:
         height: int,
         caption: str,
         mentions: List[StoryMention] = [],
-        location: Location = None
+        location: Location = None,
+        links: List[StoryLink] = []
     ) -> dict:
         """Story Configure for Photo
 
@@ -224,6 +235,9 @@ class UploadPhoto:
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
         :param location:   Temporary unused
+        :param links:      URLs for Swipe Up (List of dicts)
+
+        :return: Media (Dict)
         """
         timestamp = int(time.time())
         data = {
@@ -259,6 +273,9 @@ class UploadPhoto:
             },
             "extra": {"source_width": width, "source_height": height},
         }
+        if links:
+            links = [link.dict() for link in links]
+            data["story_cta"] = dumps([{"links": links}])
         if mentions:
             mentions = [
                 {
