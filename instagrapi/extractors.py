@@ -38,7 +38,7 @@ def extract_media_v1(data):
     return Media(
         location=extract_location(location) if location else None,
         user=extract_user_short(data.pop("user")),
-        caption_text=data.get("caption", {}).get("text", ""),
+        caption_text=(data.get("caption") or {}).get("text", ""),
         usertags=sorted([
             extract_usertag(usertag)
             for usertag in data.pop("usertags", {}).get("in", [])
