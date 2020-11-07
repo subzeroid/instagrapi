@@ -60,8 +60,8 @@ class Location(BaseModel):
     pk: Optional[int]
     name: str
     address: Optional[str] = ''
-    lng: float
-    lat: float
+    lng: Optional[float]
+    lat: Optional[float]
     external_id: Optional[int]
     external_id_source: Optional[str]
     # address_json: Optional[dict] = {}

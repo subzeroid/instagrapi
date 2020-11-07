@@ -704,5 +704,13 @@ class ClientAccountTestCase(ClientPrivateTestCase):
         self.assertIsInstance(three, UserShort)
 
 
+class ClientLocationTestCase(ClientPrivateTestCase):
+
+    def test_location_without_lat_lng(self):
+        location = self.api.location_info(197780767581661)
+        self.assertIsInstance(location, Location)
+        self.assertEqual(location.pk, 197780767581661)
+
+
 if __name__ == '__main__':
     unittest.main()
