@@ -607,6 +607,9 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             self.assertEqual(media.caption_text, "Test caption for album")
             self.assertEqual(len(media.resources), 3)
             self.assertLocation(media.location)
+            self.assertEqual(
+                media.usertags, [Usertag(user=adw0rd, x=0.5, y=0.5)]
+            )
         finally:
             cleanup(*paths)
             self.assertTrue(self.api.media_delete(media.id))
