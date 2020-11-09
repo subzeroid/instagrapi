@@ -30,8 +30,9 @@ from .exceptions import (
 
 def manual_input_code(self, username, choice=None):
     code = None
+    choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
-        code = input("Enter code (6 digits) for %s: " % username).strip()
+        code = input(f"Enter code (6 digits) for {username} ({choice_name}): ").strip()
         if code and code.isdigit():
             break
     return code  # is not int, because it can start from 0

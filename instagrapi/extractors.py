@@ -164,6 +164,8 @@ def extract_user_v1(data):
 def extract_location(data):
     """Extract location info
     """
+    if not data:
+        return None
     data['pk'] = data.get("id", data.get("pk", None))
     data['external_id'] = data.get('external_id', data.get('facebook_places_id'))
     data['external_id_source'] = data.get('external_id_source', data.get('external_source'))

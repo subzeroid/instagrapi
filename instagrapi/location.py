@@ -25,28 +25,36 @@ class LocationMixin:
             locations.append(extract_location(venue))
         return locations
 
-    def location_complete(self, data: dict) -> dict:
+    def location_complete(self, location: Location) -> Location:
         """Smart complete of location
         """
-        if data and not data.get('lat') and data.get('id'):
-            loc = self.location_info(data['id'])
-            if not loc.external_id:
-                try:
-                    venue = self.location_search(loc.lat, loc.lng)[0]
-                    loc.external_id = venue.external_id
-                    loc.external_id_source = venue.external_id_source
-                except IndexError:
-                    pass
-            data = loc.dict()
-        return data
+        assert location and isinstance(location, Location),\
+            f'Location is wrong "{location}" ({type(location)})'
+        if location.pk and not location.lat:
+            # search lat and lng
+            info = self.location_info(location.pk)
+            location.lat = info.lat
+            location.lng = info.lng
+        if not location.external_id and location.lat:
+            # search extrernal_id and external_id_source
+            try:
+                venue = self.location_search(location.lat, location.lng)[0]
+                location.external_id = venue.external_id
+                location.external_id_source = venue.external_id_source
+            except IndexError:
+                pass
+        if not location.pk and location.external_id:
+            info = self.location_info(location.external_id)
+            if info.name == location.name or (info.lat == location.lat and info.lng == location.lng):
+                location.pk = location.external_id
+        return location
 
     def location_build(self, location: Location) -> str:
         """Build correct location data
         """
         if not location:
             return '{}'
-        assert location.lat and location.lng, f'Error! lat and lng must been in location (now {location})'
-        if not location.external_id:
+        if not location.external_id and location.lat:
             try:
                 location = self.location_search(location.lat, location.lng)[0]
             except IndexError:

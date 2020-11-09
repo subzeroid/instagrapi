@@ -9,7 +9,10 @@ from .exceptions import (
     ClientNotFoundError,
     MediaNotFound,
 )
-from .extractors import extract_media_v1, extract_media_gql, extract_comment, extract_media_oembed
+from .extractors import (
+    extract_media_v1, extract_media_gql, extract_comment,
+    extract_media_oembed, extract_location
+)
 from .types import Usertag, Location, UserShort, Media, Comment
 
 
@@ -86,9 +89,10 @@ class Media:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        data['shortcode_media']['location'] = self.location_complete(
-            data['shortcode_media']['location']
-        )
+        if data['shortcode_media']['location']:
+            data['shortcode_media']['location'] = self.location_complete(
+                extract_location(data['shortcode_media']['location'])
+            ).dict()
         return extract_media_gql(data["shortcode_media"])
 
     def media_info_v1(self, media_pk: int) -> Media:
