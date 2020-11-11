@@ -71,7 +71,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | MediaOembed    | Short version of Media                                                                 |
 | Account        | Full private info for your account (e.g. email, phone_number)                          |
 | User           | Full public user data                                                                  |
-| UserShort      | Short public user data (stored in Usertag, Comment, Media, Direct)                     |
+| UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
@@ -101,7 +101,7 @@ This is your authorized account
 | base_headers                                 | dict      | Base headers for Instagram                                                        |
 | account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)                      |
 | account_edit(\**data)                        | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url) |
-| account_change_picture(path: path)           | UserShort | Change Profile picture                                                            |
+| account_change_picture(path: Path)           | UserShort | Change Profile picture                                                            |
 
 Example:
 
@@ -183,7 +183,47 @@ Example:
 >>> cl.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
 1787135824035452364
 
->>> cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/")
+>>> cl.media_info(1787135824035452364).dict()
+{'pk': 1787135824035452364,
+ 'id': '1787135824035452364_1903424587',
+ 'code': 'BjNLpA1AhXM',
+ 'taken_at': datetime.datetime(2018, 5, 25, 15, 46, 53, tzinfo=datetime.timezone.utc),
+ 'media_type': 8,
+ 'product_type': '',
+ 'thumbnail_url': None,
+ 'location': {'pk': 260916528,
+  'name': 'Foros, Crimea',
+  'address': '',
+  'lng': 33.7878,
+  'lat': 44.3914,
+  'external_id': 181364832764479,
+  'external_id_source': 'facebook_places'},
+ 'user': {'pk': 1903424587,
+  'username': 'adw0rd',
+  'full_name': 'Mikhail Andreev',
+  'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_...&oe=5FD7600E')},
+ 'comment_count': 0,
+ 'like_count': 48,
+ 'caption_text': '@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill #skateboarding #downhillskateboarding #crimea #foros',
+ 'usertags': [],
+ 'video_url': None,
+ 'view_count': 0,
+ 'video_duration': 0.0,
+ 'title': '',
+ 'resources': [{'pk': 1787135361353462176,
+   'video_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/33464086_3755...0e2362', scheme='https', ...),
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3220311...AE7332', scheme='https', ...),
+   'media_type': 2},
+  {'pk': 1787135762219834098,
+   'video_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/32895...61320_n.mp4', scheme='https', ...),
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3373413....8480_n.jpg', scheme='https', ...),
+   'media_type': 2},
+  {'pk': 1787133803186894424,
+   'video_url': None,
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/324307712_n.jpg...', scheme='https', ...),
+   'media_type': 1}]}
+
+>>> cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/").dict()
 {'version': '1.0',
  'title': 'В гостях у ДК @delai_krasivo_kaifui',
  'author_name': 'adw0rd',
@@ -229,29 +269,43 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 >>> cl.user_following(cl.user_id)
 {
-   8530598273: {
-      "pk": 8530598273,
-      "username": "dhbastards",
-      "full_name": "The Best DH Skaters Ever",
-      "is_private": False,
-      "profile_pic_url": "https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg",
-      "is_verified": False
-  },
+  8530598273: UserShort(
+    pk=8530598273,
+    username="dhbastards",
+    full_name="The Best DH Skaters Ever",
+    profile_pic_url=HttpUrl(
+      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg',
+      scheme='https',
+      host='instagram.frix7-1.fna.fbcdn.net',
+      ...
+    ),
+  ),
+  49114585: UserShort(
+    pk=49114585,
+    username='gx1000',
+    full_name='GX1000',
+    profile_pic_url=HttpUrl(
+      'https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/10388...jpg',
+      scheme='https',
+      host='scontent-hel3-1.cdninstagram.com',
+      ...
+    )
+  ),
   ...
 }
 
->>> cl.user_info_by_username('adw0rd')
+>>> cl.user_info_by_username('adw0rd').dict()
 {'pk': 1903424587,
  'username': 'adw0rd',
  'full_name': 'Mikhail Andreev',
  'is_private': False,
- 'profile_pic_url': 'https://scontent-arn2-1.cdninstagram.com/v/t51...FB463C5',
+ 'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_803537687159702_2508263208740189974_n.jpg?...', scheme='https', host='scontent-hel3-1.cdninstagram.com', tld='com', host_type='domain', ...'),
  'is_verified': False,
  'media_count': 102,
- 'follower_count': 578,
- 'following_count': 529,
- 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards ...',
- 'external_url': 'https://adw0rd.com/',
+ 'follower_count': 576,
+ 'following_count': 538,
+ 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards \n@bestskatetrick \n@best_drift_daily \n@best_rally_mag \n@asphalt_kings_lb \n@surferyone \n@bmxtravel',
+ 'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
  'is_business': False}
  
 ```
