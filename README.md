@@ -451,3 +451,48 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | ------------------------ | --------------- |---------------------------------------------------- |
 | CollectionError          | PrivateError    | Base Collection Exception (received from Instagram) |
 | CollectionNotFound       | CollectionError | Raise when collection unavailable                   |
+
+
+### Direct Exceptions
+
+| Exception                | Base           | Description                                    |
+| ------------------------ | -------------- |----------------------------------------------- |
+| DirectError              | PrivateError   | Base Direct Exception                          |
+| DirectThreadNotFound     | DirectError    | Raise when thread not found                    |
+| DirectMessageNotFound    | DirectError    | Raise when message in thread not found         |
+
+
+### Photo Exceptions
+
+| Exception                | Base                | Description                                    |
+| ------------------------ | ------------------- |----------------------------------------------- |
+| PhotoNotDownload         | PrivateError        | Raise when source photo not found              |
+| PhotoNotUpload           | PrivateError        | Raise when photo not upload                    |
+| PhotoConfigureError      | PhotoNotUpload      | Raise when photo not configured                |
+| PhotoConfigureStoryError | PhotoConfigureError | Raise when photo story not configured          |
+
+
+### Video Exceptions
+
+| Exception                | Base                | Description                                    |
+| ------------------------ | ------------------- | ---------------------------------------------- |
+| VideoNotDownload         | PrivateError        | Raise when source video not found              |
+| VideoNotUpload           | PrivateError        | Raise when video not upload                    |
+| VideoConfigureError      | VideoNotUpload      | Raise when video not configured                |
+| VideoConfigureStoryError | VideoConfigureError | Raise when video story not configured          |
+
+### IGTV Exceptions
+
+| Exception                | Base          | Description                                    |
+| ------------------------ | ------------- |----------------------------------------------- |
+| IGTVNotUpload            | PrivateError  | Raise when IGTV not upload                     |
+| IGTVConfigureError       | IGTVNotUpload | Raise when IGTV not configured                 |
+
+
+### Album Exceptions
+
+| Exception                | Base         | Description                                    |
+| ------------------------ | ------------ |----------------------------------------------- |
+| AlbumNotDownload         | PrivateError | Raise when album not found                     |
+| AlbumUnknownFormat       | PrivateError | Raise when format of media not MP4 or JPG      |
+| AlbumConfigureError      | PrivateError | Raise when album not configured                |
