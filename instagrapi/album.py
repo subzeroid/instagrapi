@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 
 from .extractors import extract_media_v1
 from .exceptions import (
-    AlbumNotDownload, UnknownFormat,
+    AlbumNotDownload, AlbumUnknownFormat,
     AlbumConfigureError
 )
 from .types import Usertag, Location, Media
@@ -46,7 +46,7 @@ class DownloadAlbum:
             elif fname.endswith('.mp4'):
                 paths.append(self.video_download_by_url(url, fname, folder))
             else:
-                raise UnknownFormat()
+                raise AlbumUnknownFormat()
         return paths
 
 
@@ -102,7 +102,7 @@ class UploadAlbum:
                 })
                 self.photo_rupload(thumbnail, upload_id)
             else:
-                raise UnknownFormat()
+                raise AlbumUnknownFormat()
 
         for attempt in range(20):
             self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")

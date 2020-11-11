@@ -204,7 +204,7 @@ class AlbumNotDownload(PrivateError):
     pass
 
 
-class UnknownFormat(PrivateError):
+class AlbumUnknownFormat(PrivateError):
     pass
 
 
