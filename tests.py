@@ -106,6 +106,68 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 #                 self.assertEqual(value, getattr(user, key))
 
 
+# class ClientTestCase(unittest.TestCase):
+#
+#     def test_lg(self):
+#         settings = {
+#             "uuids": {
+#                 "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
+#                 "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
+#                 "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
+#                 "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
+#                 "device_id": "android-e021b636049dc0e9"
+#             },
+#             "device_settings": {
+#                 "cpu": "h1",
+#                 "dpi": "640dpi",
+#                 "model": "h1",
+#                 "device": "RS988",
+#                 "resolution": "1440x2392",
+#                 "app_version": "117.0.0.28.123",
+#                 "manufacturer": "LGE/lge",
+#                 "version_code": "168361634",
+#                 "android_release": "6.0.1",
+#                 "android_version": 23
+#             },
+#             # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
+#             "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+#         }
+#         api = Client(settings)
+#         api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+#         self.assertIsInstance(api.user_id, int)
+#         self.assertEqual(api.username, ACCOUNT_USERNAME)
+
+
+class ClientDeviceTestCase(ClientPrivateTestCase):
+
+    def test_set_device(self):
+        fields = ['uuids', 'cookies', 'last_login', 'device_settings', 'user_agent']
+        for field in fields:
+            settings = self.api.get_settings()
+            self.assertIn(field, settings)
+        device = {
+            "app_version": "165.1.0.20.119",
+            "android_version": 27,
+            "android_release": "8.1.0",
+            "dpi": "480dpi",
+            "resolution": "1080x1776",
+            "manufacturer": "motorola",
+            "device": "Moto G (5S)",
+            "model": "montana",
+            "cpu": "qcom",
+            "version_code": "253447809",
+        }
+        user_agent = "Instagram 165.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+        self.api.set_device(device)
+        self.api.set_user_agent(user_agent)
+        settings = self.api.get_settings()
+        self.assertDictEqual(device, settings['device_settings'])
+        self.assertEqual(user_agent, settings['user_agent'])
+        self.api.user_info_by_username_v1('adw0rd')
+        request_user_agent = self.api.last_response.request.headers.get('User-Agent')
+        self.assertEqual(user_agent, request_user_agent)
+
+
 class ClientUserTestCase(ClientPrivateTestCase):
     def test_username_from_user_id(self):
         self.assertEqual(self.api.username_from_user_id(1903424587), "adw0rd")
