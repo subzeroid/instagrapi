@@ -164,6 +164,10 @@ class DirectMessageNotFound(DirectError):
     pass
 
 
+class VideoTooLongException(PrivateError):
+    pass
+
+
 class VideoNotDownload(PrivateError):
     pass
 

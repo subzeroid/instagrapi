@@ -24,6 +24,7 @@ from .exceptions import (
     RateLimitError,
     BadPassword,
     PleaseWaitFewMinutes,
+    VideoTooLongException,
     UnknownError,
 )
 
@@ -224,12 +225,14 @@ class PrivateRequest:
                     raise BadPassword(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
+                elif "VideoTooLongException" in message:
+                    raise VideoTooLongException(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
                 self.logger.exception(e)
                 self.logger.warning(
-                    "Status 400: %s", message or "Maybe Two-factor auth?"
+                    "Status 400: %s", message or "Empty response message. Maybe enabled Two-factor auth?"
                 )
                 raise ClientBadRequestError(
                     e, response=e.response, **last_json)
