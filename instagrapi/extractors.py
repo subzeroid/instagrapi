@@ -10,7 +10,8 @@ from .types import (
 MEDIA_TYPES_GQL = {
     "GraphImage": 1,
     "GraphVideo": 2,
-    "GraphSidecar": 8
+    "GraphSidecar": 8,
+    "StoryVideo": 2
 }
 
 
