@@ -175,7 +175,7 @@ class Login(PreLoginFlow, PostLoginFlow):
         self.init()
         user_id = re.search(r'^\d+', sessionid).group()
         user = self.user_info_v1(int(user_id))
-        self.username = user['username']
+        self.username = user.username
         return True
 
     def login(self, username: str, password: str, relogin: bool = False) -> bool:
@@ -276,6 +276,7 @@ class Login(PreLoginFlow, PostLoginFlow):
             "cpu": "samsungexynos9810",
             "version_code": "168361634",
         }
+        self.set_uuids({})
         return True
 
     def set_user_agent(self, user_agent: str = "") -> bool:
@@ -283,6 +284,7 @@ class Login(PreLoginFlow, PostLoginFlow):
             **self.device_settings
         )
         self.private.headers.update({"User-Agent": self.user_agent})
+        self.set_uuids({})
         return True
 
     def set_uuids(self, uuids: dict = {}) -> bool:
