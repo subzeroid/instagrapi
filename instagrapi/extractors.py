@@ -138,7 +138,7 @@ def extract_user_short(data):
     """Extract User Short info
     """
     data['pk'] = data.get("id", data.get("pk", None))
-    assert data['pk'], 'User without pk "%s"' % data
+    assert data['pk'], f'User without pk "{data}"'
     return UserShort(**data)
 
 

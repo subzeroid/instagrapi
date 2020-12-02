@@ -21,6 +21,7 @@ from .collection import Collection
 from .account import Account
 from .direct import Direct
 from .location import LocationMixin
+from .signup import SignUpMixin
 
 
 class Client(
@@ -45,7 +46,8 @@ class Client(
     Collection,
     Account,
     Direct,
-    LocationMixin
+    LocationMixin,
+    SignUpMixin
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")

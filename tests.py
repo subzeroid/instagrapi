@@ -9,6 +9,7 @@ from datetime import datetime
 from json.decoder import JSONDecodeError
 
 from instagrapi import Client
+from instagrapi.utils import gen_password
 from instagrapi.types import (
     User, UserShort, Media, MediaOembed, Comment, Collection,
     DirectThread, DirectMessage, Usertag, Location, Account
@@ -866,6 +867,30 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         self.assertIsInstance(loc, Location)
         self.assertEqual(loc.pk, 197780767581661)
         self.assertEqual(loc.name, 'In The Clouds')
+
+
+class SignUpTestCase(unittest.TestCase):
+
+    def test_signup(self):
+        cl = Client()
+        username = gen_password()
+        password = gen_password(12, symbols=True)
+        email = f'{username}@gmail.com'
+        phone_number = os.environ.get("IG_PHONE_NUMBER")
+        full_name = f'John {username}'
+        user = cl.signup(
+            username, password, email, phone_number, full_name,
+            year=random.randint(1980, 1990),
+            month=random.randint(1, 12),
+            day=random.randint(1, 30)
+        )
+        self.assertIsInstance(user, UserShort)
+        for key, val in {
+            "username": username,
+            "full_name": full_name
+        }.items():
+            self.assertEqual(getattr(user, key), val)
+        self.assertTrue(user.profile_pic_url.startswith("https://"))
 
 
 if __name__ == '__main__':
