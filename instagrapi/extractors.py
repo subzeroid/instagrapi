@@ -3,7 +3,8 @@ from .utils import json_value
 from .types import (
     Media, Resource, User, UserShort, Usertag,
     Location, Collection, Comment, MediaOembed,
-    DirectThread, DirectMessage, Account
+    DirectThread, DirectMessage, Account,
+    Hashtag
 )
 
 
@@ -225,3 +226,13 @@ def extract_direct_message(data):
 def extract_account(data):
     data['external_url'] = data.get('external_url') or None
     return Account(**data)
+
+
+def extract_hashtag_gql(data):
+    # data['pk'] = data['id']
+    return Hashtag(**data)
+
+
+def extract_hashtag_v1(data):
+    data['allow_following'] = data.get('allow_following') == 1
+    return Hashtag(**data)

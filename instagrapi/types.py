@@ -186,3 +186,10 @@ class DirectThread(BaseModel):
     assigned_admin_id: int
     shh_mode_enabled: bool
     last_seen_at: dict
+
+
+class Hashtag(BaseModel):
+    id: int
+    name: str
+    media_count: Optional[int]
+    profile_pic_url: Optional[HttpUrl]

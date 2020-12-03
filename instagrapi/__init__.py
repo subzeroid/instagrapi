@@ -4,7 +4,6 @@ from urllib.parse import urlparse
 from .auth import Login
 from .public import (
     PublicRequest,
-    HashtagPublic,
     TopSearchesPublic,
     ProfilePublic,
 )
@@ -22,13 +21,13 @@ from .account import Account
 from .direct import Direct
 from .location import LocationMixin
 from .signup import SignUpMixin
+from .hashtag import HashtagMixin
 
 
 class Client(
     PublicRequest,
     ChallengeResolve,
     PrivateRequest,
-    HashtagPublic,
     TopSearchesPublic,
     ProfilePublic,
     Login,
@@ -47,7 +46,8 @@ class Client(
     Account,
     Direct,
     LocationMixin,
-    SignUpMixin
+    SignUpMixin,
+    HashtagMixin
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")
