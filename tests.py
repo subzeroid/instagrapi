@@ -11,7 +11,8 @@ from json.decoder import JSONDecodeError
 from instagrapi import Client
 from instagrapi.types import (
     User, UserShort, Media, MediaOembed, Comment, Collection,
-    DirectThread, DirectMessage, Usertag, Location, Account
+    DirectThread, DirectMessage, Usertag, Location, Account,
+    Hashtag
 )
 
 
@@ -866,6 +867,23 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         self.assertIsInstance(loc, Location)
         self.assertEqual(loc.pk, 197780767581661)
         self.assertEqual(loc.name, 'In The Clouds')
+
+
+class ClientHashtagTestCase(ClientPrivateTestCase):
+
+    def test_hashtag_info(self):
+        hashtag = self.api.hashtag_info('dhbastards')
+        self.assertIsInstance(hashtag, Hashtag)
+        self.assertEqual('dhbastards', hashtag.name)
+
+    def test_extract_hashtag_info(self):
+        hashtag_a1 = self.api.hashtag_info_a1('dhbastards')
+        hashtag_v1 = self.api.hashtag_info_v1('dhbastards')
+        self.assertIsInstance(hashtag_a1, Hashtag)
+        self.assertIsInstance(hashtag_v1, Hashtag)
+        self.assertEqual('dhbastards', hashtag_a1.name)
+        self.assertEqual(hashtag_a1.id, hashtag_v1.id)
+        self.assertEqual(hashtag_a1.name, hashtag_v1.name)
 
 
 if __name__ == '__main__':
