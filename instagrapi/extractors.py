@@ -1,4 +1,5 @@
-# import json
+from copy import deepcopy
+
 from .utils import json_value
 from .types import (
     Media, Resource, User, UserShort, Usertag,
@@ -19,85 +20,87 @@ MEDIA_TYPES_GQL = {
 def extract_media_v1(data):
     """Extract media from Private API
     """
-    if "video_versions" in data:
+    media = deepcopy(data)
+    if "video_versions" in media:
         # Select Best Quality by Resolutiuon
-        data['video_url'] = sorted(
-            data["video_versions"], key=lambda o: o["height"] * o["width"]
-        ).pop()["url"]
-    if data["media_type"] == 2 and not data.get("product_type"):
-        data["product_type"] = "feed"
-    if 'image_versions2' in data:
-        data['thumbnail_url'] = sorted(
-            data["image_versions2"]["candidates"],
+        media['video_url'] = sorted(
+            media["video_versions"], key=lambda o: o["height"] * o["width"]
+        )[-1]["url"]
+    if media["media_type"] == 2 and not media.get("product_type"):
+        media["product_type"] = "feed"
+    if 'image_versions2' in media:
+        media['thumbnail_url'] = sorted(
+            media["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
-        ).pop()["url"]
-    if data["media_type"] == 8:
+        )[-1]["url"]
+    if media["media_type"] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        data.pop('thumbnail_url', '')
-        data.pop('video_url', '')
-    location = data.pop("location", None)
+        media.pop('thumbnail_url', '')
+        media.pop('video_url', '')
+    location = media.pop("location", None)
     return Media(
         location=extract_location(location) if location else None,
-        user=extract_user_short(data.pop("user")),
-        caption_text=(data.get("caption") or {}).get("text", ""),
+        user=extract_user_short(media.pop("user")),
+        caption_text=(media.get("caption") or {}).get("text", ""),
         usertags=sorted([
             extract_usertag(usertag)
-            for usertag in data.pop("usertags", {}).get("in", [])
+            for usertag in media.pop("usertags", {}).get("in", [])
         ], key=lambda tag: tag.user.pk),
         resources=[
             extract_resource_v1(edge)
-            for edge in data.get('carousel_media', [])
+            for edge in media.get('carousel_media', [])
         ],
-        like_count=data.pop('like_count', 0),
-        **data
+        like_count=media.pop('like_count', 0),
+        **media
     )
 
 
 def extract_media_gql(data):
     """Extract media from GraphQL
     """
-    user = extract_user_short(data["owner"])
+    media = deepcopy(data)
+    user = extract_user_short(media["owner"])
     # if "full_name" in user:
     #     user = extract_user_short(user)
     # else:
     #     user["pk"] = user.pop("id")
-    data['media_type'] = MEDIA_TYPES_GQL[data["__typename"]]
-    if data['media_type'] == 2 and not data.get('product_type'):
-        data['product_type'] = "feed"
-    data["thumbnail_url"] = sorted(
+    media['media_type'] = MEDIA_TYPES_GQL[media["__typename"]]
+    if media['media_type'] == 2 and not media.get('product_type'):
+        media['product_type'] = "feed"
+    media["thumbnail_url"] = sorted(
         # display_resources - user feed, thumbnail_resources - hashtag feed
-        data.get("display_resources", data.get('thumbnail_resources')),
+        media.get("display_resources", media.get('thumbnail_resources')),
         key=lambda o: o["config_width"] * o["config_height"],
-    ).pop()["src"]
-    if data['media_type'] == 8:
+    )[-1]["src"]
+    if media['media_type'] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        data.pop('thumbnail_url', '')
-        data.pop('video_url', '')
-    location = data.pop("location", None)
+        media.pop('thumbnail_url', '')
+        media.pop('video_url', '')
+    location = media.pop("location", None)
     return Media(
-        pk=data['id'],
-        id=f"{data.pop('id')}_{user.pk}",
-        code=data.get("shortcode"),
-        taken_at=data["taken_at_timestamp"],
+        pk=media['id'],
+        id=f"{media.pop('id')}_{user.pk}",
+        code=media.get("shortcode"),
+        taken_at=media["taken_at_timestamp"],
         location=extract_location(location) if location else None,
         user=user,
-        view_count=data.get('video_view_count', 0),
-        comment_count=json_value(data, "edge_media_to_comment", "count"),
-        like_count=json_value(data, "edge_media_preview_like", "count"),
+        view_count=media.get('video_view_count', 0),
+        comment_count=json_value(media, "edge_media_to_comment", "count"),
+        like_count=json_value(media, "edge_media_preview_like", "count"),
         caption_text=json_value(
-            data, "edge_media_to_caption", "edges", 0, "node", "text", default=""
+            media, "edge_media_to_caption", "edges", 0, "node", "text", default=""
         ),
         usertags=sorted([
             extract_usertag(usertag['node'])
-            for usertag in data.get("edge_media_to_tagged_user", {}).get("edges", [])
+            for usertag in media.get("edge_media_to_tagged_user", {}).get("edges", [])
         ], key=lambda tag: tag.user.pk),
         resources=[
             extract_resource_gql(edge['node'])
-            for edge in data.get('edge_sidecar_to_children', {}).get('edges', [])
+            for edge in media.get('edge_sidecar_to_children', {}).get('edges', [])
         ],
-        **data
+        **media
     )
 
 
@@ -105,11 +108,11 @@ def extract_resource_v1(data):
     if 'video_versions' in data:
         data['video_url'] = sorted(
             data["video_versions"], key=lambda o: o["height"] * o["width"]
-        ).pop()["url"]
+        )[-1]["url"]
     data['thumbnail_url'] = sorted(
         data["image_versions2"]["candidates"],
         key=lambda o: o["height"] * o["width"],
-    ).pop()["url"]
+    )[-1]["url"]
     return Resource(**data)
 
 
@@ -229,7 +232,7 @@ def extract_account(data):
 
 
 def extract_hashtag_gql(data):
-    # data['pk'] = data['id']
+    data['media_count'] = data.get('edge_hashtag_to_media', {}).get('count')
     return Hashtag(**data)
 
 

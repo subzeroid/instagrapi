@@ -3,7 +3,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 7 November 2020 (last reverse-engineering check)
+Instagram API valid for 7 December 2020 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [Discord](https://discord.gg/vM9SJAD4)
@@ -38,7 +38,7 @@ Instagram API valid for 7 November 2020 (last reverse-engineering check)
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
 
-```
+``` python
 def media_info(media_pk):
     try:
         return self.media_info_gql(media_pk)
@@ -50,7 +50,7 @@ def media_info(media_pk):
 
 ### Usage
 
-```
+``` python
 from instagrapi import Client
 
 cl = Client()
@@ -74,6 +74,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
+| Hashtag        | Hashtag object (id, name, picture)
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
@@ -105,7 +106,7 @@ This is your authorized account
 
 Example:
 
-```
+``` python
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
@@ -117,7 +118,7 @@ print(cl.user_info(cl.user_id))
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
-```
+``` python
 settings = {
    "uuids": {
       "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
@@ -170,10 +171,12 @@ Viewing and editing publications (medias)
 | media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
 | media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
+| media_like(media_id: str)                          | bool               | Like media                                                    |
+| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
 
 Example:
 
-```
+``` python
 >>> cl.media_pk_from_code("B-fKL9qpeab")
 2278584739065882267
 
@@ -263,7 +266,7 @@ View a list of a user's medias, following and followers
 
 Example:
 
-```
+``` python
 >>> cl.user_followers(cl.user_id).keys()
 dict_keys([5563084402, 43848984510, 1498977320, ...])
 
@@ -357,7 +360,7 @@ Upload medias to your stories. Common arguments:
 
 Examples:
 
-```
+``` python
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
@@ -381,7 +384,7 @@ cl.video_upload_to_story(
 
 Example:
 
-```
+``` python
 from instagrapi.story import StoryBuilder
 
 media_path = cl.video_download(
@@ -437,6 +440,24 @@ Get statistics by medias. Common arguments:
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread        |
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread        |
 | direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads   |
+
+#### Location
+
+| Method                                    | Return         | Description                                                             |
+| ----------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| location_search(lat: float, lng: float)   | List[Location] | Search Location by GEO coordinates
+| location_complete(location: Location)     | Location       | Complete blank fields
+| location_build(location: Location)        | String         | Serialized JSON
+| location_info(location_pk: int)           | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
+
+#### Hashtag
+
+| Method                                                               | Return              | Description                             |
+| -------------------------------------------------------------------- | ------------------- | --------------------------------------- |
+| hashtag_info(name: str)                                              | Hashtag             | Return Hashtag info (id, name, picture) |
+| hashtag_related_hashtags(name: str)                                  | List[Hashtag]       | Return list of related Hashtags         |
+| hashtag_medias_top(name: str, amount: int = 9)                       | List[Media]         | Return Top posts by Hashtag             |
+| hashtag_medias_recent(name: str, amount: int = 27)                   | List[Media]         | Return Most recent posts by Hashtag     |
 
 #### Challenge
 

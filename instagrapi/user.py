@@ -5,7 +5,7 @@ from copy import deepcopy
 from .exceptions import (
     ClientError,
     ClientNotFoundError,
-    UserNotFound,
+    UserNotFound
 )
 from .extractors import (
     extract_user_gql,
@@ -15,12 +15,13 @@ from .extractors import (
     extract_media_v1,
 )
 from .utils import json_value
-from .types import User, Media
+from .types import User, Media, UserShort
 from . import config
 
 
 class User:
-    _users_cache = {}  # user_pk -> "full user object"
+    _users_cache = {}  # user_pk -> User
+    _userhorts_cache = {}  # user_pk -> UserShort
     _usernames_cache = {}  # username -> user_pk
     _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
@@ -31,12 +32,42 @@ class User:
         """
         return int(self.user_info_by_username(username).pk)
 
+    def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
+        """Return UserShort by user_id
+        """
+        if use_cache:
+            cache = self._userhorts_cache.get(user_id)
+            if cache:
+                return cache
+        variables = {
+            "user_id": int(user_id),
+            "include_reel": True,
+        }
+        data = self.public_graphql_request(
+            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
+        )
+        if not data["user"]:
+            raise UserNotFound(user_id=user_id, **data)
+        user = extract_user_short(data["user"]["reel"]["user"])
+        self._userhorts_cache[user_id] = user
+        return user
+
+    def username_from_user_id_gql(self, user_id: int) -> str:
+        """Get username by user_id
+        Result: 1903424587 -> 'adw0rd'
+        """
+        return self.user_short_gql(user_id).username
+
     def username_from_user_id(self, user_id: int) -> str:
         """Get username by user_id
         Result: 1903424587 -> 'adw0rd'
         """
         user_id = int(user_id)
-        return self.user_info(user_id).username
+        try:
+            username = self.username_from_user_id_gql(user_id)
+        except ClientError:
+            username = self.user_info_v1(user_id).username
+        return username
 
     def user_info_by_username_gql(self, username: str) -> User:
         """Return user object via GraphQL API
@@ -75,16 +106,10 @@ class User:
         """Return user object via GraphQL API
         """
         user_id = int(user_id)
-        variables = {
-            "user_id": user_id,
-            "include_reel": True,
-        }
-        data = self.public_graphql_request(
-            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
+        # GraphQL haven't method to receive user by id
+        return self.user_info_by_username_gql(
+            self.username_from_user_id_gql(user_id)
         )
-        if not data["user"]:
-            raise UserNotFound(user_id=user_id, **data)
-        return self.user_info_by_username_gql(data["user"]["reel"]["user"]["username"])
 
     def user_info_v1(self, user_id: int) -> User:
         """Return user object via Private API

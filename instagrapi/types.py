@@ -43,7 +43,7 @@ class Account(BaseModel):
 
 class UserShort(BaseModel):
     pk: int
-    username: str
+    username: Optional[str]
     full_name: Optional[str] = ''
     profile_pic_url: Optional[HttpUrl]
     # is_private: bool

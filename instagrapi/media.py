@@ -1,4 +1,5 @@
 import json
+import random
 from typing import List
 from copy import deepcopy
 from urllib.parse import urlparse
@@ -238,3 +239,41 @@ class Media:
             ),
         )
         return extract_comment(result["comment"])
+
+    def media_like(self, media_id: str) -> bool:
+        """Like media
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        data = {
+            "inventory_source": "media_or_ad",
+            "media_id": media_id,
+            "radio_type": "wifi-none",
+            "is_carousel_bumped_post": "false",
+            "container_module": "feed_timeline",
+            "feed_position": str(random.randint(0, 6))
+        }
+        result = self.private_request(
+            f"media/{media_id}/like/",
+            self.with_action_data(data)
+        )
+        return result['status'] == 'ok'
+
+    def media_unlike(self, media_id: str) -> bool:
+        """Unlike media
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        data = {
+            "inventory_source": "media_or_ad",
+            "media_id": media_id,
+            "radio_type": "wifi-none",
+            "is_carousel_bumped_post": "false",
+            "container_module": "feed_timeline",
+            "feed_position": str(random.randint(0, 6))
+        }
+        result = self.private_request(
+            f"media/{media_id}/unlike/",
+            self.with_action_data(data)
+        )
+        return result['status'] == 'ok'
