@@ -909,13 +909,13 @@ class ClientHashtagTestCase(ClientPrivateTestCase):
         self.assertIsInstance(medias[0], Media)
 
     def test_extract_hashtag_medias_recent(self):
-        medias_a1 = self.api.hashtag_medias_recent_a1('dhbastards', amount=11)
-        medias_v1 = self.api.hashtag_medias_recent_v1('dhbastards', amount=11)
-        self.assertEqual(len(medias_a1), 11)
+        medias_v1 = self.api.hashtag_medias_recent_v1('dhbastards', amount=31)
+        medias_a1 = self.api.hashtag_medias_recent_a1('dhbastards', amount=31)
+        self.assertEqual(len(medias_a1), 31)
         self.assertIsInstance(medias_a1[0], Media)
-        self.assertEqual(len(medias_v1), 11)
+        self.assertEqual(len(medias_v1), 31)
         self.assertIsInstance(medias_v1[0], Media)
-        for i, a1 in enumerate(medias_a1):
+        for i, a1 in enumerate(medias_a1[:10]):
             a1 = a1.dict()
             v1 = medias_v1[i].dict()
             for f in self.REQUIRED_MEDIA_FIELDS:

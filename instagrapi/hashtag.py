@@ -118,17 +118,26 @@ class HashtagMixin:
             'include_persistent': 'true',
             'rank_token': self.rank_token,
         }
-        result = self.private_request(
-            f'tags/{name}/sections/', self.with_default_data(data)
-        )
+        max_id = None
         medias = []
-        for section in result['sections']:
-            layout_content = section.get('layout_content') or {}
-            nodes = layout_content.get('medias') or []
-            for node in nodes:
-                medias.append(
-                    extract_media_v1(node['media'])
-                )
+        while True:
+            result = self.private_request(
+                f'tags/{name}/sections/',
+                params={"max_id": max_id} if max_id else {},
+                data=self.with_default_data(data)
+            )
+            for section in result['sections']:
+                layout_content = section.get('layout_content') or {}
+                nodes = layout_content.get('medias') or []
+                for node in nodes:
+                    if amount and len(medias) >= amount:
+                        break
+                    medias.append(extract_media_v1(node['media']))
+            if not result["more_available"]:
+                break
+            if amount and len(medias) >= amount:
+                break
+            max_id = result["next_max_id"]
         if amount:
             medias = medias[:amount]
         return medias
