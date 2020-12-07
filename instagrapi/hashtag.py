@@ -123,7 +123,9 @@ class HashtagMixin:
         )
         medias = []
         for section in result['sections']:
-            for node in section['layout_content']['medias']:
+            layout_content = section.get('layout_content') or {}
+            nodes = layout_content.get('medias') or []
+            for node in nodes:
                 medias.append(
                     extract_media_v1(node['media'])
                 )
