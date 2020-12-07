@@ -54,7 +54,7 @@ class HashtagMixin:
             hashtag = self.hashtag_info_v1(name)
         return hashtag
 
-    def hashtag_related_hashtags(self, name):
+    def hashtag_related_hashtags(self, name: str) -> List[Hashtag]:
         """Get related hashtags
         """
         data = self.public_a1_request(f"/explore/tags/{name}/")

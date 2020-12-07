@@ -74,6 +74,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
+| Hashtag        | Hashtag object (id, name, picture)
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
@@ -437,6 +438,24 @@ Get statistics by medias. Common arguments:
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread        |
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread        |
 | direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads   |
+
+#### Location
+
+| Method                                    | Return         | Description                                                             |
+| ----------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| location_search(lat: float, lng: float)   | List[Location] | Search Location by GEO coordinates
+| location_complete(location: Location)     | Location       | Complete blank fields
+| location_build(location: Location)        | String         | Serialized JSON
+| location_info(location_pk: int)           | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
+
+#### Hashtag
+
+| Method                                                               | Return              | Description                             |
+| -------------------------------------------------------------------- | ------------------- | --------------------------------------- |
+| hashtag_info(name: str)                                              | Hashtag             | Return Hashtag info (id, name, picture) |
+| hashtag_related_hashtags(name: str)                                  | List[Hashtag]       | Return list of related Hashtags         |
+| hashtag_medias_top(name: str, amount: int = 9)                       | List[Media]         | Return Top posts by Hashtag             |
+| hashtag_medias_recent(name: str, amount: int = 27)                   | List[Media]         | Return Most recent posts by Hashtag     |
 
 #### Challenge
 
