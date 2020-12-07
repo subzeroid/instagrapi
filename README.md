@@ -38,7 +38,7 @@ Instagram API valid for 7 November 2020 (last reverse-engineering check)
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
 
-```
+``` python
 def media_info(media_pk):
     try:
         return self.media_info_gql(media_pk)
@@ -50,7 +50,7 @@ def media_info(media_pk):
 
 ### Usage
 
-```
+``` python
 from instagrapi import Client
 
 cl = Client()
@@ -106,7 +106,7 @@ This is your authorized account
 
 Example:
 
-```
+``` python
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
@@ -118,7 +118,7 @@ print(cl.user_info(cl.user_id))
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
-```
+``` python
 settings = {
    "uuids": {
       "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
@@ -174,7 +174,7 @@ Viewing and editing publications (medias)
 
 Example:
 
-```
+``` python
 >>> cl.media_pk_from_code("B-fKL9qpeab")
 2278584739065882267
 
@@ -264,7 +264,7 @@ View a list of a user's medias, following and followers
 
 Example:
 
-```
+``` python
 >>> cl.user_followers(cl.user_id).keys()
 dict_keys([5563084402, 43848984510, 1498977320, ...])
 
@@ -358,7 +358,7 @@ Upload medias to your stories. Common arguments:
 
 Examples:
 
-```
+``` python
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
@@ -382,7 +382,7 @@ cl.video_upload_to_story(
 
 Example:
 
-```
+``` python
 from instagrapi.story import StoryBuilder
 
 media_path = cl.video_download(
