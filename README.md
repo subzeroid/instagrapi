@@ -171,6 +171,8 @@ Viewing and editing publications (medias)
 | media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
 | media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
 | media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
+| media_like(media_id: str)                          | bool               | Like media                                                    |
+| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
 
 Example:
 
