@@ -43,7 +43,7 @@ class PrivateRequest:
     handle_exception = None
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")
-    request_timeout = 3
+    request_timeout = 1
     last_response = None
     last_json = {}
 

@@ -64,7 +64,7 @@ class HashtagMixin:
         ]
 
     def hashtag_medias_a1(self, name: str, amount: int = 27, sleep: float = 0.5, tab_key: str = '') -> List[Media]:
-        """Receive medias by hastag name
+        """Receive medias by hashtag name
         """
         medias = []
         end_cursor = None
@@ -91,7 +91,7 @@ class HashtagMixin:
                 medias.append(
                     self.media_info_gql(node['id'])
                 )
-                time.sleep(sleep)
+                # time.sleep(sleep)
             if not page_info["has_next_page"] or not end_cursor:
                 break
             if amount and len(medias) >= amount:
@@ -109,7 +109,7 @@ class HashtagMixin:
         return medias
 
     def hashtag_medias_v1(self, name: str, amount: int = 27, tab_key: str = '') -> List[Media]:
-        """Receive medias by hastag name
+        """Receive medias by hashtag name
         """
         data = {
             'supported_tabs': dumps([tab_key]),
@@ -143,7 +143,7 @@ class HashtagMixin:
         return medias
 
     def hashtag_medias_top_a1(self, name: str, amount: int = 9, sleep: float = 0.5) -> List[Media]:
-        """Top medias
+        """Top medias by public API
         """
         return self.hashtag_medias_a1(
             name, amount, sleep=sleep,
@@ -151,7 +151,7 @@ class HashtagMixin:
         )
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
-        """Top medias
+        """Top medias by private API
         """
         return self.hashtag_medias_v1(name, amount, tab_key='top')
 
@@ -166,8 +166,8 @@ class HashtagMixin:
             medias = self.hashtag_medias_top_v1(name, amount)
         return medias
 
-    def hashtag_medias_recent_a1(self, name: str, amount: int = 27, sleep: float = 0.5) -> List[Media]:
-        """Recent medias
+    def hashtag_medias_recent_a1(self, name: str, amount: int = 71, sleep: float = 0.5) -> List[Media]:
+        """Recent medias by public API
         """
         return self.hashtag_medias_a1(
             name, amount, sleep=sleep,
@@ -175,12 +175,12 @@ class HashtagMixin:
         )
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
-        """All medias
+        """Recent medias by private API
         """
         return self.hashtag_medias_v1(name, amount, tab_key='recent')
 
     def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
-        """All medias
+        """Recent medias
         """
         try:
             medias = self.hashtag_medias_recent_a1(name, amount)

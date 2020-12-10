@@ -76,6 +76,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             print(str(e))
             settings = {}
         self.api = Client(settings)
+        self.api.request_timeout = 0.5
         self.set_proxy_if_exists()
         self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
         json.dump(self.api.get_settings(), open(filename, 'w'))
@@ -891,6 +892,24 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         self.assertIsInstance(loc, Location)
         self.assertEqual(loc.pk, 197780767581661)
         self.assertEqual(loc.name, 'In The Clouds')
+
+    def test_location_medias_top(self):
+        medias = self.api.location_medias_top(197780767581661, amount=2)
+        self.assertEqual(len(medias), 2)
+        self.assertIsInstance(medias[0], Media)
+
+    # def test_extract_location_medias_top(self):
+    #     medias_a1 = self.api.location_medias_top_a1(197780767581661, amount=9)
+    #     medias_v1 = self.api.location_medias_top_v1(197780767581661, amount=9)
+    #     self.assertEqual(len(medias_a1), 9)
+    #     self.assertIsInstance(medias_a1[0], Media)
+    #     self.assertEqual(len(medias_v1), 9)
+    #     self.assertIsInstance(medias_v1[0], Media)
+
+    def test_location_medias_recent(self):
+        medias = self.api.location_medias_recent(197780767581661, amount=2)
+        self.assertEqual(len(medias), 2)
+        self.assertIsInstance(medias[0], Media)
 
 
 class ClientHashtagTestCase(ClientPrivateTestCase):

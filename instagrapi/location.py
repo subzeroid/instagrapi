@@ -1,8 +1,9 @@
 import json
+import time
 from typing import List
 
 from .extractors import extract_location
-from .types import Location
+from .types import Location, Media
 
 
 class LocationMixin:
@@ -79,3 +80,64 @@ class LocationMixin:
         """Return additonal info for location
         """
         return self.location_info_a1(location_pk)
+
+    def location_medias_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = '') -> List[Media]:
+        """Receive medias by location_pk
+        """
+        medias = []
+        end_cursor = None
+        while True:
+            data = self.public_a1_request(
+                f'/explore/locations/{location_pk}/',
+                params={"max_id": end_cursor} if end_cursor else {}
+            )['location']
+            page_info = data["edge_location_to_media"]["page_info"]
+            end_cursor = page_info["end_cursor"]
+            edges = data[tab_key]["edges"]
+            for edge in edges:
+                if amount and len(medias) >= amount:
+                    break
+                node = edge['node']
+                medias.append(
+                    self.media_info_gql(node['id'])
+                )
+                # time.sleep(sleep)
+            if not page_info["has_next_page"] or not end_cursor:
+                break
+            if amount and len(medias) >= amount:
+                break
+            time.sleep(sleep)
+        uniq_pks = set()
+        medias = [
+            m for m in medias
+            if not (m.pk in uniq_pks or uniq_pks.add(m.pk))
+        ]
+        if amount:
+            medias = medias[:amount]
+        return medias
+
+    def location_medias_top_a1(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
+        """Top medias by public API
+        """
+        return self.location_medias_a1(
+            location_pk, amount, sleep=sleep,
+            tab_key='edge_location_to_top_posts'
+        )
+
+    def location_medias_top(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
+        """Top medias
+        """
+        return self.location_medias_top_a1(location_pk, amount, sleep)
+
+    def location_medias_recent_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
+        """Recent medias by private API
+        """
+        return self.location_medias_a1(
+            location_pk, amount, sleep=sleep,
+            tab_key='edge_location_to_media'
+        )
+
+    def location_medias_recent(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
+        """Recent medias
+        """
+        return self.location_medias_recent_a1(location_pk, amount, sleep)
