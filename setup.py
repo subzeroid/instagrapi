@@ -31,7 +31,8 @@ setup(
         'PySocks==1.7.1',
         'moviepy==1.0.3',
         'Pillow==7.2.0',
-        'pydantic==1.7.2'
+        'pydantic==1.7.2',
+        'pycryptodomex==3.9.9'
     ],
     # test_requires=[],
     keywords='instagram private api',

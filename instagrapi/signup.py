@@ -1,6 +1,8 @@
 import time
+import base64
 import random
 from uuid import uuid4
+from datetime import datetime
 
 from .types import UserShort
 from .extractors import extract_user_short
@@ -15,16 +17,17 @@ class SignUpMixin:
     wait_seconds = 5
 
     def signup(
-            self,
-            username: str,
-            password: str,
-            email: str,
-            phone_number: str,
-            full_name: str = '',
-            year: int = None,
-            month: int = None,
-            day: int = None
+        self,
+        username: str,
+        password: str,
+        email: str,
+        phone_number: str,
+        full_name: str = '',
+        year: int = None,
+        month: int = None,
+        day: int = None
     ) -> UserShort:
+        email = 'jw85tnam2@relay.firefox.com'
         self.get_signup_config()
         check = self.check_email(email)
         assert check.get('valid'), f'Email not valid ({check})'
@@ -33,23 +36,28 @@ class SignUpMixin:
         assert sent.get('email_sent'), 'Email not sent ({sent})'
         # send code confirmation
         code = ""
-        for _ in range(5):
-            for attempt in range(1, 11):
-                code = self.challenge_code_handler(username, CHOICE_EMAIL)
-                if code:
-                    break
-                time.sleep(self.wait_seconds * attempt)
-            print(
-                f'Enter code "{code}" for {username} '
-                f'({attempt} attempts, by {self.wait_seconds} seconds)'
-            )
+        for attempt in range(1, 11):
+            code = self.challenge_code_handler(username, CHOICE_EMAIL)
+            if code:
+                break
+            time.sleep(self.wait_seconds * attempt)
+        print(
+            f'Enter code "{code}" for {username} '
+            f'({attempt} attempts, by {self.wait_seconds} seconds)'
+        )
         signup_code = self\
             .check_confirmation_code(email, code)\
             .get('signup_code')
         retries = 0
         kwargs = {
-            username, password, email, signup_code, full_name,
-            year, month, day
+            'username': username,
+            'password': password,
+            'email': email,
+            'signup_code': signup_code,
+            'full_name': full_name,
+            'year': year,
+            'month': month,
+            'day': day
         }
         while retries < 3:
             data = self.accounts_create(**kwargs)
@@ -113,25 +121,28 @@ class SignUpMixin:
         ).json()
 
     def accounts_create(
-            self,
-            username: str,
-            password: str,
-            email: str,
-            signup_code: str,
-            full_name: str = '',
-            year: int = None,
-            month: int = None,
-            day: int = None,
-            **data
+        self,
+        username: str,
+        password: str,
+        email: str,
+        signup_code: str,
+        full_name: str = '',
+        year: int = None,
+        month: int = None,
+        day: int = None,
+        **kwargs
     ) -> dict:
-        return self.private_request("accounts/create", {
+        timestamp = datetime.now().strftime('%s')
+        nonce = f'{username}|{timestamp}|\xb9F"\x8c\xa2I\xaaz|\xf6xz\x86\x92\x91Y\xa5\xaa#f*o%\x7f'
+        sn_nonce = base64.encodebytes(nonce.encode()).decode().strip()
+        data = {
             "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
             "tos_version": "row",
             "suggestedUsername": "sn_result",
             "do_not_auto_login_if_credentials_match": "false",
             "phone_id": self.phone_id,
-            "enc_password": "#PWD_INSTAGRAM:4:1605642001:...",
+            "enc_password": self.password_encrypt(password),
             "username": str(username),
             "first_name": str(full_name),
             "day": str(day),
@@ -142,13 +153,14 @@ class SignUpMixin:
             "_uuid": self.uuid,
             "email": email,
             "month": str(month),
-            "sn_nonce": "cnJydHRnZ2dn...........qGkpFZpaojUi1vJX8=",
+            "sn_nonce": sn_nonce,
             "force_sign_up_code": signup_code,
             "waterfall_id": self.waterfall_id,
             "password": password,
             "one_tap_opt_in": "true",
-            **data
-        })
+            **kwargs
+        }
+        return self.private_request("accounts/create/", data)
 
     def challenge_flow(self, data):
         data = self.challenge_api(data)

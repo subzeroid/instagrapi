@@ -22,6 +22,7 @@ from .direct import Direct
 from .location import LocationMixin
 from .signup import SignUpMixin
 from .hashtag import HashtagMixin
+from .password import PasswordMixin
 
 
 class Client(
@@ -47,7 +48,8 @@ class Client(
     Direct,
     LocationMixin,
     SignUpMixin,
-    HashtagMixin
+    HashtagMixin,
+    PasswordMixin
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")
