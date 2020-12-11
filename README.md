@@ -23,6 +23,8 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 7. Build stories with custom background, font animation, swipe up link and mention users
 8. In the next release, account registration and captcha passing will appear
 
+![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
+
 ### Install
 
     pip install instagrapi
@@ -408,6 +410,10 @@ cl.video_upload_to_story(
     links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
 )
 ```
+
+Result:
+
+![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
 
 
 #### Collections
