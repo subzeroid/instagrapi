@@ -25,6 +25,8 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 
 ![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
 
+More stories here https://www.instagram.com/dhbastards/
+
 ### Install
 
     pip install instagrapi
@@ -414,6 +416,8 @@ cl.video_upload_to_story(
 Result:
 
 ![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
+
+More stories here https://www.instagram.com/dhbastards/
 
 
 #### Collections
