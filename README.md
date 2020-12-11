@@ -14,12 +14,14 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 
 ### Features
 
-1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
+1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
 3. Support upload a Photo, Video, IGTV, Albums and Stories
-4. Support work with User, Media, Insights, Collections and Direct objects
-5. Insights by posts and stories
-6. Build stories with custom background and font animation
+4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
+5. Like, Follow, Edit account (Bio) and much more else
+6. Insights by account, posts and stories
+7. Build stories with custom background, font animation, swipe up link and mention users
+8. In the next release, account registration and captcha passing will appear
 
 ### Install
 
@@ -32,8 +34,8 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 
 ### Requests
 
-* `Public` (anonymous request) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
-* `Private` (authorized request) methods have `_v1` suffix
+* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Private` (authorized request via mobile api) methods have `_v1` suffix
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
