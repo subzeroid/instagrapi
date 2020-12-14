@@ -1,9 +1,9 @@
-import time
 from typing import List
 
 from .extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
+    extract_media_gql,
     extract_media_v1
 )
 from .exceptions import ClientError
@@ -63,9 +63,10 @@ class HashtagMixin:
             for item in data['hashtag']['edge_hashtag_to_related_tags']["edges"]
         ]
 
-    def hashtag_medias_a1(self, name: str, amount: int = 27, sleep: float = 0.5, tab_key: str = '') -> List[Media]:
+    def hashtag_medias_a1(self, name: str, amount: int = 27, tab_key: str = '') -> List[Media]:
         """Receive medias by hashtag name
         """
+        uniqs = set()
         medias = []
         end_cursor = None
         while True:
@@ -79,31 +80,21 @@ class HashtagMixin:
             for edge in edges:
                 if amount and len(medias) >= amount:
                     break
-                node = edge['node']
-                # node haven't video_url and
-                #   User fields (username, pic_url, full_name)
-                # if 'username' not in node['owner']:
-                #     node['owner'] = self.user_short_gql(
-                #         node['owner']['id']
-                #     ).dict()
-                #     time.sleep(sleep)
-                # medias.append(extract_media_gql(node))
-                medias.append(
-                    self.media_info_gql(node['id'])
-                )
-                # time.sleep(sleep)
+                # check uniq
+                media_pk = edge['node']['id']
+                if media_pk in uniqs:
+                    continue
+                uniqs.add(media_pk)
+                # check contains hashtag in caption
+                media = extract_media_gql(edge['node'])
+                if f'#{name}' not in media.caption_text:
+                    continue
+                # fetch full media with User, Usertags, video_url
+                medias.append(self.media_info_gql(media_pk))
             if not page_info["has_next_page"] or not end_cursor:
                 break
             if amount and len(medias) >= amount:
                 break
-            time.sleep(sleep)
-        # Post unique filtration
-        # (if calculate immediately, then the cycle can be infinite)
-        uniq_pks = set()
-        medias = [
-            m for m in medias
-            if not (m.pk in uniq_pks or uniq_pks.add(m.pk))
-        ]
         if amount:
             medias = medias[:amount]
         return medias
@@ -132,7 +123,11 @@ class HashtagMixin:
                 for node in nodes:
                     if amount and len(medias) >= amount:
                         break
-                    medias.append(extract_media_v1(node['media']))
+                    media = extract_media_v1(node['media'])
+                    # check contains hashtag in caption
+                    if f'#{name}' not in media.caption_text:
+                        continue
+                    medias.append(media)
             if not result["more_available"]:
                 break
             if amount and len(medias) >= amount:
@@ -142,11 +137,11 @@ class HashtagMixin:
             medias = medias[:amount]
         return medias
 
-    def hashtag_medias_top_a1(self, name: str, amount: int = 9, sleep: float = 0.5) -> List[Media]:
+    def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
         """Top medias by public API
         """
         return self.hashtag_medias_a1(
-            name, amount, sleep=sleep,
+            name, amount,
             tab_key='edge_hashtag_to_top_posts'
         )
 
@@ -166,11 +161,11 @@ class HashtagMixin:
             medias = self.hashtag_medias_top_v1(name, amount)
         return medias
 
-    def hashtag_medias_recent_a1(self, name: str, amount: int = 71, sleep: float = 0.5) -> List[Media]:
+    def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
         """Recent medias by public API
         """
         return self.hashtag_medias_a1(
-            name, amount, sleep=sleep,
+            name, amount,
             tab_key='edge_hashtag_to_media'
         )
 
