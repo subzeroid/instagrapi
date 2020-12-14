@@ -625,7 +625,17 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         return location
 
     def assertLocation(self, location):
-        for key, val in {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}.items():
+        # data = {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}
+        data = dict(
+            pk=107617247320879,
+            name='Russia, Saint-Petersburg',
+            address='Russia, Saint-Petersburg',
+            lng=30.30605,
+            lat=59.93318,
+            external_id=107617247320879,
+            external_id_source='facebook_places'
+        )
+        for key, val in data.items():
             self.assertEqual(getattr(location, key), val)
 
     def test_photo_upload_without_location(self):
