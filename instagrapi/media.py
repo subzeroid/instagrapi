@@ -20,7 +20,7 @@ from .types import Usertag, Location, UserShort, Media, Comment
 class Media:
     _medias_cache = {}  # pk -> object
 
-    def media_id(self, media_pk: str) -> str:
+    def media_id(self, media_pk: int) -> str:
         """Return full media id
         Example: 2277033926878261772 -> 2277033926878261772_1903424587
         """
@@ -47,7 +47,8 @@ class Media:
         """Return media_pk from code
         Example: B1LbfVPlwIA -> 2110901750722920960
         Example: B-fKL9qpeab -> 2278584739065882267
-        Example: CCQQsCXjOaBfS3I2PpqsNkxElV9DXj61vzo5xs0 -> 2346448800803776129 (because: CCQQsCXjOaB -> 2346448800803776129)
+        Example: CCQQsCXjOaBfS3I2PpqsNkxElV9DXj61vzo5xs0 -> 2346448800803776129
+            (because: CCQQsCXjOaB -> 2346448800803776129)
         """
         return InstagramIdCodec.decode(code[:11])
 
@@ -60,7 +61,7 @@ class Media:
         parts = [p for p in path.split("/") if p]
         return self.media_pk_from_code(parts.pop())
 
-    def media_info_a1(self, media_pk: int, max_id=None) -> Media:
+    def media_info_a1(self, media_pk: int, max_id: str = None) -> Media:
         media_pk = self.media_pk(media_pk)
         shortcode = InstagramIdCodec.encode(media_pk)
         """Use Client.media_info
@@ -123,17 +124,15 @@ class Media:
             self._medias_cache[media_pk] = media
         return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
 
-    def media_delete(self, media_id: str, media_type: str = '') -> bool:
-        """Delete media
-        Examples:
-        https://i.instagram.com/api/v1/media/2277033926878261772_1903424587/delete/?media_type=PHOTO
-        https://i.instagram.com/api/v1/media/2354534148830717883_1903424587/delete/?media_type=CAROUSEL
+    def media_delete(self, media_id: str) -> bool:
+        """Delete media by media_id
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         result = self.private_request(
             f"media/{media_id}/delete/", self.with_default_data(
-                {"media_id": media_id})
+                {"media_id": media_id}
+            )
         )
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
@@ -183,9 +182,6 @@ class Media:
     def media_user(self, media_pk: int) -> UserShort:
         """Get user object
         """
-        # return extract_user_short(
-        #     self._media_info_a1(InstagramIdCodec.encode(media_pk))["owner"]
-        # )
         return self.media_info(media_pk).user
 
     def media_oembed(self, url: str) -> dict:
@@ -240,7 +236,7 @@ class Media:
         )
         return extract_comment(result["comment"])
 
-    def media_like(self, media_id: str) -> bool:
+    def media_like(self, media_id: str, revert: bool = False) -> bool:
         """Like media
         """
         assert self.user_id, "Login required"
@@ -253,8 +249,9 @@ class Media:
             "container_module": "feed_timeline",
             "feed_position": str(random.randint(0, 6))
         }
+        name = 'unlike' if revert else 'like'
         result = self.private_request(
-            f"media/{media_id}/like/",
+            f"media/{media_id}/{name}/",
             self.with_action_data(data)
         )
         return result['status'] == 'ok'
@@ -262,18 +259,4 @@ class Media:
     def media_unlike(self, media_id: str) -> bool:
         """Unlike media
         """
-        assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
-        data = {
-            "inventory_source": "media_or_ad",
-            "media_id": media_id,
-            "radio_type": "wifi-none",
-            "is_carousel_bumped_post": "false",
-            "container_module": "feed_timeline",
-            "feed_position": str(random.randint(0, 6))
-        }
-        result = self.private_request(
-            f"media/{media_id}/unlike/",
-            self.with_action_data(data)
-        )
-        return result['status'] == 'ok'
+        return self.media_like(media_id, revert=True)
