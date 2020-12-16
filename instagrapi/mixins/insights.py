@@ -1,10 +1,10 @@
 import time
 
-from .utils import json_value
-from .exceptions import UserError, ClientError, MediaError
+from instagrapi.utils import json_value
+from instagrapi.exceptions import UserError, ClientError, MediaError
 
 
-class Insights:
+class InsightsMixin:
 
     def insights_media_feed_all(
         self,

@@ -10,11 +10,12 @@ import random
 import datetime
 import requests
 
-from . import config
-from .exceptions import ReloginAttemptExceeded
+from instagrapi import config
+from instagrapi.exceptions import ReloginAttemptExceeded
 
 
-class PreLoginFlow:
+class PreLoginFlowMixin:
+
     def pre_login_flow(self) -> bool:
         """Emulation mobile app behaivor before login
         """
@@ -76,7 +77,8 @@ class PreLoginFlow:
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
-class PostLoginFlow:
+class PostLoginFlowMixin:
+
     def login_flow(self) -> bool:
         """Emulation mobile app behaivor after login
         """
@@ -145,7 +147,7 @@ class PostLoginFlow:
         return self.private_request("feed/reels_tray/", data)
 
 
-class Login(PreLoginFlow, PostLoginFlow):
+class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
     last_login = None

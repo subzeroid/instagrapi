@@ -2,13 +2,13 @@ import requests
 from pathlib import Path
 from json.decoder import JSONDecodeError
 
-from .exceptions import ClientLoginRequired, ClientError
-from .extractors import extract_account, extract_user_short
-from .types import Account, UserShort
-from .utils import gen_csrftoken
+from instagrapi.exceptions import ClientLoginRequired, ClientError
+from instagrapi.extractors import extract_account, extract_user_short
+from instagrapi.types import Account, UserShort
+from instagrapi.utils import gen_csrftoken
 
 
-class Account:
+class AccountMixin:
 
     def reset_password(self, username):
         response = requests.post(

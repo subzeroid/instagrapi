@@ -9,16 +9,17 @@ from uuid import uuid4
 from PIL import Image
 from urllib.parse import urlparse
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import (
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import (
     PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, StoryLink, Media
-from .utils import dumps
+from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.utils import dumps
 
 
-class DownloadPhoto:
+class DownloadPhotoMixin:
+
     def photo_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
@@ -40,7 +41,8 @@ class DownloadPhoto:
         return path.resolve()
 
 
-class UploadPhoto:
+class UploadPhotoMixin:
+
     def photo_rupload(
         self,
         path: Path,

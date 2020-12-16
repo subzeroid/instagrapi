@@ -3,16 +3,17 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
-from .extractors import extract_media_v1
-from .exceptions import (
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import (
     AlbumNotDownload, AlbumUnknownFormat,
     AlbumConfigureError
 )
-from .types import Usertag, Location, Media
-from .utils import dumps
+from instagrapi.types import Usertag, Location, Media
+from instagrapi.utils import dumps
 
 
-class DownloadAlbum:
+class DownloadAlbumMixin:
+
     def album_download(self, media_pk: int, folder: Path = "") -> List[Path]:
         media = self.media_info(media_pk)
         assert media.media_type == 8, "Must been album"
@@ -50,7 +51,7 @@ class DownloadAlbum:
         return paths
 
 
-class UploadAlbum:
+class UploadAlbumMixin:
 
     def album_upload(
         self,

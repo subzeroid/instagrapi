@@ -1,49 +1,49 @@
 import logging
 from urllib.parse import urlparse
 
-from .auth import Login
-from .public import (
-    PublicRequest,
-    TopSearchesPublic,
-    ProfilePublic,
+from instagrapi.mixins.auth import LoginMixin
+from instagrapi.mixins.public import (
+    PublicRequestMixin,
+    TopSearchesPublicMixin,
+    ProfilePublicMixin
 )
-from .private import PrivateRequest
-from .challenge import ChallengeResolve
-from .photo import DownloadPhoto, UploadPhoto
-from .video import DownloadVideo, UploadVideo
-from .album import DownloadAlbum, UploadAlbum
-from .igtv import DownloadIGTV, UploadIGTV
-from .media import Media
-from .user import User
-from .insights import Insights
-from .collection import Collection
-from .account import Account
-from .direct import Direct
-from .location import LocationMixin
-from .hashtag import HashtagMixin
+from instagrapi.mixins.private import PrivateRequestMixin
+from instagrapi.mixins.challenge import ChallengeResolveMixin
+from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
+from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
+from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
+from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
+from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.user import UserMixin
+from instagrapi.mixins.insights import InsightsMixin
+from instagrapi.mixins.collection import CollectionMixin
+from instagrapi.mixins.account import AccountMixin
+from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.location import LocationMixin
+from instagrapi.mixins.hashtag import HashtagMixin
 
 
 class Client(
-    PublicRequest,
-    ChallengeResolve,
-    PrivateRequest,
-    TopSearchesPublic,
-    ProfilePublic,
-    Login,
-    DownloadPhoto,
-    UploadPhoto,
-    DownloadVideo,
-    UploadVideo,
-    DownloadAlbum,
-    UploadAlbum,
-    DownloadIGTV,
-    UploadIGTV,
-    Media,
-    User,
-    Insights,
-    Collection,
-    Account,
-    Direct,
+    PublicRequestMixin,
+    ChallengeResolveMixin,
+    PrivateRequestMixin,
+    TopSearchesPublicMixin,
+    ProfilePublicMixin,
+    LoginMixin,
+    DownloadPhotoMixin,
+    UploadPhotoMixin,
+    DownloadVideoMixin,
+    UploadVideoMixin,
+    DownloadAlbumMixin,
+    UploadAlbumMixin,
+    DownloadIGTVMixin,
+    UploadIGTVMixin,
+    MediaMixin,
+    UserMixin,
+    InsightsMixin,
+    CollectionMixin,
+    AccountMixin,
+    DirectMixin,
     LocationMixin,
     HashtagMixin
 ):

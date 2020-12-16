@@ -7,13 +7,14 @@ from uuid import uuid4
 from PIL import Image
 import moviepy.editor as mp
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
-from .types import Usertag, Location, Media
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
+from instagrapi.types import Usertag, Location, Media
 
 
-class DownloadIGTV:
+class DownloadIGTVMixin:
+
     def igtv_download(self, media_pk: int, folder: Path = "") -> str:
         return self.video_download(media_pk, folder)
 
@@ -21,7 +22,8 @@ class DownloadIGTV:
         return self.video_download_by_url(url, filename, folder)
 
 
-class UploadIGTV:
+class UploadIGTVMixin:
+
     def igtv_upload(
         self,
         path: Path,

@@ -2,9 +2,9 @@ import json
 import time
 from typing import List
 
-from .extractors import extract_location
-from .exceptions import ClientLoginRequired
-from .types import Location, Media
+from instagrapi.extractors import extract_location
+from instagrapi.exceptions import ClientLoginRequired
+from instagrapi.types import Location, Media
 
 
 class LocationMixin:

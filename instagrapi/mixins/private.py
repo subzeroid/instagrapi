@@ -6,9 +6,9 @@ import hashlib
 import requests
 from json.decoder import JSONDecodeError
 
-from . import config
-from .utils import generate_signature
-from .exceptions import (
+from instagrapi import config
+from instagrapi.utils import generate_signature
+from instagrapi.exceptions import (
     ClientError,
     ClientConnectionError,
     ClientNotFoundError,
@@ -39,7 +39,7 @@ def manual_input_code(self, username, choice=None):
     return code  # is not int, because it can start from 0
 
 
-class PrivateRequest:
+class PrivateRequestMixin:
     handle_exception = None
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")

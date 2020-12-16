@@ -2,25 +2,25 @@ import time
 from typing import List, Dict
 from copy import deepcopy
 
-from .exceptions import (
+from instagrapi.exceptions import (
     ClientError,
     ClientNotFoundError,
     UserNotFound,
     ClientLoginRequired
 )
-from .extractors import (
+from instagrapi.extractors import (
     extract_user_gql,
     extract_user_v1,
     extract_user_short,
     extract_media_gql,
     extract_media_v1,
 )
-from .utils import json_value
-from .types import User, Media, UserShort
-from . import config
+from instagrapi.utils import json_value
+from instagrapi.types import User, Media, UserShort
+from instagrapi import config
 
 
-class User:
+class UserMixin:
     _users_cache = {}  # user_pk -> User
     _userhorts_cache = {}  # user_pk -> UserShort
     _usernames_cache = {}  # username -> user_pk

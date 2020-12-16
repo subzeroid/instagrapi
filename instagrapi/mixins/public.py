@@ -4,8 +4,8 @@ import requests
 import logging
 from json.decoder import JSONDecodeError
 
-from .utils import json_value
-from .exceptions import (
+from instagrapi.utils import json_value
+from instagrapi.exceptions import (
     ClientError,
     ClientConnectionError,
     ClientNotFoundError,
@@ -20,7 +20,7 @@ from .exceptions import (
 )
 
 
-class PublicRequest:
+class PublicRequestMixin:
     requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
@@ -226,41 +226,38 @@ class PublicRequest:
                 message = body_json.get("message", None)
             except JSONDecodeError:
                 pass
-
             raise ClientGraphqlError(
                 "Error: '{}'. Message: '{}'".format(e, message), response=e.response
             )
 
 
-class TopSearchesPublic:
+class TopSearchesPublicMixin:
+
     def top_search(self, query):
         """Anonymous IG search request
         """
         url = "https://www.instagram.com/web/search/topsearch/"
-
         params = {
             "context": "blended",
             "query": query,
             "rank_token": 0.7763938004511706,
             "include_reel": "true",
         }
-
         response = self.public_request(url, params=params, return_json=True)
         return response
 
 
-class ProfilePublic:
+class ProfilePublicMixin:
+
     def location_feed(self, location_id, count=16, end_cursor=None):
         if count > 50:
             raise ValueError("Count cannot be greater than 50")
-
         variables = {
             "id": location_id,
             "first": int(count),
         }
         if end_cursor:
             variables["after"] = end_cursor
-
         data = self.public_graphql_request(
             variables, query_hash="1b84447a4d8b6d6d0426fefb34514485"
         )
@@ -276,7 +273,6 @@ class ProfilePublic:
             "include_highlight_reels": True,
             "include_related_profiles": True,
         }
-
         data = self.public_graphql_request(
             variables, query_hash="e74d51c10ecc0fe6250a295b9bb9db74"
         )

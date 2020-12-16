@@ -1,14 +1,14 @@
 from typing import List
 
-from .extractors import (
+from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
     extract_media_gql,
     extract_media_v1
 )
-from .exceptions import ClientError, ClientLoginRequired
-from .types import Hashtag, Media
-from .utils import dumps
+from instagrapi.exceptions import ClientError, ClientLoginRequired
+from instagrapi.types import Hashtag, Media
+from instagrapi.utils import dumps
 
 
 class HashtagMixin:

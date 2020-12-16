@@ -4,21 +4,23 @@ from typing import List
 from copy import deepcopy
 from urllib.parse import urlparse
 
-from .utils import InstagramIdCodec
-from .exceptions import (
+from instagrapi.utils import InstagramIdCodec
+from instagrapi.exceptions import (
     ClientError,
     ClientNotFoundError,
     MediaNotFound,
     ClientLoginRequired
 )
-from .extractors import (
+from instagrapi.extractors import (
     extract_media_v1, extract_media_gql, extract_comment,
     extract_media_oembed, extract_location
 )
-from .types import Usertag, Location, UserShort, Media, Comment
+from instagrapi.types import (
+    Usertag, Location, UserShort, Media, Comment
+)
 
 
-class Media:
+class MediaMixin:
     _medias_cache = {}  # pk -> object
 
     def media_id(self, media_pk: int) -> str:

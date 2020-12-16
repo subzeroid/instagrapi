@@ -7,17 +7,18 @@ from uuid import uuid4
 import moviepy.editor as mp
 from urllib.parse import urlparse
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import (
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import (
     VideoNotDownload, VideoNotUpload, VideoConfigureError,
     VideoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, StoryLink, Media
-from .utils import dumps
+from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.utils import dumps
 
 
-class DownloadVideo:
+class DownloadVideoMixin:
+
     def video_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
@@ -46,7 +47,8 @@ class DownloadVideo:
         return path.resolve()
 
 
-class UploadVideo:
+class UploadVideoMixin:
+
     def video_rupload(
         self,
         path: Path,
