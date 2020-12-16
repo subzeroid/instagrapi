@@ -81,6 +81,7 @@ class Media(BaseModel):
     user: UserShort
     comment_count: int
     like_count: int
+    has_liked: Optional[bool]
     caption_text: str
     usertags: List[Usertag]
     video_url: Optional[HttpUrl]  # for Video and IGTV
