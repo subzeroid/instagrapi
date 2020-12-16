@@ -418,6 +418,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
 
 
 class ClientCompareExtractTestCase(ClientPrivateTestCase):
+
     def assertLocation(self, v1, gql):
         if not isinstance(v1, dict):
             return self.assertEqual(v1, gql)
@@ -428,6 +429,13 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
             if isinstance(val, float):
                 val, gql_val = round(val, 4), round(gql_val, 4)
             self.assertEqual(val, gql_val)
+
+    def assertMedia(self, v1, gql):
+        self.assertTrue(v1.pop("comment_count") <= gql.pop("comment_count"))
+        self.assertLocation(v1.pop('location'), gql.pop('location'))
+        v1.pop('has_liked')
+        gql.pop('has_liked')
+        self.assertDictEqual(v1, gql)
 
     def media_info(self, media_pk):
         media_v1 = self.api.media_info_v1(media_pk)
@@ -442,27 +450,22 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
         )
         self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
-        self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
-        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
-        self.assertDictEqual(media_v1, media_gql)
+        self.assertMedia(media_v1, media_gql)
 
     def test_two_extract_media_video(self):
         media_v1, media_gql = self.media_info(
             self.api.media_pk_from_code('B3rFQPblq40')
         )
-        self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
-        self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
-        self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
-        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
-        self.assertDictEqual(media_v1, media_gql)
+        self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
+        self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
+        self.assertMedia(media_v1, media_gql)
 
     def test_two_extract_media_album(self):
         media_v1, media_gql = self.media_info(
             self.api.media_pk_from_code('BjNLpA1AhXM')
         )
-        self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
         for res in media_v1['resources']:
             self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
             if res['media_type'] == 2:
@@ -471,28 +474,27 @@ class ClientCompareExtractTestCase(ClientPrivateTestCase):
             self.assertTrue(res.pop("thumbnail_url").startswith("https://"))
             if res['media_type'] == 2:
                 self.assertTrue(res.pop("video_url").startswith("https://"))
-        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
-        self.assertDictEqual(media_v1, media_gql)
+        self.assertMedia(media_v1, media_gql)
 
     def test_two_extract_media_igtv(self):
         media_v1, media_gql = self.media_info(
             self.api.media_pk_from_code('ByYn5ZNlHWf')
         )
-        self.assertTrue(media_v1.pop("comment_count") <= media_gql.pop("comment_count"))
-        self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_v1.pop("video_url").startswith("https://"))
-        self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
         self.assertTrue(media_gql.pop("video_url").startswith("https://"))
-        self.assertLocation(media_v1.pop('location'), media_gql.pop('location'))
-        self.assertDictEqual(media_v1, media_gql)
+        self.assertTrue(media_v1.pop("thumbnail_url").startswith("https://"))
+        self.assertTrue(media_gql.pop("thumbnail_url").startswith("https://"))
+        self.assertMedia(media_v1, media_gql)
 
-    # ERROR: instagrapi.exceptions.ClientLoginRequired:
-    # def test_two_extract_user(self):
-    #     user_v1 = self.api.user_info_v1(1903424587)
-    #     user_gql = self.api.user_info_gql(1903424587)
-    #     self.assertIsInstance(user_v1, User)
-    #     self.assertIsInstance(user_gql, User)
-    #     self.assertDictEqual(media_v1.dict(), media_gql.dict())
+    def test_two_extract_user(self):
+        user_v1 = self.api.user_info_v1(1903424587)
+        user_gql = self.api.user_info_gql(1903424587)
+        self.assertIsInstance(user_v1, User)
+        self.assertIsInstance(user_gql, User)
+        user_v1, user_gql = user_v1.dict(), user_gql.dict()
+        self.assertTrue(user_v1.pop("profile_pic_url").startswith("https://"))
+        self.assertTrue(user_gql.pop("profile_pic_url").startswith("https://"))
+        self.assertDictEqual(user_v1, user_gql)
 
 
 class ClientExtractTestCase(ClientPrivateTestCase):
