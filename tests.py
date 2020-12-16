@@ -76,7 +76,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             print(str(e))
             settings = {}
         self.api = Client(settings)
-        self.api.request_timeout = 0.5
+        self.api.request_timeout = 1
         self.set_proxy_if_exists()
         self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
         json.dump(self.api.get_settings(), open(filename, 'w'))
@@ -787,6 +787,9 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         # messages
         messages = self.api.direct_messages(thread.id, 2)
         self.assertTrue(3 > len(messages) > 0)
+        self.assertTrue(
+            thread.is_seen(self.api.user_id)
+        )
         message = messages[0]
         self.assertIsInstance(message, DirectMessage)
         adw0rd = self.api.user_id_from_username('adw0rd')

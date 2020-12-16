@@ -187,6 +187,19 @@ class DirectThread(BaseModel):
     shh_mode_enabled: bool
     last_seen_at: dict
 
+    def is_seen(self, user_id: int):
+        """Have I seen this thread?
+        :param user_id: You account user_id
+        """
+        user_id = str(user_id)
+        own_timestamp = int(self.last_seen_at[user_id]['timestamp'])
+        timestamps = [
+            (int(v['timestamp']) - own_timestamp) > 0
+            for k, v in self.last_seen_at.items()
+            if k != user_id
+        ]
+        return not any(timestamps)
+
 
 class Hashtag(BaseModel):
     id: int
