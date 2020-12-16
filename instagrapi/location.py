@@ -3,6 +3,7 @@ import time
 from typing import List
 
 from .extractors import extract_location
+from .exceptions import ClientLoginRequired
 from .types import Location, Media
 
 
@@ -127,7 +128,12 @@ class LocationMixin:
     def location_medias_top(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
         """Top medias
         """
-        return self.location_medias_top_a1(location_pk, amount, sleep)
+        try:
+            return self.location_medias_top_a1(location_pk, amount, sleep)
+        except ClientLoginRequired as e:
+            if not self.inject_sessionid_to_public():
+                raise e
+            return self.location_medias_top_a1(location_pk, amount, sleep)  # retry
 
     def location_medias_recent_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
         """Recent medias by private API
@@ -140,4 +146,9 @@ class LocationMixin:
     def location_medias_recent(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
         """Recent medias
         """
-        return self.location_medias_recent_a1(location_pk, amount, sleep)
+        try:
+            return self.location_medias_recent_a1(location_pk, amount, sleep)
+        except ClientLoginRequired as e:
+            if not self.inject_sessionid_to_public():
+                raise e
+            return self.location_medias_recent_a1(location_pk, amount, sleep)  # retry

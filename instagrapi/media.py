@@ -9,6 +9,7 @@ from .exceptions import (
     ClientError,
     ClientNotFoundError,
     MediaNotFound,
+    ClientLoginRequired
 )
 from .extractors import (
     extract_media_v1, extract_media_gql, extract_comment,
@@ -114,7 +115,12 @@ class Media:
         media_pk = self.media_pk(media_pk)
         if not use_cache or media_pk not in self._medias_cache:
             try:
-                media = self.media_info_gql(media_pk)
+                try:
+                    media = self.media_info_gql(media_pk)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    media = self.media_info_gql(media_pk)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error

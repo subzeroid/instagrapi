@@ -5,7 +5,8 @@ from copy import deepcopy
 from .exceptions import (
     ClientError,
     ClientNotFoundError,
-    UserNotFound
+    UserNotFound,
+    ClientLoginRequired
 )
 from .extractors import (
     extract_user_gql,
@@ -93,7 +94,12 @@ class User:
         """
         if not use_cache or username not in self._usernames_cache:
             try:
-                user = self.user_info_by_username_gql(username)
+                try:
+                    user = self.user_info_by_username_gql(username)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    user = self.user_info_by_username_gql(username)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error
@@ -131,7 +137,12 @@ class User:
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_cache:
             try:
-                user = self.user_info_gql(user_id)
+                try:
+                    user = self.user_info_gql(user_id)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    user = self.user_info_gql(user_id)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)
@@ -353,7 +364,12 @@ class User:
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.user_medias_gql(user_id, amount)
+            try:
+                medias = self.user_medias_gql(user_id, amount)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                medias = self.user_medias_gql(user_id, amount)  # retry
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)

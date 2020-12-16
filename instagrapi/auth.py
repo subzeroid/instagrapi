@@ -346,3 +346,12 @@ class Login(PreLoginFlow, PostLoginFlow):
             ),
             base64.b64encode(data.encode("ascii")),
         )
+
+    def inject_sessionid_to_public(self):
+        """Inject sessionid from private session to public session
+        """
+        sessionid = self.private.cookies.get('sessionid')
+        if sessionid:
+            self.public.cookies.set('sessionid', sessionid)
+            return True
+        return False

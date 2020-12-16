@@ -6,7 +6,7 @@ from .extractors import (
     extract_media_gql,
     extract_media_v1
 )
-from .exceptions import ClientError
+from .exceptions import ClientError, ClientLoginRequired
 from .types import Hashtag, Media
 from .utils import dumps
 
@@ -154,7 +154,12 @@ class HashtagMixin:
         """Top medias
         """
         try:
-            medias = self.hashtag_medias_top_a1(name, amount)
+            try:
+                medias = self.hashtag_medias_top_a1(name, amount)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                medias = self.hashtag_medias_top_a1(name, amount)  # retry
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
@@ -178,7 +183,12 @@ class HashtagMixin:
         """Recent medias
         """
         try:
-            medias = self.hashtag_medias_recent_a1(name, amount)
+            try:
+                medias = self.hashtag_medias_recent_a1(name, amount)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                medias = self.hashtag_medias_recent_a1(name, amount)  # retry
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
