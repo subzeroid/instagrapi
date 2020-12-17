@@ -298,7 +298,7 @@ class PrivateRequestMixin:
             extra_sig=extra_sig,
         )
         try:
-            private_requests_count += 1
+            self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
             print('Wait 60 seconds and try one more time (ClientRequestTimeout)')
