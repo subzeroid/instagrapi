@@ -40,6 +40,7 @@ def manual_input_code(self, username, choice=None):
 
 
 class PrivateRequestMixin:
+    private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")
@@ -297,6 +298,7 @@ class PrivateRequestMixin:
             extra_sig=extra_sig,
         )
         try:
+            self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
             print('Wait 60 seconds and try one more time (ClientRequestTimeout)')
