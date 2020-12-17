@@ -21,7 +21,7 @@ from instagrapi.exceptions import (
 
 
 class PublicRequestMixin:
-    requests_count = 0
+    public_requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     request_logger = logging.getLogger("public_request")
@@ -85,7 +85,7 @@ class PublicRequestMixin:
     def _send_public_request(
         self, url, data=None, params=None, headers=None, return_json=False
     ):
-        self.requests_count += 1
+        self.public_requests_count += 1
         if headers:
             self.public.headers.update(headers)
         if self.request_timeout:
