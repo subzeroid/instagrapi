@@ -3,7 +3,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 7 December 2020 (last reverse-engineering check)
+Instagram API valid for 17 December 2020 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -22,10 +22,6 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 6. Insights by account, posts and stories
 7. Build stories with custom background, font animation, swipe up link and mention users
 8. In the next release, account registration and captcha passing will appear
-
-![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
-
-More stories here https://www.instagram.com/dhbastards/
 
 ### Install
 
@@ -278,12 +274,12 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 >>> cl.user_following(cl.user_id)
 {
-  8530598273: UserShort(
-    pk=8530598273,
-    username="dhbastards",
-    full_name="The Best DH Skaters Ever",
+  8530498223: UserShort(
+    pk=8530498223,
+    username="something",
+    full_name="Example description",
     profile_pic_url=HttpUrl(
-      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg',
+      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg',
       scheme='https',
       host='instagram.frix7-1.fna.fbcdn.net',
       ...
@@ -313,7 +309,7 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  'media_count': 102,
  'follower_count': 576,
  'following_count': 538,
- 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards \n@bestskatetrick \n@best_drift_daily \n@best_rally_mag \n@asphalt_kings_lb \n@surferyone \n@bmxtravel',
+ 'biography': 'Engineer: Python, JavaScript, Erlang',
  'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
  'is_business': False}
  
@@ -417,7 +413,7 @@ Result:
 
 ![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
 
-More stories here https://www.instagram.com/dhbastards/
+More stories here https://www.instagram.com/surferyone/
 
 
 #### Collections
