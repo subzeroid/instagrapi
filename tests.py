@@ -349,6 +349,34 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             self.assertEqual(getattr(media_oembed, key), val)
         self.assertTrue(media_oembed.thumbnail_url.startswith('http'))
 
+    def test_media_like_by_pk(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/ByU3LAslgWY/"
+        )
+        self.assertTrue(
+            self.api.media_like(media_pk)
+        )
+
+    def test_media_like_and_unlike(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/B3mr1-OlWMG/"
+        )
+        self.assertTrue(self.api.media_unlike(media_pk))
+        media = self.api.media_info_v1(media_pk)
+        like_count = int(media.like_count)
+        # like
+        self.assertTrue(self.api.media_like(media.id))
+        media = self.api.media_info_v1(media_pk)  # refresh after like
+        new_like_count = int(media.like_count)
+        self.assertEqual(new_like_count, like_count + 1)
+        # unlike
+        self.assertTrue(self.api.media_unlike(media.id))
+        media = self.api.media_info_v1(media_pk)  # refresh after unlike
+        self.assertEqual(media.like_count, like_count)
+
+
+class ClientCommentTestCase(ClientPrivateTestCase):
+
     def test_media_comments(self):
         comments = self.api.media_comments(2154602296692269830)
         self.assertTrue(len(comments) > 5)
@@ -390,31 +418,6 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         user_fields = comment['user'].keys()
         for field in ["pk", "username", "full_name", "profile_pic_url"]:
             self.assertIn(field, user_fields)
-
-    def test_media_like_by_pk(self):
-        media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/ByU3LAslgWY/"
-        )
-        self.assertTrue(
-            self.api.media_like(media_pk)
-        )
-
-    def test_media_like_and_unlike(self):
-        media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/B3mr1-OlWMG/"
-        )
-        self.assertTrue(self.api.media_unlike(media_pk))
-        media = self.api.media_info_v1(media_pk)
-        like_count = int(media.like_count)
-        # like
-        self.assertTrue(self.api.media_like(media.id))
-        media = self.api.media_info_v1(media_pk)  # refresh after like
-        new_like_count = int(media.like_count)
-        self.assertEqual(new_like_count, like_count + 1)
-        # unlike
-        self.assertTrue(self.api.media_unlike(media.id))
-        media = self.api.media_info_v1(media_pk)  # refresh after unlike
-        self.assertEqual(media.like_count, like_count)
 
     def test_comment_like_and_unlike(self):
         media_pk = self.api.media_pk_from_url(
