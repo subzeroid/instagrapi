@@ -184,6 +184,8 @@ def extract_location(data):
 def extract_comment(data):
     """Extract comment
     """
+    data['has_liked'] = data.get('has_liked_comment')
+    data['like_count'] = data.get('comment_like_count')
     return Comment(**data)
 
 

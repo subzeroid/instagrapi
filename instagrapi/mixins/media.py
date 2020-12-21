@@ -12,11 +12,11 @@ from instagrapi.exceptions import (
     ClientLoginRequired
 )
 from instagrapi.extractors import (
-    extract_media_v1, extract_media_gql, extract_comment,
+    extract_media_v1, extract_media_gql,
     extract_media_oembed, extract_location
 )
 from instagrapi.types import (
-    Usertag, Location, UserShort, Media, Comment
+    Usertag, Location, UserShort, Media
 )
 
 
@@ -198,51 +198,6 @@ class MediaMixin:
         return extract_media_oembed(
             self.private_request(f"oembed?url={url}")
         )
-
-    def media_comments(self, media_id: str) -> List[Comment]:
-        """Get list of comments for media
-        """
-        # TODO: to public or private
-        media_id = self.media_id(media_id)
-        max_id = None
-        comments = []
-        while True:
-            try:
-                result = self.private_request(
-                    f"media/{media_id}/comments/", params={"max_id": max_id}
-                )
-                for comment in result["comments"]:
-                    comments.append(extract_comment(comment))
-                if not result["has_more_comments"]:
-                    break
-                max_id = result["next_max_id"]
-            except ClientNotFoundError as e:
-                raise MediaNotFound(e, media_id=media_id, **self.last_json)
-            except ClientError as e:
-                if "Media not found" in str(e):
-                    raise MediaNotFound(e, media_id=media_id, **self.last_json)
-                raise e
-        return comments
-
-    def media_comment(self, media_id: str, text: str) -> Comment:
-        """Comment media
-        """
-        assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
-        result = self.private_request(
-            f"media/{media_id}/comment/",
-            self.with_action_data(
-                {
-                    "delivery_class": "organic",
-                    "feed_position": "0",
-                    "container_module": "self_comments_v2_feed_contextual_self_profile",  # "comments_v2",
-                    "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
-                    "idempotence_token": self.generate_uuid(),
-                    "comment_text": text,
-                }
-            ),
-        )
-        return extract_comment(result["comment"])
 
     def media_like(self, media_id: str, revert: bool = False) -> bool:
         """Like media

@@ -416,6 +416,26 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         media = self.api.media_info_v1(media_pk)  # refresh after unlike
         self.assertEqual(media.like_count, like_count)
 
+    def test_comment_like_and_unlike(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/B3mr1-OlWMG/"
+        )
+        comment = self.api.media_comments(media_pk)[0]
+        if comment.has_liked:
+            self.assertTrue(
+                self.api.comment_unlike(comment.pk)
+            )
+        like_count = int(comment.like_count)
+        # like
+        self.assertTrue(self.api.comment_like(comment.pk))
+        comment = self.api.media_comments(media_pk)[0]
+        new_like_count = int(comment.like_count)
+        self.assertEqual(new_like_count, like_count + 1)
+        # unlike
+        self.assertTrue(self.api.comment_unlike(comment.pk))
+        comment = self.api.media_comments(media_pk)[0]
+        self.assertEqual(comment.like_count, like_count)
+
 
 class ClientCompareExtractTestCase(ClientPrivateTestCase):
 

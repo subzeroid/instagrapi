@@ -21,6 +21,7 @@ from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.direct import DirectMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.hashtag import HashtagMixin
+from instagrapi.mixins.comment import CommentMixin
 
 
 class Client(
@@ -45,7 +46,8 @@ class Client(
     AccountMixin,
     DirectMixin,
     LocationMixin,
-    HashtagMixin
+    HashtagMixin,
+    CommentMixin
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")

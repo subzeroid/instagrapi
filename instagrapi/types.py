@@ -123,6 +123,8 @@ class Comment(BaseModel):
     created_at_utc: datetime
     content_type: str
     status: str
+    has_liked: Optional[bool]
+    like_count: Optional[int]
 
 
 class StoryMention(BaseModel):
