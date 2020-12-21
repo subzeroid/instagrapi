@@ -168,11 +168,9 @@ Viewing and editing publications (medias)
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
-| media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
-| media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 | media_like(media_id: str)                          | bool               | Like media                                                    |
 | media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
 
@@ -247,6 +245,16 @@ Example:
  'can_view': True}
 
 ```
+
+#### Comment
+
+| Method                                             | Return             | Description                                                   |
+| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| media_comment(media_id: str, message: str)         | bool               | Add new comment to media                                      |
+| media_comments(media_id: str)                      | List\[Comment]     | Get all comments for media                                    |
+| comment_like(comment_pk: int)                      | bool               | Like comment                                                  |
+| comment_unlike(comment_pk: int)                    | bool               | Unlike comment                                                |
+
 
 #### User
 
