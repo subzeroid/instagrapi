@@ -6,7 +6,6 @@ import requests
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-from PIL import Image
 from urllib.parse import urlparse
 
 from instagrapi import config
@@ -16,6 +15,11 @@ from instagrapi.exceptions import (
 )
 from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
 from instagrapi.utils import dumps
+
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
 class DownloadPhotoMixin:

@@ -4,12 +4,17 @@ import random
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-from PIL import Image
 
 from instagrapi import config
 from instagrapi.extractors import extract_media_v1
 from instagrapi.exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
 from instagrapi.types import Usertag, Location, Media
+
+
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
 class DownloadIGTVMixin:
