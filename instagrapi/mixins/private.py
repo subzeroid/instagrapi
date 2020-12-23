@@ -6,9 +6,9 @@ import hashlib
 import requests
 from json.decoder import JSONDecodeError
 
-from . import config
-from .utils import generate_signature
-from .exceptions import (
+from instagrapi import config
+from instagrapi.utils import generate_signature
+from instagrapi.exceptions import (
     ClientError,
     ClientConnectionError,
     ClientNotFoundError,
@@ -24,24 +24,27 @@ from .exceptions import (
     RateLimitError,
     BadPassword,
     PleaseWaitFewMinutes,
+    VideoTooLongException,
     UnknownError,
 )
 
 
 def manual_input_code(self, username, choice=None):
     code = None
+    choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
-        code = input("Enter code (6 digits) for %s: " % username).strip()
+        code = input(f"Enter code (6 digits) for {username} ({choice_name}): ").strip()
         if code and code.isdigit():
             break
     return code  # is not int, because it can start from 0
 
 
-class PrivateRequest:
+class PrivateRequestMixin:
+    private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")
-    request_timeout = 3
+    request_timeout = 1
     last_response = None
     last_json = {}
 
@@ -223,12 +226,14 @@ class PrivateRequest:
                     raise BadPassword(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
+                elif "VideoTooLongException" in message:
+                    raise VideoTooLongException(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
                 self.logger.exception(e)
                 self.logger.warning(
-                    "Status 400: %s", message or "Maybe Two-factor auth?"
+                    "Status 400: %s", message or "Empty response message. Maybe enabled Two-factor auth?"
                 )
                 raise ClientBadRequestError(
                     e, response=e.response, **last_json)
@@ -293,6 +298,7 @@ class PrivateRequest:
             extra_sig=extra_sig,
         )
         try:
+            self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
             print('Wait 60 seconds and try one more time (ClientRequestTimeout)')

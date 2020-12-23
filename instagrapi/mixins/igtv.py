@@ -4,16 +4,21 @@ import random
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-from PIL import Image
-import moviepy.editor as mp
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
-from .types import Usertag, Location, Media
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
+from instagrapi.types import Usertag, Location, Media
 
 
-class DownloadIGTV:
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
+
+
+class DownloadIGTVMixin:
+
     def igtv_download(self, media_pk: int, folder: Path = "") -> str:
         return self.video_download(media_pk, folder)
 
@@ -21,7 +26,8 @@ class DownloadIGTV:
         return self.video_download_by_url(url, filename, folder)
 
 
-class UploadIGTV:
+class UploadIGTVMixin:
+
     def igtv_upload(
         self,
         path: Path,
@@ -186,6 +192,12 @@ class UploadIGTV:
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze and crop thumbnail if need
     """
+
+    try:
+        import moviepy.editor as mp
+    except ImportError:
+        raise Exception('Please install moviepy>=1.0.3 and retry')
+
     print(f'Analizing IGTV file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size

@@ -4,8 +4,8 @@ import requests
 import logging
 from json.decoder import JSONDecodeError
 
-from .utils import json_value
-from .exceptions import (
+from instagrapi.utils import json_value
+from instagrapi.exceptions import (
     ClientError,
     ClientConnectionError,
     ClientNotFoundError,
@@ -20,8 +20,8 @@ from .exceptions import (
 )
 
 
-class PublicRequest:
-    requests_count = 0
+class PublicRequestMixin:
+    public_requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     request_logger = logging.getLogger("public_request")
@@ -85,7 +85,7 @@ class PublicRequest:
     def _send_public_request(
         self, url, data=None, params=None, headers=None, return_json=False
     ):
-        self.requests_count += 1
+        self.public_requests_count += 1
         if headers:
             self.public.headers.update(headers)
         if self.request_timeout:
@@ -226,95 +226,38 @@ class PublicRequest:
                 message = body_json.get("message", None)
             except JSONDecodeError:
                 pass
-
             raise ClientGraphqlError(
                 "Error: '{}'. Message: '{}'".format(e, message), response=e.response
             )
 
 
-class TopSearchesPublic:
+class TopSearchesPublicMixin:
+
     def top_search(self, query):
         """Anonymous IG search request
         """
         url = "https://www.instagram.com/web/search/topsearch/"
-
         params = {
             "context": "blended",
             "query": query,
             "rank_token": 0.7763938004511706,
             "include_reel": "true",
         }
-
         response = self.public_request(url, params=params, return_json=True)
         return response
 
 
-class HashtagPublic:
-    def hashtag_info(self, hashtag, max_id=None):
-        params = {"max_id": max_id} if max_id else None
-        data = self.public_a1_request(
-            "/explore/tags/{hashtag!s}/".format(**{"hashtag": hashtag}), params=params
-        )
-        return data["hashtag"]
+class ProfilePublicMixin:
 
-    def hashtag_info_gql(self, hashtag, count=12, end_cursor=None):
-        variables = {
-            "tag_name": hashtag,
-            "show_ranked": False,
-            "first": int(count),
-        }
-        if end_cursor:
-            variables["after"] = end_cursor
-
-        data = self.public_graphql_request(
-            variables, query_hash="f92f56d47dc7a55b606908374b43a314"
-        )
-        return data["hashtag"]
-
-    def hashtag_top_feed(self, hashtag):
-        data = self.hashtag_info(hashtag)
-        return data["edge_hashtag_to_top_posts"]["edges"]
-
-    def hashtag_related_hashtags(self, hashtag):
-        data = self.hashtag_info(hashtag)
-        return [
-            item["node"]["name"]
-            for item in data["edge_hashtag_to_related_tags"]["edges"]
-        ]
-
-    def hashtag_feed(self, hashtag, count=70, sleep=2):
-        medias = []
-        end_cursor = None
-
-        while True:
-            data = self.hashtag_info(hashtag, end_cursor)
-            end_cursor = data["edge_hashtag_to_media"]["page_info"]["end_cursor"]
-            edges = data["edge_hashtag_to_media"]["edges"]
-            medias.extend(edges)
-
-            if (
-                not data["edge_hashtag_to_media"]["page_info"]["has_next_page"]
-                or len(medias) >= count
-            ):
-                break
-
-            time.sleep(sleep)
-
-        return medias[:count]
-
-
-class ProfilePublic:
     def location_feed(self, location_id, count=16, end_cursor=None):
         if count > 50:
             raise ValueError("Count cannot be greater than 50")
-
         variables = {
             "id": location_id,
             "first": int(count),
         }
         if end_cursor:
             variables["after"] = end_cursor
-
         data = self.public_graphql_request(
             variables, query_hash="1b84447a4d8b6d6d0426fefb34514485"
         )
@@ -330,7 +273,6 @@ class ProfilePublic:
             "include_highlight_reels": True,
             "include_related_profiles": True,
         }
-
         data = self.public_graphql_request(
             variables, query_hash="e74d51c10ecc0fe6250a295b9bb9db74"
         )

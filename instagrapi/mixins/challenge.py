@@ -4,7 +4,7 @@ import hashlib
 import requests
 from datetime import datetime
 
-from .exceptions import (
+from instagrapi.exceptions import (
     ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm,
     ChallengeError, ChallengeRedirection, SubmitPhoneNumberForm
 )
@@ -14,7 +14,8 @@ CHOICE_EMAIL = 1
 WAIT_SECONDS = 5
 
 
-class ChallengeResolve:
+class ChallengeResolveMixin:
+
     def challenge_resolve(self, last_json):
         """Start challenge resolve
         """

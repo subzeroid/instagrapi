@@ -1,24 +1,28 @@
 import time
+from typing import List, Dict
 from copy import deepcopy
 
-from .exceptions import (
+from instagrapi.exceptions import (
     ClientError,
     ClientNotFoundError,
     UserNotFound,
+    ClientLoginRequired
 )
-from .extractors import (
+from instagrapi.extractors import (
     extract_user_gql,
     extract_user_v1,
     extract_user_short,
     extract_media_gql,
     extract_media_v1,
 )
-from .utils import json_value
-from . import config
+from instagrapi.utils import json_value
+from instagrapi.types import User, Media, UserShort
+from instagrapi import config
 
 
-class User:
-    _users_cache = {}  # user_pk -> "full user object"
+class UserMixin:
+    _users_cache = {}  # user_pk -> User
+    _userhorts_cache = {}  # user_pk -> UserShort
     _usernames_cache = {}  # username -> user_pk
     _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
@@ -29,19 +33,49 @@ class User:
         """
         return int(self.user_info_by_username(username).pk)
 
+    def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
+        """Return UserShort by user_id
+        """
+        if use_cache:
+            cache = self._userhorts_cache.get(user_id)
+            if cache:
+                return cache
+        variables = {
+            "user_id": int(user_id),
+            "include_reel": True,
+        }
+        data = self.public_graphql_request(
+            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
+        )
+        if not data["user"]:
+            raise UserNotFound(user_id=user_id, **data)
+        user = extract_user_short(data["user"]["reel"]["user"])
+        self._userhorts_cache[user_id] = user
+        return user
+
+    def username_from_user_id_gql(self, user_id: int) -> str:
+        """Get username by user_id
+        Result: 1903424587 -> 'adw0rd'
+        """
+        return self.user_short_gql(user_id).username
+
     def username_from_user_id(self, user_id: int) -> str:
         """Get username by user_id
         Result: 1903424587 -> 'adw0rd'
         """
         user_id = int(user_id)
-        return self.user_info(user_id).username
+        try:
+            username = self.username_from_user_id_gql(user_id)
+        except ClientError:
+            username = self.user_info_v1(user_id).username
+        return username
 
-    def user_info_by_username_gql(self, username: str) -> dict:
+    def user_info_by_username_gql(self, username: str) -> User:
         """Return user object via GraphQL API
         """
         return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
 
-    def user_info_by_username_v1(self, username: str) -> dict:
+    def user_info_by_username_v1(self, username: str) -> User:
         """Return user object via Private API
         """
         try:
@@ -54,13 +88,18 @@ class User:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info_by_username(self, username: str, use_cache: bool = True) -> dict:
+    def user_info_by_username(self, username: str, use_cache: bool = True) -> User:
         """Get user info by username
         Result as in self.user_info()
         """
         if not use_cache or username not in self._usernames_cache:
             try:
-                user = self.user_info_by_username_gql(username)
+                try:
+                    user = self.user_info_by_username_gql(username)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    user = self.user_info_by_username_gql(username)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error
@@ -69,22 +108,16 @@ class User:
             self._usernames_cache[user.username] = user.pk
         return self.user_info(self._usernames_cache[username])
 
-    def user_info_gql(self, user_id: int) -> dict:
+    def user_info_gql(self, user_id: int) -> User:
         """Return user object via GraphQL API
         """
         user_id = int(user_id)
-        variables = {
-            "user_id": user_id,
-            "include_reel": True,
-        }
-        data = self.public_graphql_request(
-            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
+        # GraphQL haven't method to receive user by id
+        return self.user_info_by_username_gql(
+            self.username_from_user_id_gql(user_id)
         )
-        if not data["user"]:
-            raise UserNotFound(user_id=user_id, **data)
-        return self.user_info_by_username_gql(data["user"]["reel"]["user"]["username"])
 
-    def user_info_v1(self, user_id: int) -> dict:
+    def user_info_v1(self, user_id: int) -> User:
         """Return user object via Private API
         """
         user_id = int(user_id)
@@ -98,13 +131,18 @@ class User:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info(self, user_id: int, use_cache: bool = True) -> list:
+    def user_info(self, user_id: int, use_cache: bool = True) -> User:
         """Get user info by user_id
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_cache:
             try:
-                user = self.user_info_gql(user_id)
+                try:
+                    user = self.user_info_gql(user_id)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    user = self.user_info_gql(user_id)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)
@@ -175,7 +213,7 @@ class User:
             users = users[:amount]
         return users
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
         """Return dict {user_id: user} of following users
         """
         user_id = int(user_id)
@@ -211,7 +249,7 @@ class User:
                 break
         return users
 
-    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> dict:
+    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
         """Return dict {user_id: user} of followers users
         """
         user_id = int(user_id)
@@ -247,7 +285,7 @@ class User:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
-    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> list:
+    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> List[Media]:
         """
         !Use Client.user_medias instead!
         Return list with media of instagram profile by user id using graphql
@@ -287,7 +325,7 @@ class User:
             time.sleep(sleep)
         return [extract_media_gql(media) for media in medias[:amount]]
 
-    def user_medias_v1(self, user_id: int, amount: int = 18) -> list:
+    def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
         """Get all medias by user_id via Private API
         :user_id: User ID
         :amount: By default instagram return 18 items by each request
@@ -319,15 +357,19 @@ class User:
             next_max_id = self.last_json.get("next_max_id", "")
         return [extract_media_v1(media) for media in medias[:amount]]
 
-    def user_medias(self, user_id: int, amount: int = 50) -> list:
+    def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
         """Get all medias by user_id
         First, through the Public API, then through the Private API
         """
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.user_medias_gql(
-                user_id, amount)  # get first 50 medias
+            try:
+                medias = self.user_medias_gql(user_id, amount)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                medias = self.user_medias_gql(user_id, amount)  # retry
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)

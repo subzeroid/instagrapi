@@ -4,20 +4,20 @@ import requests
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-import moviepy.editor as mp
 from urllib.parse import urlparse
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import (
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import (
     VideoNotDownload, VideoNotUpload, VideoConfigureError,
     VideoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, StoryLink, Media
-from .utils import dumps
+from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.utils import dumps
 
 
-class DownloadVideo:
+class DownloadVideoMixin:
+
     def video_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
@@ -46,7 +46,8 @@ class DownloadVideo:
         return path.resolve()
 
 
-class UploadVideo:
+class UploadVideoMixin:
+
     def video_rupload(
         self,
         path: Path,
@@ -266,7 +267,8 @@ class UploadVideo:
         :return: Media
         """
         return self.video_upload(
-            path, caption, thumbnail, mentions, links,
+            path, caption, thumbnail, mentions,
+            links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
@@ -372,6 +374,12 @@ class UploadVideo:
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze video file
     """
+
+    try:
+        import moviepy.editor as mp
+    except ImportError:
+        raise Exception('Please install moviepy>=1.0.3 and retry')
+
     print(f'Analizing video file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size

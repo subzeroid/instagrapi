@@ -2,7 +2,12 @@ import tempfile
 from pathlib import Path
 from typing import List
 
-from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip, ImageClip
+try:
+    from moviepy.editor import (
+        TextClip, CompositeVideoClip, VideoFileClip, ImageClip
+    )
+except ImportError:
+    raise Exception('Please install moviepy==1.0.3 and retry')
 
 from .types import StoryBuild, StoryMention
 
@@ -11,7 +16,7 @@ class StoryBuilder:
     width = 720
     height = 1280
 
-    def __init__(self, path: Path, caption: str = "", mentions: List[StoryMention] = [], bgpath: Path = ""):
+    def __init__(self, path: Path, caption: str = "", mentions: List[StoryMention] = [], bgpath: Path = None):
         """Init params
         :path: path to cource video or photo file
         :caption: text caption for story
@@ -21,7 +26,7 @@ class StoryBuilder:
         self.path = Path(path)
         self.caption = caption
         self.mentions = mentions
-        self.bgpath = Path(bgpath)
+        self.bgpath = Path(bgpath) if bgpath else None
 
     def build_main(self, clip, max_duration: int = 0) -> StoryBuild:
         """Build clip

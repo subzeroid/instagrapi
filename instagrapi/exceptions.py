@@ -164,6 +164,10 @@ class DirectMessageNotFound(DirectError):
     pass
 
 
+class VideoTooLongException(PrivateError):
+    pass
+
+
 class VideoNotDownload(PrivateError):
     pass
 
@@ -204,7 +208,7 @@ class AlbumNotDownload(PrivateError):
     pass
 
 
-class UnknownFormat(PrivateError):
+class AlbumUnknownFormat(PrivateError):
     pass
 
 

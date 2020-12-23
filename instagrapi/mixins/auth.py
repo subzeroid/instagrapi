@@ -3,18 +3,19 @@ import json
 import base64
 import time
 import uuid
-import pytz
 import hmac
 import hashlib
 import random
 import datetime
 import requests
 
-from . import config
-from .exceptions import ReloginAttemptExceeded
+from instagrapi import config
+from instagrapi.exceptions import ReloginAttemptExceeded
+from instagrapi.zones import CET
 
 
-class PreLoginFlow:
+class PreLoginFlowMixin:
+
     def pre_login_flow(self) -> bool:
         """Emulation mobile app behaivor before login
         """
@@ -76,7 +77,8 @@ class PreLoginFlow:
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
-class PostLoginFlow:
+class PostLoginFlowMixin:
+
     def login_flow(self) -> bool:
         """Emulation mobile app behaivor after login
         """
@@ -102,7 +104,7 @@ class PostLoginFlow:
             "feed_view_info": "",
             "phone_id": self.phone_id,
             "battery_level": random.randint(25, 100),
-            "timezone_offset": datetime.datetime.now(pytz.timezone("CET")).strftime(
+            "timezone_offset": datetime.datetime.now(CET()).strftime(
                 "%z"
             ),
             "_csrftoken": self.token,
@@ -145,7 +147,7 @@ class PostLoginFlow:
         return self.private_request("feed/reels_tray/", data)
 
 
-class Login(PreLoginFlow, PostLoginFlow):
+class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
     last_login = None
@@ -175,7 +177,7 @@ class Login(PreLoginFlow, PostLoginFlow):
         self.init()
         user_id = re.search(r'^\d+', sessionid).group()
         user = self.user_info_v1(int(user_id))
-        self.username = user['username']
+        self.username = user.username
         return True
 
     def login(self, username: str, password: str, relogin: bool = False) -> bool:
@@ -276,6 +278,7 @@ class Login(PreLoginFlow, PostLoginFlow):
             "cpu": "samsungexynos9810",
             "version_code": "168361634",
         }
+        self.set_uuids({})
         return True
 
     def set_user_agent(self, user_agent: str = "") -> bool:
@@ -283,6 +286,7 @@ class Login(PreLoginFlow, PostLoginFlow):
             **self.device_settings
         )
         self.private.headers.update({"User-Agent": self.user_agent})
+        self.set_uuids({})
         return True
 
     def set_uuids(self, uuids: dict = {}) -> bool:
@@ -344,3 +348,12 @@ class Login(PreLoginFlow, PostLoginFlow):
             ),
             base64.b64encode(data.encode("ascii")),
         )
+
+    def inject_sessionid_to_public(self):
+        """Inject sessionid from private session to public session
+        """
+        sessionid = self.private.cookies.get('sessionid')
+        if sessionid:
+            self.public.cookies.set('sessionid', sessionid)
+            return True
+        return False

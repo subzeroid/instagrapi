@@ -1,13 +1,13 @@
 import re
 from typing import List
 
-from .utils import dumps
-from .types import DirectThread, DirectMessage
-from .exceptions import ClientNotFoundError, DirectThreadNotFound
-from .extractors import extract_direct_thread, extract_direct_message
+from instagrapi.utils import dumps
+from instagrapi.types import DirectThread, DirectMessage
+from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
+from instagrapi.extractors import extract_direct_thread, extract_direct_message
 
 
-class Direct:
+class DirectMixin:
 
     def direct_threads(self, amount: int = 20) -> List[DirectThread]:
         """Return last threads

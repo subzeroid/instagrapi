@@ -6,18 +6,24 @@ import requests
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-from PIL import Image
 from urllib.parse import urlparse
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import (
+from instagrapi import config
+from instagrapi.extractors import extract_media_v1
+from instagrapi.exceptions import (
     PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
 )
-from .types import Usertag, Location, StoryMention, Media
+from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.utils import dumps
+
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
-class DownloadPhoto:
+class DownloadPhotoMixin:
+
     def photo_download(self, media_pk: int, folder: Path = "") -> Path:
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
@@ -39,7 +45,8 @@ class DownloadPhoto:
         return path.resolve()
 
 
-class UploadPhoto:
+class UploadPhotoMixin:
+
     def photo_rupload(
         self,
         path: Path,
@@ -109,6 +116,7 @@ class UploadPhoto:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
+        links: List[StoryLink] = [],
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None
@@ -121,6 +129,7 @@ class UploadPhoto:
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
         :param location:            Location
+        :param links:               URLs for Swipe Up (List of dicts)
         :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
         :param configure_handler:   Configure handler method
         :param configure_exception: Configure exception class
@@ -132,7 +141,7 @@ class UploadPhoto:
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location):
+            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
@@ -146,7 +155,8 @@ class UploadPhoto:
         height: int,
         caption: str,
         usertags: List[Usertag] = [],
-        location: Location = None
+        location: Location = None,
+        links: List[StoryLink] = []
     ) -> dict:
         """Post Configure Photo (send caption to Instagram)
 
@@ -156,6 +166,9 @@ class UploadPhoto:
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
         :param location:   Location
+        :param links:      URLs for Swipe Up (List of dicts)
+
+        :return: Media (Dict)
         """
         usertags = [
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
@@ -187,6 +200,7 @@ class UploadPhoto:
         caption: str,
         upload_id: str = "",
         mentions: List[StoryMention] = [],
+        links: List[StoryLink] = [],
         configure_timeout: int = 3
     ) -> Media:
         """Upload photo and configure to story
@@ -195,14 +209,16 @@ class UploadPhoto:
         :param caption:             Media description (String)
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
-        :param usertags:            Mentioned users (List)
+        :param mentions:            Mentioned users (List)
+        :param links:               URLs for Swipe Up (List of dicts)
         :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
 
         :return: Media
         """
         return self.photo_upload(
             path, caption, upload_id, mentions,
-            configure_timeout,
+            links=links,
+            configure_timeout=configure_timeout,
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
         )
@@ -214,7 +230,8 @@ class UploadPhoto:
         height: int,
         caption: str,
         mentions: List[StoryMention] = [],
-        location: Location = None
+        location: Location = None,
+        links: List[StoryLink] = []
     ) -> dict:
         """Story Configure for Photo
 
@@ -224,6 +241,9 @@ class UploadPhoto:
         :param caption:    Media description (String)
         :param usertags:   Mentioned users (List)
         :param location:   Temporary unused
+        :param links:      URLs for Swipe Up (List of dicts)
+
+        :return: Media (Dict)
         """
         timestamp = int(time.time())
         data = {
@@ -259,6 +279,9 @@ class UploadPhoto:
             },
             "extra": {"source_width": width, "source_height": height},
         }
+        if links:
+            links = [link.dict() for link in links]
+            data["story_cta"] = dumps([{"links": links}])
         if mentions:
             mentions = [
                 {

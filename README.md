@@ -3,10 +3,10 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 1 November 2020 (last reverse-engineering check)
+Instagram API valid for 17 December 2020 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
-![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg)
+![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
 
 ### Authors
 
@@ -14,12 +14,14 @@ Instagram API valid for 1 November 2020 (last reverse-engineering check)
 
 ### Features
 
-1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
+1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
 3. Support upload a Photo, Video, IGTV, Albums and Stories
-4. Support work with User, Media, Insights, Collections and Direct objects
-5. Insights by posts and stories
-6. Build stories with custom background and font animation
+4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
+5. Like, Follow, Edit account (Bio) and much more else
+6. Insights by account, posts and stories
+7. Build stories with custom background, font animation, swipe up link and mention users
+8. In the next release, account registration and captcha passing will appear
 
 ### Install
 
@@ -32,13 +34,13 @@ Instagram API valid for 1 November 2020 (last reverse-engineering check)
 
 ### Requests
 
-* `Public` (anonymous) methods had suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
-* `Private` (authorized request) methods have `_v1` suffix
+* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Private` (authorized request via mobile api) methods have `_v1` suffix
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
 
-```
+``` python
 def media_info(media_pk):
     try:
         return self.media_info_gql(media_pk)
@@ -50,7 +52,7 @@ def media_info(media_pk):
 
 ### Usage
 
-```
+``` python
 from instagrapi import Client
 
 cl = Client()
@@ -69,10 +71,12 @@ The current types are in [types.py](/instagrapi/types.py):
 | Media          | Media (Photo, Video, Album, IGTV or Story)                                             |
 | Resource       | Part of Media (for albums)                                                             |
 | MediaOembed    | Short version of Media                                                                 |
-| User           | User data                                                                              |
-| UserShort      | Short user data (stored in Usertag, Comment, Media, Direct)                            |
+| Account        | Full private info for your account (e.g. email, phone_number)                          |
+| User           | Full public user data                                                                  |
+| UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
+| Hashtag        | Hashtag object (id, name, picture)                                                     |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
@@ -84,24 +88,27 @@ The current types are in [types.py](/instagrapi/types.py):
 
 This is your authorized account
 
-| Method                                                   | Return   | Description                                                   |
-| -------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| Client(settings: dict = {}, proxy: str = "")             | bool     | Login by username and password                                |
-| login(username: str, password: str)                      | bool     | Login by username and password                                |
-| relogin()                                                | bool     | Relogin with clean cookies (required cl.username/cl.password) |
-| login_by_sessionid(sessionid: str)                       | bool     | Login by sessionid from Instagram site                        |
-| get_settings()                                           | dict     | Return settings dict (more details below)                     |
-| set_proxy(dsn: str)                                      | dict     | Support socks and http/https proxy                            |
-| cookie_dict                                              | dict     | Return cookies                                                |
-| user_id                                                  | int      | Return your user_id (after login)                             |
-| device                                                   | dict     | Return device dict which we pass to Instagram                 |
-| set_device(device: dict)                                 | bool     | Change device settings                                        |
-| set_user_agent(user_agent: str = "")                     | bool     | Change User-Agent header                                      |
-| base_headers                                             | dict     | Base headers for Instagram                                    |
+| Method                                       | Return    | Description                                                                       |
+| -------------------------------------------- | --------- | --------------------------------------------------------------------------------- |
+| Client(settings: dict = {}, proxy: str = "") | bool      | Init instagrapi client (settings example below)                                   |
+| login(username: str, password: str)          | bool      | Login by username and password (get new cookies if it does not exist in settings) |
+| relogin()                                    | bool      | Relogin with clean cookies (required cl.username/cl.password)                     |
+| login_by_sessionid(sessionid: str)           | bool      | Login by sessionid from Instagram site                                            |
+| get_settings()                               | dict      | Return settings dict (more details below)                                         |
+| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy                                                |
+| cookie_dict                                  | dict      | Return cookies                                                                    |
+| user_id                                      | int       | Return your user_id (after login)                                                 |
+| device                                       | dict      | Return device dict which we pass to Instagram                                     |
+| set_device(device: dict)                     | bool      | Change device settings                                                            |
+| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header                                                          |
+| base_headers                                 | dict      | Base headers for Instagram                                                        |
+| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)                      |
+| account_edit(\**data)                        | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url) |
+| account_change_picture(path: Path)           | UserShort | Change Profile picture                                                            |
 
 Example:
 
-```
+``` python
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
@@ -113,7 +120,7 @@ print(cl.user_info(cl.user_id))
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
-```
+``` python
 settings = {
    "uuids": {
       "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
@@ -161,15 +168,15 @@ Viewing and editing publications (medias)
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
-| media_oembed(url: str)                             | ShortMedia         | Return short media info by media URL                          | 
-| media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
-| media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
+| media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
+| media_like(media_id: str)                          | bool               | Like media                                                    |
+| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
 
 Example:
 
-```
+``` python
 >>> cl.media_pk_from_code("B-fKL9qpeab")
 2278584739065882267
 
@@ -179,7 +186,47 @@ Example:
 >>> cl.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
 1787135824035452364
 
->>> cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/")
+>>> cl.media_info(1787135824035452364).dict()
+{'pk': 1787135824035452364,
+ 'id': '1787135824035452364_1903424587',
+ 'code': 'BjNLpA1AhXM',
+ 'taken_at': datetime.datetime(2018, 5, 25, 15, 46, 53, tzinfo=datetime.timezone.utc),
+ 'media_type': 8,
+ 'product_type': '',
+ 'thumbnail_url': None,
+ 'location': {'pk': 260916528,
+  'name': 'Foros, Crimea',
+  'address': '',
+  'lng': 33.7878,
+  'lat': 44.3914,
+  'external_id': 181364832764479,
+  'external_id_source': 'facebook_places'},
+ 'user': {'pk': 1903424587,
+  'username': 'adw0rd',
+  'full_name': 'Mikhail Andreev',
+  'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_...&oe=5FD7600E')},
+ 'comment_count': 0,
+ 'like_count': 48,
+ 'caption_text': '@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill #skateboarding #downhillskateboarding #crimea #foros',
+ 'usertags': [],
+ 'video_url': None,
+ 'view_count': 0,
+ 'video_duration': 0.0,
+ 'title': '',
+ 'resources': [{'pk': 1787135361353462176,
+   'video_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/33464086_3755...0e2362', scheme='https', ...),
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3220311...AE7332', scheme='https', ...),
+   'media_type': 2},
+  {'pk': 1787135762219834098,
+   'video_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/32895...61320_n.mp4', scheme='https', ...),
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3373413....8480_n.jpg', scheme='https', ...),
+   'media_type': 2},
+  {'pk': 1787133803186894424,
+   'video_url': None,
+   'thumbnail_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/324307712_n.jpg...', scheme='https', ...),
+   'media_type': 1}]}
+
+>>> cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/").dict()
 {'version': '1.0',
  'title': 'В гостях у ДК @delai_krasivo_kaifui',
  'author_name': 'adw0rd',
@@ -199,6 +246,16 @@ Example:
 
 ```
 
+#### Comment
+
+| Method                                             | Return             | Description                                                   |
+| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| media_comment(media_id: str, message: str)         | bool               | Add new comment to media                                      |
+| media_comments(media_id: str)                      | List\[Comment]     | Get all comments for media                                    |
+| comment_like(comment_pk: int)                      | bool               | Like comment                                                  |
+| comment_unlike(comment_pk: int)                    | bool               | Unlike comment                                                |
+
+
 #### User
 
 View a list of a user's medias, following and followers
@@ -208,8 +265,8 @@ View a list of a user's medias, following and followers
 | Method                                             | Return              | Description                                      |
 | -------------------------------------------------- | ------------------- | ------------------------------------------------ |
 | user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
-| user_followers(user_id: int)                       | Dict\[int: User]    | Get dict of followers users                      |
-| user_following(user_id: int)                       | Dict\[int: User]    | Get dict of following users                      |
+| user_followers(user_id: int)                       | Dict\[int, User]    | Get dict of followers users                      |
+| user_following(user_id: int)                       | Dict\[int, User]    | Get dict of following users                      |
 | user_info(user_id: int)                            | User                | Get user info                                    |
 | user_info_by_username(username: str)               | User                | Get user info by username                        |
 | user_follow(user_id: int)                          | bool                | Follow user                                      |
@@ -219,35 +276,49 @@ View a list of a user's medias, following and followers
 
 Example:
 
-```
+``` python
 >>> cl.user_followers(cl.user_id).keys()
 dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 >>> cl.user_following(cl.user_id)
 {
-   8530598273: {
-      "pk": 8530598273,
-      "username": "dhbastards",
-      "full_name": "The Best DH Skaters Ever",
-      "is_private": False,
-      "profile_pic_url": "https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg",
-      "is_verified": False
-  },
+  8530498223: UserShort(
+    pk=8530498223,
+    username="something",
+    full_name="Example description",
+    profile_pic_url=HttpUrl(
+      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg',
+      scheme='https',
+      host='instagram.frix7-1.fna.fbcdn.net',
+      ...
+    ),
+  ),
+  49114585: UserShort(
+    pk=49114585,
+    username='gx1000',
+    full_name='GX1000',
+    profile_pic_url=HttpUrl(
+      'https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/10388...jpg',
+      scheme='https',
+      host='scontent-hel3-1.cdninstagram.com',
+      ...
+    )
+  ),
   ...
 }
 
->>> cl.user_info_by_username('adw0rd')
+>>> cl.user_info_by_username('adw0rd').dict()
 {'pk': 1903424587,
  'username': 'adw0rd',
  'full_name': 'Mikhail Andreev',
  'is_private': False,
- 'profile_pic_url': 'https://scontent-arn2-1.cdninstagram.com/v/t51...FB463C5',
+ 'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_803537687159702_2508263208740189974_n.jpg?...', scheme='https', host='scontent-hel3-1.cdninstagram.com', tld='com', host_type='domain', ...'),
  'is_verified': False,
  'media_count': 102,
- 'follower_count': 578,
- 'following_count': 529,
- 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards ...',
- 'external_url': 'https://adw0rd.com/',
+ 'follower_count': 576,
+ 'following_count': 538,
+ 'biography': 'Engineer: Python, JavaScript, Erlang',
+ 'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
  'is_business': False}
  
 ```
@@ -299,7 +370,7 @@ Upload medias to your stories. Common arguments:
 
 Examples:
 
-```
+``` python
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
@@ -323,7 +394,7 @@ cl.video_upload_to_story(
 
 Example:
 
-```
+``` python
 from instagrapi.story import StoryBuilder
 
 media_path = cl.video_download(
@@ -345,6 +416,12 @@ cl.video_upload_to_story(
     links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
 )
 ```
+
+Result:
+
+![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
+
+More stories here https://www.instagram.com/surferyone/
 
 
 #### Collections
@@ -379,6 +456,26 @@ Get statistics by medias. Common arguments:
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage] | Get only Messages in Thread        |
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage       | Add Message to exist Thread        |
 | direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage       | Send Message to Users or Threads   |
+
+#### Location
+
+| Method                                                     | Return         | Description                                                             |
+| ---------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| location_search(lat: float, lng: float)                    | List[Location] | Search Location by GEO coordinates
+| location_complete(location: Location)                      | Location       | Complete blank fields
+| location_build(location: Location)                         | String         | Serialized JSON
+| location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
+| location_medias_top(location_pk: int, amount: int = 9)     | List[Media]    | Return Top posts by Location
+| location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
+
+#### Hashtag
+
+| Method                                                               | Return              | Description                             |
+| -------------------------------------------------------------------- | ------------------- | --------------------------------------- |
+| hashtag_info(name: str)                                              | Hashtag             | Return Hashtag info (id, name, picture) |
+| hashtag_related_hashtags(name: str)                                  | List[Hashtag]       | Return list of related Hashtags         |
+| hashtag_medias_top(name: str, amount: int = 9)                       | List[Media]         | Return Top posts by Hashtag             |
+| hashtag_medias_recent(name: str, amount: int = 27)                   | List[Media]         | Return Most recent posts by Hashtag     |
 
 #### Challenge
 
@@ -447,3 +544,48 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | ------------------------ | --------------- |---------------------------------------------------- |
 | CollectionError          | PrivateError    | Base Collection Exception (received from Instagram) |
 | CollectionNotFound       | CollectionError | Raise when collection unavailable                   |
+
+
+### Direct Exceptions
+
+| Exception                | Base           | Description                                    |
+| ------------------------ | -------------- |----------------------------------------------- |
+| DirectError              | PrivateError   | Base Direct Exception                          |
+| DirectThreadNotFound     | DirectError    | Raise when thread not found                    |
+| DirectMessageNotFound    | DirectError    | Raise when message in thread not found         |
+
+
+### Photo Exceptions
+
+| Exception                | Base                | Description                                    |
+| ------------------------ | ------------------- |----------------------------------------------- |
+| PhotoNotDownload         | PrivateError        | Raise when source photo not found              |
+| PhotoNotUpload           | PrivateError        | Raise when photo not upload                    |
+| PhotoConfigureError      | PhotoNotUpload      | Raise when photo not configured                |
+| PhotoConfigureStoryError | PhotoConfigureError | Raise when photo story not configured          |
+
+
+### Video Exceptions
+
+| Exception                | Base                | Description                                    |
+| ------------------------ | ------------------- | ---------------------------------------------- |
+| VideoNotDownload         | PrivateError        | Raise when source video not found              |
+| VideoNotUpload           | PrivateError        | Raise when video not upload                    |
+| VideoConfigureError      | VideoNotUpload      | Raise when video not configured                |
+| VideoConfigureStoryError | VideoConfigureError | Raise when video story not configured          |
+
+### IGTV Exceptions
+
+| Exception                | Base          | Description                                    |
+| ------------------------ | ------------- |----------------------------------------------- |
+| IGTVNotUpload            | PrivateError  | Raise when IGTV not upload                     |
+| IGTVConfigureError       | IGTVNotUpload | Raise when IGTV not configured                 |
+
+
+### Album Exceptions
+
+| Exception                | Base         | Description                                    |
+| ------------------------ | ------------ |----------------------------------------------- |
+| AlbumNotDownload         | PrivateError | Raise when album not found                     |
+| AlbumUnknownFormat       | PrivateError | Raise when format of media not MP4 or JPG      |
+| AlbumConfigureError      | PrivateError | Raise when album not configured                |

@@ -1,8 +1,9 @@
-from .exceptions import CollectionNotFound
-from .extractors import extract_media_v1, extract_collection
+from instagrapi.exceptions import CollectionNotFound
+from instagrapi.extractors import extract_media_v1, extract_collection
 
 
-class Collection:
+class CollectionMixin:
+
     def collections(self) -> list:
         """Return list of collections
         """
