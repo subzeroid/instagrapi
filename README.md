@@ -76,7 +76,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
-| Hashtag        | Hashtag object (id, name, picture)
+| Hashtag        | Hashtag object (id, name, picture)                                                     |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |

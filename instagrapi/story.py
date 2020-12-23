@@ -2,7 +2,12 @@ import tempfile
 from pathlib import Path
 from typing import List
 
-from moviepy.editor import TextClip, CompositeVideoClip, VideoFileClip, ImageClip
+try:
+    from moviepy.editor import (
+        TextClip, CompositeVideoClip, VideoFileClip, ImageClip
+    )
+except ImportError:
+    raise Exception('Please install moviepy==1.0.3 and retry')
 
 from .types import StoryBuild, StoryMention
 

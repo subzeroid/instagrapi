@@ -4,7 +4,6 @@ import requests
 from pathlib import Path
 from typing import List
 from uuid import uuid4
-import moviepy.editor as mp
 from urllib.parse import urlparse
 
 from instagrapi import config
@@ -375,6 +374,12 @@ class UploadVideoMixin:
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze video file
     """
+
+    try:
+        import moviepy.editor as mp
+    except ImportError:
+        raise Exception('Please install moviepy>=1.0.3 and retry')
+
     print(f'Analizing video file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size

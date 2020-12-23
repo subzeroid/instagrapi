@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import List
 from uuid import uuid4
 from PIL import Image
-import moviepy.editor as mp
 
 from instagrapi import config
 from instagrapi.extractors import extract_media_v1
@@ -188,6 +187,12 @@ class UploadIGTVMixin:
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     """Analyze and crop thumbnail if need
     """
+
+    try:
+        import moviepy.editor as mp
+    except ImportError:
+        raise Exception('Please install moviepy>=1.0.3 and retry')
+
     print(f'Analizing IGTV file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size

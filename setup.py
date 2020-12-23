@@ -19,7 +19,7 @@ Use the most recent version of the API from Instagram.
 
 setup(
     name='instagrapi',
-    version='1.3.2',
+    version='1.3.3',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
@@ -28,7 +28,6 @@ setup(
         'pytz==2020.1',
         'requests==2.24.0',
         'PySocks==1.7.1',
-        'moviepy==1.0.3',
         'Pillow==7.2.0',
         'pydantic==1.7.2'
     ],
