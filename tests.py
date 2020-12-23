@@ -83,60 +83,58 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         super().__init__(*args, **kwargs)
 
 
-# ERROR: instagrapi.exceptions.ClientLoginRequired
-# Move this test to ClientUserTestCase.test_user_info
-# class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
-#     api = None
-#
-#     def test_user_info_gql(self):
-#         user = self.api.user_info_gql(1903424587)
-#         self.assertIsInstance(user, User)
-#         for key, value in {
-#             "biography": "Engineer: Python, JavaScript, Erlang...",
-#             "external_url": "https://adw0rd.com/",
-#             "full_name": "Mikhail Andreev",
-#             "pk": 1903424587,
-#             "is_private": False,
-#             "is_verified": False,
-#             "profile_pic_url": "https://...",
-#             "username": "adw0rd",
-#         }.items():
-#             if isinstance(value, str) and "..." in value:
-#                 self.assertTrue(value.replace("...", "") in getattr(user, key))
-#             else:
-#                 self.assertEqual(value, getattr(user, key))
+class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
+    api = None
+
+    def test_user_info_gql(self):
+        user = self.api.user_info_gql(1903424587)
+        self.assertIsInstance(user, User)
+        for key, value in {
+            "biography": "Engineer: Python, JavaScript, Erlang...",
+            "external_url": "https://adw0rd.com/",
+            "full_name": "Mikhail Andreev",
+            "pk": 1903424587,
+            "is_private": False,
+            "is_verified": False,
+            "profile_pic_url": "https://...",
+            "username": "adw0rd",
+        }.items():
+            if isinstance(value, str) and "..." in value:
+                self.assertTrue(value.replace("...", "") in getattr(user, key))
+            else:
+                self.assertEqual(value, getattr(user, key))
 
 
-# class ClientTestCase(unittest.TestCase):
-#
-#     def test_lg(self):
-#         settings = {
-#             "uuids": {
-#                 "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
-#                 "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
-#                 "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
-#                 "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
-#                 "device_id": "android-e021b636049dc0e9"
-#             },
-#             "device_settings": {
-#                 "cpu": "h1",
-#                 "dpi": "640dpi",
-#                 "model": "h1",
-#                 "device": "RS988",
-#                 "resolution": "1440x2392",
-#                 "app_version": "117.0.0.28.123",
-#                 "manufacturer": "LGE/lge",
-#                 "version_code": "168361634",
-#                 "android_release": "6.0.1",
-#                 "android_version": 23
-#             },
-#             # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
-#             "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
-#         }
-#         api = Client(settings)
-#         api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
-#         self.assertIsInstance(api.user_id, int)
-#         self.assertEqual(api.username, ACCOUNT_USERNAME)
+class ClientTestCase(unittest.TestCase):
+
+    def test_lg(self):
+        settings = {
+            "uuids": {
+                "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
+                "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
+                "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
+                "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
+                "device_id": "android-e021b636049dc0e9"
+            },
+            "device_settings": {
+                "cpu": "h1",
+                "dpi": "640dpi",
+                "model": "h1",
+                "device": "RS988",
+                "resolution": "1440x2392",
+                "app_version": "117.0.0.28.123",
+                "manufacturer": "LGE/lge",
+                "version_code": "168361634",
+                "android_release": "6.0.1",
+                "android_version": 23
+            },
+            # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
+            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+        }
+        api = Client(settings)
+        api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+        self.assertIsInstance(api.user_id, int)
+        self.assertEqual(api.username, ACCOUNT_USERNAME)
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):
