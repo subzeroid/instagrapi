@@ -19,14 +19,12 @@ setup(
         'Pillow==7.2.0',
         'pydantic==1.7.2'
     ],
-    # test_requires=[],
     keywords='instagram private api',
     description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=find_packages(),
     python_requires=">=3.6",
-    package_data={'': ["requirements.txt"]},
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
