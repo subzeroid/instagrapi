@@ -1,26 +1,12 @@
-# import pathlib
-# import pkg_resources
-
 from setuptools import setup, find_packages
-
-# install_requires = []
-# with pathlib.Path('requirements.txt').open() as requirements_txt:
-#     install_requires = [
-#         str(requirement)
-#         for requirement
-#         in pkg_resources.parse_requirements(requirements_txt)
-#     ]
 
 long_description = '''
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver)
 '''
-# with pathlib.Path('README.md').open() as readme_md:
-#     long_description = readme_md.read()
-
 
 setup(
     name='instagrapi',
-    version='1.3.0',
+    version='1.3.1',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
@@ -41,6 +27,7 @@ setup(
     packages=find_packages(),
     python_requires=">=3.6",
     package_data={'': ["requirements.txt"]},
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
