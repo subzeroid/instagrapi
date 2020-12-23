@@ -3,7 +3,6 @@ import json
 import base64
 import time
 import uuid
-import pytz
 import hmac
 import hashlib
 import random
@@ -12,6 +11,7 @@ import requests
 
 from instagrapi import config
 from instagrapi.exceptions import ReloginAttemptExceeded
+from instagrapi.zones import CET
 
 
 class PreLoginFlowMixin:
@@ -104,7 +104,7 @@ class PostLoginFlowMixin:
             "feed_view_info": "",
             "phone_id": self.phone_id,
             "battery_level": random.randint(25, 100),
-            "timezone_offset": datetime.datetime.now(pytz.timezone("CET")).strftime(
+            "timezone_offset": datetime.datetime.now(CET()).strftime(
                 "%z"
             ),
             "_csrftoken": self.token,

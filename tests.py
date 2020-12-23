@@ -1,6 +1,5 @@
 import os
 import json
-import pytz
 import random
 import os.path
 import unittest
@@ -14,6 +13,7 @@ from instagrapi.types import (
     DirectThread, DirectMessage, Usertag, Location, Account,
     Hashtag
 )
+from instagrapi.zones import UTC
 
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
@@ -403,7 +403,7 @@ class ClientCommentTestCase(ClientPrivateTestCase):
 
     def test_media_comment(self):
         text = "Test text [%s]" % datetime.now().strftime("%s")
-        now = datetime.now(tz=pytz.UTC)
+        now = datetime.now(tz=UTC())
         comment = self.api.media_comment(2276404890775267248, text)
         self.assertIsInstance(comment, Comment)
         comment = comment.dict()
@@ -536,7 +536,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "pk": 2154602296692269830,
             "code": "B3mr1-OlWMG",
             "media_type": 1,
-            "taken_at": datetime(2019, 10, 14, 15, 57, 10, tzinfo=pytz.UTC)
+            "taken_at": datetime(2019, 10, 14, 15, 57, 10, tzinfo=UTC())
         }.items():
             if isinstance(val, str):
                 self.assertTrue(getattr(media, key).startswith(val))
@@ -562,7 +562,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "video_url": "https://",
             "thumbnail_url": "https://",
             "media_type": 2,
-            "taken_at": datetime(2018, 3, 13, 14, 59, 23, tzinfo=pytz.UTC)
+            "taken_at": datetime(2018, 3, 13, 14, 59, 23, tzinfo=UTC())
         }.items():
             if isinstance(val, str):
                 self.assertTrue(getattr(media, key).startswith(val))
@@ -587,7 +587,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "pk": 1787135824035452364,
             "code": "BjNLpA1AhXM",
             "media_type": 8,
-            "taken_at": datetime(2018, 5, 25, 15, 46, 53, tzinfo=pytz.UTC),
+            "taken_at": datetime(2018, 5, 25, 15, 46, 53, tzinfo=UTC()),
             "product_type": "",
         }.items():
             self.assertEqual(getattr(media, key), val)
@@ -632,7 +632,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
             "thumbnail_url": "https://",
             "code": "ByYn5ZNlHWf",
             "media_type": 2,
-            "taken_at": datetime(2019, 6, 6, 22, 22, 6, tzinfo=pytz.UTC),
+            "taken_at": datetime(2019, 6, 6, 22, 22, 6, tzinfo=UTC()),
             "product_type": "igtv",
         }.items():
             if isinstance(val, str):

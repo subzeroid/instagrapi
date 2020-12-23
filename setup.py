@@ -19,13 +19,12 @@ Use the most recent version of the API from Instagram.
 
 setup(
     name='instagrapi',
-    version='1.3.3',
+    version='1.3.4',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
     install_requires=[
-        'pytz==2020.1',
         'requests==2.24.0',
         'PySocks==1.7.1',
         'Pillow==7.2.0',
