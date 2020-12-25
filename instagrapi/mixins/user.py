@@ -1,5 +1,4 @@
-import time
-from typing import List, Dict
+from typing import Dict
 from copy import deepcopy
 
 from instagrapi.exceptions import (
@@ -12,11 +11,9 @@ from instagrapi.extractors import (
     extract_user_gql,
     extract_user_v1,
     extract_user_short,
-    extract_media_gql,
-    extract_media_v1,
 )
 from instagrapi.utils import json_value
-from instagrapi.types import User, Media, UserShort
+from instagrapi.types import User, UserShort
 from instagrapi import config
 
 
@@ -284,97 +281,3 @@ class UserMixin:
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
-
-    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> List[Media]:
-        """
-        !Use Client.user_medias instead!
-        Return list with media of instagram profile by user id using graphql
-        :rtype: list
-        :param user_id: Profile user id in instagram
-        :param amount: Count of medias for fetching (by default instagram return 50)
-        :param sleep: Timeout between requests
-        :return: List of medias for profile
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        medias = []
-        end_cursor = None
-        variables = {
-            "id": user_id,
-            "first": 50,  # default amount
-        }
-        while True:
-            if end_cursor:
-                variables["after"] = end_cursor
-            data = self.public_graphql_request(
-                variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
-            )
-            page_info = json_value(
-                data, "user", "edge_owner_to_timeline_media", "page_info", default={}
-            )
-            edges = json_value(
-                data, "user", "edge_owner_to_timeline_media", "edges", default=[]
-            )
-            for edge in edges:
-                medias.append(edge["node"])
-            end_cursor = page_info.get("end_cursor")
-            if not page_info.get("has_next_page") or not end_cursor:
-                break
-            if len(medias) >= amount:
-                break
-            time.sleep(sleep)
-        return [extract_media_gql(media) for media in medias[:amount]]
-
-    def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
-        """Get all medias by user_id via Private API
-        :user_id: User ID
-        :amount: By default instagram return 18 items by each request
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        medias = []
-        next_max_id = ""
-        min_timestamp = None
-        while True:
-            try:
-                items = self.private_request(
-                    f"feed/user/{user_id}/",
-                    params={
-                        "max_id": next_max_id,
-                        "min_timestamp": min_timestamp,
-                        "rank_token": self.rank_token,
-                        "ranked_content": "true",
-                    },
-                )["items"]
-            except Exception as e:
-                self.logger.exception(e)
-                break
-            medias.extend(items)
-            if not self.last_json.get("more_available"):
-                break
-            if len(medias) >= amount:
-                break
-            next_max_id = self.last_json.get("next_max_id", "")
-        return [extract_media_v1(media) for media in medias[:amount]]
-
-    def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
-        """Get all medias by user_id
-        First, through the Public API, then through the Private API
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        try:
-            try:
-                medias = self.user_medias_gql(user_id, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.user_medias_gql(user_id, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
-            # User may been private, attempt via Private API
-            # (You can check is_private, but there may be other reasons,
-            #  it is better to try through a Private API)
-            medias = self.user_medias_v1(user_id, amount)
-        return medias
