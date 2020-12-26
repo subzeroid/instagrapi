@@ -3,10 +3,10 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 17 December 2020 (last reverse-engineering check)
+Instagram API valid for 7 November 2020 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
-![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
+![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [Discord](https://discord.gg/vM9SJAD4)
 
 ### Authors
 
@@ -14,14 +14,12 @@ Instagram API valid for 17 December 2020 (last reverse-engineering check)
 
 ### Features
 
-1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
+1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
 3. Support upload a Photo, Video, IGTV, Albums and Stories
-4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
-5. Like, Follow, Edit account (Bio) and much more else
-6. Insights by account, posts and stories
-7. Build stories with custom background, font animation, swipe up link and mention users
-8. In the next release, account registration and captcha passing will appear
+4. Support work with User, Media, Insights, Collections and Direct objects
+5. Insights by posts and stories
+6. Build stories with custom background and font animation
 
 ### Install
 
@@ -34,13 +32,13 @@ Instagram API valid for 17 December 2020 (last reverse-engineering check)
 
 ### Requests
 
-* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
-* `Private` (authorized request via mobile api) methods have `_v1` suffix
+* `Public` (anonymous) methods had suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Private` (authorized request) methods have `_v1` suffix
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
 
-``` python
+```
 def media_info(media_pk):
     try:
         return self.media_info_gql(media_pk)
@@ -52,7 +50,7 @@ def media_info(media_pk):
 
 ### Usage
 
-``` python
+```
 from instagrapi import Client
 
 cl = Client()
@@ -76,7 +74,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
-| Hashtag        | Hashtag object (id, name, picture)                                                     |
+| Hashtag        | Hashtag object (id, name, picture)
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
@@ -108,7 +106,7 @@ This is your authorized account
 
 Example:
 
-``` python
+```
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
@@ -120,7 +118,7 @@ print(cl.user_info(cl.user_id))
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
-``` python
+```
 settings = {
    "uuids": {
       "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
@@ -168,15 +166,15 @@ Viewing and editing publications (medias)
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
-| media_like(media_id: str)                          | bool               | Like media                                                    |
-| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
+| media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
+| media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 
 Example:
 
-``` python
+```
 >>> cl.media_pk_from_code("B-fKL9qpeab")
 2278584739065882267
 
@@ -246,16 +244,6 @@ Example:
 
 ```
 
-#### Comment
-
-| Method                                             | Return             | Description                                                   |
-| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_comment(media_id: str, message: str)         | bool               | Add new comment to media                                      |
-| media_comments(media_id: str)                      | List\[Comment]     | Get all comments for media                                    |
-| comment_like(comment_pk: int)                      | bool               | Like comment                                                  |
-| comment_unlike(comment_pk: int)                    | bool               | Unlike comment                                                |
-
-
 #### User
 
 View a list of a user's medias, following and followers
@@ -276,18 +264,18 @@ View a list of a user's medias, following and followers
 
 Example:
 
-``` python
+```
 >>> cl.user_followers(cl.user_id).keys()
 dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 >>> cl.user_following(cl.user_id)
 {
-  8530498223: UserShort(
-    pk=8530498223,
-    username="something",
-    full_name="Example description",
+  8530598273: UserShort(
+    pk=8530598273,
+    username="dhbastards",
+    full_name="The Best DH Skaters Ever",
     profile_pic_url=HttpUrl(
-      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg',
+      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg',
       scheme='https',
       host='instagram.frix7-1.fna.fbcdn.net',
       ...
@@ -317,7 +305,7 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  'media_count': 102,
  'follower_count': 576,
  'following_count': 538,
- 'biography': 'Engineer: Python, JavaScript, Erlang',
+ 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards \n@bestskatetrick \n@best_drift_daily \n@best_rally_mag \n@asphalt_kings_lb \n@surferyone \n@bmxtravel',
  'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
  'is_business': False}
  
@@ -342,12 +330,13 @@ Upload medias to your feed. Common arguments:
 
 * `path` - Path to source file
 * `caption`  - Text for you post
+* `storyUpload`  - If True will create a story from image (default: False)
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 
 | Method                                                                                                                    | Return  | Description                        |
 | ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)                       | Media   | Upload photo (Support JPG files)   |
+| photo_upload(path: Path, caption: str, storyUpload:bool , upload_id: str, usertags: List[Usertag], location: Location)    | Media   | Upload photo (Support JPG files)   |
 | video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)                      | Media   | Upload video (Support MP4 files)   |
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)           | Media   | Upload IGTV (Support MP4 files)    |
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                                | Media   | Upload Album (Support JPG and MP4) |
@@ -370,7 +359,7 @@ Upload medias to your stories. Common arguments:
 
 Examples:
 
-``` python
+```
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
@@ -394,7 +383,7 @@ cl.video_upload_to_story(
 
 Example:
 
-``` python
+```
 from instagrapi.story import StoryBuilder
 
 media_path = cl.video_download(
@@ -416,12 +405,6 @@ cl.video_upload_to_story(
     links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
 )
 ```
-
-Result:
-
-![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
-
-More stories here https://www.instagram.com/surferyone/
 
 
 #### Collections
@@ -459,14 +442,12 @@ Get statistics by medias. Common arguments:
 
 #### Location
 
-| Method                                                     | Return         | Description                                                             |
-| ---------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
-| location_search(lat: float, lng: float)                    | List[Location] | Search Location by GEO coordinates
-| location_complete(location: Location)                      | Location       | Complete blank fields
-| location_build(location: Location)                         | String         | Serialized JSON
-| location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
-| location_medias_top(location_pk: int, amount: int = 9)     | List[Media]    | Return Top posts by Location
-| location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
+| Method                                    | Return         | Description                                                             |
+| ----------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| location_search(lat: float, lng: float)   | List[Location] | Search Location by GEO coordinates
+| location_complete(location: Location)     | Location       | Complete blank fields
+| location_build(location: Location)        | String         | Serialized JSON
+| location_info(location_pk: int)           | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
 
 #### Hashtag
 

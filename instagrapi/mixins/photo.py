@@ -125,6 +125,7 @@ class UploadPhotoMixin:
 
         :param path:                Path to photo file
         :param caption:             Media description (String)
+        :param storyUpload:         if True will create a story from path 
         :param upload_id:           Unique upload_id (String). When None, then generate
                                         automatically. Example from video.video_configure
         :param usertags:            Mentioned users (List)
@@ -144,6 +145,8 @@ class UploadPhotoMixin:
             if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
                 media = self.last_json.get("media")
                 self.expose()
+                if storyUpload:
+                    self.photo_upload_to_story(path,caption)
                 return extract_media_v1(media)
         raise (configure_exception or PhotoConfigureError)(
             response=self.last_response, **self.last_json)
