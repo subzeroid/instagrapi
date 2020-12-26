@@ -17,7 +17,7 @@ from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
 from instagrapi.utils import dumps
 
 try:
-    from PIL import Image
+    from PIL import Image,ImageFilter
 except ImportError:
     raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
@@ -113,6 +113,7 @@ class UploadPhotoMixin:
         self,
         path: Path,
         caption: str,
+        storyUpload:bool=False,
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
@@ -197,10 +198,67 @@ class UploadPhotoMixin:
         }
         return self.private_request("media/configure/", self.with_default_data(data))
 
+    def stories_shaper(self,path):
+        img = Image.open(path)
+        if (img.size[0], img.size[1]) == (1080, 1920):
+            print("Image is already 1080x1920. Just converting image.")
+            new_path = "{path}_STORIES.jpg".format(path=path)
+            new = Image.new("RGB", (img.size[0], img.size[1]), (255, 255, 255))
+            new.paste(img, (0, 0, img.size[0], img.size[1]))
+            new.save(new_path)
+            return new_path
+        else:
+            min_width = 1080
+            min_height = 1920
+            if img.size[1] != 1920:
+                height_percent = min_height / float(img.size[1])
+                width_size = int(float(img.size[0]) * float(height_percent))
+                img = img.resize((width_size, min_height), Image.ANTIALIAS)
+            else:
+                pass
+            if img.size[0] < 1080:
+                width_percent = min_width / float(img.size[0])
+                height_size = int(float(img.size[1]) * float(width_percent))
+                img_bg = img.resize((min_width, height_size), Image.ANTIALIAS)
+            else:
+                pass
+            img_bg = img.crop(
+                (
+                    int((img.size[0] - 1080) / 2),
+                    int((img.size[1] - 1920) / 2),
+                    int(1080 + ((img.size[0] - 1080) / 2)),
+                    int(1920 + ((img.size[1] - 1920) / 2)),
+                )
+            ).filter(ImageFilter.GaussianBlur(100))
+            if img.size[1] > img.size[0]:
+                height_percent = min_height / float(img.size[1])
+                width_size = int(float(img.size[0]) * float(height_percent))
+                img = img.resize((width_size, min_height), Image.ANTIALIAS)
+                if img.size[0] > 1080:
+                    width_percent = min_width / float(img.size[0])
+                    height_size = int(float(img.size[1]) * float(width_percent))
+                    img = img.resize((min_width, height_size), Image.ANTIALIAS)
+                    img_bg.paste(
+                        img, (int(540 - img.size[0] / 2), int(960 - img.size[1] / 2))
+                    )
+                else:
+                    img_bg.paste(img, (int(540 - img.size[0] / 2), 0))
+            else:
+                width_percent = min_width / float(img.size[0])
+                height_size = int(float(img.size[1]) * float(width_percent))
+                img = img.resize((min_width, height_size), Image.ANTIALIAS)
+                img_bg.paste(img, (int(540 - img.size[0] / 2), int(960 - img.size[1] / 2)))
+            new_path = "{path}_STORIES.jpg".format(path=path)
+            new = Image.new("RGB", (img_bg.size[0], img_bg.size[1]), (255, 255, 255))
+            new.paste(img_bg, (0, 0, img_bg.size[0], img_bg.size[1]))
+            new.save(new_path)
+            return new_path
+
     def photo_upload_to_story(
         self,
         path: Path,
         caption: str,
+        blur:bool=True,
         upload_id: str = "",
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
@@ -218,6 +276,9 @@ class UploadPhotoMixin:
 
         :return: Media
         """
+        if blur:
+            path=self.stories_shaper(path)
+
         return self.photo_upload(
             path, caption, upload_id, mentions,
             links=links,
@@ -225,6 +286,7 @@ class UploadPhotoMixin:
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
         )
+
 
     def photo_configure_to_story(
         self,
