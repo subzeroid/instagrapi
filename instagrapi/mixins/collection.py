@@ -43,6 +43,11 @@ class CollectionMixin:
     def collection_medias_by_name(self, name: str) -> List[Collection]:
         """
         Get collections by name
+        
+        Parameters
+        ----------
+        name: str
+            Name of the media
 
         Returns
         -------
@@ -60,11 +65,11 @@ class CollectionMixin:
 
         Parameters
         ----------
-        collection_pk : int
+        collection_pk: int
             Unique identifier of a Collection
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 21
-        last_media_pk : int, optional
+        last_media_pk: int, optional
             Last PK user has seen, function will return medias after this pk. Default is 0
 
         Returns

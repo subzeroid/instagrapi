@@ -73,7 +73,7 @@ class ChallengeResolveMixin:
 
         Parameters
         ----------
-        challenge_url : str
+        challenge_url: str
             Challenge URL
 
         Returns
@@ -229,7 +229,7 @@ class ChallengeResolveMixin:
 
         Parameters
         ----------
-        challenge : Dict
+        challenge: Dict
             Dict
 
         Returns

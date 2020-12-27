@@ -22,7 +22,7 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
 
         max_id: str
@@ -45,10 +45,10 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
 
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 12
 
         end_cursor: str, optional
@@ -77,7 +77,7 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
 
         Returns
@@ -94,7 +94,7 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
 
         Returns
@@ -116,7 +116,7 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
 
         Returns
@@ -136,11 +136,11 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 27
-        tab_key : str, optional
+        tab_key: str, optional
             Tab Key, default value is ""
 
         Returns
@@ -187,13 +187,11 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 27
-
-        tab_key : str, optional
+        tab_key: str, optional
             Tab Key, default value is ""
 
         Returns
@@ -242,10 +240,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 9
 
         Returns
@@ -264,10 +261,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 9
 
         Returns
@@ -283,10 +279,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 9
 
         Returns
@@ -313,10 +308,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 71
 
         Returns
@@ -335,10 +329,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 71
 
         Returns
@@ -354,10 +347,9 @@ class HashtagMixin:
 
         Parameters
         ----------
-        name : str
+        name: str
             Name of the hashtag
-
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 71
 
         Returns

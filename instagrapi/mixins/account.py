@@ -66,7 +66,7 @@ class AccountMixin:
 
         Parameters
         ----------
-        data : Dict
+        data: Dict
             Fields you want to edit in your account as key and value pairs
 
         Returns
@@ -95,7 +95,7 @@ class AccountMixin:
 
         Parameters
         ----------
-        path : Path
+        path: Path
             Path to the image you want to update as your profile picture
 
         Returns

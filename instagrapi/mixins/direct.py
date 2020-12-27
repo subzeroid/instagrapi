@@ -18,7 +18,7 @@ class DirectMixin:
 
         Parameters
         ----------
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 20
 
         Returns
@@ -59,7 +59,7 @@ class DirectMixin:
         thread_id: int
             Unique identifier of a Direct Message thread
 
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 20
 
         Returns
@@ -103,7 +103,7 @@ class DirectMixin:
         thread_id: int
             Unique identifier of a Direct Message thread
 
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 20
 
         Returns
@@ -123,7 +123,7 @@ class DirectMixin:
         thread_id: int
             Unique identifier of a Direct Message thread
 
-        text : str
+        text: str
             String to be posted on the thread
 
         Returns
@@ -140,7 +140,7 @@ class DirectMixin:
 
         Parameters
         ----------
-        text : str
+        text: str
             String to be posted on the thread
 
         user_ids: List[int]

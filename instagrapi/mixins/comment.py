@@ -21,7 +21,7 @@ class CommentMixin:
 
         Parameters
         ----------
-        media_id : str
+        media_id: str
             Unique identifier of a Media
 
         Returns
@@ -57,7 +57,7 @@ class CommentMixin:
 
         Parameters
         ----------
-        media_id : str
+        media_id: str
             Unique identifier of a Media
         text: str
             String to be posted on the media
@@ -90,7 +90,7 @@ class CommentMixin:
 
         Parameters
         ----------
-        comment_pk : str
+        comment_pk: str
             Unique identifier of a Comment
         revert: bool, optional
             If liked, whether or not to unlike. Default is False
@@ -120,7 +120,7 @@ class CommentMixin:
 
         Parameters
         ----------
-        comment_pk : str
+        comment_pk: str
             Unique identifier of a Comment
 
         Returns

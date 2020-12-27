@@ -46,7 +46,7 @@ class PreLoginFlowMixin:
 
         Parameters
         ----------
-        login : bool, optional
+        login: bool, optional
             Whether to login or not
 
         Returns
@@ -77,7 +77,7 @@ class PreLoginFlowMixin:
 
         Parameters
         ----------
-        login : bool, optional
+        login: bool, optional
             Whether to login or not
 
         Returns
@@ -104,7 +104,7 @@ class PreLoginFlowMixin:
 
         Parameters
         ----------
-        login : bool, optional
+        login: bool, optional
             Whether to login or not
 
         Returns
@@ -128,7 +128,7 @@ class PreLoginFlowMixin:
 
         Parameters
         ----------
-        usage : str, optional
+        usage: str, optional
             Default "prefill"
 
         Returns
@@ -171,7 +171,7 @@ class PostLoginFlowMixin:
 
         Parameters
         ----------
-        options : List, optional
+        options: List, optional
             Configurable options
 
         Returns
@@ -225,7 +225,7 @@ class PostLoginFlowMixin:
 
         Parameters
         ----------
-        reason : str, optional
+        reason: str, optional
             Default "pull_to_refresh"
 
         Returns
@@ -283,7 +283,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        sessionid : str
+        sessionid: str
             Session ID
 
         Returns
@@ -306,10 +306,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        username : str
+        username: str
             Instagram Username
 
-        password : str
+        password: str
             Instagram Password
 
         relogin: bool
@@ -424,7 +424,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        device : Dict, optional
+        device: Dict, optional
             Dict of device settings, default is None
 
         Returns
@@ -453,7 +453,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        user_agent : str, optional
+        user_agent: str, optional
             User agent, default is ""
 
         Returns
@@ -474,7 +474,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        uuids : Dict, optional
+        uuids: Dict, optional
             UUIDs, default is None
 
         Returns
@@ -568,7 +568,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         Parameters
         ----------
-        size : int
+        size: int
             Integer value
 
         Returns

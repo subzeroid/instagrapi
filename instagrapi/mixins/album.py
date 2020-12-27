@@ -23,11 +23,10 @@ class DownloadAlbumMixin:
 
         Parameters
         ----------
-        media_pk : int
+        media_pk: int
             PK for the album you want to download
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album, default is "" and will download the files to working directory.
 
         Returns
         -------
@@ -63,11 +62,10 @@ class DownloadAlbumMixin:
 
         Parameters
         ----------
-        urls : List[str]
+        urls: List[str]
             List of URLs to download media from
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album, default is "" and will download the files to working directory.
 
         Returns
         -------
@@ -104,7 +102,7 @@ class UploadAlbumMixin:
 
         Parameters
         ----------
-        paths : List[Path]
+        paths: List[Path]
             List of paths for media to upload
         caption: str
             Media caption
@@ -190,7 +188,7 @@ class UploadAlbumMixin:
 
         Parameters
         ----------
-        childs : List
+        childs: List
             List of media/resources of an album
         caption: str
             Media caption

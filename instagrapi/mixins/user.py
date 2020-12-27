@@ -286,7 +286,7 @@ class UserMixin:
         ----------
         user_id: int
             User id of an instagram account
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 0
 
         Returns
@@ -337,7 +337,7 @@ class UserMixin:
         ----------
         user_id: int
             User id of an instagram account
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 0
 
         Returns
@@ -376,7 +376,7 @@ class UserMixin:
             User id of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 0
 
         Returns
@@ -407,7 +407,7 @@ class UserMixin:
         ----------
         user_id: int
             User id of an instagram account
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 0
 
         Returns
@@ -440,7 +440,7 @@ class UserMixin:
             User id of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 0
 
         Returns
@@ -508,7 +508,7 @@ class UserMixin:
         Parameters
         ----------
         user_id: int
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 50
         sleep: int, optional
             Timeout between pages iterations, default is 2
@@ -555,7 +555,7 @@ class UserMixin:
         Parameters
         ----------
         user_id: int
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 18
 
         Returns
@@ -597,7 +597,7 @@ class UserMixin:
         Parameters
         ----------
         user_id: int
-        amount : int, optional
+        amount: int, optional
             Maximum number of media to return, default is 50
 
         Returns

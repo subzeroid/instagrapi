@@ -25,10 +25,13 @@ class InsightsMixin:
         ----------
         post_type: str, optional
             Types of posts, default is "ALL"
-        time_frame : str, optional
+            Options: ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
+        time_frame: str, optional
             Time frame to pull media insights, default is "TWO_YEARS"
+            Options: ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
         data_ordering: str, optional
             Ordering strategy for the data, default is "REACH_COUNT"
+            Options: ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
         count: int, optional
             Max media count for retrieving, default is 0
         sleep: int, optional
@@ -151,7 +154,7 @@ class InsightsMixin:
 
         Parameters
         ----------
-        media_pk : int
+        media_pk: int
             PK for the album you want to download
 
         Returns

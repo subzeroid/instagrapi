@@ -28,7 +28,7 @@ class DownloadIGTVMixin:
 
         Parameters
         ----------
-        media_pk : int
+        media_pk: int
             PK for the album you want to download
         folder: Path, optional
             Directory in which you want to download the album, default is "" and will download the files to working
@@ -46,7 +46,7 @@ class DownloadIGTVMixin:
 
         Parameters
         ----------
-        url : str
+        url: str
             URL to download media from
         folder: Path, optional
             Directory in which you want to download the album, default is "" and will download the files to working
@@ -79,13 +79,13 @@ class UploadIGTVMixin:
 
         Parameters
         ----------
-        path : Path
+        path: Path
             Path to IGTV file
-        title : str
+        title: str
             Title of the video
-        caption : str
+        caption: str
             Media caption
-        thumbnail : Path, optional
+        thumbnail: Path, optional
             Path to thumbnail for IGTV. Default value is None, and it generates a thumbnail
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
@@ -200,7 +200,7 @@ class UploadIGTVMixin:
         ----------
         upload_id: str
             Unique identifier for a IGTV video
-        thumbnail : Path
+        thumbnail: Path
             Path to thumbnail for IGTV
         width: int
             Width of the video in pixels
@@ -208,9 +208,9 @@ class UploadIGTVMixin:
             Height of the video in pixels
         duration: int
             Duration of the video in seconds
-        title : str
+        title: str
             Title of the video
-        caption : str
+        caption: str
             Media caption
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
@@ -261,9 +261,9 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
 
     Parameters
     ----------
-    path : Path
+    path: Path
         Path to the video
-    thumbnail : Path
+    thumbnail: Path
         Path to thumbnail for IGTV
 
     Returns
@@ -293,7 +293,7 @@ def crop_thumbnail(path: Path) -> bool:
 
     Parameters
     ----------
-    path : Path
+    path: Path
         Path to the video
 
     Returns

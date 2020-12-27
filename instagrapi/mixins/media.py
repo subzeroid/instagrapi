@@ -282,7 +282,7 @@ class MediaMixin:
             Unique identifier of the media
         caption: str
             Media caption
-        title : str
+        title: str
             Title of the media
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
@@ -366,7 +366,7 @@ class MediaMixin:
 
         Parameters
         ----------
-        media_id : str
+        media_id: str
             Unique identifier of a Media
         revert: bool, optional
             If liked, whether or not to unlike. Default is False
@@ -399,7 +399,7 @@ class MediaMixin:
 
         Parameters
         ----------
-        media_id : str
+        media_id: str
             Unique identifier of a Media
 
         Returns
