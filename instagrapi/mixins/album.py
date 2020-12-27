@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from urllib.parse import urlparse
 
 from instagrapi.extractors import extract_media_v1
@@ -13,8 +13,27 @@ from instagrapi.utils import dumps
 
 
 class DownloadAlbumMixin:
+    """
+    Helper class to download album
+    """
 
     def album_download(self, media_pk: int, folder: Path = "") -> List[Path]:
+        """
+        Download your album
+
+        Parameters
+        ----------
+        media_pk : int
+            PK for the album you want to download
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        List[Path]
+            List of path for all the files downloaded
+        """
         media = self.media_info(media_pk)
         assert media.media_type == 8, "Must been album"
         paths = []
@@ -39,13 +58,29 @@ class DownloadAlbumMixin:
         return paths
 
     def album_download_by_urls(self, urls: List[str], folder: Path = "") -> List[Path]:
+        """
+        Download your album using specified URLs
+
+        Parameters
+        ----------
+        urls : List[str]
+            List of URLs to download media from
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        List[Path]
+            List of path for all the files downloaded
+        """
         paths = []
         for url in urls:
-            fname = urlparse(url).path.rsplit('/', 1)[1]
-            if fname.endswith('.jpg'):
-                paths.append(self.photo_download_by_url(url, fname, folder))
-            elif fname.endswith('.mp4'):
-                paths.append(self.video_download_by_url(url, fname, folder))
+            file_name = urlparse(url).path.rsplit('/', 1)[1]
+            if file_name.endswith('.jpg'):
+                paths.append(self.photo_download_by_url(url, file_name, folder))
+            elif file_name.endswith('.mp4'):
+                paths.append(self.video_download_by_url(url, file_name, folder))
             else:
                 raise AlbumUnknownFormat()
         return paths
@@ -64,24 +99,39 @@ class UploadAlbumMixin:
         configure_exception=None,
         to_story=False
     ) -> Media:
-        """Upload album to feed
-
-        :param paths:               Path to files (List)
-        :param caption:             Media description (String)
-        :param usertags:            Mentioned users (List of Usertag)
-        :param location:            Location
-        :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
-        :param configure_handler:   Configure handler method
-        :param configure_exception: Configure exception class
-
-        :return: Media
         """
-        childs = []
+        Upload album to feed
+
+        Parameters
+        ----------
+        paths : List[Path]
+            List of paths for media to upload
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is none
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 3
+        configure_handler
+            Configure handler method, default is None
+        configure_exception
+            Configure exception class, default is None
+        to_story: bool
+            Currently not used, default is False
+
+        Returns
+        -------
+        Media
+            An object of Media class
+        """
+        children = []
         for path in paths:
             path = Path(path)
             if path.suffix == '.jpg':
                 upload_id, width, height = self.photo_rupload(path, to_album=True)
-                childs.append({
+                children.append({
                     "upload_id": upload_id,
                     "edits": dumps({"crop_original_size": [width, height], "crop_center": [0.0, -0.0], "crop_zoom": 1.0}),
                     "extra": dumps({"source_width": width, "source_height": height}),
@@ -90,7 +140,7 @@ class UploadAlbumMixin:
                 })
             elif path.suffix == '.mp4':
                 upload_id, width, height, duration, thumbnail = self.video_rupload(path, to_album=True)
-                childs.append({
+                children.append({
                     "upload_id": upload_id,
                     "clips": dumps([{"length": duration, "source_type": "4"}]),
                     "extra": dumps({"source_width": width, "source_height": height}),
@@ -110,7 +160,7 @@ class UploadAlbumMixin:
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.album_configure)(
-                    childs, caption, usertags, location)
+                    children, caption, usertags, location)
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
                     """
@@ -130,19 +180,29 @@ class UploadAlbumMixin:
 
     def album_configure(
         self,
-        childs: list,
+        childs: List,
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None
-    ) -> dict:
-        """Post Configure Album
+    ) -> Dict:
+        """
+        Post Configure Album
 
-        :param childs:     Childs of album (List)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List of Usertag)
-        :param location:   Location
+        Parameters
+        ----------
+        childs : List
+            List of media/resources of an album
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         upload_id = str(int(time.time() * 1000))
         if usertags:

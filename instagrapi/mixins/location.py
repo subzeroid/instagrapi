@@ -8,9 +8,25 @@ from instagrapi.types import Location, Media
 
 
 class LocationMixin:
+    """
+    Helper class to get location
+    """
 
     def location_search(self, lat: float, lng: float) -> List[Location]:
-        """Search location
+        """
+        Get locations using lat and long
+
+        Parameters
+        ----------
+        lat: float
+            Latitude you want to search for
+        lng: float
+            Longitude you want to search for
+
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
         """
         params = {
             'latitude': lat,
@@ -28,7 +44,18 @@ class LocationMixin:
         return locations
 
     def location_complete(self, location: Location) -> Location:
-        """Smart complete of location
+        """
+        Smart complete of location
+
+        Parameters
+        ----------
+        location: Location
+            An object of location
+
+        Returns
+        -------
+        Location
+            An object of Location
         """
         assert location and isinstance(location, Location),\
             f'Location is wrong "{location}" ({type(location)})'
@@ -52,7 +79,17 @@ class LocationMixin:
         return location
 
     def location_build(self, location: Location) -> str:
-        """Build correct location data
+        """
+        Build correct location data
+
+        Parameters
+        ----------
+        location: Location
+            An object of location
+
+        Returns
+        -------
+        str
         """
         if not location:
             return '{}'
@@ -72,18 +109,57 @@ class LocationMixin:
         return json.dumps(data, separators=(",", ":"))
 
     def location_info_a1(self, location_pk: int) -> Location:
-        """Return additonal info for location by ?__a=1
+        """
+        Get a location using location pk
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+
+        Returns
+        -------
+        Location
+            An object of Location
         """
         data = self.public_a1_request(f"/explore/locations/{location_pk}/")
         return extract_location(data['location'])
 
     def location_info(self, location_pk: int) -> Location:
-        """Return additonal info for location
+        """
+        Get a location using location pk
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+
+        Returns
+        -------
+        Location
+            An object of Location
         """
         return self.location_info_a1(location_pk)
 
     def location_medias_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = '') -> List[Media]:
-        """Receive medias by location_pk
+        """
+        Get medias for a location
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+        amount: int, optional
+            Maximum number of media to return, default is 24
+        sleep: float, optional
+            Timeout between requests, default is 0.5
+        tab_key: str, optional
+            Tab Key, default value is ""
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         medias = []
         end_cursor = None
@@ -118,7 +194,22 @@ class LocationMixin:
         return medias
 
     def location_medias_top_a1(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
-        """Top medias by public API
+        """
+        Get top medias for a location
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+        amount: int, optional
+            Maximum number of media to return, default is 9
+        sleep: float, optional
+            Timeout between requests, default is 0.5
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.location_medias_a1(
             location_pk, amount, sleep=sleep,
@@ -126,7 +217,22 @@ class LocationMixin:
         )
 
     def location_medias_top(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
-        """Top medias
+        """
+        Get top medias for a location
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+        amount: int, optional
+            Maximum number of media to return, default is 9
+        sleep: float, optional
+            Timeout between requests, default is 0.5
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         try:
             return self.location_medias_top_a1(location_pk, amount, sleep)
@@ -136,7 +242,22 @@ class LocationMixin:
             return self.location_medias_top_a1(location_pk, amount, sleep)  # retry
 
     def location_medias_recent_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
-        """Recent medias by private API
+        """
+        Get recent medias for a location
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+        amount: int, optional
+            Maximum number of media to return, default is 24
+        sleep: float, optional
+            Timeout between requests, default is 0.5
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.location_medias_a1(
             location_pk, amount, sleep=sleep,
@@ -144,7 +265,22 @@ class LocationMixin:
         )
 
     def location_medias_recent(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
-        """Recent medias
+        """
+        Get recent medias for a location
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+        amount: int, optional
+            Maximum number of media to return, default is 24
+        sleep: float, optional
+            Timeout between requests, default is 0.5
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         try:
             return self.location_medias_recent_a1(location_pk, amount, sleep)

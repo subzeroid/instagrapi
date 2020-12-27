@@ -2,7 +2,7 @@ import json
 import time
 import random
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 from uuid import uuid4
 
 from instagrapi import config
@@ -18,15 +18,51 @@ except ImportError:
 
 
 class DownloadIGTVMixin:
+    """
+    Helpers to download IGTV videos
+    """
 
     def igtv_download(self, media_pk: int, folder: Path = "") -> str:
+        """
+        Download IGTV video
+
+        Parameters
+        ----------
+        media_pk : int
+            PK for the album you want to download
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        str
+        """
         return self.video_download(media_pk, folder)
 
     def igtv_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
+        """
+        Download IGTV video using URL
+
+        Parameters
+        ----------
+        url : str
+            URL to download media from
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        str
+        """
         return self.video_download_by_url(url, filename, folder)
 
 
 class UploadIGTVMixin:
+    """
+    Helpers to upload IGTV videos
+    """
 
     def igtv_upload(
         self,
@@ -38,18 +74,30 @@ class UploadIGTVMixin:
         location: Location = None,
         configure_timeout: int = 10,
     ) -> Media:
-        """Upload IGTV to Instagram
+        """
+        Upload IGTV to Instagram
 
-        :param path:              Path to IGTV file
-        :param title:             Media title (String)
-        :param caption:           Media description (String)
-        :param thumbnail:         Path to thumbnail for IGTV. When None, then
-                                  thumbnail is generate automatically
-        :param usertags:          Mentioned users (List)
-        :param location:          Location
-        :param configure_timeout: Timeout between attempt to configure media (set caption and title)
+        Parameters
+        ----------
+        path : Path
+            Path to IGTV file
+        title : str
+            Title of the video
+        caption : str
+            Media caption
+        thumbnail : Path, optional
+            Path to thumbnail for IGTV. Default value is None, and it generates a thumbnail
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is none
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 10
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         path = Path(path)
         if thumbnail is not None:
@@ -144,17 +192,35 @@ class UploadIGTVMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None
-    ) -> dict:
-        """Post Configure IGTV (send caption, thumbnail and more to Instagram)
+    ) -> Dict:
+        """
+        Post Configure IGTV (send caption, thumbnail and more to Instagram)
 
-        :param upload_id:  Unique upload_id (String)
-        :param thumbnail:  Path to thumbnail for IGTV
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param duration:   Duration in seconds (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location
+        Parameters
+        ----------
+        upload_id: str
+            Unique identifier for a IGTV video
+        thumbnail : Path
+            Path to thumbnail for IGTV
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        duration: int
+            Duration of the video in seconds
+        title : str
+            Title of the video
+        caption : str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
@@ -190,9 +256,21 @@ class UploadIGTVMixin:
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
-    """Analyze and crop thumbnail if need
     """
+    Analyze and crop thumbnail if need
 
+    Parameters
+    ----------
+    path : Path
+        Path to the video
+    thumbnail : Path
+        Path to thumbnail for IGTV
+
+    Returns
+    -------
+    Tuple
+        A tuple with (thumbail path, width, height, duration)
+    """
     try:
         import moviepy.editor as mp
     except ImportError:
@@ -210,7 +288,18 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
 
 
 def crop_thumbnail(path: Path) -> bool:
-    """Crop IGTV thumbnail with save height
+    """
+    Analyze and crop thumbnail if need
+
+    Parameters
+    ----------
+    path : Path
+        Path to the video
+
+    Returns
+    -------
+    bool
+        A boolean value
     """
     im = Image.open(str(path))
     width, height = im.size

@@ -12,9 +12,26 @@ from instagrapi.utils import dumps
 
 
 class HashtagMixin:
+    """
+    Helpers for managing Hashtag
+    """
 
     def hashtag_info_a1(self, name: str, max_id: str = None) -> Hashtag:
-        """Get info (id, name, profile_pic_url)
+        """
+        Get information about a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        max_id: str
+            Max ID, default value is None
+
+        Returns
+        -------
+        Hashtag
+            An object of Hashtag
         """
         params = {"max_id": max_id} if max_id else None
         data = self.public_a1_request(
@@ -23,7 +40,24 @@ class HashtagMixin:
         return extract_hashtag_gql(data["hashtag"])
 
     def hashtag_info_gql(self, name: str, amount: int = 12, end_cursor: str = None) -> Hashtag:
-        """Get info (id, name, profile_pic_url)
+        """
+        Get information about a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 12
+
+        end_cursor: str, optional
+            End Cursor, default value is None
+
+        Returns
+        -------
+        Hashtag
+            An object of Hashtag
         """
         variables = {
             "tag_name": name,
@@ -38,13 +72,35 @@ class HashtagMixin:
         return extract_hashtag_gql(data["hashtag"])
 
     def hashtag_info_v1(self, name: str) -> Hashtag:
-        """Get info (id, name, profile_pic_url)
+        """
+        Get information about a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        Returns
+        -------
+        Hashtag
+            An object of Hashtag
         """
         result = self.private_request(f'tags/{name}/info/')
         return extract_hashtag_v1(result)
 
     def hashtag_info(self, name: str) -> Hashtag:
-        """Get info (id, name, profile_pic_url)
+        """
+        Get information about a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        Returns
+        -------
+        Hashtag
+            An object of Hashtag
         """
         try:
             hashtag = self.hashtag_info_a1(name)
@@ -55,7 +111,18 @@ class HashtagMixin:
         return hashtag
 
     def hashtag_related_hashtags(self, name: str) -> List[Hashtag]:
-        """Get related hashtags
+        """
+        Get related hashtags from a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        Returns
+        -------
+        List[Hashtag]
+            List of objects of Hashtag
         """
         data = self.public_a1_request(f"/explore/tags/{name}/")
         return [
@@ -64,9 +131,24 @@ class HashtagMixin:
         ]
 
     def hashtag_medias_a1(self, name: str, amount: int = 27, tab_key: str = '') -> List[Media]:
-        """Receive medias by hashtag name
         """
-        uniqs = set()
+        Get medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+        amount : int, optional
+            Maximum number of media to return, default is 27
+        tab_key : str, optional
+            Tab Key, default value is ""
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
+        """
+        unique_set = set()
         medias = []
         end_cursor = None
         while True:
@@ -82,9 +164,9 @@ class HashtagMixin:
                     break
                 # check uniq
                 media_pk = edge['node']['id']
-                if media_pk in uniqs:
+                if media_pk in unique_set:
                     continue
-                uniqs.add(media_pk)
+                unique_set.add(media_pk)
                 # check contains hashtag in caption
                 media = extract_media_gql(edge['node'])
                 if f'#{name}' not in media.caption_text:
@@ -100,7 +182,24 @@ class HashtagMixin:
         return medias
 
     def hashtag_medias_v1(self, name: str, amount: int = 27, tab_key: str = '') -> List[Media]:
-        """Receive medias by hashtag name
+        """
+        Get medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 27
+
+        tab_key : str, optional
+            Tab Key, default value is ""
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         data = {
             'supported_tabs': dumps([tab_key]),
@@ -138,7 +237,21 @@ class HashtagMixin:
         return medias
 
     def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
-        """Top medias by public API
+        """
+        Get top medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 9
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.hashtag_medias_a1(
             name, amount,
@@ -146,12 +259,40 @@ class HashtagMixin:
         )
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
-        """Top medias by private API
+        """
+        Get top medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 9
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.hashtag_medias_v1(name, amount, tab_key='top')
 
     def hashtag_medias_top(self, name: str, amount: int = 9) -> List[Media]:
-        """Top medias
+        """
+        Get top medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 9
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         try:
             try:
@@ -167,7 +308,21 @@ class HashtagMixin:
         return medias
 
     def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
-        """Recent medias by public API
+        """
+        Get recent medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 71
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.hashtag_medias_a1(
             name, amount,
@@ -175,12 +330,40 @@ class HashtagMixin:
         )
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
-        """Recent medias by private API
+        """
+        Get recent medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 71
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         return self.hashtag_medias_v1(name, amount, tab_key='recent')
 
     def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
-        """Recent medias
+        """
+        Get recent medias for a hashtag
+
+        Parameters
+        ----------
+        name : str
+            Name of the hashtag
+
+        amount : int, optional
+            Maximum number of media to return, default is 71
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
         """
         try:
             try:
