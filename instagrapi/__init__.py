@@ -1,27 +1,27 @@
 import logging
 from urllib.parse import urlparse
 
+from instagrapi.mixins.account import AccountMixin
+from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
+from instagrapi.mixins.challenge import ChallengeResolveMixin
+from instagrapi.mixins.collection import CollectionMixin
+from instagrapi.mixins.comment import CommentMixin
+from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.hashtag import HashtagMixin
+from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
+from instagrapi.mixins.insights import InsightsMixin
+from instagrapi.mixins.location import LocationMixin
+from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
+from instagrapi.mixins.private import PrivateRequestMixin
 from instagrapi.mixins.public import (
+    ProfilePublicMixin,
     PublicRequestMixin,
     TopSearchesPublicMixin,
-    ProfilePublicMixin
 )
-from instagrapi.mixins.private import PrivateRequestMixin
-from instagrapi.mixins.challenge import ChallengeResolveMixin
-from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
-from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
-from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
-from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
-from instagrapi.mixins.media import MediaMixin
 from instagrapi.mixins.user import UserMixin
-from instagrapi.mixins.insights import InsightsMixin
-from instagrapi.mixins.collection import CollectionMixin
-from instagrapi.mixins.account import AccountMixin
-from instagrapi.mixins.direct import DirectMixin
-from instagrapi.mixins.location import LocationMixin
-from instagrapi.mixins.hashtag import HashtagMixin
-from instagrapi.mixins.comment import CommentMixin
+from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
 
 class Client(

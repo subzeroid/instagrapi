@@ -1,12 +1,12 @@
 from typing import List
 
+from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
     extract_media_gql,
-    extract_media_v1
+    extract_media_v1,
 )
-from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.types import Hashtag, Media
 from instagrapi.utils import dumps
 

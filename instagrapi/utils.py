@@ -1,8 +1,8 @@
+import hashlib
 import hmac
 import json
 import random
 import string
-import hashlib
 import urllib
 
 from . import config

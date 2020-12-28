@@ -1,9 +1,9 @@
 """
 Example to handle Email/SMS challenges
 """
-import re
 import email
 import imaplib
+import re
 
 from instagrapi import Client
 

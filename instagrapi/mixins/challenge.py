@@ -1,14 +1,18 @@
+import hashlib
 import json
 import time
-import hashlib
+from datetime import datetime
 from typing import Dict
 
 import requests
-from datetime import datetime
 
 from instagrapi.exceptions import (
-    ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm,
-    ChallengeError, ChallengeRedirection, SubmitPhoneNumberForm
+    ChallengeError,
+    ChallengeRedirection,
+    ChallengeRequired,
+    RecaptchaChallengeForm,
+    SelectContactPointRecoveryForm,
+    SubmitPhoneNumberForm,
 )
 
 CHOICE_SMS = 0

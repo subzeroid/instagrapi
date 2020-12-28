@@ -1,14 +1,15 @@
 import time
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.extractors import extract_media_v1
 from instagrapi.exceptions import (
-    AlbumNotDownload, AlbumUnknownFormat,
-    AlbumConfigureError
+    AlbumConfigureError,
+    AlbumNotDownload,
+    AlbumUnknownFormat,
 )
-from instagrapi.types import Usertag, Location, Media
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import Location, Media, Usertag
 from instagrapi.utils import dumps
 
 

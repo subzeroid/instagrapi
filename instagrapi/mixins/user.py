@@ -1,20 +1,16 @@
-from typing import List, Dict
 from copy import deepcopy
+from typing import Dict, List
 
+from instagrapi import config
 from instagrapi.exceptions import (
     ClientError,
+    ClientLoginRequired,
     ClientNotFoundError,
     UserNotFound,
-    ClientLoginRequired
 )
-from instagrapi.extractors import (
-    extract_user_gql,
-    extract_user_v1,
-    extract_user_short,
-)
-from instagrapi.utils import json_value
+from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
 from instagrapi.types import User, UserShort
-from instagrapi import config
+from instagrapi.utils import json_value
 
 
 class UserMixin:

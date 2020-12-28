@@ -1,32 +1,33 @@
-import time
-import json
-import random
-import logging
 import hashlib
-import requests
+import json
+import logging
+import random
+import time
 from json.decoder import JSONDecodeError
 
+import requests
+
 from instagrapi import config
-from instagrapi.utils import generate_signature
 from instagrapi.exceptions import (
-    ClientError,
-    ClientConnectionError,
-    ClientNotFoundError,
-    ClientJSONDecodeError,
-    ClientForbiddenError,
-    ClientBadRequestError,
-    ClientThrottledError,
-    ClientRequestTimeout,
-    FeedbackRequired,
-    ChallengeRequired,
-    LoginRequired,
-    SentryBlock,
-    RateLimitError,
     BadPassword,
+    ChallengeRequired,
+    ClientBadRequestError,
+    ClientConnectionError,
+    ClientError,
+    ClientForbiddenError,
+    ClientJSONDecodeError,
+    ClientNotFoundError,
+    ClientRequestTimeout,
+    ClientThrottledError,
+    FeedbackRequired,
+    LoginRequired,
     PleaseWaitFewMinutes,
-    VideoTooLongException,
+    RateLimitError,
+    SentryBlock,
     UnknownError,
+    VideoTooLongException,
 )
+from instagrapi.utils import generate_signature
 
 
 def manual_input_code(self, username: str, choice=None):

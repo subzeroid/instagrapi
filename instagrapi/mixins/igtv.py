@@ -1,15 +1,14 @@
 import json
-import time
 import random
+import time
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 from uuid import uuid4
 
 from instagrapi import config
+from instagrapi.exceptions import ClientError, IGTVConfigureError, IGTVNotUpload
 from instagrapi.extractors import extract_media_v1
-from instagrapi.exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
-from instagrapi.types import Usertag, Location, Media
-
+from instagrapi.types import Location, Media, Usertag
 
 try:
     from PIL import Image

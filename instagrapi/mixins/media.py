@@ -1,24 +1,24 @@
-import time
 import json
 import random
-from typing import List, Dict
+import time
 from copy import deepcopy
+from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.utils import InstagramIdCodec, json_value
 from instagrapi.exceptions import (
     ClientError,
+    ClientLoginRequired,
     ClientNotFoundError,
     MediaNotFound,
-    ClientLoginRequired
 )
 from instagrapi.extractors import (
-    extract_media_v1, extract_media_gql,
-    extract_media_oembed, extract_location
+    extract_location,
+    extract_media_gql,
+    extract_media_oembed,
+    extract_media_v1,
 )
-from instagrapi.types import (
-    Usertag, Location, UserShort, Media
-)
+from instagrapi.types import Location, Media, UserShort, Usertag
+from instagrapi.utils import InstagramIdCodec, json_value
 
 
 class MediaMixin:

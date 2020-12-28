@@ -1,7 +1,7 @@
 from typing import List
 
 from instagrapi.exceptions import CollectionNotFound
-from instagrapi.extractors import extract_media_v1, extract_collection
+from instagrapi.extractors import extract_collection, extract_media_v1
 from instagrapi.types import Collection, Media
 
 

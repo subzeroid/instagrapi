@@ -1,18 +1,21 @@
-import time
 import random
-import requests
+import time
 from pathlib import Path
-from typing import List, Dict
-from uuid import uuid4
+from typing import Dict, List
 from urllib.parse import urlparse
+from uuid import uuid4
+
+import requests
 
 from instagrapi import config
-from instagrapi.extractors import extract_media_v1
 from instagrapi.exceptions import (
-    VideoNotDownload, VideoNotUpload, VideoConfigureError,
-    VideoConfigureStoryError
+    VideoConfigureError,
+    VideoConfigureStoryError,
+    VideoNotDownload,
+    VideoNotUpload,
 )
-from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import Location, Media, StoryLink, StoryMention, Usertag
 from instagrapi.utils import dumps
 
 

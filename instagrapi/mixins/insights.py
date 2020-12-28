@@ -1,8 +1,8 @@
 import time
-from typing import List, Dict
+from typing import Dict, List
 
+from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
-from instagrapi.exceptions import UserError, ClientError, MediaError
 
 
 class InsightsMixin:
