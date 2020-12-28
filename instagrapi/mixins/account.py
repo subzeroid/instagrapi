@@ -17,7 +17,7 @@ class AccountMixin:
 
     def reset_password(self, username: str) -> Dict:
         """
-        Reset password your password
+        Reset your password
 
         Returns
         -------

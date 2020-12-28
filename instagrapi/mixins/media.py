@@ -68,6 +68,10 @@ class MediaMixin:
         -------
         str
             media id
+
+        Example
+        -------
+        2277033926878261772_1903424587 -> 2277033926878261772
         """
         media_pk = str(media_id)
         if "_" in media_pk:
