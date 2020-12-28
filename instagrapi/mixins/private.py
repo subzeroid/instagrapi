@@ -30,7 +30,22 @@ from instagrapi.exceptions import (
 from instagrapi.utils import generate_signature
 
 
-def manual_input_code(self, username, choice=None):
+def manual_input_code(self, username: str, choice=None):
+    """
+    Manual security code helper
+
+    Parameters
+    ----------
+    username: str
+        User name of a Instagram account
+    choice: optional
+        Whether sms or email
+
+    Returns
+    -------
+    str
+        Code
+    """
     code = None
     choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
@@ -41,6 +56,9 @@ def manual_input_code(self, username, choice=None):
 
 
 class PrivateRequestMixin:
+    """
+    Helpers for private request
+    """
     private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
@@ -58,9 +76,23 @@ class PrivateRequestMixin:
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
+        """
+        Small Delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.75, 3.75))
 
     def very_small_delay(self):
+        """
+        Very small delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.175, 0.875))
 
     @property

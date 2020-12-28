@@ -8,9 +8,23 @@ from instagrapi.utils import dumps
 
 
 class DirectMixin:
+    """
+    Helpers for managing Direct Messaging
+    """
 
     def direct_threads(self, amount: int = 20) -> List[DirectThread]:
-        """Return last threads
+        """
+        Get direct message threads
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 20
+
+        Returns
+        -------
+        List[DirectThread]
+            A list of objects of DirectThread
         """
         assert self.user_id, "Login required"
         params = {
@@ -37,7 +51,21 @@ class DirectMixin:
         return threads
 
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
-        """Return full information by thread
+        """
+        Get all the information about a Direct Message thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Unique identifier of a Direct Message thread
+
+        amount: int, optional
+            Maximum number of media to return, default is 20
+
+        Returns
+        -------
+        DirectThread
+            An object of DirectThread
         """
         assert self.user_id, "Login required"
         params = {
@@ -67,19 +95,64 @@ class DirectMixin:
         return extract_direct_thread(thread)
 
     def direct_messages(self, thread_id: int, amount: int = 20) -> List[DirectMessage]:
-        """Fetch list of messages by thread (helper)
+        """
+        Get all the messages from a thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Unique identifier of a Direct Message thread
+
+        amount: int, optional
+            Maximum number of media to return, default is 20
+
+        Returns
+        -------
+        List[DirectMessage]
+            A list of objects of DirectMessage
         """
         assert self.user_id, "Login required"
         return self.direct_thread(thread_id, amount).messages
 
     def direct_answer(self, thread_id: int, text: str) -> DirectMessage:
-        """Send message
+        """
+        Post a message on a Direct Message thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Unique identifier of a Direct Message thread
+
+        text: str
+            String to be posted on the thread
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
         """
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
     def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
-        """Send message
+        """
+        Send a direct message to list of users or threads
+
+        Parameters
+        ----------
+        text: str
+            String to be posted on the thread
+
+        user_ids: List[int]
+            List of unique identifier of Users thread
+
+        thread_ids: List[int]
+            List of unique identifier of Direct Message thread
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
         """
         assert self.user_id, "Login required"
         method = "text"

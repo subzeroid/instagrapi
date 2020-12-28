@@ -7,9 +7,23 @@ from instagrapi.types import Comment
 
 
 class CommentMixin:
+    """
+    Helpers for managing comments on a Media
+    """
 
     def media_comments(self, media_id: str) -> List[Comment]:
-        """Get list of comments for media
+        """
+        Get comments on a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+
+        Returns
+        -------
+        List[Comment]
+            A list of objects of Comment
         """
         # TODO: to public or private
         media_id = self.media_id(media_id)
@@ -34,7 +48,20 @@ class CommentMixin:
         return comments
 
     def media_comment(self, media_id: str, text: str) -> Comment:
-        """Comment media
+        """
+        Post a comment on a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        text: str
+            String to be posted on the media
+
+        Returns
+        -------
+        Comment
+            An object of Comment type
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
@@ -54,7 +81,20 @@ class CommentMixin:
         return extract_comment(result["comment"])
 
     def comment_like(self, comment_pk: int, revert: bool = False) -> bool:
-        """Like comment
+        """
+        Like a comment on a media
+
+        Parameters
+        ----------
+        comment_pk: str
+            Unique identifier of a Comment
+        revert: bool, optional
+            If liked, whether or not to unlike. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         assert self.user_id, "Login required"
         comment_pk = int(comment_pk)
@@ -71,6 +111,17 @@ class CommentMixin:
         return result['status'] == 'ok'
 
     def comment_unlike(self, comment_pk: str) -> bool:
-        """Unlike comment
+        """
+        Unlike a comment on a media
+
+        Parameters
+        ----------
+        comment_pk: str
+            Unique identifier of a Comment
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         return self.comment_like(comment_pk, revert=True)

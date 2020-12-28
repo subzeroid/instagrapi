@@ -7,6 +7,7 @@ import random
 import re
 import time
 import uuid
+from typing import Dict, List
 
 import requests
 
@@ -16,9 +17,18 @@ from instagrapi.zones import CET
 
 
 class PreLoginFlowMixin:
+    """
+    Helpers for pre login flow
+    """
 
     def pre_login_flow(self) -> bool:
-        """Emulation mobile app behaivor before login
+        """
+        Emulation mobile app behavior before login
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         # /api/v1/accounts/get_prefill_candidates
         self.get_prefill_candidates(True)
@@ -30,7 +40,20 @@ class PreLoginFlowMixin:
         self.set_contact_point_prefill("prefill")
         return True
 
-    def get_prefill_candidates(self, login: bool = False) -> dict:
+    def get_prefill_candidates(self, login: bool = False) -> Dict:
+        """
+        Get prefill candidates value from Instagram
+
+        Parameters
+        ----------
+        login: bool, optional
+            Whether to login or not
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         # "android_device_id":"android-f14b9731e4869eb",
         # "phone_id":"b4bd7978-ca2b-4ea0-a728-deb4180bd6ca",
         # "usages":"[\"account_recovery_omnibox\"]",
@@ -48,7 +71,20 @@ class PreLoginFlowMixin:
             "accounts/get_prefill_candidates/", data, login=login
         )
 
-    def sync_device_features(self, login: bool = False) -> dict:
+    def sync_device_features(self, login: bool = False) -> Dict:
+        """
+        Sync device features to your Instagram account
+
+        Parameters
+        ----------
+        login: bool, optional
+            Whether to login or not
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
         data = {
             "id": self.uuid,
             "server_config_retrieval": "1",
@@ -62,7 +98,20 @@ class PreLoginFlowMixin:
             "qe/sync/", data, login=login, headers={"X-DEVICE-ID": self.uuid}
         )
 
-    def sync_launcher(self, login: bool = False) -> dict:
+    def sync_launcher(self, login: bool = False) -> Dict:
+        """
+        Sync Launcher
+
+        Parameters
+        ----------
+        login: bool, optional
+            Whether to login or not
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
         data = {
             "id": self.uuid,
             "server_config_retrieval": "1",
@@ -73,15 +122,37 @@ class PreLoginFlowMixin:
             data["_csrftoken"] = self.token
         return self.private_request("launcher/sync/", data, login=login)
 
-    def set_contact_point_prefill(self, usage: str = "prefill") -> dict:
+    def set_contact_point_prefill(self, usage: str = "prefill") -> Dict:
+        """
+        Sync Launcher
+
+        Parameters
+        ----------
+        usage: str, optional
+            Default "prefill"
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
         data = {"phone_id": self.phone_id, "usage": usage}
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
 class PostLoginFlowMixin:
+    """
+    Helpers for post login flow
+    """
 
     def login_flow(self) -> bool:
-        """Emulation mobile app behaivor after login
+        """
+        Emulation mobile app behaivor after login
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         check_flow = []
         chance = random.randint(1, 100) % 2 == 0
@@ -94,7 +165,20 @@ class PostLoginFlowMixin:
         )
         return all(check_flow)
 
-    def get_timeline_feed(self, options: list = []) -> dict:
+    def get_timeline_feed(self, options: List[Dict] = None) -> Dict:
+        """
+        Get your timeline feed
+
+        Parameters
+        ----------
+        options: List, optional
+            Configurable options
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
@@ -135,9 +219,19 @@ class PostLoginFlowMixin:
             "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
         )
 
-    def get_reels_tray_feed(self, reason: str = "pull_to_refresh") -> dict:
+    def get_reels_tray_feed(self, reason: str = "pull_to_refresh") -> Dict:
         """
-        :param reason: can be = cold_start, pull_to_refresh
+        Get your reels tray feed
+
+        Parameters
+        ----------
+        reason: str, optional
+            Default "pull_to_refresh"
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         data = {
             "supported_capabilities_new": config.SUPPORTED_CAPABILITIES,
@@ -160,7 +254,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     phone_id = ""
     uuid = ""
 
+    def __init__(self):
+        self.user_agent = None
+        self.settings = None
+
     def init(self) -> bool:
+        """
+        Initialize Login helpers
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         if "cookies" in self.settings:
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
@@ -172,6 +278,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
+        """
+        Login using session id
+
+        Parameters
+        ----------
+        sessionid: str
+            Session ID
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         assert isinstance(sessionid, str) and len(
             sessionid) > 30, 'Invalid sessionid'
         self.settings = {'cookies': {'sessionid': sessionid}}
@@ -182,6 +301,25 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def login(self, username: str, password: str, relogin: bool = False) -> bool:
+        """
+        Login
+
+        Parameters
+        ----------
+        username: str
+            Instagram Username
+
+        password: str
+            Instagram Password
+
+        relogin: bool
+            Whether or not to re login, default False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         self.username = username
         self.password = password
         self.init()
@@ -212,7 +350,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return False
 
     def relogin(self) -> bool:
-        """Relogin shortcut
+        """
+        Relogin helper
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         return self.login(self.username, self.password, relogin=True)
 
@@ -251,7 +395,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             if key in ["manufacturer", "model", "android_version", "android_release"]
         }
 
-    def get_settings(self) -> dict:
+    def get_settings(self) -> Dict:
+        """
+        Get current session settings
+
+        Returns
+        -------
+        Dict
+            Current session settings as a Dict
+        """
         return {
             "uuids": {
                 "phone_id": self.phone_id,
@@ -266,7 +418,20 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "user_agent": self.user_agent,
         }
 
-    def set_device(self, device: dict = {}) -> bool:
+    def set_device(self, device: Dict = None) -> bool:
+        """
+        Helper to set a device for login
+
+        Parameters
+        ----------
+        device: Dict, optional
+            Dict of device settings, default is None
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         self.device_settings = device or {
             "app_version": "105.0.0.18.119",
             "android_version": 28,
@@ -283,6 +448,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def set_user_agent(self, user_agent: str = "") -> bool:
+        """
+        Helper to set user agent
+
+        Parameters
+        ----------
+        user_agent: str, optional
+            User agent, default is ""
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         self.user_agent = user_agent or config.USER_AGENT_BASE.format(
             **self.device_settings
         )
@@ -290,7 +468,20 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids({})
         return True
 
-    def set_uuids(self, uuids: dict = {}) -> bool:
+    def set_uuids(self, uuids: Dict = None) -> bool:
+        """
+        Helper to set uuids
+
+        Parameters
+        ----------
+        uuids: Dict, optional
+            UUIDs, default is None
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         self.phone_id = uuids.get("phone_id", self.generate_uuid())
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get(
@@ -300,21 +491,53 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def generate_uuid(self) -> str:
+        """
+        Helper to generate uuids
+
+        Returns
+        -------
+        str
+            A stringified UUID
+        """
         return str(uuid.uuid4())
 
     def generate_device_id(self) -> str:
+        """
+        Helper to generate Device ID
+
+        Returns
+        -------
+        str
+            A random android device id
+        """
         return "android-%s" % hashlib.md5(
             bytes(random.randint(1, 1000))
         ).hexdigest()[:16]
 
-    def expose(self) -> dict:
+    def expose(self) -> Dict:
+        """
+        Helper to expose
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
         data = {
             "id": self.uuid,
             "experiment": "ig_android_profile_contextual_feed"
         }
         return self.private_request("qe/expose/", self.with_default_data(data))
 
-    def with_default_data(self, data: dict) -> dict:
+    def with_default_data(self, data: Dict) -> Dict:
+        """
+        Helper to get default data
+
+        Returns
+        -------
+        Dict
+            A dictionary of default data
+        """
         return dict(
             {
                 "_uuid": self.uuid,
@@ -325,10 +548,31 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             **data
         )
 
-    def with_action_data(self, data: dict) -> dict:
+    def with_action_data(self, data: Dict) -> Dict:
+        """
+        Helper to get action data
+
+        Returns
+        -------
+        Dict
+            A dictionary of action data
+        """
         return dict(self.with_default_data({"radio_type": "wifi-none"}), **data)
 
     def gen_user_breadcrumb(self, size: int) -> str:
+        """
+        Helper to generate user breadcrumbs
+
+        Parameters
+        ----------
+        size: int
+            Integer value
+
+        Returns
+        -------
+        Str
+            A string
+        """
         key = "iN4$aGr0m"
         dt = int(time.time() * 1000)
         time_elapsed = random.randint(500, 1500) + size * random.randint(500, 1500)
@@ -350,11 +594,17 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             base64.b64encode(data.encode("ascii")),
         )
 
-    def inject_sessionid_to_public(self):
-        """Inject sessionid from private session to public session
+    def inject_sessionid_to_public(self) -> bool:
         """
-        sessionid = self.private.cookies.get('sessionid')
-        if sessionid:
-            self.public.cookies.set('sessionid', sessionid)
+        Inject sessionid from private session to public session
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        session_id = self.private.cookies.get('sessionid')
+        if session_id:
+            self.public.cookies.set('sessionid', session_id)
             return True
         return False

@@ -11,15 +11,30 @@ from .types import StoryBuild, StoryMention
 
 
 class StoryBuilder:
+    """
+    Helpers for Story building
+    """
     width = 720
     height = 1280
 
     def __init__(self, path: Path, caption: str = "", mentions: List[StoryMention] = [], bgpath: Path = None):
-        """Init params
-        :path: path to cource video or photo file
-        :caption: text caption for story
-        :mentions: list of StoryMention (see types.py)
-        :bgpath: path to background image (recommend jpg and 720x1280)
+        """
+        Initialization function
+
+        Parameters
+        ----------
+        path: Path
+            Path for a file
+        caption: str, optional
+            Media caption, default value is ""
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list
+        bgpath: Path
+            Path for a background image, default value is ""
+
+        Returns
+        -------
+        Void
         """
         self.path = Path(path)
         self.caption = caption
@@ -27,10 +42,20 @@ class StoryBuilder:
         self.bgpath = Path(bgpath) if bgpath else None
 
     def build_main(self, clip, max_duration: int = 0) -> StoryBuild:
-        """Build clip
-        :clip: Clip object (VideoFileClip, ImageClip)
-        :max_duration: Result duration in seconds
-        :return: StoryBuild (with new path and mentions)
+        """
+        Build clip
+
+        Parameters
+        ----------
+        clip: (VideoFileClip, ImageClip)
+            An object of either VideoFileClip or ImageClip
+        max_duration: int, optional
+            Duration of the clip if a video clip, default value is 0
+
+        Returns
+        -------
+        StoryBuild
+            An object of StoryBuild
         """
         clips = []
         # Background
@@ -80,15 +105,35 @@ class StoryBuilder:
         return StoryBuild(mentions=mentions, path=destination)
 
     def video(self, max_duration: int = 0):
-        """Build CompositeVideoClip from source video
-        :max_duration: Result duration in seconds
+        """
+        Build CompositeVideoClip from source video
+
+        Parameters
+        ----------
+        max_duration: int, optional
+            Duration of the clip if a video clip, default value is 0
+
+        Returns
+        -------
+        StoryBuild
+            An object of StoryBuild
         """
         clip = VideoFileClip(str(self.path), has_mask=True)
         return self.build_main(clip, max_duration)
 
     def photo(self, max_duration: int = 0):
-        """Build CompositeVideoClip from source photo
-        :max_duration: Result duration in seconds
+        """
+        Build CompositeVideoClip from source video
+
+        Parameters
+        ----------
+        max_duration: int, optional
+            Duration of the clip if a video clip, default value is 0
+
+        Returns
+        -------
+        StoryBuild
+            An object of StoryBuild
         """
         clip = ImageClip(str(self.path)).resize(width=self.width)
         return self.build_main(clip, max_duration or 15)

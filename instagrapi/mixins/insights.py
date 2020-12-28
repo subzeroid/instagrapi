@@ -1,10 +1,14 @@
 import time
+from typing import Dict, List
 
 from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
 
 
 class InsightsMixin:
+    """
+    Helper class to get insights
+    """
 
     def insights_media_feed_all(
         self,
@@ -13,15 +17,30 @@ class InsightsMixin:
         data_ordering: str = "REACH_COUNT",
         count: int = 0,
         sleep: int = 2,
-    ) -> list:
-        """Get insights for all medias from feed with page iteration with cursor and sleep timeout
-        :param post_type:       Media type ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
-        :param time_frame:      Time frame for media publishing date ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
-        :param data_ordering:   Data ordering in instagram response ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
-        :param count:           Max media count for retrieving
-        :param sleep:           Timeout between pages iterations
-        :return: List with media insights
-        :rtype: list
+    ) -> List[Dict]:
+        """
+        Get insights for all medias from feed with page iteration with cursor and sleep timeout
+
+        Parameters
+        ----------
+        post_type: str, optional
+            Types of posts, default is "ALL"
+            Options: ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
+        time_frame: str, optional
+            Time frame to pull media insights, default is "TWO_YEARS"
+            Options: ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
+        data_ordering: str, optional
+            Ordering strategy for the data, default is "REACH_COUNT"
+            Options: ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
+        count: int, optional
+            Max media count for retrieving, default is 0
+        sleep: int, optional
+            Timeout between pages iterations, default is 2
+
+        Returns
+        -------
+        List[Dict]
+            List of dictionaries of response from the call
         """
         assert self.user_id, "Login required"
         supported_post_types = ("ALL", "CAROUSEL_V2",
@@ -89,10 +108,18 @@ class InsightsMixin:
             medias = medias[:count]
         return medias
 
-    def insights_account(self) -> dict:
-        """Get insights for account
-        :return: Dict with insights
-        :rtype: dict
+    """
+    Helpers for getting insights for media
+    """
+
+    def insights_account(self) -> Dict:
+        """
+        Get insights for account
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         assert self.user_id, "Login required"
         data = {
@@ -121,11 +148,19 @@ class InsightsMixin:
                             **self.last_json)
         return res
 
-    def insights_media(self, media_pk: int) -> dict:
-        """Get insights data for media
-        :param media_pk:  Media id
-        :return: Dict with insights data
-        :rtype: dict
+    def insights_media(self, media_pk: int) -> Dict:
+        """
+        Get insights data for media
+
+        Parameters
+        ----------
+        media_pk: int
+            PK for the album you want to download
+
+        Returns
+        -------
+        Dict
+            A dictionary with insights data
         """
         assert self.user_id, "Login required"
         media_pk = self.media_pk(media_pk)

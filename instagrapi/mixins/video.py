@@ -1,7 +1,7 @@
 import random
 import time
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -20,8 +20,26 @@ from instagrapi.utils import dumps
 
 
 class DownloadVideoMixin:
+    """
+    Helpers for downloading video
+    """
 
     def video_download(self, media_pk: int, folder: Path = "") -> Path:
+        """
+        Download video using media pk
+
+        Parameters
+        ----------
+        media_pk: int
+            Unique Media ID
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
         filename = "{username}_{media_pk}".format(
@@ -30,6 +48,24 @@ class DownloadVideoMixin:
         return self.video_download_by_url(media.video_url, filename, folder)
 
     def video_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+        """
+        Download video using media pk
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+        filename: str, optional
+            Filename for the media
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
         fname = urlparse(url).path.rsplit('/', 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
                               1]) if filename else fname
@@ -50,6 +86,9 @@ class DownloadVideoMixin:
 
 
 class UploadVideoMixin:
+    """
+    Helpers for downloading video
+    """
 
     def video_rupload(
         self,
@@ -58,13 +97,22 @@ class UploadVideoMixin:
         to_album: bool = False,
         to_story: bool = False
     ) -> tuple:
-        """Upload video to Instagram
+        """
+        Upload video to Instagram
 
-        :param path:          Path to video file
-        :param thumbnail:     Path to thumbnail for video. When None, then
-                              thumbnail is generate automatically
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        to_album: bool, optional
+        to_story: bool, optional
 
-        :return: Tuple (upload_id, width, height, duration)
+        Returns
+        -------
+        tuple
+            (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = str(int(time.time() * 1000))
@@ -152,20 +200,35 @@ class UploadVideoMixin:
         configure_exception=None,
         to_story: bool = False
     ) -> Media:
-        """Upload video to feed
+        """
+        Upload video and configure to feed
 
-        :param path:                Path to video file
-        :param caption:             Media description (String)
-        :param thumbnail:           Path to thumbnail for video. When None, then
-                                        thumbnail is generate automatically
-        :param usertags:            Mentioned users (List)
-        :param location:            Location
-        :param links:               URLs for Swipe Up (List of dicts)
-        :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
-        :param configure_handler:   Configure handler method
-        :param configure_exception: Configure exception class
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 3
+        configure_handler
+            Configure handler method, default is None
+        configure_exception
+            Configure exception class, default is None
+        to_story: bool, optional
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         path = Path(path)
         if thumbnail is not None:
@@ -208,20 +271,35 @@ class UploadVideoMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         links: List[StoryLink] = []
-    ) -> dict:
-        """Post Configure Video (send caption, thumbnail and more to Instagram)
+    ) -> Dict:
+        """
+        Post Configure Video (send caption, thumbnail and more to Instagram)
 
-        :param upload_id:  Unique upload_id (String)
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param duration:   Duration in seconds (Integer)
-        :param thumbnail:  Path to thumbnail for video
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        duration: int
+            Duration of the video in seconds
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
@@ -257,17 +335,28 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         configure_timeout: int = 3
     ) -> Media:
-        """Upload video to feed
+        """
+        Upload video as a story and configure it
 
-        :param path:              Path to video file
-        :param caption:           Media description (String)
-        :param thumbnail:         Path to thumbnail for video. When None, then
-                                  thumbnail is generate automatically
-        :param mentions:          Mentioned users (List)
-        :param links:             URLs for Swipe Up (List of dicts)
-        :param configure_timeout: Timeout between attempt to configure media (set caption, etc)
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        links: List[StoryLink]
+            URLs for Swipe Up
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 3
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         return self.video_upload(
             path, caption, thumbnail, mentions,
@@ -289,20 +378,35 @@ class UploadVideoMixin:
         mentions: List[StoryMention] = [],
         location: Location = None,
         links: List[StoryLink] = []
-    ) -> dict:
-        """Post Configure Video (send caption, thumbnail and more to Instagram)
+    ) -> Dict:
+        """
+        Story Configure for Photo
 
-        :param upload_id:  Unique upload_id (String)
-        :param thumbnail:  Path to thumbnail for video
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param duration:   Duration in seconds (Integer)
-        :param caption:    Media description (String)
-        :param mentions:   Mentioned users (List)
-        :param location:   Temporary unused
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        duration: int
+            Duration of the video in seconds
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        caption: str
+            Media caption
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         timestamp = int(time.time())
         data = {
@@ -375,7 +479,20 @@ class UploadVideoMixin:
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
-    """Analyze video file
+    """
+    Story Configure for Photo
+
+    Parameters
+    ----------
+    path: Path
+        Path to the media
+    thumbnail: str
+        Path to thumbnail for video. When None, then thumbnail is generate automatically
+
+    Returns
+    -------
+    Tuple
+        (width, height, duration, thumbnail)
     """
 
     try:

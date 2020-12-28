@@ -246,6 +246,13 @@ Example:
 
 ```
 
+#### Media Type
+
+* 1 - Photo
+* 2 - Video (and ITGV when product_type=igtv)
+* 8 - Album
+
+
 #### Comment
 
 | Method                                             | Return             | Description                                                   |

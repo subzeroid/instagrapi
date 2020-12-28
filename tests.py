@@ -648,16 +648,27 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         return location
 
     def assertLocation(self, location):
-        # data = {'pk': 213597007, 'name': 'Palace Square', 'lat': 59.939166666667, 'lng': 30.315833333333}
-        data = dict(
-            pk=107617247320879,
-            name='Russia, Saint-Petersburg',
-            address='Russia, Saint-Petersburg',
-            lng=30.30605,
-            lat=59.93318,
-            external_id=107617247320879,
-            external_id_source='facebook_places'
-        )
+        # Instagram sometimes changes location by GEO coordinates:
+        locations = [
+            dict(
+                pk=213597007,
+                name='Palace Square',
+                lat=59.939166666667,
+                lng=30.315833333333
+            ),
+            dict(
+                pk=107617247320879,
+                name='Russia, Saint-Petersburg',
+                address='Russia, Saint-Petersburg',
+                lat=59.93318,
+                lng=30.30605,
+                external_id=107617247320879,
+                external_id_source='facebook_places'
+            )
+        ]
+        for data in locations:
+            if data['pk'] == location.pk:
+                break
         for key, val in data.items():
             self.assertEqual(getattr(location, key), val)
 
@@ -843,10 +854,10 @@ class ClientAccountTestCase(ClientPrivateTestCase):
         # current
         one = self.api.user_info(self.api.user_id)
         self.assertIsInstance(one, User)
-        dhbastards = self.api.user_info_by_username('dhbastards')
+        adw0rd = self.api.user_info_by_username('adw0rd')
         # change
         two = self.api.account_change_picture(
-            self.api.photo_download_by_url(dhbastards.profile_pic_url)
+            self.api.photo_download_by_url(adw0rd.profile_pic_url)
         )
         self.assertIsInstance(two, UserShort)
         # return back
