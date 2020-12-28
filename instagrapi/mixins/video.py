@@ -45,8 +45,7 @@ class DownloadVideoMixin:
         )
         return self.video_download_by_url(media.video_url, filename, folder)
 
-    @staticmethod
-    def video_download_by_url(url: str, filename: str = "", folder: Path = "") -> Path:
+    def video_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download video using media pk
 

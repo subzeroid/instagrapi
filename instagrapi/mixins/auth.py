@@ -490,8 +490,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.device_id = uuids.get("device_id", self.generate_device_id())
         return True
 
-    @staticmethod
-    def generate_uuid() -> str:
+    def generate_uuid(self) -> str:
         """
         Helper to generate uuids
 
@@ -502,8 +501,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         return str(uuid.uuid4())
 
-    @staticmethod
-    def generate_device_id() -> str:
+    def generate_device_id(self) -> str:
         """
         Helper to generate Device ID
 
@@ -561,8 +559,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         return dict(self.with_default_data({"radio_type": "wifi-none"}), **data)
 
-    @staticmethod
-    def gen_user_breadcrumb(size: int) -> str:
+    def gen_user_breadcrumb(self, size: int) -> str:
         """
         Helper to generate user breadcrumbs
 

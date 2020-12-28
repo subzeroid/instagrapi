@@ -73,8 +73,7 @@ class MediaMixin:
             media_pk, _ = media_id.split("_")
         return int(media_pk)
 
-    @staticmethod
-    def media_pk_from_code(code: str) -> int:
+    def media_pk_from_code(self, code: str) -> int:
         """
         Get Media PK from Code
 

@@ -250,9 +250,66 @@ class ChallengeResolveMixin:
             challenge = challenge["challenge"]
         challenge_type = challenge.get("challengeType")
         if challenge_type == "SelectContactPointRecoveryForm":
-            self._handle_select_contact_point_recovery_form(challenge, messages)
+            """
+            Помогите нам удостовериться, что вы владеете этим аккаунтом
+            Чтобы защитить свой аккаунт, запросите помощь со входом.
+            {'message': '',
+            'challenge': {'challengeType': 'SelectContactPointRecoveryForm',
+            'errors': ['Select a valid choice. 1 is not one of the available choices.'],
+            'experiments': {},
+            'extraData': {'__typename': 'GraphChallengePage',
+            'content': [{'__typename': 'GraphChallengePageHeader',
+            'description': None,
+            'title': 'Help Us Confirm You Own This Account'},
+            {'__typename': 'GraphChallengePageText',
+            'alignment': 'center',
+            'html': None,
+            'text': 'To secure your account, you need to request help logging in.'},
+            {'__typename': 'GraphChallengePageForm',
+            'call_to_action': 'Get Help Logging In',
+            'display': 'inline',
+            'fields': None,
+            'href': 'https://help.instagram.com/358911864194456'}]},
+            'fields': {'choice': 'None'},
+            'navigation': {'forward': '/challenge/8530598273/PlWAX2OMVk/',
+            'replay': '/challenge/replay/8530598273/PlWAX2OMVk/',
+            'dismiss': 'instagram://checkpoint/dismiss'},
+            'privacyPolicyUrl': '/about/legal/privacy/',
+            'type': 'CHALLENGE'},
+            'status': 'fail'}
+            """
+            if "extraData" in challenge:
+                for item in challenge["extraData"].get("content"):
+                    message = item.get("title", item.get("text"))
+                    if message:
+                        dot = "" if message.endswith(".") else "."
+                        messages.append(f"{message}{dot}")
+            if "errors" in challenge:
+                for error in challenge["errors"]:
+                    messages.append(error)
+            raise SelectContactPointRecoveryForm(
+                " ".join(messages), challenge=challenge)
         elif challenge_type == "RecaptchaChallengeForm":
-            self._handle_recaptha_challenge_form(challenge)
+            """
+            Example:
+            {'message': '',
+            'challenge': {
+            'challengeType': 'RecaptchaChallengeForm',
+            'errors': ['Неправильная Captcha. Попробуйте еще раз.'],
+            'experiments': {},
+            'extraData': None,
+            'fields': {'g-recaptcha-response': 'None',
+            'disable_num_days_remaining': -60,
+            'sitekey': '6LebnxwUAAAAAGm3yH06pfqQtcMH0AYDwlsXnh-u'},
+            'navigation': {'forward': '/challenge/32708972491/CE6QdsYZyB/',
+            'replay': '/challenge/replay/32708972491/CE6QdsYZyB/',
+            'dismiss': 'instagram://checkpoint/dismiss'},
+            'privacyPolicyUrl': '/about/legal/privacy/',
+            'type': 'CHALLENGE'},
+            'status': 'fail'}
+            """
+            raise RecaptchaChallengeForm(
+                ". ".join(challenge.get("errors", [])))
         elif challenge_type in ('VerifyEmailCodeForm', 'VerifySMSCodeForm'):
             # Success. Next step
             return challenge
@@ -274,73 +331,6 @@ class ChallengeResolveMixin:
             """
             raise ChallengeRedirection()
         return challenge
-
-    @staticmethod
-    def _handle_select_contact_point_recovery_form(challenge: Dict, messages: List):
-        """
-        Помогите нам удостовериться, что вы владеете этим аккаунтом
-        (Help us make sure you own this account)
-        Чтобы защитить свой аккаунт, запросите помощь со входом.
-        (To help protect your account, ask for help signing in.)
-        {'message': '',
-        'challenge': {'challengeType': 'SelectContactPointRecoveryForm',
-        'errors': ['Select a valid choice. 1 is not one of the available choices.'],
-        'experiments': {},
-        'extraData': {'__typename': 'GraphChallengePage',
-        'content': [{'__typename': 'GraphChallengePageHeader',
-        'description': None,
-        'title': 'Help Us Confirm You Own This Account'},
-        {'__typename': 'GraphChallengePageText',
-        'alignment': 'center',
-        'html': None,
-        'text': 'To secure your account, you need to request help logging in.'},
-        {'__typename': 'GraphChallengePageForm',
-        'call_to_action': 'Get Help Logging In',
-        'display': 'inline',
-        'fields': None,
-        'href': 'https://help.instagram.com/358911864194456'}]},
-        'fields': {'choice': 'None'},
-        'navigation': {'forward': '/challenge/8530598273/PlWAX2OMVk/',
-        'replay': '/challenge/replay/8530598273/PlWAX2OMVk/',
-        'dismiss': 'instagram://checkpoint/dismiss'},
-        'privacyPolicyUrl': '/about/legal/privacy/',
-        'type': 'CHALLENGE'},
-        'status': 'fail'}
-        """
-        if "extraData" in challenge:
-            for item in challenge["extraData"].get("content"):
-                message = item.get("title", item.get("text"))
-                if message:
-                    dot = "" if message.endswith(".") else "."
-                    messages.append(f"{message}{dot}")
-        if "errors" in challenge:
-            for error in challenge["errors"]:
-                messages.append(error)
-        raise SelectContactPointRecoveryForm(
-            " ".join(messages), challenge=challenge)
-
-    @staticmethod
-    def _handle_recaptha_challenge_form(challenge: Dict):
-        """
-        Example:
-        {'message': '',
-        'challenge': {
-        'challengeType': 'RecaptchaChallengeForm',
-        'errors': ['Неправильная Captcha. Попробуйте еще раз.'],
-        'experiments': {},
-        'extraData': None,
-        'fields': {'g-recaptcha-response': 'None',
-        'disable_num_days_remaining': -60,
-        'sitekey': '6LebnxwUAAAAAGm3yH06pfqQtcMH0AYDwlsXnh-u'},
-        'navigation': {'forward': '/challenge/32708972491/CE6QdsYZyB/',
-        'replay': '/challenge/replay/32708972491/CE6QdsYZyB/',
-        'dismiss': 'instagram://checkpoint/dismiss'},
-        'privacyPolicyUrl': '/about/legal/privacy/',
-        'type': 'CHALLENGE'},
-        'status': 'fail'}
-        """
-        raise RecaptchaChallengeForm(
-            ". ".join(challenge.get("errors", [])))
 
     def challenge_resolve_simple(self, challenge_url: str) -> bool:
         """
@@ -364,13 +354,43 @@ class ChallengeResolveMixin:
             return True
         elif step_name in ("verify_email", "select_verify_method"):
             if step_name == "select_verify_method":
-                self._handle_select_verify_method(challenge_url)
+                """
+                {'step_name': 'select_verify_method',
+                'step_data': {'choice': '0',
+                'fb_access_token': 'None',
+                'big_blue_token': 'None',
+                'google_oauth_token': 'true',
+                'vetted_device': 'None',
+                'phone_number': '+7 *** ***-**-09',
+                'email': 'x****g@y*****.com'},     <------------- choice
+                'nonce_code': 'DrW8V4m5Ec',
+                'user_id': 12060121299,
+                'status': 'ok'}
+                """
+                steps = self.last_json["step_data"].keys()
+                if "email" in steps:
+                    self._send_private_request(
+                        challenge_url, {"choice": CHOICE_EMAIL}
+                    )
+                elif "phone_number" in steps:
+                    self._send_private_request(
+                        challenge_url, {"choice": CHOICE_SMS}
+                    )
+                else:
+                    raise ChallengeError(
+                        'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'
+                        % self.last_json
+                    )
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, CHOICE_EMAIL)
                 if code:
                     break
                 time.sleep(wait_seconds)
+            print(
+                'Enter code "%s" for %s (%d attempts by %d seconds)'
+                % (code, self.username, attempt, wait_seconds)
+            )
             self._send_private_request(challenge_url, {"security_code": code})
             # assert 'logged_in_user' in client.last_json
             assert self.last_json.get("action", "") == "close"
@@ -386,32 +406,3 @@ class ChallengeResolveMixin:
                 % (step_name, self.username, self.last_json)
             )
         return True
-
-    def _handle_select_verify_method(self, challenge_url: str):
-        """
-        {'step_name': 'select_verify_method',
-        'step_data': {'choice': '0',
-        'fb_access_token': 'None',
-        'big_blue_token': 'None',
-        'google_oauth_token': 'true',
-        'vetted_device': 'None',
-        'phone_number': '+7 *** ***-**-09',
-        'email': 'x****g@y*****.com'},     <------------- choice
-        'nonce_code': 'DrW8V4m5Ec',
-        'user_id': 12060121299,
-        'status': 'ok'}
-        """
-        steps = self.last_json["step_data"].keys()
-        if "email" in steps:
-            self._send_private_request(
-                challenge_url, {"choice": CHOICE_EMAIL}
-            )
-        elif "phone_number" in steps:
-            self._send_private_request(
-                challenge_url, {"choice": CHOICE_SMS}
-            )
-        else:
-            raise ChallengeError(
-                'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'
-                % self.last_json
-            )

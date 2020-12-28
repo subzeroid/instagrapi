@@ -51,8 +51,7 @@ class DownloadPhotoMixin:
         )
         return self.photo_download_by_url(media.thumbnail_url, filename, folder)
 
-    @staticmethod
-    def photo_download_by_url(url: str, filename: str = "", folder: Path = "") -> Path:
+    def photo_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download photo using media pk
 
