@@ -27,11 +27,6 @@ Instagram API valid for 17 December 2020 (last reverse-engineering check)
 
     pip install instagrapi
 
-### Tests
-
-    python -m unittest tests
-    python -m unittest tests.ClientPublicTestCase
-
 ### Requests
 
 * `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
@@ -596,3 +591,22 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | AlbumNotDownload         | PrivateError | Raise when album not found                     |
 | AlbumUnknownFormat       | PrivateError | Raise when format of media not MP4 or JPG      |
 | AlbumConfigureError      | PrivateError | Raise when album not configured                |
+
+## Contribute
+
+First, please [install docker](https://docs.docker.com/install/) on your computer.
+Docker must be running correctly for these commands to work.
+
+*If you are using windows, please make sure your editor writes files with linefeed (`\n`) line endings.*
+
+Once you have cloned this repo, run the test suite to see if docker is set up correctly:
+
+```bash
+docker-compose run --rm test
+```
+
+You can also run just the lint using:
+
+```bash
+docker-compose run --rm lint
+```
