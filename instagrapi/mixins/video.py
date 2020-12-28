@@ -30,8 +30,7 @@ class DownloadVideoMixin:
         media_pk: int
             Unique Media ID
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory
+            Directory in which you want to download the album, default is "" and will download the files to working directory
 
         Returns
         -------
