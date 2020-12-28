@@ -11,6 +11,9 @@ from .types import (
     Media,
     MediaOembed,
     Resource,
+    Story,
+    StoryLink,
+    StoryMention,
     User,
     UserShort,
     Usertag,
@@ -46,20 +49,20 @@ def extract_media_v1(data):
         # see resources
         media.pop('thumbnail_url', '')
         media.pop('video_url', '')
-    location = media.pop("location", None)
+    location = media.get("location")
+    media['location'] = location and extract_location(location)
+    media['user'] = extract_user_short(media.get("user"))
+    media['usertags'] = sorted([
+        extract_usertag(usertag)
+        for usertag in media.get("usertags", {}).get("in", [])
+    ], key=lambda tag: tag.user.pk)
+    media['like_count'] = media.get('like_count', 0)
     return Media(
-        location=extract_location(location) if location else None,
-        user=extract_user_short(media.pop("user")),
         caption_text=(media.get("caption") or {}).get("text", ""),
-        usertags=sorted([
-            extract_usertag(usertag)
-            for usertag in media.pop("usertags", {}).get("in", [])
-        ], key=lambda tag: tag.user.pk),
         resources=[
             extract_resource_v1(edge)
             for edge in media.get('carousel_media', [])
         ],
-        like_count=media.pop('like_count', 0),
         **media
     )
 
@@ -87,9 +90,9 @@ def extract_media_gql(data):
         media.pop('thumbnail_url', '')
         media.pop('video_url', '')
     location = media.pop("location", None)
+    media['id'] = f"{media.pop('id')}_{user.pk}"
     return Media(
         pk=media['id'],
-        id=f"{media.pop('id')}_{user.pk}",
         code=media.get("shortcode"),
         taken_at=media["taken_at_timestamp"],
         location=extract_location(location) if location else None,
@@ -249,3 +252,31 @@ def extract_hashtag_gql(data):
 def extract_hashtag_v1(data):
     data['allow_following'] = data.get('allow_following') == 1
     return Hashtag(**data)
+
+
+def extract_story_v1(data):
+    """Extract story from Private API
+    """
+    story = deepcopy(data)
+    if "video_versions" in story:
+        # Select Best Quality by Resolutiuon
+        story['video_url'] = sorted(
+            story["video_versions"], key=lambda o: o["height"] * o["width"]
+        )[-1]["url"]
+    if story["media_type"] == 2 and not story.get("product_type"):
+        story["product_type"] = "feed"
+    if 'image_versions2' in story:
+        story['thumbnail_url'] = sorted(
+            story["image_versions2"]["candidates"],
+            key=lambda o: o["height"] * o["width"],
+        )[-1]["url"]
+    story['mentions'] = [
+        StoryMention(**mention)
+        for mention in story.get('reel_mentions', [])
+    ]
+    story['links'] = []
+    for cta in story.get('story_cta', []):
+        for link in cta.get('links', []):
+            story['links'].append(StoryLink(**link))
+    story['user'] = extract_user_short(story.get("user"))
+    return Story(**story)

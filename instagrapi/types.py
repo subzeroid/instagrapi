@@ -76,7 +76,7 @@ class Media(BaseModel):
     code: str
     taken_at: datetime
     media_type: int
-    product_type: Optional[str] = ''  # only for IGTV
+    product_type: Optional[str] = ''  # igtv or feed
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
@@ -143,6 +143,21 @@ class StoryBuild(BaseModel):
 
 class StoryLink(BaseModel):
     webUri: HttpUrl
+
+
+class Story(BaseModel):
+    pk: int
+    id: str
+    code: str
+    taken_at: datetime
+    media_type: int
+    product_type: Optional[str] = ''
+    thumbnail_url: Optional[HttpUrl]
+    user: UserShort
+    video_url: Optional[HttpUrl]  # for Video and IGTV
+    video_duration: Optional[float] = 0.0  # for Video and IGTV
+    mentions: List[StoryMention]
+    links: List[StoryLink]
 
 
 class DirectMessage(BaseModel):

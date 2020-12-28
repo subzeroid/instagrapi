@@ -15,8 +15,10 @@ from instagrapi.exceptions import (
     PhotoConfigureStoryError,
     PhotoNotUpload,
 )
+
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import Location, Media, StoryLink, StoryMention, Usertag
+from instagrapi.types import Location, Media, Story, StoryLink, StoryMention, Usertag
+
 from instagrapi.utils import dumps
 
 try:
@@ -280,7 +282,7 @@ class UploadPhotoMixin:
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
         configure_timeout: int = 3
-    ) -> Media:
+    ) -> Story:
         """
         Upload photo as a story and configure it
 
@@ -301,7 +303,7 @@ class UploadPhotoMixin:
 
         Returns
         -------
-        Media
+        Story
             An object of Media class
         """
         return self.photo_upload(

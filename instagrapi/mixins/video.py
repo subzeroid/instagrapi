@@ -15,7 +15,7 @@ from instagrapi.exceptions import (
     VideoNotUpload,
 )
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import Location, Media, StoryLink, StoryMention, Usertag
+from instagrapi.types import Location, Media, Story, StoryLink, StoryMention, Usertag
 from instagrapi.utils import dumps
 
 
@@ -334,7 +334,7 @@ class UploadVideoMixin:
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
         configure_timeout: int = 3
-    ) -> Media:
+    ) -> Story:
         """
         Upload video as a story and configure it
 
@@ -355,7 +355,7 @@ class UploadVideoMixin:
 
         Returns
         -------
-        Media
+        Story
             An object of Media class
         """
         return self.video_upload(
