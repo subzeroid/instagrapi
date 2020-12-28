@@ -1,3 +1,5 @@
+from typing import Dict
+
 import requests
 from pathlib import Path
 from json.decoder import JSONDecodeError
@@ -9,8 +11,19 @@ from instagrapi.utils import gen_csrftoken
 
 
 class AccountMixin:
+    """
+    Helper class to manage your account
+    """
 
-    def reset_password(self, username):
+    def reset_password(self, username: str) -> Dict:
+        """
+        Reset password your password
+
+        Returns
+        -------
+        Dict
+            Jsonified response from Instagram
+        """
         response = requests.post(
             "https://www.instagram.com/accounts/account_recovery_send_ajax/",
             data={
@@ -36,11 +49,30 @@ class AccountMixin:
             raise ClientError(e, response=response)
 
     def account_info(self) -> Account:
+        """
+        Fetch your account info
+
+        Returns
+        -------
+        Account
+            An object of Account class
+        """
         result = self.private_request('accounts/current_user/?edit=true')
         return extract_account(result['user'])
 
-    def account_edit(self, **data) -> Account:
-        """Edit your profile (authorized account)
+    def account_edit(self, **data: Dict) -> Account:
+        """
+        Edit your profile (authorized account)
+
+        Parameters
+        ----------
+        data: Dict
+            Fields you want to edit in your account as key and value pairs
+
+        Returns
+        -------
+        Account
+            An object of Account class
         """
         fields = ("external_url", "phone_number", "username", "full_name", "biography", "email")
         data = {key: val for key, val in data.items() if key in fields}
@@ -58,7 +90,18 @@ class AccountMixin:
         return extract_account(result["user"])
 
     def account_change_picture(self, path: Path) -> UserShort:
-        """Change photo for your profile (authorized account)
+        """
+        Change photo for your profile (authorized account)
+
+        Parameters
+        ----------
+        path: Path
+            Path to the image you want to update as your profile picture
+
+        Returns
+        -------
+        UserShort
+            An object of UserShort class
         """
         upload_id, _, _ = self.photo_rupload(Path(path))
         result = self.private_request(
