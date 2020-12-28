@@ -1,0 +1,15 @@
+version: "3.4"
+services:
+
+  # "devbox" to enable the developer to have a fully loaded development environment
+  devbox: &devbox
+    build:
+      dockerfile: "./docker/devbox.dockerfile"
+      context: "."
+    tty: true
+    volumes:
+      - "./:/app"
+
+  lint:
+    <<: *devbox
+    entrypoint: "docker/lint.sh"

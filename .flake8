@@ -1,0 +1,4 @@
+[flake8]
+max-complexity = 10
+builtins = unicode
+tee = True

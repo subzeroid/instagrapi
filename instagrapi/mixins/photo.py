@@ -1,19 +1,22 @@
-import shutil
 import json
-import time
 import random
-import requests
+import shutil
+import time
 from pathlib import Path
 from typing import List
-from uuid import uuid4
 from urllib.parse import urlparse
+from uuid import uuid4
+
+import requests
 
 from instagrapi import config
-from instagrapi.extractors import extract_media_v1
 from instagrapi.exceptions import (
-    PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
+    PhotoConfigureError,
+    PhotoConfigureStoryError,
+    PhotoNotUpload,
 )
-from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import Location, Media, StoryLink, StoryMention, Usertag
 from instagrapi.utils import dumps
 
 try:

@@ -1,13 +1,21 @@
 from copy import deepcopy
 
-from .utils import json_value
 from .types import (
-    Media, Resource, User, UserShort, Usertag,
-    Location, Collection, Comment, MediaOembed,
-    DirectThread, DirectMessage, Account,
-    Hashtag
+    Account,
+    Collection,
+    Comment,
+    DirectMessage,
+    DirectThread,
+    Hashtag,
+    Location,
+    Media,
+    MediaOembed,
+    Resource,
+    User,
+    UserShort,
+    Usertag,
 )
-
+from .utils import json_value
 
 MEDIA_TYPES_GQL = {
     "GraphImage": 1,

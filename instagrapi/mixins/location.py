@@ -2,8 +2,8 @@ import json
 import time
 from typing import List
 
-from instagrapi.extractors import extract_location
 from instagrapi.exceptions import ClientLoginRequired
+from instagrapi.extractors import extract_location
 from instagrapi.types import Location, Media
 
 

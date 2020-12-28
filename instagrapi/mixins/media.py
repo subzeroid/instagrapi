@@ -1,23 +1,23 @@
 import json
 import random
-from typing import List
 from copy import deepcopy
+from typing import List
 from urllib.parse import urlparse
 
-from instagrapi.utils import InstagramIdCodec
 from instagrapi.exceptions import (
     ClientError,
+    ClientLoginRequired,
     ClientNotFoundError,
     MediaNotFound,
-    ClientLoginRequired
 )
 from instagrapi.extractors import (
-    extract_media_v1, extract_media_gql,
-    extract_media_oembed, extract_location
+    extract_location,
+    extract_media_gql,
+    extract_media_oembed,
+    extract_media_v1,
 )
-from instagrapi.types import (
-    Usertag, Location, UserShort, Media
-)
+from instagrapi.types import Location, Media, UserShort, Usertag
+from instagrapi.utils import InstagramIdCodec
 
 
 class MediaMixin:

@@ -1,23 +1,24 @@
 import json
-import time
-import requests
 import logging
+import time
 from json.decoder import JSONDecodeError
 
-from instagrapi.utils import json_value
+import requests
+
 from instagrapi.exceptions import (
-    ClientError,
-    ClientConnectionError,
-    ClientNotFoundError,
-    ClientJSONDecodeError,
-    ClientForbiddenError,
     ClientBadRequestError,
+    ClientConnectionError,
+    ClientError,
+    ClientForbiddenError,
     ClientGraphqlError,
-    ClientThrottledError,
     ClientIncompleteReadError,
+    ClientJSONDecodeError,
     ClientLoginRequired,
+    ClientNotFoundError,
+    ClientThrottledError,
     GenericRequestError,
 )
+from instagrapi.utils import json_value
 
 
 class PublicRequestMixin:
