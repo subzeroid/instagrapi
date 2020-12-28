@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 long_description = '''
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver).

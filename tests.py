@@ -1,20 +1,28 @@
-import os
 import json
-import random
+import os
 import os.path
+import random
 import unittest
-from pathlib import Path
 from datetime import datetime
 from json.decoder import JSONDecodeError
+from pathlib import Path
 
 from instagrapi import Client
 from instagrapi.types import (
-    User, UserShort, Media, MediaOembed, Comment, Collection,
-    DirectThread, DirectMessage, Usertag, Location, Account,
-    Hashtag
+    Account,
+    Collection,
+    Comment,
+    DirectMessage,
+    DirectThread,
+    Hashtag,
+    Location,
+    Media,
+    MediaOembed,
+    User,
+    UserShort,
+    Usertag,
 )
 from instagrapi.zones import UTC
-
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")

@@ -12,4 +12,9 @@ services:
 
   lint:
     <<: *devbox
-    entrypoint: "docker/lint.sh"
+    command: "test --lint"
+
+  # "test" enables the developer to run all the tests and linting locally
+  test:
+    <<: *devbox
+    command: "test --all"

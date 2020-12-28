@@ -7,4 +7,6 @@ RUN python3 -m pip install parse realpython-reader
 COPY . /app
 WORKDIR /app
 
-RUN python3 -m pip install -r requirements-test.txt
+RUN python3 -m pip install -r requirements-test.txt -r requirements.txt
+
+ENTRYPOINT [ "docker/entrypoints/entrypoint.sh" ]
