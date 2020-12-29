@@ -103,23 +103,47 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
     api = None
 
-    def test_user_info_gql(self):
-        user = self.api.user_info_gql(1903424587)
-        self.assertIsInstance(user, User)
-        for key, value in {
-            "biography": "Engineer: Python, JavaScript, Erlang...",
-            "external_url": "https://adw0rd.com/",
-            "full_name": "Mikhail Andreev",
-            "pk": 1903424587,
-            "is_private": False,
-            "is_verified": False,
-            "profile_pic_url": "https://...",
-            "username": "adw0rd",
-        }.items():
+    def assertDict(self, obj, data):
+        for key, value in data.items():
             if isinstance(value, str) and "..." in value:
-                self.assertTrue(value.replace("...", "") in getattr(user, key))
+                self.assertTrue(value.replace("...", "") in obj[key])
+            elif isinstance(value, int):
+                self.assertTrue(obj[key] >= value)
             else:
-                self.assertEqual(value, getattr(user, key))
+                self.assertEqual(obj[key], value)
+
+    def test_media_info_gql(self):
+        media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
+        m = self.api.media_info_gql(media_pk)
+        self.assertIsInstance(m, Media)
+        media = {
+            'pk': 1532130876531694688,
+            'id': '1532130876531694688_1903424587',
+            'code': 'BVDOOolFFxg',
+            'taken_at': datetime(2017, 6, 7, 19, 37, 35, tzinfo=UTC()),
+            'media_type': 1,
+            'product_type': '',
+            'thumbnail_url': 'https://...',
+            'location': None,
+            'comment_count': 6,
+            'like_count': 79,
+            'has_liked': None,
+            'caption_text': '#creepy #creepyclothing',
+            'usertags': [],
+            'video_url': None,
+            'view_count': 0,
+            'video_duration': 0.0,
+            'title': '',
+            'resources': []
+        }
+        self.assertDict(m.dict(), media)
+        user = {
+            'pk': 1903424587,
+            'username': 'adw0rd',
+            'full_name': 'Mikhail Andreev',
+            'profile_pic_url': 'https://...',
+        }
+        self.assertDict(m.user.dict(), user)
 
 
 class ClientTestCase(unittest.TestCase):
