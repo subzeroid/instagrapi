@@ -214,3 +214,7 @@ class AlbumUnknownFormat(PrivateError):
 
 class AlbumConfigureError(PrivateError):
     pass
+
+
+class StoryNotFound(MediaNotFound):
+    pass
