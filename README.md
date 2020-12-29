@@ -74,8 +74,10 @@ The current types are in [types.py](/instagrapi/types.py):
 | Hashtag        | Hashtag object (id, name, picture)                                                     |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
+| Story          | Story                                                                                  |
+| StoryLink      | Link (Swipe up)                                                                        |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
-| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinates |
+| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
 | DirectThread   | Thread (topic) with messages in Direct                                                 |
 | DirectMessage  | Message in Direct                                                                      |
 
