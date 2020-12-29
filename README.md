@@ -109,7 +109,7 @@ Example:
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
-# cl.set_proxy("http://127.0.0.1:8080")
+# cl.set_proxy("http://username:password@127.0.0.1:8080")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
