@@ -18,10 +18,14 @@ from instagrapi.types import (
     Location,
     Media,
     MediaOembed,
+    Story,
+    StoryMention,
+    StoryLink,
     User,
     UserShort,
-    Usertag,
+    Usertag
 )
+from instagrapi.story import StoryBuilder
 from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
@@ -31,6 +35,11 @@ REQUIRED_MEDIA_FIELDS = [
     "pk", "taken_at", "id", "media_type", "code", "thumbnail_url", "location",
     "user", "comment_count", "like_count", "caption_text", "usertags",
     "video_url", "view_count", "video_duration", "title"
+]
+REQUIRED_STORY_FIELDS = [
+    'pk', 'id', 'code', 'taken_at', 'media_type', 'product_type',
+    'thumbnail_url', 'user', 'video_url', 'video_duration', 'mentions',
+    'links'
 ]
 
 
@@ -1035,6 +1044,54 @@ class ClientHashtagTestCase(ClientPrivateTestCase):
                     self.assertTrue(v1_val > 1)
                     continue
                 self.assertEqual(a1_val, v1_val)
+
+
+class ClientStoryTestCase(ClientPrivateTestCase):
+
+    def test_upload_video_story(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/Bk2tOgogq9V/"
+        )
+        path = self.api.video_download(media_pk)
+        self.assertIsInstance(path, Path)
+        caption = 'Test video caption'
+        adw0rd = self.api.user_info_by_username('adw0rd')
+        self.assertIsInstance(adw0rd, User)
+        mentions = [StoryMention(user=adw0rd)]
+        links = [StoryLink(webUri='https://adw0rd.com/')]
+        try:
+            buildout = StoryBuilder(
+                path, caption, mentions,
+                Path('./examples/background.png')
+            ).video(1)
+            story = self.api.video_upload_to_story(
+                buildout.path,
+                caption,
+                mentions=buildout.mentions,
+                links=links
+            )
+            self.assertIsInstance(story, Story)
+            self.assertTrue(story)
+        finally:
+            cleanup(path)
+            self.assertTrue(self.api.story_delete(story.id))
+
+    def test_user_stories(self):
+        user_id = self.api.user_id_from_username("dhbastards")
+        stories = self.api.user_stories(user_id, 2)
+        self.assertEqual(len(stories), 2)
+        story = stories[0]
+        self.assertIsInstance(story, Story)
+        for field in REQUIRED_STORY_FIELDS:
+            self.assertTrue(hasattr(story, field))
+
+    def test_story_info(self):
+        user_id = self.api.user_id_from_username("dhbastards")
+        stories = self.api.user_stories(user_id, 1)
+        story = self.api.story_info(stories[0].pk)
+        self.assertIsInstance(story, Story)
+        story = self.api.story_info(stories[0].id)
+        self.assertIsInstance(story, Story)
 
 
 if __name__ == '__main__':
