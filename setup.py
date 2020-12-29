@@ -17,18 +17,19 @@ Use the most recent version of the API from Instagram.
 8. In the next release, account registration and captcha passing will appear
 '''
 
+requirements = [
+    line.strip()
+    for line in open('requirements.txt').readlines()
+]
+
 setup(
     name='instagrapi',
-    version='1.3.6',
+    version='1.3.7',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
-    install_requires=[
-        'requests==2.24.0',
-        'PySocks==1.7.1',
-        'pydantic==1.7.2'
-    ],
+    install_requires=requirements,
     keywords='instagram private api',
     description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
