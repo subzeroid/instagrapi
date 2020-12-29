@@ -171,12 +171,21 @@ class HashtagMixin:
                 media = extract_media_gql(edge['node'])
                 if f'#{name}' not in media.caption_text:
                     continue
-                # fetch full media with User, Usertags, video_url
+                # Enrich media: Full user, usertags and video_url
                 medias.append(self.media_info_gql(media_pk))
-            if not page_info["has_next_page"] or not end_cursor:
-                break
-            if amount and len(medias) >= amount:
-                break
+            ######################################################
+            # infinity loop in hashtag_medias_top_a1
+            # https://github.com/adw0rd/instagrapi/issues/52
+            ######################################################
+            # Mikhail Andreev, [30.12.20 02:17]:
+            # Instagram always returns the same 9 medias for top
+            # I think we should return them without a loop
+            ######################################################
+            # if not page_info["has_next_page"] or not end_cursor:
+            #     break
+            # if amount and len(medias) >= amount:
+            #     break
+            break
         if amount:
             medias = medias[:amount]
         return medias
