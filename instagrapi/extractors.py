@@ -90,9 +90,10 @@ def extract_media_gql(data):
         media.pop('thumbnail_url', '')
         media.pop('video_url', '')
     location = media.pop("location", None)
-    media['id'] = f"{media.pop('id')}_{user.pk}"
+    media_id = media.get('id')
+    media['pk'] = media_id
+    media['id'] = f"{media_id}_{user.pk}"
     return Media(
-        pk=media['id'],
         code=media.get("shortcode"),
         taken_at=media["taken_at_timestamp"],
         location=extract_location(location) if location else None,
