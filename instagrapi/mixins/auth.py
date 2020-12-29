@@ -165,7 +165,7 @@ class PostLoginFlowMixin:
         )
         return all(check_flow)
 
-    def get_timeline_feed(self, options: List[Dict] = None) -> Dict:
+    def get_timeline_feed(self, options: List[Dict] = []) -> Dict:
         """
         Get your timeline feed
 
