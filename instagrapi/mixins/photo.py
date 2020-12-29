@@ -306,13 +306,14 @@ class UploadPhotoMixin:
         Story
             An object of Media class
         """
-        return self.photo_upload(
+        media = self.photo_upload(
             path, caption, upload_id, mentions,
             links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.photo_configure_to_story,
             configure_exception=PhotoConfigureStoryError
         )
+        return Story(links=links, mentions=mentions, **media.dict())
 
     def photo_configure_to_story(
         self,

@@ -8,6 +8,24 @@ from instagrapi.types import Story
 
 class StoryMixin:
 
+    def story_delete(self, story_pk: int) -> bool:
+        """
+        Delete story
+
+        Parameters
+        ----------
+        story_pk: int
+            Unique identifier of the story
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(story_pk)
+        return self.media_delete(media_id)
+
     def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)

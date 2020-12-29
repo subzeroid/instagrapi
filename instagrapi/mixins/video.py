@@ -358,7 +358,7 @@ class UploadVideoMixin:
         Story
             An object of Media class
         """
-        return self.video_upload(
+        media = self.video_upload(
             path, caption, thumbnail, mentions,
             links=links,
             configure_timeout=configure_timeout,
@@ -366,6 +366,7 @@ class UploadVideoMixin:
             configure_exception=VideoConfigureStoryError,
             to_story=True
         )
+        return Story(links=links, mentions=mentions, **media.dict())
 
     def video_configure_to_story(
         self,
