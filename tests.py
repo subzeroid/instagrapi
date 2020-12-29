@@ -1072,6 +1072,30 @@ class ClientHashtagTestCase(ClientPrivateTestCase):
 
 class ClientStoryTestCase(ClientPrivateTestCase):
 
+    def test_upload_photo_story(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/B3mr1-OlWMG/"
+        )
+        path = self.api.photo_download(media_pk)
+        self.assertIsInstance(path, Path)
+        caption = 'Test photo caption'
+        adw0rd = self.api.user_info_by_username('adw0rd')
+        self.assertIsInstance(adw0rd, User)
+        mentions = [StoryMention(user=adw0rd)]
+        links = [StoryLink(webUri='https://adw0rd.com/')]
+        try:
+            story = self.api.photo_upload_to_story(
+                path,
+                caption,
+                mentions=mentions,
+                links=links
+            )
+            self.assertIsInstance(story, Story)
+            self.assertTrue(story)
+        finally:
+            cleanup(path)
+            self.assertTrue(self.api.story_delete(story.id))
+
     def test_upload_video_story(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/Bk2tOgogq9V/"
