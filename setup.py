@@ -18,13 +18,18 @@ Use the most recent version of the API from Instagram.
 '''
 
 requirements = [
-    line.strip()
-    for line in open('requirements.txt').readlines()
+    'requests==2.24.0',
+    'PySocks==1.7.1',
+    'pydantic==1.7.2'
 ]
+# requirements = [
+#     line.strip()
+#     for line in open('requirements.txt').readlines()
+# ]
 
 setup(
     name='instagrapi',
-    version='1.3.7',
+    version='1.3.8',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
