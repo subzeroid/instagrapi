@@ -163,6 +163,7 @@ Viewing and editing publications (medias)
 | media_pk(media_id: str)                            | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
 | media_pk_from_code(code: str)                      | int                | Return media_pk                                               |
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
+| user_medias(user_id: int, amount: int = 20)        | List\[Media]       | Get list of medias by user_id                                |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
 | media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
@@ -249,6 +250,14 @@ Example:
 * 2 - Video (and ITGV when product_type=igtv)
 * 8 - Album
 
+#### Story
+
+| Method                                             | Return      | Description                                                   |
+| -------------------------------------------------- | ----------- | ------------------------------------------------------------- |
+| user_stories(user_id: int, amount: int = None)     | List[Story] | Get list of stories by user_id                                |
+| story_info(story_pk: int, use_cache: bool = True)  | Story       | Return story info                                             |
+| story_delete(story_pk: int)                        | bool        | Delete story                                                  |       
+
 
 #### Comment
 
@@ -268,7 +277,6 @@ View a list of a user's medias, following and followers
 
 | Method                                             | Return              | Description                                                        |
 | -------------------------------------------------- | ------------------- | ------------------------------------------------------------------ |
-| user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                                      |
 | user_followers(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of followers users (amount=0 - fetch all followers)       |
 | user_following(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of following users (amount=0 - fetch all following users) |
 | user_info(user_id: int)                            | User                | Get user info                                                      |
