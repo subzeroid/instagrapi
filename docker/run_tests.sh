@@ -18,7 +18,7 @@ while [[ $# -gt 0 ]]; do
     case $arg in
         --format-code)
         BLACK_ACTION="--quiet"
-        ISORT_ACTION=""
+        ISORT_ACTION="--recursive"
         ;;
         -h|--help)
         usage

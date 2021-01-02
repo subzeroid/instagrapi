@@ -15,11 +15,8 @@ from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
 from instagrapi.mixins.private import PrivateRequestMixin
-from instagrapi.mixins.public import (
-    ProfilePublicMixin,
-    PublicRequestMixin,
-    TopSearchesPublicMixin,
-)
+from instagrapi.mixins.public import (ProfilePublicMixin, PublicRequestMixin,
+                                      TopSearchesPublicMixin)
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin

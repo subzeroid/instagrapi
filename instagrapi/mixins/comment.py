@@ -1,7 +1,8 @@
 import random
 from typing import List
 
-from instagrapi.exceptions import ClientError, ClientNotFoundError, MediaNotFound
+from instagrapi.exceptions import (ClientError, ClientNotFoundError,
+                                   MediaNotFound)
 from instagrapi.extractors import extract_comment
 from instagrapi.types import Comment
 
