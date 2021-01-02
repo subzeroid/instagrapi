@@ -20,7 +20,7 @@ Use the most recent version of the API from Instagram.
 requirements = [
     'requests==2.24.0',
     'PySocks==1.7.1',
-    'pydantic==1.7.2'
+    'pydantic==1.7.3'
 ]
 # requirements = [
 #     line.strip()
