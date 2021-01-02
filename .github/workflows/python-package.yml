@@ -9,7 +9,26 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  PYTHON_VERSION: "3.8.5"
+
 jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          test-requirements: "true"
+
+      - name: Run bandit
+        run: bandit --ini .bandit -r instagrapi
+
   flake8:
     runs-on: ubuntu-latest
     steps:
