@@ -41,6 +41,3 @@ isort ${ISORT_ACTION} instagrapi
 
 echo "Running flake8..."
 flake8 instagrapi --count --exit-zero --statistics
-
-echo "Running bandit..."
-bandit --ini .bandit --quiet -r instagrapi
