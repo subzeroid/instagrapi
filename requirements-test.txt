@@ -1,4 +1,4 @@
 flake8==3.8.4
 Pillow==7.2.0
-isort==4.3.21
+isort==5.7.0
 bandit==1.7.0
