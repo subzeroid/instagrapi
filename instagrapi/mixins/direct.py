@@ -38,7 +38,7 @@ class DirectMixin:
         self.private_request("direct_v2/get_presence/")
         while True:
             if cursor:
-                params['cursor'] = cursor
+                params["cursor"] = cursor
             result = self.private_request("direct_v2/inbox/", params=params)
             inbox = result.get("inbox", {})
             for thread in inbox.get("threads", []):
@@ -78,20 +78,22 @@ class DirectMixin:
         items = []
         while True:
             if cursor:
-                params['cursor'] = cursor
+                params["cursor"] = cursor
             try:
-                result = self.private_request(f"direct_v2/threads/{thread_id}/", params=params)
+                result = self.private_request(
+                    f"direct_v2/threads/{thread_id}/", params=params
+                )
             except ClientNotFoundError as e:
                 raise DirectThreadNotFound(e, thread_id=thread_id, **self.last_json)
-            thread = result['thread']
-            for item in thread['items']:
+            thread = result["thread"]
+            for item in thread["items"]:
                 items.append(item)
             cursor = thread.get("oldest_cursor")
             if not cursor or (amount and len(items) >= amount):
                 break
         if amount:
             items = items[:amount]
-        thread['items'] = items
+        thread["items"] = items
         return extract_direct_thread(thread)
 
     def direct_messages(self, thread_id: int, amount: int = 20) -> List[DirectMessage]:
@@ -134,7 +136,9 @@ class DirectMixin:
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+    def direct_send(
+        self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
 
@@ -157,25 +161,20 @@ class DirectMixin:
         assert self.user_id, "Login required"
         method = "text"
         kwargs = {}
-        if 'http' in text:
+        if "http" in text:
             method = "link"
             kwargs["link_text"] = text
-            kwargs["link_urls"] = dumps(
-                re.findall(r"(https?://[^\s]+)", text))
+            kwargs["link_urls"] = dumps(re.findall(r"(https?://[^\s]+)", text))
         else:
             kwargs["text"] = text
         if thread_ids:
             kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         if user_ids:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
-        data = {
-            "client_context": self.generate_uuid(),
-            "action": "send_item",
-            **kwargs
-        }
+        data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
         result = self.private_request(
             "direct_v2/threads/broadcast/%s/" % method,
             data=self.with_default_data(data),
-            with_signature=False
+            with_signature=False,
         )
         return extract_direct_message(result["payload"])

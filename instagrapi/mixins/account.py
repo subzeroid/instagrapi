@@ -26,10 +26,7 @@ class AccountMixin:
         """
         response = requests.post(
             "https://www.instagram.com/accounts/account_recovery_send_ajax/",
-            data={
-                "email_or_username": username,
-                "recaptcha_challenge_field": ""
-            },
+            data={"email_or_username": username, "recaptcha_challenge_field": ""},
             headers={
                 "x-requested-with": "XMLHttpRequest",
                 "x-csrftoken": gen_csrftoken(),
@@ -37,9 +34,9 @@ class AccountMixin:
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
                 "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             },
-            proxies=self.public.proxies
+            proxies=self.public.proxies,
         )
         try:
             return response.json()
@@ -57,8 +54,8 @@ class AccountMixin:
         Account
             An object of Account class
         """
-        result = self.private_request('accounts/current_user/?edit=true')
-        return extract_account(result['user'])
+        result = self.private_request("accounts/current_user/?edit=true")
+        return extract_account(result["user"])
 
     def account_edit(self, **data: Dict) -> Account:
         """
@@ -74,18 +71,24 @@ class AccountMixin:
         Account
             An object of Account class
         """
-        fields = ("external_url", "phone_number", "username", "full_name", "biography", "email")
+        fields = (
+            "external_url",
+            "phone_number",
+            "username",
+            "full_name",
+            "biography",
+            "email",
+        )
         data = {key: val for key, val in data.items() if key in fields}
-        if 'email' not in data and 'phone_number' not in data:
+        if "email" not in data and "phone_number" not in data:
             # Instagram Error: You need an email or confirmed phone number.
             user_data = self.account_info().dict()
             user_data = {field: user_data[field] for field in fields}
             data = dict(user_data, **data)
         # Instagram original field-name for full user name is "first_name"
-        data['first_name'] = data.pop('full_name')
+        data["first_name"] = data.pop("full_name")
         result = self.private_request(
-            "accounts/edit_profile/",
-            self.with_default_data(data)
+            "accounts/edit_profile/", self.with_default_data(data)
         )
         return extract_account(result["user"])
 
@@ -106,6 +109,6 @@ class AccountMixin:
         upload_id, _, _ = self.photo_rupload(Path(path))
         result = self.private_request(
             "accounts/change_profile_picture/",
-            self.with_default_data({'use_fbuploader': True, 'upload_id': upload_id})
+            self.with_default_data({"use_fbuploader": True, "upload_id": upload_id}),
         )
         return extract_user_short(result["user"])

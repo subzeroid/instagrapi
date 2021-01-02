@@ -156,8 +156,7 @@ class PostLoginFlowMixin:
         """
         check_flow = []
         chance = random.randint(1, 100) % 2 == 0
-        check_flow.append(self.get_timeline_feed(
-            [chance and "is_pull_to_refresh"]))
+        check_flow.append(self.get_timeline_feed([chance and "is_pull_to_refresh"]))
         check_flow.append(
             self.get_reels_tray_feed(
                 reason="pull_to_refresh" if chance else "cold_start"
@@ -189,9 +188,7 @@ class PostLoginFlowMixin:
             "feed_view_info": "",
             "phone_id": self.phone_id,
             "battery_level": random.randint(25, 100),
-            "timezone_offset": datetime.datetime.now(CET()).strftime(
-                "%z"
-            ),
+            "timezone_offset": datetime.datetime.now(CET()).strftime("%z"),
             "_csrftoken": self.token,
             "device_id": self.uuid,
             "request_id": self.device_id,
@@ -291,11 +288,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        assert isinstance(sessionid, str) and len(
-            sessionid) > 30, 'Invalid sessionid'
-        self.settings = {'cookies': {'sessionid': sessionid}}
+        assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
+        self.settings = {"cookies": {"sessionid": sessionid}}
         self.init()
-        user_id = re.search(r'^\d+', sessionid).group()
+        user_id = re.search(r"^\d+", sessionid).group()
         user = self.user_info_v1(int(user_id))
         self.username = user.username
         return True
@@ -484,8 +480,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         self.phone_id = uuids.get("phone_id", self.generate_uuid())
         self.uuid = uuids.get("uuid", self.generate_uuid())
-        self.client_session_id = uuids.get(
-            "client_session_id", self.generate_uuid())
+        self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
         self.device_id = uuids.get("device_id", self.generate_device_id())
         return True
@@ -510,9 +505,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A random android device id
         """
-        return "android-%s" % hashlib.md5(
-            bytes(random.randint(1, 1000))
-        ).hexdigest()[:16]
+        return (
+            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))).hexdigest()[:16]
+        )
 
     def expose(self) -> Dict:
         """
@@ -523,10 +518,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of response from the call
         """
-        data = {
-            "id": self.uuid,
-            "experiment": "ig_android_profile_contextual_feed"
-        }
+        data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
     def with_default_data(self, data: Dict) -> Dict:
@@ -545,7 +537,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "_csrftoken": self.token,
                 "device_id": self.device_id,
             },
-            **data
+            **data,
         )
 
     def with_action_data(self, data: Dict) -> Dict:
@@ -603,8 +595,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        session_id = self.private.cookies.get('sessionid')
+        session_id = self.private.cookies.get("sessionid")
         if session_id:
-            self.public.cookies.set('sessionid', session_id)
+            self.public.cookies.set("sessionid", session_id)
             return True
         return False

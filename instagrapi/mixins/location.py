@@ -29,17 +29,17 @@ class LocationMixin:
             List of objects of Location
         """
         params = {
-            'latitude': lat,
-            'longitude': lng,
+            "latitude": lat,
+            "longitude": lng,
             # rankToken=c544eea5-726b-4091-a916-a71a35a76474 - self.uuid?
             # fb_access_token=EAABwzLixnjYBABK2YBFkT...pKrjju4cijEGYtcbIyCSJ0j4ZD
         }
         result = self.private_request("location_search/", params=params)
         locations = []
-        for venue in result['venues']:
-            if 'lat' not in venue:
-                venue['lat'] = lat
-                venue['lng'] = lng
+        for venue in result["venues"]:
+            if "lat" not in venue:
+                venue["lat"] = lat
+                venue["lng"] = lng
             locations.append(extract_location(venue))
         return locations
 
@@ -57,8 +57,9 @@ class LocationMixin:
         Location
             An object of Location
         """
-        assert location and isinstance(location, Location),\
-            f'Location is wrong "{location}" ({type(location)})'
+        assert location and isinstance(
+            location, Location
+        ), f'Location is wrong "{location}" ({type(location)})'
         if location.pk and not location.lat:
             # search lat and lng
             info = self.location_info(location.pk)
@@ -74,7 +75,9 @@ class LocationMixin:
                 pass
         if not location.pk and location.external_id:
             info = self.location_info(location.external_id)
-            if info.name == location.name or (info.lat == location.lat and info.lng == location.lng):
+            if info.name == location.name or (
+                info.lat == location.lat and info.lng == location.lng
+            ):
                 location.pk = location.external_id
         return location
 
@@ -92,7 +95,7 @@ class LocationMixin:
         str
         """
         if not location:
-            return '{}'
+            return "{}"
         if not location.external_id and location.lat:
             try:
                 location = self.location_search(location.lat, location.lng)[0]
@@ -104,7 +107,7 @@ class LocationMixin:
             "lat": location.lat,
             "lng": location.lng,
             "external_source": location.external_id_source,
-            "facebook_places_id": location.external_id
+            "facebook_places_id": location.external_id,
         }
         return json.dumps(data, separators=(",", ":"))
 
@@ -123,7 +126,7 @@ class LocationMixin:
             An object of Location
         """
         data = self.public_a1_request(f"/explore/locations/{location_pk}/")
-        return extract_location(data['location'])
+        return extract_location(data["location"])
 
     def location_info(self, location_pk: int) -> Location:
         """
@@ -141,7 +144,9 @@ class LocationMixin:
         """
         return self.location_info_a1(location_pk)
 
-    def location_medias_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = '') -> List[Media]:
+    def location_medias_a1(
+        self, location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = ""
+    ) -> List[Media]:
         """
         Get medias for a location
 
@@ -165,19 +170,17 @@ class LocationMixin:
         end_cursor = None
         while True:
             data = self.public_a1_request(
-                f'/explore/locations/{location_pk}/',
-                params={"max_id": end_cursor} if end_cursor else {}
-            )['location']
+                f"/explore/locations/{location_pk}/",
+                params={"max_id": end_cursor} if end_cursor else {},
+            )["location"]
             page_info = data["edge_location_to_media"]["page_info"]
             end_cursor = page_info["end_cursor"]
             edges = data[tab_key]["edges"]
             for edge in edges:
                 if amount and len(medias) >= amount:
                     break
-                node = edge['node']
-                medias.append(
-                    self.media_info_gql(node['id'])
-                )
+                node = edge["node"]
+                medias.append(self.media_info_gql(node["id"]))
                 # time.sleep(sleep)
             if not page_info["has_next_page"] or not end_cursor:
                 break
@@ -185,15 +188,14 @@ class LocationMixin:
                 break
             time.sleep(sleep)
         uniq_pks = set()
-        medias = [
-            m for m in medias
-            if not (m.pk in uniq_pks or uniq_pks.add(m.pk))
-        ]
+        medias = [m for m in medias if not (m.pk in uniq_pks or uniq_pks.add(m.pk))]
         if amount:
             medias = medias[:amount]
         return medias
 
-    def location_medias_top_a1(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
+    def location_medias_top_a1(
+        self, location_pk: int, amount: int = 9, sleep: float = 0.5
+    ) -> List[Media]:
         """
         Get top medias for a location
 
@@ -212,11 +214,12 @@ class LocationMixin:
             List of objects of Media
         """
         return self.location_medias_a1(
-            location_pk, amount, sleep=sleep,
-            tab_key='edge_location_to_top_posts'
+            location_pk, amount, sleep=sleep, tab_key="edge_location_to_top_posts"
         )
 
-    def location_medias_top(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
+    def location_medias_top(
+        self, location_pk: int, amount: int = 9, sleep: float = 0.5
+    ) -> List[Media]:
         """
         Get top medias for a location
 
@@ -241,7 +244,9 @@ class LocationMixin:
                 raise e
             return self.location_medias_top_a1(location_pk, amount, sleep)  # retry
 
-    def location_medias_recent_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
+    def location_medias_recent_a1(
+        self, location_pk: int, amount: int = 24, sleep: float = 0.5
+    ) -> List[Media]:
         """
         Get recent medias for a location
 
@@ -260,11 +265,12 @@ class LocationMixin:
             List of objects of Media
         """
         return self.location_medias_a1(
-            location_pk, amount, sleep=sleep,
-            tab_key='edge_location_to_media'
+            location_pk, amount, sleep=sleep, tab_key="edge_location_to_media"
         )
 
-    def location_medias_recent(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
+    def location_medias_recent(
+        self, location_pk: int, amount: int = 24, sleep: float = 0.5
+    ) -> List[Media]:
         """
         Get recent medias for a location
 

@@ -10,15 +10,11 @@ from uuid import uuid4
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import (
-    PhotoConfigureError,
-    PhotoConfigureStoryError,
-    PhotoNotUpload,
-)
-
+from instagrapi.exceptions import (PhotoConfigureError,
+                                   PhotoConfigureStoryError, PhotoNotUpload)
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import Location, Media, Story, StoryLink, StoryMention, Usertag
-
+from instagrapi.types import (Location, Media, Story, StoryLink, StoryMention,
+                              Usertag)
 from instagrapi.utils import dumps
 
 try:
@@ -56,7 +52,9 @@ class DownloadPhotoMixin:
         )
         return self.photo_download_by_url(media.thumbnail_url, filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+    def photo_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
         """
         Download photo using media pk
 
@@ -75,9 +73,8 @@ class DownloadPhotoMixin:
         Path
             Path for the file downloaded
         """
-        fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
-                              1]) if filename else fname
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -93,10 +90,7 @@ class UploadPhotoMixin:
     """
 
     def photo_rupload(
-        self,
-        path: Path,
-        upload_id: str = "",
-        to_album: bool = False
+        self, path: Path, upload_id: str = "", to_album: bool = False
     ) -> tuple:
         """
         Upload photo to Instagram
@@ -150,7 +144,8 @@ class UploadPhotoMixin:
             "https://{domain}/rupload_igphoto/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=photo_data, headers=headers
+            data=photo_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -172,7 +167,7 @@ class UploadPhotoMixin:
         links: List[StoryLink] = [],
         configure_timeout: int = 3,
         configure_handler=None,
-        configure_exception=None
+        configure_exception=None,
     ) -> Media:
         """
         Upload photo and configure to feed
@@ -208,12 +203,15 @@ class UploadPhotoMixin:
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
+            if (configure_handler or self.photo_configure)(
+                upload_id, width, height, caption, usertags, location, links
+            ):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
         raise (configure_exception or PhotoConfigureError)(
-            response=self.last_response, **self.last_json)
+            response=self.last_response, **self.last_json
+        )
 
     def photo_configure(
         self,
@@ -223,7 +221,7 @@ class UploadPhotoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = []
+        links: List[StoryLink] = [],
     ) -> Dict:
         """
         Post Configure Photo (send caption to Instagram)
@@ -251,8 +249,7 @@ class UploadPhotoMixin:
             A dictionary of response from the call
         """
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "timezone_offset": "10800",
@@ -281,7 +278,7 @@ class UploadPhotoMixin:
         upload_id: str = "",
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
-        configure_timeout: int = 3
+        configure_timeout: int = 3,
     ) -> Story:
         """
         Upload photo as a story and configure it
@@ -307,11 +304,14 @@ class UploadPhotoMixin:
             An object of Media class
         """
         media = self.photo_upload(
-            path, caption, upload_id, mentions,
+            path,
+            caption,
+            upload_id,
+            mentions,
             links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.photo_configure_to_story,
-            configure_exception=PhotoConfigureStoryError
+            configure_exception=PhotoConfigureStoryError,
         )
         return Story(links=links, mentions=mentions, **media.dict())
 
@@ -323,7 +323,7 @@ class UploadPhotoMixin:
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None,
-        links: List[StoryLink] = []
+        links: List[StoryLink] = [],
     ) -> Dict:
         """
         Post configure photo
@@ -372,10 +372,7 @@ class UploadPhotoMixin:
             "client_timestamp": str(timestamp),
             "device": self.device,
             "implicit_location": {
-                "media_location": {
-                    "lat": 44.64972222222222,
-                    "lng": 33.541666666666664
-                }
+                "media_location": {"lat": 44.64972222222222, "lng": 33.541666666666664}
             },
             "edits": {
                 "crop_original_size": [width * 1.0, height * 1.0],
@@ -390,11 +387,20 @@ class UploadPhotoMixin:
         if mentions:
             mentions = [
                 {
-                    "x": 0.5002546, "y": 0.8583542, "z": 0,
-                    "width": 0.4712963, "height": 0.0703125, "rotation": 0.0,
-                    "type": "mention", "user_id": str(mention.user.pk),
-                    "is_sticker": False, "display_type": "mention_username"
-                } for mention in mentions
+                    "x": 0.5002546,
+                    "y": 0.8583542,
+                    "z": 0,
+                    "width": 0.4712963,
+                    "height": 0.0703125,
+                    "rotation": 0.0,
+                    "type": "mention",
+                    "user_id": str(mention.user.pk),
+                    "is_sticker": False,
+                    "display_type": "mention_username",
+                }
+                for mention in mentions
             ]
             data["tap_models"] = data["reel_mentions"] = json.dumps(mentions)
-        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/", self.with_default_data(data)
+        )

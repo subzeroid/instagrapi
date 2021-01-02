@@ -55,8 +55,7 @@ class ClientIncompleteReadError(ClientError):
 
 
 class ClientLoginRequired(ClientError):
-    """Instagram redirect to https://www.instagram.com/accounts/login/
-    """
+    """Instagram redirect to https://www.instagram.com/accounts/login/"""
 
 
 class ReloginAttemptExceeded(ClientError):
@@ -64,8 +63,7 @@ class ReloginAttemptExceeded(ClientError):
 
 
 class PrivateError(ClientError):
-    """For Private API and last_json logic
-    """
+    """For Private API and last_json logic"""
 
 
 class FeedbackRequired(PrivateError):

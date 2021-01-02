@@ -8,25 +8,15 @@ from json.decoder import JSONDecodeError
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import (
-    BadPassword,
-    ChallengeRequired,
-    ClientBadRequestError,
-    ClientConnectionError,
-    ClientError,
-    ClientForbiddenError,
-    ClientJSONDecodeError,
-    ClientNotFoundError,
-    ClientRequestTimeout,
-    ClientThrottledError,
-    FeedbackRequired,
-    LoginRequired,
-    PleaseWaitFewMinutes,
-    RateLimitError,
-    SentryBlock,
-    UnknownError,
-    VideoTooLongException,
-)
+from instagrapi.exceptions import (BadPassword, ChallengeRequired,
+                                   ClientBadRequestError,
+                                   ClientConnectionError, ClientError,
+                                   ClientForbiddenError, ClientJSONDecodeError,
+                                   ClientNotFoundError, ClientRequestTimeout,
+                                   ClientThrottledError, FeedbackRequired,
+                                   LoginRequired, PleaseWaitFewMinutes,
+                                   RateLimitError, SentryBlock, UnknownError,
+                                   VideoTooLongException)
 from instagrapi.utils import generate_signature
 
 
