@@ -39,8 +39,7 @@ class PublicRequestMixin:
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             }
         )
-        self.request_timeout = kwargs.pop(
-            "request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
 
     def public_request(
@@ -54,7 +53,10 @@ class PublicRequestMixin:
         retries_timeout=10,
     ):
         kwargs = dict(
-            data=data, params=params, headers=headers, return_json=return_json,
+            data=data,
+            params=params,
+            headers=headers,
+            return_json=return_json,
         )
         assert retries_count <= 10, "Retries count is too high"
         assert retries_timeout <= 600, "Retries timeout is too high"
@@ -152,8 +154,7 @@ class PublicRequestMixin:
             raise ClientError(e, response=e.response)
 
         except requests.ConnectionError as e:
-            raise ClientConnectionError(
-                "{} {}".format(e.__class__.__name__, str(e)))
+            raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
@@ -171,8 +172,7 @@ class PublicRequestMixin:
             error_type = response.get("error_type")
             if error_type == "generic_request_error":
                 raise GenericRequestError(
-                    json_value(response, "errors", "error",
-                               0, default=error_type),
+                    json_value(response, "errors", "error", 0, default=error_type),
                     **response
                 )
             raise e
@@ -187,8 +187,7 @@ class PublicRequestMixin:
         headers=None,
     ):
         assert query_id or query_hash, "Must provide valid one of: query_id, query_hash"
-        default_params = {"variables": json.dumps(
-            variables, separators=(",", ":"))}
+        default_params = {"variables": json.dumps(variables, separators=(",", ":"))}
         if query_id:
             default_params["query_id"] = query_id
 
@@ -212,8 +211,7 @@ class PublicRequestMixin:
             if body_json.get("status", None) != "ok":
                 raise ClientGraphqlError(
                     "Unexpected status '{}' in response. Message: '{}'".format(
-                        body_json.get("status", None), body_json.get(
-                            "message", None)
+                        body_json.get("status", None), body_json.get("message", None)
                     ),
                     response=body_json,
                 )
@@ -233,10 +231,8 @@ class PublicRequestMixin:
 
 
 class TopSearchesPublicMixin:
-
     def top_search(self, query):
-        """Anonymous IG search request
-        """
+        """Anonymous IG search request"""
         url = "https://www.instagram.com/web/search/topsearch/"
         params = {
             "context": "blended",
@@ -249,7 +245,6 @@ class TopSearchesPublicMixin:
 
 
 class ProfilePublicMixin:
-
     def location_feed(self, location_id, count=16, end_cursor=None):
         if count > 50:
             raise ValueError("Count cannot be greater than 50")

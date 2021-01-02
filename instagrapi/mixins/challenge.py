@@ -50,7 +50,10 @@ class ChallengeResolveMixin:
             params = {}
         try:
             self._send_private_request(
-                challenge_url, None, params=params, with_signature=False,
+                challenge_url,
+                None,
+                params=params,
+                with_signature=False,
             )
         except ChallengeRequired:
             assert self.last_json["message"] == "challenge_required", self.last_json
@@ -167,8 +170,8 @@ class ChallengeResolveMixin:
                 result = session.post(
                     challenge_url,
                     {
-                        "phone_number": e.challenge['fields']['phone_number'],
-                        "challenge_context": e.challenge['challenge_context']
+                        "phone_number": e.challenge["fields"]["phone_number"],
+                        "challenge_context": e.challenge["challenge_context"],
                     },
                 )
                 result = result.json()
@@ -176,7 +179,10 @@ class ChallengeResolveMixin:
             except ChallengeRedirection:
                 return True  # instagram redirect
         assert result["challengeType"] in (
-            'VerifyEmailCodeForm', 'VerifySMSCodeForm', 'VerifySMSCodeFormForSMSCaptcha'), result
+            "VerifyEmailCodeForm",
+            "VerifySMSCodeForm",
+            "VerifySMSCodeFormForSMSCaptcha",
+        ), result
         wait_seconds = 5
         for retry_code in range(5):
             for attempt in range(1, 11):
@@ -186,19 +192,24 @@ class ChallengeResolveMixin:
                 time.sleep(wait_seconds * attempt)
             # SEND CODE
             time.sleep(WAIT_SECONDS)
-            result = session.post(challenge_url, {
-                "security_code": code,
-                "enc_new_password1": enc_password,
-                "new_password1": "",
-                "enc_new_password2": enc_password,
-                "new_password2": "",
-            }).json()
-            result = result.get('challenge', result)
-            if 'Please check the code we sent you and try again' not in (result.get("errors") or [''])[0]:
+            result = session.post(
+                challenge_url,
+                {
+                    "security_code": code,
+                    "enc_new_password1": enc_password,
+                    "new_password1": "",
+                    "enc_new_password2": enc_password,
+                    "new_password2": "",
+                },
+            ).json()
+            result = result.get("challenge", result)
+            if (
+                "Please check the code we sent you and try again"
+                not in (result.get("errors") or [""])[0]
+            ):
                 break
         # FORM TO APPROVE CONTACT DATA
-        assert result.get(
-            "challengeType") == "ReviewContactPointChangeForm", result
+        assert result.get("challengeType") == "ReviewContactPointChangeForm", result
         details = []
         for data in result["extraData"]["content"]:
             for entry in data.get("labeled_list_entries", []):
@@ -213,8 +224,7 @@ class ChallengeResolveMixin:
             ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
         time.sleep(WAIT_SECONDS)
         result = session.post(
-            "https://i.instagram.com%s" % result.get(
-                "navigation").get("forward"),
+            "https://i.instagram.com%s" % result.get("navigation").get("forward"),
             {
                 "choice": 0,  # I AGREE
                 "enc_new_password1": enc_password,
@@ -292,7 +302,8 @@ class ChallengeResolveMixin:
                 for error in challenge["errors"]:
                     messages.append(error)
             raise SelectContactPointRecoveryForm(
-                " ".join(messages), challenge=challenge)
+                " ".join(messages), challenge=challenge
+            )
         elif challenge_type == "RecaptchaChallengeForm":
             """
             Example:
@@ -312,12 +323,11 @@ class ChallengeResolveMixin:
             'type': 'CHALLENGE'},
             'status': 'fail'}
             """
-            raise RecaptchaChallengeForm(
-                ". ".join(challenge.get("errors", [])))
-        elif challenge_type in ('VerifyEmailCodeForm', 'VerifySMSCodeForm'):
+            raise RecaptchaChallengeForm(". ".join(challenge.get("errors", [])))
+        elif challenge_type in ("VerifyEmailCodeForm", "VerifySMSCodeForm"):
             # Success. Next step
             return challenge
-        elif challenge_type == 'SubmitPhoneNumberForm':
+        elif challenge_type == "SubmitPhoneNumberForm":
             raise SubmitPhoneNumberForm(challenge=challenge)
         elif challenge_type:
             # Unknown challenge_type
@@ -373,13 +383,9 @@ class ChallengeResolveMixin:
                 """
                 steps = self.last_json["step_data"].keys()
                 if "email" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": CHOICE_EMAIL}
-                    )
+                    self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
                 elif "phone_number" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": CHOICE_SMS}
-                    )
+                    self._send_private_request(challenge_url, {"choice": CHOICE_SMS})
                 else:
                     raise ChallengeError(
                         'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'

@@ -74,9 +74,9 @@ class CommentMixin:
                     "container_module": "self_comments_v2_feed_contextual_self_profile",  # "comments_v2",
                     "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
                     "idempotence_token": self.generate_uuid(),
-                    "comment_text": text
+                    "comment_text": text,
                 }
-            )
+            ),
         )
         return extract_comment(result["comment"])
 
@@ -101,14 +101,13 @@ class CommentMixin:
         data = {
             "is_carousel_bumped_post": "false",
             "container_module": "feed_contextual_self_profile",
-            "feed_position": str(random.randint(0, 6))
+            "feed_position": str(random.randint(0, 6)),
         }
-        name = 'unlike' if revert else 'like'
+        name = "unlike" if revert else "like"
         result = self.private_request(
-            f"media/{comment_pk}/comment_{name}/",
-            self.with_action_data(data)
+            f"media/{comment_pk}/comment_{name}/", self.with_action_data(data)
         )
-        return result['status'] == 'ok'
+        return result["status"] == "ok"
 
     def comment_unlike(self, comment_pk: str) -> bool:
         """

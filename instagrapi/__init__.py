@@ -49,7 +49,7 @@ class Client(
     LocationMixin,
     HashtagMixin,
     CommentMixin,
-    StoryMixin
+    StoryMixin,
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")
@@ -62,8 +62,9 @@ class Client(
 
     def set_proxy(self, dsn: str):
         if dsn:
-            assert isinstance(dsn, str),\
-                f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
+            assert isinstance(
+                dsn, str
+            ), f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
             self.proxy = dsn
             proxy_href = "{scheme}{href}".format(
                 scheme="http://" if not urlparse(self.proxy).scheme else "",

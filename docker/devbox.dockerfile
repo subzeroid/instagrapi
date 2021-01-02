@@ -1,12 +1,28 @@
-FROM ubuntu:latest
+FROM python:3.8.5-buster
 
-RUN apt-get update
-RUN apt-get install -y python3 python3-pip
-RUN python3 -m pip install parse realpython-reader
+ARG _USER="instagrapi"
+ARG _UID="1001"
+ARG _GID="100"
+ARG _SHELL="/bin/bash"
 
-COPY . /app
+
+RUN useradd -m -s "${_SHELL}" -N -u "${_UID}" "${_USER}"
+
+ENV USER ${_USER}
+ENV UID ${_UID}
+ENV GID ${_GID}
+ENV HOME /home/${_USER}
+ENV PATH "${HOME}/.local/bin/:${PATH}"
+ENV PIP_NO_CACHE_DIR "true"
+
+
+RUN mkdir /app && chown ${UID}:${GID} /app
+
+USER ${_USER}
+
+COPY ./requirements*.txt /app/
 WORKDIR /app
 
-RUN python3 -m pip install -r requirements-test.txt -r requirements.txt
+RUN pip install -r requirements.txt -r requirements-test.txt
 
-ENTRYPOINT [ "docker/entrypoints/entrypoint.sh" ]
+CMD bash

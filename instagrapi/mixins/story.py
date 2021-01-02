@@ -1,10 +1,10 @@
 import json
-from typing import List
 from copy import deepcopy
+from typing import List
 
 from instagrapi import config
-from instagrapi.extractors import extract_story_v1
 from instagrapi.exceptions import StoryNotFound
+from instagrapi.extractors import extract_story_v1
 from instagrapi.types import Story
 
 
@@ -30,7 +30,7 @@ class StoryMixin:
             An object of Story type
         """
         story_id = self.media_id(story_pk)
-        story_pk, user_id = story_id.split('_')
+        story_pk, user_id = story_id.split("_")
         stories = self.user_stories_v1(user_id)
         story_pk = int(story_pk)
         for story in stories:
@@ -98,9 +98,11 @@ class StoryMixin:
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
         }
         user_id = int(user_id)
-        reel = self.private_request(f"feed/user/{user_id}/story/", params=params)['reel']
+        reel = self.private_request(f"feed/user/{user_id}/story/", params=params)[
+            "reel"
+        ]
         stories = []
-        for item in reel['items']:
+        for item in reel["items"]:
             stories.append(extract_story_v1(item))
         if amount:
             amount = int(amount)

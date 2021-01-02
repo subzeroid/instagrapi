@@ -47,7 +47,9 @@ class DownloadVideoMixin:
         )
         return self.video_download_by_url(media.video_url, filename, folder)
 
-    def video_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+    def video_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
         """
         Download video using media pk
 
@@ -66,9 +68,8 @@ class DownloadVideoMixin:
         Path
             Path for the file downloaded
         """
-        fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
-                              1]) if filename else fname
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -95,7 +96,7 @@ class UploadVideoMixin:
         path: Path,
         thumbnail: Path = None,
         to_album: bool = False,
-        to_story: bool = False
+        to_story: bool = False,
     ) -> tuple:
         """
         Upload video to Instagram
@@ -138,7 +139,7 @@ class UploadVideoMixin:
                 "extract_cover_frame": "1",
                 "content_tags": "has-overlay",
                 "for_album": "1",
-                **rupload_params
+                **rupload_params,
             }
         headers = {
             "Accept-Encoding": "gzip, deflate",
@@ -148,21 +149,16 @@ class UploadVideoMixin:
             # "X_FB_VIDEO_WATERFALL_ID": "1594919079102",  # VIDEO
         }
         if to_album:
-            headers = {
-                "Segment-Start-Offset": "0",
-                "Segment-Type": "3",
-                **headers
-            }
+            headers = {"Segment-Start-Offset": "0", "Segment-Type": "3", **headers}
         response = self.private.get(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
-            ), headers=headers
+            ),
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise VideoNotUpload(
-                response.text, response=response, **self.last_json
-            )
+            raise VideoNotUpload(response.text, response=response, **self.last_json)
         video_data = open(path, "rb").read()
         video_len = str(len(video_data))
         headers = {
@@ -172,19 +168,18 @@ class UploadVideoMixin:
             "Content-Type": "application/octet-stream",
             "Content-Length": video_len,
             "X-Entity-Type": "video/mp4",
-            **headers
+            **headers,
         }
         response = self.private.post(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=video_data, headers=headers
+            data=video_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise VideoNotUpload(
-                response.text, response=response, **self.last_json
-            )
+            raise VideoNotUpload(response.text, response=response, **self.last_json)
         return upload_id, width, height, duration, Path(thumbnail)
 
     def video_upload(
@@ -198,7 +193,7 @@ class UploadVideoMixin:
         configure_timeout: int = 3,
         configure_handler=None,
         configure_exception=None,
-        to_story: bool = False
+        to_story: bool = False,
     ) -> Media:
         """
         Upload video and configure to feed
@@ -241,7 +236,15 @@ class UploadVideoMixin:
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.video_configure)(
-                    upload_id, width, height, duration, thumbnail, caption, usertags, location, links
+                    upload_id,
+                    width,
+                    height,
+                    duration,
+                    thumbnail,
+                    caption,
+                    usertags,
+                    location,
+                    links,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -258,7 +261,8 @@ class UploadVideoMixin:
                     self.expose()
                     return extract_media_v1(media)
         raise (configure_exception or VideoConfigureError)(
-            response=self.last_response, **self.last_json)
+            response=self.last_response, **self.last_json
+        )
 
     def video_configure(
         self,
@@ -270,7 +274,7 @@ class UploadVideoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = []
+        links: List[StoryLink] = [],
     ) -> Dict:
         """
         Post Configure Video (send caption, thumbnail and more to Instagram)
@@ -303,8 +307,7 @@ class UploadVideoMixin:
         """
         self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "multi_sharing": "1",
@@ -324,7 +327,9 @@ class UploadVideoMixin:
             "device": self.device,
             "caption": caption,
         }
-        return self.private_request("media/configure/?video=1", self.with_default_data(data))
+        return self.private_request(
+            "media/configure/?video=1", self.with_default_data(data)
+        )
 
     def video_upload_to_story(
         self,
@@ -333,7 +338,7 @@ class UploadVideoMixin:
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
-        configure_timeout: int = 3
+        configure_timeout: int = 3,
     ) -> Story:
         """
         Upload video as a story and configure it
@@ -359,12 +364,15 @@ class UploadVideoMixin:
             An object of Media class
         """
         media = self.video_upload(
-            path, caption, thumbnail, mentions,
+            path,
+            caption,
+            thumbnail,
+            mentions,
             links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.video_configure_to_story,
             configure_exception=VideoConfigureStoryError,
-            to_story=True
+            to_story=True,
         )
         return Story(links=links, mentions=mentions, **media.dict())
 
@@ -378,7 +386,7 @@ class UploadVideoMixin:
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None,
-        links: List[StoryLink] = []
+        links: List[StoryLink] = [],
     ) -> Dict:
         """
         Story Configure for Photo
@@ -435,7 +443,7 @@ class UploadVideoMixin:
             "creation_surface": "camera",
             "caption": caption,
             "capture_type": "normal",
-            "rich_text_format_types": "[\"strong\"]",  # default, typewriter
+            "rich_text_format_types": '["strong"]',  # default, typewriter
             "upload_id": upload_id,
             # Facebook Sharing Part:
             # "xpost_surface": "auto_xpost",
@@ -446,16 +454,11 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "implicit_location": {
-                "media_location": {
-                    "lat": 0.0,
-                    "lng": 0.0
-                }
-            },
+            "implicit_location": {"media_location": {"lat": 0.0, "lng": 0.0}},
             "clips": [{"length": duration, "source_type": "4"}],
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
-            "poster_frame_index": 0
+            "poster_frame_index": 0,
         }
         if links:
             links = [link.dict() for link in links]
@@ -464,19 +467,36 @@ class UploadVideoMixin:
             reel_mentions = []
             text_metadata = []
             for mention in mentions:
-                reel_mentions.append({
-                    "x": mention.x, "y": mention.y, "z": 0,
-                    "width": mention.width, "height": mention.height, "rotation": 0.0,
-                    "type": "mention", "user_id": str(mention.user.pk), "is_sticker": False, "display_type": "mention_username"
-                })
-                text_metadata.append({
-                    "font_size": 40.0, "scale": 1.2798771,
-                    "width": 1017.50226, "height": 216.29922,
-                    "x": mention.x, "y": mention.y, "rotation": 0.0
-                })
+                reel_mentions.append(
+                    {
+                        "x": mention.x,
+                        "y": mention.y,
+                        "z": 0,
+                        "width": mention.width,
+                        "height": mention.height,
+                        "rotation": 0.0,
+                        "type": "mention",
+                        "user_id": str(mention.user.pk),
+                        "is_sticker": False,
+                        "display_type": "mention_username",
+                    }
+                )
+                text_metadata.append(
+                    {
+                        "font_size": 40.0,
+                        "scale": 1.2798771,
+                        "width": 1017.50226,
+                        "height": 216.29922,
+                        "x": mention.x,
+                        "y": mention.y,
+                        "rotation": 0.0,
+                    }
+                )
             data["text_metadata"] = dumps(text_metadata)
             data["tap_models"] = data["reel_mentions"] = dumps(reel_mentions)
-        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/?video=1", self.with_default_data(data)
+        )
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
@@ -499,7 +519,7 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception('Please install moviepy>=1.0.3 and retry')
+        raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analizing video file "{path}"')
     video = mp.VideoFileClip(str(path))

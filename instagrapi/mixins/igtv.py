@@ -39,7 +39,9 @@ class DownloadIGTVMixin:
         """
         return self.video_download(media_pk, folder)
 
-    def igtv_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
+    def igtv_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> str:
         """
         Download IGTV video using URL
 
@@ -131,7 +133,8 @@ class UploadIGTVMixin:
         response = self.private.get(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
-            ), headers=headers
+            ),
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -144,13 +147,14 @@ class UploadIGTVMixin:
             "X-Entity-Length": igtv_len,
             "Content-Type": "application/octet-stream",
             "Content-Length": igtv_len,
-            **headers
+            **headers,
         }
         response = self.private.post(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=igtv_data, headers=headers
+            data=igtv_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -162,7 +166,15 @@ class UploadIGTVMixin:
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(
-                    upload_id, thumbnail, width, height, duration, title, caption, usertags, location
+                    upload_id,
+                    thumbnail,
+                    width,
+                    height,
+                    duration,
+                    title,
+                    caption,
+                    usertags,
+                    location,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -190,7 +202,7 @@ class UploadIGTVMixin:
         title: str,
         caption: str,
         usertags: List[Usertag] = [],
-        location: Location = None
+        location: Location = None,
     ) -> Dict:
         """
         Post Configure IGTV (send caption, thumbnail and more to Instagram)
@@ -223,8 +235,7 @@ class UploadIGTVMixin:
         """
         self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "igtv_ads_toggled_on": "0",
@@ -273,7 +284,7 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception('Please install moviepy>=1.0.3 and retry')
+        raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analizing IGTV file "{path}"')
     video = mp.VideoFileClip(str(path))

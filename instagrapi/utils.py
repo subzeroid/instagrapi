@@ -41,13 +41,14 @@ class InstagramIdCodec:
 
 
 def generate_signature(data):
-    """Generate signature of POST data for Private API
-    """
+    """Generate signature of POST data for Private API"""
     body = hmac.new(
         config.IG_SIG_KEY.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
     ).hexdigest()
     return "signed_body={body}.{data}&ig_sig_key_version={sig_key}".format(
-        body=body, data=urllib.parse.quote(data), sig_key=config.SIG_KEY_VERSION,
+        body=body,
+        data=urllib.parse.quote(data),
+        sig_key=config.SIG_KEY_VERSION,
     )
 
 
@@ -68,7 +69,7 @@ def gen_password(size=10, symbols=False):
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += string.punctuation
-    return ''.join(random.choice(chars) for _ in range(size))
+    return "".join(random.choice(chars) for _ in range(size))
 
 
 def gen_csrftoken(size=32):

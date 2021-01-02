@@ -25,6 +25,7 @@ class MediaMixin:
     """
     Helpers for media
     """
+
     _medias_cache = {}  # pk -> object
 
     def media_id(self, media_pk: int) -> str:
@@ -181,9 +182,9 @@ class MediaMixin:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        if data['shortcode_media']['location']:
-            data['shortcode_media']['location'] = self.location_complete(
-                extract_location(data['shortcode_media']['location'])
+        if data["shortcode_media"]["location"]:
+            data["shortcode_media"]["location"] = self.location_complete(
+                extract_location(data["shortcode_media"]["location"])
             ).dict()
         return extract_media_gql(data["shortcode_media"])
 
@@ -243,7 +244,9 @@ class MediaMixin:
                 # Or private account
                 media = self.media_info_v1(media_pk)
             self._medias_cache[media_pk] = media
-        return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
+        return deepcopy(
+            self._medias_cache[media_pk]
+        )  # return copy of cache (dict changes protection)
 
     def media_delete(self, media_id: str) -> bool:
         """
@@ -262,9 +265,7 @@ class MediaMixin:
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         result = self.private_request(
-            f"media/{media_id}/delete/", self.with_default_data(
-                {"media_id": media_id}
-            )
+            f"media/{media_id}/delete/", self.with_default_data({"media_id": media_id})
         )
         self._medias_cache.pop(self.media_pk(media_id), None)
         return result.get("did_delete")
@@ -275,7 +276,7 @@ class MediaMixin:
         caption: str,
         title: str = "",
         usertags: List[Usertag] = [],
-        location: Location = None
+        location: Location = None,
     ) -> Dict:
         """
         Edit caption for media
@@ -302,8 +303,7 @@ class MediaMixin:
         media_id = self.media_id(media_id)
         media = self.media_info(media_id)  # from cache
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "caption_text": caption,
@@ -326,7 +326,8 @@ class MediaMixin:
             }
         self._medias_cache.pop(self.media_pk(media_id), None)  # clean cache
         result = self.private_request(
-            f"media/{media_id}/edit_media/", self.with_default_data(data),
+            f"media/{media_id}/edit_media/",
+            self.with_default_data(data),
         )
         return result
 
@@ -360,9 +361,7 @@ class MediaMixin:
         Dict
             A dictionary of response from the call
         """
-        return extract_media_oembed(
-            self.private_request(f"oembed?url={url}")
-        )
+        return extract_media_oembed(self.private_request(f"oembed?url={url}"))
 
     def media_like(self, media_id: str, revert: bool = False) -> bool:
         """
@@ -388,14 +387,13 @@ class MediaMixin:
             "radio_type": "wifi-none",
             "is_carousel_bumped_post": "false",
             "container_module": "feed_timeline",
-            "feed_position": str(random.randint(0, 6))
+            "feed_position": str(random.randint(0, 6)),
         }
-        name = 'unlike' if revert else 'like'
+        name = "unlike" if revert else "like"
         result = self.private_request(
-            f"media/{media_id}/{name}/",
-            self.with_action_data(data)
+            f"media/{media_id}/{name}/", self.with_action_data(data)
         )
-        return result['status'] == 'ok'
+        return result["status"] == "ok"
 
     def media_unlike(self, media_id: str) -> bool:
         """
@@ -413,7 +411,9 @@ class MediaMixin:
         """
         return self.media_like(media_id, revert=True)
 
-    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> List[Media]:
+    def user_medias_gql(
+        self, user_id: int, amount: int = 50, sleep: int = 2
+    ) -> List[Media]:
         """
         Get a user's media
 

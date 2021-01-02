@@ -17,6 +17,7 @@ class UserMixin:
     """
     Helpers to manage user
     """
+
     _users_cache = {}  # user_pk -> User
     _userhorts_cache = {}  # user_pk -> UserShort
     _usernames_cache = {}  # username -> user_pk
@@ -209,9 +210,7 @@ class UserMixin:
         """
         user_id = int(user_id)
         # GraphQL haven't method to receive user by id
-        return self.user_info_by_username_gql(
-            self.username_from_user_id_gql(user_id)
-        )
+        return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
 
     def user_info_v1(self, user_id: int) -> User:
         """
@@ -269,7 +268,9 @@ class UserMixin:
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
-        return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
+        return deepcopy(
+            self._users_cache[user_id]
+        )  # return copy of cache (dict changes protection)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[User]:
         """
@@ -294,7 +295,7 @@ class UserMixin:
             "id": user_id,
             "include_reel": True,
             "fetch_mutual": False,
-            "first": 24
+            "first": 24,
         }
         while True:
             if end_cursor:
@@ -304,12 +305,8 @@ class UserMixin:
             )
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
-            page_info = json_value(
-                data, "user", "edge_follow", "page_info", default={}
-            )
-            edges = json_value(
-                data, "user", "edge_follow", "edges", default=[]
-            )
+            page_info = json_value(data, "user", "edge_follow", "page_info", default={})
+            edges = json_value(data, "user", "edge_follow", "edges", default=[])
             for edge in edges:
                 users.append(extract_user_short(edge["node"]))
             end_cursor = page_info.get("end_cursor")
@@ -359,7 +356,9 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
+    def user_following(
+        self, user_id: int, use_cache: bool = True, amount: int = 0
+    ) -> Dict[int, User]:
         """
         Get user's followers information
 
@@ -387,9 +386,7 @@ class UserMixin:
             #         self.logger.exception(e)
             #     users = self.user_following_v1(user_id, amount)
             users = self.user_following_v1(user_id, amount)
-            self._users_following[user_id] = {
-                user.pk: user for user in users
-            }
+            self._users_following[user_id] = {user.pk: user for user in users}
         return self._users_following[user_id]
 
     def user_followers_v1(self, user_id: int, amount: int = 0) -> List[User]:
@@ -423,7 +420,9 @@ class UserMixin:
                 break
         return users
 
-    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
+    def user_followers(
+        self, user_id: int, use_cache: bool = True, amount: int = 0
+    ) -> Dict[int, User]:
         """
         Get user's followers
 
@@ -444,9 +443,7 @@ class UserMixin:
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_followers:
             users = self.user_followers_v1(user_id, amount)
-            self._users_followers[user_id] = {
-                user.pk: user for user in users
-            }
+            self._users_followers[user_id] = {user.pk: user for user in users}
         return self._users_followers[user_id]
 
     def user_follow(self, user_id: int) -> bool:
