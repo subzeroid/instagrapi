@@ -453,7 +453,8 @@ class ClientCommentTestCase(ClientPrivateTestCase):
         }.items():
             self.assertEqual(comment[key], val)
         self.assertIn("pk", comment)
-        self.assertTrue(comment["created_at_utc"] >= now)
+        # The comment was written no more than 20 seconds ago
+        self.assertTrue((now - comment["created_at_utc"]).seconds <= 20)
         user_fields = comment['user'].keys()
         for field in ["pk", "username", "full_name", "profile_pic_url"]:
             self.assertIn(field, user_fields)

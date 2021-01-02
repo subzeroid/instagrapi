@@ -1,6 +1,6 @@
 from typing import List
 
-from instagrapi.exceptions import ClientError, ClientLoginRequired
+from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound
 from instagrapi.extractors import (extract_hashtag_gql, extract_hashtag_v1,
                                    extract_media_gql, extract_media_v1)
 from instagrapi.types import Hashtag, Media
@@ -31,6 +31,8 @@ class HashtagMixin:
         """
         params = {"max_id": max_id} if max_id else None
         data = self.public_a1_request(f"/explore/tags/{name}/", params=params)
+        if not data.get("hashtag"):
+            raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
 
     def hashtag_info_gql(
@@ -61,6 +63,8 @@ class HashtagMixin:
         data = self.public_graphql_request(
             variables, query_hash="f92f56d47dc7a55b606908374b43a314"
         )
+        if not data.get("hashtag"):
+            raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
 
     def hashtag_info_v1(self, name: str) -> Hashtag:
@@ -117,6 +121,8 @@ class HashtagMixin:
             List of objects of Hashtag
         """
         data = self.public_a1_request(f"/explore/tags/{name}/")
+        if not data.get("hashtag"):
+            raise HashtagNotFound(name=name, **data)
         return [
             extract_hashtag_gql(item["node"])
             for item in data["hashtag"]["edge_hashtag_to_related_tags"]["edges"]

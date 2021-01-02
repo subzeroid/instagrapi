@@ -216,3 +216,16 @@ class AlbumConfigureError(PrivateError):
 
 class StoryNotFound(MediaNotFound):
     pass
+
+
+class HashtagError(PrivateError):
+    pass
+
+
+class HashtagNotFound(HashtagError):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Hashtag \"{kwargs['name']}\" not found",
+            *args, **kwargs
+        )
