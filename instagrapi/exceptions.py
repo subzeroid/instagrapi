@@ -226,6 +226,19 @@ class HashtagNotFound(HashtagError):
 
     def __init__(self, *args, **kwargs):
         super().__init__(
-            f"Hashtag \"{kwargs['name']}\" not found",
+            f"Hashtag \"{kwargs.get('name')}\" not found",
+            *args, **kwargs
+        )
+
+
+class LocationError(PrivateError):
+    pass
+
+
+class LocationNotFound(LocationError):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Location \"{kwargs.get('location_pk')}\" not found",
             *args, **kwargs
         )
