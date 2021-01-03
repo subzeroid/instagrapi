@@ -2,7 +2,8 @@ import json
 import time
 from typing import List
 
-from instagrapi.exceptions import ClientLoginRequired, LocationNotFound
+from instagrapi.exceptions import (ClientLoginRequired, ClientNotFoundError,
+                                   LocationNotFound)
 from instagrapi.extractors import extract_location
 from instagrapi.types import Location, Media
 
@@ -125,10 +126,13 @@ class LocationMixin:
         Location
             An object of Location
         """
-        data = self.public_a1_request(f"/explore/locations/{location_pk}/")
-        if not data.get("location"):
-            raise LocationNotFound(location_pk=location_pk, **data)
-        return extract_location(data["location"])
+        try:
+            data = self.public_a1_request(f"/explore/locations/{location_pk}/")
+            if not data.get("location"):
+                raise LocationNotFound(location_pk=location_pk, **data)
+            return extract_location(data["location"])
+        except ClientNotFoundError:
+            raise LocationNotFound(location_pk=location_pk)
 
     def location_info(self, location_pk: int) -> Location:
         """
