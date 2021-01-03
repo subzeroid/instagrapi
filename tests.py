@@ -227,11 +227,23 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertIn(user_id, followers)
         self.assertEqual(followers[user_id].username, "asphalt_kings_lb")
 
+    def test_user_followers_amount(self):
+        user_id = self.api.user_id_from_username("adw0rd")
+        followers = self.api.user_followers(user_id, amount=10)
+        self.assertTrue(len(followers) == 10)
+        self.assertIsInstance(list(followers.values())[0], UserShort)
+
     def test_user_following(self):
         user_id = self.api.user_id_from_username("asphalt_kings_lb")
         following = self.api.user_following(self.api.user_id)
         self.assertIn(user_id, following)
         self.assertEqual(following[user_id].username, "asphalt_kings_lb")
+
+    def test_user_following_amount(self):
+        user_id = self.api.user_id_from_username("adw0rd")
+        following = self.api.user_following(user_id, amount=10)
+        self.assertTrue(len(following) == 10)
+        self.assertIsInstance(list(following.values())[0], UserShort)
 
     def test_user_follow_unfollow(self):
         user_id = self.api.user_id_from_username("bmxtravel")

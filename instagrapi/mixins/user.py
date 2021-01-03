@@ -269,7 +269,7 @@ class UserMixin:
             self._users_cache[user_id]
         )  # return copy of cache (dict changes protection)
 
-    def user_following_gql(self, user_id: int, amount: int = 0) -> List[User]:
+    def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information
 
@@ -282,7 +282,7 @@ class UserMixin:
 
         Returns
         -------
-        List[User]
+        List[UserShort]
             List of objects of User type
         """
         user_id = int(user_id)
@@ -316,7 +316,7 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_following_v1(self, user_id: int, amount: int = 0) -> List[User]:
+    def user_following_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information
 
@@ -329,13 +329,15 @@ class UserMixin:
 
         Returns
         -------
-        List[User]
+        List[UserShort]
             List of objects of User type
         """
         user_id = int(user_id)
         max_id = ""
         users = []
         while True:
+            if amount and len(users) >= amount:
+                break
             result = self.private_request(
                 f"friendships/{user_id}/following/",
                 params={
@@ -347,7 +349,7 @@ class UserMixin:
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id or (amount and len(users) >= amount):
+            if not max_id:
                 break
         if amount:
             users = users[:amount]
@@ -355,7 +357,7 @@ class UserMixin:
 
     def user_following(
         self, user_id: int, use_cache: bool = True, amount: int = 0
-    ) -> Dict[int, User]:
+    ) -> Dict[int, UserShort]:
         """
         Get user's followers information
 
@@ -370,12 +372,13 @@ class UserMixin:
 
         Returns
         -------
-        Dict[int, User]
+        Dict[int, UserShort]
             Dict of user_id and User object
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_following:
             # Temporary: Instagram Required Login for GQL request
+            # You can inject sessionid from private to public session
             # try:
             #     users = self.user_following_gql(user_id, amount)
             # except Exception as e:
@@ -384,9 +387,12 @@ class UserMixin:
             #     users = self.user_following_v1(user_id, amount)
             users = self.user_following_v1(user_id, amount)
             self._users_following[user_id] = {user.pk: user for user in users}
-        return self._users_following[user_id]
+        following = self._users_following[user_id]
+        if amount and len(following) > amount:
+            following = dict(list(following.items())[:amount])
+        return following
 
-    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[User]:
+    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information
 
@@ -399,13 +405,15 @@ class UserMixin:
 
         Returns
         -------
-        List[User]
+        List[UserShort]
             List of objects of User type
         """
         user_id = int(user_id)
         max_id = ""
         users = []
         while True:
+            if amount and len(users) >= amount:
+                break
             result = self.private_request(
                 f"friendships/{user_id}/followers/",
                 params={"max_id": max_id, "rank_token": self.rank_token},
@@ -413,13 +421,15 @@ class UserMixin:
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id or (amount and len(users) >= amount):
+            if not max_id:
                 break
+        if amount:
+            users = users[:amount]
         return users
 
     def user_followers(
         self, user_id: int, use_cache: bool = True, amount: int = 0
-    ) -> Dict[int, User]:
+    ) -> Dict[int, UserShort]:
         """
         Get user's followers
 
@@ -434,14 +444,17 @@ class UserMixin:
 
         Returns
         -------
-        Dict[int, User]
+        Dict[int, UserShort]
             Dict of user_id and User object
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_followers:
             users = self.user_followers_v1(user_id, amount)
             self._users_followers[user_id] = {user.pk: user for user in users}
-        return self._users_followers[user_id]
+        followers = self._users_followers[user_id]
+        if amount and len(followers) > amount:
+            followers = dict(list(followers.items())[:amount])
+        return followers
 
     def user_follow(self, user_id: int) -> bool:
         """
