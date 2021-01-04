@@ -40,14 +40,14 @@ class CollectionMixin:
             next_max_id = result.get("next_max_id", "")
         return total_items
 
-    def collection_medias_by_name(self, name: str) -> List[Collection]:
+    def collection_pk_by_name(self, name: str) -> int:
         """
-        Get collections by name
+        Get collection_pk by name
 
         Parameters
         ----------
         name: str
-            Name of the media
+            Name of the collection
 
         Returns
         -------
@@ -55,15 +55,31 @@ class CollectionMixin:
             A list of objects of Collection
         """
         for item in self.collections():
-            if item.name.lower() == name.lower():
-                return self.collection_medias(item.id)
-        raise CollectionNotFound()
+            if item.name == name:
+                return item.id
+        raise CollectionNotFound(name=name)
+
+    def collection_medias_by_name(self, name: str) -> List[Collection]:
+        """
+        Get medias by collection name
+
+        Parameters
+        ----------
+        name: str
+            Name of the collection
+
+        Returns
+        -------
+        List[Collection]
+            A list of collections
+        """
+        return self.collection_medias(self.collection_pk_by_name(name))
 
     def collection_medias(
         self, collection_pk: int, amount: int = 21, last_media_pk: int = 0
     ) -> List[Media]:
         """
-        Get media in a collection by collection pk
+        Get media in a collection by collection_pk
 
         Parameters
         ----------
@@ -102,3 +118,53 @@ class CollectionMixin:
                 return total_items
             next_max_id = result.get("next_max_id", "")
         return total_items
+
+    def media_save(self, media_id: str, collection_pk: int = None, revert: bool = False) -> bool:
+        """
+        Save a media to collection
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        collection_pk: int
+            Unique identifier of a Collection
+        revert: bool, optional
+            If True then save to collection, otherwise unsave
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        data = {
+            "module_name": "feed_timeline",
+            "radio_type": "wifi-none",
+        }
+        if collection_pk:
+            data["added_collection_ids"] = f"[{int(collection_pk)}]"
+        name = "unsave" if revert else "save"
+        result = self.private_request(
+            f"media/{media_id}/{name}/", self.with_action_data(data)
+        )
+        return result["status"] == "ok"
+
+    def media_unsave(self, media_id: str, collection_pk: int = None) -> bool:
+        """
+        Unsave a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        collection_pk: int
+            Unique identifier of a Collection
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.media_save(media_id, collection_pk, revert=True)

@@ -856,12 +856,30 @@ class ClientCollectionTestCase(ClientPrivateTestCase):
             self.assertTrue(hasattr(collection, field))
 
     def test_collection_medias_by_name(self):
-        medias = self.api.collection_medias_by_name("repost")
+        medias = self.api.collection_medias_by_name("Repost")
         self.assertTrue(len(medias) > 0)
         media = medias[0]
         self.assertIsInstance(media, Media)
         for field in REQUIRED_MEDIA_FIELDS:
             self.assertTrue(hasattr(media, field))
+
+    def test_media_save_to_collection(self):
+        media_pk = self.api.media_pk_from_url(
+            "https://www.instagram.com/p/B3mr1-OlWMG/"
+        )
+        collection_pk = self.api.collection_pk_by_name("Repost")
+        # clear and check
+        self.api.media_unsave(media_pk)
+        medias = self.api.collection_medias(collection_pk)
+        self.assertNotIn(media_pk, [m.pk for m in medias])
+        # save
+        self.api.media_save(media_pk, collection_pk)
+        medias = self.api.collection_medias(collection_pk)
+        self.assertIn(media_pk, [m.pk for m in medias])
+        # unsave
+        self.api.media_unsave(media_pk, collection_pk)
+        medias = self.api.collection_medias(collection_pk)
+        self.assertNotIn(media_pk, [m.pk for m in medias])
 
 
 class ClientDirectTestCase(ClientPrivateTestCase):

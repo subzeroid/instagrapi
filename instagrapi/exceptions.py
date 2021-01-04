@@ -147,7 +147,11 @@ class CollectionError(PrivateError):
 
 
 class CollectionNotFound(CollectionError):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Collection \"{kwargs.get('name')}\" not found",
+            *args, **kwargs
+        )
 
 
 class DirectError(PrivateError):
@@ -223,7 +227,6 @@ class HashtagError(PrivateError):
 
 
 class HashtagNotFound(HashtagError):
-
     def __init__(self, *args, **kwargs):
         super().__init__(
             f"Hashtag \"{kwargs.get('name')}\" not found",
@@ -236,7 +239,6 @@ class LocationError(PrivateError):
 
 
 class LocationNotFound(LocationError):
-
     def __init__(self, *args, **kwargs):
         super().__init__(
             f"Location \"{kwargs.get('location_pk')}\" not found",
