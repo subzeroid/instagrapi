@@ -1,0 +1,20 @@
+name: "Install Dependencies"
+description: "Install Python dependencies"
+inputs:
+  requirements:
+    description: "Should requirements.txt be installed"
+    default: "false"
+    required: false
+  test-requirements:
+    description: "Should requirements-test.txt be installed"
+    default: "false"
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Python dependencies"
+      run: "$GITHUB_ACTION_PATH/action.sh"
+      shell: "bash"
+      env:
+        INSTALL_REQUIREMENTS: ${{ inputs.requirements }}
+        INSTALL_TEST_REQUIREMENTS: ${{ inputs.test-requirements }}

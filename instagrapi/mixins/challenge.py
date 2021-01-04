@@ -1,22 +1,34 @@
+import hashlib
 import json
 import time
-import hashlib
-import requests
 from datetime import datetime
+from typing import Dict
 
-from .exceptions import (
-    ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm,
-    ChallengeError, ChallengeRedirection, SubmitPhoneNumberForm
-)
+import requests
+
+from instagrapi.exceptions import (ChallengeError, ChallengeRedirection,
+                                   ChallengeRequired, RecaptchaChallengeForm,
+                                   SelectContactPointRecoveryForm,
+                                   SubmitPhoneNumberForm)
 
 CHOICE_SMS = 0
 CHOICE_EMAIL = 1
 WAIT_SECONDS = 5
 
 
-class ChallengeResolve:
-    def challenge_resolve(self, last_json):
-        """Start challenge resolve
+class ChallengeResolveMixin:
+    """
+    Helpers for resolving login challenge
+    """
+
+    def challenge_resolve(self, last_json: Dict) -> bool:
+        """
+        Start challenge resolve
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         # START GET REQUEST to challenge_url
         challenge_url = last_json["challenge"]["api_path"]
@@ -34,25 +46,46 @@ class ChallengeResolve:
             params = {}
         try:
             self._send_private_request(
-                challenge_url, None, params=params, with_signature=False,
+                challenge_url,
+                None,
+                params=params,
+                with_signature=False,
             )
         except ChallengeRequired:
             assert self.last_json["message"] == "challenge_required", self.last_json
             return self.challenge_resolve_contact_form(challenge_url)
         return self.challenge_resolve_simple(challenge_url)
 
-    def challenge_resolve_contact_form(self, challenge_url):
+    def challenge_resolve_contact_form(self, challenge_url: str) -> bool:
         """
+        Start challenge resolve
+
         Помогите нам удостовериться, что вы владеете этим аккаунтом
         > CODE
         Верна ли информация вашего профиля?
         Мы заметили подозрительные действия в вашем аккаунте.
         В целях безопасности сообщите, верна ли информация вашего профиля.
         > I AGREE
+
+        Help us make sure you own this account
+        > CODE
+        Is your profile information correct?
+        We have noticed suspicious activity on your account.
+        For security reasons, please let us know if your profile information is correct.
+        > I AGREE
+
+        Parameters
+        ----------
+        challenge_url: str
+            Challenge URL
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         result = self.last_json
         challenge_url = "https://i.instagram.com%s" % challenge_url
-        print("challenge_resolve_contact_form for %s" % challenge_url)
         enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % datetime.now().strftime("%s")
         instagram_ajax = hashlib.md5(enc_password.encode()).hexdigest()[:12]
         session = requests.Session()
@@ -133,8 +166,8 @@ class ChallengeResolve:
                 result = session.post(
                     challenge_url,
                     {
-                        "phone_number": e.challenge['fields']['phone_number'],
-                        "challenge_context": e.challenge['challenge_context']
+                        "phone_number": e.challenge["fields"]["phone_number"],
+                        "challenge_context": e.challenge["challenge_context"],
                     },
                 )
                 result = result.json()
@@ -142,7 +175,10 @@ class ChallengeResolve:
             except ChallengeRedirection:
                 return True  # instagram redirect
         assert result["challengeType"] in (
-            'VerifyEmailCodeForm', 'VerifySMSCodeForm', 'VerifySMSCodeFormForSMSCaptcha'), result
+            "VerifyEmailCodeForm",
+            "VerifySMSCodeForm",
+            "VerifySMSCodeFormForSMSCaptcha",
+        ), result
         wait_seconds = 5
         for retry_code in range(5):
             for attempt in range(1, 11):
@@ -150,23 +186,26 @@ class ChallengeResolve:
                 if code:
                     break
                 time.sleep(wait_seconds * attempt)
-            print('Enter code "%s" for %s (%d attempts, by %d seconds)' %
-                  (code, self.username, attempt, wait_seconds))
             # SEND CODE
             time.sleep(WAIT_SECONDS)
-            result = session.post(challenge_url, {
-                "security_code": code,
-                "enc_new_password1": enc_password,
-                "new_password1": "",
-                "enc_new_password2": enc_password,
-                "new_password2": "",
-            }).json()
-            result = result.get('challenge', result)
-            if 'Please check the code we sent you and try again' not in (result.get("errors") or [''])[0]:
+            result = session.post(
+                challenge_url,
+                {
+                    "security_code": code,
+                    "enc_new_password1": enc_password,
+                    "new_password1": "",
+                    "enc_new_password2": enc_password,
+                    "new_password2": "",
+                },
+            ).json()
+            result = result.get("challenge", result)
+            if (
+                "Please check the code we sent you and try again"
+                not in (result.get("errors") or [""])[0]
+            ):
                 break
         # FORM TO APPROVE CONTACT DATA
-        assert result.get(
-            "challengeType") == "ReviewContactPointChangeForm", result
+        assert result.get("challengeType") == "ReviewContactPointChangeForm", result
         details = []
         for data in result["extraData"]["content"]:
             for entry in data.get("labeled_list_entries", []):
@@ -181,8 +220,7 @@ class ChallengeResolve:
             ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
         time.sleep(WAIT_SECONDS)
         result = session.post(
-            "https://i.instagram.com%s" % result.get(
-                "navigation").get("forward"),
+            "https://i.instagram.com%s" % result.get("navigation").get("forward"),
             {
                 "choice": 0,  # I AGREE
                 "enc_new_password1": enc_password,
@@ -195,13 +233,29 @@ class ChallengeResolve:
         assert result.get("status") == "ok", result
         return True
 
-    def handle_challenge_result(self, challenge):
+    def handle_challenge_result(self, challenge: Dict):
+        """
+        Handle challenge result
+
+        Parameters
+        ----------
+        challenge: Dict
+            Dict
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
         messages = []
         if "challenge" in challenge:
             """
             Иногда в JSON есть вложенность,
             вместо {challege_object}
             приходит {"challenge": {challenge_object}}
+            Sometimes there is nesting in JSON,
+            instead of {challege_object}
+            comes {"challenge": {challenge_object}}
             """
             challenge = challenge["challenge"]
         challenge_type = challenge.get("challengeType")
@@ -244,7 +298,8 @@ class ChallengeResolve:
                 for error in challenge["errors"]:
                     messages.append(error)
             raise SelectContactPointRecoveryForm(
-                " ".join(messages), challenge=challenge)
+                " ".join(messages), challenge=challenge
+            )
         elif challenge_type == "RecaptchaChallengeForm":
             """
             Example:
@@ -264,12 +319,11 @@ class ChallengeResolve:
             'type': 'CHALLENGE'},
             'status': 'fail'}
             """
-            raise RecaptchaChallengeForm(
-                ". ".join(challenge.get("errors", [])))
-        elif challenge_type in ('VerifyEmailCodeForm', 'VerifySMSCodeForm'):
+            raise RecaptchaChallengeForm(". ".join(challenge.get("errors", [])))
+        elif challenge_type in ("VerifyEmailCodeForm", "VerifySMSCodeForm"):
             # Success. Next step
             return challenge
-        elif challenge_type == 'SubmitPhoneNumberForm':
+        elif challenge_type == "SubmitPhoneNumberForm":
             raise SubmitPhoneNumberForm(challenge=challenge)
         elif challenge_type:
             # Unknown challenge_type
@@ -288,12 +342,22 @@ class ChallengeResolve:
             raise ChallengeRedirection()
         return challenge
 
-    def challenge_resolve_simple(self, challenge_url):
-        """Old type (through private api) challenge resolver
+    def challenge_resolve_simple(self, challenge_url: str) -> bool:
+        """
+        Old type (through private api) challenge resolver
         Помогите нам удостовериться, что вы владеете этим аккаунтом
+
+        Parameters
+        ----------
+        challenge_url : str
+            Challenge URL
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         step_name = self.last_json.get("step_name", "")
-        print("challenge_resolve_simple for %s" % challenge_url)
         if step_name == "delta_login_review":
             # IT WAS ME (by GEO)
             self._send_private_request(challenge_url, {"choice": "0"})
@@ -315,13 +379,9 @@ class ChallengeResolve:
                 """
                 steps = self.last_json["step_data"].keys()
                 if "email" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": CHOICE_EMAIL}
-                    )
+                    self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
                 elif "phone_number" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": CHOICE_SMS}
-                    )
+                    self._send_private_request(challenge_url, {"choice": CHOICE_SMS})
                 else:
                     raise ChallengeError(
                         'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'

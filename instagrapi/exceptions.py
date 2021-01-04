@@ -55,8 +55,7 @@ class ClientIncompleteReadError(ClientError):
 
 
 class ClientLoginRequired(ClientError):
-    """Instagram redirect to https://www.instagram.com/accounts/login/
-    """
+    """Instagram redirect to https://www.instagram.com/accounts/login/"""
 
 
 class ReloginAttemptExceeded(ClientError):
@@ -64,8 +63,7 @@ class ReloginAttemptExceeded(ClientError):
 
 
 class PrivateError(ClientError):
-    """For Private API and last_json logic
-    """
+    """For Private API and last_json logic"""
 
 
 class FeedbackRequired(PrivateError):
@@ -149,7 +147,11 @@ class CollectionError(PrivateError):
 
 
 class CollectionNotFound(CollectionError):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Collection \"{kwargs.get('name')}\" not found",
+            *args, **kwargs
+        )
 
 
 class DirectError(PrivateError):
@@ -214,3 +216,31 @@ class AlbumUnknownFormat(PrivateError):
 
 class AlbumConfigureError(PrivateError):
     pass
+
+
+class StoryNotFound(MediaNotFound):
+    pass
+
+
+class HashtagError(PrivateError):
+    pass
+
+
+class HashtagNotFound(HashtagError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Hashtag \"{kwargs.get('name')}\" not found",
+            *args, **kwargs
+        )
+
+
+class LocationError(PrivateError):
+    pass
+
+
+class LocationNotFound(LocationError):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            f"Location \"{kwargs.get('location_pk')}\" not found",
+            *args, **kwargs
+        )

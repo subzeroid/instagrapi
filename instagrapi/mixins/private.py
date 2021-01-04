@@ -1,35 +1,41 @@
-import time
-import json
-import random
-import logging
 import hashlib
-import requests
+import json
+import logging
+import random
+import time
 from json.decoder import JSONDecodeError
 
-from . import config
-from .utils import generate_signature
-from .exceptions import (
-    ClientError,
-    ClientConnectionError,
-    ClientNotFoundError,
-    ClientJSONDecodeError,
-    ClientForbiddenError,
-    ClientBadRequestError,
-    ClientThrottledError,
-    ClientRequestTimeout,
-    FeedbackRequired,
-    ChallengeRequired,
-    LoginRequired,
-    SentryBlock,
-    RateLimitError,
-    BadPassword,
-    PleaseWaitFewMinutes,
-    VideoTooLongException,
-    UnknownError,
-)
+import requests
+
+from instagrapi import config
+from instagrapi.exceptions import (BadPassword, ChallengeRequired,
+                                   ClientBadRequestError,
+                                   ClientConnectionError, ClientError,
+                                   ClientForbiddenError, ClientJSONDecodeError,
+                                   ClientNotFoundError, ClientRequestTimeout,
+                                   ClientThrottledError, FeedbackRequired,
+                                   LoginRequired, PleaseWaitFewMinutes,
+                                   RateLimitError, SentryBlock, UnknownError,
+                                   VideoTooLongException)
+from instagrapi.utils import generate_signature
 
 
-def manual_input_code(self, username, choice=None):
+def manual_input_code(self, username: str, choice=None):
+    """
+    Manual security code helper
+
+    Parameters
+    ----------
+    username: str
+        User name of a Instagram account
+    choice: optional
+        Whether sms or email
+
+    Returns
+    -------
+    str
+        Code
+    """
     code = None
     choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
@@ -39,11 +45,15 @@ def manual_input_code(self, username, choice=None):
     return code  # is not int, because it can start from 0
 
 
-class PrivateRequest:
+class PrivateRequestMixin:
+    """
+    Helpers for private request
+    """
+    private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")
-    request_timeout = 3
+    request_timeout = 1
     last_response = None
     last_json = {}
 
@@ -56,9 +66,23 @@ class PrivateRequest:
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
+        """
+        Small Delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.75, 3.75))
 
     def very_small_delay(self):
+        """
+        Very small delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.175, 0.875))
 
     @property
@@ -297,6 +321,7 @@ class PrivateRequest:
             extra_sig=extra_sig,
         )
         try:
+            self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
             print('Wait 60 seconds and try one more time (ClientRequestTimeout)')

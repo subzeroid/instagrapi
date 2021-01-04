@@ -3,10 +3,10 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 7 December 2020 (last reverse-engineering check)
+Instagram API valid for 4 January 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
-![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [Discord](https://discord.gg/VcpmEs2Qdm)
+![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
 
 ### Authors
 
@@ -14,26 +14,23 @@ Instagram API valid for 7 December 2020 (last reverse-engineering check)
 
 ### Features
 
-1. Performs public (`_gql` or `_a1` suffix methods) or private/auth (`_v1` suffix methods) requests depending on the situation (to avoid Instagram limits)
+1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
 3. Support upload a Photo, Video, IGTV, Albums and Stories
-4. Support work with User, Media, Insights, Collections and Direct objects
-5. Insights by posts and stories
-6. Build stories with custom background and font animation
+4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
+5. Like, Follow, Edit account (Bio) and much more else
+6. Insights by account, posts and stories
+7. Build stories with custom background, font animation, swipe up link and mention users
+8. In the next release, account registration and captcha passing will appear
 
 ### Install
 
     pip install instagrapi
 
-### Tests
-
-    python -m unittest tests
-    python -m unittest tests.ClientPublicTestCase
-
 ### Requests
 
-* `Public` (anonymous) methods had suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
-* `Private` (authorized request) methods have `_v1` suffix
+* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Private` (authorized request via mobile api) methods have `_v1` suffix
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 Example (pseudo-code):
@@ -74,11 +71,13 @@ The current types are in [types.py](/instagrapi/types.py):
 | UserShort      | Short public user data (used in Usertag, Comment, Media, Direct)                       |
 | Usertag        | Tag user in Media (coordinates + UserShort)                                            |
 | Location       | GEO location (GEO coordinates, name, address)                                          |
-| Hashtag        | Hashtag object (id, name, picture)
+| Hashtag        | Hashtag object (id, name, picture)                                                     |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
+| Story          | Story                                                                                  |
+| StoryLink      | Link (Swipe up)                                                                        |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
-| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinates |
+| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
 | DirectThread   | Thread (topic) with messages in Direct                                                 |
 | DirectMessage  | Message in Direct                                                                      |
 
@@ -110,7 +109,7 @@ Example:
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
-# cl.set_proxy("http://127.0.0.1:8080")
+# cl.set_proxy("http://username:password@127.0.0.1:8080")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
@@ -164,13 +163,12 @@ Viewing and editing publications (medias)
 | media_pk(media_id: str)                            | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
 | media_pk_from_code(code: str)                      | int                | Return media_pk                                               |
 | media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
+| user_medias(user_id: int, amount: int = 20)        | List\[Media]       | Get list of medias by user_id                                |
 | media_info(media_pk: int)                          | Media              | Return media info                                             |
 | media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media           |
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
 | media_user(media_pk: int)                          | User               | Get user info for media                                       |
 | media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
-| media_comment(media_id: str, message: str)         | bool               | Write message to media                                        |
-| media_comments(media_id: str)                      | List\[Comment]     | Get all comments                                              |
 | media_like(media_id: str)                          | bool               | Like media                                                    |
 | media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
 
@@ -246,23 +244,47 @@ Example:
 
 ```
 
+#### Media Type
+
+* 1 - Photo
+* 2 - Video (and ITGV when product_type=igtv)
+* 8 - Album
+
+#### Story
+
+| Method                                             | Return      | Description                                                   |
+| -------------------------------------------------- | ----------- | ------------------------------------------------------------- |
+| user_stories(user_id: int, amount: int = None)     | List[Story] | Get list of stories by user_id                                |
+| story_info(story_pk: int, use_cache: bool = True)  | Story       | Return story info                                             |
+| story_delete(story_pk: int)                        | bool        | Delete story                                                  |       
+
+
+#### Comment
+
+| Method                                             | Return             | Description                                                   |
+| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
+| media_comment(media_id: str, message: str)         | bool               | Add new comment to media                                      |
+| media_comments(media_id: str)                      | List\[Comment]     | Get all comments for media                                    |
+| comment_like(comment_pk: int)                      | bool               | Like comment                                                  |
+| comment_unlike(comment_pk: int)                    | bool               | Unlike comment                                                |
+
+
 #### User
 
 View a list of a user's medias, following and followers
 
 * `user_id` - Integer ID of user, example `1903424587`
 
-| Method                                             | Return              | Description                                      |
-| -------------------------------------------------- | ------------------- | ------------------------------------------------ |
-| user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
-| user_followers(user_id: int)                       | Dict\[int, User]    | Get dict of followers users                      |
-| user_following(user_id: int)                       | Dict\[int, User]    | Get dict of following users                      |
-| user_info(user_id: int)                            | User                | Get user info                                    |
-| user_info_by_username(username: str)               | User                | Get user info by username                        |
-| user_follow(user_id: int)                          | bool                | Follow user                                      |
-| user_unfollow(user_id: int)                        | bool                | Unfollow user                                    |
-| user_id_from_username(username: str)               | int                 | Get user_id by username                          |
-| username_from_user_id(user_id: int)                | str                 | Get username by user_id                          |
+| Method                                             | Return              | Description                                                        |
+| -------------------------------------------------- | ------------------- | ------------------------------------------------------------------ |
+| user_followers(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of followers users (amount=0 - fetch all followers)       |
+| user_following(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of following users (amount=0 - fetch all following users) |
+| user_info(user_id: int)                            | User                | Get user info                                                      |
+| user_info_by_username(username: str)               | User                | Get user info by username                                          |
+| user_follow(user_id: int)                          | bool                | Follow user                                                        |
+| user_unfollow(user_id: int)                        | bool                | Unfollow user                                                      |
+| user_id_from_username(username: str)               | int                 | Get user_id by username                                            |
+| username_from_user_id(user_id: int)                | str                 | Get username by user_id                                            |
 
 Example:
 
@@ -272,12 +294,12 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 
 >>> cl.user_following(cl.user_id)
 {
-  8530598273: UserShort(
-    pk=8530598273,
-    username="dhbastards",
-    full_name="The Best DH Skaters Ever",
+  8530498223: UserShort(
+    pk=8530498223,
+    username="something",
+    full_name="Example description",
     profile_pic_url=HttpUrl(
-      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9318717440_n.jpg',
+      'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg',
       scheme='https',
       host='instagram.frix7-1.fna.fbcdn.net',
       ...
@@ -307,7 +329,7 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  'media_count': 102,
  'follower_count': 576,
  'following_count': 538,
- 'biography': 'Engineer: Python, JavaScript, Erlang\n@dhbastards \n@bestskatetrick \n@best_drift_daily \n@best_rally_mag \n@asphalt_kings_lb \n@surferyone \n@bmxtravel',
+ 'biography': 'Engineer: Python, JavaScript, Erlang',
  'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
  'is_business': False}
  
@@ -407,14 +429,23 @@ cl.video_upload_to_story(
 )
 ```
 
+Result:
+
+![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
+
+More stories here https://www.instagram.com/surferyone/
+
 
 #### Collections
 
-| Method                                                       | Return             | Description                                                   |
-| ------------------------------------------------------------ | ------------------ | ------------------------------------------------------------- |
-| collections()                                                | List\[Collection]  | Get all account collections                                   |
-| collection_medias_by_name(name)                              | List\[Media]       | Get medias in collection by name                              |
-| collection_medias(collection_id, amount=21, last_media_pk=0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor |
+| Method                                                                          | Return             | Description                                      |
+| ------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------ |
+| collections()                                                                   | List\[Collection]  | Get all account collections
+| collection_pk_by_name(name: str)                                                | int                | Get collection_pk by name
+| collection_medias_by_name(name: str)                                            | List\[Media]       | Get medias in collection by name
+| collection_medias(collection_pk: int, amount: int = 21, last_media_pk: int = 0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor
+| media_save(media_id: str, collection_pk: int = None)                            | bool               | Save media to collection
+| media_unsave(media_id: str, collection_pk: int = None)                          | bool               | Unsave media from collection
 
 
 #### Insights
@@ -443,12 +474,14 @@ Get statistics by medias. Common arguments:
 
 #### Location
 
-| Method                                    | Return         | Description                                                             |
-| ----------------------------------------- | -------------- | ----------------------------------------------------------------------- |
-| location_search(lat: float, lng: float)   | List[Location] | Search Location by GEO coordinates
-| location_complete(location: Location)     | Location       | Complete blank fields
-| location_build(location: Location)        | String         | Serialized JSON
-| location_info(location_pk: int)           | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
+| Method                                                     | Return         | Description                                                             |
+| ---------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| location_search(lat: float, lng: float)                    | List[Location] | Search Location by GEO coordinates
+| location_complete(location: Location)                      | Location       | Complete blank fields
+| location_build(location: Location)                         | String         | Serialized JSON
+| location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
+| location_medias_top(location_pk: int, amount: int = 9)     | List[Media]    | Return Top posts by Location
+| location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
 
 #### Hashtag
 
@@ -571,3 +604,22 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | AlbumNotDownload         | PrivateError | Raise when album not found                     |
 | AlbumUnknownFormat       | PrivateError | Raise when format of media not MP4 or JPG      |
 | AlbumConfigureError      | PrivateError | Raise when album not configured                |
+
+## Contribute
+
+First, please [install docker](https://docs.docker.com/install/) on your computer.
+Docker must be running correctly for these commands to work.
+
+*If you are using windows, please make sure your editor writes files with linefeed (`\n`) line endings.*
+
+Once you have cloned this repo, run the test suite to see if docker is set up correctly:
+
+```bash
+docker-compose run --rm test
+```
+
+You can also run just the lint using:
+
+```bash
+docker-compose run --rm lint
+```

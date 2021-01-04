@@ -1,55 +1,56 @@
 import logging
 from urllib.parse import urlparse
 
-from .auth import Login
-from .public import (
-    PublicRequest,
-    TopSearchesPublic,
-    ProfilePublic,
-)
-from .private import PrivateRequest
-from .challenge import ChallengeResolve
-from .photo import DownloadPhoto, UploadPhoto
-from .video import DownloadVideo, UploadVideo
-from .album import DownloadAlbum, UploadAlbum
-from .igtv import DownloadIGTV, UploadIGTV
-from .media import Media
-from .user import User
-from .insights import Insights
-from .collection import Collection
-from .account import Account
-from .direct import Direct
-from .location import LocationMixin
-from .signup import SignUpMixin
-from .hashtag import HashtagMixin
-from .password import PasswordMixin
+from instagrapi.mixins.account import AccountMixin
+from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
+from instagrapi.mixins.auth import LoginMixin
+from instagrapi.mixins.challenge import ChallengeResolveMixin
+from instagrapi.mixins.collection import CollectionMixin
+from instagrapi.mixins.comment import CommentMixin
+from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.hashtag import HashtagMixin
+from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
+from instagrapi.mixins.insights import InsightsMixin
+from instagrapi.mixins.location import LocationMixin
+from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.password import PasswordMixin
+from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
+from instagrapi.mixins.private import PrivateRequestMixin
+from instagrapi.mixins.public import (ProfilePublicMixin, PublicRequestMixin,
+                                      TopSearchesPublicMixin)
+from instagrapi.mixins.signup import SignUpMixin
+from instagrapi.mixins.story import StoryMixin
+from instagrapi.mixins.user import UserMixin
+from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
 
 class Client(
-    PublicRequest,
-    ChallengeResolve,
-    PrivateRequest,
-    TopSearchesPublic,
-    ProfilePublic,
-    Login,
-    DownloadPhoto,
-    UploadPhoto,
-    DownloadVideo,
-    UploadVideo,
-    DownloadAlbum,
-    UploadAlbum,
-    DownloadIGTV,
-    UploadIGTV,
-    Media,
-    User,
-    Insights,
-    Collection,
-    Account,
-    Direct,
+    PublicRequestMixin,
+    ChallengeResolveMixin,
+    PrivateRequestMixin,
+    TopSearchesPublicMixin,
+    ProfilePublicMixin,
+    LoginMixin,
+    DownloadPhotoMixin,
+    UploadPhotoMixin,
+    DownloadVideoMixin,
+    UploadVideoMixin,
+    DownloadAlbumMixin,
+    UploadAlbumMixin,
+    DownloadIGTVMixin,
+    UploadIGTVMixin,
+    MediaMixin,
+    UserMixin,
+    InsightsMixin,
+    CollectionMixin,
+    AccountMixin,
+    DirectMixin,
     LocationMixin,
-    SignUpMixin,
     HashtagMixin,
-    PasswordMixin
+    CommentMixin,
+    StoryMixin,
+    PasswordMixin,
+    SignUpMixin,
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")
@@ -62,8 +63,9 @@ class Client(
 
     def set_proxy(self, dsn: str):
         if dsn:
-            assert isinstance(dsn, str),\
-                f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
+            assert isinstance(
+                dsn, str
+            ), f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
             self.proxy = dsn
             proxy_href = "{scheme}{href}".format(
                 scheme="http://" if not urlparse(self.proxy).scheme else "",

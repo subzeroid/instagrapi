@@ -1,27 +1,22 @@
 import json
-import time
-import requests
 import logging
+import time
 from json.decoder import JSONDecodeError
 
-from .utils import json_value
-from .exceptions import (
-    ClientError,
-    ClientConnectionError,
-    ClientNotFoundError,
-    ClientJSONDecodeError,
-    ClientForbiddenError,
-    ClientBadRequestError,
-    ClientGraphqlError,
-    ClientThrottledError,
-    ClientIncompleteReadError,
-    ClientLoginRequired,
-    GenericRequestError,
-)
+import requests
+
+from instagrapi.exceptions import (ClientBadRequestError,
+                                   ClientConnectionError, ClientError,
+                                   ClientForbiddenError, ClientGraphqlError,
+                                   ClientIncompleteReadError,
+                                   ClientJSONDecodeError, ClientLoginRequired,
+                                   ClientNotFoundError, ClientThrottledError,
+                                   GenericRequestError)
+from instagrapi.utils import json_value
 
 
-class PublicRequest:
-    requests_count = 0
+class PublicRequestMixin:
+    public_requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     request_logger = logging.getLogger("public_request")
@@ -38,8 +33,7 @@ class PublicRequest:
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             }
         )
-        self.request_timeout = kwargs.pop(
-            "request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
 
     def public_request(
@@ -53,7 +47,10 @@ class PublicRequest:
         retries_timeout=10,
     ):
         kwargs = dict(
-            data=data, params=params, headers=headers, return_json=return_json,
+            data=data,
+            params=params,
+            headers=headers,
+            return_json=return_json,
         )
         assert retries_count <= 10, "Retries count is too high"
         assert retries_timeout <= 600, "Retries timeout is too high"
@@ -85,7 +82,7 @@ class PublicRequest:
     def _send_public_request(
         self, url, data=None, params=None, headers=None, return_json=False
     ):
-        self.requests_count += 1
+        self.public_requests_count += 1
         if headers:
             self.public.headers.update(headers)
         if self.request_timeout:
@@ -151,8 +148,7 @@ class PublicRequest:
             raise ClientError(e, response=e.response)
 
         except requests.ConnectionError as e:
-            raise ClientConnectionError(
-                "{} {}".format(e.__class__.__name__, str(e)))
+            raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
@@ -170,8 +166,7 @@ class PublicRequest:
             error_type = response.get("error_type")
             if error_type == "generic_request_error":
                 raise GenericRequestError(
-                    json_value(response, "errors", "error",
-                               0, default=error_type),
+                    json_value(response, "errors", "error", 0, default=error_type),
                     **response
                 )
             raise e
@@ -186,8 +181,7 @@ class PublicRequest:
         headers=None,
     ):
         assert query_id or query_hash, "Must provide valid one of: query_id, query_hash"
-        default_params = {"variables": json.dumps(
-            variables, separators=(",", ":"))}
+        default_params = {"variables": json.dumps(variables, separators=(",", ":"))}
         if query_id:
             default_params["query_id"] = query_id
 
@@ -211,8 +205,7 @@ class PublicRequest:
             if body_json.get("status", None) != "ok":
                 raise ClientGraphqlError(
                     "Unexpected status '{}' in response. Message: '{}'".format(
-                        body_json.get("status", None), body_json.get(
-                            "message", None)
+                        body_json.get("status", None), body_json.get("message", None)
                     ),
                     response=body_json,
                 )
@@ -226,41 +219,35 @@ class PublicRequest:
                 message = body_json.get("message", None)
             except JSONDecodeError:
                 pass
-
             raise ClientGraphqlError(
                 "Error: '{}'. Message: '{}'".format(e, message), response=e.response
             )
 
 
-class TopSearchesPublic:
+class TopSearchesPublicMixin:
     def top_search(self, query):
-        """Anonymous IG search request
-        """
+        """Anonymous IG search request"""
         url = "https://www.instagram.com/web/search/topsearch/"
-
         params = {
             "context": "blended",
             "query": query,
             "rank_token": 0.7763938004511706,
             "include_reel": "true",
         }
-
         response = self.public_request(url, params=params, return_json=True)
         return response
 
 
-class ProfilePublic:
+class ProfilePublicMixin:
     def location_feed(self, location_id, count=16, end_cursor=None):
         if count > 50:
             raise ValueError("Count cannot be greater than 50")
-
         variables = {
             "id": location_id,
             "first": int(count),
         }
         if end_cursor:
             variables["after"] = end_cursor
-
         data = self.public_graphql_request(
             variables, query_hash="1b84447a4d8b6d6d0426fefb34514485"
         )
@@ -276,7 +263,6 @@ class ProfilePublic:
             "include_highlight_reels": True,
             "include_related_profiles": True,
         }
-
         data = self.public_graphql_request(
             variables, query_hash="e74d51c10ecc0fe6250a295b9bb9db74"
         )

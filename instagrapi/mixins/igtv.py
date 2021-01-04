@@ -1,27 +1,71 @@
 import json
-import time
 import random
+import time
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 from uuid import uuid4
-from PIL import Image
-import moviepy.editor as mp
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import ClientError, IGTVNotUpload, IGTVConfigureError
-from .types import Usertag, Location, Media
+from instagrapi import config
+from instagrapi.exceptions import (ClientError, IGTVConfigureError,
+                                   IGTVNotUpload)
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import Location, Media, Usertag
+
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
-class DownloadIGTV:
+class DownloadIGTVMixin:
+    """
+    Helpers to download IGTV videos
+    """
+
     def igtv_download(self, media_pk: int, folder: Path = "") -> str:
+        """
+        Download IGTV video
+
+        Parameters
+        ----------
+        media_pk: int
+            PK for the album you want to download
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        str
+        """
         return self.video_download(media_pk, folder)
 
-    def igtv_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
+    def igtv_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> str:
+        """
+        Download IGTV video using URL
+
+        Parameters
+        ----------
+        url: str
+            URL to download media from
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory.
+
+        Returns
+        -------
+        str
+        """
         return self.video_download_by_url(url, filename, folder)
 
 
-class UploadIGTV:
+class UploadIGTVMixin:
+    """
+    Helpers to upload IGTV videos
+    """
+
     def igtv_upload(
         self,
         path: Path,
@@ -32,18 +76,30 @@ class UploadIGTV:
         location: Location = None,
         configure_timeout: int = 10,
     ) -> Media:
-        """Upload IGTV to Instagram
+        """
+        Upload IGTV to Instagram
 
-        :param path:              Path to IGTV file
-        :param title:             Media title (String)
-        :param caption:           Media description (String)
-        :param thumbnail:         Path to thumbnail for IGTV. When None, then
-                                  thumbnail is generate automatically
-        :param usertags:          Mentioned users (List)
-        :param location:          Location
-        :param configure_timeout: Timeout between attempt to configure media (set caption and title)
+        Parameters
+        ----------
+        path: Path
+            Path to IGTV file
+        title: str
+            Title of the video
+        caption: str
+            Media caption
+        thumbnail: Path, optional
+            Path to thumbnail for IGTV. Default value is None, and it generates a thumbnail
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is none
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 10
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         path = Path(path)
         if thumbnail is not None:
@@ -78,7 +134,8 @@ class UploadIGTV:
         response = self.private.get(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
-            ), headers=headers
+            ),
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -91,13 +148,14 @@ class UploadIGTV:
             "X-Entity-Length": igtv_len,
             "Content-Type": "application/octet-stream",
             "Content-Length": igtv_len,
-            **headers
+            **headers,
         }
         response = self.private.post(
             "https://{domain}/rupload_igvideo/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=igtv_data, headers=headers
+            data=igtv_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -109,7 +167,15 @@ class UploadIGTV:
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(
-                    upload_id, thumbnail, width, height, duration, title, caption, usertags, location
+                    upload_id,
+                    thumbnail,
+                    width,
+                    height,
+                    duration,
+                    title,
+                    caption,
+                    usertags,
+                    location,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -137,23 +203,40 @@ class UploadIGTV:
         title: str,
         caption: str,
         usertags: List[Usertag] = [],
-        location: Location = None
-    ) -> dict:
-        """Post Configure IGTV (send caption, thumbnail and more to Instagram)
+        location: Location = None,
+    ) -> Dict:
+        """
+        Post Configure IGTV (send caption, thumbnail and more to Instagram)
 
-        :param upload_id:  Unique upload_id (String)
-        :param thumbnail:  Path to thumbnail for IGTV
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param duration:   Duration in seconds (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location
+        Parameters
+        ----------
+        upload_id: str
+            Unique identifier for a IGTV video
+        thumbnail: Path
+            Path to thumbnail for IGTV
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        duration: int
+            Duration of the video in seconds
+        title: str
+            Title of the video
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "igtv_ads_toggled_on": "0",
@@ -184,8 +267,26 @@ class UploadIGTV:
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
-    """Analyze and crop thumbnail if need
     """
+    Analyze and crop thumbnail if need
+
+    Parameters
+    ----------
+    path: Path
+        Path to the video
+    thumbnail: Path
+        Path to thumbnail for IGTV
+
+    Returns
+    -------
+    Tuple
+        A tuple with (thumbail path, width, height, duration)
+    """
+    try:
+        import moviepy.editor as mp
+    except ImportError:
+        raise Exception("Please install moviepy>=1.0.3 and retry")
+
     print(f'Analizing IGTV file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size
@@ -198,7 +299,18 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
 
 
 def crop_thumbnail(path: Path) -> bool:
-    """Crop IGTV thumbnail with save height
+    """
+    Analyze and crop thumbnail if need
+
+    Parameters
+    ----------
+    path: Path
+        Path to the video
+
+    Returns
+    -------
+    bool
+        A boolean value
     """
     im = Image.open(str(path))
     width, height = im.size

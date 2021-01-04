@@ -1,25 +1,50 @@
-import shutil
 import json
-import time
 import random
-import requests
+import shutil
+import time
 from pathlib import Path
-from typing import List
-from uuid import uuid4
-from PIL import Image
+from typing import Dict, List
 from urllib.parse import urlparse
+from uuid import uuid4
 
-from . import config
-from .extractors import extract_media_v1
-from .exceptions import (
-    PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
-)
-from .types import Usertag, Location, StoryMention, StoryLink, Media
-from .utils import dumps
+import requests
+
+from instagrapi import config
+from instagrapi.exceptions import (PhotoConfigureError,
+                                   PhotoConfigureStoryError, PhotoNotUpload)
+from instagrapi.extractors import extract_media_v1
+from instagrapi.types import (Location, Media, Story, StoryLink, StoryMention,
+                              Usertag)
+from instagrapi.utils import dumps
+
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
-class DownloadPhoto:
+class DownloadPhotoMixin:
+    """
+    Helpers for downloading photo
+    """
+
     def photo_download(self, media_pk: int, folder: Path = "") -> Path:
+        """
+        Download photo using media pk
+
+        Parameters
+        ----------
+        media_pk: int
+            Unique Media ID
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
@@ -27,10 +52,29 @@ class DownloadPhoto:
         )
         return self.photo_download_by_url(media.thumbnail_url, filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
-        fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
-                              1]) if filename else fname
+    def photo_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
+        """
+        Download photo using media pk
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+        filename: str, optional
+            Filename for the media
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -40,20 +84,29 @@ class DownloadPhoto:
         return path.resolve()
 
 
-class UploadPhoto:
+class UploadPhotoMixin:
+    """
+    Helpers for downloading photo
+    """
+
     def photo_rupload(
-        self,
-        path: Path,
-        upload_id: str = "",
-        to_album: bool = False
+        self, path: Path, upload_id: str = "", to_album: bool = False
     ) -> tuple:
-        """Upload photo to Instagram
+        """
+        Upload photo to Instagram
 
-        :param path:         Path to photo file
-        :param upload_id:    Unique upload_id (String). When None, then generate
-                             automatically. Example from video.video_configure
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        to_album: bool, optional
 
-        :return: Tuple (upload_id, width, height)
+        Returns
+        -------
+        tuple
+            (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = upload_id or str(int(time.time() * 1000))
@@ -91,7 +144,8 @@ class UploadPhoto:
             "https://{domain}/rupload_igphoto/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=photo_data, headers=headers
+            data=photo_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -113,34 +167,51 @@ class UploadPhoto:
         links: List[StoryLink] = [],
         configure_timeout: int = 3,
         configure_handler=None,
-        configure_exception=None
+        configure_exception=None,
     ) -> Media:
-        """Upload photo and configure to feed
+        """
+        Upload photo and configure to feed
 
-        :param path:                Path to photo file
-        :param caption:             Media description (String)
-        :param upload_id:           Unique upload_id (String). When None, then generate
-                                        automatically. Example from video.video_configure
-        :param usertags:            Mentioned users (List)
-        :param location:            Location
-        :param links:               URLs for Swipe Up (List of dicts)
-        :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
-        :param configure_handler:   Configure handler method
-        :param configure_exception: Configure exception class
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 3
+        configure_handler
+            Configure handler method, default is None
+        configure_exception
+            Configure exception class, default is None
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         path = Path(path)
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
+            if (configure_handler or self.photo_configure)(
+                upload_id, width, height, caption, usertags, location, links
+            ):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
         raise (configure_exception or PhotoConfigureError)(
-            response=self.last_response, **self.last_json)
+            response=self.last_response, **self.last_json
+        )
 
     def photo_configure(
         self,
@@ -150,23 +221,35 @@ class UploadPhoto:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = []
-    ) -> dict:
-        """Post Configure Photo (send caption to Instagram)
+        links: List[StoryLink] = [],
+    ) -> Dict:
+        """
+        Post Configure Photo (send caption to Instagram)
 
-        :param upload_id:  Unique upload_id (String)
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "timezone_offset": "10800",
@@ -195,27 +278,42 @@ class UploadPhoto:
         upload_id: str = "",
         mentions: List[StoryMention] = [],
         links: List[StoryLink] = [],
-        configure_timeout: int = 3
-    ) -> Media:
-        """Upload photo and configure to story
-
-        :param path:                Path to photo file
-        :param caption:             Media description (String)
-        :param upload_id:           Unique upload_id (String). When None, then generate
-                                        automatically. Example from video.video_configure
-        :param mentions:            Mentioned users (List)
-        :param links:               URLs for Swipe Up (List of dicts)
-        :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
-
-        :return: Media
+        configure_timeout: int = 3,
+    ) -> Story:
         """
-        return self.photo_upload(
-            path, caption, upload_id, mentions,
+        Upload photo as a story and configure it
+
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        links: List[StoryLink]
+            URLs for Swipe Up
+        configure_timeout: int
+            Timeout between attempt to configure media (set caption, etc), default is 3
+
+        Returns
+        -------
+        Story
+            An object of Media class
+        """
+        media = self.photo_upload(
+            path,
+            caption,
+            upload_id,
+            mentions,
             links=links,
             configure_timeout=configure_timeout,
             configure_handler=self.photo_configure_to_story,
-            configure_exception=PhotoConfigureStoryError
+            configure_exception=PhotoConfigureStoryError,
         )
+        return Story(links=links, mentions=mentions, **media.dict())
 
     def photo_configure_to_story(
         self,
@@ -225,19 +323,32 @@ class UploadPhoto:
         caption: str,
         mentions: List[StoryMention] = [],
         location: Location = None,
-        links: List[StoryLink] = []
-    ) -> dict:
-        """Story Configure for Photo
+        links: List[StoryLink] = [],
+    ) -> Dict:
+        """
+        Post configure photo
 
-        :param upload_id:  Unique upload_id (String)
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Temporary unused
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        caption: str
+            Media caption
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
+        links: List[StoryLink]
+            URLs for Swipe Up
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         timestamp = int(time.time())
         data = {
@@ -261,10 +372,7 @@ class UploadPhoto:
             "client_timestamp": str(timestamp),
             "device": self.device,
             "implicit_location": {
-                "media_location": {
-                    "lat": 44.64972222222222,
-                    "lng": 33.541666666666664
-                }
+                "media_location": {"lat": 44.64972222222222, "lng": 33.541666666666664}
             },
             "edits": {
                 "crop_original_size": [width * 1.0, height * 1.0],
@@ -279,11 +387,20 @@ class UploadPhoto:
         if mentions:
             mentions = [
                 {
-                    "x": 0.5002546, "y": 0.8583542, "z": 0,
-                    "width": 0.4712963, "height": 0.0703125, "rotation": 0.0,
-                    "type": "mention", "user_id": str(mention.user.pk),
-                    "is_sticker": False, "display_type": "mention_username"
-                } for mention in mentions
+                    "x": 0.5002546,
+                    "y": 0.8583542,
+                    "z": 0,
+                    "width": 0.4712963,
+                    "height": 0.0703125,
+                    "rotation": 0.0,
+                    "type": "mention",
+                    "user_id": str(mention.user.pk),
+                    "is_sticker": False,
+                    "display_type": "mention_username",
+                }
+                for mention in mentions
             ]
             data["tap_models"] = data["reel_mentions"] = json.dumps(mentions)
-        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/", self.with_default_data(data)
+        )

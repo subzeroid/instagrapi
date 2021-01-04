@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, HttpUrl, FilePath
+
+from pydantic import BaseModel, FilePath, HttpUrl
 
 
 class Resource(BaseModel):
@@ -20,7 +21,7 @@ class User(BaseModel):
     media_count: int
     follower_count: int
     following_count: int
-    biography: Optional[str] = ''
+    biography: Optional[str] = ""
     external_url: Optional[HttpUrl]
     is_business: bool
 
@@ -32,7 +33,7 @@ class Account(BaseModel):
     is_private: bool
     profile_pic_url: HttpUrl
     is_verified: bool
-    biography: Optional[str] = ''
+    biography: Optional[str] = ""
     external_url: Optional[HttpUrl]
     is_business: bool
     birthday: Optional[str]
@@ -44,7 +45,7 @@ class Account(BaseModel):
 class UserShort(BaseModel):
     pk: int
     username: Optional[str]
-    full_name: Optional[str] = ''
+    full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
     # is_private: bool
     # is_verified: bool
@@ -59,7 +60,7 @@ class Usertag(BaseModel):
 class Location(BaseModel):
     pk: Optional[int]
     name: str
-    address: Optional[str] = ''
+    address: Optional[str] = ""
     lng: Optional[float]
     lat: Optional[float]
     external_id: Optional[int]
@@ -75,18 +76,19 @@ class Media(BaseModel):
     code: str
     taken_at: datetime
     media_type: int
-    product_type: Optional[str] = ''  # only for IGTV
+    product_type: Optional[str] = ""  # igtv or feed
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
     comment_count: int
     like_count: int
+    has_liked: Optional[bool]
     caption_text: str
     usertags: List[Usertag]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
-    title: Optional[str] = ''
+    title: Optional[str] = ""
     resources: List[Resource] = []
 
 
@@ -122,6 +124,8 @@ class Comment(BaseModel):
     created_at_utc: datetime
     content_type: str
     status: str
+    has_liked: Optional[bool]
+    like_count: Optional[int]
 
 
 class StoryMention(BaseModel):
@@ -139,6 +143,21 @@ class StoryBuild(BaseModel):
 
 class StoryLink(BaseModel):
     webUri: HttpUrl
+
+
+class Story(BaseModel):
+    pk: int
+    id: str
+    code: str
+    taken_at: datetime
+    media_type: int
+    product_type: Optional[str] = ""
+    thumbnail_url: Optional[HttpUrl]
+    user: UserShort
+    video_url: Optional[HttpUrl]  # for Video and IGTV
+    video_duration: Optional[float] = 0.0  # for Video and IGTV
+    mentions: List[StoryMention]
+    links: List[StoryLink]
 
 
 class DirectMessage(BaseModel):
@@ -186,6 +205,19 @@ class DirectThread(BaseModel):
     assigned_admin_id: int
     shh_mode_enabled: bool
     last_seen_at: dict
+
+    def is_seen(self, user_id: int):
+        """Have I seen this thread?
+        :param user_id: You account user_id
+        """
+        user_id = str(user_id)
+        own_timestamp = int(self.last_seen_at[user_id]["timestamp"])
+        timestamps = [
+            (int(v["timestamp"]) - own_timestamp) > 0
+            for k, v in self.last_seen_at.items()
+            if k != user_id
+        ]
+        return not any(timestamps)
 
 
 class Hashtag(BaseModel):
