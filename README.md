@@ -3,7 +3,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 17 December 2020 (last reverse-engineering check)
+Instagram API valid for 4 January 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -438,11 +438,14 @@ More stories here https://www.instagram.com/surferyone/
 
 #### Collections
 
-| Method                                                       | Return             | Description                                                   |
-| ------------------------------------------------------------ | ------------------ | ------------------------------------------------------------- |
-| collections()                                                | List\[Collection]  | Get all account collections                                   |
-| collection_medias_by_name(name)                              | List\[Media]       | Get medias in collection by name                              |
-| collection_medias(collection_id, amount=21, last_media_pk=0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor |
+| Method                                                                          | Return             | Description                                      |
+| ------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------ |
+| collections()                                                                   | List\[Collection]  | Get all account collections
+| collection_pk_by_name(name: str)                                                | int                | Get collection_pk by name
+| collection_medias_by_name(name: str)                                            | List\[Media]       | Get medias in collection by name
+| collection_medias(collection_pk: int, amount: int = 21, last_media_pk: int = 0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor
+| media_save(media_id: str, collection_pk: int = None)                            | bool               | Save media to collection
+| media_unsave(media_id: str, collection_pk: int = None)                          | bool               | Unsave media from collection
 
 
 #### Insights
