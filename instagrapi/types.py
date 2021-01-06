@@ -151,6 +151,14 @@ class StoryHashtag(BaseModel):
     height: Optional[float]
 
 
+class StoryLocation(BaseModel):
+    location: Location
+    x: Optional[float]
+    y: Optional[float]
+    width: Optional[float]
+    height: Optional[float]
+
+
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
@@ -174,6 +182,7 @@ class Story(BaseModel):
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
+    locations: List[StoryLocation]
 
 
 class DirectMessage(BaseModel):

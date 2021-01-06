@@ -19,9 +19,10 @@ from instagrapi.types import (
     Media,
     MediaOembed,
     Story,
+    StoryLink,
+    StoryLocation,
     StoryMention,
     StoryHashtag,
-    StoryLink,
     User,
     UserShort,
     Usertag
@@ -1112,18 +1113,28 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(path, Path)
         caption = 'Test photo caption'
         adw0rd = self.api.user_info_by_username('adw0rd')
-        dhbastards = self.api.hashtag_info('dhbastards')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
-        hashtags = [StoryHashtag(hashtag=dhbastards)]
+        hashtags = [
+            StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))
+        ]
+        locations = [
+            StoryLocation(
+                location=Location(
+                    pk=150300262230285,
+                    name='Blaues Wunder (Dresden)',
+                )
+            )
+        ]
         try:
             story = self.api.photo_upload_to_story(
                 path,
                 caption,
                 mentions=mentions,
                 links=links,
-                hashtags=hashtags
+                hashtags=hashtags,
+                locations=locations,
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
@@ -1139,11 +1150,20 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(path, Path)
         caption = 'Test video caption'
         adw0rd = self.api.user_info_by_username('adw0rd')
-        dhbastards = self.api.hashtag_info('dhbastards')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
-        hashtags = [StoryHashtag(hashtag=dhbastards)]
+        hashtags = [
+            StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))
+        ]
+        locations = [
+            StoryLocation(
+                location=Location(
+                    pk=150300262230285,
+                    name='Blaues Wunder (Dresden)',
+                )
+            )
+        ]
         try:
             buildout = StoryBuilder(
                 path, caption, mentions,
@@ -1154,7 +1174,8 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 caption,
                 mentions=buildout.mentions,
                 links=links,
-                hashtags=hashtags
+                hashtags=hashtags,
+                locations=locations,
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)

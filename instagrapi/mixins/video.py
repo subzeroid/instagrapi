@@ -13,7 +13,7 @@ from instagrapi.exceptions import (VideoConfigureError,
                                    VideoNotUpload)
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryMention, Usertag)
+                              StoryLocation, StoryMention, Usertag)
 from instagrapi.utils import dumps
 
 
@@ -317,7 +317,7 @@ class UploadVideoMixin:
         caption: str,
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
-        location: Location = None,
+        locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
     ) -> Story:
@@ -334,8 +334,8 @@ class UploadVideoMixin:
             Path to thumbnail for video. When None, then thumbnail is generate automatically
         mentions: List[StoryMention], optional
             List of mentions to be tagged on this upload, default is empty list.
-        location: Location, optional
-            Location tag for this upload, default is None
+        locations: List[StoryLocation], optional
+            List of locations to be tagged on this upload, default is empty list.
         links: List[StoryLink]
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
@@ -364,7 +364,7 @@ class UploadVideoMixin:
                     thumbnail,
                     caption,
                     mentions,
-                    location,
+                    locations,
                     links,
                     hashtags,
                 )
@@ -384,6 +384,7 @@ class UploadVideoMixin:
                     links=links,
                     mentions=mentions,
                     hashtags=hashtags,
+                    locations=locations,
                     **extract_media_v1(media).dict()
                 )
         raise VideoConfigureStoryError(
@@ -399,7 +400,7 @@ class UploadVideoMixin:
         thumbnail: Path,
         caption: str,
         mentions: List[StoryMention] = [],
-        location: Location = None,
+        locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
     ) -> Dict:
@@ -422,8 +423,8 @@ class UploadVideoMixin:
             Media caption
         mentions: List[StoryMention], optional
             List of mentions to be tagged on this upload, default is empty list.
-        location: Location, optional
-            Location tag for this upload, default is None
+        locations: List[StoryLocation], optional
+            List of locations to be tagged on this upload, default is empty list.
         links: List[StoryLink]
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
@@ -435,6 +436,7 @@ class UploadVideoMixin:
             A dictionary of response from the call
         """
         timestamp = int(time.time())
+        story_sticker_ids = []
         data = {
             "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
             "has_original_sound": "1",
@@ -453,6 +455,7 @@ class UploadVideoMixin:
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
             "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
             "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
+            "story_sticker_ids": "",
             "media_folder": "Camera",
             "configure_mode": "1",
             "source_type": "4",
@@ -471,19 +474,11 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "implicit_location": {},
             "clips": [{"length": duration, "source_type": "4"}],
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 0,
         }
-        if location:
-            assert isinstance(location, Location), \
-                f'location must been Location (not {type(location)})'
-            loc = self.location_build(location)
-            data["implicit_location"] = {
-                "media_location": {"lat": loc.lat, "lng": loc.lng}
-            }
         if links:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
@@ -521,6 +516,7 @@ class UploadVideoMixin:
             data["reel_mentions"] = dumps(reel_mentions)
             tap_models.extend(reel_mentions)
         if hashtags:
+            story_sticker_ids.append("hashtag_sticker")
             for mention in hashtags:
                 item = {
                     "x": mention.x,
@@ -536,7 +532,26 @@ class UploadVideoMixin:
                     "tap_state_str_id": "hashtag_sticker_gradient"
                 }
                 tap_models.append(item)
+        if locations:
+            story_sticker_ids.append("location_sticker")
+            for mention in locations:
+                mention.location = self.location_complete(mention.location)
+                item = {
+                    "x": mention.x,
+                    "y": mention.y,
+                    "z": 0,
+                    "width": mention.width,
+                    "height": mention.height,
+                    "rotation": 0.0,
+                    "type": "location",
+                    "location_id": str(mention.location.pk),
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "location_sticker_vibrant"
+                }
+                tap_models.append(item)
         data["tap_models"] = dumps(tap_models)
+        data["story_sticker_ids"] = dumps(story_sticker_ids)
         return self.private_request(
             "media/configure_to_story/?video=1", self.with_default_data(data)
         )

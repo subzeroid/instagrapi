@@ -76,6 +76,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | Comment        | Comments to Media                                                                      |
 | Story          | Story                                                                                  |
 | StoryLink      | Link (Swipe up)                                                                        |
+| StoryLocation  | Tag Location in Story (as stocker)                                                     |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
 | StoryHashtag   | Hashtag for story (as sticker)                                                         |
 | StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
@@ -356,7 +357,7 @@ Upload medias to your feed. Common arguments:
 * `path` - Path to source file
 * `caption`  - Text for you post
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
-* `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
+* `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
 | Method                                                                                                                    | Return  | Description                        |
 | ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
@@ -373,28 +374,38 @@ Upload medias to your stories. Common arguments:
 * `caption` - Caption for story (now use to fetch mentions)
 * `thumbnail` - Thumbnail instead capture from source file
 * `mentions` - Tag profiles in story
-* `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
+* `locations` - Add locations to story
 * `links` - "Swipe Up" links (now use first)
 * `hashtags` - Add hashtags to story
 
 | Method                                                                                           | Return   | Description   |
 | ------------------------------------------------------------------------------------------------ | -------- | ------------- |
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], location: Location, links: List[StoryLink], hashtags: List[StoryHashtag])  | Media    | Upload photo (Support JPG files)
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], location: Location, links: List[StoryLink], hashtags: List[StoryHashtag])  | Media    | Upload video (Support MP4 files)
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag])  | Story  | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag]) | Story  | Upload video (Support MP4 files)
 
 Examples:
 
 ``` python
+from instagrapi import Client
+from instagrapi.types import Location, StoryMention, StoryLocation, StoryLink, StoryHashtag
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
 adw0rd = cl.user_info_by_username('adw0rd')
+loc = cl.location_complete(Location(name='Test', lat=42.0, lng=42.0))
+ht = cl.hashtag_info('dhbastards')
 
 cl.video_upload_to_story(
     media_path,
     "Credits @adw0rd",
     mentions=[StoryMention(user=adw0rd, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
-    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
+    locations=[StoryLocation(location=loc, x=0.33, y=0.22, width=0.4, height=0.7)],
+    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
+    hashtags=[StoryHashtag(hashtag=ht, x=0.23, y=0.32, width=0.5, height=0.22)],
 )
 ```
 

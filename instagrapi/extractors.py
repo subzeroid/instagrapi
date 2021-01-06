@@ -240,6 +240,7 @@ def extract_story_v1(data):
     story["mentions"] = [
         StoryMention(**mention) for mention in story.get("reel_mentions", [])
     ]
+    story["locations"] = []
     story["hashtags"] = []
     story["links"] = []
     for cta in story.get("story_cta", []):
