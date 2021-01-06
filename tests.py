@@ -20,6 +20,7 @@ from instagrapi.types import (
     MediaOembed,
     Story,
     StoryMention,
+    StoryHashtag,
     StoryLink,
     User,
     UserShort,
@@ -1111,15 +1112,18 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(path, Path)
         caption = 'Test photo caption'
         adw0rd = self.api.user_info_by_username('adw0rd')
+        dhbastards = self.api.hashtag_info('dhbastards')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
+        hashtags = [StoryHashtag(hashtag=dhbastards)]
         try:
             story = self.api.photo_upload_to_story(
                 path,
                 caption,
                 mentions=mentions,
-                links=links
+                links=links,
+                hashtags=hashtags
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
@@ -1135,9 +1139,11 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(path, Path)
         caption = 'Test video caption'
         adw0rd = self.api.user_info_by_username('adw0rd')
+        dhbastards = self.api.hashtag_info('dhbastards')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
+        hashtags = [StoryHashtag(hashtag=dhbastards)]
         try:
             buildout = StoryBuilder(
                 path, caption, mentions,
@@ -1147,7 +1153,8 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 buildout.path,
                 caption,
                 mentions=buildout.mentions,
-                links=links
+                links=links,
+                hashtags=hashtags
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)

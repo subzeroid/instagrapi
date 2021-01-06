@@ -128,8 +128,23 @@ class Comment(BaseModel):
     like_count: Optional[int]
 
 
+class Hashtag(BaseModel):
+    id: int
+    name: str
+    media_count: Optional[int]
+    profile_pic_url: Optional[HttpUrl]
+
+
 class StoryMention(BaseModel):
     user: UserShort
+    x: Optional[float]
+    y: Optional[float]
+    width: Optional[float]
+    height: Optional[float]
+
+
+class StoryHashtag(BaseModel):
+    hashtag: Hashtag
     x: Optional[float]
     y: Optional[float]
     width: Optional[float]
@@ -158,6 +173,7 @@ class Story(BaseModel):
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     mentions: List[StoryMention]
     links: List[StoryLink]
+    hashtags: List[StoryHashtag]
 
 
 class DirectMessage(BaseModel):
@@ -218,10 +234,3 @@ class DirectThread(BaseModel):
             if k != user_id
         ]
         return not any(timestamps)
-
-
-class Hashtag(BaseModel):
-    id: int
-    name: str
-    media_count: Optional[int]
-    profile_pic_url: Optional[HttpUrl]

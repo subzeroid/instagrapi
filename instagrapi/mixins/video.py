@@ -12,7 +12,7 @@ from instagrapi.exceptions import (VideoConfigureError,
                                    VideoConfigureStoryError, VideoNotDownload,
                                    VideoNotUpload)
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import (Location, Media, Story, StoryLink,
+from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
                               StoryMention, Usertag)
 from instagrapi.utils import dumps
 
@@ -319,6 +319,7 @@ class UploadVideoMixin:
         mentions: List[StoryMention] = [],
         location: Location = None,
         links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
     ) -> Story:
         """
         Upload video as a story and configure it
@@ -337,6 +338,8 @@ class UploadVideoMixin:
             Location tag for this upload, default is None
         links: List[StoryLink]
             URLs for Swipe Up
+        hashtags: List[StoryHashtag], optional
+            List of hashtags to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -363,6 +366,7 @@ class UploadVideoMixin:
                     mentions,
                     location,
                     links,
+                    hashtags,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -379,6 +383,7 @@ class UploadVideoMixin:
                 return Story(
                     links=links,
                     mentions=mentions,
+                    hashtags=hashtags,
                     **extract_media_v1(media).dict()
                 )
         raise VideoConfigureStoryError(
@@ -396,6 +401,7 @@ class UploadVideoMixin:
         mentions: List[StoryMention] = [],
         location: Location = None,
         links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
     ) -> Dict:
         """
         Story Configure for Photo
@@ -420,6 +426,8 @@ class UploadVideoMixin:
             Location tag for this upload, default is None
         links: List[StoryLink]
             URLs for Swipe Up
+        hashtags: List[StoryHashtag], optional
+            List of hashtags to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -512,6 +520,22 @@ class UploadVideoMixin:
             data["text_metadata"] = dumps(text_metadata)
             data["reel_mentions"] = dumps(reel_mentions)
             tap_models.extend(reel_mentions)
+        if hashtags:
+            for mention in hashtags:
+                item = {
+                    "x": mention.x,
+                    "y": mention.y,
+                    "z": 0,
+                    "width": mention.width,
+                    "height": mention.height,
+                    "rotation": 0.0,
+                    "type": "hashtag",
+                    "tag_name": mention.hashtag.name,
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "hashtag_sticker_gradient"
+                }
+                tap_models.append(item)
         data["tap_models"] = dumps(tap_models)
         return self.private_request(
             "media/configure_to_story/?video=1", self.with_default_data(data)
