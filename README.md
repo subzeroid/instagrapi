@@ -3,7 +3,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 4 January 2021 (last reverse-engineering check)
+Instagram API valid for 6 January 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -371,14 +371,15 @@ Upload medias to your stories. Common arguments:
 * `path` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
 * `thumbnail` - Thumbnail instead capture from source file
-* `usertags` - Specify usertags for mention users in story 
-* `configure_timeout` - How long to wait in seconds for a response from Instagram when publishing a story
+* `mentions` - Tag profiles in story
+* `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
 * `links` - "Swipe Up" links (now use first)
+* `hashtags` - Add hashtags to story
 
-| Method                                                                                                                      | Return   | Description                      |
-| --------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag])                                    | Media    | Upload photo (Support JPG files) |
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], links: List[StoryLink])           | Media    | Upload video (Support MP4 files) |
+| Method                                                                                           | Return   | Description   |
+| ------------------------------------------------------------------------------------------------ | -------- | ------------- |
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], location: Location, links: List[StoryLink], hashtags: List[StoryHashtag])  | Media    | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], location: Location, links: List[StoryLink], hashtags: List[StoryHashtag])  | Media    | Upload video (Support MP4 files)
 
 Examples:
 
