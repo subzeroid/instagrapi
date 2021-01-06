@@ -317,6 +317,7 @@ class UploadVideoMixin:
         caption: str,
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
+        location: Location = None,
         links: List[StoryLink] = [],
     ) -> Story:
         """
@@ -332,6 +333,8 @@ class UploadVideoMixin:
             Path to thumbnail for video. When None, then thumbnail is generate automatically
         mentions: List[StoryMention], optional
             List of mentions to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
         links: List[StoryLink]
             URLs for Swipe Up
 
@@ -358,6 +361,7 @@ class UploadVideoMixin:
                     thumbnail,
                     caption,
                     mentions,
+                    location,
                     links,
                 )
             except Exception as e:
@@ -390,6 +394,7 @@ class UploadVideoMixin:
         thumbnail: Path,
         caption: str,
         mentions: List[StoryMention] = [],
+        location: Location = None,
         links: List[StoryLink] = [],
     ) -> Dict:
         """
@@ -458,12 +463,19 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "implicit_location": {"media_location": {"lat": 0.0, "lng": 0.0}},
+            "implicit_location": {},
             "clips": [{"length": duration, "source_type": "4"}],
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 0,
         }
+        if location:
+            assert isinstance(location, Location), \
+                f'location must been Location (not {type(location)})'
+            loc = self.location_build(location)
+            data["implicit_location"] = {
+                "media_location": {"lat": loc.lat, "lng": loc.lng}
+            }
         if links:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])

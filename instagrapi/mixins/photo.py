@@ -116,9 +116,10 @@ class UploadPhotoMixin:
         upload_name = "{upload_id}_0_{rand}".format(
             upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
         )
+        # media_type: "2" when from video/igtv/album thumbnail, "1" - upload photo only
         rupload_params = {
             "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
-            "media_type": "1",  # "2" if upload_id else "1",  # "2" when from video/igtv/album thumbnail, "1" - upload photo only
+            "media_type": "1",  # "2" if upload_id else "1",
             "xsharing_user_ids": "[]",
             "upload_id": upload_id,
             "image_compression": json.dumps(
@@ -164,10 +165,6 @@ class UploadPhotoMixin:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = [],
-        configure_timeout: int = 3,
-        configure_handler=None,
-        configure_exception=None,
     ) -> Media:
         """
         Upload photo and configure to feed
@@ -184,14 +181,6 @@ class UploadPhotoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
-        links: List[StoryLink]
-            URLs for Swipe Up
-        configure_timeout: int
-            Timeout between attempt to configure media (set caption, etc), default is 3
-        configure_handler
-            Configure handler method, default is None
-        configure_exception
-            Configure exception class, default is None
 
         Returns
         -------
@@ -202,14 +191,14 @@ class UploadPhotoMixin:
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
-            time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(
-                upload_id, width, height, caption, usertags, location, links
+            time.sleep(3)
+            if self.photo_configure(
+                upload_id, width, height, caption, usertags, location,
             ):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
-        raise (configure_exception or PhotoConfigureError)(
+        raise PhotoConfigureError(
             response=self.last_response, **self.last_json
         )
 
@@ -221,7 +210,6 @@ class UploadPhotoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = [],
     ) -> Dict:
         """
         Post Configure Photo (send caption to Instagram)
@@ -240,8 +228,6 @@ class UploadPhotoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
-        links: List[StoryLink]
-            URLs for Swipe Up
 
         Returns
         -------
@@ -277,8 +263,8 @@ class UploadPhotoMixin:
         caption: str,
         upload_id: str = "",
         mentions: List[StoryMention] = [],
+        location: Location = None,
         links: List[StoryLink] = [],
-        configure_timeout: int = 3,
     ) -> Story:
         """
         Upload photo as a story and configure it
@@ -293,27 +279,34 @@ class UploadPhotoMixin:
             Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
         mentions: List[StoryMention], optional
             List of mentions to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
         links: List[StoryLink]
             URLs for Swipe Up
-        configure_timeout: int
-            Timeout between attempt to configure media (set caption, etc), default is 3
 
         Returns
         -------
         Story
             An object of Media class
         """
-        media = self.photo_upload(
-            path,
-            caption,
-            upload_id,
-            mentions,
-            links=links,
-            configure_timeout=configure_timeout,
-            configure_handler=self.photo_configure_to_story,
-            configure_exception=PhotoConfigureStoryError,
+        path = Path(path)
+        upload_id, width, height = self.photo_rupload(path, upload_id)
+        for attempt in range(10):
+            self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
+            time.sleep(3)
+            if self.photo_configure_to_story(
+                upload_id, width, height, caption, mentions, location, links
+            ):
+                media = self.last_json.get("media")
+                self.expose()
+                return Story(
+                    links=links,
+                    mentions=mentions,
+                    **extract_media_v1(media).dict()
+                )
+        raise PhotoConfigureStoryError(
+            response=self.last_response, **self.last_json
         )
-        return Story(links=links, mentions=mentions, **media.dict())
 
     def photo_configure_to_story(
         self,
@@ -371,9 +364,7 @@ class UploadPhotoMixin:
             "upload_id": upload_id,
             "client_timestamp": str(timestamp),
             "device": self.device,
-            "implicit_location": {
-                "media_location": {"lat": 44.64972222222222, "lng": 33.541666666666664}
-            },
+            "implicit_location": {},
             "edits": {
                 "crop_original_size": [width * 1.0, height * 1.0],
                 "crop_center": [0.0, 0.0],
@@ -381,6 +372,13 @@ class UploadPhotoMixin:
             },
             "extra": {"source_width": width, "source_height": height},
         }
+        if location:
+            assert isinstance(location, Location), \
+                f'location must been Location (not {type(location)})'
+            loc = self.location_build(location)
+            data["implicit_location"] = {
+                "media_location": {"lat": loc.lat, "lng": loc.lng}
+            }
         if links:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
