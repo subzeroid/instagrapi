@@ -77,6 +77,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | Story          | Story                                                                                  |
 | StoryLink      | Link (Swipe up)                                                                        |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
+| StoryHashtag   | Hashtag for story (as sticker)                                                         |
 | StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
 | DirectThread   | Thread (topic) with messages in Direct                                                 |
 | DirectMessage  | Message in Direct                                                                      |
