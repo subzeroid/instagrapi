@@ -428,6 +428,13 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         media = self.api.media_info_v1(media_pk)  # refresh after unlike
         self.assertEqual(media.like_count, like_count)
 
+    def test_media_likers(self):
+        media = self.api.user_medias(self.api.user_id, amount=3)[-1]
+        self.assertIsInstance(media, Media)
+        likers = self.api.media_likers(media.pk)
+        self.assertTrue(len(likers) > 0)
+        self.assertIsInstance(likers[0], UserShort)
+
 
 class ClientCommentTestCase(ClientPrivateTestCase):
 
@@ -1206,11 +1213,12 @@ class ClientStoryTestCase(ClientPrivateTestCase):
 
     def test_story_info(self):
         user_id = self.api.user_id_from_username("dhbastards")
-        stories = self.api.user_stories(user_id, 1)
+        stories = self.api.user_stories(user_id, amount=1)
         story = self.api.story_info(stories[0].pk)
         self.assertIsInstance(story, Story)
         story = self.api.story_info(stories[0].id)
         self.assertIsInstance(story, Story)
+        self.assertTrue(self.api.story_seen(story.pk))
 
 
 if __name__ == '__main__':

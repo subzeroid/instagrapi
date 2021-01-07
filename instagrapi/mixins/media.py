@@ -9,7 +9,8 @@ from urllib.parse import urlparse
 from instagrapi.exceptions import (ClientError, ClientLoginRequired,
                                    ClientNotFoundError, MediaNotFound)
 from instagrapi.extractors import (extract_location, extract_media_gql,
-                                   extract_media_oembed, extract_media_v1)
+                                   extract_media_oembed, extract_media_v1,
+                                   extract_user_short)
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
 
@@ -565,3 +566,8 @@ class MediaMixin:
             self.with_default_data(data)
         )
         return result["status"] == "ok"
+
+    def media_likers(self, media_id: str) -> List[UserShort]:
+        media_id = self.media_id(media_id)
+        result = self.private_request(f"media/{media_id}/likers/")
+        return [extract_user_short(u) for u in result['users']]

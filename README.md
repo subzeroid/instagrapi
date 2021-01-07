@@ -160,20 +160,22 @@ Viewing and editing publications (medias)
 * `code` - Short code (slug for media), example `BjNLpA1AhXM` from `"https://www.instagram.com/p/BjNLpA1AhXM/"`
 * `url` - URL to media publication
 
-| Method                                             | Return             | Description                                                   |
-| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_id(media_pk: int)                            | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
-| media_pk(media_id: str)                            | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
-| media_pk_from_code(code: str)                      | int                | Return media_pk                                               |
-| media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
-| user_medias(user_id: int, amount: int = 20)        | List\[Media]       | Get list of medias by user_id                                |
-| media_info(media_pk: int)                          | Media              | Return media info                                             |
-| media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
-| media_user(media_pk: int)                          | User               | Get user info for media                                       |
-| media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
-| media_like(media_id: str)                          | bool               | Like media                                                    |
-| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
+| Method                                                          | Return             | Description                                  |
+| --------------------------------------------------------------- | ------------------ | -------------------------------------------- |
+| media_id(media_pk: int)                                         | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587)
+| media_pk(media_id: str)                                         | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772)
+| media_pk_from_code(code: str)                                   | int                | Return media_pk
+| media_pk_from_url(url: str)                                     | int                | Return media_pk
+| user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
+| media_info(media_pk: int)                                       | Media              | Return media info
+| media_delete(media_pk: int)                                     | bool               | Delete media
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media
+| media_user(media_pk: int)                                       | User | Get user info for media
+| media_oembed(url: str)                                          | MediaOembed        | Return short media info by media URL
+| media_like(media_id: str)                                       | bool               | Like media
+| media_unlike(media_id: str)                                     | bool               | Unlike media
+| media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a story as seen
+| media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post
 
 Example:
 
@@ -255,11 +257,12 @@ Example:
 
 #### Story
 
-| Method                                             | Return      | Description                                                   |
-| -------------------------------------------------- | ----------- | ------------------------------------------------------------- |
-| user_stories(user_id: int, amount: int = None)     | List[Story] | Get list of stories by user_id                                |
-| story_info(story_pk: int, use_cache: bool = True)  | Story       | Return story info                                             |
-| story_delete(story_pk: int)                        | bool        | Delete story                                                  |       
+| Method                                                          | Return      | Description
+| --------------------------------------------------------------- | ----------- | ---------------------------------- |
+| user_stories(user_id: int, amount: int = None)                  | List[Story] | Get list of stories by user_id
+| story_info(story_pk: int, use_cache: bool = True)               | Story       | Return story info
+| story_delete(story_pk: int)                                     | bool        | Delete story
+| story_seen(story_pks: List[int], skipped_story_pks: List[int])  | bool        | Mark a story as seen
 
 
 #### Comment

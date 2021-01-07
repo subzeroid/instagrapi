@@ -24,7 +24,7 @@ class CollectionMixin:
         while True:
             try:
                 result = self.private_request(
-                    "/collections/list/",
+                    "collections/list/",
                     params={
                         "collection_types": '["ALL_MEDIA_AUTO_COLLECTION","PRODUCT_AUTO_COLLECTION","MEDIA"]',
                         "max_id": next_max_id,
