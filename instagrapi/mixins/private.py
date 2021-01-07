@@ -174,8 +174,6 @@ class PrivateRequestMixin:
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
         self.private.headers.update(self.base_headers)
-        if endpoint.startswith("/"):
-            endpoint = endpoint[1:]
         if headers:
             self.private.headers.update(headers)
         if not login:
@@ -183,6 +181,9 @@ class PrivateRequestMixin:
         if self.user_id and login:
             raise Exception(f"User already login ({self.user_id})")
         try:
+            if not endpoint.startswith('/'):
+                endpoint = f"/v1/{endpoint}"
+            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -192,11 +193,10 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    config.API_URL + endpoint, data=data, params=params
+                    api_url, data=data, params=params
                 )
             else:  # GET
-                response = self.private.get(
-                    config.API_URL + endpoint, params=params)
+                response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text
             )

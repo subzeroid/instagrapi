@@ -2,6 +2,7 @@ import json
 import random
 import time
 from copy import deepcopy
+from datetime import datetime
 from typing import Dict, List
 from urllib.parse import urlparse
 
@@ -526,3 +527,41 @@ class MediaMixin:
             #  it is better to try through a Private API)
             medias = self.user_medias_v1(user_id, amount)
         return medias
+
+    def media_seen(self, media_ids: List[str], skipped_media_ids: List[str] = []):
+        """
+        Mark a media as seen
+
+        Parameters
+        ----------
+        media_id: str
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+
+        def gen(media_ids):
+            result = {}
+            for media_id in media_ids:
+                media_pk, user_id = self.media_id(media_id).split('_')
+                end = int(datetime.now().timestamp())
+                begin = end - random.randint(100, 3000)
+                result[f"{media_pk}_{user_id}_{user_id}"] = [f"{begin}_{end}"]
+            return result
+
+        data = {
+            "container_module": "feed_timeline",
+            "live_vods_skipped": {},
+            "nuxes_skipped": {},
+            "nuxes": {},
+            "reels": gen(media_ids),
+            "live_vods": {},
+            "reel_media_skipped": gen(skipped_media_ids)
+        }
+        result = self.private_request(
+            "/v2/media/seen/?reel=1&live_vod=0",
+            self.with_default_data(data)
+        )
+        return result["status"] == "ok"

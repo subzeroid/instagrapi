@@ -126,3 +126,21 @@ class StoryMixin:
         """
         # TODO: Add user_stories_gql
         return self.user_stories_v1(user_id, amount)
+
+    def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
+        """
+        Mark a story as seen
+
+        Parameters
+        ----------
+        story_pk: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.media_seen(
+            [self.media_id(mid) for mid in story_pks],
+            [self.media_id(mid) for mid in skipped_story_pks]
+        )
