@@ -14,7 +14,8 @@ from instagrapi.exceptions import (PhotoConfigureError,
                                    PhotoConfigureStoryError, PhotoNotUpload)
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, StorySticker, Usertag)
+                              StoryLocation, StoryMention, StorySticker,
+                              Usertag)
 from instagrapi.utils import dumps
 
 try:
