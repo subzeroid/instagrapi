@@ -13,7 +13,7 @@ from instagrapi.exceptions import (VideoConfigureError,
                                    VideoNotUpload)
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, Usertag)
+                              StoryLocation, StoryMention, StorySticker, Usertag)
 from instagrapi.utils import dumps
 
 
@@ -320,6 +320,7 @@ class UploadVideoMixin:
         locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
     ) -> Story:
         """
         Upload video as a story and configure it
@@ -340,6 +341,8 @@ class UploadVideoMixin:
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
             List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -367,6 +370,7 @@ class UploadVideoMixin:
                     locations,
                     links,
                     hashtags,
+                    stickers,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -385,6 +389,7 @@ class UploadVideoMixin:
                     mentions=mentions,
                     hashtags=hashtags,
                     locations=locations,
+                    stickers=stickers,
                     **extract_media_v1(media).dict()
                 )
         raise VideoConfigureStoryError(
@@ -403,6 +408,7 @@ class UploadVideoMixin:
         locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
     ) -> Dict:
         """
         Story Configure for Photo
@@ -429,6 +435,8 @@ class UploadVideoMixin:
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
             List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -483,6 +491,7 @@ class UploadVideoMixin:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
         tap_models = []
+        static_models = []
         if mentions:
             reel_mentions = []
             text_metadata = []
@@ -550,7 +559,24 @@ class UploadVideoMixin:
                     "tap_state_str_id": "location_sticker_vibrant"
                 }
                 tap_models.append(item)
+        if stickers:
+            for sticker in stickers:
+                str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
+                static_models.append({
+                    "x": sticker.x,
+                    "y": sticker.y,
+                    "z": sticker.z,
+                    "width": sticker.width,
+                    "height": sticker.height,
+                    "rotation": sticker.rotation,
+                    "str_id": str_id,
+                    "sticker_type": sticker.type,
+                })
+                story_sticker_ids.append(str_id)
+                if sticker.type == "gif":
+                    data["has_animated_sticker"] = "1"
         data["tap_models"] = dumps(tap_models)
+        data["static_models"] = dumps(static_models)
         data["story_sticker_ids"] = dumps(story_sticker_ids)
         return self.private_request(
             "media/configure_to_story/?video=1", self.with_default_data(data)

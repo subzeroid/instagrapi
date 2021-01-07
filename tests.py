@@ -23,6 +23,7 @@ from instagrapi.types import (
     StoryLocation,
     StoryMention,
     StoryHashtag,
+    StorySticker,
     User,
     UserShort,
     Usertag
@@ -1127,6 +1128,16 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 )
             )
         ]
+        stickers = [
+            StorySticker(
+                id="Igjf05J559JWuef4N5",
+                type="gif",
+                x=0.5,
+                y=0.5,
+                width=0.4,
+                height=0.08
+            )
+        ]
         try:
             story = self.api.photo_upload_to_story(
                 path,
@@ -1135,6 +1146,7 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 links=links,
                 hashtags=hashtags,
                 locations=locations,
+                stickers=stickers
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)

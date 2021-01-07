@@ -14,7 +14,7 @@ from instagrapi.exceptions import (PhotoConfigureError,
                                    PhotoConfigureStoryError, PhotoNotUpload)
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, Usertag)
+                              StoryLocation, StoryMention, StorySticker, Usertag)
 from instagrapi.utils import dumps
 
 try:
@@ -266,6 +266,7 @@ class UploadPhotoMixin:
         locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
     ) -> Story:
         """
         Upload photo as a story and configure it
@@ -286,6 +287,8 @@ class UploadPhotoMixin:
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
             List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -306,6 +309,7 @@ class UploadPhotoMixin:
                 locations,
                 links,
                 hashtags,
+                stickers,
             ):
                 media = self.last_json.get("media")
                 self.expose()
@@ -314,6 +318,7 @@ class UploadPhotoMixin:
                     mentions=mentions,
                     hashtags=hashtags,
                     locations=locations,
+                    stickers=stickers,
                     **extract_media_v1(media).dict()
                 )
         raise PhotoConfigureStoryError(
@@ -330,6 +335,7 @@ class UploadPhotoMixin:
         locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
     ) -> Dict:
         """
         Post configure photo
@@ -352,6 +358,8 @@ class UploadPhotoMixin:
             URLs for Swipe Up
         hashtags: List[StoryHashtag], optional
             List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
 
         Returns
         -------
@@ -391,6 +399,7 @@ class UploadPhotoMixin:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
         tap_models = []
+        static_models = []
         if mentions:
             reel_mentions = [
                 {
@@ -444,7 +453,24 @@ class UploadPhotoMixin:
                     "tap_state_str_id": "location_sticker_vibrant"
                 }
                 tap_models.append(item)
+        if stickers:
+            for sticker in stickers:
+                str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
+                static_models.append({
+                    "x": sticker.x,
+                    "y": sticker.y,
+                    "z": sticker.z,
+                    "width": sticker.width,
+                    "height": sticker.height,
+                    "rotation": sticker.rotation,
+                    "str_id": str_id,
+                    "sticker_type": sticker.type,
+                })
+                story_sticker_ids.append(str_id)
+                if sticker.type == "gif":
+                    data["has_animated_sticker"] = "1"
         data["tap_models"] = dumps(tap_models)
+        data["static_models"] = dumps(static_models)
         data["story_sticker_ids"] = dumps(story_sticker_ids)
         return self.private_request(
             "media/configure_to_story/", self.with_default_data(data)
