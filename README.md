@@ -79,6 +79,7 @@ The current types are in [types.py](/instagrapi/types.py):
 | StoryLocation  | Tag Location in Story (as stocker)                                                     |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
 | StoryHashtag   | Hashtag for story (as sticker)                                                         |
+| StorySticker   | Tag sticker to story (for example from giphy)                                          |
 | StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
 | DirectThread   | Thread (topic) with messages in Direct                                                 |
 | DirectMessage  | Message in Direct                                                                      |
@@ -377,11 +378,12 @@ Upload medias to your stories. Common arguments:
 * `locations` - Add locations to story
 * `links` - "Swipe Up" links (now use first)
 * `hashtags` - Add hashtags to story
+* `stickers` - Add stickers to story
 
 | Method                                                                                           | Return   | Description   |
 | ------------------------------------------------------------------------------------------------ | -------- | ------------- |
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag])  | Story  | Upload photo (Support JPG files)
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag]) | Story  | Upload video (Support MP4 files)
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker])  | Story  | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker]) | Story  | Upload video (Support MP4 files)
 
 Examples:
 
