@@ -9,6 +9,10 @@ try:
 except ImportError:
     raise Exception("Please install moviepy==1.0.3 and retry")
 
+try:
+    from PIL import Image
+except ImportError:
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
 class StoryBuilder:
@@ -152,5 +156,11 @@ class StoryBuilder:
         StoryBuild
             An object of StoryBuild
         """
-        clip = ImageClip(str(self.path)).resize(width=self.width)
+
+        image_width, image_height = Image.open(self.path).size
+
+        width_reduction_percent = (self.width / float(image_width))
+        height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
+
+        clip = ImageClip(str(self.path)).resize(width=self.width, height=height_in_ratio)
         return self.build_main(clip, max_duration or 15)
