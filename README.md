@@ -251,9 +251,11 @@ Example:
 
 #### Media Type
 
-* 1 - Photo
-* 2 - Video (and ITGV when product_type=igtv)
-* 8 - Album
+* Photo: media_type=1
+* Video: media_type=2, product_type=feed
+* IGTV:  media_type=2, product_type=igtv
+* Reel:  media_type=2, product_type=clips
+* Album: media_type=8
 
 #### Story
 
