@@ -74,6 +74,9 @@ class Media(BaseModel):
     pk: int
     id: str
     code: str
+    width: int
+    height: int
+    preview_url: str
     taken_at: datetime
     media_type: int
     product_type: Optional[str] = ""  # igtv or feed
@@ -161,7 +164,7 @@ class StoryLocation(BaseModel):
 
 class StorySticker(BaseModel):
     id: str
-    type: Optional[str] = 'gif'
+    type: Optional[str] = "gif"
     x: float
     y: float
     z: Optional[int] = 1000005

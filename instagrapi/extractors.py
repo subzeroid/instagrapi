@@ -1,8 +1,23 @@
 from copy import deepcopy
 
-from .types import (Account, Collection, Comment, DirectMessage, DirectThread,
-                    Hashtag, Location, Media, MediaOembed, Resource, Story,
-                    StoryLink, StoryMention, User, UserShort, Usertag)
+from .types import (
+    Account,
+    Collection,
+    Comment,
+    DirectMessage,
+    DirectThread,
+    Hashtag,
+    Location,
+    Media,
+    MediaOembed,
+    Resource,
+    Story,
+    StoryLink,
+    StoryMention,
+    User,
+    UserShort,
+    Usertag,
+)
 from .utils import json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
@@ -40,6 +55,9 @@ def extract_media_v1(data):
     )
     media["like_count"] = media.get("like_count", 0)
     return Media(
+        width=media["dimensions"]["width"],
+        height=media["dimensions"]["height"],
+        preview_url=media["display_resources"][0]["src"],
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
             extract_resource_v1(edge) for edge in media.get("carousel_media", [])
@@ -75,6 +93,9 @@ def extract_media_gql(data):
     media["id"] = f"{media_id}_{user.pk}"
     return Media(
         code=media.get("shortcode"),
+        width=media["dimensions"]["width"],
+        height=media["dimensions"]["height"],
+        preview_url=media["display_resources"][0]["src"],
         taken_at=media["taken_at_timestamp"],
         location=extract_location(location) if location else None,
         user=user,
