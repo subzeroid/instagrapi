@@ -10,7 +10,6 @@ import uuid
 from typing import Dict, List
 
 import requests
-
 from instagrapi import config
 from instagrapi.exceptions import ReloginAttemptExceeded
 from instagrapi.zones import CET
