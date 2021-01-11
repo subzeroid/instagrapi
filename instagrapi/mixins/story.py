@@ -5,7 +5,7 @@ from typing import List
 from instagrapi import config
 from instagrapi.exceptions import StoryNotFound
 from instagrapi.extractors import extract_story_gql, extract_story_v1
-from instagrapi.types import Story
+from instagrapi.types import Story, StoryQueue
 
 
 class StoryMixin:
@@ -126,9 +126,10 @@ class StoryMixin:
 
         st = []
         for media in stories_un['reels_media']:
+            sq = StoryQueue()
             for story in media["items"]:
-                st.append(extract_story_gql(story))
-                st.append(story)
+                sq.items.append(extract_story_gql(story))
+            st.append(sq.copy())
         return st
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
