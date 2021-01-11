@@ -138,7 +138,7 @@ class StoryMixin:
 
         st = []
         for media in stories_un['reels_media']:
-            sq = StoryQueue()
+            sq = StoryQueue(items=[])
             for story in media["items"]:
                 sq.items.append(extract_story_gql(story))
             st.append(sq.copy())
