@@ -6,6 +6,7 @@ import time
 from json.decoder import JSONDecodeError
 
 import requests
+
 from instagrapi import config
 from instagrapi.exceptions import (BadPassword, ChallengeRequired,
                                    ClientBadRequestError,

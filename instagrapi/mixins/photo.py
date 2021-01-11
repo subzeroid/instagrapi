@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
+
 from instagrapi import config
 from instagrapi.exceptions import (PhotoConfigureError,
                                    PhotoConfigureStoryError, PhotoNotUpload)

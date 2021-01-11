@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Dict
 
 import requests
+
 from instagrapi.exceptions import (ChallengeError, ChallengeRedirection,
                                    ChallengeRequired, RecaptchaChallengeForm,
                                    SelectContactPointRecoveryForm,

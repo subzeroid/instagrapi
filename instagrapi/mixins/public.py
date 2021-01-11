@@ -4,6 +4,7 @@ import time
 from json.decoder import JSONDecodeError
 
 import requests
+
 from instagrapi.exceptions import (ClientBadRequestError,
                                    ClientConnectionError, ClientError,
                                    ClientForbiddenError, ClientGraphqlError,
