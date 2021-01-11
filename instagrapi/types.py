@@ -186,6 +186,9 @@ class Story(BaseModel):
     pk: int
     id: str
     code: str
+    width: int
+    height: int
+    preview_url: str
     taken_at: datetime
     media_type: int
     product_type: Optional[str] = ""

@@ -261,6 +261,9 @@ def extract_story_v1(data):
     story["mentions"] = [
         StoryMention(**mention) for mention in story.get("reel_mentions", [])
     ]
+    story["preview_url"] = story["image_versions2"]["candidates"][0]["url"]
+    story["width"] = story["original_width"]
+    story["height"] = story["original_height"]
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
