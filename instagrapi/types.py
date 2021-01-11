@@ -197,6 +197,10 @@ class Story(BaseModel):
     stickers: List[StorySticker]
 
 
+class StoryQueue(BaseModel):
+    items: List[Story]
+
+
 class DirectMessage(BaseModel):
     id: int  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]

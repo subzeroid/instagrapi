@@ -8,6 +8,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from instagrapi import Client
+from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
     Collection,
@@ -28,7 +29,6 @@ from instagrapi.types import (
     UserShort,
     Usertag
 )
-from instagrapi.story import StoryBuilder
 from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")

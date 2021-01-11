@@ -4,8 +4,8 @@ from typing import List
 
 from instagrapi import config
 from instagrapi.exceptions import StoryNotFound
-from instagrapi.extractors import extract_story_v1
-from instagrapi.types import Story
+from instagrapi.extractors import extract_story_gql, extract_story_v1
+from instagrapi.types import Story, StoryQueue
 
 
 class StoryMixin:
@@ -108,6 +108,41 @@ class StoryMixin:
             amount = int(amount)
             stories = stories[:amount]
         return stories
+
+    def user_stories_gql(self, user_ids: List[int] = None) -> List[StoryQueue]:
+        """
+        Get a user's stories (Private API)
+
+        Parameters
+        ----------
+        user_ids: List[int]
+
+        Returns
+        -------
+        List[StoryQueue]
+            A list of objects of StoryQueue for each user_id
+        """
+        self.public.cookies.update(self.private.cookies)
+
+        def _userid_chunks():
+            assert user_ids is not None
+            user_ids_per_query = 50
+            for i in range(0, len(user_ids), user_ids_per_query):
+                yield user_ids[i:i + user_ids_per_query]
+
+        stories_un = {}
+        for userid_chunk in _userid_chunks():
+            res = self.public_graphql_request(query_hash="303a4ae99711322310f25250d988f3b7",
+                                              variables={"reel_ids": userid_chunk, "precomposed_overlay": False})
+            stories_un.update(res)
+
+        st = []
+        for media in stories_un['reels_media']:
+            sq = StoryQueue(items=[])
+            for story in media["items"]:
+                sq.items.append(extract_story_gql(story))
+            st.append(sq.copy())
+        return st
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
         """

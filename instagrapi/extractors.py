@@ -249,3 +249,34 @@ def extract_story_v1(data):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
     return Story(**story)
+
+
+def extract_story_gql(data):
+    """Extract story from Public API"""
+    story = deepcopy(data)
+    if "video_resources" in story:
+        # Select Best Quality by Resolutiuon
+        story["video_url"] = sorted(
+            story["video_resources"], key=lambda o: o["config_height"] * o["config_width"]
+        )[-1]["src"]
+    if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
+        story["product_type"] = "feed"
+    if "display_url" in story and not story["is_video"]:
+        story["thumbnail_url"] = story["display_url"]
+    story["mentions"] = []
+    for mention in story.get("tappable_objects", []):
+        if mention["__typename"] == "GraphTappableMention":
+            mention["id"] = 1
+            mention["user"] = extract_user_short(mention)
+            story["mentions"].append(StoryMention(**mention))
+    story["locations"] = []
+    story["hashtags"] = []
+    story["stickers"] = []
+    story_cta_url = story.get("story_cta_url", None)
+    story["links"] = [StoryLink(**story_cta_url)] if story_cta_url else []
+    story["user"] = extract_user_short(story.get("owner"))
+    story["pk"] = story["id"]
+    story["code"] = story["tracking_token"]
+    story["taken_at"] = story["taken_at_timestamp"]
+    story["media_type"] = 2 if story["is_video"] else 1
+    return Story(**story)
