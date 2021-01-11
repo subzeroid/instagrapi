@@ -109,7 +109,19 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_gql(self, user_ids: List[int] = None):
+    def user_stories_gql(self, user_ids: List[int] = None) -> List[StoryQueue]:
+        """
+        Get a user's stories (Private API)
+
+        Parameters
+        ----------
+        user_ids: List[int]
+
+        Returns
+        -------
+        List[StoryQueue]
+            A list of objects of StoryQueue for each user_id
+        """
         self.public.cookies.update(self.private.cookies)
 
         def _userid_chunks():
