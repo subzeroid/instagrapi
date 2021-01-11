@@ -4,7 +4,7 @@ from typing import List
 
 from instagrapi import config
 from instagrapi.exceptions import StoryNotFound
-from instagrapi.extractors import extract_story_v1, extract_story_gql
+from instagrapi.extractors import extract_story_gql, extract_story_v1
 from instagrapi.types import Story
 
 
