@@ -1,8 +1,8 @@
+import json
 from typing import List
 
 from instagrapi import Client
 from instagrapi.types import Media
-import json
 
 HASHTAGS = ['instacool']
 IG_USERNAME = ''

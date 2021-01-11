@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Dict
 
 import requests
-
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
