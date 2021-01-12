@@ -189,6 +189,8 @@ class StoryMixin:
             return self.user_stories_gql(user_id, amount)
         except ClientNotFoundError as e:
             raise UserNotFound(e, user_id=user_id, **self.last_json)
+        except IndexError:
+            return []
         except Exception:
             return self.user_stories_v1(user_id, amount)
 
