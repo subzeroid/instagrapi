@@ -49,6 +49,7 @@ class UserShort(BaseModel):
     profile_pic_url: Optional[HttpUrl]
     # is_private: bool
     # is_verified: bool
+    stories: List = []
 
 
 class Usertag(BaseModel):

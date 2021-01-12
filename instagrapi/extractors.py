@@ -18,7 +18,7 @@ from .types import (
     UserShort,
     Usertag,
 )
-from .utils import json_value
+from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
 
@@ -272,4 +272,38 @@ def extract_story_v1(data):
         for link in cta.get("links", []):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
+    return Story(**story)
+
+
+def extract_story_gql(data):
+    """Extract story from Public API"""
+    story = deepcopy(data)
+    if "video_resources" in story:
+        # Select Best Quality by Resolutiuon
+        story["video_url"] = sorted(
+            story["video_resources"],
+            key=lambda o: o["config_height"] * o["config_width"],
+        )[-1]["src"]
+    # if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
+    story["product_type"] = "feed"
+    story["thumbnail_url"] = story.get("display_url")
+    story["mentions"] = []
+    for mention in story.get("tappable_objects", []):
+        if mention["__typename"] == "GraphTappableMention":
+            mention["id"] = 1
+            mention["user"] = extract_user_short(mention)
+            story["mentions"].append(StoryMention(**mention))
+    story["locations"] = []
+    story["hashtags"] = []
+    story["stickers"] = []
+    story["links"] = []
+    story_cta_url = story.get("story_cta_url", [])
+    if story_cta_url:
+        story["links"] = [StoryLink(**{"webUri": story_cta_url})]
+    story["user"] = extract_user_short(story.get("owner"))
+    story["pk"] = int(story["id"])
+    story["id"] = f"{story['id']}_{story['owner']['id']}"
+    story["code"] = InstagramIdCodec.encode(story["pk"])
+    story["taken_at"] = story["taken_at_timestamp"]
+    story["media_type"] = 2 if story["is_video"] else 1
     return Story(**story)

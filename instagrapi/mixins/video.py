@@ -410,6 +410,7 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Story Configure for Photo
@@ -438,6 +439,8 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        extra_data: List[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -488,6 +491,7 @@ class UploadVideoMixin:
             "audio_muted": False,
             "poster_frame_index": 0,
         }
+        data.update(extra_data)
         if links:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
