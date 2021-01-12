@@ -1209,6 +1209,50 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         for field in REQUIRED_STORY_FIELDS:
             self.assertTrue(hasattr(story, field))
 
+    def test_extract_user_stories(self):
+        user_id = self.api.user_id_from_username('dhbastards')
+        stories_v1 = self.api.user_stories_v1(user_id, amount=2)
+        stories_gql = self.api.user_stories_gql(user_id, amount=2)
+        self.assertEqual(len(stories_v1), 2)
+        self.assertIsInstance(stories_v1[0], Story)
+        self.assertEqual(len(stories_gql), 2)
+        self.assertIsInstance(stories_gql[0], Story)
+        for i, gql in enumerate(stories_gql[:2]):
+            gql = gql.dict()
+            v1 = stories_v1[i].dict()
+            for f in REQUIRED_STORY_FIELDS:
+                gql_val, v1_val = gql[f], v1[f]
+                is_video = v1.get('video_duration') > 0
+                if f == 'video_url' and is_video:
+                    gql_val = gql[f].path.rsplit('.', 1)[1]
+                    v1_val = v1[f].path.rsplit('.', 1)[1]
+                elif f == "thumbnail_url":
+                    self.assertIn(".jpg", gql_val)
+                    self.assertIn(".jpg", v1_val)
+                    continue
+                elif f == "user":
+                    gql_val.pop('full_name')
+                    v1_val.pop('full_name')
+                elif f == "mentions":
+                    for item in [*gql_val, *v1_val]:
+                        item['user'].pop('pk')
+                        item['user'].pop('profile_pic_url')
+                        item.pop('width')
+                        item.pop('height')
+                        item['x'] = round(item['x'], 4)
+                        item['y'] = round(item['y'], 4)
+                elif f == "links":
+                    # [{'webUri': HttpUrl('https://youtu.be/x3GYpar-e64', scheme='https', host='youtu.be', tld='be', host_type='domain', path='/x3GYpar-e64')}]
+                    # [{'webUri': HttpUrl('https://l.instagram.com/?u=https%3A%2F%2Fyoutu.be%2Fx3GYpar-e64&e=ATM59nvUNmptw8vUsyoX835T....}]
+                    self.assertEqual(len(v1_val), len(gql_val))
+                    if gql_val:
+                        self.assertIn(
+                            gql_val[0]['webUri'].host,
+                            v1_val[0]['webUri'].query
+                        )
+                    continue
+                self.assertEqual(gql_val, v1_val)
+
     def test_story_info(self):
         user_id = self.api.user_id_from_username("dhbastards")
         stories = self.api.user_stories(user_id, amount=1)

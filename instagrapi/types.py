@@ -49,6 +49,7 @@ class UserShort(BaseModel):
     profile_pic_url: Optional[HttpUrl]
     # is_private: bool
     # is_verified: bool
+    stories: List = []
 
 
 class Usertag(BaseModel):
@@ -195,10 +196,6 @@ class Story(BaseModel):
     hashtags: List[StoryHashtag]
     locations: List[StoryLocation]
     stickers: List[StorySticker]
-
-
-class StoryQueue(BaseModel):
-    items: List[Story]
 
 
 class DirectMessage(BaseModel):

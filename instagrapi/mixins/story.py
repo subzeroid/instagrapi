@@ -3,9 +3,11 @@ from copy import deepcopy
 from typing import List
 
 from instagrapi import config
-from instagrapi.exceptions import StoryNotFound
-from instagrapi.extractors import extract_story_gql, extract_story_v1
-from instagrapi.types import Story, StoryQueue
+from instagrapi.exceptions import (ClientNotFoundError, StoryNotFound,
+                                   UserNotFound)
+from instagrapi.extractors import (extract_story_gql, extract_story_v1,
+                                   extract_user_short)
+from instagrapi.types import Story, UserShort
 
 
 class StoryMixin:
@@ -79,6 +81,65 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
+    def users_stories_gql(self, user_ids: List[int]) -> List[UserShort]:
+        """
+        Get a user's stories (Public API)
+
+        Parameters
+        ----------
+        user_ids: List[int]
+
+        Returns
+        -------
+        List[UserShort]
+            A list of objects of UserShort for each user_id
+        """
+        self.inject_sessionid_to_public()
+
+        def _userid_chunks():
+            assert user_ids is not None
+            user_ids_per_query = 50
+            for i in range(0, len(user_ids), user_ids_per_query):
+                yield user_ids[i:i + user_ids_per_query]
+
+        stories_un = {}
+        for userid_chunk in _userid_chunks():
+            res = self.public_graphql_request(
+                query_hash="303a4ae99711322310f25250d988f3b7",
+                variables={"reel_ids": userid_chunk, "precomposed_overlay": False}
+            )
+            stories_un.update(res)
+        users = []
+        for media in stories_un['reels_media']:
+            user = extract_user_short(media['owner'])
+            user.stories = [
+                extract_story_gql(m)
+                for m in media['items']
+            ]
+            users.append(user)
+        return users
+
+    def user_stories_gql(self, user_id: int, amount: int = None) -> List[UserShort]:
+        """
+        Get a user's stories (Public API)
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of story to return, default is all
+
+        Returns
+        -------
+        List[UserShort]
+            A list of objects of UserShort for each user_id
+        """
+        user = self.users_stories_gql([user_id])[0]
+        stories = deepcopy(user.stories)
+        if amount:
+            stories = stories[:amount]
+        return stories
+
     def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
@@ -91,8 +152,8 @@ class StoryMixin:
 
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        List[Story]
+            A list of objects of Story
         """
         params = {
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
@@ -109,41 +170,6 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_gql(self, user_ids: List[int] = None) -> List[StoryQueue]:
-        """
-        Get a user's stories (Private API)
-
-        Parameters
-        ----------
-        user_ids: List[int]
-
-        Returns
-        -------
-        List[StoryQueue]
-            A list of objects of StoryQueue for each user_id
-        """
-        self.public.cookies.update(self.private.cookies)
-
-        def _userid_chunks():
-            assert user_ids is not None
-            user_ids_per_query = 50
-            for i in range(0, len(user_ids), user_ids_per_query):
-                yield user_ids[i:i + user_ids_per_query]
-
-        stories_un = {}
-        for userid_chunk in _userid_chunks():
-            res = self.public_graphql_request(query_hash="303a4ae99711322310f25250d988f3b7",
-                                              variables={"reel_ids": userid_chunk, "precomposed_overlay": False})
-            stories_un.update(res)
-
-        st = []
-        for media in stories_un['reels_media']:
-            sq = StoryQueue(items=[])
-            for story in media["items"]:
-                sq.items.append(extract_story_gql(story))
-            st.append(sq.copy())
-        return st
-
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
         """
         Get a user's stories
@@ -156,11 +182,15 @@ class StoryMixin:
 
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        List[Story]
+            A list of objects of STory
         """
-        # TODO: Add user_stories_gql
-        return self.user_stories_v1(user_id, amount)
+        try:
+            return self.user_stories_gql(user_id, amount)
+        except ClientNotFoundError as e:
+            raise UserNotFound(e, user_id=user_id, **self.last_json)
+        except Exception:
+            return self.user_stories_v1(user_id, amount)
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
         """

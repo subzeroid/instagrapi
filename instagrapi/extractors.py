@@ -3,7 +3,7 @@ from copy import deepcopy
 from .types import (Account, Collection, Comment, DirectMessage, DirectThread,
                     Hashtag, Location, Media, MediaOembed, Resource, Story,
                     StoryLink, StoryMention, User, UserShort, Usertag)
-from .utils import json_value
+from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
 
@@ -259,10 +259,9 @@ def extract_story_gql(data):
         story["video_url"] = sorted(
             story["video_resources"], key=lambda o: o["config_height"] * o["config_width"]
         )[-1]["src"]
-    if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
-        story["product_type"] = "feed"
-    if "display_url" in story and not story["is_video"]:
-        story["thumbnail_url"] = story["display_url"]
+    # if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
+    story["product_type"] = "feed"
+    story["thumbnail_url"] = story.get("display_url")
     story["mentions"] = []
     for mention in story.get("tappable_objects", []):
         if mention["__typename"] == "GraphTappableMention":
@@ -272,11 +271,14 @@ def extract_story_gql(data):
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
-    story_cta_url = story.get("story_cta_url", None)
-    story["links"] = [StoryLink(**story_cta_url)] if story_cta_url else []
+    story["links"] = []
+    story_cta_url = story.get("story_cta_url", [])
+    if story_cta_url:
+        story["links"] = [StoryLink(**{'webUri': story_cta_url})]
     story["user"] = extract_user_short(story.get("owner"))
-    story["pk"] = story["id"]
-    story["code"] = story["tracking_token"]
+    story["pk"] = int(story["id"])
+    story["id"] = f"{story['id']}_{story['owner']['id']}"
+    story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
     return Story(**story)
