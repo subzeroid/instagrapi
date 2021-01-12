@@ -56,7 +56,10 @@ def extract_media_gql(data):
     #     user = extract_user_short(user)
     # else:
     #     user["pk"] = user.pop("id")
-    media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
+    try:
+        media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
+    except KeyError:
+        pass
     if media["media_type"] == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
     media["thumbnail_url"] = sorted(
