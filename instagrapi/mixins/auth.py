@@ -595,7 +595,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        session_id = self.private.cookies.get("sessionid")
+        session_id = self.private.cookies.get_dict().get("sessionid")
         if session_id:
             self.public.cookies.set("sessionid", session_id)
             return True

@@ -1208,6 +1208,10 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(story, Story)
         for field in REQUIRED_STORY_FIELDS:
             self.assertTrue(hasattr(story, field))
+        stories = self.api.user_stories(
+            self.api.user_id_from_username("adw0rd")
+        )
+        self.assertIsInstance(stories, list)
 
     def test_extract_user_stories(self):
         user_id = self.api.user_id_from_username('dhbastards')
