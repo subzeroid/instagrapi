@@ -3,10 +3,12 @@ from copy import deepcopy
 from typing import List
 
 from instagrapi import config
-from instagrapi.exceptions import (ClientNotFoundError, StoryNotFound,
-                                   UserNotFound)
-from instagrapi.extractors import (extract_story_gql, extract_story_v1,
-                                   extract_user_short)
+from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
+from instagrapi.extractors import (
+    extract_story_gql,
+    extract_story_v1,
+    extract_user_short,
+)
 from instagrapi.types import Story, UserShort
 
 
@@ -100,22 +102,19 @@ class StoryMixin:
             assert user_ids is not None
             user_ids_per_query = 50
             for i in range(0, len(user_ids), user_ids_per_query):
-                yield user_ids[i:i + user_ids_per_query]
+                yield user_ids[i : i + user_ids_per_query]
 
         stories_un = {}
         for userid_chunk in _userid_chunks():
             res = self.public_graphql_request(
                 query_hash="303a4ae99711322310f25250d988f3b7",
-                variables={"reel_ids": userid_chunk, "precomposed_overlay": False}
+                variables={"reel_ids": userid_chunk, "precomposed_overlay": False},
             )
             stories_un.update(res)
         users = []
-        for media in stories_un['reels_media']:
-            user = extract_user_short(media['owner'])
-            user.stories = [
-                extract_story_gql(m)
-                for m in media['items']
-            ]
+        for media in stories_un["reels_media"]:
+            user = extract_user_short(media["owner"])
+            user.stories = [extract_story_gql(m) for m in media["items"]]
             users.append(user)
         return users
 
@@ -163,6 +162,10 @@ class StoryMixin:
             "reel"
         ]
         stories = []
+
+        if not reel:
+            return stories
+
         for item in reel["items"]:
             stories.append(extract_story_v1(item))
         if amount:
@@ -207,5 +210,5 @@ class StoryMixin:
         """
         return self.media_seen(
             [self.media_id(mid) for mid in story_pks],
-            [self.media_id(mid) for mid in skipped_story_pks]
+            [self.media_id(mid) for mid in skipped_story_pks],
         )
