@@ -7,6 +7,7 @@ import random
 import re
 import time
 import uuid
+from pathlib import Path
 from typing import Dict, List
 
 import requests
@@ -413,6 +414,53 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
         }
+
+    def set_settings(self, settings: Dict) -> bool:
+        """
+        Set session settings
+
+        Returns
+        -------
+        Bool
+        """
+        self.settings = settings
+        return True
+
+    def load_settings(self, path: Path) -> Dict:
+        """
+        Load session settings
+
+        Parameters
+        ----------
+        path: Path
+            Path to storage file
+
+        Returns
+        -------
+        Dict
+            Current session settings as a Dict
+        """
+        with open(path, 'r') as fp:
+            self.set_settings(json.load(fp))
+            return self.settings
+        return None
+
+    def dump_settings(self, path: Path) -> bool:
+        """
+        Serialize and save session settings
+
+        Parameters
+        ----------
+        path: Path
+            Path to storage file
+
+        Returns
+        -------
+        Bool
+        """
+        with open(path, 'w') as fp:
+            json.dump(self.get_settings(), fp)
+        return True
 
     def set_device(self, device: Dict = None) -> bool:
         """

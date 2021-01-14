@@ -87,19 +87,20 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
+        self.api = Client()
         try:
-            settings = json.load(open(filename))
+            settings = self.api.load_settings(filename)
         except FileNotFoundError:
             settings = {}
         except JSONDecodeError as e:
             print('JSONDecodeError when read stored client settings. Use empty settings')
             print(str(e))
             settings = {}
-        self.api = Client(settings)
+        self.api.set_settings(settings)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
         self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
-        json.dump(self.api.get_settings(), open(filename, 'w'))
+        self.api.dump_settings(filename)
         super().__init__(*args, **kwargs)
 
 
