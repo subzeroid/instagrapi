@@ -619,3 +619,4 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
         video.save_frame(thumbnail, t=(video.duration / 2))
     # duration = round(video.duration + 0.001, 3)
     return width, height, video.duration, thumbnail
+    video.close()
