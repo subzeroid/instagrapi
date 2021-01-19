@@ -33,6 +33,7 @@ from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
+ACCOUNT_SESSIONID = os.environ.get("IG_SESSIONID", "")
 
 REQUIRED_MEDIA_FIELDS = [
     "pk", "taken_at", "id", "media_type", "code", "thumbnail_url", "location",
@@ -99,7 +100,10 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         self.api.set_settings(settings)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
-        self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+        if ACCOUNT_SESSIONID:
+            self.api.login_by_sessionid(ACCOUNT_SESSIONID)
+        else:
+            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
         self.api.dump_settings(filename)
         super().__init__(*args, **kwargs)
 
