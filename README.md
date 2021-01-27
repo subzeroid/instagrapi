@@ -98,7 +98,7 @@ This is your authorized account
 | set_settings(settings: Dict)                 | bool      | Set session settings
 | load_settings(path: Path)                    | dict      | Load session settings from file
 | dump_settings(path: Path)                    | bool      | Serialize and save session settings to file
-| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy
+| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy "scheme://username:password@host:port"
 | cookie_dict                                  | dict      | Return cookies
 | user_id                                      | int       | Return your user_id (after login)
 | device                                       | dict      | Return device dict which we pass to Instagram
@@ -116,6 +116,7 @@ cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
 # cl.set_proxy("http://username:password@127.0.0.1:8080")
+# cl.set_proxy("socks5://username:password@127.0.0.1:30235")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
