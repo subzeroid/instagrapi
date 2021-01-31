@@ -1,26 +1,20 @@
-import time
-from typing import List, Dict
 from copy import deepcopy
+from typing import Dict, List
 
-from instagrapi.exceptions import (
-    ClientError,
-    ClientNotFoundError,
-    UserNotFound,
-    ClientLoginRequired
-)
-from instagrapi.extractors import (
-    extract_user_gql,
-    extract_user_v1,
-    extract_user_short,
-    extract_media_gql,
-    extract_media_v1,
-)
-from instagrapi.utils import json_value
-from instagrapi.types import User, Media, UserShort
 from instagrapi import config
+from instagrapi.exceptions import (ClientError, ClientLoginRequired,
+                                   ClientNotFoundError, UserNotFound)
+from instagrapi.extractors import (extract_user_gql, extract_user_short,
+                                   extract_user_v1)
+from instagrapi.types import User, UserShort
+from instagrapi.utils import json_value
 
 
 class UserMixin:
+    """
+    Helpers to manage user
+    """
+
     _users_cache = {}  # user_pk -> User
     _userhorts_cache = {}  # user_pk -> UserShort
     _usernames_cache = {}  # username -> user_pk
@@ -28,13 +22,40 @@ class UserMixin:
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
 
     def user_id_from_username(self, username: str) -> int:
-        """Get user_id by username
-        Result: 'adw0rd' -> 1903424587
+        """
+        Get full media id
+
+        Parameters
+        ----------
+        username: str
+            Username for an Instagram account
+
+        Returns
+        -------
+        int
+            User PK
+
+        Example
+        -------
+        'adw0rd' -> 1903424587
         """
         return int(self.user_info_by_username(username).pk)
 
     def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
-        """Return UserShort by user_id
+        """
+        Get full media id
+
+        Parameters
+        ----------
+        user_id: int
+            User ID
+        use_cache: bool, optional
+            Whether or not to use information from cache, default value is True
+
+        Returns
+        -------
+        UserShort
+            An object of UserShort type
         """
         if use_cache:
             cache = self._userhorts_cache.get(user_id)
@@ -54,14 +75,42 @@ class UserMixin:
         return user
 
     def username_from_user_id_gql(self, user_id: int) -> str:
-        """Get username by user_id
-        Result: 1903424587 -> 'adw0rd'
+        """
+        Get username from user id
+
+        Parameters
+        ----------
+        user_id: int
+            User ID
+
+        Returns
+        -------
+        str
+            User name
+
+        Example
+        -------
+        1903424587 -> 'adw0rd'
         """
         return self.user_short_gql(user_id).username
 
     def username_from_user_id(self, user_id: int) -> str:
-        """Get username by user_id
-        Result: 1903424587 -> 'adw0rd'
+        """
+        Get username from user id
+
+        Parameters
+        ----------
+        user_id: int
+            User ID
+
+        Returns
+        -------
+        str
+            User name
+
+        Example
+        -------
+        1903424587 -> 'adw0rd'
         """
         user_id = int(user_id)
         try:
@@ -71,12 +120,34 @@ class UserMixin:
         return username
 
     def user_info_by_username_gql(self, username: str) -> User:
-        """Return user object via GraphQL API
+        """
+        Get user object from user name
+
+        Parameters
+        ----------
+        username: str
+            User name of an instagram account
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
 
     def user_info_by_username_v1(self, username: str) -> User:
-        """Return user object via Private API
+        """
+        Get user object from user name
+
+        Parameters
+        ----------
+        username: str
+            User name of an instagram account
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         try:
             result = self.private_request(f"users/{username}/usernameinfo/")
@@ -89,8 +160,20 @@ class UserMixin:
         return extract_user_v1(result["user"])
 
     def user_info_by_username(self, username: str, use_cache: bool = True) -> User:
-        """Get user info by username
-        Result as in self.user_info()
+        """
+        Get user object from username
+
+        Parameters
+        ----------
+        username: str
+            User name of an instagram account
+        use_cache: bool, optional
+            Whether or not to use information from cache, default value is True
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         if not use_cache or username not in self._usernames_cache:
             try:
@@ -109,16 +192,36 @@ class UserMixin:
         return self.user_info(self._usernames_cache[username])
 
     def user_info_gql(self, user_id: int) -> User:
-        """Return user object via GraphQL API
+        """
+        Get user object from user id
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         user_id = int(user_id)
         # GraphQL haven't method to receive user by id
-        return self.user_info_by_username_gql(
-            self.username_from_user_id_gql(user_id)
-        )
+        return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
 
     def user_info_v1(self, user_id: int) -> User:
-        """Return user object via Private API
+        """
+        Get user object from user id
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         user_id = int(user_id)
         try:
@@ -132,7 +235,20 @@ class UserMixin:
         return extract_user_v1(result["user"])
 
     def user_info(self, user_id: int, use_cache: bool = True) -> User:
-        """Get user info by user_id
+        """
+        Get user object from user id
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        use_cache: bool, optional
+            Whether or not to use information from cache, default value is True
+
+        Returns
+        -------
+        User
+            An object of User type
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_cache:
@@ -149,10 +265,25 @@ class UserMixin:
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
-        return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
+        return deepcopy(
+            self._users_cache[user_id]
+        )  # return copy of cache (dict changes protection)
 
-    def user_following_gql(self, user_id: int, amount: int = 0) -> list:
-        """Return list of following users (without authorization)
+    def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
         """
         user_id = int(user_id)
         end_cursor = None
@@ -161,7 +292,7 @@ class UserMixin:
             "id": user_id,
             "include_reel": True,
             "fetch_mutual": False,
-            "first": 24
+            "first": 24,
         }
         while True:
             if end_cursor:
@@ -171,12 +302,8 @@ class UserMixin:
             )
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
-            page_info = json_value(
-                data, "user", "edge_follow", "page_info", default={}
-            )
-            edges = json_value(
-                data, "user", "edge_follow", "edges", default=[]
-            )
+            page_info = json_value(data, "user", "edge_follow", "page_info", default={})
+            edges = json_value(data, "user", "edge_follow", "edges", default=[])
             for edge in edges:
                 users.append(extract_user_short(edge["node"]))
             end_cursor = page_info.get("end_cursor")
@@ -189,13 +316,28 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_following_v1(self, user_id: int, amount: int = 0) -> list:
-        """Return list of following users (with authorization)
+    def user_following_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
         """
         user_id = int(user_id)
         max_id = ""
         users = []
         while True:
+            if amount and len(users) >= amount:
+                break
             result = self.private_request(
                 f"friendships/{user_id}/following/",
                 params={
@@ -207,18 +349,36 @@ class UserMixin:
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id or (amount and len(users) >= amount):
+            if not max_id:
                 break
         if amount:
             users = users[:amount]
         return users
 
-    def user_following(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
-        """Return dict {user_id: user} of following users
+    def user_following(
+        self, user_id: int, use_cache: bool = True, amount: int = 0
+    ) -> Dict[int, UserShort]:
+        """
+        Get user's followers information
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        use_cache: bool, optional
+            Whether or not to use information from cache, default value is True
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        Dict[int, UserShort]
+            Dict of user_id and User object
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_following:
             # Temporary: Instagram Required Login for GQL request
+            # You can inject sessionid from private to public session
             # try:
             #     users = self.user_following_gql(user_id, amount)
             # except Exception as e:
@@ -226,18 +386,34 @@ class UserMixin:
             #         self.logger.exception(e)
             #     users = self.user_following_v1(user_id, amount)
             users = self.user_following_v1(user_id, amount)
-            self._users_following[user_id] = {
-                user.pk: user for user in users
-            }
-        return self._users_following[user_id]
+            self._users_following[user_id] = {user.pk: user for user in users}
+        following = self._users_following[user_id]
+        if amount and len(following) > amount:
+            following = dict(list(following.items())[:amount])
+        return following
 
-    def user_followers_v1(self, user_id: int, amount: int = 0) -> list:
-        """Return list of followers users (with auth)
+    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
         """
         user_id = int(user_id)
         max_id = ""
         users = []
         while True:
+            if amount and len(users) >= amount:
+                break
             result = self.private_request(
                 f"friendships/{user_id}/followers/",
                 params={"max_id": max_id, "rank_token": self.rank_token},
@@ -245,23 +421,53 @@ class UserMixin:
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id or (amount and len(users) >= amount):
+            if not max_id:
                 break
+        if amount:
+            users = users[:amount]
         return users
 
-    def user_followers(self, user_id: int, use_cache: bool = True, amount: int = 0) -> Dict[int, User]:
-        """Return dict {user_id: user} of followers users
+    def user_followers(
+        self, user_id: int, use_cache: bool = True, amount: int = 0
+    ) -> Dict[int, UserShort]:
+        """
+        Get user's followers
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        use_cache: bool, optional
+            Whether or not to use information from cache, default value is True
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        Dict[int, UserShort]
+            Dict of user_id and User object
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_followers:
             users = self.user_followers_v1(user_id, amount)
-            self._users_followers[user_id] = {
-                user.pk: user for user in users
-            }
-        return self._users_followers[user_id]
+            self._users_followers[user_id] = {user.pk: user for user in users}
+        followers = self._users_followers[user_id]
+        if amount and len(followers) > amount:
+            followers = dict(list(followers.items())[:amount])
+        return followers
 
     def user_follow(self, user_id: int) -> bool:
-        """Follow user by user_id
+        """
+        Follow a user
+
+        Parameters
+        ----------
+        user_id: int
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         assert self.user_id, "Login required"
         user_id = int(user_id)
@@ -275,7 +481,17 @@ class UserMixin:
         return result["friendship_status"]["following"] is True
 
     def user_unfollow(self, user_id: int) -> bool:
-        """Unfollow user by user_id
+        """
+        Unfollow a user
+
+        Parameters
+        ----------
+        user_id: int
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
         assert self.user_id, "Login required"
         user_id = int(user_id)
@@ -284,97 +500,3 @@ class UserMixin:
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
-
-    def user_medias_gql(self, user_id: int, amount: int = 50, sleep: int = 2) -> List[Media]:
-        """
-        !Use Client.user_medias instead!
-        Return list with media of instagram profile by user id using graphql
-        :rtype: list
-        :param user_id: Profile user id in instagram
-        :param amount: Count of medias for fetching (by default instagram return 50)
-        :param sleep: Timeout between requests
-        :return: List of medias for profile
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        medias = []
-        end_cursor = None
-        variables = {
-            "id": user_id,
-            "first": 50,  # default amount
-        }
-        while True:
-            if end_cursor:
-                variables["after"] = end_cursor
-            data = self.public_graphql_request(
-                variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
-            )
-            page_info = json_value(
-                data, "user", "edge_owner_to_timeline_media", "page_info", default={}
-            )
-            edges = json_value(
-                data, "user", "edge_owner_to_timeline_media", "edges", default=[]
-            )
-            for edge in edges:
-                medias.append(edge["node"])
-            end_cursor = page_info.get("end_cursor")
-            if not page_info.get("has_next_page") or not end_cursor:
-                break
-            if len(medias) >= amount:
-                break
-            time.sleep(sleep)
-        return [extract_media_gql(media) for media in medias[:amount]]
-
-    def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
-        """Get all medias by user_id via Private API
-        :user_id: User ID
-        :amount: By default instagram return 18 items by each request
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        medias = []
-        next_max_id = ""
-        min_timestamp = None
-        while True:
-            try:
-                items = self.private_request(
-                    f"feed/user/{user_id}/",
-                    params={
-                        "max_id": next_max_id,
-                        "min_timestamp": min_timestamp,
-                        "rank_token": self.rank_token,
-                        "ranked_content": "true",
-                    },
-                )["items"]
-            except Exception as e:
-                self.logger.exception(e)
-                break
-            medias.extend(items)
-            if not self.last_json.get("more_available"):
-                break
-            if len(medias) >= amount:
-                break
-            next_max_id = self.last_json.get("next_max_id", "")
-        return [extract_media_v1(media) for media in medias[:amount]]
-
-    def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
-        """Get all medias by user_id
-        First, through the Public API, then through the Private API
-        """
-        amount = int(amount)
-        user_id = int(user_id)
-        try:
-            try:
-                medias = self.user_medias_gql(user_id, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.user_medias_gql(user_id, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
-            # User may been private, attempt via Private API
-            # (You can check is_private, but there may be other reasons,
-            #  it is better to try through a Private API)
-            medias = self.user_medias_v1(user_id, amount)
-        return medias

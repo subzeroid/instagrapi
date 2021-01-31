@@ -1,8 +1,6 @@
 SIG_KEY_VERSION = "4"
 IG_SIG_KEY = "a86109795736d73c9a94172cd9b736917d7d94ca61c9101164894b3f0d43bef4"
-
 API_DOMAIN = "i.instagram.com"
-API_URL = "https://{domain}/api/v1/".format(domain=API_DOMAIN)
 
 # Instagram 134.0.0.26.121
 # Android (26/8.0.0;

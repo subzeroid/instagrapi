@@ -1,35 +1,41 @@
-import time
-import json
-import random
-import logging
 import hashlib
-import requests
+import json
+import logging
+import random
+import time
 from json.decoder import JSONDecodeError
 
+import requests
+
 from instagrapi import config
+from instagrapi.exceptions import (BadPassword, ChallengeRequired,
+                                   ClientBadRequestError,
+                                   ClientConnectionError, ClientError,
+                                   ClientForbiddenError, ClientJSONDecodeError,
+                                   ClientNotFoundError, ClientRequestTimeout,
+                                   ClientThrottledError, FeedbackRequired,
+                                   LoginRequired, PleaseWaitFewMinutes,
+                                   RateLimitError, SentryBlock, UnknownError,
+                                   VideoTooLongException)
 from instagrapi.utils import generate_signature
-from instagrapi.exceptions import (
-    ClientError,
-    ClientConnectionError,
-    ClientNotFoundError,
-    ClientJSONDecodeError,
-    ClientForbiddenError,
-    ClientBadRequestError,
-    ClientThrottledError,
-    ClientRequestTimeout,
-    FeedbackRequired,
-    ChallengeRequired,
-    LoginRequired,
-    SentryBlock,
-    RateLimitError,
-    BadPassword,
-    PleaseWaitFewMinutes,
-    VideoTooLongException,
-    UnknownError,
-)
 
 
-def manual_input_code(self, username, choice=None):
+def manual_input_code(self, username: str, choice=None):
+    """
+    Manual security code helper
+
+    Parameters
+    ----------
+    username: str
+        User name of a Instagram account
+    choice: optional
+        Whether sms or email
+
+    Returns
+    -------
+    str
+        Code
+    """
     code = None
     choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
@@ -40,6 +46,9 @@ def manual_input_code(self, username, choice=None):
 
 
 class PrivateRequestMixin:
+    """
+    Helpers for private request
+    """
     private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
@@ -57,9 +66,23 @@ class PrivateRequestMixin:
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
+        """
+        Small Delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.75, 3.75))
 
     def very_small_delay(self):
+        """
+        Very small delay
+
+        Returns
+        -------
+        Void
+        """
         time.sleep(random.uniform(0.175, 0.875))
 
     @property
@@ -148,11 +171,10 @@ class PrivateRequestMixin:
         headers=None,
         extra_sig=None,
     ):
+        endpoint1=endpoint
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
         self.private.headers.update(self.base_headers)
-        if endpoint.startswith("/"):
-            endpoint = endpoint[1:]
         if headers:
             self.private.headers.update(headers)
         if not login:
@@ -160,6 +182,12 @@ class PrivateRequestMixin:
         if self.user_id and login:
             raise Exception(f"User already login ({self.user_id})")
         try:
+            if not endpoint.startswith('/'):
+                endpoint = f"/v1/{endpoint}"
+            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
+            url=endpoint
+            if "topsearch"  in endpoint:
+                api_url= endpoint1
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -169,11 +197,10 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    config.API_URL + endpoint, data=data, params=params
+                    api_url, data=data, params=params
                 )
             else:  # GET
-                response = self.private.get(
-                    config.API_URL + endpoint, params=params)
+                response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text
             )

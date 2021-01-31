@@ -1,30 +1,51 @@
-import shutil
 import json
-import time
 import random
-import requests
+import shutil
+import time
 from pathlib import Path
-from typing import List
-from uuid import uuid4
+from typing import Dict, List
 from urllib.parse import urlparse
+from uuid import uuid4
+
+import requests
 
 from instagrapi import config
+from instagrapi.exceptions import (PhotoConfigureError,
+                                   PhotoConfigureStoryError, PhotoNotUpload)
 from instagrapi.extractors import extract_media_v1
-from instagrapi.exceptions import (
-    PhotoNotUpload, PhotoConfigureError, PhotoConfigureStoryError
-)
-from instagrapi.types import Usertag, Location, StoryMention, StoryLink, Media
+from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
+                              StoryLocation, StoryMention, StorySticker,
+                              Usertag)
 from instagrapi.utils import dumps
 
 try:
-    from PIL import Image,ImageFilter
+    from PIL import Image
 except ImportError:
     raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
 
 
 class DownloadPhotoMixin:
+    """
+    Helpers for downloading photo
+    """
 
     def photo_download(self, media_pk: int, folder: Path = "") -> Path:
+        """
+        Download photo using media pk
+
+        Parameters
+        ----------
+        media_pk: int
+            Unique Media ID
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
@@ -32,10 +53,29 @@ class DownloadPhotoMixin:
         )
         return self.photo_download_by_url(media.thumbnail_url, filename, folder)
 
-    def photo_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
-        fname = urlparse(url).path.rsplit('/', 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit('.', 1)[
-                              1]) if filename else fname
+    def photo_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
+        """
+        Download photo using media pk
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+        filename: str, optional
+            Filename for the media
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -46,20 +86,28 @@ class DownloadPhotoMixin:
 
 
 class UploadPhotoMixin:
+    """
+    Helpers for downloading photo
+    """
 
     def photo_rupload(
-        self,
-        path: Path,
-        upload_id: str = "",
-        to_album: bool = False
+        self, path: Path, upload_id: str = "", to_album: bool = False
     ) -> tuple:
-        """Upload photo to Instagram
+        """
+        Upload photo to Instagram
 
-        :param path:         Path to photo file
-        :param upload_id:    Unique upload_id (String). When None, then generate
-                             automatically. Example from video.video_configure
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        to_album: bool, optional
 
-        :return: Tuple (upload_id, width, height)
+        Returns
+        -------
+        tuple
+            (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = upload_id or str(int(time.time() * 1000))
@@ -69,9 +117,10 @@ class UploadPhotoMixin:
         upload_name = "{upload_id}_0_{rand}".format(
             upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
         )
+        # media_type: "2" when from video/igtv/album thumbnail, "1" - upload photo only
         rupload_params = {
             "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
-            "media_type": "1",  # "2" if upload_id else "1",  # "2" when from video/igtv/album thumbnail, "1" - upload photo only
+            "media_type": "1",  # "2" if upload_id else "1",
             "xsharing_user_ids": "[]",
             "upload_id": upload_id,
             "image_compression": json.dumps(
@@ -97,7 +146,8 @@ class UploadPhotoMixin:
             "https://{domain}/rupload_igphoto/{name}".format(
                 domain=config.API_DOMAIN, name=upload_name
             ),
-            data=photo_data, headers=headers
+            data=photo_data,
+            headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
@@ -117,40 +167,44 @@ class UploadPhotoMixin:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = [],
-        configure_timeout: int = 3,
-        configure_handler=None,
-        configure_exception=None
     ) -> Media:
-        """Upload photo and configure to feed
+        """
+        Upload photo and configure to feed
 
-        :param path:                Path to photo file
-        :param caption:             Media description (String)
-        :param storyUpload:         if True will create a story from path 
-        :param upload_id:           Unique upload_id (String). When None, then generate
-                                        automatically. Example from video.video_configure
-        :param usertags:            Mentioned users (List)
-        :param location:            Location
-        :param links:               URLs for Swipe Up (List of dicts)
-        :param configure_timeout:   Timeout between attempt to configure media (set caption, etc)
-        :param configure_handler:   Configure handler method
-        :param configure_exception: Configure exception class
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
 
-        :return: Media
+        Returns
+        -------
+        Media
+            An object of Media class
         """
         path = Path(path)
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
-            time.sleep(configure_timeout)
-            if (configure_handler or self.photo_configure)(upload_id, width, height, caption, usertags, location, links):
+            time.sleep(3)
+            if self.photo_configure(
+                upload_id, width, height, caption, usertags, location,
+            ):
                 media = self.last_json.get("media")
                 self.expose()
                 if storyUpload:
                     self.photo_upload_to_story(path,caption)
                 return extract_media_v1(media)
-        raise (configure_exception or PhotoConfigureError)(
-            response=self.last_response, **self.last_json)
+        raise PhotoConfigureError(
+            response=self.last_response, **self.last_json
+        )
 
     def photo_configure(
         self,
@@ -160,23 +214,32 @@ class UploadPhotoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        links: List[StoryLink] = []
-    ) -> dict:
-        """Post Configure Photo (send caption to Instagram)
+    ) -> Dict:
+        """
+        Post Configure Photo (send caption to Instagram)
 
-        :param upload_id:  Unique upload_id (String)
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Location
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        caption: str
+            Media caption
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload, default is empty list.
+        location: Location, optional
+            Location tag for this upload, default is None
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]}
-            for tag in usertags
+            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
             "timezone_offset": "10800",
@@ -198,95 +261,73 @@ class UploadPhotoMixin:
         }
         return self.private_request("media/configure/", self.with_default_data(data))
 
-    def stories_shaper(self,path):
-        img = Image.open(path)
-        if (img.size[0], img.size[1]) == (1080, 1920):
-            print("Image is already 1080x1920. Just converting image.")
-            new_path = "{path}_STORIES.jpg".format(path=path)
-            new = Image.new("RGB", (img.size[0], img.size[1]), (255, 255, 255))
-            new.paste(img, (0, 0, img.size[0], img.size[1]))
-            new.save(new_path)
-            return new_path
-        else:
-            min_width = 1080
-            min_height = 1920
-            if img.size[1] != 1920:
-                height_percent = min_height / float(img.size[1])
-                width_size = int(float(img.size[0]) * float(height_percent))
-                img = img.resize((width_size, min_height), Image.ANTIALIAS)
-            else:
-                pass
-            if img.size[0] < 1080:
-                width_percent = min_width / float(img.size[0])
-                height_size = int(float(img.size[1]) * float(width_percent))
-                img_bg = img.resize((min_width, height_size), Image.ANTIALIAS)
-            else:
-                pass
-            img_bg = img.crop(
-                (
-                    int((img.size[0] - 1080) / 2),
-                    int((img.size[1] - 1920) / 2),
-                    int(1080 + ((img.size[0] - 1080) / 2)),
-                    int(1920 + ((img.size[1] - 1920) / 2)),
-                )
-            ).filter(ImageFilter.GaussianBlur(100))
-            if img.size[1] > img.size[0]:
-                height_percent = min_height / float(img.size[1])
-                width_size = int(float(img.size[0]) * float(height_percent))
-                img = img.resize((width_size, min_height), Image.ANTIALIAS)
-                if img.size[0] > 1080:
-                    width_percent = min_width / float(img.size[0])
-                    height_size = int(float(img.size[1]) * float(width_percent))
-                    img = img.resize((min_width, height_size), Image.ANTIALIAS)
-                    img_bg.paste(
-                        img, (int(540 - img.size[0] / 2), int(960 - img.size[1] / 2))
-                    )
-                else:
-                    img_bg.paste(img, (int(540 - img.size[0] / 2), 0))
-            else:
-                width_percent = min_width / float(img.size[0])
-                height_size = int(float(img.size[1]) * float(width_percent))
-                img = img.resize((min_width, height_size), Image.ANTIALIAS)
-                img_bg.paste(img, (int(540 - img.size[0] / 2), int(960 - img.size[1] / 2)))
-            new_path = "{path}_STORIES.jpg".format(path=path)
-            new = Image.new("RGB", (img_bg.size[0], img_bg.size[1]), (255, 255, 255))
-            new.paste(img_bg, (0, 0, img_bg.size[0], img_bg.size[1]))
-            new.save(new_path)
-            return new_path
-
     def photo_upload_to_story(
         self,
         path: Path,
         caption: str,
-        blur:bool=True,
         upload_id: str = "",
         mentions: List[StoryMention] = [],
+        locations: List[StoryLocation] = [],
         links: List[StoryLink] = [],
-        configure_timeout: int = 3
-    ) -> Media:
-        """Upload photo and configure to story
-
-        :param path:                Path to photo file
-        :param caption:             Media description (String)
-        :param upload_id:           Unique upload_id (String). When None, then generate
-                                        automatically. Example from video.video_configure
-        :param mentions:            Mentioned users (List)
-        :param links:               URLs for Swipe Up (List of dicts)
-        :param configure_timeout:   Timeout between at<tempt to configure media (set caption, etc)
-
-        :return: Media
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+    ) -> Story:
         """
-        if blur:
-            path=self.stories_shaper(path)
+        Upload photo as a story and configure it
 
-        return self.photo_upload(
-            path, caption, upload_id, mentions,
-            links=links,
-            configure_timeout=configure_timeout,
-            configure_handler=self.photo_configure_to_story,
-            configure_exception=PhotoConfigureStoryError
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        upload_id: str, optional
+            Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        locations: List[StoryLocation], optional
+            List of locations to be tagged on this upload, default is empty list.
+        links: List[StoryLink]
+            URLs for Swipe Up
+        hashtags: List[StoryHashtag], optional
+            List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
+
+        Returns
+        -------
+        Story
+            An object of Media class
+        """
+        path = Path(path)
+        upload_id, width, height = self.photo_rupload(path, upload_id)
+        for attempt in range(10):
+            self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
+            time.sleep(3)
+            if self.photo_configure_to_story(
+                upload_id,
+                width,
+                height,
+                caption,
+                mentions,
+                locations,
+                links,
+                hashtags,
+                stickers,
+            ):
+                media = self.last_json.get("media")
+                self.expose()
+                return Story(
+                    links=links,
+                    mentions=mentions,
+                    hashtags=hashtags,
+                    locations=locations,
+                    stickers=stickers,
+                    **extract_media_v1(media).dict()
+                )
+        raise PhotoConfigureStoryError(
+            response=self.last_response, **self.last_json
         )
-
 
     def photo_configure_to_story(
         self,
@@ -295,22 +336,45 @@ class UploadPhotoMixin:
         height: int,
         caption: str,
         mentions: List[StoryMention] = [],
-        location: Location = None,
-        links: List[StoryLink] = []
-    ) -> dict:
-        """Story Configure for Photo
+        locations: List[StoryLocation] = [],
+        links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+        extra_data: Dict[str, str] = {},
+    ) -> Dict:
+        """
+        Post configure photo
 
-        :param upload_id:  Unique upload_id (String)
-        :param width:      Width in px (Integer)
-        :param height:     Height in px (Integer)
-        :param caption:    Media description (String)
-        :param usertags:   Mentioned users (List)
-        :param location:   Temporary unused
-        :param links:      URLs for Swipe Up (List of dicts)
+        Parameters
+        ----------
+        upload_id: str
+            Unique upload_id
+        width: int
+            Width of the video in pixels
+        height: int
+            Height of the video in pixels
+        caption: str
+            Media caption
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        locations: List[StoryLocation], optional
+            List of locations to be tagged on this upload, default is empty list.
+        links: List[StoryLink]
+            URLs for Swipe Up
+        hashtags: List[StoryHashtag], optional
+            List of hashtags to be tagged on this upload, default is empty list.
+        stickers: List[StorySticker], optional
+            List of stickers to be tagged on this upload, default is empty list.
+        extra_data: List[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
-        :return: Media (Dict)
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
         """
         timestamp = int(time.time())
+        story_sticker_ids = []
         data = {
             "text_metadata": '[{"font_size":40.0,"scale":1.0,"width":611.0,"height":169.0,"x":0.51414347,"y":0.8487708,"rotation":0.0}]',
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES),
@@ -319,7 +383,7 @@ class UploadPhotoMixin:
             "scene_capture_type": "",
             "timezone_offset": "10800",
             "client_shared_at": str(timestamp - 5),  # 5 seconds ago
-            "story_sticker_ids": "time_sticker_digital",
+            "story_sticker_ids": "",
             "media_folder": "Camera",
             "configure_mode": "1",
             "source_type": "4",
@@ -331,12 +395,6 @@ class UploadPhotoMixin:
             "upload_id": upload_id,
             "client_timestamp": str(timestamp),
             "device": self.device,
-            "implicit_location": {
-                "media_location": {
-                    "lat": 44.64972222222222,
-                    "lng": 33.541666666666664
-                }
-            },
             "edits": {
                 "crop_original_size": [width * 1.0, height * 1.0],
                 "crop_center": [0.0, 0.0],
@@ -344,17 +402,84 @@ class UploadPhotoMixin:
             },
             "extra": {"source_width": width, "source_height": height},
         }
+        data.update(extra_data)
         if links:
             links = [link.dict() for link in links]
             data["story_cta"] = dumps([{"links": links}])
+        tap_models = []
+        static_models = []
         if mentions:
-            mentions = [
+            reel_mentions = [
                 {
-                    "x": 0.5002546, "y": 0.8583542, "z": 0,
-                    "width": 0.4712963, "height": 0.0703125, "rotation": 0.0,
-                    "type": "mention", "user_id": str(mention.user.pk),
-                    "is_sticker": False, "display_type": "mention_username"
-                } for mention in mentions
+                    "x": 0.5002546,
+                    "y": 0.8583542,
+                    "z": 0,
+                    "width": 0.4712963,
+                    "height": 0.0703125,
+                    "rotation": 0.0,
+                    "type": "mention",
+                    "user_id": str(mention.user.pk),
+                    "is_sticker": False,
+                    "display_type": "mention_username",
+                }
+                for mention in mentions
             ]
-            data["tap_models"] = data["reel_mentions"] = json.dumps(mentions)
-        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+            data["reel_mentions"] = json.dumps(reel_mentions)
+            tap_models.extend(reel_mentions)
+        if hashtags:
+            story_sticker_ids.append("hashtag_sticker")
+            for mention in hashtags:
+                item = {
+                    "x": mention.x,
+                    "y": mention.y,
+                    "z": 0,
+                    "width": mention.width,
+                    "height": mention.height,
+                    "rotation": 0.0,
+                    "type": "hashtag",
+                    "tag_name": mention.hashtag.name,
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "hashtag_sticker_gradient"
+                }
+                tap_models.append(item)
+        if locations:
+            story_sticker_ids.append("location_sticker")
+            for mention in locations:
+                mention.location = self.location_complete(mention.location)
+                item = {
+                    "x": mention.x,
+                    "y": mention.y,
+                    "z": 0,
+                    "width": mention.width,
+                    "height": mention.height,
+                    "rotation": 0.0,
+                    "type": "location",
+                    "location_id": str(mention.location.pk),
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "location_sticker_vibrant"
+                }
+                tap_models.append(item)
+        if stickers:
+            for sticker in stickers:
+                str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
+                static_models.append({
+                    "x": sticker.x,
+                    "y": sticker.y,
+                    "z": sticker.z,
+                    "width": sticker.width,
+                    "height": sticker.height,
+                    "rotation": sticker.rotation,
+                    "str_id": str_id,
+                    "sticker_type": sticker.type,
+                })
+                story_sticker_ids.append(str_id)
+                if sticker.type == "gif":
+                    data["has_animated_sticker"] = "1"
+        data["tap_models"] = dumps(tap_models)
+        data["static_models"] = dumps(static_models)
+        data["story_sticker_ids"] = dumps(story_sticker_ids)
+        return self.private_request(
+            "media/configure_to_story/", self.with_default_data(data)
+        )
