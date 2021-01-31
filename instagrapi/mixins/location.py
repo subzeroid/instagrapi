@@ -49,21 +49,18 @@ class LocationMixin:
 
         return locations
 
-    def location_search_pk(self, pk: int) -> List[Location]:
+    def location_search_pk(self, pk: int) -> Location:
         """
-        Get locations using lat and long
+        Get locations using pk
 
         Parameters
         ----------
-        lat: float
-            Latitude you want to search for
-        lng: float
-            Longitude you want to search for
-
+        pk: int
+            id
         Returns
         -------
-        List[Location]
-            List of objects of Location
+        Location
+            An object of Location
         """
         result = self.top_search(self.location_info(pk).name)
         
@@ -74,6 +71,26 @@ class LocationMixin:
                 location=single_location
         
         return location
+
+    def location_search_name(self, LocationName: str) -> List[Location]:
+        """
+        Get locations using name
+
+        Parameters
+        ----------
+        LocationName: string
+                    LocationName
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(LocationName)
+        locations = []
+        for places in result["places"]:
+            locations.append(extract_locationV2(places))
+        
+        return locations
 
     def location_complete(self, location: Location) -> Location:
         """
