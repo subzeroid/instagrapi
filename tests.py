@@ -33,6 +33,7 @@ from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
+ACCOUNT_SESSIONID = os.environ.get("IG_SESSIONID", "")
 
 REQUIRED_MEDIA_FIELDS = [
     "pk", "taken_at", "id", "media_type", "code", "thumbnail_url", "location",
@@ -87,19 +88,23 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
+        self.api = Client()
         try:
-            settings = json.load(open(filename))
+            settings = self.api.load_settings(filename)
         except FileNotFoundError:
             settings = {}
         except JSONDecodeError as e:
             print('JSONDecodeError when read stored client settings. Use empty settings')
             print(str(e))
             settings = {}
-        self.api = Client(settings)
+        self.api.set_settings(settings)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
-        self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
-        json.dump(self.api.get_settings(), open(filename, 'w'))
+        if ACCOUNT_SESSIONID:
+            self.api.login_by_sessionid(ACCOUNT_SESSIONID)
+        else:
+            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+        self.api.dump_settings(filename)
         super().__init__(*args, **kwargs)
 
 
@@ -1208,6 +1213,10 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertIsInstance(story, Story)
         for field in REQUIRED_STORY_FIELDS:
             self.assertTrue(hasattr(story, field))
+        stories = self.api.user_stories(
+            self.api.user_id_from_username("adw0rd")
+        )
+        self.assertIsInstance(stories, list)
 
     def test_extract_user_stories(self):
         user_id = self.api.user_id_from_username('dhbastards')
