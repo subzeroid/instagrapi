@@ -14,6 +14,10 @@ class ClientError(Exception):
             self.code = self.response.status_code
 
 
+class InactiveUserError(ClientError):
+    """Your account has been disabled for violating our terms. Learn how you may be able to restore your account."""
+
+
 class GenericRequestError(ClientError):
     """Sorry, there was a problem with your request"""
 
@@ -149,8 +153,7 @@ class CollectionError(PrivateError):
 class CollectionNotFound(CollectionError):
     def __init__(self, *args, **kwargs):
         super().__init__(
-            f"Collection \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
+            f"Collection \"{kwargs.get('name')}\" not found", *args, **kwargs
         )
 
 
@@ -228,10 +231,7 @@ class HashtagError(PrivateError):
 
 class HashtagNotFound(HashtagError):
     def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Hashtag \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
-        )
+        super().__init__(f"Hashtag \"{kwargs.get('name')}\" not found", *args, **kwargs)
 
 
 class LocationError(PrivateError):
@@ -241,6 +241,5 @@ class LocationError(PrivateError):
 class LocationNotFound(LocationError):
     def __init__(self, *args, **kwargs):
         super().__init__(
-            f"Location \"{kwargs.get('location_pk')}\" not found",
-            *args, **kwargs
+            f"Location \"{kwargs.get('location_pk')}\" not found", *args, **kwargs
         )
