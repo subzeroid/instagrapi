@@ -54,10 +54,22 @@ def extract_media_v1(data):
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
+
+    if media["media_type"] == 8:
+        width = media["carousel_media"][0]["original_width"]
+        height = media["carousel_media"][0]["original_height"]
+        preview_url = media["carousel_media"][0]["image_versions2"]["candidates"][-1][
+            "url"
+        ]
+    else:
+        width = media["original_width"]
+        height = media["original_height"]
+        preview_url = media["image_versions2"]["candidates"][-1]["url"]
+
     return Media(
-        width=media["dimensions"]["width"],
-        height=media["dimensions"]["height"],
-        preview_url=media["display_resources"][0]["src"],
+        width=width,
+        height=height,
+        preview_url=preview_url,
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
             extract_resource_v1(edge) for edge in media.get("carousel_media", [])
