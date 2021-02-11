@@ -18,6 +18,10 @@ class InactiveUserError(ClientError):
     """Your account has been disabled for violating our terms. Learn how you may be able to restore your account."""
 
 
+class InvalidUserError(ClientError):
+    """The username you entered doesn't appear to belong to an account. Please check your username and try again."""
+
+
 class GenericRequestError(ClientError):
     """Sorry, there was a problem with your request"""
 
