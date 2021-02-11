@@ -252,6 +252,8 @@ class PrivateRequestMixin:
                     raise InactiveUserError(**last_json)
                 elif error_type == "invalid_user":
                     raise InvalidUserError(**last_json)
+                elif error_type == "ip_block":
+                    raise IPBlockError(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:

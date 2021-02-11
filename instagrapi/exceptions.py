@@ -22,6 +22,10 @@ class InvalidUserError(ClientError):
     """The username you entered doesn't appear to belong to an account. Please check your username and try again."""
 
 
+class IPBlockError(ClientError):
+    """error_type:'ip_block'"""
+
+
 class GenericRequestError(ClientError):
     """Sorry, there was a problem with your request"""
 
