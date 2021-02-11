@@ -10,7 +10,7 @@ import requests
 from instagrapi import config
 from instagrapi.exceptions import (BadPassword, ChallengeRequired,
                                    ClientBadRequestError, InactiveUserError,
-                                   InvalidUserError,
+                                   InvalidUserError, IPBlockError,
                                    ClientConnectionError, ClientError,
                                    ClientForbiddenError, ClientJSONDecodeError,
                                    ClientNotFoundError, ClientRequestTimeout,
