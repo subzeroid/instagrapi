@@ -16,6 +16,20 @@ from instagrapi import config
 from instagrapi.exceptions import ReloginAttemptExceeded
 from instagrapi.zones import CET
 
+from json.decoder import JSONDecodeError
+
+from instagrapi.exceptions import (
+    ClientBadRequestError,
+    ClientConnectionError,
+    BadPassword,
+    ClientError,
+    ClientForbiddenError,
+    ClientJSONDecodeError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    ClientThrottledError,
+)
+
 
 class PreLoginFlowMixin:
     """
@@ -275,6 +289,97 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         return True
 
+    def login_by_web(self, username: str, password: str) -> dict:
+        """Login via the website, get a cookie and login via sessionid
+
+        Args:
+            username (str): login username
+            password (str): password
+
+        Returns:
+            dict: cookies
+        """
+        BASE_URL = "https://www.instagram.com"
+
+        try:
+            response = requests.get(
+                BASE_URL,
+                headers={"user-agent": self.user_agent},
+                proxies={"https": self.proxy},
+                timeout=30,
+                verify=False,
+            )
+
+            match = re.findall(r'"csrf_token":"(.*?)"', response.text)
+            if len(match) > 0:
+                csrfToken = match[0]
+
+            cookies = response.cookies.get_dict()
+
+            response = requests.get(
+                f"{BASE_URL}/web/__mid/",
+                headers={"user-agent": self.user_agent},
+                proxies={"https": self.proxy},
+                timeout=30,
+                verify=False,
+            )
+            mid = response.text
+
+            headers = {
+                "cookie": f"ig_cb=1; csrftoken={csrfToken}; mid={mid};",
+                "referer": BASE_URL,
+                "x-csrftoken": csrfToken,
+                "X-CSRFToken": csrfToken,
+                "user-agent": self.user_agent,
+            }
+            payload = {
+                "username": username,
+                "enc_password": f"#PWD_INSTAGRAM_BROWSER:0:{int(time.time())}:{password}",
+            }
+            response = requests.post(
+                f"{BASE_URL}/accounts/login/ajax/",
+                data=payload,
+                headers=headers,
+                proxies={"https": self.proxy},
+                timeout=30,
+            )
+
+            if not response.json().get("authenticated"):
+                raise BadPassword(message=response.text)
+
+        except JSONDecodeError as e:
+            if "/login/" in response.url:
+                raise ClientLoginRequired(e, response=response)
+            raise ClientJSONDecodeError(
+                "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
+                response=response,
+            )
+
+        except requests.HTTPError as e:
+            if e.response.status_code == 403:
+                raise ClientForbiddenError(e, response=e.response)
+
+            if e.response.status_code == 400:
+                raise ClientBadRequestError(e, response=e.response)
+
+            if e.response.status_code == 429:
+                raise ClientThrottledError(e, response=e.response)
+
+            if e.response.status_code == 404:
+                raise ClientNotFoundError(e, response=e.response)
+
+            raise ClientError(e, response=e.response)
+
+        except requests.ConnectionError as e:
+            raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
+
+        cookies = response.cookies.get_dict()
+        cookies["mid"] = mid
+
+        self.login_by_sessionid(cookies["sessionid"])
+
+        return cookies
+
     def login_by_sessionid(self, sessionid: str) -> bool:
         """
         Login using session id
@@ -440,7 +545,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             Current session settings as a Dict
         """
-        with open(path, 'r') as fp:
+        with open(path, "r") as fp:
             self.set_settings(json.load(fp))
             return self.settings
         return None
@@ -458,7 +563,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         -------
         Bool
         """
-        with open(path, 'w') as fp:
+        with open(path, "w") as fp:
             json.dump(self.get_settings(), fp)
         return True
 
