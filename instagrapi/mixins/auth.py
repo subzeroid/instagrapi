@@ -415,6 +415,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             'status': 'ok' <-------------
             }"""
             raise ClientError(response=response, **last_json)
+        elif not response.json().get("authenticated"):
+            raise BadPassword(**last_json)
 
         cookies = response.cookies.get_dict()
         cookies["mid"] = mid
