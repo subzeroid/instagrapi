@@ -19,15 +19,26 @@ from instagrapi.zones import CET
 from json.decoder import JSONDecodeError
 
 from instagrapi.exceptions import (
-    ClientBadRequestError,
-    ClientConnectionError,
     BadPassword,
+    ChallengeRequired,
+    ClientBadRequestError,
+    InactiveUserError,
+    InvalidUserError,
+    IPBlockError,
+    ClientConnectionError,
     ClientError,
     ClientForbiddenError,
     ClientJSONDecodeError,
-    ClientLoginRequired,
     ClientNotFoundError,
+    ClientRequestTimeout,
     ClientThrottledError,
+    FeedbackRequired,
+    LoginRequired,
+    PleaseWaitFewMinutes,
+    RateLimitError,
+    SentryBlock,
+    UnknownError,
+    VideoTooLongException,
 )
 
 
@@ -301,77 +312,109 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         BASE_URL = "https://www.instagram.com"
 
+        response = requests.get(
+            BASE_URL,
+            headers={"user-agent": self.user_agent},
+            proxies={"https": self.proxy},
+            timeout=30,
+            verify=False,
+        )
+
+        match = re.findall(r'"csrf_token":"(.*?)"', response.text)
+        if len(match) > 0:
+            csrfToken = match[0]
+
+        cookies = response.cookies.get_dict()
+
+        response = requests.get(
+            f"{BASE_URL}/web/__mid/",
+            headers={"user-agent": self.user_agent},
+            proxies={"https": self.proxy},
+            timeout=30,
+            verify=False,
+        )
+        mid = response.text
+
+        headers = {
+            "cookie": f"ig_cb=1; csrftoken={csrfToken}; mid={mid};",
+            "referer": BASE_URL,
+            "x-csrftoken": csrfToken,
+            "X-CSRFToken": csrfToken,
+            "user-agent": self.user_agent,
+        }
+        payload = {
+            "username": username,
+            "enc_password": f"#PWD_INSTAGRAM_BROWSER:0:{int(time.time())}:{password}",
+        }
+        response = requests.post(
+            f"{BASE_URL}/accounts/login/ajax/",
+            data=payload,
+            headers=headers,
+            proxies={"https": self.proxy},
+            timeout=30,
+        )
+
         try:
-            response = requests.get(
-                BASE_URL,
-                headers={"user-agent": self.user_agent},
-                proxies={"https": self.proxy},
-                timeout=30,
-                verify=False,
-            )
+            last_json = response.json()
+        except JSONDecodeError:
+            pass
+        message = last_json.get("message", "")
+        if response.status_code == 403:
+            if message == "login_required":
+                raise LoginRequired(response=response, **last_json)
+            raise ClientForbiddenError(response=response, **last_json)
+        elif response.status_code == 400:
+            error_type = last_json.get("error_type")
+            if message == "challenge_required" or message == "checkpoint_required":
+                raise ChallengeRequired(**last_json)
+            elif message == "feedback_required":
+                raise FeedbackRequired(
+                    **dict(
+                        last_json,
+                        message="%s: %s" % (message, last_json.get("feedback_message")),
+                    )
+                )
+            elif error_type == "sentry_block":
+                raise SentryBlock(**last_json)
+            elif error_type == "rate_limit_error":
+                raise RateLimitError(**last_json)
+            elif error_type == "bad_password":
+                raise BadPassword(**last_json)
+            elif error_type == "inactive user":
+                raise InactiveUserError(**last_json)
+            elif error_type == "invalid_user":
+                raise InvalidUserError(**last_json)
+            elif error_type == "ip_block":
+                raise IPBlockError(**last_json)
+            elif "Please wait a few minutes before you try again" in message:
+                raise PleaseWaitFewMinutes(response=response, **last_json)
+            elif "VideoTooLongException" in message:
+                raise VideoTooLongException(response=response, **last_json)
+            elif error_type or message:
+                raise UnknownError(**last_json)
+            raise ClientBadRequestError(response=response, **last_json)
+        elif response.status_code == 429:
+            if "Please wait a few minutes before you try again" in message:
+                raise PleaseWaitFewMinutes(response=response, **last_json)
+            raise ClientThrottledError(response=response, **last_json)
+        elif response.status_code == 404:
+            raise ClientNotFoundError(response=response, **last_json)
+        elif response.status_code == 408:
+            raise ClientRequestTimeout(response=response, **last_json)
 
-            match = re.findall(r'"csrf_token":"(.*?)"', response.text)
-            if len(match) > 0:
-                csrfToken = match[0]
-
-            cookies = response.cookies.get_dict()
-
-            response = requests.get(
-                f"{BASE_URL}/web/__mid/",
-                headers={"user-agent": self.user_agent},
-                proxies={"https": self.proxy},
-                timeout=30,
-                verify=False,
-            )
-            mid = response.text
-
-            headers = {
-                "cookie": f"ig_cb=1; csrftoken={csrfToken}; mid={mid};",
-                "referer": BASE_URL,
-                "x-csrftoken": csrfToken,
-                "X-CSRFToken": csrfToken,
-                "user-agent": self.user_agent,
-            }
-            payload = {
-                "username": username,
-                "enc_password": f"#PWD_INSTAGRAM_BROWSER:0:{int(time.time())}:{password}",
-            }
-            response = requests.post(
-                f"{BASE_URL}/accounts/login/ajax/",
-                data=payload,
-                headers=headers,
-                proxies={"https": self.proxy},
-                timeout=30,
-            )
-
-            if not response.json().get("authenticated"):
-                raise BadPassword(message=response.text)
-
-        except JSONDecodeError as e:
-            if "/login/" in response.url:
-                raise ClientLoginRequired(e, response=response)
-            raise ClientJSONDecodeError(
-                "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
-                response=response,
-            )
-
-        except requests.HTTPError as e:
-            if e.response.status_code == 403:
-                raise ClientForbiddenError(e, response=e.response)
-
-            if e.response.status_code == 400:
-                raise ClientBadRequestError(e, response=e.response)
-
-            if e.response.status_code == 429:
-                raise ClientThrottledError(e, response=e.response)
-
-            if e.response.status_code == 404:
-                raise ClientNotFoundError(e, response=e.response)
-
-            raise ClientError(e, response=e.response)
-
-        except requests.ConnectionError as e:
-            raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
+        if last_json.get("status") == "fail":
+            raise ClientError(response=response, **last_json)
+        elif "error_title" in last_json:
+            """Example: {
+            'error_title': 'bad image input extra:{}', <-------------
+            'media': {
+                'device_timestamp': '1588184737203',
+                'upload_id': '1588184737203'
+            },
+            'message': 'media_needs_reupload', <-------------
+            'status': 'ok' <-------------
+            }"""
+            raise ClientError(response=response, **last_json)
 
         cookies = response.cookies.get_dict()
         cookies["mid"] = mid
