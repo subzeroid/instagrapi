@@ -47,8 +47,8 @@ class UserShort(BaseModel):
     username: Optional[str]
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
-    # is_private: bool
-    # is_verified: bool
+    is_private: bool
+    is_verified: bool
     stories: List = []
 
 
