@@ -312,7 +312,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         BASE_URL = "https://www.instagram.com"
 
-        response = requests.get(
+        response = self.private.get(
             BASE_URL,
             headers={"user-agent": self.user_agent},
             proxies={"https": self.proxy},
@@ -326,7 +326,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         cookies = response.cookies.get_dict()
 
-        response = requests.get(
+        response = self.private.get(
             f"{BASE_URL}/web/__mid/",
             headers={"user-agent": self.user_agent},
             proxies={"https": self.proxy},
@@ -346,7 +346,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "username": username,
             "enc_password": f"#PWD_INSTAGRAM_BROWSER:0:{int(time.time())}:{password}",
         }
-        response = requests.post(
+        response = self.private.post(
             f"{BASE_URL}/accounts/login/ajax/",
             data=payload,
             headers=headers,
