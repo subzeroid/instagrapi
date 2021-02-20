@@ -362,6 +362,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if response.status_code == 403:
             if message == "login_required":
                 raise LoginRequired(response=response, **last_json)
+            if "Looks like you requested to delete this account" in message:
+                raise InvalidUserError(response=response, **last_json)
             raise ClientForbiddenError(response=response, **last_json)
         elif response.status_code == 400:
             error_type = last_json.get("error_type")
