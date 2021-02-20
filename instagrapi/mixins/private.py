@@ -10,7 +10,7 @@ import requests
 from instagrapi import config
 from instagrapi.exceptions import (BadPassword, ChallengeRequired,
                                    ClientBadRequestError, InactiveUserError,
-                                   InvalidUserError, IPBlockError,
+                                   InvalidUserError, IPBlockError, MediaNotFound,
                                    ClientConnectionError, ClientError,
                                    ClientForbiddenError, ClientJSONDecodeError,
                                    ClientNotFoundError, ClientRequestTimeout,
@@ -258,6 +258,8 @@ class PrivateRequestMixin:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
+                elif "has been deleted" in message or "Media is unavailable" in  message:
+                    raise MediaNotFound(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
