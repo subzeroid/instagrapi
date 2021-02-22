@@ -1,8 +1,7 @@
 import random
 from typing import List
 
-from instagrapi.exceptions import (ClientError, ClientNotFoundError,
-                                   MediaNotFound)
+from instagrapi.exceptions import ClientError, ClientNotFoundError, MediaNotFound
 from instagrapi.extractors import extract_comment
 from instagrapi.types import Comment
 
@@ -35,6 +34,8 @@ class CommentMixin:
                 result = self.private_request(
                     f"media/{media_id}/comments/", params={"max_id": max_id}
                 )
+                if not result.get("comments"):
+                    break
                 for comment in result["comments"]:
                     comments.append(extract_comment(comment))
                 if not result["has_more_comments"]:
