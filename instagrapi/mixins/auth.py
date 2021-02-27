@@ -31,14 +31,13 @@ class PreLoginFlowMixin:
         bool
             A boolean value
         """
-        # /api/v1/accounts/get_prefill_candidates
-        self.get_prefill_candidates(True)
-        # /api/v1/qe/sync (server_config_retrieval)
-        self.sync_device_features(True)
-        # /api/v1/launcher/sync/ (server_config_retrieval)
-        self.sync_launcher(True)
-        # /api/v1/accounts/contact_point_prefill/
         self.set_contact_point_prefill("prefill")
+        self.get_prefill_candidates(True)
+        self.set_contact_point_prefill("prefill")
+        self.sync_device_features(True)
+        self.sync_launcher(True)
+        self.sync_device_features(True)
+        # self.set_contact_point_prefill("prefill")
         return True
 
     def get_prefill_candidates(self, login: bool = False) -> Dict:
@@ -331,14 +330,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if self.user_id:
             return True  # already login
         self.pre_login_flow()
+        enc_password = self.password_encrypt(password)
         data = {
+            "jazoest": "22478",
+            "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
             "phone_id": self.phone_id,
+            "enc_password": enc_password,
             "_csrftoken": self.token,
             "username": username,
+            "adid": self.uuid,
             "guid": self.uuid,
             "device_id": self.device_id,
-            "password": password,
-            "login_attempt_count": "0",
+            "google_tokens": "[]",
+            "login_attempt_count": "0"
         }
         if self.private_request("accounts/login/", data, login=True):
             self.login_flow()
