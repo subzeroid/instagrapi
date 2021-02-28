@@ -17,7 +17,7 @@ from instagrapi.exceptions import (BadPassword, ChallengeRequired,
                                    LoginRequired, PleaseWaitFewMinutes,
                                    RateLimitError, SentryBlock, UnknownError,
                                    VideoTooLongException)
-from instagrapi.utils import generate_signature
+from instagrapi.utils import generate_signature, dumps
 
 
 def manual_input_code(self, username: str, choice=None):
@@ -87,40 +87,6 @@ class PrivateRequestMixin:
 
     @property
     def base_headers(self):
-        """
-        Example:
-            X-IG-App-Locale	en_US
-            X-IG-Device-Locale	en_US
-            X-IG-Mapped-Locale	en_US
-            X-Pigeon-Session-Id	ec6a2145-3b81-4c88-9b81-6285f0370a3b
-            X-Pigeon-Rawclienttime	1586192562.151
-            X-IG-Connection-Speed	-1kbps
-            X-IG-Bandwidth-Speed-KBPS	2934.670
-            X-IG-Bandwidth-TotalBytes-B	53417556
-            X-IG-Bandwidth-TotalTime-MS	15113
-            X-IG-EU-DC-ENABLED	true
-            X-IG-App-Startup-Country	US
-            X-Bloks-Version-Id	9963ab1f03b66a2392845416b379bf71e0613103e91d03dabfc2a8b6ccd0f990
-            X-Bloks-Is-Layout-RTL	false
-            X-IG-Device-ID	c642fece-8663-40d8-8ab7-112df0179e65
-            X-IG-Android-ID	android-7d8ad96cc1b71922
-            X-IG-Connection-Type	WIFI
-            X-IG-Capabilities	3brTvwM=
-            X-IG-App-ID	1217981644879628
-            User-Agent	Instagram 134.0.0.26.121 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 205280538)
-            Accept-Language	en-US
-            Cookie	urlgen={\"91.108.28.92\": 42065}:1jLV8b:MS5-AItdzNM_pp5oR_AidcAVaNQ; ig_direct_region_hint=FRC; ds_user=dhbastards; igfl=dhbastards; ds_user_id=8530598273; mid=XotDHQABAAFsb6GIlQ_RJCSwAaBN; shbts=1586192141.118131; sessionid=8530598273%3AMwtjHRDT0bKJsS%3A4; csrftoken=H8Rk6Ry2ffWcUSwWIBblVK4hHHII2RMk; shbid=3713; rur=VLL; is_starred_enabled=yes
-            Authorization	Bearer IGT:2:eyJkc191c2VyX2lkIjoiODUzMDU5ODI3MyIsInNlc3Npb25pZCI6Ijg1MzA1OTgyNzMlM0FNd3RqSFJEVDBiS0pzUyUzQTQifQ==
-            X-MID	XotDHQABAAFsb6GIlQ_RJCSwAaBN
-            Content-Type	application/x-www-form-urlencoded; charset=UTF-8
-            Accept-Encoding	gzip, deflate
-            Host	i.instagram.com
-            X-FB-HTTP-Engine	Liger
-            Connection	keep-alive
-            Content-Length	553
-            Pragma	no-cache
-            Cache-Control	no-cache
-            """
         return {
             "X-IG-App-Locale": "en_US",
             "X-IG-Device-Locale": "en_US",
@@ -128,24 +94,25 @@ class PrivateRequestMixin:
             "X-Pigeon-Session-Id": self.generate_uuid(),
             "X-Pigeon-Rawclienttime": str(round(time.time() * 1000) / 1000),
             "X-IG-Connection-Speed": "-1kbps",
-            "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2900000, 10000000) / 1000),
-            "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),
-            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(5000, 15000)),
+            "X-IG-Bandwidth-Speed-KBPS": "-1.000",  # str(random.randint(2900000, 10000000) / 1000),
+            "X-IG-Bandwidth-TotalBytes-B": "0",  # str(random.randint(5000000, 90000000)),
+            "X-IG-Bandwidth-TotalTime-MS": "0",  # str(random.randint(5000, 15000)),
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
+            "X-IG-App-Startup-Country": "US",
             "X-Bloks-Version-Id": hashlib.sha256(
                 json.dumps(self.device_settings).encode()
             ).hexdigest(),
+            "X-IG-WWW-Claim": "0",
             "X-Bloks-Is-Layout-RTL": "false",
             # "X-Bloks-Enable-RenderCore": "false",  # OLD from instabot
-            # "X-IG-WWW-Claim": "0",  # OLD from instabot
             "X-MID": self.mid,  # "XkAyKQABAAHizpYQvHzNeBo4E9nm" in instabot
+            "X-Bloks-Is-Panorama-Enabled": "true",
             "X-IG-Device-ID": self.uuid,
             "X-IG-Android-ID": self.device_id,
             "X-IG-Connection-Type": "WIFI",
             "X-IG-Capabilities": "3brTvwM=",  # "3brTvwE=" in instabot
             "X-IG-App-ID": "567067343352427",
-            "X-IG-App-Startup-Country": "US",
             "User-Agent": self.user_agent,
             "Accept-Language": "en-US",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
@@ -153,8 +120,9 @@ class PrivateRequestMixin:
             "Host": "i.instagram.com",
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",  # "close" in instabot
-            "Pragma": "no-cache",
-            "Cache-Control": "no-cache",
+            # "Pragma": "no-cache",
+            # "Cache-Control": "no-cache",
+            "X-FB-Client-IP": "True",
         }
 
     @staticmethod
@@ -189,7 +157,7 @@ class PrivateRequestMixin:
                 # data = json.dumps(data)
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
-                    data = generate_signature(json.dumps(data))
+                    data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(

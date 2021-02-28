@@ -30,6 +30,8 @@ from instagrapi.types import (
     Usertag
 )
 from instagrapi.zones import UTC
+from instagrapi.utils import generate_jazoest
+
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
@@ -155,6 +157,10 @@ class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
 
 
 class ClientTestCase(unittest.TestCase):
+
+    def test_jazoest(self):
+        phone_id = "57d64c41-a916-3fa5-bd7a-3796c1dab122"
+        self.assertTrue(generate_jazoest(phone_id), "22413")
 
     def test_lg(self):
         settings = {

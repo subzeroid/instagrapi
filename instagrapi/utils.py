@@ -40,7 +40,7 @@ class InstagramIdCodec:
         return num
 
 
-def generate_signature(data):
+def generate_signature_old(data):
     """Generate signature of POST data for Private API"""
     body = hmac.new(
         config.IG_SIG_KEY.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
@@ -49,6 +49,12 @@ def generate_signature(data):
         body=body,
         data=urllib.parse.quote(data),
         sig_key=config.SIG_KEY_VERSION,
+    )
+
+
+def generate_signature(data):
+    return "signed_body=SIGNATURE.{data}".format(
+        data=urllib.parse.quote(data)
     )
 
 
@@ -78,3 +84,8 @@ def gen_csrftoken(size=32):
 
 def dumps(data):
     return json.dumps(data, separators=(",", ":"))
+
+
+def generate_jazoest(symbols: str) -> str:
+    amount = sum(ord(s) for s in symbols)
+    return f'2{amount}'
