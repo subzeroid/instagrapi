@@ -104,8 +104,8 @@ This is your authorized account
 | cookie_dict                                  | dict      | Return cookies
 | user_id                                      | int       | Return your user_id (after login)
 | device                                       | dict      | Return device dict which we pass to Instagram
-| set_device(device: dict)                     | bool      | Change device settings
-| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header
+| set_device(device: dict)                     | bool      | Change device settings (https://user-agents.net/applications/instagram-app)
+| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header (https://user-agents.net/applications/instagram-app)
 | base_headers                                 | dict      | Base headers for Instagram
 | account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)
 | account_edit(\*\*data)                       | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url)
