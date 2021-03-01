@@ -21,7 +21,7 @@ requirements = [
     'requests==2.25.1',
     'PySocks==1.7.1',
     'pydantic==1.7.3',
-    'pycryptodomex==3.9.9'
+    'pycryptodomex==3.10.1'
 ]
 # requirements = [
 #     line.strip()
