@@ -321,4 +321,7 @@ def extract_story_gql(data):
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
+    story["preview_url"] = story["display_resources"][0]["src"]
+    story["width"] = story["dimensions"]["width"]
+    story["height"] = story["dimensions"]["height"]
     return Story(**story)
