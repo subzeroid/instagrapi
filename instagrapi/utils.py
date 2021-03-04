@@ -54,7 +54,7 @@ def generate_signature_old(data):
 
 def generate_signature(data):
     return "signed_body=SIGNATURE.{data}".format(
-        data=urllib.parse.quote(data)
+        data=urllib.parse.quote_plus(data)
     )
 
 

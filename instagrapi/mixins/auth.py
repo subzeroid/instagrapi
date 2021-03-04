@@ -175,7 +175,7 @@ class PostLoginFlowMixin:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
-            "X-CM-Bandwidth-KBPS": -1.000,  # str(random.randint(2000, 5000)),
+            "X-CM-Bandwidth-KBPS": '-1.000',  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
@@ -327,10 +327,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
+            # "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
             "phone_id": self.phone_id,
             "enc_password": enc_password,
-            "_csrftoken": self.token,
+            # "_csrftoken": self.token,
             "username": username,
             "adid": self.advertising_id,
             "guid": self.uuid,
