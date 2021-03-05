@@ -1,8 +1,9 @@
+import time
 import base64
+
 from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Random import get_random_bytes
-from datetime import datetime
 
 
 class PasswordMixin:
@@ -11,7 +12,7 @@ class PasswordMixin:
         publickeyid, publickey = self.password_publickeys()
         session_key = get_random_bytes(32)
         iv = get_random_bytes(12)
-        timestamp = datetime.now().strftime('%s')
+        timestamp = str(int(time.time()))
         decoded_publickey = base64.b64decode(publickey.encode())
         recipient_key = RSA.import_key(decoded_publickey)
         cipher_rsa = PKCS1_v1_5.new(recipient_key)
