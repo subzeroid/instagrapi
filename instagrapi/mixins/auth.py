@@ -552,7 +552,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A random android device id
         """
         return (
-            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))).hexdigest()[:16]
+            "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
         )
 
     def expose(self) -> Dict:
