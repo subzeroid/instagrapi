@@ -17,7 +17,7 @@ from instagrapi.exceptions import (BadPassword, ChallengeRequired,
                                    LoginRequired, PleaseWaitFewMinutes,
                                    RateLimitError, SentryBlock, UnknownError,
                                    VideoTooLongException)
-from instagrapi.utils import generate_signature, dumps
+from instagrapi.utils import dumps, generate_signature
 
 
 def manual_input_code(self, username: str, choice=None):
