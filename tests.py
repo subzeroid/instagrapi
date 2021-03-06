@@ -486,8 +486,10 @@ class ClientCommentTestCase(ClientPrivateTestCase):
         }.items():
             self.assertEqual(comment[key], val)
         self.assertIn("pk", comment)
-        # The comment was written no more than 20 seconds ago
-        self.assertTrue((now - comment["created_at_utc"]).seconds <= 60)
+        # The comment was written no more than 120 seconds ago
+        self.assertTrue(
+            abs((now - comment["created_at_utc"]).total_seconds()) <= 120
+        )
         user_fields = comment['user'].keys()
         for field in ["pk", "username", "full_name", "profile_pic_url"]:
             self.assertIn(field, user_fields)
@@ -745,7 +747,11 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             if data['pk'] == location.pk:
                 break
         for key, val in data.items():
-            self.assertEqual(getattr(location, key), val)
+            itm = getattr(location, key)
+            if isinstance(val, float):
+                val = round(val, 2)
+                itm = round(itm, 2)
+            self.assertEqual(itm, val)
 
     def test_photo_upload_without_location(self):
         media_pk = self.api.media_pk_from_url(
