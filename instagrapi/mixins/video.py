@@ -451,7 +451,7 @@ class UploadVideoMixin:
         story_sticker_ids = []
         data = {
             "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
-            "has_original_sound": "1",
+            # "has_original_sound": "1",
             # Segment mode (when file is too big):
             # "allow_multi_configures": "1",
             # "segmented_video_group_id": str(uuid4()),
@@ -477,6 +477,8 @@ class UploadVideoMixin:
             "capture_type": "normal",
             "rich_text_format_types": '["strong"]',  # default, typewriter
             "upload_id": upload_id,
+            "scene_capture_type": "",
+            # "original_media_type": "photo" / "video",
             # Facebook Sharing Part:
             # "xpost_surface": "auto_xpost",
             # "share_to_fb_destination_type": "USER",
@@ -487,6 +489,17 @@ class UploadVideoMixin:
             "device": self.device,
             "length": duration,
             "clips": [{"length": duration, "source_type": "4"}],
+            # "edits": {
+            #     "crop_original_size": [
+            #         960,
+            #         960
+            #     ],
+            #     "crop_center": [
+            #         0,
+            #         0
+            #     ],
+            #     "crop_zoom": 1
+            # },
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 0,
