@@ -23,6 +23,7 @@ from instagrapi.exceptions import (
     ChallengeRequired,
     ClientBadRequestError,
     InactiveUserError,
+    TwoFactorRequiredError,
     InvalidUserError,
     IPBlockError,
     ClientConnectionError,
@@ -384,6 +385,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 raise BadPassword(**last_json)
             elif error_type == "inactive user":
                 raise InactiveUserError(**last_json)
+            elif error_type == "two_factor_required":
+                raise TwoFactorRequiredError(**last_json)
             elif error_type == "invalid_user":
                 raise InvalidUserError(**last_json)
             elif error_type == "ip_block":

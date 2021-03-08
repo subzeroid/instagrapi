@@ -26,6 +26,10 @@ class IPBlockError(ClientError):
     """error_type:'ip_block'"""
 
 
+class TwoFactorRequiredError(ClientError):
+    """error_type:'two_factor_required'"""
+
+
 class GenericRequestError(ClientError):
     """Sorry, there was a problem with your request"""
 
