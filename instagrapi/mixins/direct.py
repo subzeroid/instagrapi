@@ -1,4 +1,6 @@
 import re
+import time
+from pathlib import Path
 from typing import List
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
@@ -137,7 +139,7 @@ class DirectMixin:
         return self.direct_send(text, [], [int(thread_id)])
 
     def direct_send(
-        self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
+            self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
     ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
@@ -178,3 +180,73 @@ class DirectMixin:
             with_signature=False,
         )
         return extract_direct_message(result["payload"])
+
+    def direct_send_photo(
+            self, filepath: str, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
+        """
+        Send a direct photo to list of users or threads
+
+        Parameters
+        ----------
+        filepath: str
+            Path to photo that will be posted on the thread
+
+        user_ids: List[int]
+            List of unique identifier of Users thread
+
+        thread_ids: List[int]
+            List of unique identifier of Direct Message thread
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        method = "configure_photo"
+        kwargs = {}
+        if user_ids:
+            kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+
+        path = Path(filepath)
+
+        upload_id = str(int(time.time() * 1000))
+        upload_id, width, height = self.photo_rupload(path, upload_id)
+
+        kwargs['upload_id'] = upload_id
+        kwargs['content_type'] = 'photo'
+
+        data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
+
+        result = self.private_request(
+            "direct_v2/threads/broadcast/%s/" % method,
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
+
+    def direct_send_seen(self, thread_id: int) -> None:
+        """
+        Send seen to thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread which messages will be read
+
+        Returns
+        -------
+        None
+        """
+        data = {}
+
+        thread = self.direct_thread(thread_id=thread_id)
+        print(thread)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/items/{thread.messages[0].id}/seen/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
