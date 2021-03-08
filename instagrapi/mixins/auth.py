@@ -14,6 +14,7 @@ import requests
 
 from instagrapi import config
 from instagrapi.exceptions import ReloginAttemptExceeded
+from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
 from json.decoder import JSONDecodeError
@@ -57,14 +58,11 @@ class PreLoginFlowMixin:
         bool
             A boolean value
         """
-        # /api/v1/accounts/get_prefill_candidates
-        self.get_prefill_candidates(True)
-        # /api/v1/qe/sync (server_config_retrieval)
-        self.sync_device_features(True)
-        # /api/v1/launcher/sync/ (server_config_retrieval)
-        self.sync_launcher(True)
-        # /api/v1/accounts/contact_point_prefill/
         self.set_contact_point_prefill("prefill")
+        self.get_prefill_candidates(True)
+        self.set_contact_point_prefill("prefill")
+        self.sync_launcher(True)
+        self.sync_device_features(True)
         return True
 
     def get_prefill_candidates(self, login: bool = False) -> Dict:
@@ -81,19 +79,15 @@ class PreLoginFlowMixin:
         bool
             A boolean value
         """
-        # "android_device_id":"android-f14b9731e4869eb",
-        # "phone_id":"b4bd7978-ca2b-4ea0-a728-deb4180bd6ca",
-        # "usages":"[\"account_recovery_omnibox\"]",
-        # "_csrftoken":"9LZXBXXOztxNmg3h1r4gNzX5ohoOeBkI",
-        # "device_id":"70db6a72-2663-48da-96f5-123edff1d458"
         data = {
             "android_device_id": self.device_id,
+            "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
             "device_id": self.device_id,
         }
-        if login is False:
-            data["_csrftoken"] = self.token
+        # if login is False:
+        data["_csrftoken"] = self.token
         return self.private_request(
             "accounts/get_prefill_candidates/", data, login=login
         )
@@ -121,9 +115,8 @@ class PreLoginFlowMixin:
             data["_uuid"] = self.uuid
             data["_uid"] = self.user_id
             data["_csrftoken"] = self.token
-        return self.private_request(
-            "qe/sync/", data, login=login, headers={"X-DEVICE-ID": self.uuid}
-        )
+        # headers={"X-DEVICE-ID": self.uuid}
+        return self.private_request("qe/sync/", data, login=login)
 
     def sync_launcher(self, login: bool = False) -> Dict:
         """
@@ -163,7 +156,7 @@ class PreLoginFlowMixin:
         Dict
             A dictionary of response from the call
         """
-        data = {"phone_id": self.phone_id, "usage": usage}
+        data = {"phone_id": self.phone_id, "usage": usage, "_csrftoken": self.token}
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
@@ -208,7 +201,7 @@ class PostLoginFlowMixin:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
-            "X-CM-Bandwidth-KBPS": str(random.randint(2000, 5000)),
+            "X-CM-Bandwidth-KBPS": '-1.000',  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
@@ -486,14 +479,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if self.user_id:
             return True  # already login
         self.pre_login_flow()
+        enc_password = self.password_encrypt(password)
         data = {
+            "jazoest": generate_jazoest(self.phone_id),
+            # "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
             "phone_id": self.phone_id,
-            "_csrftoken": self.token,
+            "enc_password": enc_password,
+            # "_csrftoken": self.token,
             "username": username,
+            "adid": self.advertising_id,
             "guid": self.uuid,
             "device_id": self.device_id,
-            "password": password,
-            "login_attempt_count": "0",
+            "google_tokens": "[]",
+            "login_attempt_count": "0"
         }
         if self.private_request("accounts/login/", data, login=True):
             self.login_flow()
@@ -632,16 +630,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "105.0.0.18.119",
-            "android_version": 28,
-            "android_release": "9.0",
+            "app_version": "169.3.0.30.135",
+            "android_version": 26,
+            "android_release": "8.0.0",
             "dpi": "640dpi",
             "resolution": "1440x2560",
-            "manufacturer": "samsung",
-            "device": "SM-G965F",
-            "model": "star2qltecs",
-            "cpu": "samsungexynos9810",
-            "version_code": "168361634",
+            "manufacturer": "Xiaomi",
+            "device": "MI 5s",
+            "model": "capricorn",
+            "cpu": "qcom",
+            "version_code": "264009049",
         }
         self.set_uuids({})
         return True
@@ -709,7 +707,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A random android device id
         """
         return (
-            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))).hexdigest()[:16]
+            "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
         )
 
     def expose(self) -> Dict:
