@@ -133,8 +133,10 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
-        user = self.users_stories_gql([user_id])[0]
-        stories = deepcopy(user.stories)
+        user = self.users_stories_gql([user_id])
+        if len(user) == 0:
+            return []
+        stories = deepcopy(user[0].stories)
         if amount:
             stories = stories[:amount]
         return stories
