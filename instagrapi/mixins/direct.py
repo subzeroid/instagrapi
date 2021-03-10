@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import List
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
-from instagrapi.extractors import extract_direct_message, extract_direct_thread
-from instagrapi.types import DirectMessage, DirectThread
+from instagrapi.extractors import extract_direct_message, extract_direct_thread, extract_direct_response
+from instagrapi.types import DirectMessage, DirectThread, DirectResponse
 from instagrapi.utils import dumps
 
 
@@ -228,7 +228,7 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def direct_send_seen(self, thread_id: int) -> None:
+    def direct_send_seen(self, thread_id: int) -> DirectResponse:
         """
         Send seen to thread
 
@@ -239,14 +239,14 @@ class DirectMixin:
 
         Returns
         -------
-        None
+            An object of DirectResponse
         """
         data = {}
 
         thread = self.direct_thread(thread_id=thread_id)
-        print(thread)
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/items/{thread.messages[0].id}/seen/",
             data=self.with_default_data(data),
             with_signature=False,
         )
+        return extract_direct_response(result)

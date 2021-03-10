@@ -214,6 +214,12 @@ class DirectMessage(BaseModel):
     placeholder: Optional[dict]
 
 
+class DirectResponse(BaseModel):
+    unseen_count: Optional[int]
+    unseen_count_ts: Optional[int]
+    status: Optional[str]
+
+
 class DirectThread(BaseModel):
     pk: int  # thread_v2_id, e.g. 17898572618026348
     id: int  # thread_id, e.g. 340282366841510300949128268610842297468
