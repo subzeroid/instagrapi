@@ -32,7 +32,6 @@ from instagrapi.types import (
 from instagrapi.zones import UTC
 from instagrapi.utils import generate_jazoest
 
-
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
 ACCOUNT_SESSIONID = os.environ.get("IG_SESSIONID", "")
@@ -658,7 +657,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
         self.assertTrue(media.like_count > 40)
         for key, val in {
             "caption_text": "@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill "
-            "#skateboarding #downhillskateboarding #crimea #foros #rememberwheels",
+                            "#skateboarding #downhillskateboarding #crimea #foros #rememberwheels",
             "pk": 1787135824035452364,
             "code": "BjNLpA1AhXM",
             "media_type": 8,
@@ -929,6 +928,13 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         pong = self.api.direct_answer(ping.thread_id, 'Pong')
         self.assertIsInstance(pong, DirectMessage)
         self.assertEqual(ping.thread_id, pong.thread_id)
+        # send direct photo
+        photo = self.api.direct_send_photo(filepath='examples/kanada.jpg', user_ids=[adw0rd])
+        self.assertIsInstance(photo, DirectMessage)
+        self.assertEqual(photo.thread_id, pong.thread_id)
+        # send seen
+        seen = self.api.direct_send_seen(thread_id=thread.id)
+        self.assertEqual(seen.status, 'ok')
 
 
 class ClientAccountTestCase(ClientPrivateTestCase):

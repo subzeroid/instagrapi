@@ -1,8 +1,9 @@
 from copy import deepcopy
 
-from .types import (Account, Collection, Comment, DirectMessage, DirectThread,
-                    Hashtag, Location, Media, MediaOembed, Resource, Story,
-                    StoryLink, StoryMention, User, UserShort, Usertag)
+from .types import (Account, Collection, Comment, DirectMessage,
+                    DirectResponse, DirectThread, Hashtag, Location, Media,
+                    MediaOembed, Resource, Story, StoryLink, StoryMention,
+                    User, UserShort, Usertag)
 from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
@@ -91,8 +92,8 @@ def extract_media_gql(data):
             [
                 extract_usertag(usertag["node"])
                 for usertag in media.get("edge_media_to_tagged_user", {}).get(
-                    "edges", []
-                )
+                "edges", []
+            )
             ],
             key=lambda tag: tag.user.pk,
         ),
@@ -201,6 +202,10 @@ def extract_direct_thread(data):
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
     return DirectThread(**data)
+
+
+def extract_direct_response(data):
+    return DirectResponse(**data)
 
 
 def extract_direct_message(data):
