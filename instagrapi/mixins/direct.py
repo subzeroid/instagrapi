@@ -4,8 +4,10 @@ from pathlib import Path
 from typing import List
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
-from instagrapi.extractors import extract_direct_message, extract_direct_thread, extract_direct_response
-from instagrapi.types import DirectMessage, DirectThread, DirectResponse
+from instagrapi.extractors import (extract_direct_message,
+                                   extract_direct_response,
+                                   extract_direct_thread)
+from instagrapi.types import DirectMessage, DirectResponse, DirectThread
 from instagrapi.utils import dumps
 
 

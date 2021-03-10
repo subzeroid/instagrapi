@@ -1,8 +1,9 @@
 from copy import deepcopy
 
-from .types import (Account, Collection, Comment, DirectMessage, DirectThread,
-                    Hashtag, Location, Media, MediaOembed, Resource, Story,
-                    StoryLink, StoryMention, User, UserShort, Usertag, DirectResponse)
+from .types import (Account, Collection, Comment, DirectMessage,
+                    DirectResponse, DirectThread, Hashtag, Location, Media,
+                    MediaOembed, Resource, Story, StoryLink, StoryMention,
+                    User, UserShort, Usertag)
 from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
