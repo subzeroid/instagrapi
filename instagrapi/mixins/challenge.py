@@ -7,10 +7,11 @@ from typing import Dict
 import requests
 
 from instagrapi.exceptions import (ChallengeError, ChallengeRedirection,
-                                   ChallengeRequired, RecaptchaChallengeForm,
+                                   ChallengeRequired,
+                                   LegacyForceSetNewPasswordForm,
+                                   RecaptchaChallengeForm,
                                    SelectContactPointRecoveryForm,
-                                   SubmitPhoneNumberForm,
-                                   LegacyForceSetNewPasswordForm)
+                                   SubmitPhoneNumberForm)
 
 CHOICE_SMS = 0
 CHOICE_EMAIL = 1
