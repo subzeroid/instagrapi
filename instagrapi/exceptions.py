@@ -94,6 +94,10 @@ class SubmitPhoneNumberForm(ChallengeError):
     pass
 
 
+class LegacyForceSetNewPasswordForm(ChallengeError):
+    pass
+
+
 class LoginRequired(PrivateError):
     """Instagram request relogin
     Example:

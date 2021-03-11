@@ -9,11 +9,22 @@ import requests
 from instagrapi.exceptions import (ChallengeError, ChallengeRedirection,
                                    ChallengeRequired, RecaptchaChallengeForm,
                                    SelectContactPointRecoveryForm,
-                                   SubmitPhoneNumberForm)
+                                   SubmitPhoneNumberForm,
+                                   LegacyForceSetNewPasswordForm)
 
 CHOICE_SMS = 0
 CHOICE_EMAIL = 1
 WAIT_SECONDS = 5
+
+
+def extract_messages(challenge):
+    messages = []
+    for item in challenge["extraData"].get("content"):
+        message = item.get("title", item.get("text"))
+        if message:
+            dot = "" if message.endswith(".") else "."
+            messages.append(f"{message}{dot}")
+    return messages
 
 
 class ChallengeResolveMixin:
@@ -46,7 +57,7 @@ class ChallengeResolveMixin:
             params = {}
         try:
             self._send_private_request(
-                challenge_url,
+                challenge_url[1:],
                 None,
                 params=params,
                 with_signature=False,
@@ -130,18 +141,10 @@ class ChallengeResolveMixin:
         )
         time.sleep(WAIT_SECONDS)
         choice = CHOICE_EMAIL
-        result = session.post(
-            challenge_url,
-            {
-                "choice": choice,
-                "enc_new_password1": enc_password,
-                "new_password1": "",
-                "enc_new_password2": enc_password,
-                "new_password2": "",
-            },
-        )
+        result = session.post(challenge_url, {"choice": choice})
         result = result.json()
         for retry in range(8):
+            time.sleep(WAIT_SECONDS)
             try:
                 # FORM TO ENTER CODE
                 result = self.handle_challenge_result(result)
@@ -150,16 +153,7 @@ class ChallengeResolveMixin:
                 if choice == CHOICE_SMS:  # last iteration
                     raise e
                 choice = CHOICE_SMS
-                result = session.post(
-                    challenge_url,
-                    {
-                        "choice": choice,
-                        "enc_new_password1": enc_password,
-                        "new_password1": "",
-                        "enc_new_password2": enc_password,
-                        "new_password2": "",
-                    },
-                )
+                result = session.post(challenge_url, {"choice": choice})
                 result = result.json()
                 continue  # next choice attempt
             except SubmitPhoneNumberForm as e:
@@ -174,30 +168,20 @@ class ChallengeResolveMixin:
                 break
             except ChallengeRedirection:
                 return True  # instagram redirect
-        assert result["challengeType"] in (
+        assert result.get("challengeType") in (
             "VerifyEmailCodeForm",
             "VerifySMSCodeForm",
             "VerifySMSCodeFormForSMSCaptcha",
         ), result
-        wait_seconds = 5
         for retry_code in range(5):
             for attempt in range(1, 11):
                 code = self.challenge_code_handler(self.username, choice)
                 if code:
                     break
-                time.sleep(wait_seconds * attempt)
+                time.sleep(WAIT_SECONDS * attempt)
             # SEND CODE
             time.sleep(WAIT_SECONDS)
-            result = session.post(
-                challenge_url,
-                {
-                    "security_code": code,
-                    "enc_new_password1": enc_password,
-                    "new_password1": "",
-                    "enc_new_password2": enc_password,
-                    "new_password2": "",
-                },
-            ).json()
+            result = session.post(challenge_url, {"security_code": code}).json()
             result = result.get("challenge", result)
             if (
                 "Please check the code we sent you and try again"
@@ -205,6 +189,9 @@ class ChallengeResolveMixin:
             ):
                 break
         # FORM TO APPROVE CONTACT DATA
+        challenge_type = result.get("challengeType")
+        if challenge_type == "LegacyForceSetNewPasswordForm":
+            self.challenge_resolve_new_password_form(result)
         assert result.get("challengeType") == "ReviewContactPointChangeForm", result
         details = []
         for data in result["extraData"]["content"]:
@@ -232,6 +219,13 @@ class ChallengeResolveMixin:
         assert result.get("type") == "CHALLENGE_REDIRECTION", result
         assert result.get("status") == "ok", result
         return True
+
+    def challenge_resolve_new_password_form(self, result):
+        msg = ' '.join([
+            'Log into your Instagram account from smartphone and change password!',
+            *extract_messages(result)
+        ])
+        raise LegacyForceSetNewPasswordForm(msg)
 
     def handle_challenge_result(self, challenge: Dict):
         """
@@ -289,11 +283,7 @@ class ChallengeResolveMixin:
             'status': 'fail'}
             """
             if "extraData" in challenge:
-                for item in challenge["extraData"].get("content"):
-                    message = item.get("title", item.get("text"))
-                    if message:
-                        dot = "" if message.endswith(".") else "."
-                        messages.append(f"{message}{dot}")
+                messages += extract_messages(challenge)
             if "errors" in challenge:
                 for error in challenge["errors"]:
                     messages.append(error)

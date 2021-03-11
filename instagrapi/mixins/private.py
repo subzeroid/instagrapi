@@ -308,5 +308,4 @@ class PrivateRequestMixin:
                 # After challenge resolve return last_json
                 return self.last_json
             return self._send_private_request(endpoint, **kwargs)
-
         return self.last_json
