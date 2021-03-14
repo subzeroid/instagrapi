@@ -92,6 +92,50 @@ class LocationMixin:
         
         return locations
 
+    def location_search_pk(self, location_pk: int) -> Location:
+        """
+        Get locations using pk
+
+        Parameters
+        ----------
+        pk: int
+            id
+        Returns
+        -------
+        Location
+            An object of Location
+        """
+        result = self.top_search(self.location_info(location_pk).name)
+        
+        location = "{}"
+        for places in result["places"]:
+            single_location=extract_location(places)
+            if int(single_location.pk)==location_pk:
+                location=single_location
+                break
+        
+        return location
+
+    def location_search_name(self, locationName) -> List[Location]:
+        """
+        Get locations using locationName
+
+        Parameters
+        ----------
+        LocationName: string
+                    LocationName
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(locationName)
+        locations = []
+        for places in result["places"]:
+            locations.append(extract_location(places))
+        
+        return locations
+
     def location_complete(self, location: Location) -> Location:
         """
         Smart complete of location
@@ -142,9 +186,6 @@ class LocationMixin:
         Returns
         -------
         str
-                if location.pk != None:
-            location = self.location_info(location.pk)
-        else:
         """
         if location.pk != None:
             location = self.location_search_pk(location.pk)

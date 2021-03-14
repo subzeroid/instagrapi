@@ -1,0 +1,16 @@
+version: "3.4"
+services:
+
+  # "devbox" to enable the developer to have a fully loaded development environment
+  devbox: &devbox
+    build:
+      dockerfile: "./docker/devbox.dockerfile"
+      context: "."
+    tty: true
+    volumes:
+      - "./:/app"
+
+  # "test" enables the developer to run all the tests and linting locally
+  test:
+    <<: *devbox
+    command: "docker/run_tests.sh --format-code"

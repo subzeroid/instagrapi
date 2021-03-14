@@ -3,7 +3,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
-Instagram API valid for 17 December 2020 (last reverse-engineering check)
+Instagram API valid for 6 January 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -26,11 +26,6 @@ Instagram API valid for 17 December 2020 (last reverse-engineering check)
 ### Install
 
     pip install instagrapi
-
-### Tests
-
-    python -m unittest tests
-    python -m unittest tests.ClientPublicTestCase
 
 ### Requests
 
@@ -79,8 +74,13 @@ The current types are in [types.py](/instagrapi/types.py):
 | Hashtag        | Hashtag object (id, name, picture)                                                     |
 | Collection     | Collection of medias (name, picture and list of medias)                                |
 | Comment        | Comments to Media                                                                      |
+| Story          | Story                                                                                  |
+| StoryLink      | Link (Swipe up)                                                                        |
+| StoryLocation  | Tag Location in Story (as stocker)                                                     |
 | StoryMention   | Mention users in Story (user, coordinates and dimensions)                              |
-| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinates |
+| StoryHashtag   | Hashtag for story (as sticker)                                                         |
+| StorySticker   | Tag sticker to story (for example from giphy)                                          |
+| StoryBuild     | [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention cordinats  |
 | DirectThread   | Thread (topic) with messages in Direct                                                 |
 | DirectMessage  | Message in Direct                                                                      |
 
@@ -88,23 +88,26 @@ The current types are in [types.py](/instagrapi/types.py):
 
 This is your authorized account
 
-| Method                                       | Return    | Description                                                                       |
-| -------------------------------------------- | --------- | --------------------------------------------------------------------------------- |
-| Client(settings: dict = {}, proxy: str = "") | bool      | Init instagrapi client (settings example below)                                   |
-| login(username: str, password: str)          | bool      | Login by username and password (get new cookies if it does not exist in settings) |
-| relogin()                                    | bool      | Relogin with clean cookies (required cl.username/cl.password)                     |
-| login_by_sessionid(sessionid: str)           | bool      | Login by sessionid from Instagram site                                            |
-| get_settings()                               | dict      | Return settings dict (more details below)                                         |
-| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy                                                |
-| cookie_dict                                  | dict      | Return cookies                                                                    |
-| user_id                                      | int       | Return your user_id (after login)                                                 |
-| device                                       | dict      | Return device dict which we pass to Instagram                                     |
-| set_device(device: dict)                     | bool      | Change device settings                                                            |
-| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header                                                          |
-| base_headers                                 | dict      | Base headers for Instagram                                                        |
-| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)                      |
-| account_edit(\**data)                        | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url) |
-| account_change_picture(path: Path)           | UserShort | Change Profile picture                                                            |
+| Method                                       | Return    | Description
+| -------------------------------------------- | --------- | ---------------------------------------------------------------------------------
+| Client(settings: dict = {}, proxy: str = "") | bool      | Init instagrapi client (settings example below)
+| login(username: str, password: str)          | bool      | Login by username and password (get new cookies if it does not exist in settings)
+| relogin()                                    | bool      | Relogin with clean cookies (required cl.username/cl.password)
+| login_by_sessionid(sessionid: str)           | bool      | Login by sessionid from Instagram site
+| get_settings()                               | dict      | Return settings dict (more details below)
+| set_settings(settings: Dict)                 | bool      | Set session settings
+| load_settings(path: Path)                    | dict      | Load session settings from file
+| dump_settings(path: Path)                    | bool      | Serialize and save session settings to file
+| set_proxy(dsn: str)                          | dict      | Support socks and http/https proxy "scheme://username:password@host:port"
+| cookie_dict                                  | dict      | Return cookies
+| user_id                                      | int       | Return your user_id (after login)
+| device                                       | dict      | Return device dict which we pass to Instagram
+| set_device(device: dict)                     | bool      | Change device settings
+| set_user_agent(user_agent: str = "")         | bool      | Change User-Agent header
+| base_headers                                 | dict      | Base headers for Instagram
+| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)
+| account_edit(\*\*data)                       | Account   | Change profile data (e.g. email, phone_number, username, full_name, biography, external_url)
+| account_change_picture(path: Path)           | UserShort | Change Profile picture
 
 Example:
 
@@ -112,7 +115,8 @@ Example:
 cl.login("instagrapi", "42")
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
-# cl.set_proxy("http://127.0.0.1:8080")
+# cl.set_proxy("http://username:password@127.0.0.1:8080")
+# cl.set_proxy("socks5://username:password@127.0.0.1:30235")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
@@ -160,19 +164,22 @@ Viewing and editing publications (medias)
 * `code` - Short code (slug for media), example `BjNLpA1AhXM` from `"https://www.instagram.com/p/BjNLpA1AhXM/"`
 * `url` - URL to media publication
 
-| Method                                             | Return             | Description                                                   |
-| -------------------------------------------------- | ------------------ | ------------------------------------------------------------- |
-| media_id(media_pk: int)                            | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587) |
-| media_pk(media_id: str)                            | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772) |
-| media_pk_from_code(code: str)                      | int                | Return media_pk                                               |
-| media_pk_from_url(url: str)                        | int                | Return media_pk                                               |
-| media_info(media_pk: int)                          | Media              | Return media info                                             |
-| media_delete(media_pk: int)                        | bool               | Delete media                                                  |
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media      |
-| media_user(media_pk: int)                          | User               | Get user info for media                                       |
-| media_oembed(url: str)                             | MediaOembed        | Return short media info by media URL                          | 
-| media_like(media_id: str)                          | bool               | Like media                                                    |
-| media_unlike(media_id: str)                        | bool               | Unlike media                                                  |
+| Method                                                          | Return             | Description                                  |
+| --------------------------------------------------------------- | ------------------ | -------------------------------------------- |
+| media_id(media_pk: int)                                         | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587)
+| media_pk(media_id: str)                                         | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772)
+| media_pk_from_code(code: str)                                   | int                | Return media_pk
+| media_pk_from_url(url: str)                                     | int                | Return media_pk
+| user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
+| media_info(media_pk: int)                                       | Media              | Return media info
+| media_delete(media_pk: int)                                     | bool               | Delete media
+| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media
+| media_user(media_pk: int)                                       | User | Get user info for media
+| media_oembed(url: str)                                          | MediaOembed        | Return short media info by media URL
+| media_like(media_id: str)                                       | bool               | Like media
+| media_unlike(media_id: str)                                     | bool               | Unlike media
+| media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a story as seen
+| media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post
 
 Example:
 
@@ -246,6 +253,24 @@ Example:
 
 ```
 
+#### Media Type
+
+* Photo: media_type=1
+* Video: media_type=2, product_type=feed
+* IGTV:  media_type=2, product_type=igtv
+* Reel:  media_type=2, product_type=clips
+* Album: media_type=8
+
+#### Story
+
+| Method                                                          | Return      | Description
+| --------------------------------------------------------------- | ----------- | ---------------------------------- |
+| user_stories(user_id: int, amount: int = None)                  | List[Story] | Get list of stories by user_id
+| story_info(story_pk: int, use_cache: bool = True)               | Story       | Return story info
+| story_delete(story_pk: int)                                     | bool        | Delete story
+| story_seen(story_pks: List[int], skipped_story_pks: List[int])  | bool        | Mark a story as seen
+
+
 #### Comment
 
 | Method                                             | Return             | Description                                                   |
@@ -262,17 +287,16 @@ View a list of a user's medias, following and followers
 
 * `user_id` - Integer ID of user, example `1903424587`
 
-| Method                                             | Return              | Description                                      |
-| -------------------------------------------------- | ------------------- | ------------------------------------------------ |
-| user_medias(user_id: int, amount: int = 20)        | List\[Media]        | Get list of medias by user_id                    |
-| user_followers(user_id: int)                       | Dict\[int, User]    | Get dict of followers users                      |
-| user_following(user_id: int)                       | Dict\[int, User]    | Get dict of following users                      |
-| user_info(user_id: int)                            | User                | Get user info                                    |
-| user_info_by_username(username: str)               | User                | Get user info by username                        |
-| user_follow(user_id: int)                          | bool                | Follow user                                      |
-| user_unfollow(user_id: int)                        | bool                | Unfollow user                                    |
-| user_id_from_username(username: str)               | int                 | Get user_id by username                          |
-| username_from_user_id(user_id: int)                | str                 | Get username by user_id                          |
+| Method                                             | Return              | Description                                                        |
+| -------------------------------------------------- | ------------------- | ------------------------------------------------------------------ |
+| user_followers(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of followers users (amount=0 - fetch all followers)       |
+| user_following(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of following users (amount=0 - fetch all following users) |
+| user_info(user_id: int)                            | User                | Get user info                                                      |
+| user_info_by_username(username: str)               | User                | Get user info by username                                          |
+| user_follow(user_id: int)                          | bool                | Follow user                                                        |
+| user_unfollow(user_id: int)                        | bool                | Unfollow user                                                      |
+| user_id_from_username(username: str)               | int                 | Get user_id by username                                            |
+| username_from_user_id(user_id: int)                | str                 | Get username by user_id                                            |
 
 Example:
 
@@ -344,7 +368,7 @@ Upload medias to your feed. Common arguments:
 * `caption`  - Text for you post
 * `storyUpload`  - If True will create a story from image (default: False)
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
-* `location` - Location (e.g. `Location(lat=42.0, lng=42.0)`)
+* `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
 | Method                                                                                                                    | Return  | Description                        |
 | ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
@@ -361,28 +385,40 @@ Upload medias to your stories. Common arguments:
 * `caption` - Caption for story (now use to fetch mentions)
 * `blur` - Fill Story Background with Image Blur (Default: True)
 * `thumbnail` - Thumbnail instead capture from source file
-* `usertags` - Specify usertags for mention users in story 
-* `configure_timeout` - How long to wait in seconds for a response from Instagram when publishing a story
+* `mentions` - Tag profiles in story
+* `locations` - Add locations to story
 * `links` - "Swipe Up" links (now use first)
+* `hashtags` - Add hashtags to story
+* `stickers` - Add stickers to story
 
-| Method                                                                                                                      | Return   | Description                      |
-| --------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| photo_upload_to_story(path: Path, caption: str, blur: bool, upload_id: str, mentions: List[Usertag])                        | Media    | Upload photo (Support JPG files) |
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], links: List[StoryLink])           | Media    | Upload video (Support MP4 files) |
+| Method                                                                                           | Return   | Description   |
+| ------------------------------------------------------------------------------------------------ | -------- | ------------- |
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker])  | Story  | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker]) | Story  | Upload video (Support MP4 files)
 
 Examples:
 
 ``` python
+from instagrapi import Client
+from instagrapi.types import Location, StoryMention, StoryLocation, StoryLink, StoryHashtag
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 )
 adw0rd = cl.user_info_by_username('adw0rd')
+loc = cl.location_complete(Location(name='Test', lat=42.0, lng=42.0))
+ht = cl.hashtag_info('dhbastards')
 
 cl.video_upload_to_story(
     media_path,
     "Credits @adw0rd",
     mentions=[StoryMention(user=adw0rd, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
-    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
+    locations=[StoryLocation(location=loc, x=0.33, y=0.22, width=0.4, height=0.7)],
+    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
+    hashtags=[StoryHashtag(hashtag=ht, x=0.23, y=0.32, width=0.5, height=0.22)],
 )
 ```
 
@@ -428,11 +464,14 @@ More stories here https://www.instagram.com/surferyone/
 
 #### Collections
 
-| Method                                                       | Return             | Description                                                   |
-| ------------------------------------------------------------ | ------------------ | ------------------------------------------------------------- |
-| collections()                                                | List\[Collection]  | Get all account collections                                   |
-| collection_medias_by_name(name)                              | List\[Media]       | Get medias in collection by name                              |
-| collection_medias(collection_id, amount=21, last_media_pk=0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor |
+| Method                                                                          | Return             | Description                                      |
+| ------------------------------------------------------------------------------- | ------------------ | ------------------------------------------------ |
+| collections()                                                                   | List\[Collection]  | Get all account collections
+| collection_pk_by_name(name: str)                                                | int                | Get collection_pk by name
+| collection_medias_by_name(name: str)                                            | List\[Media]       | Get medias in collection by name
+| collection_medias(collection_pk: int, amount: int = 21, last_media_pk: int = 0) | List\[Media]       | Get medias in collection by collection_id; Use **amount=0** to return all medias in collection; Use **last_media_pk** to return medias by cursor
+| media_save(media_id: str, collection_pk: int = None)                            | bool               | Save media to collection
+| media_unsave(media_id: str, collection_pk: int = None)                          | bool               | Unsave media from collection
 
 
 #### Insights
@@ -591,3 +630,22 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | AlbumNotDownload         | PrivateError | Raise when album not found                     |
 | AlbumUnknownFormat       | PrivateError | Raise when format of media not MP4 or JPG      |
 | AlbumConfigureError      | PrivateError | Raise when album not configured                |
+
+## Contribute
+
+First, please [install docker](https://docs.docker.com/install/) on your computer.
+Docker must be running correctly for these commands to work.
+
+*If you are using windows, please make sure your editor writes files with linefeed (`\n`) line endings.*
+
+Once you have cloned this repo, run the test suite to see if docker is set up correctly:
+
+```bash
+docker-compose run --rm test
+```
+
+You can also run just the lint using:
+
+```bash
+docker-compose run --rm lint
+```

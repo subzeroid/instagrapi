@@ -176,6 +176,11 @@ def extract_locationV2(data):
         return None
     data=data["place"]["location"]
     data["pk"] = data.get("id", data.get("pk"))
+    try:
+        data=data["place"]["location"]
+    except:
+        pass
+    data["pk"] = data.get("id", data.get("pk", None))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(
         "external_id_source", data.get("external_source")

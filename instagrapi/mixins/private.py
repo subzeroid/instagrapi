@@ -171,7 +171,6 @@ class PrivateRequestMixin:
         headers=None,
         extra_sig=None,
     ):
-        endpoint1=endpoint
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
         self.private.headers.update(self.base_headers)
@@ -182,12 +181,12 @@ class PrivateRequestMixin:
         if self.user_id and login:
             raise Exception(f"User already login ({self.user_id})")
         try:
-            if not endpoint.startswith('/'):
-                endpoint = f"/v1/{endpoint}"
-            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
-            url=endpoint
-            if "topsearch"  in endpoint:
-                api_url= endpoint1
+            if "topsearch" in endpoint:
+                api_url= endpoint
+            else:
+                if not endpoint.startswith('/'):
+                    endpoint = f"/v1/{endpoint}"
+                api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)

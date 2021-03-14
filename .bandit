@@ -1,0 +1,3 @@
+[bandit]
+exclude: *venv*,*env*,*scratch*
+skips: B101,B311,B303,B306
