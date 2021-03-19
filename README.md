@@ -5,6 +5,8 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
+For any other languages, I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
+
 Instagram API valid for 6 January 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
