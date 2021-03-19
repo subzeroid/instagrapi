@@ -20,7 +20,7 @@ Use the most recent version of the API from Instagram.
 requirements = [
     'requests==2.25.1',
     'PySocks==1.7.1',
-    'pydantic==1.7.3',
+    'pydantic==1.8.1',
     'pycryptodomex==3.9.9'
 ]
 # requirements = [
@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.5.6',
+    version='1.5.7',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
