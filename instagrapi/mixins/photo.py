@@ -21,7 +21,7 @@ from instagrapi.utils import dumps
 try:
     from PIL import Image
 except ImportError:
-    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
 
 
 class DownloadPhotoMixin:
