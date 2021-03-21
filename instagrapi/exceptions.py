@@ -22,6 +22,10 @@ class InvalidUserError(ClientError):
     """The username you entered doesn't appear to belong to an account. Please check your username and try again."""
 
 
+class PrivateProfileUser(ClientError):
+    """ Private profile user """
+
+
 class IPBlockError(ClientError):
     """error_type:'ip_block'"""
 
