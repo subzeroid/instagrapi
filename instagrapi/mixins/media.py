@@ -6,11 +6,19 @@ from datetime import datetime
 from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.exceptions import (ClientError, ClientLoginRequired,
-                                   ClientNotFoundError, MediaNotFound)
-from instagrapi.extractors import (extract_location, extract_media_gql,
-                                   extract_media_oembed, extract_media_v1,
-                                   extract_user_short)
+from instagrapi.exceptions import (
+    ClientError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    MediaNotFound,
+)
+from instagrapi.extractors import (
+    extract_location,
+    extract_media_gql,
+    extract_media_oembed,
+    extract_media_v1,
+    extract_user_short,
+)
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
 
@@ -475,19 +483,17 @@ class MediaMixin:
         next_max_id = ""
         min_timestamp = None
         while True:
-            try:
-                items = self.private_request(
-                    f"feed/user/{user_id}/",
-                    params={
-                        "max_id": next_max_id,
-                        "min_timestamp": min_timestamp,
-                        "rank_token": self.rank_token,
-                        "ranked_content": "true",
-                    },
-                )["items"]
-            except Exception as e:
-                self.logger.exception(e)
-                break
+
+            items = self.private_request(
+                f"feed/user/{user_id}/",
+                params={
+                    "max_id": next_max_id,
+                    "min_timestamp": min_timestamp,
+                    "rank_token": self.rank_token,
+                    "ranked_content": "true",
+                },
+            )["items"]
+
             medias.extend(items)
             if not self.last_json.get("more_available"):
                 break
@@ -546,7 +552,7 @@ class MediaMixin:
         def gen(media_ids):
             result = {}
             for media_id in media_ids:
-                media_pk, user_id = self.media_id(media_id).split('_')
+                media_pk, user_id = self.media_id(media_id).split("_")
                 end = int(datetime.now().timestamp())
                 begin = end - random.randint(100, 3000)
                 result[f"{media_pk}_{user_id}_{user_id}"] = [f"{begin}_{end}"]
@@ -559,15 +565,14 @@ class MediaMixin:
             "nuxes": {},
             "reels": gen(media_ids),
             "live_vods": {},
-            "reel_media_skipped": gen(skipped_media_ids)
+            "reel_media_skipped": gen(skipped_media_ids),
         }
         result = self.private_request(
-            "/v2/media/seen/?reel=1&live_vod=0",
-            self.with_default_data(data)
+            "/v2/media/seen/?reel=1&live_vod=0", self.with_default_data(data)
         )
         return result["status"] == "ok"
 
     def media_likers(self, media_id: str) -> List[UserShort]:
         media_id = self.media_id(media_id)
         result = self.private_request(f"media/{media_id}/likers/")
-        return [extract_user_short(u) for u in result['users']]
+        return [extract_user_short(u) for u in result["users"]]
