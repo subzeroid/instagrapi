@@ -191,13 +191,13 @@ class PrivateRequestMixin:
             self.last_json = last_json = response.json()
             self.logger.debug("last_json %s", last_json)
         except JSONDecodeError as e:
-            self.logger.error(
-                "Status %s: JSONDecodeError in private_request (user_id=%s, endpoint=%s) >>> %s",
-                response.status_code,
-                self.user_id,
-                endpoint,
-                response.text,
-            )
+            # self.logger.error(
+            #     "Status %s: JSONDecodeError in private_request (user_id=%s, endpoint=%s) >>> %s",
+            #     response.status_code,
+            #     self.user_id,
+            #     endpoint,
+            #     response.text,
+            # )
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
                 response=response,
