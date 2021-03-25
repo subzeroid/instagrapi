@@ -163,6 +163,7 @@ class UploadPhotoMixin:
         self,
         path: Path,
         caption: str,
+        storyUpload:bool=False,
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
@@ -198,6 +199,8 @@ class UploadPhotoMixin:
             ):
                 media = self.last_json.get("media")
                 self.expose()
+                if storyUpload:
+                    self.photo_upload_to_story(path,caption)
                 return extract_media_v1(media)
         raise PhotoConfigureError(
             response=self.last_response, **self.last_json

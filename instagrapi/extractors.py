@@ -157,6 +157,30 @@ def extract_location(data):
     """Extract location info"""
     if not data:
         return None
+    data["pk"] = data.get("id", data.get("pk"))
+    data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
+    data["external_id_source"] = data.get(
+        "external_id_source", data.get("external_source")
+    )
+
+    # address_json = data.get("address_json", "{}")
+    # if isinstance(address_json, str):
+    #     address_json = json.loads(address_json)
+    # data['address_json'] = address_json
+    return Location(**data)
+
+
+
+def extract_locationV2(data):
+    """Extract location info"""
+    if not data:
+        return None
+    data=data["place"]["location"]
+    data["pk"] = data.get("id", data.get("pk"))
+    try:
+        data=data["place"]["location"]
+    except:
+        pass
     data["pk"] = data.get("id", data.get("pk", None))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(

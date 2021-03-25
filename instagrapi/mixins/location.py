@@ -4,7 +4,7 @@ from typing import List
 
 from instagrapi.exceptions import (ClientLoginRequired, ClientNotFoundError,
                                    LocationNotFound)
-from instagrapi.extractors import extract_location
+from instagrapi.extractors import extract_location,extract_locationV2
 from instagrapi.types import Location, Media
 
 
@@ -42,6 +42,98 @@ class LocationMixin:
                 venue["lat"] = lat
                 venue["lng"] = lng
             locations.append(extract_location(venue))
+        
+        print("location list")
+        print(locations)
+        print("--end location list")
+
+        return locations
+
+    def location_search_pk(self, pk: int) -> Location:
+        """
+        Get locations using pk
+
+        Parameters
+        ----------
+        pk: int
+            id
+        Returns
+        -------
+        Location
+            An object of Location
+        """
+        result = self.top_search(self.location_info(pk).name)
+        
+        location = "{}"
+        for places in result["places"]:
+            single_location=extract_locationV2(places)
+            if single_location.pk==pk:
+                location=single_location
+        
+        return location
+
+    def location_search_name(self, LocationName: str) -> List[Location]:
+        """
+        Get locations using name
+
+        Parameters
+        ----------
+        LocationName: string
+                    LocationName
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(LocationName)
+        locations = []
+        for places in result["places"]:
+            locations.append(extract_locationV2(places))
+        
+        return locations
+
+    def location_search_pk(self, location_pk: int) -> Location:
+        """
+        Get locations using pk
+
+        Parameters
+        ----------
+        pk: int
+            id
+        Returns
+        -------
+        Location
+            An object of Location
+        """
+        result = self.top_search(self.location_info(location_pk).name)
+        
+        location = "{}"
+        for places in result["places"]:
+            single_location=extract_location(places)
+            if int(single_location.pk)==location_pk:
+                location=single_location
+                break
+        
+        return location
+
+    def location_search_name(self, locationName) -> List[Location]:
+        """
+        Get locations using locationName
+
+        Parameters
+        ----------
+        LocationName: string
+                    LocationName
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(locationName)
+        locations = []
+        for places in result["places"]:
+            locations.append(extract_location(places))
+        
         return locations
 
     def location_complete(self, location: Location) -> Location:
@@ -95,14 +187,18 @@ class LocationMixin:
         -------
         str
         """
-        if not location:
-            return "{}"
-        if not location.external_id and location.lat:
-            try:
-                location = self.location_search(location.lat, location.lng)[0]
-            except IndexError:
-                pass
+        if location.pk != None:
+            location = self.location_search_pk(location.pk)
+        else:
+            if not location:
+                return "{}"
+            if not location.external_id and location.lat:
+                try:
+                    location = self.location_search(location.lat, location.lng)[0]
+                except IndexError:
+                    pass
         data = {
+            "pk": location.pk,
             "name": location.name,
             "address": location.address,
             "lat": location.lat,
@@ -110,6 +206,7 @@ class LocationMixin:
             "external_source": location.external_id_source,
             "facebook_places_id": location.external_id,
         }
+
         return json.dumps(data, separators=(",", ":"))
 
     def location_info_a1(self, location_pk: int) -> Location:

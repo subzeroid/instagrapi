@@ -149,9 +149,12 @@ class PrivateRequestMixin:
         if self.user_id and login:
             raise Exception(f"User already login ({self.user_id})")
         try:
-            if not endpoint.startswith('/'):
-                endpoint = f"/v1/{endpoint}"
-            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
+            if "topsearch" in endpoint:
+                api_url= endpoint
+            else:
+                if not endpoint.startswith('/'):
+                    endpoint = f"/v1/{endpoint}"
+                api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)

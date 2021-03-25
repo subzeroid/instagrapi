@@ -370,12 +370,13 @@ Upload medias to your feed. Common arguments:
 
 * `path` - Path to source file
 * `caption`  - Text for you post
+* `storyUpload`  - If True will create a story from image (default: False)
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
 | Method                                                                                                                    | Return  | Description                        |
 | ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)                       | Media   | Upload photo (Support JPG files)   |
+| photo_upload(path: Path, caption: str, storyUpload:bool , upload_id: str, usertags: List[Usertag], location: Location)    | Media   | Upload photo (Support JPG files)   |
 | video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)                      | Media   | Upload video (Support MP4 files)   |
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)           | Media   | Upload IGTV (Support MP4 files)    |
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                                | Media   | Upload Album (Support JPG and MP4) |
@@ -386,6 +387,7 @@ Upload medias to your stories. Common arguments:
 
 * `path` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
+* `blur` - Fill Story Background with Image Blur (Default: True)
 * `thumbnail` - Thumbnail instead capture from source file
 * `mentions` - Tag profiles in story
 * `locations` - Add locations to story
