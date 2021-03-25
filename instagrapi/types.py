@@ -1,7 +1,13 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, FilePath, HttpUrl
+from pydantic import ValidationError, validator, BaseModel, FilePath, HttpUrl
+
+
+def validate_external_url(cls, v):
+    if (v.startswith('http') and '://' in v) or isinstance(v, str):
+        return v
+    raise ValidationError('external_url must been URL or string')
 
 
 class Resource(BaseModel):
@@ -22,8 +28,10 @@ class User(BaseModel):
     follower_count: int
     following_count: int
     biography: Optional[str] = ""
-    external_url: Optional[HttpUrl]
+    external_url: Optional[str]
     is_business: bool
+
+    _external_url = validator('external_url', allow_reuse=True)(validate_external_url)
 
 
 class Account(BaseModel):
@@ -34,12 +42,14 @@ class Account(BaseModel):
     profile_pic_url: HttpUrl
     is_verified: bool
     biography: Optional[str] = ""
-    external_url: Optional[HttpUrl]
+    external_url: Optional[str]
     is_business: bool
     birthday: Optional[str]
     phone_number: Optional[str]
     gender: Optional[int]
     email: Optional[str]
+
+    _external_url = validator('external_url', allow_reuse=True)(validate_external_url)
 
 
 class UserShort(BaseModel):
