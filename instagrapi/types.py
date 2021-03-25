@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import ValidationError, validator, BaseModel, FilePath, HttpUrl
+from pydantic import BaseModel, FilePath, HttpUrl, ValidationError, validator
 
 
 def validate_external_url(cls, v):
