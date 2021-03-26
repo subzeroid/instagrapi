@@ -81,7 +81,8 @@ class PreLoginFlowMixin:
         """
         data = {
             "android_device_id": self.device_id,
-            "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
+            "client_contact_points": '[{"type":"omnistring","value":"%s","source":"last_login_attempt"}]'
+            % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
             "device_id": self.device_id,
@@ -201,7 +202,7 @@ class PostLoginFlowMixin:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
-            "X-CM-Bandwidth-KBPS": '-1.000',  # str(random.randint(2000, 5000)),
+            "X-CM-Bandwidth-KBPS": "-1.000",  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
@@ -356,7 +357,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if response.status_code == 403:
             if message == "login_required":
                 raise LoginRequired(response=response, **last_json)
-            if "Looks like you requested to delete this account" in message:
+            if (
+                "Looks like you requested to delete this account" in message
+                or "Your account has been disabled for violating our terms" in message
+            ):
                 raise InvalidUserError(response=response, **last_json)
             raise ClientForbiddenError(response=response, **last_json)
         elif response.status_code == 400:
@@ -491,7 +495,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "guid": self.uuid,
             "device_id": self.device_id,
             "google_tokens": "[]",
-            "login_attempt_count": "0"
+            "login_attempt_count": "0",
         }
         if self.private_request("accounts/login/", data, login=True):
             self.login_flow()
@@ -706,9 +710,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A random android device id
         """
-        return (
-            "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
-        )
+        return "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
 
     def expose(self) -> Dict:
         """
