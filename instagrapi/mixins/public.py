@@ -5,13 +5,20 @@ from json.decoder import JSONDecodeError
 
 import requests
 
-from instagrapi.exceptions import (ClientBadRequestError,
-                                   ClientConnectionError, ClientError,
-                                   ClientForbiddenError, ClientGraphqlError,
-                                   ClientIncompleteReadError,
-                                   ClientJSONDecodeError, ClientLoginRequired,
-                                   ClientNotFoundError, ClientThrottledError,
-                                   GenericRequestError)
+from instagrapi.exceptions import (
+    UserNotFound,
+    ClientBadRequestError,
+    ClientConnectionError,
+    ClientError,
+    ClientForbiddenError,
+    ClientGraphqlError,
+    ClientIncompleteReadError,
+    ClientJSONDecodeError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    ClientThrottledError,
+    GenericRequestError,
+)
 from instagrapi.utils import json_value
 
 
@@ -169,7 +176,8 @@ class PublicRequestMixin:
                     json_value(response, "errors", "error", 0, default=error_type),
                     **response
                 )
-            raise e
+            raise UserNotFound(e)
+            # raise e
 
     def public_graphql_request(
         self,
