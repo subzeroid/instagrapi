@@ -180,7 +180,7 @@ class StoryBuild(BaseModel):
 
 
 class StoryLink(BaseModel):
-    webUri: HttpUrl
+    webUri: str
 
 
 class Story(BaseModel):
