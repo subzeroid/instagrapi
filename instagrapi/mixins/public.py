@@ -129,12 +129,12 @@ class PublicRequestMixin:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
-            self.request_logger.error(
-                "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
-                response.status_code,
-                response.url,
-                response.text,
-            )
+            # self.request_logger.error(
+            #     "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
+            #     response.status_code,
+            #     response.url,
+            #     response.text,
+            # )
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, url),
                 response=response,
