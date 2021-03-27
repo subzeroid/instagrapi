@@ -22,7 +22,7 @@ class User(BaseModel):
     follower_count: int
     following_count: int
     biography: Optional[str] = ""
-    external_url: Optional[HttpUrl]
+    external_url: Optional[str]
     is_business: bool
 
 
