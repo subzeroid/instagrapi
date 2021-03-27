@@ -34,7 +34,7 @@ class Account(BaseModel):
     profile_pic_url: HttpUrl
     is_verified: bool
     biography: Optional[str] = ""
-    external_url: Optional[HttpUrl]
+    external_url: Optional[str]
     is_business: bool
     birthday: Optional[str]
     phone_number: Optional[str]
