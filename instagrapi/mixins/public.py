@@ -31,17 +31,18 @@ class PublicRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.public = requests.Session()
-        self.public.headers.update(
-            {
-                "Connection": "Keep-Alive",
-                "Accept": "*/*",
-                "Accept-Encoding": "gzip,deflate",
-                "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
-            }
-        )
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
+
+    @property
+    def public_base_headers(self):
+        return {
+            "Connection": "Keep-Alive",
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip,deflate",
+            "Accept-Language": "en-US",
+            "User-Agent": self.web_user_agent,
+        }
 
     def public_request(
         self,
@@ -51,7 +52,7 @@ class PublicRequestMixin:
         headers=None,
         return_json=False,
         retries_count=10,
-        retries_timeout=10,
+        retries_timeout=30,
     ):
         kwargs = dict(
             data=data,
@@ -90,6 +91,7 @@ class PublicRequestMixin:
         self, url, data=None, params=None, headers=None, return_json=False
     ):
         self.public_requests_count += 1
+        self.public.headers.update(self.public_base_headers)
         if headers:
             self.public.headers.update(headers)
         if self.request_timeout:

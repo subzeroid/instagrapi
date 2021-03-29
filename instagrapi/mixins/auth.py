@@ -293,6 +293,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
+        self.username = self.settings.get("username", "")
+        self.web_user_agent = self.settings.get(
+            "web_user_agent",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+        )
         return True
 
     def login_by_web(self, username: str, password: str) -> dict:
@@ -307,9 +312,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         BASE_URL = "https://www.instagram.com"
 
-        response = self.private.get(
+        response = self.public.get(
             BASE_URL,
-            headers={"user-agent": self.user_agent},
+            headers={"user-agent": self.web_user_agent},
             proxies={"https": self.proxy},
             timeout=30,
             verify=False,
@@ -321,9 +326,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         cookies = response.cookies.get_dict()
 
-        response = self.private.get(
+        response = self.public.get(
             f"{BASE_URL}/web/__mid/",
-            headers={"user-agent": self.user_agent},
+            headers={"user-agent": self.web_user_agent},
             proxies={"https": self.proxy},
             timeout=30,
             verify=False,
@@ -335,7 +340,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "referer": BASE_URL,
             "x-csrftoken": csrfToken,
             "X-CSRFToken": csrfToken,
-            "user-agent": self.user_agent,
+            "user-agent": self.web_user_agent,
         }
         payload = {
             "username": username,
@@ -426,6 +431,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.login_by_sessionid(cookies["sessionid"])
 
         return cookies
+
+    def login_by_settings(self, settings) -> bool:
+        self.settings = json.loads(settings)
+        self.init()
+        return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
         """
@@ -570,6 +580,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
+            "web_user_agent": self.web_user_agent,
+            "username": self.username,
         }
 
     def set_settings(self, settings: Dict) -> bool:

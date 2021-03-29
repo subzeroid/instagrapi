@@ -16,8 +16,11 @@ from instagrapi.mixins.media import MediaMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
 from instagrapi.mixins.private import PrivateRequestMixin
-from instagrapi.mixins.public import (ProfilePublicMixin, PublicRequestMixin,
-                                      TopSearchesPublicMixin)
+from instagrapi.mixins.public import (
+    ProfilePublicMixin,
+    PublicRequestMixin,
+    TopSearchesPublicMixin,
+)
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
@@ -53,7 +56,13 @@ class Client(
     proxy = None
     logger = logging.getLogger("instagrapi")
 
-    def __init__(self, settings: dict = {}, proxy: str = None, **kwargs):
+    def __init__(
+        self,
+        settings: dict = {},
+        web_user_agent: str = None,
+        proxy: str = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self.settings = settings
         self.set_proxy(proxy)
