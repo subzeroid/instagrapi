@@ -5,7 +5,7 @@ from pydantic import BaseModel, FilePath, HttpUrl, ValidationError, validator
 
 
 def validate_external_url(cls, v):
-    if (v.startswith('http') and '://' in v) or isinstance(v, str):
+    if v is None or (v.startswith('http') and '://' in v) or isinstance(v, str):
         return v
     raise ValidationError('external_url must been URL or string')
 
