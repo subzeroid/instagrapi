@@ -91,7 +91,7 @@ class Media(BaseModel):
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
-    comment_count: int
+    comment_count: Optional[int] = 0
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
