@@ -2,10 +2,13 @@ from copy import deepcopy
 from typing import Dict, List
 
 from instagrapi import config
-from instagrapi.exceptions import (ClientError, ClientLoginRequired,
-                                   ClientNotFoundError, UserNotFound)
-from instagrapi.extractors import (extract_user_gql, extract_user_short,
-                                   extract_user_v1)
+from instagrapi.exceptions import (
+    ClientError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    UserNotFound,
+)
+from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
 from instagrapi.types import User, UserShort
 from instagrapi.utils import json_value
 

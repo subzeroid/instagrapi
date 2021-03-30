@@ -6,12 +6,15 @@ from typing import Dict
 
 import requests
 
-from instagrapi.exceptions import (ChallengeError, ChallengeRedirection,
-                                   ChallengeRequired,
-                                   LegacyForceSetNewPasswordForm,
-                                   RecaptchaChallengeForm,
-                                   SelectContactPointRecoveryForm,
-                                   SubmitPhoneNumberForm)
+from instagrapi.exceptions import (
+    ChallengeError,
+    ChallengeRedirection,
+    ChallengeRequired,
+    LegacyForceSetNewPasswordForm,
+    RecaptchaChallengeForm,
+    SelectContactPointRecoveryForm,
+    SubmitPhoneNumberForm,
+)
 
 CHOICE_SMS = 0
 CHOICE_EMAIL = 1

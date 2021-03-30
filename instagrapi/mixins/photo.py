@@ -10,12 +10,23 @@ from uuid import uuid4
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import (PhotoConfigureError,
-                                   PhotoConfigureStoryError, PhotoNotUpload)
+from instagrapi.exceptions import (
+    PhotoConfigureError,
+    PhotoConfigureStoryError,
+    PhotoNotUpload,
+)
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, StorySticker,
-                              Usertag)
+from instagrapi.types import (
+    Location,
+    Media,
+    Story,
+    StoryHashtag,
+    StoryLink,
+    StoryLocation,
+    StoryMention,
+    StorySticker,
+    Usertag,
+)
 from instagrapi.utils import dumps
 
 try:

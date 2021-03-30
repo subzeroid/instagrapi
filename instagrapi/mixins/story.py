@@ -3,10 +3,12 @@ from copy import deepcopy
 from typing import List
 
 from instagrapi import config
-from instagrapi.exceptions import (ClientNotFoundError, StoryNotFound,
-                                   UserNotFound)
-from instagrapi.extractors import (extract_story_gql, extract_story_v1,
-                                   extract_user_short)
+from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
+from instagrapi.extractors import (
+    extract_story_gql,
+    extract_story_v1,
+    extract_user_short,
+)
 from instagrapi.types import Story, UserShort
 
 

@@ -6,11 +6,19 @@ from datetime import datetime
 from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.exceptions import (ClientError, ClientLoginRequired,
-                                   ClientNotFoundError, MediaNotFound)
-from instagrapi.extractors import (extract_location, extract_media_gql,
-                                   extract_media_oembed, extract_media_v1,
-                                   extract_user_short)
+from instagrapi.exceptions import (
+    ClientError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    MediaNotFound,
+)
+from instagrapi.extractors import (
+    extract_location,
+    extract_media_gql,
+    extract_media_oembed,
+    extract_media_v1,
+    extract_user_short,
+)
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
 
