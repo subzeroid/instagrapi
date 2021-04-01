@@ -70,6 +70,7 @@ class PublicRequestMixin:
                 ClientLoginRequired,
                 ClientNotFoundError,
                 ClientBadRequestError,
+                ChallengeRequired,
             ) as e:
                 # Stop retries
                 raise e
