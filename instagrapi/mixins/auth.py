@@ -435,6 +435,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     def login_by_settings(self, settings) -> bool:
         self.settings = json.loads(settings)
         self.init()
+        self.inject_sessionid_to_public()
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:

@@ -18,6 +18,7 @@ from instagrapi.exceptions import (
     ClientNotFoundError,
     ClientThrottledError,
     GenericRequestError,
+    ChallengeRequired,
 )
 from instagrapi.utils import json_value
 
@@ -130,6 +131,9 @@ class PublicRequestMixin:
         except JSONDecodeError as e:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
+
+            if "challenge" in response.url:
+                raise ChallengeRequired(e, response=response)
 
             # self.request_logger.error(
             #     "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
