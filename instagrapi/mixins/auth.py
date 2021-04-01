@@ -289,6 +289,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
+            self.public.cookie = requests.utils.cookiejar_from_dict(
+                self.settings["cookies"]
+            )
         self.last_login = self.settings.get("last_login")
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
