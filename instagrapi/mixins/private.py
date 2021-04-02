@@ -313,25 +313,8 @@ class PrivateRequestMixin:
             headers=headers,
             extra_sig=extra_sig,
         )
-        try:
-            self.private_requests_count += 1
-            self._send_private_request(endpoint, **kwargs)
-        except ClientRequestTimeout:
-            print("Wait 60 seconds and try one more time (ClientRequestTimeout)")
-            time.sleep(60)
-            return self._send_private_request(endpoint, **kwargs)
-        # except BadPassword as e:
-        #     raise e
-        # except Exception as e:
-        #     if self.handle_exception:
-        #         self.handle_exception(self, e)
-        #     elif isinstance(e, ChallengeRequired):
-        #         self.challenge_resolve(self.last_json)
-        #     else:
-        #         raise e
-        #     if login and self.user_id:
-        #         # After challenge resolve return last_json
-        #         return self.last_json
-        #     return self._send_private_request(endpoint, **kwargs)
+
+        self.private_requests_count += 1
+        self._send_private_request(endpoint, **kwargs)
 
         return self.last_json
