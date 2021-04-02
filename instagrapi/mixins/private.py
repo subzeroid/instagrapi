@@ -198,6 +198,9 @@ class PrivateRequestMixin:
             #     endpoint,
             #     response.text,
             # )
+            if "challenge" in response.url:
+                raise ChallengeRequired(e, response=response)
+
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
                 response=response,
