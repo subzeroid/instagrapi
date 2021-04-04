@@ -456,12 +456,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
-
         self.settings.update({"cookies": {"sessionid": sessionid}})
-
         self.init()
-        user_id = re.search(r"^\d+", sessionid).group()
         if not self.username:
+            user_id = re.search(r"^\d+", sessionid).group()
             user = self.user_info_v1(int(user_id))
             self.username = user.username
         return True
