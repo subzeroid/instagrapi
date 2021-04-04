@@ -190,6 +190,9 @@ class PrivateRequestMixin:
             # last_json - for Sentry context in traceback
             self.last_json = last_json = response.json()
             self.logger.debug("last_json %s", last_json)
+
+            self.settings.update({"cookies": response.cookies.get_dict()})
+
         except JSONDecodeError as e:
             # self.logger.error(
             #     "Status %s: JSONDecodeError in private_request (user_id=%s, endpoint=%s) >>> %s",
