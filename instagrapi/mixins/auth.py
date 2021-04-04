@@ -461,8 +461,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
-        user = self.user_info_v1(int(user_id))
-        self.username = user.username
+        if not self.username:
+            user = self.user_info_v1(int(user_id))
+            self.username = user.username
         return True
 
     def login(self, username: str, password: str, relogin: bool = False) -> bool:
