@@ -439,6 +439,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.settings = json.loads(settings)
         self.init()
         self.inject_sessionid_to_public()
+        self.last_login = time.time()
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -462,6 +463,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             user_id = re.search(r"^\d+", sessionid).group()
             user = self.user_info_v1(int(user_id))
             self.username = user.username
+        self.last_login = time.time()
         return True
 
     def login(self, username: str, password: str, relogin: bool = False) -> bool:
