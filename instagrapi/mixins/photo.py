@@ -10,18 +10,29 @@ from uuid import uuid4
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import (PhotoConfigureError,
-                                   PhotoConfigureStoryError, PhotoNotUpload)
+from instagrapi.exceptions import (
+    PhotoConfigureError,
+    PhotoConfigureStoryError,
+    PhotoNotUpload,
+)
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import (Location, Media, Story, StoryHashtag, StoryLink,
-                              StoryLocation, StoryMention, StorySticker,
-                              Usertag)
+from instagrapi.types import (
+    Location,
+    Media,
+    Story,
+    StoryHashtag,
+    StoryLink,
+    StoryLocation,
+    StoryMention,
+    StorySticker,
+    Usertag,
+)
 from instagrapi.utils import dumps
 
 try:
     from PIL import Image
 except ImportError:
-    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
 
 
 class DownloadPhotoMixin:

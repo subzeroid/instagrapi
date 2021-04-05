@@ -3,8 +3,11 @@ from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.exceptions import (AlbumConfigureError, AlbumNotDownload,
-                                   AlbumUnknownFormat)
+from instagrapi.exceptions import (
+    AlbumConfigureError,
+    AlbumNotDownload,
+    AlbumUnknownFormat,
+)
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
 from instagrapi.utils import dumps

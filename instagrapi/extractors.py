@@ -5,6 +5,7 @@ from .types import (
     Collection,
     Comment,
     DirectMessage,
+    DirectResponse,
     DirectThread,
     Hashtag,
     Location,
@@ -234,6 +235,10 @@ def extract_direct_thread(data):
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
     return DirectThread(**data)
+
+
+def extract_direct_response(data):
+    return DirectResponse(**data)
 
 
 def extract_direct_message(data):

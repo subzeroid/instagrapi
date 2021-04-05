@@ -6,15 +6,14 @@ from typing import Dict, List
 from uuid import uuid4
 
 from instagrapi import config
-from instagrapi.exceptions import (ClientError, IGTVConfigureError,
-                                   IGTVNotUpload)
+from instagrapi.exceptions import ClientError, IGTVConfigureError, IGTVNotUpload
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
 
 try:
     from PIL import Image
 except ImportError:
-    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=7.2.0")
+    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
 
 
 class DownloadIGTVMixin:

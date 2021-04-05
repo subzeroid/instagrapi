@@ -1,7 +1,13 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, FilePath, HttpUrl
+from pydantic import BaseModel, FilePath, HttpUrl, ValidationError, validator
+
+
+def validate_external_url(cls, v):
+    if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
+        return v
+    raise ValidationError("external_url must been URL or string")
 
 
 class Resource(BaseModel):
@@ -25,6 +31,8 @@ class User(BaseModel):
     external_url: Optional[str]
     is_business: bool
 
+    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
+
 
 class Account(BaseModel):
     pk: int
@@ -40,6 +48,8 @@ class Account(BaseModel):
     phone_number: Optional[str]
     gender: Optional[int]
     email: Optional[str]
+
+    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
 
 
 class UserShort(BaseModel):
@@ -84,7 +94,7 @@ class Media(BaseModel):
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
-    comment_count: int = 0
+    comment_count: Optional[int] = 0
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
@@ -218,6 +228,12 @@ class DirectMessage(BaseModel):
     story_share: Optional[dict]
     felix_share: Optional[dict]
     placeholder: Optional[dict]
+
+
+class DirectResponse(BaseModel):
+    unseen_count: Optional[int]
+    unseen_count_ts: Optional[int]
+    status: Optional[str]
 
 
 class DirectThread(BaseModel):

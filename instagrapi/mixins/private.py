@@ -12,10 +12,6 @@ from instagrapi.exceptions import (
     BadPassword,
     ChallengeRequired,
     ClientBadRequestError,
-    InactiveUserError,
-    InvalidUserError,
-    IPBlockError,
-    MediaNotFound,
     ClientConnectionError,
     ClientError,
     ClientForbiddenError,
@@ -29,8 +25,12 @@ from instagrapi.exceptions import (
     RateLimitError,
     SentryBlock,
     UnknownError,
-    PrivateProfileUser,
     VideoTooLongException,
+    InactiveUserError,
+    InvalidUserError,
+    IPBlockError,
+    MediaNotFound,
+    PrivateProfileUser,
 )
 from instagrapi.utils import dumps, generate_signature
 

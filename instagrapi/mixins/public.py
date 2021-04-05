@@ -6,7 +6,6 @@ from json.decoder import JSONDecodeError
 import requests
 
 from instagrapi.exceptions import (
-    UserNotFound,
     ClientBadRequestError,
     ClientConnectionError,
     ClientError,
@@ -19,6 +18,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     GenericRequestError,
     ChallengeRequired,
+    UserNotFound,
 )
 from instagrapi.utils import json_value
 
@@ -76,11 +76,13 @@ class PublicRequestMixin:
                 raise e
             except ClientError as e:
                 msg = str(e)
-                if (
-                    isinstance(e, ClientConnectionError)
-                    and "SOCKSHTTPSConnectionPool" in msg
-                    and "Max retries exceeded with url" in msg
-                    and "Failed to establish a new connection" in msg
+                if all(
+                    (
+                        isinstance(e, ClientConnectionError),
+                        "SOCKSHTTPSConnectionPool" in msg,
+                        "Max retries exceeded with url" in msg,
+                        "Failed to establish a new connection" in msg,
+                    )
                 ):
                     raise e
                 if retries_count > iteration + 1:
