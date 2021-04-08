@@ -159,8 +159,9 @@ class PrivateRequestMixin:
         self.private.headers.update(self.base_headers)
         if headers:
             self.private.headers.update(headers)
-        # if not login:
-        #     time.sleep(self.request_timeout)
+        if not login:
+            #     time.sleep(self.request_timeout)
+            self.very_small_delay()
         if self.user_id and login:
             raise Exception(f"User already login ({self.user_id})")
         try:
