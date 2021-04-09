@@ -184,10 +184,10 @@ class MediaMixin:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        if data["shortcode_media"]["location"]:
-            data["shortcode_media"]["location"] = self.location_complete(
-                extract_location(data["shortcode_media"]["location"])
-            ).dict()
+        # if data["shortcode_media"]["location"]:
+        #     data["shortcode_media"]["location"] = self.location_complete(
+        #         extract_location(data["shortcode_media"]["location"])
+        #     ).dict()
         return extract_media_gql(data["shortcode_media"])
 
     def media_info_v1(self, media_pk: int) -> Media:
