@@ -431,7 +431,17 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         cookies = response.cookies.get_dict()
         cookies["mid"] = mid
 
-        self.login_by_sessionid(cookies["sessionid"])
+        self.settings.update({"cookies": cookies})
+
+        self.init()
+        self.inject_sessionid_to_public()
+
+        if not self.username:
+            user_id = re.search(r"^\d+", cookies["sessionid"]).group()
+            user = self.user_info_v1(int(user_id))
+            self.username = user.username
+            
+        self.last_login = time.time()
 
         return cookies
 
