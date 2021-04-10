@@ -210,6 +210,15 @@ class IGTVConfigureError(IGTVNotUpload):
     pass
 
 
+
+class ClipNotUpload(PrivateError):
+    pass
+
+
+class ClipConfigureError(ClipNotUpload):
+    pass
+
+
 class AlbumNotDownload(PrivateError):
     pass
 
