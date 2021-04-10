@@ -5,12 +5,12 @@ from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
 from instagrapi.mixins.challenge import ChallengeResolveMixin
+from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
 from instagrapi.mixins.hashtag import HashtagMixin
 from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
-from instagrapi.mixins.clip import  DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
