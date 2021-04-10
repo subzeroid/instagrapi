@@ -20,7 +20,7 @@ Instagram API valid for 6 January 2021 (last reverse-engineering check)
 
 1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have [Email](/examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](/examples/challenge_resolvers.py)
-3. Support upload a Photo, Video, IGTV, Albums and Stories
+3. Support upload a Photo, Video, IGTV, Reels, Albums and Stories
 4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
 5. Like, Follow, Edit account (Bio) and much more else
 6. Insights by account, posts and stories
@@ -67,7 +67,7 @@ The current types are in [types.py](/instagrapi/types.py):
 
 | Method         | Description                                                                            |
 | -------------- | -------------------------------------------------------------------------------------- |
-| Media          | Media (Photo, Video, Album, IGTV or Story)                                             |
+| Media          | Media (Photo, Video, Album, IGTV, Reels or Story)                                      |
 | Resource       | Part of Media (for albums)                                                             |
 | MediaOembed    | Short version of Media                                                                 |
 | Account        | Full private info for your account (e.g. email, phone_number)                          |
@@ -359,10 +359,12 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
 | photo_download_by_url(url: str, filename: str, folder: Path) | Path    | Download photo by URL (path to photo with best resoluton)           |
 | video_download(media_pk: int, folder: Path)                  | Path    | Download video (path to video with best resoluton)                  |
 | video_download_by_url(url: str, filename: str, folder: Path) | Path    | Download Video by URL (path to video with best resoluton)           |
-| igtv_download(media_pk: int, folder: Path)                   | Path    | Download IGTV (path to video with best resoluton)                   |
-| igtv_download_by_url(url: str, filename: str, folder: Path)  | Path    | Download IGTV by URL (path to video with best resoluton)            |
 | album_download(media_pk: int, folder: Path)                  | Path    | Download Album (multiple paths to photo/video with best resolutons) |
 | album_download_by_urls(urls: List[str], folder: Path)        | Path    | Download Album by URLs (multiple paths to photo/video)              |
+| igtv_download(media_pk: int, folder: Path)                   | Path    | Download IGTV (path to video with best resoluton)                   |
+| igtv_download_by_url(url: str, filename: str, folder: Path)  | Path    | Download IGTV by URL (path to video with best resoluton)            |
+| clip_download(media_pk: int, folder: Path)                   | Path    | Download Reels Clip (path to video with best resoluton)             |
+| clip_download_by_url(url: str, filename: str, folder: Path)  | Path    | Download Reels Clip by URL (path to video with best resoluton)      |
 
 #### Upload Media
 
@@ -373,12 +375,13 @@ Upload medias to your feed. Common arguments:
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
-| Method                                                                                                                    | Return  | Description                        |
-| ------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------- |
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)                       | Media   | Upload photo (Support JPG files)   |
-| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)                      | Media   | Upload video (Support MP4 files)   |
-| igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)           | Media   | Upload IGTV (Support MP4 files)    |
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                                | Media   | Upload Album (Support JPG and MP4) |
+| Method                                                                                                          | Return  | Description
+| --------------------------------------------------------------------------------------------------------------- | ------- | ------------------
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)             | Media   | Upload photo (Support JPG files)
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)            | Media   | Upload video (Support MP4 files)
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                      | Media   | Upload Album (Support JPG/MP4 files)
+| igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location) | Media   | Upload IGTV (Support MP4 files)
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)             | Media   | Upload Reels Clip (Support MP4 files)
 
 #### Upload Stories
 
@@ -623,6 +626,13 @@ Automatic submission code from SMS/Email in examples [here](/examples/challenge_
 | ------------------------ | ------------- |----------------------------------------------- |
 | IGTVNotUpload            | PrivateError  | Raise when IGTV not upload                     |
 | IGTVConfigureError       | IGTVNotUpload | Raise when IGTV not configured                 |
+
+### Reels Clip Exceptions
+
+| Exception                | Base          | Description                                    |
+| ------------------------ | ------------- |----------------------------------------------- |
+| ClipNotUpload            | PrivateError  | Raise when Reels Clip not upload               |
+| ClipConfigureError       | ClipNotUpload | Raise when Reels Clip not configured           |
 
 
 ### Album Exceptions
