@@ -507,5 +507,8 @@ class UserMixin:
     def short_user_info_by_username(self, username: str) -> UserShort:
 
         data = self.top_search(username)
-        user = extract_user_short(data["users"][0]["user"])
+        try:
+            user = extract_user_short(data["users"][0]["user"])
+        except IndexError:
+            raise UserNotFound(**data)
         return user
