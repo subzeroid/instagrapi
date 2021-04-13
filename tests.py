@@ -293,6 +293,13 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertEqual(user.full_name, "Mikhail Andreev")
         self.assertFalse(user.is_private)
 
+    def test_age_restricted_user_info_by_username(self):
+        user = self.api.user_info_by_username("philippe_jury_")
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.pk, 5802433335)
+        self.assertEqual(user.full_name, "Philippe Jury")
+        self.assertFalse(user.is_private)
+
 
 class ClientMediaTestCase(ClientPrivateTestCase):
     def test_media_id(self):
