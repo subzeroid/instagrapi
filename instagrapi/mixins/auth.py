@@ -486,6 +486,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "cpu": "qcom",
             "version_code": "264009049",
         }
+        self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
         return True
 
@@ -507,6 +508,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             **self.device_settings
         )
         self.private.headers.update({"User-Agent": self.user_agent})
+        self.settings["user_agent"] = self.user_agent
         self.set_uuids({})
         return True
 
