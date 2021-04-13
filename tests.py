@@ -221,6 +221,30 @@ class ClientDeviceTestCase(ClientPrivateTestCase):
         self.assertEqual(user_agent, request_user_agent)
 
 
+class ClientDeviceAgentTestCase(ClientPrivateTestCase):
+
+    def test_set_device_agent(self):
+        device = {
+            "app_version": "165.1.0.20.119",
+            "android_version": 27,
+            "android_release": "8.1.0",
+            "dpi": "480dpi",
+            "resolution": "1080x1776",
+            "manufacturer": "motorola",
+            "device": "Moto G (5S)",
+            "model": "montana",
+            "cpu": "qcom",
+            "version_code": "253447809",
+        }
+        user_agent = "Instagram 165.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+        api = Client()
+        api.set_device(device)
+        api.set_user_agent(user_agent)
+        api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+        self.assertDictEqual(device, api.settings['device_settings'])
+        self.assertEqual(user_agent, api.settings['user_agent'])
+
+
 class ClientUserTestCase(ClientPrivateTestCase):
     def test_username_from_user_id(self):
         self.assertEqual(self.api.username_from_user_id(1903424587), "adw0rd")
