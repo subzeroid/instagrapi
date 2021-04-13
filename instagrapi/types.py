@@ -230,6 +230,17 @@ class DirectResponse(BaseModel):
     status: Optional[str]
 
 
+class DirectShortThread(BaseModel):
+    id: int
+    users: List[UserShort]
+    named: bool
+    thread_title: str
+    pending: bool
+    thread_type: str
+    viewer_id: int
+    is_group: bool
+
+
 class DirectThread(BaseModel):
     pk: int  # thread_v2_id, e.g. 17898572618026348
     id: int  # thread_id, e.g. 340282366841510300949128268610842297468

@@ -6,6 +6,7 @@ from .types import (
     Comment,
     DirectMessage,
     DirectResponse,
+    DirectShortThread,
     DirectThread,
     Hashtag,
     Location,
@@ -217,6 +218,12 @@ def extract_direct_thread(data):
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
     return DirectThread(**data)
+
+
+def extract_direct_short_thread(data):
+    data["users"] = [extract_user_short(u) for u in data["users"]]
+    data["id"] = data.get("thread_id")
+    return DirectShortThread(**data)
 
 
 def extract_direct_response(data):

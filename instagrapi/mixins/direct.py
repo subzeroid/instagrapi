@@ -7,9 +7,15 @@ from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_message,
     extract_direct_response,
+    extract_direct_short_thread,
     extract_direct_thread,
 )
-from instagrapi.types import DirectMessage, DirectResponse, DirectThread
+from instagrapi.types import (
+    DirectMessage,
+    DirectResponse,
+    DirectShortThread,
+    DirectThread,
+)
 from instagrapi.utils import dumps
 
 
@@ -254,3 +260,14 @@ class DirectMixin:
             with_signature=False,
         )
         return extract_direct_response(result)
+
+    def direct_search(self, query: str) -> List[DirectShortThread]:
+        result = self.private_request(
+            "direct_v2/ranked_recipients/",
+            params={"mode": "raven", "show_threads": "true", "query": str(query)}
+        )
+        return [
+            extract_direct_short_thread(item.get('thread', {}))
+            for item in result.get('ranked_recipients', [])
+            if 'thread' in item
+        ]
