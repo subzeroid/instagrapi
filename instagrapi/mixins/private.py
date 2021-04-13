@@ -247,7 +247,11 @@ class PrivateRequestMixin:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
-                elif "has been deleted" in message or "Media is unavailable" in message:
+                elif (
+                    "has been deleted" in message
+                    or "Media is unavailable" in message
+                    or "Invalid media_id" in message
+                ):
                     raise MediaNotFound(e, response=e.response, **last_json)
                 elif "Not authorized to view user" in message:
                     raise PrivateProfileUser(e, response=e.response, **last_json)
