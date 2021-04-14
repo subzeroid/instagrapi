@@ -77,7 +77,7 @@ class FakeClientTestCase(BaseClientMixin, unittest.TestCase):
 
     def test_login(self):
         try:
-            self.api.login(ACCOUNT_USERNAME, "fakepassword")
+            self.api.login(ACCOUNT_USERNAME, "yoa5af6deeRujeec")
         except Exception as e:
             self.assertEqual(
                 str(e), "The password you entered is incorrect. Please try again."
@@ -750,7 +750,7 @@ class ClientExtractTestCase(ClientPrivateTestCase):
 
 class ClienUploadTestCase(ClientPrivateTestCase):
     def get_location(self):
-        location = self.api.location_search(lat=59.939095, lng=30.315868)[0]
+        location = self.api.location_search(lat=59.93318, lng=30.30605)[0]
         self.assertIsInstance(location, Location)
         return location
 
@@ -760,8 +760,8 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             dict(
                 pk=213597007,
                 name='Palace Square',
-                lat=59.939166666667,
-                lng=30.315833333333
+                lat=59.938961072984,
+                lng=30.316096544266
             ),
             dict(
                 pk=107617247320879,
@@ -1004,11 +1004,25 @@ class ClientAccountTestCase(ClientPrivateTestCase):
 class ClientLocationTestCase(ClientPrivateTestCase):
 
     def test_location_search(self):
-        loc = self.api.location_search(51.0536111111, 13.8108333333)[0]
+        loc = self.api.location_search(51.053157024486, 13.812078650852)[0]
         self.assertIsInstance(loc, Location)
         self.assertIn('Dresden', loc.name)
         self.assertIn('Dresden', loc.address)
         self.assertEqual(150300262230285, loc.external_id)
+        self.assertEqual('facebook_places', loc.external_id_source)
+
+    def test_location_search_pk(self):
+        loc = self.api.location_search_pk(239130043)
+        self.assertIsInstance(loc, Location)
+        self.assertIn('Choroní', loc.name)
+        self.assertEqual(108835465815492, loc.external_id)
+        self.assertEqual('facebook_places', loc.external_id_source)
+        
+    def test_location_search_name(self):
+        loc = self.api.location_search("Choroní")[0]
+        self.assertIsInstance(loc, Location)
+        self.assertIn('Choroní', loc.name)
+        self.assertEqual(108835465815492, loc.external_id)
         self.assertEqual('facebook_places', loc.external_id_source)
 
     def test_location_complete_pk(self):
@@ -1028,14 +1042,14 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         )
         result = self.api.location_complete(source)
         self.assertIsInstance(result, Location)
-        self.assertEqual(result.lat, 51.0536111111)
-        self.assertEqual(result.lng, 13.8108333333)
+        self.assertEqual(result.lat, 51.053157024486)
+        self.assertEqual(result.lng, 13.812078650852)
 
     def test_location_complete_external_id(self):
         source = Location(
             name='Blaues Wunder (Dresden)',
-            lat=51.0536111111,
-            lng=13.8108333333
+            lat=51.053157024486,
+            lng=13.812078650852
         )
         result = self.api.location_complete(source)
         self.assertIsInstance(result, Location)
@@ -1053,8 +1067,8 @@ class ClientLocationTestCase(ClientPrivateTestCase):
             data, {
                 "name": "Blaues Wunder (Dresden)",
                 "address": "Dresden, Germany",
-                "lat": 51.053611111111,
-                "lng": 13.810833333333,
+                "lat": 51.053157024486,
+                "lng": 13.812078650852,
                 "facebook_places_id": 150300262230285,
                 "external_source": "facebook_places",
             }
@@ -1065,8 +1079,8 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         self.assertIsInstance(loc, Location)
         self.assertEqual(loc.pk, 150300262230285)
         self.assertEqual(loc.name, 'Blaues Wunder (Dresden)')
-        self.assertEqual(loc.lng, 13.8108333333)
-        self.assertEqual(loc.lat, 51.0536111111)
+        self.assertEqual(loc.lng, 13.812078650852)
+        self.assertEqual(loc.lat, 51.053157024486)
 
     def test_location_info_without_lat_lng(self):
         loc = self.api.location_info(197780767581661)

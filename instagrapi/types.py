@@ -76,6 +76,7 @@ class Location(BaseModel):
     lat: Optional[float]
     external_id: Optional[int]
     external_id_source: Optional[str]
+    precision: Optional[int]
     # address_json: Optional[dict] = {}
     # profile_pic_url: Optional[HttpUrl]
     # directory: Optional[dict] = {}

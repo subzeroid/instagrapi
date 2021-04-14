@@ -1,5 +1,6 @@
 import json
 import time
+from math import atan2, cos, radians, sin, sqrt
 from typing import List
 
 from instagrapi.exceptions import (
@@ -38,13 +39,69 @@ class LocationMixin:
             # rankToken=c544eea5-726b-4091-a916-a71a35a76474 - self.uuid?
             # fb_access_token=EAABwzLixnjYBABK2YBFkT...pKrjju4cijEGYtcbIyCSJ0j4ZD
         }
+        #Calculate approximate radius of earth in km
+        R = 6373.0
+        lat1 = radians(lat)
+        lon1 = radians(lng)
         result = self.private_request("location_search/", params=params)
         locations = []
         for venue in result["venues"]:
-            if "lat" not in venue:
-                venue["lat"] = lat
-                venue["lng"] = lng
-            locations.append(extract_location(venue))
+            if "lat" in venue:
+                lat2 = radians(venue["lat"])
+                lon2 = radians(venue["lng"])
+                dlon = lon2 - lon1
+                dlat = lat2 - lat1
+                a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+                c = 2 * atan2(sqrt(a), sqrt(1 - a))
+                precision = R * c
+                #return approximate of two coordinates in km
+                if precision < 1:
+                    loc=extract_location(venue)
+                    loc.precision=precision
+                    locations.append(loc)
+        return sorted(locations, key=lambda k: k.precision)
+
+    def location_search_pk(self, pk: int) -> Location:
+        """
+        Get locations using pk
+
+        Parameters
+        ----------
+        pk: int
+            id
+        Returns
+        -------
+        Location
+            An object of Location
+        """
+        result = self.top_search(self.location_info(pk).name)
+        
+        location = "{}"
+        for places in result["places"]:
+            single_location=extract_location(places)
+            if single_location.pk==pk:
+                location=single_location
+        
+        return location
+
+    def location_search_name(self, LocationName: str) -> List[Location]:
+        """
+        Get locations using name
+
+        Parameters
+        ----------
+        LocationName: string
+                    LocationName
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(LocationName)
+        locations = []
+        for places in result["places"]:
+            locations.append(extract_location(places))
+        
         return locations
 
     def location_complete(self, location: Location) -> Location:
