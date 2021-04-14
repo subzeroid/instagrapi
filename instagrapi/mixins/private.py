@@ -31,6 +31,7 @@ from instagrapi.exceptions import (
     IPBlockError,
     MediaNotFound,
     PrivateProfileUser,
+    InvalidTargetUser,
 )
 from instagrapi.utils import dumps, generate_signature
 
@@ -255,6 +256,8 @@ class PrivateRequestMixin:
                     raise MediaNotFound(e, response=e.response, **last_json)
                 elif "Not authorized to view user" in message:
                     raise PrivateProfileUser(e, response=e.response, **last_json)
+                elif "Invalid target user" in message:
+                    raise InvalidTargetUser(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}

@@ -26,6 +26,10 @@ class PrivateProfileUser(ClientError):
     """ Private profile user """
 
 
+class InvalidTargetUser(ClientError):
+    """ Invalid target user """
+
+
 class IPBlockError(ClientError):
     """error_type:'ip_block'"""
 
