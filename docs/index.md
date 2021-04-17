@@ -22,7 +22,7 @@ Instagram API valid for 13 April 2021 (last reverse-engineering check)
 ## Features
 
 1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
-2. Challenge Resolver have [Email](../examples/challenge_resolvers.py) (as well as recipes for automating receive a code from email) and [SMS handlers](../examples/challenge_resolvers.py)
+2. Challenge Resolver have Email (as well as recipes for automating receive a code from email) and SMS handlers
 3. Support upload a Photo, Video, IGTV, Reels, Albums and Stories
 4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
 5. Like, Follow, Edit account (Bio) and much more else

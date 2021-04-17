@@ -93,6 +93,6 @@ cl = Client(settings)
 
 ## Challenge
 
-All challenges solved in the module [challenge.py](../../instagrapi/mixins/challenge.py)
+All challenges solved in the module challenge.py
 
-Automatic submission code from SMS/Email in examples [here](../../examples/challenge_resolvers.py)
+Automatic submission code from SMS/Email in examples here

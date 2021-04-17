@@ -13,9 +13,6 @@ The first request to fetch media/user is `public` (anonymous), if instagram rais
 ## Detailed Sections
 
 * [Interactions][interactions]
-* [Optional Questions & Branching][optional-questions]
-* [Validators][validators]
-* [Command Line Interface][command-line]
 
 [getting-started]: ../getting-started.md
 [interactions]: interactions.md
