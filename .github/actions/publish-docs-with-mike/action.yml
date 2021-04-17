@@ -1,0 +1,37 @@
+name: "Publish Docs with Mike"
+description: |
+  Publish versioned documentation with Mike.
+  Requires a python environment to already be setup with mike and any other documentation dependencies installed.
+inputs:
+  version_name:
+    description: |
+      Name a version to publish.
+      Required when new_version is false.
+    required: false
+    default: ""
+  new_version:
+    description: |
+      If true, publish a new docs version. If an existing version uses the alias/tile "latest",
+      update the records so that the new version becomes the latest version.
+      If version_name is given, that value will be used. Otherwise the release tag will be used.
+    required: false
+    default: "false"
+  commit_user_name:
+    description: "User name to use for commits. When omitted, the event values will be inspected to derive the name."
+    default: ""
+    required: false
+  commit_user_email:
+    description: "User email to use for commits. When omitted, the event values will be inspected to derive the email."
+    default: ""
+    required: false
+runs:
+  using: "composite"
+  steps:
+    - run: "$GITHUB_ACTION_PATH/action.sh"
+      shell: "bash"
+      env:
+        USER_NAME: ${{ inputs.name }}
+        USER_EMAIL: ${{ inputs.email }}
+        VERSION_NAME: ${{ inputs.version_name }}
+        NEW_VERSION: ${{ inputs.new_version }}
+        RELEASE_TAG: ${{ github.event.release.tag_name }}

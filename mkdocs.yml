@@ -1,0 +1,49 @@
+site_name: instagrapi Documentation
+repo_url: https://github.com/adw0rd/instagrapi/
+repo_name: adw0rd/instagrapi
+edit_uri: edit/main/docs/
+docs_dir: docs
+nav:
+  - Overview: index.md
+  - Getting Started: getting-started.md
+  - Usage Guide:
+    - Fundamentals: usage-guide/fundamentals.md
+    - Interactions: usage-guide/interactions.md
+    - Collection: usage-guide/collection.md
+    - Comment: usage-guide/comment.md
+    - Direct: usage-guide/direct.md
+    - Hashtag: usage-guide/hashtag.md
+    - Insight: usage-guide/insight.md
+    - Location: usage-guide/location.md
+    - Media: usage-guide/media.md
+    - Story: usage-guide/story.md
+    - User: usage-guide/user.md
+  - Development Guide: development-guide.md
+theme: material
+markdown_extensions:
+  - markdown_include.include:
+      base_path: docs
+  - admonition
+  - codehilite
+  - footnotes
+  - pymdownx.highlight
+  - pymdownx.keys
+  - pymdownx.superfences
+plugins:
+  - mkdocstrings:
+      handlers:
+        python:
+          selection:
+            docstring_style: "restructured-text"
+          rendering:
+            heading_level: 3
+            show_root_heading: True
+            show_source: False
+            show_root_full_path: False
+  - mkdocstrings_patch_type_aliases
+
+extra:
+  version:
+    provider: mike
+extra_css:
+  - css/mkdocstrings.css

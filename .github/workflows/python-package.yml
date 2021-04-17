@@ -5,12 +5,11 @@ name: Package
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
+  pull_request: {}
 
 env:
-  PYTHON_VERSION: "3.8.5"
+  PYTHON_VERSION: "3.9.1"
 
 jobs:
   bandit:
@@ -84,3 +83,53 @@ jobs:
 
       - name: Run test
         run: python -m unittest tests.FakeClientTestCase tests.ClientPublicTestCase
+
+  build-docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          requirements: "true"
+          test-requirements: "true"
+
+      - name: Build Docs
+        run: mkdocs build --strict
+
+      # upload artifact for dev build
+      - name: Upload coverage results artifact
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs-site
+          path: site/
+
+  update-dev-docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          requirements: "true"
+          test-requirements: "true"
+
+      - name: Push documentaiton changes
+        uses: ./.github/actions/publish-docs-with-mike
+        with:
+          version_name: dev
