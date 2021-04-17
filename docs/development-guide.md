@@ -5,8 +5,7 @@ and how to work with the code base.
 
 Before you dive into this, it is best to read:
 
-* The [Code of Conduct][code of conduct]
-* The [Contributing][contributing] guide
+* The [Contributing guide](development-guide.md)
 
 ## Docker
 
@@ -91,3 +90,15 @@ This will trigger the CI system to build a wheel and a source distributions of t
 ## Continuous Integration Pipeline
 
 TODO: Add CI documentation.
+
+[install-docker]: https://docs.docker.com/install/
+[pdbpp-home]: https://github.com/pdbpp/pdbpp
+[pdb-docs]: https://docs.python.org/3/library/pdb.html
+[pdbpp-docs]: https://github.com/pdbpp/pdbpp#usage
+[pytest-docs]: https://docs.pytest.org/en/latest/
+[mypy-docs]: https://mypy.readthedocs.io/en/stable/
+[isort-docs]: https://pycqa.github.io/isort/
+[flake8-docs]: http://flake8.pycqa.org/en/stable/
+[bandit-docs]: https://bandit.readthedocs.io/en/stable/
+[sem-ver]: https://semver.org/
+[pypi]: https://pypi.org/project/gbq/
