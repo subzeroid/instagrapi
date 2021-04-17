@@ -30,9 +30,6 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.superfences
 plugins:
-  - redirects:
-      redirect_maps:
-        usage-guide.md: usage-guide/fundamentals.md
   - mkdocstrings:
       handlers:
         python:
