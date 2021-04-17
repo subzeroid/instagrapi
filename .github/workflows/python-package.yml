@@ -5,12 +5,11 @@ name: Package
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
+  pull_request: {}
 
 env:
-  PYTHON_VERSION: "3.8.5"
+  PYTHON_VERSION: "3.9.1"
 
 jobs:
   bandit:
