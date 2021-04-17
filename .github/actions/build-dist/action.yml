@@ -1,0 +1,8 @@
+name: "Build Python package"
+description: "Build a wheel and sdist for the package"
+runs:
+  using: "composite"
+  steps:
+    - name: "Build wheel"
+      run: "$GITHUB_ACTION_PATH/action.sh"
+      shell: "bash"

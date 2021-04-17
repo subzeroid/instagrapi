@@ -1,4 +1,4 @@
-FROM python:3.8.5-buster
+FROM python:3.9.1-buster
 
 ARG _USER="instagrapi"
 ARG _UID="1001"
@@ -20,9 +20,10 @@ RUN mkdir /app && chown ${UID}:${GID} /app
 
 USER ${_USER}
 
-COPY ./requirements*.txt /app/
+COPY --chown=${UID}:${GID} ./requirements* /app/
+COPY --chown=${UID}:${GID} ./util /app/util/
 WORKDIR /app
 
-RUN pip install -r requirements.txt -r requirements-test.txt
+RUN pip install -r requirements.lock -r requirements-test.txt
 
 CMD bash

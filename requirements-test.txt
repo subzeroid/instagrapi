@@ -2,3 +2,5 @@ flake8==3.9.1
 Pillow==8.2.0
 isort==5.8.0
 bandit==1.7.0
+./util/mkdocs-redirects
+./util/mkdocstrings_patch_type_aliases

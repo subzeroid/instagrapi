@@ -2,7 +2,7 @@ name: "Install Dependencies"
 description: "Install Python dependencies"
 inputs:
   requirements:
-    description: "Should requirements.txt be installed"
+    description: "Should requirements.lock be installed"
     default: "false"
     required: false
   test-requirements:

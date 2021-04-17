@@ -5,7 +5,7 @@ python -m pip install --upgrade pip
 
 if [[ "${INSTALL_REQUIREMENTS}" == "true"  ]]; then
   echo "Installing code requirements"
-  pip install -r requirements.txt
+  pip install -r requirements.lock
 fi
 
 if [[ "${INSTALL_TEST_REQUIREMENTS}" == "true"  ]]; then

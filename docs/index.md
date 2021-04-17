@@ -1,9 +1,9 @@
+# instagrapi - 1.6.2
+
 [![Package](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)][pypi]
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)][mypy-home]
-
-# instagrapi
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
@@ -72,3 +72,35 @@ cl.video_upload_to_story(
 )
 ```
 </details>
+
+### Requests
+
+* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Private` (authorized request via mobile api) methods have `_v1` suffix
+
+The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
+Example (pseudo-code):
+
+``` python
+def media_info(media_pk):
+    try:
+        return self.media_info_gql(media_pk)
+    except ClientError as e:
+        # Restricted Video: This video is not available in your country.
+        # Or media from private account
+        return self.media_info_v1(media_pk)
+```
+
+## Detailed Documentation
+
+To learn more about the various ways `instagrapi` can be used, read the [Usage Guide][usage-guide] page.
+
+## API Reference
+
+To find detailed information about a specific function or class, read the [API Reference][api-reference].
+
+[ci]: https://github.com/adw0rd/instagrapi/actions
+[pypi]: https://pypi.org/project/instagrapi/
+[getting-started]: getting-started.md
+[usage-guide]: usage-guide/fundamentals.md
+[exceptions]: exceptions.md
