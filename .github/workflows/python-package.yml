@@ -85,24 +85,6 @@ jobs:
       - name: Run test
         run: python -m unittest tests.FakeClientTestCase tests.ClientPublicTestCase
 
-  verify-wheel:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [ 3.6, 3.7, 3.8, 3.9 ]
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build wheel
-        uses: ./.github/actions/build-dist
-      - name: Verify wheel
-        uses: ./.github/actions/verify-wheel
-        with:
-          package-import-name: "instagrapi"
-
   build-docs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
