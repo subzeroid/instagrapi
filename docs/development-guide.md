@@ -81,7 +81,7 @@ grabs the version from `__init__.py` without actually importing.
 
 ### Requirements
 
-* **requirements.lock** - Lists all direct dependencies (packages imported by the library).
+* **requirements.txt** - Lists all direct dependencies (packages imported by the library).
 * **requirements-test.txt** - Lists all direct requirements needed to run the test suite & lints.
 
 This will trigger the CI system to build a wheel and a source distributions of the package and push them to
