@@ -16,9 +16,9 @@ Instagram API valid for 13 April 2021 (last reverse-engineering check)
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
 
-## Authors
+## Documentation
 
-[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
+[https://adw0rd.github.io/instagrapi/](https://adw0rd.github.io/instagrapi/)
 
 ## Features
 
