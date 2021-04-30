@@ -26,27 +26,31 @@ class CommentMixin:
             A list of objects of Comment
         """
         # TODO: to public or private
+        def get_comments():
+            if result.get("comments"):
+                for comment in result.get("comments"):
+                    comments.append(extract_comment(comment))
         media_id = self.media_id(media_id)
         params = None
         comments = []
         result = self.private_request(
             f"media/{media_id}/comments/", params
         )
-        while ((result.get('has_more_comments') and result.get('next_max_id'))
-               or (result.get('has_more_headload_comments') and result.get('next_min_id'))):
+        get_comments()
+        while ((result.get("has_more_comments") and result.get("next_max_id"))
+               or (result.get("has_more_headload_comments") and result.get("next_min_id"))):
             try:
-                for comment in result["comments"]:
-                    comments.append(extract_comment(comment))
-                if result.get('has_more_comments'):
-                    params = {'max_id': result.get('next_max_id')}
+                if result.get("has_more_comments"):
+                    params = {"max_id": result.get("next_max_id")}
                 else:
-                    params = {'min_id': result.get('next_min_id')}
-                if not (result.get('next_max_id') or result.get('next_min_id')
-                        or result.get('comments')):
+                    params = {"min_id": result.get("next_min_id")}
+                if not (result.get("next_max_id") or result.get("next_min_id")
+                        or result.get("comments")):
                     break
                 result = self.private_request(
                     f"media/{media_id}/comments/", params
                 )
+                get_comments()
             except ClientNotFoundError as e:
                 raise MediaNotFound(e, media_id=media_id, **self.last_json)
             except ClientError as e:
