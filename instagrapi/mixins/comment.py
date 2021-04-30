@@ -27,18 +27,26 @@ class CommentMixin:
         """
         # TODO: to public or private
         media_id = self.media_id(media_id)
-        max_id = None
+        params = None
         comments = []
-        while True:
+        result = self.private_request(
+            f"media/{media_id}/comments/", params
+        )
+        while ((result.get('has_more_comments') and result.get('next_max_id'))
+               or (result.get('has_more_headload_comments') and result.get('next_min_id'))):
             try:
-                result = self.private_request(
-                    f"media/{media_id}/comments/", params={"max_id": max_id}
-                )
                 for comment in result["comments"]:
                     comments.append(extract_comment(comment))
-                if not result["has_more_comments"]:
+                if result.get('has_more_comments'):
+                    params = {'max_id': result.get('next_max_id')}
+                else:
+                    params = {'min_id': result.get('next_min_id')}
+                if not (result.get('next_max_id') or result.get('next_min_id')
+                        or result.get('comments')):
                     break
-                max_id = result["next_max_id"]
+                result = self.private_request(
+                    f"media/{media_id}/comments/", params
+                )
             except ClientNotFoundError as e:
                 raise MediaNotFound(e, media_id=media_id, **self.last_json)
             except ClientError as e:
