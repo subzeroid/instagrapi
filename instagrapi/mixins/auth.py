@@ -9,6 +9,7 @@ import time
 import uuid
 from pathlib import Path
 from typing import Dict, List
+from datetime import datetime
 
 import requests
 
@@ -313,51 +314,72 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Returns:
             dict: cookies
         """
-        BASE_URL = "https://www.instagram.com"
 
-        response = requests.get(
-            BASE_URL,
-            headers={"user-agent": self.web_user_agent},
-            proxies={"https": self.proxy},
-            timeout=30,
-            verify=False,
-        )
+        def encrypt_password(app_id, key_id, public_key, password):
+            import base64
+            from nacl.public import PublicKey, SealedBox
+            from Crypto import Random
+            from Crypto.Cipher import AES
 
-        match = re.findall(r'"csrf_token":"(.*?)"', response.text)
-        if len(match) > 0:
-            csrfToken = match[0]
+            timestamp = str(int(datetime.now().timestamp()))
 
-        cookies = response.cookies.get_dict()
+            # create a random key of length 32 bytes (for AES 256)
+            key = Random.get_random_bytes(32)
+            # create a buffer of length 12 bytes filled with 0
+            iv = bytearray(12)
 
-        response = requests.get(
-            f"{BASE_URL}/web/__mid/",
-            headers={"user-agent": self.web_user_agent},
-            proxies={"https": self.proxy},
-            timeout=30,
-            verify=False,
-        )
-        mid = response.text
+            aes = AES.new(key, AES.MODE_GCM, nonce=iv)
+            aes.update(bytearray(timestamp, "utf-8"))
+            ciphertext, tag = aes.encrypt_and_digest(bytearray(password, "utf-8"))
 
-        headers = {
-            "cookie": f"ig_cb=1; csrftoken={csrfToken}; mid={mid};",
-            "referer": BASE_URL,
-            "x-csrftoken": csrfToken,
-            "X-CSRFToken": csrfToken,
-            "user-agent": self.web_user_agent,
-        }
-        payload = {
-            "username": username,
-            "enc_password": f"#PWD_INSTAGRAM_BROWSER:0:{int(time.time())}:{password}",
-        }
-        response = requests.post(
-            f"{BASE_URL}/accounts/login/ajax/",
-            data=payload,
-            headers=headers,
-            proxies={"https": self.proxy},
-            timeout=30,
-        )
+            # get a byte array of the given public key
+            public_key_seal = PublicKey(bytes.fromhex(public_key))
+            sealed_box = SealedBox(public_key_seal)
+            sealed = sealed_box.encrypt(key)
+
+            enc_password = bytearray()
+            enc_password += (
+                bytearray([1, int(key_id), len(sealed) & 255, (len(sealed) >> 8) & 255])
+                + sealed
+                + tag
+                + ciphertext
+            )
+
+            return f"#PWD_INSTAGRAM_BROWSER:{app_id}:{timestamp}:{str(base64.b64encode(enc_password), 'utf-8')}"
+
+        # https://github.com/instaloader/instaloader/issues/615
+
+        BASE_URL = "https://www.instagram.com/"
+
+        session = requests.Session()
+        session.headers = {"user-agent": self.web_user_agent}
+        session.cookies["ig_pr"] = "1"
+        session.headers["Referer"] = BASE_URL
+        session.proxies.update({"http": self.proxy, "https": self.proxy})
 
         try:
+            req = session.get(BASE_URL + "accounts/login/")
+            session.headers["X-CSRFToken"] = req.cookies["csrftoken"]
+            session.headers["mid"] = mid = req.cookies["mid"]
+
+            enc_password = encrypt_password(
+                req.headers.get("ig-set-password-encryption-web-key-version"),
+                req.headers.get("ig-set-password-encryption-web-key-id"),
+                req.headers.get("ig-set-password-encryption-web-pub-key"),
+                password,
+            )
+
+            time.sleep(random.uniform(1.175, 2.875))
+
+            response = session.post(
+                BASE_URL + "accounts/login/ajax/",
+                data={
+                    "username": username,
+                    "enc_password": enc_password,
+                },
+                allow_redirects=True,
+            )
+
             last_json = response.json()
         except JSONDecodeError:
             pass
@@ -440,7 +462,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             user_id = re.search(r"^\d+", cookies["sessionid"]).group()
             user = self.user_info_v1(int(user_id))
             self.username = user.username
-            
+
         self.last_login = time.time()
 
         return cookies
