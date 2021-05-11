@@ -127,7 +127,7 @@ class PrivateRequestMixin:
             "Accept-Language": "en-US",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Accept-Encoding": "gzip, deflate",
-            "Host": "i.instagram.com",
+            # "Host": "i.instagram.com",
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",  # "close" in instabot
             # "Pragma": "no-cache",
