@@ -13,7 +13,7 @@ from typing import Dict, List
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ReloginAttemptExceeded
+from instagrapi.exceptions import ReloginAttemptExceeded, PleaseWaitFewMinutes
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
@@ -323,7 +323,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         #        return True  # already login
         if self.user_id:
             return True  # already login
-        self.pre_login_flow()
+        try:
+            self.pre_login_flow()
+        except PleaseWaitFewMinutes:
+            # The instagram application ignores this error
+            # and continues to log in (repeat this behavior)
+            pass
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
