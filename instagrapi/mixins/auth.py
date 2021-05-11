@@ -13,7 +13,7 @@ from typing import Dict, List
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ReloginAttemptExceeded, PleaseWaitFewMinutes
+from instagrapi.exceptions import PleaseWaitFewMinutes, ReloginAttemptExceeded
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
