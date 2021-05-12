@@ -13,7 +13,7 @@ from typing import Dict, List
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import PleaseWaitFewMinutes, ReloginAttemptExceeded
+from instagrapi.exceptions import PrivateError, PleaseWaitFewMinutes, ReloginAttemptExceeded
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
@@ -286,7 +286,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.settings = {"cookies": {"sessionid": sessionid}}
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
-        user = self.user_info_v1(int(user_id))
+        try:
+            user = self.user_info_v1(int(user_id))
+        except PrivateError:
+            user = self.user_short_gql(int(user_id))
         self.username = user.username
         return True
 

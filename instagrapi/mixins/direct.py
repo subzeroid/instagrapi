@@ -160,10 +160,10 @@ class DirectMixin:
             String to be posted on the thread
 
         user_ids: List[int]
-            List of unique identifier of Users thread
+            List of unique identifier of Users id
 
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread
+            List of unique identifier of Direct Message thread id
 
         Returns
         -------
@@ -203,10 +203,10 @@ class DirectMixin:
             Path to photo that will be posted on the thread
 
         user_ids: List[int]
-            List of unique identifier of Users thread
+            List of unique identifier of Users id
 
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread
+            List of unique identifier of Direct Message thread id
 
         Returns
         -------
@@ -271,3 +271,30 @@ class DirectMixin:
             for item in result.get('ranked_recipients', [])
             if 'thread' in item
         ]
+
+    def direct_thread_by_participants(self, user_ids: List[int]) -> DirectThread:
+        """
+        Get direct thread by participants
+
+        Parameters
+        ----------
+        user_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectThread
+            An object of DirectThread
+        """
+        recipient_users = dumps([int(uid) for uid in user_ids])
+        result = self.private_request(
+            "direct_v2/threads/get_by_participants/",
+            params={"recipient_users": recipient_users, "seq_id": 2580572, "limit": 20}
+        )
+        if 'thread' not in result:
+            raise DirectThreadNotFound(
+                f'Thread not found by recipient_users={recipient_users}',
+                user_ids=user_ids,
+                **self.last_json
+            )
+        return extract_direct_thread(result['thread'])

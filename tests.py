@@ -31,6 +31,7 @@ from instagrapi.types import (
 )
 from instagrapi.zones import UTC
 from instagrapi.utils import generate_jazoest
+from instagrapi.exceptions import DirectThreadNotFound
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
@@ -966,6 +967,12 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         # send seen
         seen = self.api.direct_send_seen(thread_id=thread.id)
         self.assertEqual(seen.status, 'ok')
+
+    def test_direct_thread_by_participants(self):
+        try:
+            self.api.direct_thread_by_participants([12345])
+        except DirectThreadNotFound:
+            pass
 
 
 class ClientAccountTestCase(ClientPrivateTestCase):
