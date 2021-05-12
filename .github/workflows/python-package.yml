@@ -82,7 +82,7 @@ jobs:
           test-requirements: "true"
 
       - name: Run test
-        run: python -m unittest tests.FakeClientTestCase tests.ClientPublicTestCase
+        run: python -m unittest tests.FakeClientTestCase
 
   build-docs:
     runs-on: ubuntu-latest
