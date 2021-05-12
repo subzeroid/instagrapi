@@ -503,3 +503,24 @@ class UserMixin:
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
+
+    def user_remove_follower(self, user_id: int) -> bool:
+        """
+        Remove a follower
+
+        Parameters
+        ----------
+        user_id: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = int(user_id)
+        data = self.with_action_data({"user_id": str(user_id)})
+        result = self.private_request(f"friendships/remove_follower/{user_id}/", data)
+        if self.user_id in self._users_followers:
+            self._users_followers[self.user_id].pop(user_id, None)
+        return result["friendship_status"]["followed_by"] is False
