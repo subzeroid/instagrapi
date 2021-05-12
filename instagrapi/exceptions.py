@@ -257,3 +257,6 @@ class LocationNotFound(LocationError):
             f"Location \"{kwargs.get('location_pk')}\" not found",
             *args, **kwargs
         )
+
+class TwoFactorRequired(PrivateError):
+    pass

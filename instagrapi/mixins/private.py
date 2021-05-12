@@ -26,6 +26,7 @@ from instagrapi.exceptions import (
     SentryBlock,
     UnknownError,
     VideoTooLongException,
+    TwoFactorRequired,
 )
 from instagrapi.utils import dumps, generate_signature
 
@@ -225,6 +226,10 @@ class PrivateRequestMixin:
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
+                elif error_type == "two_factor_required":
+                    if not last_json['message']:
+                        last_json['message'] = "Two-factor authentication required"
+                    raise TwoFactorRequired(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
