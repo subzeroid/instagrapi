@@ -1,7 +1,7 @@
 [![Package](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml)
-[![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)][pypi]
-[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)][mypy-home]
+![PyPI](https://img.shields.io/pypi/v/instagrapi)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
+![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
 # instagrapi
 
