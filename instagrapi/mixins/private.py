@@ -24,9 +24,9 @@ from instagrapi.exceptions import (
     PleaseWaitFewMinutes,
     RateLimitError,
     SentryBlock,
+    TwoFactorRequired,
     UnknownError,
     VideoTooLongException,
-    TwoFactorRequired,
 )
 from instagrapi.utils import dumps, generate_signature
 
