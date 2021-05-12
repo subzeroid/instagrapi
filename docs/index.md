@@ -52,7 +52,7 @@ from instagrapi import Client
 from instagrapi.types import Location, StoryMention, StoryLocation, StoryLink, StoryHashtag
 
 cl = Client()
-cl.login(USERNAME, PASSWORD)
+cl.login(USERNAME, PASSWORD, verification_code='123456')  # with 2FA verification_code
 
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')

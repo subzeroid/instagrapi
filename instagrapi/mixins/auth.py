@@ -9,11 +9,17 @@ import time
 import uuid
 from pathlib import Path
 from typing import Dict, List
+from uuid import uuid4
 
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import PrivateError, PleaseWaitFewMinutes, ReloginAttemptExceeded
+from instagrapi.exceptions import (
+    PleaseWaitFewMinutes,
+    PrivateError,
+    ReloginAttemptExceeded,
+    TwoFactorRequired,
+)
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
@@ -293,7 +299,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.username = user.username
         return True
 
-    def login(self, username: str, password: str, relogin: bool = False) -> bool:
+    def login(self, username: str, password: str, relogin: bool = False, verification_code: str = '') -> bool:
         """
         Login
 
@@ -346,7 +352,28 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "google_tokens": "[]",
             "login_attempt_count": "0"
         }
-        if self.private_request("accounts/login/", data, login=True):
+        try:
+            logged = self.private_request("accounts/login/", data, login=True)
+        except TwoFactorRequired as e:
+            if not verification_code.strip():
+                raise TwoFactorRequired(f'{e} (you did not provide verification_code for login method)')
+            two_factor_identifier = self.last_json.get(
+                'two_factor_info', {}
+            ).get('two_factor_identifier')
+            data = {
+                "verification_code": verification_code,
+                "phone_id": self.phone_id,
+                "_csrftoken": self.token,
+                "two_factor_identifier": two_factor_identifier,
+                "username": username,
+                "trust_this_device": "0",
+                "guid": self.uuid,
+                "device_id": self.device_id,
+                "waterfall_id": str(uuid4()),
+                "verification_method": "3"
+            }
+            logged = self.private_request("accounts/two_factor_login/", data, login=True)
+        if logged:
             self.login_flow()
             self.last_login = time.time()
             return True

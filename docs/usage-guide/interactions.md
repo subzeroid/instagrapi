@@ -32,6 +32,7 @@
   
 ``` python
 cl.login("instagrapi", "42")
+# cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
 # cl.set_proxy("http://username:password@127.0.0.1:8080")
@@ -42,6 +43,7 @@ print(cl.user_info(cl.user_id))
 ```
 
 * login(username: str, password: str): bool - Login by username and password (get new cookies if it does not exist in settings)
+* login(username, password, verification_code='<2FA CODE>') - Login by username and password with 2FA verification code
 * relogin(): bool - Re-login with clean cookies (required cl.username/cl.password)
 * login_by_sessionid(sessionid: str): bool - Login by sessionid from Instagram site
 * get_settings(): dict - Return settings dict
