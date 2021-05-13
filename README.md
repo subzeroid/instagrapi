@@ -16,9 +16,6 @@ Instagram API valid for 13 April 2021 (last reverse-engineering check)
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
 
-## Documentation
-
-[https://adw0rd.github.io/instagrapi/](https://adw0rd.github.io/instagrapi/)
 
 ## Features
 
@@ -72,3 +69,33 @@ cl.video_upload_to_story(
 )
 ```
 </details>
+
+## Documentation
+
+* [Index](https://adw0rd.github.io/instagrapi/)
+* [Getting Started](https://adw0rd.github.io/instagrapi/getting-started.html)
+* [Usage Guide](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html)
+* [Interactions](https://adw0rd.github.io/instagrapi/usage-guide/interactions.html)
+  * [`Media`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Media (Photo, Video, Album, IGTV, Reels or Story)
+  * `Resource` - Part of Media (for albums)
+  * `MediaOembed` - Short version of Media
+  * `Account` - Full private info for your account (e.g. email, phone_number)
+  * [`User`](https://adw0rd.github.io/instagrapi/usage-guide/user.html) - Full public user data
+  * `UserShort` - Short public user data (used in Usertag, Comment, Media, Direct)
+  * `Usertag` - Tag user in Media (coordinates + UserShort)
+  * [`Location`](https://adw0rd.github.io/instagrapi/usage-guide/location.html) - GEO location (GEO coordinates, name, address)
+  * [`Hashtag`](https://adw0rd.github.io/instagrapi/usage-guide/hashtag.html) - Hashtag object (id, name, picture)
+  * [`Collection`](https://adw0rd.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)
+  * [`Comment`](https://adw0rd.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
+  * [`Story`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Story
+  * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link (Swipe up)
+  * [`StoryLocation`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
+  * [`StoryMention`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Mention users in Story (user, coordinates and dimensions)
+  * [`StoryHashtag`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Hashtag for story (as sticker)
+  * [`StorySticker`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag sticker to story (for example from giphy)
+  * [`StoryBuild`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention co-ordinates
+  * [`DirectThread`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Thread (topic) with messages in Direct
+  * [`DirectMessage`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Message in Direct
+  * [`Insight`](https://adw0rd.github.io/instagrapi/usage-guide/insight.html) - Insights for a post
+* [Development Guide](https://adw0rd.github.io/instagrapi/development-guide.html)
+* [Exceptions](https://adw0rd.github.io/instagrapi/exceptions.html)
