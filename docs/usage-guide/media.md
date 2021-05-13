@@ -125,7 +125,7 @@ Upload medias to your feed. Common arguments:
 
 * `path` - Path to source file
 * `caption`  - Text for you post
-* `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](/instagrapi/types.py))
+* `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
 | Method                                                                                                          | Return  | Description
