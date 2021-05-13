@@ -10,14 +10,10 @@ Support **Python >= 3.6**
 
 For any other languages (e.g. C++, C#, F#, Golang, Erlang, Haskell, Lisp, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Ruby, Rust, Swift, Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
 
-Instagram API valid for 13 April 2021 (last reverse-engineering check)
+Instagram API valid for 13 May 2021 (last reverse-engineering check)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
-
-## Authors
-
-[@adw0rd](http://github.com/adw0rd/) and [@onlinehunter](http://github.com/onlinehunter/)
 
 ## Features
 
@@ -44,10 +40,9 @@ user_id = cl.user_id_from_username("adw0rd")
 medias = cl.user_medias(user_id, 20)
 ```
 
-<details>
-    <summary>The full example</summary>
+#### The full example
 
-```python
+``` python
 from instagrapi import Client
 from instagrapi.types import Location, StoryMention, StoryLocation, StoryLink, StoryHashtag
 
@@ -70,7 +65,6 @@ cl.video_upload_to_story(
     hashtags=[StoryHashtag(hashtag=ht, x=0.23, y=0.32, width=0.5, height=0.22)],
 )
 ```
-</details>
 
 ### Requests
 
