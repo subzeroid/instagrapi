@@ -1,4 +1,4 @@
-# instagrapi - 1.6.2
+# instagrapi
 
 [![Package](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]

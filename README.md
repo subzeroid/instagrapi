@@ -77,12 +77,12 @@ cl.video_upload_to_story(
 * [Usage Guide](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html)
 * [Interactions](https://adw0rd.github.io/instagrapi/usage-guide/interactions.html)
   * [`Media`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Media (Photo, Video, Album, IGTV, Reels or Story)
-  * `Resource` - Part of Media (for albums)
-  * `MediaOembed` - Short version of Media
-  * `Account` - Full private info for your account (e.g. email, phone_number)
+  * [`Resource`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Part of Media (for albums)
+  * [`MediaOembed`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Short version of Media
+  * [`Account`](https://adw0rd.github.io/instagrapi/usage-guide/account.html) - Full private info for your account (e.g. email, phone_number)
   * [`User`](https://adw0rd.github.io/instagrapi/usage-guide/user.html) - Full public user data
-  * `UserShort` - Short public user data (used in Usertag, Comment, Media, Direct)
-  * `Usertag` - Tag user in Media (coordinates + UserShort)
+  * [`UserShort`](https://adw0rd.github.io/instagrapi/usage-guide/user.html) - Short public user data (used in Usertag, Comment, Media, Direct)
+  * [`Usertag`](https://adw0rd.github.io/instagrapi/usage-guide/user.html) - Tag user in Media (coordinates + UserShort)
   * [`Location`](https://adw0rd.github.io/instagrapi/usage-guide/location.html) - GEO location (GEO coordinates, name, address)
   * [`Hashtag`](https://adw0rd.github.io/instagrapi/usage-guide/hashtag.html) - Hashtag object (id, name, picture)
   * [`Collection`](https://adw0rd.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)

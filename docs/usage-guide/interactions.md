@@ -3,12 +3,12 @@
 `instagrapi` provides various types of `Interactions` that can be used to control how the program will interact with the `Instagram`:
 
 * [`Media`](media.md) - Media (Photo, Video, Album, IGTV, Reels or Story)
-* `Resource` - Part of Media (for albums)
-* `MediaOembed` - Short version of Media
-* `Account` - Full private info for your account (e.g. email, phone_number)
+* [`Resource`](media.md) - Part of Media (for albums)
+* [`MediaOembed`](media.md) - Short version of Media
+* [`Account`](account.md) - Full private info for your account (e.g. email, phone_number)
 * [`User`](user.md) - Full public user data
-* `UserShort` - Short public user data (used in Usertag, Comment, Media, Direct)
-* `Usertag` - Tag user in Media (coordinates + UserShort)
+* [`UserShort`](user.md) - Short public user data (used in Usertag, Comment, Media, Direct)
+* [`Usertag`](user.md) - Tag user in Media (coordinates + UserShort)
 * [`Location`](location.md) - GEO location (GEO coordinates, name, address)
 * [`Hashtag`](hashtag.md) - Hashtag object (id, name, picture)
 * [`Collection`](collection.md) - Collection of medias (name, picture and list of medias)
@@ -46,7 +46,6 @@ print(cl.user_info(cl.user_id))
 * login(username, password, verification_code='<2FA CODE>') - Login by username and password with 2FA verification code
 * relogin(): bool - Re-login with clean cookies (required cl.username/cl.password)
 * login_by_sessionid(sessionid: str): bool - Login by sessionid from Instagram site
-* get_settings(): dict - Return settings dict
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
@@ -79,21 +78,28 @@ settings = {
 cl = Client(settings)
 ```
 
-* set_settings(settings: Dict): bool - Set session settings
-* load_settings(path: Path): dict - Load session settings from file
-* dump_settings(path: Path): bool - Serialize and save session settings to file
-* set_proxy(dsn: str): dict - Support socks and http/https proxy "scheme://username:password@host:port"
-* cookie_dict: dict - Return cookies
-* user_id: int - Return your user_id (after login)
-* device: dict - Return device dict which we pass to Instagram
-* set_device(device: dict): bool - Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
-* set_user_agent(user_agent: str = ""): bool - Change User-Agent header (https://user-agents.net/applications/instagram-app)
-* base_headers: dict - Base headers for Instagram
-* account_info(): Account - Get private info for your account (e.g. email, phone_number)
-* account_edit(\*\*data): Account - Change profile data (e.g. email, phone_number, username, full_name, biography, external_url)
-* account_change_picture(path: Path): UserShort - Change Profile picture
+### Settings
 
-## Challenge
+| Method                        | Return  | Description
+| ----------------------------- | ------- | ------------------------------------------------------------------
+| get_settings()                | dict    | Return settings dict
+| set_settings(settings: dict)  | bool    | Set session settings
+| load_settings(path: Path)     | dict    | Load session settings from file
+| dump_settings(path: Path)     | bool    | Serialize and save session settings to file
+
+### Manage device, proxy and other account settings
+
+| Method                               | Return  | Description
+| ------------------------------------ | ------- | ------------------------------------------------------------------
+| set_proxy(dsn: str)                  | dict    | Support socks and http/https proxy "scheme://username:password@host:port"
+| set_device(device: dict)             | bool    | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| set_user_agent(user_agent: str = "") | bool    | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| cookie_dict                          | dict    | Return cookies
+| user_id                              | int     | Return your user_id (after login)
+| device                               | dict    | Return device dict which we pass to Instagram
+| base_headers                         | dict    | Base headers for Instagram
+
+## Challenge resolving
 
 All challenges solved in the module [challenge.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/mixins/challenge.py)
 

@@ -18,7 +18,9 @@ nav:
     - Media: usage-guide/media.md
     - Story: usage-guide/story.md
     - User: usage-guide/user.md
+    - Account: usage-guide/account.md
   - Development Guide: development-guide.md
+  - Exceptions: exceptions.md
 theme: material
 markdown_extensions:
   - markdown_include.include:
