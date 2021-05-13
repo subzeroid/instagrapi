@@ -18,15 +18,16 @@
 
 ## Private Exceptions
 
-| Exception                | Base         | Description                                                 |
-| ------------------------ | ------------ |------------------------------------------------------------ |
-| PrivateError             | ClientError  | Base Exception for Private calls (received from Instagram)  |
-| FeedbackRequired         | PrivateError | Raise when get message=feedback_required                    |
-| LoginRequired            | PrivateError | Raise when get message=login_required                       |
-| SentryBlock              | PrivateError | Raise when get message=sentry_block                         |
-| RateLimitError           | PrivateError | Raise when get message=rate_limit_error                     |
-| BadPassword              | PrivateError | Raise when get message=bad_password                         |
-| UnknownError             | PrivateError | Raise when get unknown message (new message from instagram) |
+| Exception                | Base         | Description
+| ------------------------ | ------------ |-----------------------------------------------------------
+| PrivateError             | ClientError  | Base Exception for Private calls (received from Instagram)
+| FeedbackRequired         | PrivateError | Raise when get message=feedback_required
+| LoginRequired            | PrivateError | Raise when get message=login_required
+| SentryBlock              | PrivateError | Raise when get message=sentry_block
+| RateLimitError           | PrivateError | Raise when get message=rate_limit_error
+| BadPassword              | PrivateError | Raise when get message=bad_password
+| TwoFactorRequired        | PrivateError | Raise when get message=two_factor_required
+| UnknownError             | PrivateError | Raise when get unknown message (new message from instagram)
 
 ## Challenge Exceptions
 
