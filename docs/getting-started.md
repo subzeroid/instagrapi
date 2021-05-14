@@ -14,6 +14,7 @@ python -m pip install instagrapi
 
 ## What's Next?
 
-TODO
+* [Usage Guide](usage-guide/fundamentals.md)
+* [Interactions](usage-guide/interactions.md)
 
 [docs-main]: index.md
