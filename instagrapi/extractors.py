@@ -159,6 +159,8 @@ def extract_user_gql(data):
         follower_count=data["edge_followed_by"]["count"],
         following_count=data["edge_follow"]["count"],
         is_business=data["is_business_account"],
+        public_email=data["business_email"],
+        contact_phone_number=data["business_phone_number"],
         **data,
     )
 
