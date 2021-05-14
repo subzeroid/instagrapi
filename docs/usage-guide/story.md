@@ -86,6 +86,6 @@ cl.video_upload_to_story(
 
 Result:
 
-![](https://github.com/adw0rd/instagrapi/blob/master/examples/dhb.gif)
+![](https://raw.githubusercontent.com/adw0rd/instagrapi/master/examples/dhb.gif)
 
-More stories here https://www.instagram.com/surferyone/
+More stories here [https://www.instagram.com/wrclive/](https://www.instagram.com/wrclive/)
