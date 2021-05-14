@@ -130,7 +130,7 @@ class LocationMixin:
             An object of Location
         """
         try:
-            data = self.public_a1_request(f"/explore/locations/{location_pk}/")
+            data = self.public_a1_request(f"/explore/locations/{location_pk}/") or {}
             if not data.get("location"):
                 raise LocationNotFound(location_pk=location_pk, **data)
             return extract_location(data["location"])
