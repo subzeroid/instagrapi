@@ -2,13 +2,13 @@
 
 Post comment, viewing, like and unlike comments
 
-| Method                                     | Return             | Description
-| ------------------------------------------ | ------------------ | --------------------------
-| media_comment(media_id: str, message: str) | Comment            | Add new comment to media
-| media_comments(media_id: str)              | List\[Comment]     | Get all comments for media
-| comment_like(comment_pk: int)              | bool               | Like a comment
-| comment_unlike(comment_pk: int)            | bool               | Unlike a comment
-| comment_delete(comment_pk: int)            | bool               | Delete a comment
+| Method                                                     | Return             | Description
+| ---------------------------------------------------------- | ------------------ | --------------------------
+| media_comment(media_id: str, message: str)                 | Comment            | Add new comment to media
+| media_comments(media_id: str)                              | List\[Comment]     | Get all comments for media
+| comment_like(comment_pk: int)                              | bool               | Like a comment
+| comment_unlike(comment_pk: int)                            | bool               | Unlike a comment
+| comment_bulk_delete(media_id: str, comment_pks: List[int]) | bool               | Delete a comment
 
 
 Example:
@@ -57,6 +57,6 @@ True
 >>> cl.comment_unlike(17926777897585108)
 True
 
->>> cl.comment_delete(17926777897585108)
+>>> cl.comment_bulk_delete(media_id, [17926777897585108])
 True
 ```

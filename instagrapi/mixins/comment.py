@@ -98,7 +98,7 @@ class CommentMixin:
 
         Parameters
         ----------
-        comment_pk: str
+        comment_pk: int
             Unique identifier of a Comment
         revert: bool, optional
             If liked, whether or not to unlike. Default is False
@@ -121,13 +121,13 @@ class CommentMixin:
         )
         return result["status"] == "ok"
 
-    def comment_unlike(self, comment_pk: str) -> bool:
+    def comment_unlike(self, comment_pk: int) -> bool:
         """
         Unlike a comment on a media
 
         Parameters
         ----------
-        comment_pk: str
+        comment_pk: int
             Unique identifier of a Comment
 
         Returns
@@ -136,3 +136,30 @@ class CommentMixin:
             A boolean value
         """
         return self.comment_like(comment_pk, revert=True)
+
+    def comment_bulk_delete(self, media_id: str, comment_pks: List[int]) -> bool:
+        """
+        Delete a comment on a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        comment_pks: List[int]
+            List of unique identifier of a Comment
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        media_id = self.media_id(media_id)
+        data = {
+            "comment_ids_to_delete": ','.join([str(pk) for pk in comment_pks]),
+            "container_module": "self_comments_v2_newsfeed_you"
+        }
+        result = self.private_request(
+            f"media/{media_id}/comment/bulk_delete/",
+            self.with_action_data(data)
+        )
+        return result["status"] == "ok"
