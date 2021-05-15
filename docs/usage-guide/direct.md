@@ -9,3 +9,4 @@
 | direct_send(text: str, users: List[int] = [], threads: List[int] = [])    | DirectMessage           | Send Message to Users or Threads
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
+| direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")

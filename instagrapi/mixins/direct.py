@@ -185,7 +185,7 @@ class DirectMixin:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
         result = self.private_request(
-            "direct_v2/threads/broadcast/%s/" % method,
+            f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(data),
             with_signature=False,
         )
@@ -232,7 +232,7 @@ class DirectMixin:
         data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
 
         result = self.private_request(
-            "direct_v2/threads/broadcast/%s/" % method,
+            f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(data),
             with_signature=False,
         )
@@ -298,3 +298,27 @@ class DirectMixin:
                 **self.last_json
             )
         return extract_direct_thread(result['thread'])
+
+    def direct_thread_hide(self, thread_id: int) -> bool:
+        """
+        Hide (delete) a thread
+        When you click delete, Instagram hides a thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread which messages will be read
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/hide/",
+            data=data
+        )
+        return result["status"] == "ok"
