@@ -618,7 +618,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "_uuid": self.uuid,
                 "_uid": str(self.user_id),
                 "_csrftoken": self.token,
-                "device_id": self.device_id,
+                # "device_id": self.device_id,
             },
             **data,
         )

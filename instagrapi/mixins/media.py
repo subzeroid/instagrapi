@@ -576,6 +576,58 @@ class MediaMixin:
         return result["status"] == "ok"
 
     def media_likers(self, media_id: str) -> List[UserShort]:
+        """
+        Get user's likers
+
+        Parameters
+        ----------
+        media_id: str
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
         media_id = self.media_id(media_id)
         result = self.private_request(f"media/{media_id}/likers/")
         return [extract_user_short(u) for u in result['users']]
+
+    def media_archive(self, media_id: str, revert: bool = False) -> bool:
+        """
+        Archive a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        revert: bool, optional
+            Flag for archive or unarchive. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        media_id = self.media_id(media_id)
+        name = "undo_only_me" if revert else "only_me"
+        result = self.private_request(
+            f"media/{media_id}/{name}/",
+            self.with_action_data({"media_id": media_id})
+        )
+        return result["status"] == "ok"
+
+    def media_unarchive(self, media_id: str) -> bool:
+        """
+        Unarchive a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.media_archive(media_id, revert=True)

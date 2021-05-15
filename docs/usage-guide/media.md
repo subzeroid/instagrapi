@@ -37,6 +37,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_unlike(media_id: str)                                     | bool               | Unlike media
 | media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a story as seen
 | media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post
+| media_archive(media_id: str)                                    | bool               | Archive a media
+| media_unarchive(media_id: str)                                  | bool               | Unarchive a media
 
 ### Example:
 
@@ -112,6 +114,12 @@ In terms of Instagram, this is called Media, usually users call it publications 
  'thumbnail_height': 480,
  'can_view': True}
 
+
+>>> cl.media_archive('2155832952940083788_1903424587')
+True
+
+>>> cl.media_unarchive('2155832952940083788_1903424587')
+True
 ```
 
 ## Download media
