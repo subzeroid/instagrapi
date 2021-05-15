@@ -1,6 +1,6 @@
-# Location
+# Location (place)
 
-Viewing and manage location (place)
+Viewing location info and medias by location
 
 | Method                                                     | Return         | Description
 | ---------------------------------------------------------- | -------------- | ----------------------------------------------------
