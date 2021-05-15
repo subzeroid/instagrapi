@@ -3,6 +3,8 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
+[![Build](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
+
 # instagrapi
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
