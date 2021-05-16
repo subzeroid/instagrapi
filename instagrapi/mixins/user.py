@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -395,6 +395,40 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
+    def user_followers_v1_chunk(self, user_id: int, max_amount: int = 0, max_id: str = "") -> Tuple[List[UserShort], str]:
+        """
+        Get user's followers information
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        max_id: str, optional
+            Max ID, default value is empty String
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            Tuple of List of users and max_id
+        """
+        users = []
+        while True:
+            result = self.private_request(f"friendships/{user_id}/followers/", params={
+                "max_id": max_id,
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "query": "",
+                "enable_groups": "true"
+            })
+            for user in result["users"]:
+                users.append(extract_user_short(user))
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(users) >= max_amount):
+                break
+        return users, max_id
+
     def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information
@@ -404,28 +438,14 @@ class UserMixin:
         user_id: int
             User id of an instagram account
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
         List[UserShort]
             List of objects of User type
         """
-        user_id = int(user_id)
-        max_id = ""
-        users = []
-        while True:
-            if amount and len(users) >= amount:
-                break
-            result = self.private_request(
-                f"friendships/{user_id}/followers/",
-                params={"max_id": max_id, "rank_token": self.rank_token},
-            )
-            for user in result["users"]:
-                users.append(extract_user_short(user))
-            max_id = result.get("next_max_id")
-            if not max_id:
-                break
+        users, max_id = self.user_followers_v1_chunk(int(user_id), amount)
         if amount:
             users = users[:amount]
         return users
@@ -443,7 +463,7 @@ class UserMixin:
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
