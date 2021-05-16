@@ -274,7 +274,7 @@ class UserMixin:
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information
+        Get user's following information by Public Graphql API
 
         Parameters
         ----------
@@ -322,7 +322,7 @@ class UserMixin:
 
     def user_following_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information
+        Get user's following users information by Private Mobile API
 
         Parameters
         ----------
@@ -380,7 +380,8 @@ class UserMixin:
             Dict of user_id and User object
         """
         user_id = int(user_id)
-        if not use_cache or user_id not in self._users_following:
+        users = self._users_following.get(user_id, {})
+        if not use_cache or not users or (amount and len(users) < amount):
             # Temporary: Instagram Required Login for GQL request
             # You can inject sessionid from private to public session
             # try:
@@ -398,7 +399,7 @@ class UserMixin:
 
     def user_followers_gql_chunk(self, user_id: int, max_amount: int = 0, end_cursor: str = None) -> Tuple[List[UserShort], str]:
         """
-        Get user's followers information by Web API with cursor
+        Get user's followers information by Public Graphql API and end_cursor
 
         Parameters
         ----------
@@ -444,7 +445,7 @@ class UserMixin:
 
     def user_followers_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information by Web API
+        Get user's followers information by Public Graphql API
 
         Parameters
         ----------
@@ -465,7 +466,7 @@ class UserMixin:
 
     def user_followers_v1_chunk(self, user_id: int, max_amount: int = 0, max_id: str = "") -> Tuple[List[UserShort], str]:
         """
-        Get user's followers information
+        Get user's followers information by Private Mobile API and max_id (cursor)
 
         Parameters
         ----------
@@ -499,7 +500,7 @@ class UserMixin:
 
     def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information
+        Get user's followers information by Private Mobile API
 
         Parameters
         ----------
@@ -539,7 +540,8 @@ class UserMixin:
             Dict of user_id and User object
         """
         user_id = int(user_id)
-        if not use_cache or user_id not in self._users_followers:
+        users = self._users_followers.get(user_id, {})
+        if not use_cache or not users or (amount and len(users) < amount):
             try:
                 users = self.user_followers_gql(user_id, amount)
             except Exception as e:

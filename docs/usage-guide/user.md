@@ -4,17 +4,29 @@ View a list of a user's medias, following and followers
 
 * `user_id` - Integer ID of user, example `1903424587`
 
-| Method                                             | Return              | Description
-| -------------------------------------------------- | ------------------- | ------------------------------------------------------------------
-| user_followers(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of followers users (amount=0 - fetch all followers)
-| user_following(user_id: int, amount: int = 0)      | Dict\[int, User]    | Get dict of following users (amount=0 - fetch all following users)
-| user_info(user_id: int)                            | User                | Get user info
-| user_info_by_username(username: str)               | User                | Get user info by username
-| user_follow(user_id: int)                          | bool                | Follow user
-| user_unfollow(user_id: int)                        | bool                | Unfollow user
-| user_id_from_username(username: str)               | int                 | Get user_id by username
-| username_from_user_id(user_id: int)                | str                 | Get username by user_id
-| user_remove_follower(user_id: int)                 | bool                | Remove your follower
+| Method                                        | Return           | Description
+| --------------------------------------------- | ---------------- | ---------------------------------------------------------
+| user_followers(user_id: int, amount: int = 0) | Dict\[int, User] | Get dict of followers users (amount=0 - fetch all followers)
+| user_following(user_id: int, amount: int = 0) | Dict\[int, User] | Get dict of following users (amount=0 - fetch all)
+| user_info(user_id: int)                       | User             | Get user info
+| user_info_by_username(username: str)          | User             | Get user info by username
+| user_follow(user_id: int)                     | bool             | Follow user
+| user_unfollow(user_id: int)                   | bool             | Unfollow user
+| user_id_from_username(username: str)          | int              | Get user_id by username
+| username_from_user_id(user_id: int)           | str              | Get username by user_id
+| user_remove_follower(user_id: int)            | bool             | Remove your follower
+
+Low level methods:
+
+| Method                                            | Return          | Description
+| ------------------------------------------------- | --------------- | ---------------------------------------------------------
+| user_followers_gql_chunk(user_id: int, max_amount: int = 0, end_cursor: str = None) | Tuple[List[UserShort], str] | Get user's followers information by Public Graphql API and end_cursor
+| user_followers_gql(user_id: int, amount: int = 0) | List[UserShort] | Get user's followers information by Public Graphql API
+| user_followers_v1_chunk(user_id: int, max_amount: int = 0, max_id: str = "") | Tuple[List[UserShort], str] | Get user's followers information by Private Mobile API and max_id (cursor)
+| user_followers_v1(user_id: int, amount: int = 0) | List[UserShort] | Get user's followers information by Private Mobile API
+| user_following_v1(user_id: int, amount: int = 0) | List[UserShort] | Get user's following users information by Private Mobile API
+| user_following_gql(user_id: int, amount: int = 0) | List[UserShort] | Get user's following information by Public Graphql API
+
 
 Example:
 
