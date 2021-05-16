@@ -9,21 +9,6 @@ Viewing hashtag info and medias by hashtag
 | hashtag_medias_top(name: str, amount: int = 9)     | List[Media]         | Return Top posts by Hashtag
 | hashtag_medias_recent(name: str, amount: int = 27) | List[Media]         | Return Most recent posts by Hashtag
 
-Low level methods:
-
-| Method                                         | Return  | Description
-| ---------------------------------------------- | ------- | --------------------------------------------
-| hashtag_info_a1(name: str, max_id: str = None) | Hashtag | Get information about a hashtag by Public Web API
-| hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
-| hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
-| hashtag_medias_a1_chunk(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media", end_cursor: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor by Public Web API
-| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media") | List[Media] | Get medias for a hashtag by Public Web API
-| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
-| hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
-| hashtag_medias_top_a1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Public Web API
-| hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
-| hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Get recent medias for a hashtag by Public Web API
-| hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
 
 Example:
 
@@ -124,4 +109,38 @@ Example:
    'video_url': None,
    'thumbnail_url': HttpUrl('https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg?tp=1&_nc_ht=instagram.fhel3-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=45NguRpEtZQAX83VSGE&edm=AP_V10EBAAAA&ccb=7-4&oh=c8c087ecfba444d9d85f7bd059f42a2a&oe=60C5C3C2&_nc_sid=4f375e', scheme='https', host='instagram.fhel3-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg', query='tp=1&_nc_ht=instagram.fhel3-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=45NguRpEtZQAX83VSGE&edm=AP_V10EBAAAA&ccb=7-4&oh=c8c087ecfba444d9d85f7bd059f42a2a&oe=60C5C3C2&_nc_sid=4f375e'),
    'media_type': 1}]}
+```
+
+Low level methods:
+
+| Method                                         | Return  | Description
+| ---------------------------------------------- | ------- | --------------------------------------------
+| hashtag_info_a1(name: str, max_id: str = None) | Hashtag | Get information about a hashtag by Public Web API
+| hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
+| hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
+| hashtag_medias_a1_chunk(name: str, max_amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media", end_cursor: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor by Public Web API
+| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media") | List[Media] | Get medias for a hashtag by Public Web API
+| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
+| hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
+| hashtag_medias_top_a1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Public Web API
+| hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
+| hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Get recent medias for a hashtag by Public Web API
+| hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
+
+Example for [Request for loading every next time new posts from hashtag](https://github.com/adw0rd/instagrapi/issues/79):
+
+``` python
+>>> medias, cursor = cl.hashtag_medias_v1_chunk('test', max_amount=32, tab_key='recent')
+>>> len(medias)
+32
+>>> cursor
+QVFDR0dzT3FJT0V4amFjMaQ3czlGVzRKV3FNWDJqaE1mWmltWU5VWGYtbnV6RVpoOUlsR3dCN05RRmpLc2R5SVlCQTNaekV5bUVOV0F4Vno1MDkxN1Nndg==
+
+# NEXT cursor:
+
+>>> medias, cursor = cl.hashtag_medias_v1_chunk('test', max_amount=32, tab_key='recent', max_id=cursor)
+>>> len(medias)
+32
+>>> cursor
+QVFEUXpfM0RtaDdmMExPQ0k0UWRlaHFJa2RVdVlaX01LTzhkNF9Dd1N2UlhtVy1vSTZvMERfYW5XN205OTBRNFBCSVJ2ZTVfTG5ZMXVmY0VJbUM5TU9URQ==
 ```

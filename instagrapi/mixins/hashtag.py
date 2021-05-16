@@ -133,7 +133,7 @@ class HashtagMixin:
         ]
 
     def hashtag_medias_a1_chunk(
-        self, name: str, amount: int = 27, tab_key: str = "", end_cursor: str = None
+        self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias and end_cursor by Public Web API
@@ -142,7 +142,7 @@ class HashtagMixin:
         ----------
         name: str
             Name of the hashtag
-        amount: int, optional
+        max_amount: int, optional
             Maximum number of media to return, default is 27
         tab_key: str, optional
             Tab Key, default value is ""
@@ -165,7 +165,7 @@ class HashtagMixin:
             end_cursor = page_info["end_cursor"]
             edges = data[tab_key]["edges"]
             for edge in edges:
-                if amount and len(medias) >= amount:
+                if max_amount and len(medias) >= max_amount:
                     break
                 # check uniq
                 media_pk = edge["node"]["id"]
@@ -188,7 +188,7 @@ class HashtagMixin:
             ######################################################
             # if not page_info["has_next_page"] or not end_cursor:
             #     break
-            # if amount and len(medias) >= amount:
+            # if max_amount and len(medias) >= max_amount:
             #     break
             break
         return medias, end_cursor
