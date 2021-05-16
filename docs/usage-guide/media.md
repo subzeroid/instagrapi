@@ -40,6 +40,17 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_archive(media_id: str)                                    | bool               | Archive a media
 | media_unarchive(media_id: str)                                  | bool               | Unarchive a media
 
+Low level methods:
+
+| Method                                                          | Return      | Description
+| --------------------------------------------------------------- | ----------- | --------------------------------------------
+| media_info_a1(media_pk: int, max_id: str = None)                | Media       | Get Media from PK by Public Web API
+| media_info_gql(media_pk: int)                                   | Media       | Get Media from PK by Public Graphql API
+| media_info_v1(media_pk: int)                                    | Media       | Get Media from PK by Private Mobile API
+| user_medias_gql(user_id: int, amount: int = 50, sleep: int = 2) | List[Media] | Get a user's media by Public Graphql API
+| user_medias_v1(user_id: int, amount: int = 18)                  | List[Media] | Get a user's media by Private Mobile API
+
+
 ### Example:
 
 ``` python

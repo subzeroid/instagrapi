@@ -128,7 +128,7 @@ class MediaMixin:
 
     def media_info_a1(self, media_pk: int, max_id: str = None) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Public Web API
 
         Parameters
         ----------
@@ -156,7 +156,7 @@ class MediaMixin:
 
     def media_info_gql(self, media_pk: int) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Public Graphql API
 
         Parameters
         ----------
@@ -192,7 +192,7 @@ class MediaMixin:
 
     def media_info_v1(self, media_pk: int) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Private Mobile API
 
         Parameters
         ----------
@@ -417,7 +417,7 @@ class MediaMixin:
         self, user_id: int, amount: int = 50, sleep: int = 2
     ) -> List[Media]:
         """
-        Get a user's media
+        Get a user's media by Public Graphql API
 
         Parameters
         ----------
@@ -464,7 +464,7 @@ class MediaMixin:
 
     def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
         """
-        Get a user's media
+        Get a user's media by Private Mobile API
 
         Parameters
         ----------
