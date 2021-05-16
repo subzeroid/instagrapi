@@ -16,10 +16,10 @@ Low level methods:
 | hashtag_info_a1(name: str, max_id: str = None) | Hashtag | Get information about a hashtag by Public Web API
 | hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
 | hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
-| hashtag_medias_a1_chunk(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media", end_cursor: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor by Public Web API
-| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media") | List[Media] | Get medias for a hashtag by Public Web API
-| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
-| hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
+| hashtag_medias_a1_chunk(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media", end_cursor: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor by Public Web API
+| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts\|edge_hashtag_to_media") | List[Media] | Get medias for a hashtag by Public Web API
+| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
+| hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
 | hashtag_medias_top_a1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Public Web API
 | hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
 | hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Get recent medias for a hashtag by Public Web API
