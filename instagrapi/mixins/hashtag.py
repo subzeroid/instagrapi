@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound
 from instagrapi.extractors import (
@@ -18,7 +18,7 @@ class HashtagMixin:
 
     def hashtag_info_a1(self, name: str, max_id: str = None) -> Hashtag:
         """
-        Get information about a hashtag
+        Get information about a hashtag by Public Web API
 
         Parameters
         ----------
@@ -43,7 +43,7 @@ class HashtagMixin:
         self, name: str, amount: int = 12, end_cursor: str = None
     ) -> Hashtag:
         """
-        Get information about a hashtag
+        Get information about a hashtag by Public Graphql API
 
         Parameters
         ----------
@@ -73,7 +73,7 @@ class HashtagMixin:
 
     def hashtag_info_v1(self, name: str) -> Hashtag:
         """
-        Get information about a hashtag
+        Get information about a hashtag by Private Mobile API
 
         Parameters
         ----------
@@ -132,11 +132,11 @@ class HashtagMixin:
             for item in data["hashtag"]["edge_hashtag_to_related_tags"]["edges"]
         ]
 
-    def hashtag_medias_a1(
-        self, name: str, amount: int = 27, tab_key: str = ""
-    ) -> List[Media]:
+    def hashtag_medias_a1_chunk(
+        self, name: str, amount: int = 27, tab_key: str = "", end_cursor: str = None
+    ) -> Tuple[List[Media], str]:
         """
-        Get medias for a hashtag
+        Get chunk of medias and end_cursor by Public Web API
 
         Parameters
         ----------
@@ -146,15 +146,16 @@ class HashtagMixin:
             Maximum number of media to return, default is 27
         tab_key: str, optional
             Tab Key, default value is ""
+        end_cursor: str, optional
+            End Cursor, default value is None
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        Tuple[List[Media], str]
+            List of objects of Media and end_cursor
         """
         unique_set = set()
         medias = []
-        end_cursor = None
         while True:
             data = self.public_a1_request(
                 f"/explore/tags/{name}/",
@@ -190,15 +191,13 @@ class HashtagMixin:
             # if amount and len(medias) >= amount:
             #     break
             break
-        if amount:
-            medias = medias[:amount]
-        return medias
+        return medias, end_cursor
 
-    def hashtag_medias_v1(
+    def hashtag_medias_a1(
         self, name: str, amount: int = 27, tab_key: str = ""
     ) -> List[Media]:
         """
-        Get medias for a hashtag
+        Get medias for a hashtag by Public Web API
 
         Parameters
         ----------
@@ -214,6 +213,33 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        medias, _ = self.hashtag_medias_a1_chunk(name, amount, tab_key)
+        if amount:
+            medias = medias[:amount]
+        return medias
+
+    def hashtag_medias_v1_chunk(
+        self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        max_amount: int, optional
+            Maximum number of media to return, default is 27
+        tab_key: str, optional
+            Tab Key, default value is ""
+        max_id: str
+            Max ID, default value is None
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            List of objects of Media and max_id
+        """
         data = {
             "supported_tabs": dumps([tab_key]),
             # 'lat': 59.8626416,
@@ -221,7 +247,6 @@ class HashtagMixin:
             "include_persistent": "true",
             "rank_token": self.rank_token,
         }
-        max_id = None
         medias = []
         while True:
             result = self.private_request(
@@ -233,7 +258,7 @@ class HashtagMixin:
                 layout_content = section.get("layout_content") or {}
                 nodes = layout_content.get("medias") or []
                 for node in nodes:
-                    if amount and len(medias) >= amount:
+                    if max_amount and len(medias) >= max_amount:
                         break
                     media = extract_media_v1(node["media"])
                     # check contains hashtag in caption
@@ -242,16 +267,39 @@ class HashtagMixin:
                     medias.append(media)
             if not result["more_available"]:
                 break
-            if amount and len(medias) >= amount:
+            if max_amount and len(medias) >= max_amount:
                 break
             max_id = result["next_max_id"]
+        return medias, max_id
+
+    def hashtag_medias_v1(
+        self, name: str, amount: int = 27, tab_key: str = ""
+    ) -> List[Media]:
+        """
+        Get medias for a hashtag by Private Mobile API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to return, default is 27
+        tab_key: str, optional
+            Tab Key, default value is ""
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
+        """
+        medias, _ = self.hashtag_medias_v1_chunk(name, amount, tab_key)
         if amount:
             medias = medias[:amount]
         return medias
 
     def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
         """
-        Get top medias for a hashtag
+        Get top medias for a hashtag by Public Web API
 
         Parameters
         ----------
@@ -269,7 +317,7 @@ class HashtagMixin:
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
         """
-        Get top medias for a hashtag
+        Get top medias for a hashtag by Private Mobile API
 
         Parameters
         ----------
@@ -316,7 +364,7 @@ class HashtagMixin:
 
     def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
         """
-        Get recent medias for a hashtag
+        Get recent medias for a hashtag by Public Web API
 
         Parameters
         ----------
@@ -334,7 +382,7 @@ class HashtagMixin:
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
         """
-        Get recent medias for a hashtag
+        Get recent medias for a hashtag by Private Mobile API
 
         Parameters
         ----------
