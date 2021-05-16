@@ -297,6 +297,7 @@ class UserMixin:
             "fetch_mutual": False,
             "first": 24,
         }
+        self.inject_sessionid_to_public()
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
@@ -395,6 +396,73 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
+    def user_followers_gql_chunk(self, user_id: int, max_amount: int = 0, end_cursor: str = None) -> Tuple[List[UserShort], str]:
+        """
+        Get user's followers information by Web API with cursor
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        end_cursor: str, optional
+            The cursor from which it is worth continuing to receive the list of followers
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            List of objects of User type with cursor
+        """
+        user_id = int(user_id)
+        users = []
+        variables = {
+            "id": user_id,
+            "include_reel": True,
+            "fetch_mutual": False,
+            "first": 12
+        }
+        self.inject_sessionid_to_public()
+        while True:
+            if end_cursor:
+                variables["after"] = end_cursor
+            data = self.public_graphql_request(
+                variables, query_hash="5aefa9893005572d237da5068082d8d5"
+            )
+            if not data["user"] and not users:
+                raise UserNotFound(user_id=user_id, **data)
+            page_info = json_value(data, "user", "edge_followed_by", "page_info", default={})
+            edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
+            for edge in edges:
+                users.append(extract_user_short(edge["node"]))
+            end_cursor = page_info.get("end_cursor")
+            if not page_info.get("has_next_page") or not end_cursor:
+                break
+            if max_amount and len(users) >= max_amount:
+                break
+        return users, end_cursor
+
+    def user_followers_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information by Web API
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
+        users, _ = self.user_followers_gql_chunk(int(user_id), amount)
+        if amount:
+            users = users[:amount]
+        return users
+
     def user_followers_v1_chunk(self, user_id: int, max_amount: int = 0, max_id: str = "") -> Tuple[List[UserShort], str]:
         """
         Get user's followers information
@@ -445,7 +513,7 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        users, max_id = self.user_followers_v1_chunk(int(user_id), amount)
+        users, _ = self.user_followers_v1_chunk(int(user_id), amount)
         if amount:
             users = users[:amount]
         return users
@@ -472,7 +540,12 @@ class UserMixin:
         """
         user_id = int(user_id)
         if not use_cache or user_id not in self._users_followers:
-            users = self.user_followers_v1(user_id, amount)
+            try:
+                users = self.user_followers_gql(user_id, amount)
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                users = self.user_followers_v1(user_id, amount)
             self._users_followers[user_id] = {user.pk: user for user in users}
         followers = self._users_followers[user_id]
         if amount and len(followers) > amount:
