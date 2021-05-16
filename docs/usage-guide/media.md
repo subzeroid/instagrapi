@@ -35,7 +35,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_oembed(url: str)                                          | MediaOembed        | Return short media info by media URL
 | media_like(media_id: str)                                       | bool               | Like media
 | media_unlike(media_id: str)                                     | bool               | Unlike media
-| media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a story as seen
+| media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a media as seen
 | media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post
 | media_archive(media_id: str)                                    | bool               | Archive a media
 | media_unarchive(media_id: str)                                  | bool               | Unarchive a media

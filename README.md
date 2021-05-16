@@ -79,7 +79,7 @@ cl.video_upload_to_story(
 * [Getting Started](https://adw0rd.github.io/instagrapi/getting-started.html)
 * [Usage Guide](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html)
 * [Interactions](https://adw0rd.github.io/instagrapi/usage-guide/interactions.html)
-  * [`Media`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Media (Photo, Video, Album, IGTV, Reels or Story)
+  * [`Media`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Publication (also called post): Photo, Video, Album, IGTV and Reels
   * [`Resource`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Part of Media (for albums)
   * [`MediaOembed`](https://adw0rd.github.io/instagrapi/usage-guide/media.html) - Short version of Media
   * [`Account`](https://adw0rd.github.io/instagrapi/usage-guide/account.html) - Full private info for your account (e.g. email, phone_number)
