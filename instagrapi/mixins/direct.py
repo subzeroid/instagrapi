@@ -1,6 +1,6 @@
+import random
 import re
 import time
-import random
 from pathlib import Path
 from typing import List
 
