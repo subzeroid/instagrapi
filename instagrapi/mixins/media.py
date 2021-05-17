@@ -438,7 +438,7 @@ class MediaMixin:
         end_cursor = None
         variables = {
             "id": user_id,
-            "first": 50,  # These are Instagram restrictions, you can only specify <= 50
+            "first": 50 if amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
         }
         while True:
             if end_cursor:
