@@ -139,8 +139,9 @@ class UploadIGTVMixin:
         self.request_log(response)
         if response.status_code != 200:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
-        igtv_data = open(path, "rb").read()
-        igtv_len = str(len(igtv_data))
+        with open(path, "rb") as fp:
+            igtv_data = fp.read()
+            igtv_len = str(len(igtv_data))
         headers = {
             "Offset": "0",
             "X-Entity-Name": upload_name,
@@ -317,6 +318,7 @@ def crop_thumbnail(path: Path) -> bool:
     center = width / 2
     # Crop the center of the image
     im = im.crop((center - offset, 0, center + offset, height))
-    im.save(open(path, "w"))
-    im.close()
+    with open(path, "w") as fp:
+        im.save(fp)
+        im.close()
     return True

@@ -140,8 +140,9 @@ class UploadPhotoMixin:
         }
         if to_album:
             rupload_params["is_sidecar"] = "1"
-        photo_data = open(path, "rb").read()
-        photo_len = str(len(photo_data))
+        with open(path, "rb") as fp:
+            photo_data = fp.read()
+            photo_len = str(len(photo_data))
         headers = {
             "Accept-Encoding": "gzip",
             "X-Instagram-Rupload-Params": json.dumps(rupload_params),
@@ -167,7 +168,8 @@ class UploadPhotoMixin:
             )
             last_json = self.last_json  # local variable for read in sentry
             raise PhotoNotUpload(response.text, response=response, **last_json)
-        width, height = Image.open(path).size
+        with Image.open(path) as im:
+            width, height = im.size
         return upload_id, width, height
 
     def photo_upload(

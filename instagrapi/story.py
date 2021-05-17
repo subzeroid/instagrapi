@@ -157,7 +157,8 @@ class StoryBuilder:
             An object of StoryBuild
         """
 
-        image_width, image_height = Image.open(self.path).size
+        with Image.open(self.path) as im:
+            image_width, image_height = im.size
 
         width_reduction_percent = (self.width / float(image_width))
         height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
