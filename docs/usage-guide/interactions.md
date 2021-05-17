@@ -42,10 +42,15 @@ print(cl.get_settings())
 print(cl.user_info(cl.user_id))
 ```
 
-* login(username: str, password: str): bool - Login by username and password (get new cookies if it does not exist in settings)
-* login(username, password, verification_code='<2FA CODE>') - Login by username and password with 2FA verification code
-* relogin(): bool - Re-login with clean cookies (required cl.username/cl.password)
-* login_by_sessionid(sessionid: str): bool - Login by sessionid from Instagram site
+### Login
+
+| Method                              | Return  | Description
+| ----------------------------------- | ------- | -------------------------------------------------
+| login(username: str, password: str) | bool    | Login by username and password (get new cookies if it does not exist in settings)
+| login(username: str, password: str, verification_code: str) | bool | Login by username and password with 2FA verification code
+| relogin()                           | bool    | Re-login with clean cookies (required cl.username and cl.password)
+| login_by_sessionid(sessionid: str)  | bool    | Login by sessionid from Instagram site
+| inject_sessionid_to_public()        | bool    | Inject sessionid from Private Session to Public Session
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
