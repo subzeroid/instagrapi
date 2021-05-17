@@ -1,5 +1,6 @@
 import re
 import time
+import random
 from pathlib import Path
 from typing import List
 
@@ -322,3 +323,42 @@ class DirectMixin:
             data=data
         )
         return result["status"] == "ok"
+
+    def direct_media_share(self, media_id: str, user_ids: List[int]) -> DirectMessage:
+        """
+        Share a media to list of users
+
+        Parameters
+        ----------
+        media_id: str
+            Unique Media ID
+        user_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        recipient_users = dumps([[int(uid) for uid in user_ids]])
+        token = random.randint(6800011111111111111, 6800099999999999999)
+        data = {
+            'recipient_users': recipient_users,
+            'action': 'send_item',
+            'is_shh_mode': 0,
+            'send_attribution': 'feed_timeline',
+            'client_context': token,
+            'media_id': media_id,
+            'mutation_token': token,
+            'nav_chain': '1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6',
+            'offline_threading_id': token
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/media_share/",
+            # params={'media_type': 'video'},
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])

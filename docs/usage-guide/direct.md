@@ -10,3 +10,4 @@
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
+| direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
