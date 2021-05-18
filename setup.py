@@ -36,7 +36,12 @@ setup(
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
     install_requires=requirements,
-    keywords='instagram private api',
+    keywords=[
+        'instagram private api', 'instagram-private-api', 'instagram api', 'instagram-api', 'instagram',
+        'instagram-scraper', 'instagram-client', 'instagram-stories', 'instagram-feed', 'instagram-reels', 'instagram-insights',
+        'downloader', 'uploader', 'videos', 'photos', 'albums', 'igtv', 'reels', 'stories', 'pictures',
+        'instagram-user-photos', 'instagram-photos', 'instagram-metadata', 'instagram-downloader', 'instagram-uploader'
+    ],
     description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
     long_description_content_type='text/markdown',
