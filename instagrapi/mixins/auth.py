@@ -297,6 +297,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except PrivateError:
             user = self.user_short_gql(int(user_id))
         self.username = user.username
+        self.cookie_dict.set("ds_user_id", user.pk)
         return True
 
     def login(self, username: str, password: str, relogin: bool = False, verification_code: str = '') -> bool:
@@ -393,6 +394,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     @property
     def cookie_dict(self) -> dict:
         return self.private.cookies.get_dict()
+
+    @property
+    def sessionid(self) -> str:
+        return self.cookie_dict.get("sessionid")
 
     @property
     def token(self) -> str:
@@ -678,8 +683,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        session_id = self.private.cookies.get_dict().get("sessionid")
-        if session_id:
-            self.public.cookies.set("sessionid", session_id)
+        if self.sessionid:
+            self.public.cookies.set("sessionid", self.sessionid)
             return True
         return False
