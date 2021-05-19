@@ -297,7 +297,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except PrivateError:
             user = self.user_short_gql(int(user_id))
         self.username = user.username
-        self.cookie_dict.set("ds_user_id", user.pk)
+        self.cookie_dict["ds_user_id"] = user.pk
         return True
 
     def login(self, username: str, password: str, relogin: bool = False, verification_code: str = '') -> bool:
