@@ -89,25 +89,26 @@ class StoryBuilder:
             mention = self.mentions[0]
             if getattr(mention, 'user', None):
                 caption = "@{mention.user.username}"
-        text_clip = TextClip(
-            caption,
-            color="white",
-            font="Arial",
-            kerning=-1,
-            fontsize=100,
-            method="label",
-        )
-        text_clip_left = (self.width - 600) / 2
-        text_clip_top = clip_top + clip.size[1] + 50
-        offset = (text_clip_top + text_clip.size[1]) - self.height
-        if offset > 0:
-            text_clip_top -= offset + 90
-        text_clip = (
-            text_clip.resize(width=600)
-            .set_position((text_clip_left, text_clip_top))
-            .fadein(3)
-        )
-        clips.append(text_clip)
+        if caption:
+            text_clip = TextClip(
+                caption,
+                color="white",
+                font="Arial",
+                kerning=-1,
+                fontsize=100,
+                method="label",
+            )
+            text_clip_left = (self.width - 600) / 2
+            text_clip_top = clip_top + clip.size[1] + 50
+            offset = (text_clip_top + text_clip.size[1]) - self.height
+            if offset > 0:
+                text_clip_top -= offset + 90
+            text_clip = (
+                text_clip.resize(width=600)
+                .set_position((text_clip_left, text_clip_top))
+                .fadein(3)
+            )
+            clips.append(text_clip)
         # Mentions
         mentions = []
         if mention:
