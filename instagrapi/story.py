@@ -84,9 +84,11 @@ class StoryBuilder:
         clips.append(media_clip)
         mention = self.mentions[0] if self.mentions else None
         # Text clip
-        caption = (
-            "@%s" % mention.user.username if mention.user.username else self.caption
-        )
+        caption = self.caption
+        if self.mentions:
+            mention = self.mentions[0]
+            if getattr(mention, 'user', None):
+                caption = "@{mention.user.username}"
         text_clip = TextClip(
             caption,
             color="white",
