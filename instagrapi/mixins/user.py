@@ -628,3 +628,12 @@ class UserMixin:
         if self.user_id in self._users_followers:
             self._users_followers[self.user_id].pop(user_id, None)
         return result["friendship_status"]["followed_by"] is False
+
+    def short_user_info_by_username(self, username: str) -> UserShort:
+
+        data = self.top_search(username)
+        try:
+            user = extract_user_short(data["users"][0]["user"])
+        except IndexError:
+            raise UserNotFound(**data)
+        return user
