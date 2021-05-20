@@ -326,7 +326,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             from Crypto import Random
             from Crypto.Cipher import AES
 
-            timestamp = str(int(datetime.now().timestamp()))
+            timestamp = str(int(datetime.datetime.now().timestamp()))
 
             # create a random key of length 32 bytes (for AES 256)
             key = Random.get_random_bytes(32)
