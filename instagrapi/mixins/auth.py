@@ -386,6 +386,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
 
             last_json = response.json()
+        except PleaseWaitFewMinutes:
+            # The instagram application ignores this error
+            # and continues to log in (repeat this behavior)
+            pass
         except JSONDecodeError:
             pass
         message = last_json.get("message", "")
