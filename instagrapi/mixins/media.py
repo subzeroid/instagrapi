@@ -128,7 +128,7 @@ class MediaMixin:
 
     def media_info_a1(self, media_pk: int, max_id: str = None) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Public Web API
 
         Parameters
         ----------
@@ -156,7 +156,7 @@ class MediaMixin:
 
     def media_info_gql(self, media_pk: int) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Public Graphql API
 
         Parameters
         ----------
@@ -192,7 +192,7 @@ class MediaMixin:
 
     def media_info_v1(self, media_pk: int) -> Media:
         """
-        Get Media from PK
+        Get Media from PK by Private Mobile API
 
         Parameters
         ----------
@@ -417,7 +417,7 @@ class MediaMixin:
         self, user_id: int, amount: int = 50, sleep: int = 2
     ) -> List[Media]:
         """
-        Get a user's media
+        Get a user's media by Public Graphql API
 
         Parameters
         ----------
@@ -438,7 +438,9 @@ class MediaMixin:
         end_cursor = None
         variables = {
             "id": user_id,
-            "first": 50,  # default amount
+            "first": 50
+            if amount > 50
+            else amount,  # These are Instagram restrictions, you can only specify <= 50
         }
         while True:
             if end_cursor:
@@ -464,7 +466,7 @@ class MediaMixin:
 
     def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
         """
-        Get a user's media
+        Get a user's media by Private Mobile API
 
         Parameters
         ----------
@@ -573,6 +575,57 @@ class MediaMixin:
         return result["status"] == "ok"
 
     def media_likers(self, media_id: str) -> List[UserShort]:
+        """
+        Get user's likers
+
+        Parameters
+        ----------
+        media_id: str
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
         media_id = self.media_id(media_id)
         result = self.private_request(f"media/{media_id}/likers/")
         return [extract_user_short(u) for u in result["users"]]
+
+    def media_archive(self, media_id: str, revert: bool = False) -> bool:
+        """
+        Archive a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        revert: bool, optional
+            Flag for archive or unarchive. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        media_id = self.media_id(media_id)
+        name = "undo_only_me" if revert else "only_me"
+        result = self.private_request(
+            f"media/{media_id}/{name}/", self.with_action_data({"media_id": media_id})
+        )
+        return result["status"] == "ok"
+
+    def media_unarchive(self, media_id: str) -> bool:
+        """
+        Unarchive a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.media_archive(media_id, revert=True)

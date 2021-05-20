@@ -24,6 +24,7 @@ from instagrapi.exceptions import (
     PleaseWaitFewMinutes,
     RateLimitError,
     SentryBlock,
+    TwoFactorRequired,
     UnknownError,
     VideoTooLongException,
     InactiveUserError,
@@ -133,7 +134,7 @@ class PrivateRequestMixin:
             "Accept-Language": "en-US",
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Accept-Encoding": "gzip, deflate",
-            "Host": "i.instagram.com",
+            # "Host": "i.instagram.com",
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",  # "close" in instabot
             # "Pragma": "no-cache",
@@ -238,12 +239,10 @@ class PrivateRequestMixin:
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
-                elif error_type == "inactive user":
-                    raise InactiveUserError(**last_json)
-                elif error_type == "invalid_user":
-                    raise InvalidUserError(**last_json)
-                elif error_type == "ip_block":
-                    raise IPBlockError(**last_json)
+                elif error_type == "two_factor_required":
+                    if not last_json["message"]:
+                        last_json["message"] = "Two-factor authentication required"
+                    raise TwoFactorRequired(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:

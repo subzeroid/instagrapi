@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -274,7 +274,7 @@ class UserMixin:
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information
+        Get user's following information by Public Graphql API
 
         Parameters
         ----------
@@ -297,6 +297,7 @@ class UserMixin:
             "fetch_mutual": False,
             "first": 24,
         }
+        self.inject_sessionid_to_public()
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
@@ -321,7 +322,7 @@ class UserMixin:
 
     def user_following_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
-        Get user's followers information
+        Get user's following users information by Private Mobile API
 
         Parameters
         ----------
@@ -379,7 +380,8 @@ class UserMixin:
             Dict of user_id and User object
         """
         user_id = int(user_id)
-        if not use_cache or user_id not in self._users_following:
+        users = self._users_following.get(user_id, {})
+        if not use_cache or not users or (amount and len(users) < amount):
             # Temporary: Instagram Required Login for GQL request
             # You can inject sessionid from private to public session
             # try:
@@ -395,37 +397,133 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
-    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+    def user_followers_gql_chunk(
+        self, user_id: int, max_amount: int = 0, end_cursor: str = None
+    ) -> Tuple[List[UserShort], str]:
         """
-        Get user's followers information
+        Get user's followers information by Public Graphql API and end_cursor
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        end_cursor: str, optional
+            The cursor from which it is worth continuing to receive the list of followers
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            List of objects of User type with cursor
+        """
+        user_id = int(user_id)
+        users = []
+        variables = {
+            "id": user_id,
+            "include_reel": True,
+            "fetch_mutual": False,
+            "first": 12,
+        }
+        self.inject_sessionid_to_public()
+        while True:
+            if end_cursor:
+                variables["after"] = end_cursor
+            data = self.public_graphql_request(
+                variables, query_hash="5aefa9893005572d237da5068082d8d5"
+            )
+            if not data["user"] and not users:
+                raise UserNotFound(user_id=user_id, **data)
+            page_info = json_value(
+                data, "user", "edge_followed_by", "page_info", default={}
+            )
+            edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
+            for edge in edges:
+                users.append(extract_user_short(edge["node"]))
+            end_cursor = page_info.get("end_cursor")
+            if not page_info.get("has_next_page") or not end_cursor:
+                break
+            if max_amount and len(users) >= max_amount:
+                break
+        return users, end_cursor
+
+    def user_followers_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information by Public Graphql API
 
         Parameters
         ----------
         user_id: int
             User id of an instagram account
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
         List[UserShort]
             List of objects of User type
         """
-        user_id = int(user_id)
-        max_id = ""
+        users, _ = self.user_followers_gql_chunk(int(user_id), amount)
+        if amount:
+            users = users[:amount]
+        return users
+
+    def user_followers_v1_chunk(
+        self, user_id: int, max_amount: int = 0, max_id: str = ""
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's followers information by Private Mobile API and max_id (cursor)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        max_id: str, optional
+            Max ID, default value is empty String
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            Tuple of List of users and max_id
+        """
         users = []
         while True:
-            if amount and len(users) >= amount:
-                break
             result = self.private_request(
                 f"friendships/{user_id}/followers/",
-                params={"max_id": max_id, "rank_token": self.rank_token},
+                params={
+                    "max_id": max_id,
+                    "rank_token": self.rank_token,
+                    "search_surface": "follow_list_page",
+                    "query": "",
+                    "enable_groups": "true",
+                },
             )
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id:
+            if not max_id or (max_amount and len(users) >= max_amount):
                 break
+        return users, max_id
+
+    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's followers information by Private Mobile API
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
+        users, _ = self.user_followers_v1_chunk(int(user_id), amount)
         if amount:
             users = users[:amount]
         return users
@@ -443,7 +541,7 @@ class UserMixin:
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
@@ -451,8 +549,14 @@ class UserMixin:
             Dict of user_id and User object
         """
         user_id = int(user_id)
-        if not use_cache or user_id not in self._users_followers:
-            users = self.user_followers_v1(user_id, amount)
+        users = self._users_followers.get(user_id, {})
+        if not use_cache or not users or (amount and len(users) < amount):
+            try:
+                users = self.user_followers_gql(user_id, amount)
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                users = self.user_followers_v1(user_id, amount)
             self._users_followers[user_id] = {user.pk: user for user in users}
         followers = self._users_followers[user_id]
         if amount and len(followers) > amount:
@@ -504,11 +608,23 @@ class UserMixin:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
-    def short_user_info_by_username(self, username: str) -> UserShort:
+    def user_remove_follower(self, user_id: int) -> bool:
+        """
+        Remove a follower
 
-        data = self.top_search(username)
-        try:
-            user = extract_user_short(data["users"][0]["user"])
-        except IndexError:
-            raise UserNotFound(**data)
-        return user
+        Parameters
+        ----------
+        user_id: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = int(user_id)
+        data = self.with_action_data({"user_id": str(user_id)})
+        result = self.private_request(f"friendships/remove_follower/{user_id}/", data)
+        if self.user_id in self._users_followers:
+            self._users_followers[self.user_id].pop(user_id, None)
+        return result["friendship_status"]["followed_by"] is False

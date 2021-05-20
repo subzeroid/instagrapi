@@ -31,6 +31,12 @@ class User(BaseModel):
     external_url: Optional[str]
     is_business: bool
 
+    public_email: Optional[str]
+    contact_phone_number: Optional[str]
+    business_contact_method: Optional[str]
+    business_category_name: Optional[str]
+    category_name: Optional[str]
+
     _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
 
 
@@ -234,6 +240,17 @@ class DirectResponse(BaseModel):
     unseen_count: Optional[int]
     unseen_count_ts: Optional[int]
     status: Optional[str]
+
+
+class DirectShortThread(BaseModel):
+    id: int
+    users: List[UserShort]
+    named: bool
+    thread_title: str
+    pending: bool
+    thread_type: str
+    viewer_id: int
+    is_group: bool
 
 
 class DirectThread(BaseModel):

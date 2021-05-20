@@ -9,12 +9,17 @@ import time
 import uuid
 from pathlib import Path
 from typing import Dict, List
-from datetime import datetime
+from uuid import uuid4
 
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ReloginAttemptExceeded
+from instagrapi.exceptions import (
+    PleaseWaitFewMinutes,
+    PrivateError,
+    ReloginAttemptExceeded,
+    TwoFactorRequired,
+)
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import CET
 
@@ -491,14 +496,22 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
         self.settings.update({"cookies": {"sessionid": sessionid}})
         self.init()
-        if not self.username:
-            user_id = re.search(r"^\d+", sessionid).group()
+        user_id = re.search(r"^\d+", sessionid).group()
+        try:
             user = self.user_info_v1(int(user_id))
-            self.username = user.username
-        self.last_login = time.time()
+        except PrivateError:
+            user = self.user_short_gql(int(user_id))
+        self.username = user.username
+        self.cookie_dict["ds_user_id"] = user.pk
         return True
 
-    def login(self, username: str, password: str, relogin: bool = False) -> bool:
+    def login(
+        self,
+        username: str,
+        password: str,
+        relogin: bool = False,
+        verification_code: str = "",
+    ) -> bool:
         """
         Login
 
@@ -531,7 +544,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         #        return True  # already login
         if self.user_id:
             return True  # already login
-        self.pre_login_flow()
+        try:
+            self.pre_login_flow()
+        except PleaseWaitFewMinutes:
+            # The instagram application ignores this error
+            # and continues to log in (repeat this behavior)
+            pass
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
@@ -546,7 +564,32 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "google_tokens": "[]",
             "login_attempt_count": "0",
         }
-        if self.private_request("accounts/login/", data, login=True):
+        try:
+            logged = self.private_request("accounts/login/", data, login=True)
+        except TwoFactorRequired as e:
+            if not verification_code.strip():
+                raise TwoFactorRequired(
+                    f"{e} (you did not provide verification_code for login method)"
+                )
+            two_factor_identifier = self.last_json.get("two_factor_info", {}).get(
+                "two_factor_identifier"
+            )
+            data = {
+                "verification_code": verification_code,
+                "phone_id": self.phone_id,
+                "_csrftoken": self.token,
+                "two_factor_identifier": two_factor_identifier,
+                "username": username,
+                "trust_this_device": "0",
+                "guid": self.uuid,
+                "device_id": self.device_id,
+                "waterfall_id": str(uuid4()),
+                "verification_method": "3",
+            }
+            logged = self.private_request(
+                "accounts/two_factor_login/", data, login=True
+            )
+        if logged:
             self.login_flow()
             self.last_login = time.time()
             return True
@@ -566,6 +609,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     @property
     def cookie_dict(self) -> dict:
         return self.private.cookies.get_dict()
+
+    @property
+    def sessionid(self) -> str:
+        return self.cookie_dict.get("sessionid")
 
     @property
     def token(self) -> str:
@@ -696,6 +743,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "cpu": "qcom",
             "version_code": "264009049",
         }
+        self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
         return True
 
@@ -717,6 +765,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             **self.device_settings
         )
         self.private.headers.update({"User-Agent": self.user_agent})
+        self.settings["user_agent"] = self.user_agent
         self.set_uuids({})
         return True
 
@@ -849,8 +898,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        session_id = self.private.cookies.get_dict().get("sessionid")
-        if session_id:
-            self.public.cookies.set("sessionid", session_id)
+        if self.sessionid:
+            self.public.cookies.set("sessionid", self.sessionid)
             return True
         return False
