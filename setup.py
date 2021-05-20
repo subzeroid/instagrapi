@@ -20,7 +20,7 @@ Use the most recent version of the API from Instagram.
 requirements = [
     'requests==2.25.1',
     'PySocks==1.7.1',
-    'pydantic==1.8.1',
+    'pydantic==1.8.2',
     'pycryptodomex==3.9.9'
 ]
 # requirements = [
@@ -30,13 +30,18 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.5.10',
+    version='1.7.5',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
     url='https://github.com/adw0rd/instagrapi',
     install_requires=requirements,
-    keywords='instagram private api',
+    keywords=[
+        'instagram private api', 'instagram-private-api', 'instagram api', 'instagram-api', 'instagram',
+        'instagram-scraper', 'instagram-client', 'instagram-stories', 'instagram-feed', 'instagram-reels', 'instagram-insights',
+        'downloader', 'uploader', 'videos', 'photos', 'albums', 'igtv', 'reels', 'stories', 'pictures',
+        'instagram-user-photos', 'instagram-photos', 'instagram-metadata', 'instagram-downloader', 'instagram-uploader'
+    ],
     description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
     long_description_content_type='text/markdown',

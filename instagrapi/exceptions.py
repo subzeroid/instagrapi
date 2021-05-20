@@ -233,6 +233,15 @@ class IGTVConfigureError(IGTVNotUpload):
     pass
 
 
+
+class ClipNotUpload(PrivateError):
+    pass
+
+
+class ClipConfigureError(ClipNotUpload):
+    pass
+
+
 class AlbumNotDownload(PrivateError):
     pass
 
@@ -267,3 +276,6 @@ class LocationNotFound(LocationError):
         super().__init__(
             f"Location \"{kwargs.get('location_pk')}\" not found", *args, **kwargs
         )
+
+class TwoFactorRequired(PrivateError):
+    pass

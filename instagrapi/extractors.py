@@ -6,6 +6,7 @@ from .types import (
     Comment,
     DirectMessage,
     DirectResponse,
+    DirectShortThread,
     DirectThread,
     Hashtag,
     Location,
@@ -176,6 +177,8 @@ def extract_user_gql(data):
         follower_count=data["edge_followed_by"]["count"],
         following_count=data["edge_follow"]["count"],
         is_business=data["is_business_account"],
+        public_email=data["business_email"],
+        contact_phone_number=data["business_phone_number"],
         **data,
     )
 
@@ -235,6 +238,12 @@ def extract_direct_thread(data):
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
     return DirectThread(**data)
+
+
+def extract_direct_short_thread(data):
+    data["users"] = [extract_user_short(u) for u in data["users"]]
+    data["id"] = data.get("thread_id")
+    return DirectShortThread(**data)
 
 
 def extract_direct_response(data):

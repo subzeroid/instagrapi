@@ -168,8 +168,9 @@ class UploadVideoMixin:
         self.request_log(response)
         if response.status_code != 200:
             raise VideoNotUpload(response.text, response=response, **self.last_json)
-        video_data = open(path, "rb").read()
-        video_len = str(len(video_data))
+        with open(path, "rb") as fp:
+            video_data = fp.read()
+            video_len = str(len(video_data))
         headers = {
             "Offset": "0",
             "X-Entity-Name": upload_name,

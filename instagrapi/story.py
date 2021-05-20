@@ -84,28 +84,31 @@ class StoryBuilder:
         clips.append(media_clip)
         mention = self.mentions[0] if self.mentions else None
         # Text clip
-        caption = (
-            "@%s" % mention.user.username if mention.user.username else self.caption
-        )
-        text_clip = TextClip(
-            caption,
-            color="white",
-            font="Arial",
-            kerning=-1,
-            fontsize=100,
-            method="label",
-        )
-        text_clip_left = (self.width - 600) / 2
-        text_clip_top = clip_top + clip.size[1] + 50
-        offset = (text_clip_top + text_clip.size[1]) - self.height
-        if offset > 0:
-            text_clip_top -= offset + 90
-        text_clip = (
-            text_clip.resize(width=600)
-            .set_position((text_clip_left, text_clip_top))
-            .fadein(3)
-        )
-        clips.append(text_clip)
+        caption = self.caption
+        if self.mentions:
+            mention = self.mentions[0]
+            if getattr(mention, 'user', None):
+                caption = "@{mention.user.username}"
+        if caption:
+            text_clip = TextClip(
+                caption,
+                color="white",
+                font="Arial",
+                kerning=-1,
+                fontsize=100,
+                method="label",
+            )
+            text_clip_left = (self.width - 600) / 2
+            text_clip_top = clip_top + clip.size[1] + 50
+            offset = (text_clip_top + text_clip.size[1]) - self.height
+            if offset > 0:
+                text_clip_top -= offset + 90
+            text_clip = (
+                text_clip.resize(width=600)
+                .set_position((text_clip_left, text_clip_top))
+                .fadein(3)
+            )
+            clips.append(text_clip)
         # Mentions
         mentions = []
         if mention:
@@ -157,7 +160,8 @@ class StoryBuilder:
             An object of StoryBuild
         """
 
-        image_width, image_height = Image.open(self.path).size
+        with Image.open(self.path) as im:
+            image_width, image_height = im.size
 
         width_reduction_percent = (self.width / float(image_width))
         height_in_ratio = int((float(image_height) * float(width_reduction_percent)))

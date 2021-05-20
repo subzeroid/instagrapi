@@ -1,3 +1,4 @@
+import random
 import re
 import time
 from pathlib import Path
@@ -7,9 +8,15 @@ from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_message,
     extract_direct_response,
+    extract_direct_short_thread,
     extract_direct_thread,
 )
-from instagrapi.types import DirectMessage, DirectResponse, DirectThread
+from instagrapi.types import (
+    DirectMessage,
+    DirectResponse,
+    DirectShortThread,
+    DirectThread,
+)
 from instagrapi.utils import dumps
 
 
@@ -154,10 +161,10 @@ class DirectMixin:
             String to be posted on the thread
 
         user_ids: List[int]
-            List of unique identifier of Users thread
+            List of unique identifier of Users id
 
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread
+            List of unique identifier of Direct Message thread id
 
         Returns
         -------
@@ -179,7 +186,7 @@ class DirectMixin:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
         result = self.private_request(
-            "direct_v2/threads/broadcast/%s/" % method,
+            f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(data),
             with_signature=False,
         )
@@ -197,10 +204,10 @@ class DirectMixin:
             Path to photo that will be posted on the thread
 
         user_ids: List[int]
-            List of unique identifier of Users thread
+            List of unique identifier of Users id
 
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread
+            List of unique identifier of Direct Message thread id
 
         Returns
         -------
@@ -226,7 +233,7 @@ class DirectMixin:
         data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
 
         result = self.private_request(
-            "direct_v2/threads/broadcast/%s/" % method,
+            f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(data),
             with_signature=False,
         )
@@ -254,3 +261,104 @@ class DirectMixin:
             with_signature=False,
         )
         return extract_direct_response(result)
+
+    def direct_search(self, query: str) -> List[DirectShortThread]:
+        result = self.private_request(
+            "direct_v2/ranked_recipients/",
+            params={"mode": "raven", "show_threads": "true", "query": str(query)}
+        )
+        return [
+            extract_direct_short_thread(item.get('thread', {}))
+            for item in result.get('ranked_recipients', [])
+            if 'thread' in item
+        ]
+
+    def direct_thread_by_participants(self, user_ids: List[int]) -> DirectThread:
+        """
+        Get direct thread by participants
+
+        Parameters
+        ----------
+        user_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectThread
+            An object of DirectThread
+        """
+        recipient_users = dumps([int(uid) for uid in user_ids])
+        result = self.private_request(
+            "direct_v2/threads/get_by_participants/",
+            params={"recipient_users": recipient_users, "seq_id": 2580572, "limit": 20}
+        )
+        if 'thread' not in result:
+            raise DirectThreadNotFound(
+                f'Thread not found by recipient_users={recipient_users}',
+                user_ids=user_ids,
+                **self.last_json
+            )
+        return extract_direct_thread(result['thread'])
+
+    def direct_thread_hide(self, thread_id: int) -> bool:
+        """
+        Hide (delete) a thread
+        When you click delete, Instagram hides a thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread which messages will be read
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/hide/",
+            data=data
+        )
+        return result["status"] == "ok"
+
+    def direct_media_share(self, media_id: str, user_ids: List[int]) -> DirectMessage:
+        """
+        Share a media to list of users
+
+        Parameters
+        ----------
+        media_id: str
+            Unique Media ID
+        user_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        recipient_users = dumps([[int(uid) for uid in user_ids]])
+        token = random.randint(6800011111111111111, 6800099999999999999)
+        data = {
+            'recipient_users': recipient_users,
+            'action': 'send_item',
+            'is_shh_mode': 0,
+            'send_attribution': 'feed_timeline',
+            'client_context': token,
+            'media_id': media_id,
+            'mutation_token': token,
+            'nav_chain': '1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6',
+            'offline_threading_id': token
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/media_share/",
+            # params={'media_type': 'video'},
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
