@@ -61,7 +61,7 @@ class DownloadVideoMixin:
         self, url: str, filename: str = "", folder: Path = ""
     ) -> Path:
         """
-        Download video using media pk
+        Download video using URL
 
         Parameters
         ----------

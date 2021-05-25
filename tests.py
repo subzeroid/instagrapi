@@ -1172,6 +1172,12 @@ class ClientHashtagTestCase(ClientPrivateTestCase):
 
 class ClientStoryTestCase(ClientPrivateTestCase):
 
+    def test_story_pk_from_url(self):
+        story_pk = self.api.story_pk_from_url(
+            "https://www.instagram.com/stories/dhbastards/2581281926631793076/"
+        )
+        self.assertEqual(story_pk, 2581281926631793076)
+
     def test_upload_photo_story(self):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/B3mr1-OlWMG/"

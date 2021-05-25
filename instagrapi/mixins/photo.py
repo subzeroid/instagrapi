@@ -68,7 +68,7 @@ class DownloadPhotoMixin:
         self, url: str, filename: str = "", folder: Path = ""
     ) -> Path:
         """
-        Download photo using media pk
+        Download photo using URL
 
         Parameters
         ----------

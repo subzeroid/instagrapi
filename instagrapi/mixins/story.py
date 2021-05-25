@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 from copy import deepcopy
 from typing import List
 
@@ -18,6 +19,28 @@ class StoryMixin:
     # def story_info_gql(self, story_pk: int):
     #     # GQL havent video_url :-(
     #     return self.media_info_gql(self, int(story_pk))
+
+    def story_pk_from_url(self, url: str) -> int:
+        """
+        Get Story (media) PK from URL
+
+        Parameters
+        ----------
+        url: str
+            URL of the story
+
+        Returns
+        -------
+        int
+            Media PK
+
+        Examples
+        --------
+        https://www.instagram.com/stories/dhbastards/2581281926631793076/ -> 2581281926631793076
+        """
+        path = urlparse(url).path
+        parts = [p for p in path.split("/") if p and p.isdigit()]
+        return int(parts[0])
 
     def story_info_v1(self, story_pk: int) -> Story:
         """
