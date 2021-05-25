@@ -11,3 +11,12 @@
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
+| direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
+
+
+Example:
+
+```
+>>> cl.direct_thread_mark_unread(340282366841710301949128122292511813703)
+True
+```
