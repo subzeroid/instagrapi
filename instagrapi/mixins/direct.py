@@ -263,6 +263,19 @@ class DirectMixin:
         return extract_direct_response(result)
 
     def direct_search(self, query: str) -> List[DirectShortThread]:
+        """
+        Search threads by query
+
+        Parameters
+        ----------
+        query: String
+            Text query, e.g. username
+
+        Returns
+        -------
+        List[DirectShortThread]
+            List of short version of DirectThread
+        """
         result = self.private_request(
             "direct_v2/ranked_recipients/",
             params={"mode": "raven", "show_threads": "true", "query": str(query)}
@@ -370,7 +383,7 @@ class DirectMixin:
         Parameters
         ----------
         thread_id: int
-            Id of thread which messages will be read
+            Id of thread
 
         Returns
         -------
@@ -382,6 +395,34 @@ class DirectMixin:
         data.pop('device_id', None)
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/mark_unread/",
+            data=data
+        )
+        return result["status"] == "ok"
+
+    def direct_message_delete(self, thread_id: int, message_id: int) -> bool:
+        """
+        Delete a message from thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+        message_id: int
+            Id of message
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        data['is_shh_mode'] = 0
+        data['send_attribution'] = 'direct_thread'
+        data['original_message_client_context'] = random.randint(6800011111111111111, 6800099999999999999)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/items/{message_id}/delete/",
             data=data
         )
         return result["status"] == "ok"
