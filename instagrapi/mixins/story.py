@@ -1,9 +1,9 @@
 import json
 import shutil
-from pathlib import Path
-from urllib.parse import urlparse
 from copy import deepcopy
+from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
 
 import requests
 
