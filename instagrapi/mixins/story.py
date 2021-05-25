@@ -1,7 +1,11 @@
 import json
+import shutil
+from pathlib import Path
 from urllib.parse import urlparse
 from copy import deepcopy
 from typing import List
+
+import requests
 
 from instagrapi import config
 from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
@@ -15,10 +19,6 @@ from instagrapi.types import Story, UserShort
 
 class StoryMixin:
     _stories_cache = {}  # pk -> object
-
-    # def story_info_gql(self, story_pk: int):
-    #     # GQL havent video_url :-(
-    #     return self.media_info_gql(self, int(story_pk))
 
     def story_pk_from_url(self, url: str) -> int:
         """
@@ -41,6 +41,10 @@ class StoryMixin:
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return int(parts[0])
+
+    # def story_info_gql(self, story_pk: int):
+    #     # GQL havent video_url :-(
+    #     return self.media_info_gql(self, int(story_pk))
 
     def story_info_v1(self, story_pk: int) -> Story:
         """
@@ -236,3 +240,50 @@ class StoryMixin:
             [self.media_id(mid) for mid in story_pks],
             [self.media_id(mid) for mid in skipped_story_pks]
         )
+
+    def story_download(self, story_pk: int) -> Path:
+        """
+        Download story media by media_type
+
+        Parameters
+        ----------
+        story_pk: int
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
+        story_pk = int(story_pk)
+        story = self.story_info(story_pk)
+        url = story.thumbnail_url if story.media_type == 1 else story.video_url
+        return self.story_download_by_url(url)
+
+    def story_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+        """
+        Download story media using URL
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+        filename: str, optional
+            Filename for the media
+        folder: Path, optional
+            Directory in which you want to download the album, default is "" and will download the files to working
+                directory
+
+        Returns
+        -------
+        Path
+            Path for the file downloaded
+        """
+        fname = urlparse(url).path.rsplit("/", 1)[1]
+        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
+        path = Path(folder) / filename
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        with open(path, "wb") as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)
+        return path.resolve()
