@@ -6,6 +6,22 @@
 | story_info(story_pk: int, use_cache: bool = True)               | Story       | Return story info
 | story_delete(story_pk: int)                                     | bool        | Delete story
 | story_seen(story_pks: List[int], skipped_story_pks: List[int])  | bool        | Mark a story as seen
+| story_pk_from_url(url: str)                                     | int         | Get Story (media) PK from URL
+| story_download(story_pk: int)                                   | Path        | Download story media by media_type
+| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path | Download story media using URL
+
+```
+>>> cl.story_download(2581281926631793076)
+PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
+
+>>> s = cl.story_info(2581281926631793076)
+
+>>> cl.story_download_by_url(s.video_url)
+PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
+
+>>> cl.story_download_by_url(s.thumbnail_url)
+PosixPath('/app/191260083_2908005872746895_8988438451809588865_n.jpg')
+```
 
 ## Upload Stories
 
