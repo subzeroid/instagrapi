@@ -362,3 +362,26 @@ class DirectMixin:
             with_signature=False,
         )
         return extract_direct_message(result["payload"])
+
+    def direct_thread_mark_unread(self, thread_id: int) -> bool:
+        """
+        Mark a thread as unread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread which messages will be read
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/mark_unread/",
+            data=data
+        )
+        return result["status"] == "ok"
