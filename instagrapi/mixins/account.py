@@ -112,3 +112,20 @@ class AccountMixin:
             self.with_default_data({"use_fbuploader": True, "upload_id": upload_id}),
         )
         return extract_user_short(result["user"])
+
+    def news_inbox_v1(self, mark_as_seen: bool = False) -> dict:
+        """Get old and new stories as is
+
+        Parameters
+        ----------
+        mark_as_seen: bool
+            Mark as seen or not
+
+        Returns
+        -------
+        dict
+        """
+        return self.private_request(
+            "news/inbox/",
+            params={'mark_as_seen': mark_as_seen}
+        )
