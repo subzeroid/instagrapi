@@ -12,7 +12,7 @@
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
 | direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
-
+| direct_message_delete(thread_id: int, message_id: int)                    | bool                    | Delete a message from thread
 
 Example:
 
