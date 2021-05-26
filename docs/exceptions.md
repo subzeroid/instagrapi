@@ -1,20 +1,20 @@
 ## Common Exceptions
 
-| Exception                 | Base        | Description                          |
-| ------------------------- | ----------- |------------------------------------- |
-| ClientError               | Exception   | Base Exception for Instagram calls   |
-| GenericRequestError       | ClientError | Base Exception for Request           |
-| ClientGraphqlError        | ClientError | Exception for GraphQL calls          |
-| ClientJSONDecodeError     | ClientError | JSON Exception                       |
-| ClientConnectionError     | ClientError | Connection error                     |
-| ClientBadRequestError     | ClientError | HTTP 400 Exception                   |
-| ClientForbiddenError      | ClientError | HTTP 403 Exception                   |
-| ClientNotFoundError       | ClientError | HTTP 404 Exception                   |
-| ClientThrottledError      | ClientError | HTTP 429 Exception                   |
-| ClientRequestTimeout      | ClientError | Request Timeout Exception            |
-| ClientIncompleteReadError | ClientError | Raised when response interrupted     |
-| ClientLoginRequired       | ClientError | Raised when Instagram required Login |
-| ReloginAttemptExceeded    | ClientError | Raised when all attempts exceeded    |
+| Exception                 | Base        | Description
+| ------------------------- | ----------- |-------------------------------------
+| ClientError               | Exception   | Base Exception for Instagram calls
+| GenericRequestError       | ClientError | Base Exception for Request
+| ClientGraphqlError        | ClientError | Exception for GraphQL calls
+| ClientJSONDecodeError     | ClientError | JSON Exception
+| ClientConnectionError     | ClientError | Connection error
+| ClientBadRequestError     | ClientError | HTTP 400 Exception
+| ClientForbiddenError      | ClientError | HTTP 403 Exception
+| ClientNotFoundError       | ClientError | HTTP 404 Exception
+| ClientThrottledError      | ClientError | HTTP 429 Exception
+| ClientRequestTimeout      | ClientError | Request Timeout Exception
+| ClientIncompleteReadError | ClientError | Raised when response interrupted
+| ClientLoginRequired       | ClientError | Raised when Instagram required Login
+| ReloginAttemptExceeded    | ClientError | Raised when all attempts exceeded
 
 ## Private Exceptions
 
@@ -23,7 +23,7 @@
 | PrivateError             | ClientError  | Base Exception for Private calls (received from Instagram)
 | FeedbackRequired         | PrivateError | Raise when get message=feedback_required
 | LoginRequired            | PrivateError | Raise when get message=login_required
-| SentryBlock              | PrivateError | Raise when get message=sentry_block
+| SentryBlock              | PrivateError | Raise when get message=sentry_block (most likely you were banned from instagram by ip address)
 | RateLimitError           | PrivateError | Raise when get message=rate_limit_error
 | BadPassword              | PrivateError | Raise when get message=bad_password
 | TwoFactorRequired        | PrivateError | Raise when get message=two_factor_required
