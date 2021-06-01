@@ -463,7 +463,7 @@ class UploadVideoMixin:
         story_sticker_ids = []
         data = {
             "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
-            # "has_original_sound": "1",
+            "has_original_sound": "1",
             # Segment mode (when file is too big):
             # "allow_multi_configures": "1",
             # "segmented_video_group_id": str(uuid4()),
@@ -474,6 +474,11 @@ class UploadVideoMixin:
             # "is_segmented_video": "1",  # SEGMENT MODE
             "filter_type": "0",
             "camera_session_id": self.client_session_id,
+            "camera_entry_point": str(random.randint(35, 45)),
+            # "date_time_digitalized":"2021:03:12+00:59:35",
+            # "composition_id":"ce3b1324-3761-4e8a-9212-fbac6c5e7d7d"
+            "camera_make": self.device_settings.get("manufacturer", "Xiaomi"),
+            "camera_model": self.device_settings.get("model", "MI+5s"),
             "timezone_offset": "10800",
             "client_timestamp": str(timestamp),
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
@@ -485,12 +490,13 @@ class UploadVideoMixin:
             "source_type": "4",
             "video_result": "",
             "creation_surface": "camera",
+            "software": config.SOFTWARE.format(**self.device_settings),
             "caption": caption,
             "capture_type": "normal",
-            "rich_text_format_types": '["strong"]',  # default, typewriter
+            "rich_text_format_types": '["classic_v2"]',  # default, typewriter
             "upload_id": upload_id,
-            "scene_capture_type": "",
-            # "original_media_type": "photo" / "video",
+            "scene_capture_type": "standard",
+            "original_media_type": "video",
             # Facebook Sharing Part:
             # "xpost_surface": "auto_xpost",
             # "share_to_fb_destination_type": "USER",
@@ -538,21 +544,23 @@ class UploadVideoMixin:
                         "user_id": str(mention.user.pk),
                         "is_sticker": False,
                         "display_type": "mention_username",
+                        "tap_state": 0,
+                        "tap_state_str_id": "mention_text",
                     }
                 )
                 text_metadata.append(
                     {
-                        "font_size": 40.0,
-                        "scale": 1.2798771,
-                        "width": 1017.50226,
-                        "height": 216.29922,
+                        "font_size": 24.0,
+                        "scale": 1.0,
+                        "width": 366.0,
+                        "height": 102.0,
                         "x": mention.x,
                         "y": mention.y,
                         "rotation": 0.0,
                     }
                 )
             data["text_metadata"] = dumps(text_metadata)
-            data["reel_mentions"] = dumps(reel_mentions)
+            # data["reel_mentions"] = dumps(reel_mentions)
             tap_models.extend(reel_mentions)
         if hashtags:
             story_sticker_ids.append("hashtag_sticker")
