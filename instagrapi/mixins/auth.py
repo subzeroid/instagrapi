@@ -687,3 +687,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.public.cookies.set("sessionid", self.sessionid)
             return True
         return False
+
+    def logout(self) -> bool:
+        result = self.private_request(
+            "accounts/logout/",
+            {'one_tap_app_login': True}
+        )
+        return result["status"] == "ok"
