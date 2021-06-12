@@ -47,7 +47,7 @@ print(cl.user_info(cl.user_id))
 | Method                              | Return  | Description
 | ----------------------------------- | ------- | -------------------------------------------------
 | login(username: str, password: str) | bool    | Login by username and password (get new cookies if it does not exist in settings)
-| login(username: str, password: str, verification_code: str) | bool | Login by username and password with 2FA verification code
+| login(username: str, password: str, verification_code: str) | bool | Login by username and password with 2FA verification code (use Google Authenticator or something similar to generate TOTP code, not work with SMS)
 | relogin()                           | bool    | Re-login with clean cookies (required cl.username and cl.password)
 | login_by_sessionid(sessionid: str)  | bool    | Login by sessionid from Instagram site
 | inject_sessionid_to_public()        | bool    | Inject sessionid from Private Session to Public Session
