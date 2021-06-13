@@ -626,3 +626,91 @@ class UserMixin:
         if self.user_id in self._users_followers:
             self._users_followers[self.user_id].pop(user_id, None)
         return result["friendship_status"]["followed_by"] is False
+
+    def mute_posts_from_follow(self, user_id: int, revert: bool = False) -> bool:
+        """
+        Mute posts from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+        revert: bool, optional
+            Unmute when True
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        name = "unmute" if revert else "mute"
+        result = self.private_request(
+            f"friendships/{name}_posts_or_story_from_follow/",
+            {
+                # "media_id": media_pk,  # when feed_timeline
+                "target_posts_author_id": str(user_id),
+                "container_module": "media_mute_sheet"  # or "feed_timeline"
+            }
+        )
+        return result["status"] == "ok"
+
+    def unmute_posts_from_follow(self, user_id: int) -> bool:
+        """
+        Unmute posts from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.mute_posts_from_follow(user_id, True)
+
+    def mute_stories_from_follow(self, user_id: int, revert: bool = False) -> bool:
+        """
+        Mute stories from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+        revert: bool, optional
+            Unmute when True
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        name = "unmute" if revert else "mute"
+        result = self.private_request(
+            f"friendships/{name}_posts_or_story_from_follow/",
+            {
+                # "media_id": media_pk,  # when feed_timeline
+                "target_reel_author_id": str(user_id),
+                "container_module": "media_mute_sheet"  # or "feed_timeline"
+            }
+        )
+        return result["status"] == "ok"
+
+    def unmute_stories_from_follow(self, user_id: int) -> bool:
+        """
+        Unmute stories from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.mute_stories_from_follow(user_id, True)

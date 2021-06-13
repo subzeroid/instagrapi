@@ -15,6 +15,10 @@ View a list of a user's medias, following and followers
 | user_id_from_username(username: str)          | int              | Get user_id by username
 | username_from_user_id(user_id: int)           | str              | Get username by user_id
 | user_remove_follower(user_id: int)            | bool             | Remove your follower
+| mute_posts_from_follow(user_id: int)          | bool             | Mute posts from following user
+| unmute_posts_from_follow(user_id: int)        | bool             | Unmute posts from following user
+| mute_stories_from_follow(user_id: int)        | bool             | Mute stories from following user
+| unmute_stories_from_follow(user_id: int)      | bool             | Unmute stories from following user
 
 Low level methods:
 
