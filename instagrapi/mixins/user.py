@@ -1,4 +1,5 @@
 from copy import deepcopy
+from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
 from instagrapi import config
@@ -6,6 +7,7 @@ from instagrapi.exceptions import (
     ClientError,
     ClientLoginRequired,
     ClientNotFoundError,
+    ClientJSONDecodeError,
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
@@ -209,8 +211,13 @@ class UserMixin:
             An object of User type
         """
         user_id = int(user_id)
-        # GraphQL haven't method to receive user by id
-        return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
+        try:
+            # GraphQL haven't method to receive user by id
+            return self.user_info_by_username_gql(
+                self.username_from_user_id_gql(user_id)
+            )
+        except JSONDecodeError as e:
+            raise ClientJSONDecodeError(e, user_id=user_id)
 
     def user_info_v1(self, user_id: int) -> User:
         """
