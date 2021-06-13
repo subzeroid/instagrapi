@@ -5,9 +5,9 @@ from typing import Dict, List, Tuple
 from instagrapi import config
 from instagrapi.exceptions import (
     ClientError,
+    ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
-    ClientJSONDecodeError,
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
