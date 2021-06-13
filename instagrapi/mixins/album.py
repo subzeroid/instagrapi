@@ -72,9 +72,9 @@ class DownloadAlbumMixin:
         paths = []
         for url in urls:
             file_name = urlparse(url).path.rsplit("/", 1)[1]
-            if file_name.endswith((".jpg", ".jpeg")):
+            if file_name.lower().endswith((".jpg", ".jpeg")):
                 paths.append(self.photo_download_by_url(url, file_name, folder))
-            elif file_name.endswith(".mp4"):
+            elif file_name.lower().endswith(".mp4"):
                 paths.append(self.video_download_by_url(url, file_name, folder))
             else:
                 raise AlbumUnknownFormat()
@@ -123,7 +123,7 @@ class UploadAlbumMixin:
         children = []
         for path in paths:
             path = Path(path)
-            if path.suffix in (".jpg", ".jpeg"):
+            if path.suffix.lower() in (".jpg", ".jpeg"):
                 upload_id, width, height = self.photo_rupload(path, to_album=True)
                 children.append(
                     {
@@ -142,7 +142,7 @@ class UploadAlbumMixin:
                         "scene_type": None,
                     }
                 )
-            elif path.suffix == ".mp4":
+            elif path.suffix.lower() == ".mp4":
                 upload_id, width, height, duration, thumbnail = self.video_rupload(
                     path, to_album=True
                 )
