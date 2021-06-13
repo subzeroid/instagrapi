@@ -51,6 +51,7 @@ print(cl.user_info(cl.user_id))
 | relogin()                           | bool    | Re-login with clean cookies (required cl.username and cl.password)
 | login_by_sessionid(sessionid: str)  | bool    | Login by sessionid from Instagram site
 | inject_sessionid_to_public()        | bool    | Inject sessionid from Private Session to Public Session
+| logout()                            | bool    | Logout
 
 You can pass settings to the Client (and save cookies), it has the following format:
 

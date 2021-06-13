@@ -76,8 +76,7 @@ class CollectionMixin:
 
         return self.collection_medias(self.collection_pk_by_name(name))
 
-    def liked_medias(self,amount: int = 21, last_media_pk: int = 0
-    ) -> List[Media]:
+    def liked_medias(self, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
         Get media you have liked
 
@@ -92,7 +91,7 @@ class CollectionMixin:
         List[Media]
             A list of objects of Media
         """
-        return self.collection_medias('liked',amount,last_media_pk)
+        return self.collection_medias("liked", amount, last_media_pk)
 
     def collection_medias(
         self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
@@ -116,7 +115,7 @@ class CollectionMixin:
         """
         if collection_pk.isdigit():
             private_request_endpoint = f"feed/collection/{collection_pk}/"
-        elif collection_pk.lower() == 'liked':
+        elif collection_pk.lower() == "liked":
             private_request_endpoint = "feed/liked/"
         else:
             private_request_endpoint = "feed/saved/posts/"
@@ -138,7 +137,7 @@ class CollectionMixin:
             for item in result["items"]:
                 if last_media_pk and last_media_pk == item["media"]["pk"]:
                     return total_items
-                total_items.append(extract_media_v1(item.get("media",item)))
+                total_items.append(extract_media_v1(item.get("media", item)))
             if not result.get("more_available"):
                 return total_items
             next_max_id = result.get("next_max_id", "")
