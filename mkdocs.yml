@@ -9,6 +9,7 @@ nav:
   - Usage Guide:
     - Fundamentals: usage-guide/fundamentals.md
     - Interactions: usage-guide/interactions.md
+    - Handle Exceptions: usage-guide/handle_exception.md
     - Collection: usage-guide/collection.md
     - Comment: usage-guide/comment.md
     - Direct: usage-guide/direct.md
