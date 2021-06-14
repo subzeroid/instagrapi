@@ -64,3 +64,5 @@ cl.login(USERNAME, PASSWORD)
 ```
 
 In this way, you can centrally handle errors and not repeat handlers throughout your code.
+
+Full example [here](https://github.com/adw0rd/instagrapi/blob/master/examples/handle_exception.py)
