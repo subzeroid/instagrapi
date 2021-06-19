@@ -7,7 +7,7 @@ import requests
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import gen_csrftoken
+from instagrapi.utils import gen_token
 
 
 class AccountMixin:
@@ -29,7 +29,7 @@ class AccountMixin:
             data={"email_or_username": username, "recaptcha_challenge_field": ""},
             headers={
                 "x-requested-with": "XMLHttpRequest",
-                "x-csrftoken": gen_csrftoken(),
+                "x-csrftoken": gen_token(),
                 "Connection": "Keep-Alive",
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
