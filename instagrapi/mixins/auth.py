@@ -380,6 +380,33 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return True
         return False
 
+    def one_tap_app_login(self, user_id: int, nonce: str) -> bool:
+        """One tap login emulation
+
+        Parameters
+        ----------
+        user_id: int
+            User ID
+        nonce: str
+            Login nonce (from Instagram, e.g. in /logout/)
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        data = {
+            "phone_id": self.phone_id,
+            "user_id": user_id,
+            "adid": self.advertising_id,
+            "guid": self.uuid,
+            "device_id": self.device_id,
+            "login_nonce": nonce,
+            "_csrftoken": self.token
+        }
+        return self.private_request("accounts/one_tap_app_login/", data)
+
     def relogin(self) -> bool:
         """
         Relogin helper
