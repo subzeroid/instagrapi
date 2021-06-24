@@ -423,7 +423,7 @@ class MediaMixin:
         ----------
         user_id: int
         amount: int, optional
-            Maximum number of media to return, default is 50
+            Maximum number of media to return, default is 50 (0 - infinity)
         sleep: int, optional
             Timeout between pages iterations, default is 2
 
@@ -438,7 +438,7 @@ class MediaMixin:
         end_cursor = None
         variables = {
             "id": user_id,
-            "first": 50 if amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
+            "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
         }
         while True:
             if end_cursor:
@@ -457,10 +457,12 @@ class MediaMixin:
             end_cursor = page_info.get("end_cursor")
             if not page_info.get("has_next_page") or not end_cursor:
                 break
-            if len(medias) >= amount:
+            if amount and len(medias) >= amount:
                 break
             time.sleep(sleep)
-        return [extract_media_gql(media) for media in medias[:amount]]
+        if amount:
+            medias = medias[:amount]
+        return [extract_media_gql(media) for media in medias]
 
     def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
         """
@@ -470,7 +472,7 @@ class MediaMixin:
         ----------
         user_id: int
         amount: int, optional
-            Maximum number of media to return, default is 18
+            Maximum number of media to return, default is 18 (0 - infinity)
 
         Returns
         -------
@@ -499,10 +501,12 @@ class MediaMixin:
             medias.extend(items)
             if not self.last_json.get("more_available"):
                 break
-            if len(medias) >= amount:
+            if amount and len(medias) >= amount:
                 break
             next_max_id = self.last_json.get("next_max_id", "")
-        return [extract_media_v1(media) for media in medias[:amount]]
+        if amount:
+            medias = medias[:amount]
+        return [extract_media_v1(media) for media in medias]
 
     def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
         """
