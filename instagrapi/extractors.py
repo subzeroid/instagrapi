@@ -220,6 +220,7 @@ def extract_direct_thread(data):
         data["inviter"] = extract_user_short(data["inviter"])
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
+    data["left_users"] = data.get("left_users", [])
     return DirectThread(**data)
 
 

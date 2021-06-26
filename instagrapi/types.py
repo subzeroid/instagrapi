@@ -255,11 +255,11 @@ class DirectThread(BaseModel):
     messages: List[DirectMessage]
     users: List[UserShort]
     inviter: Optional[UserShort]
-    left_users: List[UserShort]
+    left_users: List[UserShort] = []
     admin_user_ids: list
     last_activity_at: datetime
     muted: bool
-    is_pin: bool
+    is_pin: Optional[bool]
     named: bool
     canonical: bool
     pending: bool
