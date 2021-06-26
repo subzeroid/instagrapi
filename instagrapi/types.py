@@ -23,6 +23,7 @@ class User(BaseModel):
     full_name: str
     is_private: bool
     profile_pic_url: HttpUrl
+    profile_pic_url_hd: Optional[HttpUrl]
     is_verified: bool
     media_count: int
     follower_count: int
@@ -63,6 +64,7 @@ class UserShort(BaseModel):
     username: Optional[str]
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
+    profile_pic_url_hd: Optional[HttpUrl]
     # is_private: bool
     # is_verified: bool
     stories: List = []
