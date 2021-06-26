@@ -93,6 +93,23 @@ cl = Client(settings)
 | load_settings(path: Path)     | dict    | Load session settings from file
 | dump_settings(path: Path)     | bool    | Serialize and save session settings to file
 
+
+In order for Instagram [to trust you more](https://github.com/adw0rd/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
+
+```python
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings('/tmp/dump.json')
+```
+
+Next time:
+
+```python
+cl = Client()
+cl.load_settings('/tmp/dump.json')
+cl.login(USERNAME, PASSWORD)
+```
+
 ### Manage device, proxy and other account settings
 
 | Method                               | Return  | Description
