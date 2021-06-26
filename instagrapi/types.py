@@ -254,7 +254,7 @@ class DirectThread(BaseModel):
     id: int  # thread_id, e.g. 340282366841510300949128268610842297468
     messages: List[DirectMessage]
     users: List[UserShort]
-    inviter: UserShort
+    inviter: Optional[UserShort]
     left_users: List[UserShort]
     admin_user_ids: list
     last_activity_at: datetime

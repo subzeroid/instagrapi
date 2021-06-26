@@ -216,7 +216,8 @@ def extract_media_oembed(data):
 def extract_direct_thread(data):
     data["messages"] = [extract_direct_message(item) for item in data["items"]]
     data["users"] = [extract_user_short(u) for u in data["users"]]
-    data["inviter"] = extract_user_short(data["inviter"])
+    if "inviter" in data:
+        data["inviter"] = extract_user_short(data["inviter"])
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
     return DirectThread(**data)
