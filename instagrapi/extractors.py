@@ -77,14 +77,14 @@ def extract_media_gql(data):
         media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
     except KeyError:
         pass
-    if media["media_type"] == 2 and not media.get("product_type"):
+    if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
     media["thumbnail_url"] = sorted(
         # display_resources - user feed, thumbnail_resources - hashtag feed
         media.get("display_resources", media.get("thumbnail_resources")),
         key=lambda o: o["config_width"] * o["config_height"],
     )[-1]["src"]
-    if media["media_type"] == 8:
+    if media.get("media_type") == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
         media.pop("thumbnail_url", "")
@@ -95,7 +95,7 @@ def extract_media_gql(data):
     media["id"] = f"{media_id}_{user.pk}"
     return Media(
         code=media.get("shortcode"),
-        taken_at=media["taken_at_timestamp"],
+        taken_at=media.get("taken_at_timestamp"),
         location=extract_location(location) if location else None,
         user=user,
         view_count=media.get("video_view_count", 0),
