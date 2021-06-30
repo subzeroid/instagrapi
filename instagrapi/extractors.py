@@ -76,7 +76,7 @@ def extract_media_gql(data):
     try:
         media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
     except KeyError:
-        pass
+        media["media_type"] = 0
     if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
     media["thumbnail_url"] = sorted(
