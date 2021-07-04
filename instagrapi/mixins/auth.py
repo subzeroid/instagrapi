@@ -548,16 +548,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "169.3.0.30.135",
+            "app_version": "194.0.0.36.172",
             "android_version": 26,
             "android_release": "8.0.0",
-            "dpi": "640dpi",
-            "resolution": "1440x2560",
+            "dpi": "480dpi",
+            "resolution": "1080x1920",
             "manufacturer": "Xiaomi",
             "device": "MI 5s",
             "model": "capricorn",
             "cpu": "qcom",
-            "version_code": "264009049",
+            "version_code": "301484483",
         }
         self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
