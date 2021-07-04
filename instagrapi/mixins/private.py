@@ -67,8 +67,6 @@ class PrivateRequestMixin:
     request_timeout = 1
     last_response = None
     last_json = {}
-    country = "US"
-    locale = "en_US"
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()

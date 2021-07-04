@@ -250,6 +250,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     device_id = ""
     phone_id = ""
     uuid = ""
+    country = "US"
+    locale = "en_US"
 
     def __init__(self):
         self.user_agent = None
@@ -272,6 +274,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
+        self.set_country(self.settings.get("country", self.country))
+        self.set_locale(self.settings.get("locale", self.locale))
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -478,6 +482,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
+            "country": self.country,
+            "locale": self.locale,
         }
 
     def set_settings(self, settings: Dict) -> bool:
