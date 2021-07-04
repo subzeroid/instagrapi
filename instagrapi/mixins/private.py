@@ -67,6 +67,8 @@ class PrivateRequestMixin:
     request_timeout = 1
     last_response = None
     last_json = {}
+    country = "US"
+    locale = "en_US"
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
@@ -98,10 +100,11 @@ class PrivateRequestMixin:
 
     @property
     def base_headers(self):
+        locale = self.locale.replace("-", "_")
         return {
-            "X-IG-App-Locale": "en_US",
-            "X-IG-Device-Locale": "en_US",
-            "X-IG-Mapped-Locale": "en_US",
+            "X-IG-App-Locale": locale,
+            "X-IG-Device-Locale": locale,
+            "X-IG-Mapped-Locale": locale,
             "X-Pigeon-Session-Id": self.generate_uuid(),
             "X-Pigeon-Rawclienttime": str(round(time.time() * 1000) / 1000),
             "X-IG-Connection-Speed": "-1kbps",
@@ -110,7 +113,7 @@ class PrivateRequestMixin:
             "X-IG-Bandwidth-TotalTime-MS": "0",  # str(random.randint(5000, 15000)),
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
-            "X-IG-App-Startup-Country": "US",
+            "X-IG-App-Startup-Country": self.country.upper(),
             "X-Bloks-Version-Id": hashlib.sha256(
                 json.dumps(self.device_settings).encode()
             ).hexdigest(),
@@ -125,7 +128,7 @@ class PrivateRequestMixin:
             "X-IG-Capabilities": "3brTvwM=",  # "3brTvwE=" in instabot
             "X-IG-App-ID": "567067343352427",
             "User-Agent": self.user_agent,
-            "Accept-Language": "en-US",
+            "Accept-Language": locale.replace("_", "-"),
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
             "Accept-Encoding": "gzip, deflate",
             # "Host": "i.instagram.com",
@@ -135,6 +138,40 @@ class PrivateRequestMixin:
             # "Cache-Control": "no-cache",
             "X-FB-Client-IP": "True",
         }
+
+    def set_country(self, country: str = "US"):
+        """Set you country code (ISO 3166-1/3166-2)
+
+        Parameters
+        ----------
+        country: str
+            Your country code (ISO 3166-1/3166-2) string identifier (e.g. US, UK, RU)
+            Advise to specify the country code of your proxy
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.country = country
+        return True
+
+    def set_locale(self, locale: str = "en_US"):
+        """Set you locale (ISO 3166-1/3166-2)
+
+        Parameters
+        ----------
+        locale: str
+            Your locale code (ISO 3166-1/3166-2) string identifier (e.g. US, UK, RU)
+            Advise to specify the locale code of your proxy
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.locale = locale
+        return True
 
     @staticmethod
     def with_query_params(data, params):
