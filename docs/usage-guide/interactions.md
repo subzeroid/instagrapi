@@ -129,6 +129,8 @@ cl.login(USERNAME, PASSWORD)
 | user\_id                                | int     | Return your user\_id (after login)
 | device                                  | dict    | Return device dict which we pass to Instagram
 | base\_headers                           | dict    | Base headers for Instagram
+| set\_country(country: str = "US")       | bool    | Set country (advice: use the country of your proxy)
+| set\_locale(locale: str = "en_US")      | bool    | Set locale (advice: use the locale of your proxy)
 
 ## Challenge resolving
 
