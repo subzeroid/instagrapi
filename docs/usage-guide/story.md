@@ -25,7 +25,11 @@ PosixPath('/app/191260083_2908005872746895_8988438451809588865_n.jpg')
 
 ## Upload Stories
 
-Upload medias to your stories. Common arguments:
+Upload medias to your stories.
+The story file should be at 9:16 resolution (e.g. 720x1280).
+If you have a different resolution, then you need to prepare a file or use the StoryBuilder, which is written about below.
+
+Common arguments:
 
 * `path` - Path to media file
 * `caption` - Caption for story (now use to fetch mentions)
@@ -68,6 +72,8 @@ cl.video_upload_to_story(
 ```
 
 ## Build Story to Upload
+
+If you want to format your story correctly (correct resolution, suer mentionins, etc), use StoryBuilder:
 
 | Method                                                | Return     | Description                              |
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |
