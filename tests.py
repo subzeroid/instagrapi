@@ -967,6 +967,12 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         # send seen
         seen = self.api.direct_send_seen(thread_id=thread.id)
         self.assertEqual(seen.status, 'ok')
+        # mute and unmute thread
+        self.assertTrue(self.api.direct_thread_mute(thread.id))
+        self.assertTrue(self.api.direct_thread_unmute(thread.id))
+        # mute video call and unmute
+        self.assertTrue(self.api.direct_thread_mute_video_call(thread.id))
+        self.assertTrue(self.api.direct_thread_unmute_video_call(thread.id))
 
     def test_direct_thread_by_participants(self):
         try:
