@@ -20,7 +20,7 @@ from instagrapi.exceptions import (
     ReloginAttemptExceeded,
     TwoFactorRequired,
 )
-from instagrapi.utils import generate_jazoest
+from instagrapi.utils import generate_jazoest, dumps
 from instagrapi.zones import CET
 
 
@@ -242,7 +242,7 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
-    authorization = ''
+    authorization = ''  # Bearer IGT:2:<base64:authorization_data>
     authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
@@ -272,6 +272,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
+        self.authorization_data = self.settings.get('authorization_data', {})
         self.last_login = self.settings.get("last_login")
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
@@ -298,6 +299,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.settings = {"cookies": {"sessionid": sessionid}}
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
+
+        self.authorization_data = {
+            "ds_user_id": user_id,
+            "sessionid": sessionid,
+            "should_use_header_over_cookies": True
+        }
+
         try:
             user = self.user_info_v1(int(user_id))
         except PrivateError:
@@ -361,12 +369,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         try:
             logged = self.private_request("accounts/login/", data, login=True)
-            # Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
-            self.authorization = self.last_response.headers.get('ig-set-authorization')
-            try:
-                self.authorization_data = json.loads(base64.b64decode(self.authorization.rsplit(':', 1)[-1]))
-            except Exception as e:
-                self.logger.exception(e)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get('ig-set-authorization')
+            )
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f'{e} (you did not provide verification_code for login method)')
@@ -491,6 +496,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "advertising_id": self.advertising_id,
                 "device_id": self.device_id,
             },
+            "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
             "device_settings": self.device_settings,
@@ -508,6 +514,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Bool
         """
         self.settings = settings
+        self.init()
         return True
 
     def load_settings(self, path: Path) -> Dict:
@@ -740,3 +747,25 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             {'one_tap_app_login': True}
         )
         return result["status"] == "ok"
+
+    def parse_authorization(self, authorization) -> dict:
+        """Parse authorization header
+        """
+        try:
+            b64part = authorization.rsplit(':', 1)[-1]
+            return json.loads(base64.b64decode(b64part))
+        except Exception as e:
+            self.logger.exception(e)
+        return {}
+
+    @property
+    def authorization(self) -> str:
+        """Build authorization header
+        Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
+        """
+        if self.authorization_data:
+            b64part = base64.b64encode(
+                dumps(self.authorization_data).encode()
+            ).decode()
+            return f'Bearer IGT:2:{b64part}'
+        return ''
