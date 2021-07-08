@@ -13,10 +13,30 @@
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
 | direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
 | direct_message_delete(thread_id: int, message_id: int)                    | bool                    | Delete a message from thread
+| direct_thread_mute(thread_id: int, revert: bool = False)                  | bool                    | Mute the thread
+| direct_thread_unmute(thread_id: int)                                      | bool                    | Unmute the thread
+| direct_thread_mute_video_call(thread_id: int, revert: bool = False)       | bool                    | Mute video call for the thread
+| direct_thread_unmute_video_call(thread_id: int)                           | bool                    | Unmute video call for the thread
 
 Example:
 
 ```
+>>> from instagrapi import Client
+>>> cl = Client()
+>>> cl.login(USERNAME, PASSWORD)
+
 >>> cl.direct_thread_mark_unread(340282366841710301949128122292511813703)
+True
+
+>>> cl.direct_thread_mute(340282366841710301949128122292511813703)
+True
+
+>>> cl.direct_thread_mute_video_call(340282366841710301949128122292511813703)
+True
+
+>>> cl.direct_thread_unmute_video_call(340282366841710301949128122292511813703)
+True
+
+>>> cl.direct_thread_unmute(340282366841710301949128122292511813703)
 True
 ```
