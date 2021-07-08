@@ -330,6 +330,11 @@ class PrivateRequestMixin:
         headers=None,
         extra_sig=None,
     ):
+        if self.authorization:
+            if not headers:
+                headers = {}
+            if 'authorization' not in headers:
+                headers.update({'Authorization': self.authorization})
         kwargs = dict(
             data=data,
             params=params,

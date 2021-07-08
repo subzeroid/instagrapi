@@ -242,6 +242,8 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
+    authorization = ''
+    authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
     device_settings = {}
@@ -359,6 +361,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         try:
             logged = self.private_request("accounts/login/", data, login=True)
+            # Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
+            self.authorization = self.last_response.headers.get('ig-set-authorization')
+            try:
+                self.authorization_data = json.loads(base64.b64decode(self.authorization.rsplit(':', 1)[-1]))
+            except Exception as e:
+                self.logger.exception(e)
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f'{e} (you did not provide verification_code for login method)')
@@ -428,7 +436,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     @property
     def sessionid(self) -> str:
-        return self.cookie_dict.get("sessionid")
+        sessionid = self.cookie_dict.get("sessionid")
+        if not sessionid and self.authorization_data:
+            sessionid = self.authorization_data.get('sessionid')
+        return sessionid
 
     @property
     def token(self) -> str:
@@ -441,6 +452,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     @property
     def user_id(self) -> int:
         user_id = self.cookie_dict.get("ds_user_id")
+        if not user_id and self.authorization_data:
+            user_id = self.authorization_data.get('ds_user_id')
         if user_id:
             return int(user_id)
         return None
