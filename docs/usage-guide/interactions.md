@@ -120,17 +120,19 @@ cl.login(USERNAME, PASSWORD)
 
 ### Manage device, proxy and other account settings
 
-| Method                                  | Return  | Description
-| --------------------------------------- | ------- | ------------------------------------------------------------------
-| set\_proxy(dsn: str)                    | dict    | Support socks and http/https proxy "scheme://username:password@host:port"
-| set\_device(device: dict)               | bool    | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
-| set\_user\_agent(user\_agent: str = "") | bool    | Change User-Agent header (https://user-agents.net/applications/instagram-app)
-| cookie\_dict                            | dict    | Return cookies
-| user\_id                                | int     | Return your user\_id (after login)
-| device                                  | dict    | Return device dict which we pass to Instagram
-| base\_headers                           | dict    | Base headers for Instagram
-| set\_country(country: str = "US")       | bool    | Set country (advice: use the country of your proxy)
-| set\_locale(locale: str = "en_US")      | bool    | Set locale (advice: use the locale of your proxy)
+| Method                                 | Return | Description
+|----------------------------------------|------|----------------------------------------------------------------------------
+| set\_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| private.proxies                        | dict | Stores used proxy servers for private (mobile, v1) requests
+| public.proxies                         | dict | Stores used proxy servers for public (web, graphql) requests
+| set\_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| device                                 | dict | Return device dict which we pass to Instagram
+| set\_user\_agent(user\_agent: str = "")| bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| cookie\_dict                           | dict | Return cookies
+| user\_id                               | int  | Return your user\_id (after login)
+| base\_headers                          | dict | Base headers for Instagram
+| set\_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
+| set\_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
 
 ## Challenge resolving
 
