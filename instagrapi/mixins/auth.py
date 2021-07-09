@@ -805,3 +805,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
             return f"Bearer IGT:2:{b64part}"
         return ""
+
+    def login_by_settings(self, settings: str) -> bool:
+        self.settings = json.loads(settings)
+        self.init()
+        self.inject_sessionid_to_public()
+        self.last_login = time.time()
+        return True
