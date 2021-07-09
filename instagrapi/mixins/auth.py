@@ -306,6 +306,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
+        self.username = self.settings.get("username", "")
+        self.web_user_agent = self.settings.get(
+            "web_user_agent",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+        )
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
