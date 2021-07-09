@@ -20,7 +20,7 @@ from instagrapi.exceptions import (
     ReloginAttemptExceeded,
     TwoFactorRequired,
 )
-from instagrapi.utils import generate_jazoest, dumps
+from instagrapi.utils import dumps, generate_jazoest
 from instagrapi.zones import CET
 
 
