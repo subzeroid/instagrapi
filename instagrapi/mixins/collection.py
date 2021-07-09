@@ -73,17 +73,35 @@ class CollectionMixin:
         List[Collection]
             A list of collections
         """
+
         return self.collection_medias(self.collection_pk_by_name(name))
 
+    def liked_medias(self, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
+        """
+        Get media you have liked
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 21
+        last_media_pk: int, optional
+            Last PK user has seen, function will return medias after this pk. Default is 0
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        return self.collection_medias("liked", amount, last_media_pk)
+
     def collection_medias(
-        self, collection_pk: int, amount: int = 21, last_media_pk: int = 0
+        self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
     ) -> List[Media]:
         """
         Get media in a collection by collection_pk
 
         Parameters
         ----------
-        collection_pk: int
+        collection_pk: str
             Unique identifier of a Collection
         amount: int, optional
             Maximum number of media to return, default is 21
@@ -95,7 +113,13 @@ class CollectionMixin:
         List[Media]
             A list of objects of Media
         """
-        collection_pk = int(collection_pk)
+        if collection_pk.isdigit():
+            private_request_endpoint = f"feed/collection/{collection_pk}/"
+        elif collection_pk.lower() == "liked":
+            private_request_endpoint = "feed/liked/"
+        else:
+            private_request_endpoint = "feed/saved/posts/"
+
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
         next_max_id = ""
@@ -104,7 +128,7 @@ class CollectionMixin:
                 return total_items[:amount]
             try:
                 result = self.private_request(
-                    f"feed/collection/{collection_pk}/",
+                    private_request_endpoint,
                     params={"include_igtv_preview": "false", "max_id": next_max_id},
                 )
             except Exception as e:
@@ -113,7 +137,7 @@ class CollectionMixin:
             for item in result["items"]:
                 if last_media_pk and last_media_pk == item["media"]["pk"]:
                     return total_items
-                total_items.append(extract_media_v1(item["media"]))
+                total_items.append(extract_media_v1(item.get("media", item)))
             if not result.get("more_available"):
                 return total_items
             next_max_id = result.get("next_max_id", "")

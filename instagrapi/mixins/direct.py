@@ -263,6 +263,19 @@ class DirectMixin:
         return extract_direct_response(result)
 
     def direct_search(self, query: str) -> List[DirectShortThread]:
+        """
+        Search threads by query
+
+        Parameters
+        ----------
+        query: String
+            Text query, e.g. username
+
+        Returns
+        -------
+        List[DirectShortThread]
+            List of short version of DirectThread
+        """
         result = self.private_request(
             "direct_v2/ranked_recipients/",
             params={"mode": "raven", "show_threads": "true", "query": str(query)}
@@ -362,3 +375,132 @@ class DirectMixin:
             with_signature=False,
         )
         return extract_direct_message(result["payload"])
+
+    def direct_thread_mark_unread(self, thread_id: int) -> bool:
+        """
+        Mark a thread as unread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/mark_unread/",
+            data=data
+        )
+        return result["status"] == "ok"
+
+    def direct_message_delete(self, thread_id: int, message_id: int) -> bool:
+        """
+        Delete a message from thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+        message_id: int
+            Id of message
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = self.with_default_data({})
+        data.pop('_uid', None)
+        data.pop('device_id', None)
+        data['is_shh_mode'] = 0
+        data['send_attribution'] = 'direct_thread'
+        data['original_message_client_context'] = random.randint(6800011111111111111, 6800099999999999999)
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/items/{message_id}/delete/",
+            data=data
+        )
+        return result["status"] == "ok"
+
+    def direct_thread_mute(self, thread_id: int, revert: bool = False) -> bool:
+        """
+        Mute the thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+        revert: bool, optional
+            If muted, whether or not to unmute. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        name = "unmute" if revert else "mute"
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/{name}/",
+            data={'_uuid': self.uuid}
+        )
+        return result["status"] == "ok"
+
+    def direct_thread_unmute(self, thread_id: int) -> bool:
+        """
+        Unmute the thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.direct_thread_mute(thread_id, revert=True)
+
+    def direct_thread_mute_video_call(self, thread_id: int, revert: bool = False) -> bool:
+        """
+        Mute video call for the thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+        revert: bool, optional
+            If muted, whether or not to unmute. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        name = "unmute_video_call" if revert else "mute_video_call"
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/{name}/",
+            data={'_uuid': self.uuid}
+        )
+        return result["status"] == "ok"
+
+    def direct_thread_unmute_video_call(self, thread_id: int) -> bool:
+        """
+        Unmute video call for the thread
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.direct_thread_mute_video_call(thread_id, revert=True)

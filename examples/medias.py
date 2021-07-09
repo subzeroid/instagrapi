@@ -2,40 +2,11 @@ from typing import List
 
 from instagrapi import Client
 from instagrapi.types import Media
-import json
 
 HASHTAGS = ['instacool']
 IG_USERNAME = ''
 IG_PASSWORD = ''
 IG_CREDENTIAL_PATH = 'credential.json'
-
-
-def write_file(data, path_file, default=None):
-    """
-    Write a file
-    :param default:
-    :param data:
-    :param path_file:
-    :return:
-    """
-    from pathlib import Path
-
-    path_user = Path(path_file)
-    path_user.parent.mkdir(exist_ok=True)
-
-    with open(path_file, 'w', encoding='utf8') as json_file:
-        json.dump(data, json_file, ensure_ascii=False, indent=True, default=default)
-
-
-def read_file(path_file, object_hook=None):
-    """
-    Read a file
-    :param object_hook:
-    :param path_file:
-    :return:
-    """
-    with open(path_file, 'r', encoding='utf8') as json_file:
-        return json.load(json_file, object_hook=object_hook)
 
 
 def get_logger(name, **kwargs):
@@ -104,13 +75,13 @@ if __name__ == '__main__':
         "level": "DEBUG",
         "format": "%(asctime)s %(levelname)s %(name)s: %(message)s"
     })
-    cl = None
+    cl = Client()
     if os.path.exists(IG_CREDENTIAL_PATH):
-        cl = Client(read_file(IG_CREDENTIAL_PATH))
-    else:
-        cl = Client()
+        cl.load_settings(IG_CREDENTIAL_PATH)
         cl.login(IG_USERNAME, IG_PASSWORD)
-        write_file(cl.get_settings(), IG_CREDENTIAL_PATH)
+    else:
+        cl.login(IG_USERNAME, IG_PASSWORD)
+        cl.dump_settings(IG_CREDENTIAL_PATH)
 
     m = get_medias(HASHTAGS, amount=4)
     m = filter_medias(m, like_count_min=1, days_ago_max=365)

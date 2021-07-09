@@ -71,18 +71,24 @@ def json_value(data, *args, default=None):
     return cur
 
 
-def gen_password(size=10, symbols=False):
+def gen_token(size=10, symbols=False):
+    """Gen CSRF or something else token
+    """
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += string.punctuation
     return "".join(random.choice(chars) for _ in range(size))
 
 
-def gen_csrftoken(size=32):
-    return gen_password(size, symbols=False)
+def gen_password(size=10):
+    """Gen password
+    """
+    return gen_token(size)
 
 
 def dumps(data):
+    """Json dumps format as required Instagram
+    """
     return json.dumps(data, separators=(",", ":"))
 
 

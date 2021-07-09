@@ -91,15 +91,15 @@ def extract_media_gql(data):
     try:
         media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
     except KeyError:
-        pass
-    if media["media_type"] == 2 and not media.get("product_type"):
+        media["media_type"] = 0
+    if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
     media["thumbnail_url"] = sorted(
         # display_resources - user feed, thumbnail_resources - hashtag feed
         media.get("display_resources", media.get("thumbnail_resources")),
         key=lambda o: o["config_width"] * o["config_height"],
     )[-1]["src"]
-    if media["media_type"] == 8:
+    if media.get("media_type") == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
         media.pop("thumbnail_url", "")
@@ -110,10 +110,7 @@ def extract_media_gql(data):
     media["id"] = f"{media_id}_{user.pk}"
     return Media(
         code=media.get("shortcode"),
-        width=media["dimensions"]["width"],
-        height=media["dimensions"]["height"],
-        preview_url=media["display_resources"][0]["src"],
-        taken_at=media["taken_at_timestamp"],
+        taken_at=media.get("taken_at_timestamp"),
         location=extract_location(location) if location else None,
         user=user,
         view_count=media.get("video_view_count", 0),
@@ -135,6 +132,9 @@ def extract_media_gql(data):
             extract_resource_gql(edge["node"])
             for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
         ],
+        width=media["dimensions"]["width"],
+        height=media["dimensions"]["height"],
+        preview_url=media["display_resources"][0]["src"],
         **media,
     )
 
@@ -234,9 +234,11 @@ def extract_media_oembed(data):
 def extract_direct_thread(data):
     data["messages"] = [extract_direct_message(item) for item in data["items"]]
     data["users"] = [extract_user_short(u) for u in data["users"]]
-    data["inviter"] = extract_user_short(data["inviter"])
+    if "inviter" in data:
+        data["inviter"] = extract_user_short(data["inviter"])
     data["pk"] = data.get("thread_v2_id")
     data["id"] = data.get("thread_id")
+    data["left_users"] = data.get("left_users", [])
     return DirectThread(**data)
 
 

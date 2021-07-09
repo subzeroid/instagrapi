@@ -967,6 +967,12 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         # send seen
         seen = self.api.direct_send_seen(thread_id=thread.id)
         self.assertEqual(seen.status, 'ok')
+        # mute and unmute thread
+        self.assertTrue(self.api.direct_thread_mute(thread.id))
+        self.assertTrue(self.api.direct_thread_unmute(thread.id))
+        # mute video call and unmute
+        self.assertTrue(self.api.direct_thread_mute_video_call(thread.id))
+        self.assertTrue(self.api.direct_thread_unmute_video_call(thread.id))
 
     def test_direct_thread_by_participants(self):
         try:
@@ -1171,6 +1177,12 @@ class ClientHashtagTestCase(ClientPrivateTestCase):
 
 
 class ClientStoryTestCase(ClientPrivateTestCase):
+
+    def test_story_pk_from_url(self):
+        story_pk = self.api.story_pk_from_url(
+            "https://www.instagram.com/stories/dhbastards/2581281926631793076/"
+        )
+        self.assertEqual(story_pk, 2581281926631793076)
 
     def test_upload_photo_story(self):
         media_pk = self.api.media_pk_from_url(

@@ -20,7 +20,7 @@ from instagrapi.exceptions import (
     ReloginAttemptExceeded,
     TwoFactorRequired,
 )
-from instagrapi.utils import generate_jazoest
+from instagrapi.utils import generate_jazoest, dumps
 from instagrapi.zones import CET
 
 from json.decoder import JSONDecodeError
@@ -269,6 +269,8 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
+    authorization = ""  # Bearer IGT:2:<base64:authorization_data>
+    authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
     device_settings = {}
@@ -277,6 +279,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     device_id = ""
     phone_id = ""
     uuid = ""
+    country = "US"
+    locale = "en_US"
 
     def __init__(self):
         self.user_agent = None
@@ -295,192 +299,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
-            self.public.cookie = requests.utils.cookiejar_from_dict(
-                self.settings["cookies"]
-            )
+        self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
-        self.username = self.settings.get("username", "")
-        self.web_user_agent = self.settings.get(
-            "web_user_agent",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
-        )
-        return True
-
-    def login_by_web(self, username: str, password: str) -> dict:
-        """Login via the website, get a cookie and login via sessionid
-
-        Args:
-            username (str): login username
-            password (str): password
-
-        Returns:
-            dict: cookies
-        """
-
-        def encrypt_password(app_id, key_id, public_key, password):
-            import base64
-            from nacl.public import PublicKey, SealedBox
-            from Crypto import Random
-            from Crypto.Cipher import AES
-
-            timestamp = str(int(datetime.datetime.now().timestamp()))
-
-            # create a random key of length 32 bytes (for AES 256)
-            key = Random.get_random_bytes(32)
-            # create a buffer of length 12 bytes filled with 0
-            iv = bytearray(12)
-
-            aes = AES.new(key, AES.MODE_GCM, nonce=iv)
-            aes.update(bytearray(timestamp, "utf-8"))
-            ciphertext, tag = aes.encrypt_and_digest(bytearray(password, "utf-8"))
-
-            # get a byte array of the given public key
-            public_key_seal = PublicKey(bytes.fromhex(public_key))
-            sealed_box = SealedBox(public_key_seal)
-            sealed = sealed_box.encrypt(key)
-
-            enc_password = bytearray()
-            enc_password += (
-                bytearray([1, int(key_id), len(sealed) & 255, (len(sealed) >> 8) & 255])
-                + sealed
-                + tag
-                + ciphertext
-            )
-
-            return f"#PWD_INSTAGRAM_BROWSER:{app_id}:{timestamp}:{str(base64.b64encode(enc_password), 'utf-8')}"
-
-        # https://github.com/instaloader/instaloader/issues/615
-
-        BASE_URL = "https://www.instagram.com/"
-
-        session = requests.Session()
-        session.headers = {"user-agent": self.web_user_agent}
-        session.cookies["ig_pr"] = "1"
-        session.headers["Referer"] = BASE_URL
-        session.proxies.update({"http": self.proxy, "https": self.proxy})
-
-        try:
-            req = session.get(BASE_URL + "accounts/login/")
-            session.headers["X-CSRFToken"] = req.cookies["csrftoken"]
-            session.headers["mid"] = mid = req.cookies["mid"]
-
-            enc_password = encrypt_password(
-                req.headers.get("ig-set-password-encryption-web-key-version"),
-                req.headers.get("ig-set-password-encryption-web-key-id"),
-                req.headers.get("ig-set-password-encryption-web-pub-key"),
-                password,
-            )
-
-            time.sleep(random.uniform(1.175, 2.875))
-
-            response = session.post(
-                BASE_URL + "accounts/login/ajax/",
-                data={
-                    "username": username,
-                    "enc_password": enc_password,
-                },
-                allow_redirects=True,
-            )
-
-            last_json = response.json()
-        except PleaseWaitFewMinutes:
-            # The instagram application ignores this error
-            # and continues to log in (repeat this behavior)
-            pass
-        except JSONDecodeError:
-            pass
-        message = last_json.get("message", "")
-        if response.status_code == 403:
-            if message == "login_required":
-                raise LoginRequired(response=response, **last_json)
-            if (
-                "Looks like you requested to delete this account" in message
-                or "Your account has been disabled for violating our terms" in message
-            ):
-                raise InvalidUserError(response=response, **last_json)
-            raise ClientForbiddenError(response=response, **last_json)
-        elif response.status_code == 400:
-            error_type = last_json.get("error_type")
-            if message == "challenge_required" or message == "checkpoint_required":
-                raise ChallengeRequired(**last_json)
-            elif message == "feedback_required":
-                raise FeedbackRequired(
-                    **dict(
-                        last_json,
-                        message="%s: %s" % (message, last_json.get("feedback_message")),
-                    )
-                )
-            elif error_type == "sentry_block":
-                raise SentryBlock(**last_json)
-            elif error_type == "rate_limit_error":
-                raise RateLimitError(**last_json)
-            elif error_type == "bad_password":
-                raise BadPassword(**last_json)
-            elif error_type == "inactive user":
-                raise InactiveUserError(**last_json)
-            elif error_type == "two_factor_required":
-                raise TwoFactorRequiredError(**last_json)
-            elif error_type == "invalid_user":
-                raise InvalidUserError(**last_json)
-            elif error_type == "ip_block":
-                raise IPBlockError(**last_json)
-            elif "Please wait a few minutes before you try again" in message:
-                raise PleaseWaitFewMinutes(response=response, **last_json)
-            elif "VideoTooLongException" in message:
-                raise VideoTooLongException(response=response, **last_json)
-            elif error_type or message:
-                raise UnknownError(**last_json)
-            raise ClientBadRequestError(response=response, **last_json)
-        elif response.status_code == 429:
-            if "Please wait a few minutes before you try again" in message:
-                raise PleaseWaitFewMinutes(response=response, **last_json)
-            raise ClientThrottledError(response=response, **last_json)
-        elif response.status_code == 404:
-            raise ClientNotFoundError(response=response, **last_json)
-        elif response.status_code == 408:
-            raise ClientRequestTimeout(response=response, **last_json)
-
-        if last_json.get("status") == "fail":
-            raise ClientError(response=response, **last_json)
-        elif "error_title" in last_json:
-            """Example: {
-            'error_title': 'bad image input extra:{}', <-------------
-            'media': {
-                'device_timestamp': '1588184737203',
-                'upload_id': '1588184737203'
-            },
-            'message': 'media_needs_reupload', <-------------
-            'status': 'ok' <-------------
-            }"""
-            raise ClientError(response=response, **last_json)
-        elif not response.json().get("authenticated"):
-            raise BadPassword(**last_json)
-
-        cookies = response.cookies.get_dict()
-        cookies["mid"] = mid
-
-        self.settings.update({"cookies": cookies})
-
-        self.init()
-        self.inject_sessionid_to_public()
-
-        if not self.username:
-            user_id = re.search(r"^\d+", cookies["sessionid"]).group()
-            user = self.user_info_v1(int(user_id))
-            self.username = user.username
-
-        self.last_login = time.time()
-
-        return cookies
-
-    def login_by_settings(self, settings: str) -> bool:
-        self.settings = json.loads(settings)
-        self.init()
-        self.inject_sessionid_to_public()
-        self.last_login = time.time()
+        self.set_country(self.settings.get("country", self.country))
+        self.set_locale(self.settings.get("locale", self.locale))
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -501,6 +326,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.settings.update({"cookies": {"sessionid": sessionid}})
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
+
+        self.authorization_data = {
+            "ds_user_id": user_id,
+            "sessionid": sessionid,
+            "should_use_header_over_cookies": True,
+        }
+
         try:
             user = self.user_info_v1(int(user_id))
         except PrivateError:
@@ -570,6 +402,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         try:
             logged = self.private_request("accounts/login/", data, login=True)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get("ig-set-authorization")
+            )
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(
@@ -599,6 +434,33 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return True
         return False
 
+    def one_tap_app_login(self, user_id: int, nonce: str) -> bool:
+        """One tap login emulation
+
+        Parameters
+        ----------
+        user_id: int
+            User ID
+        nonce: str
+            Login nonce (from Instagram, e.g. in /logout/)
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        data = {
+            "phone_id": self.phone_id,
+            "user_id": user_id,
+            "adid": self.advertising_id,
+            "guid": self.uuid,
+            "device_id": self.device_id,
+            "login_nonce": nonce,
+            "_csrftoken": self.token,
+        }
+        return self.private_request("accounts/one_tap_app_login/", data)
+
     def relogin(self) -> bool:
         """
         Relogin helper
@@ -616,7 +478,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     @property
     def sessionid(self) -> str:
-        return self.cookie_dict.get("sessionid")
+        sessionid = self.cookie_dict.get("sessionid")
+        if not sessionid and self.authorization_data:
+            sessionid = self.authorization_data.get("sessionid")
+        return sessionid
 
     @property
     def token(self) -> str:
@@ -629,6 +494,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     @property
     def user_id(self) -> int:
         user_id = self.cookie_dict.get("ds_user_id")
+        if not user_id and self.authorization_data:
+            user_id = self.authorization_data.get("ds_user_id")
         if user_id:
             return int(user_id)
         return None
@@ -666,12 +533,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "advertising_id": self.advertising_id,
                 "device_id": self.device_id,
             },
+            "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
             "web_user_agent": self.web_user_agent,
             "username": self.username,
+            "country": self.country,
+            "locale": self.locale,
         }
 
     def set_settings(self, settings: Dict) -> bool:
@@ -683,6 +553,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Bool
         """
         self.settings = settings
+        self.init()
         return True
 
     def load_settings(self, path: Path) -> Dict:
@@ -736,16 +607,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "169.3.0.30.135",
+            "app_version": "194.0.0.36.172",
             "android_version": 26,
             "android_release": "8.0.0",
-            "dpi": "640dpi",
-            "resolution": "1440x2560",
+            "dpi": "480dpi",
+            "resolution": "1080x1920",
             "manufacturer": "Xiaomi",
             "device": "MI 5s",
             "model": "capricorn",
             "cpu": "qcom",
-            "version_code": "264009049",
+            "version_code": "301484483",
         }
         self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
@@ -906,3 +777,26 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.public.cookies.set("sessionid", self.sessionid)
             return True
         return False
+
+    def logout(self) -> bool:
+        result = self.private_request("accounts/logout/", {"one_tap_app_login": True})
+        return result["status"] == "ok"
+
+    def parse_authorization(self, authorization) -> dict:
+        """Parse authorization header"""
+        try:
+            b64part = authorization.rsplit(":", 1)[-1]
+            return json.loads(base64.b64decode(b64part))
+        except Exception as e:
+            self.logger.exception(e)
+        return {}
+
+    @property
+    def authorization(self) -> str:
+        """Build authorization header
+        Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
+        """
+        if self.authorization_data:
+            b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
+            return f"Bearer IGT:2:{b64part}"
+        return ""
