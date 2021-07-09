@@ -7,7 +7,7 @@ import requests
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import gen_csrftoken
+from instagrapi.utils import gen_token
 
 
 class AccountMixin:
@@ -29,7 +29,7 @@ class AccountMixin:
             data={"email_or_username": username, "recaptcha_challenge_field": ""},
             headers={
                 "x-requested-with": "XMLHttpRequest",
-                "x-csrftoken": gen_csrftoken(),
+                "x-csrftoken": gen_token(),
                 "Connection": "Keep-Alive",
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
@@ -112,3 +112,20 @@ class AccountMixin:
             self.with_default_data({"use_fbuploader": True, "upload_id": upload_id}),
         )
         return extract_user_short(result["user"])
+
+    def news_inbox_v1(self, mark_as_seen: bool = False) -> dict:
+        """Get old and new stories as is
+
+        Parameters
+        ----------
+        mark_as_seen: bool
+            Mark as seen or not
+
+        Returns
+        -------
+        dict
+        """
+        return self.private_request(
+            "news/inbox/",
+            params={'mark_as_seen': mark_as_seen}
+        )

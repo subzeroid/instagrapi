@@ -42,15 +42,24 @@ print(cl.get_settings())
 print(cl.user_info(cl.user_id))
 ```
 
+### Request
+
+| Property            | Description
+| ------------------- | --------------------------------------------------------------
+| request\_logger     | Logger in which various actions from Instagram are registered
+| request\_timeout    | Timeout in seconds between requests (1 second by default)
+
+
 ### Login
 
-| Method                              | Return  | Description
-| ----------------------------------- | ------- | -------------------------------------------------
-| login(username: str, password: str) | bool    | Login by username and password (get new cookies if it does not exist in settings)
-| login(username: str, password: str, verification_code: str) | bool | Login by username and password with 2FA verification code
-| relogin()                           | bool    | Re-login with clean cookies (required cl.username and cl.password)
-| login_by_sessionid(sessionid: str)  | bool    | Login by sessionid from Instagram site
-| inject_sessionid_to_public()        | bool    | Inject sessionid from Private Session to Public Session
+| Method                               | Return  | Description
+| ------------------------------------ | ------- | -------------------------------------------------
+| login(username: str, password: str)  | bool    | Login by username and password (get new cookies if it does not exist in settings)
+| login(username: str, password: str, verification\_code: str) | bool | Login by username and password with 2FA verification code (use Google Authenticator or something similar to generate TOTP code, not work with SMS)
+| relogin()                            | bool    | Re-login with clean cookies (required cl.username and cl.password)
+| login\_by\_sessionid(sessionid: str) | bool    | Login by sessionid from Instagram site
+| inject\_sessionid\_to\_public()      | bool    | Inject sessionid from Private Session to Public Session
+| logout()                             | bool    | Logout
 
 You can pass settings to the Client (and save cookies), it has the following format:
 
@@ -85,24 +94,45 @@ cl = Client(settings)
 
 ### Settings
 
-| Method                        | Return  | Description
-| ----------------------------- | ------- | ------------------------------------------------------------------
-| get_settings()                | dict    | Return settings dict
-| set_settings(settings: dict)  | bool    | Set session settings
-| load_settings(path: Path)     | dict    | Load session settings from file
-| dump_settings(path: Path)     | bool    | Serialize and save session settings to file
+| Method                         | Return  | Description
+| ------------------------------ | ------- | ------------------------------------------------------------------
+| get\_settings()                | dict    | Return settings dict
+| set\_settings(settings: dict)  | bool    | Set session settings
+| load\_settings(path: Path)     | dict    | Load session settings from file
+| dump\_settings(path: Path)     | bool    | Serialize and save session settings to file
+
+
+In order for Instagram [to trust you more](https://github.com/adw0rd/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
+
+```python
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings('/tmp/dump.json')
+```
+
+Next time:
+
+```python
+cl = Client()
+cl.load_settings('/tmp/dump.json')
+cl.login(USERNAME, PASSWORD)
+```
 
 ### Manage device, proxy and other account settings
 
-| Method                               | Return  | Description
-| ------------------------------------ | ------- | ------------------------------------------------------------------
-| set_proxy(dsn: str)                  | dict    | Support socks and http/https proxy "scheme://username:password@host:port"
-| set_device(device: dict)             | bool    | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
-| set_user_agent(user_agent: str = "") | bool    | Change User-Agent header (https://user-agents.net/applications/instagram-app)
-| cookie_dict                          | dict    | Return cookies
-| user_id                              | int     | Return your user_id (after login)
-| device                               | dict    | Return device dict which we pass to Instagram
-| base_headers                         | dict    | Base headers for Instagram
+| Method                                 | Return | Description
+|----------------------------------------|------|----------------------------------------------------------------------------
+| set\_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| private.proxies                        | dict | Stores used proxy servers for private (mobile, v1) requests
+| public.proxies                         | dict | Stores used proxy servers for public (web, graphql) requests
+| set\_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| device                                 | dict | Return device dict which we pass to Instagram
+| set\_user\_agent(user\_agent: str = "")| bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| cookie\_dict                           | dict | Return cookies
+| user\_id                               | int  | Return your user\_id (after login)
+| base\_headers                          | dict | Base headers for Instagram
+| set\_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
+| set\_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
 
 ## Challenge resolving
 

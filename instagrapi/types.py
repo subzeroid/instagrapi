@@ -23,6 +23,7 @@ class User(BaseModel):
     full_name: str
     is_private: bool
     profile_pic_url: HttpUrl
+    profile_pic_url_hd: Optional[HttpUrl]
     is_verified: bool
     media_count: int
     follower_count: int
@@ -258,12 +259,12 @@ class DirectThread(BaseModel):
     id: int  # thread_id, e.g. 340282366841510300949128268610842297468
     messages: List[DirectMessage]
     users: List[UserShort]
-    inviter: UserShort
-    left_users: List[UserShort]
+    inviter: Optional[UserShort]
+    left_users: List[UserShort] = []
     admin_user_ids: list
     last_activity_at: datetime
     muted: bool
-    is_pin: bool
+    is_pin: Optional[bool]
     named: bool
     canonical: bool
     pending: bool

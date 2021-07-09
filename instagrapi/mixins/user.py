@@ -1,9 +1,11 @@
 from copy import deepcopy
+from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
 from instagrapi import config
 from instagrapi.exceptions import (
     ClientError,
+    ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
     UserNotFound,
@@ -209,8 +211,13 @@ class UserMixin:
             An object of User type
         """
         user_id = int(user_id)
-        # GraphQL haven't method to receive user by id
-        return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
+        try:
+            # GraphQL haven't method to receive user by id
+            return self.user_info_by_username_gql(
+                self.username_from_user_id_gql(user_id)
+            )
+        except JSONDecodeError as e:
+            raise ClientJSONDecodeError(e, user_id=user_id)
 
     def user_info_v1(self, user_id: int) -> User:
         """
@@ -629,11 +636,90 @@ class UserMixin:
             self._users_followers[self.user_id].pop(user_id, None)
         return result["friendship_status"]["followed_by"] is False
 
-    def short_user_info_by_username(self, username: str) -> UserShort:
+    def mute_posts_from_follow(self, user_id: int, revert: bool = False) -> bool:
+        """
+        Mute posts from following user
 
-        data = self.top_search(username)
-        try:
-            user = extract_user_short(data["users"][0]["user"])
-        except IndexError:
-            raise UserNotFound(**data)
-        return user
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+        revert: bool, optional
+            Unmute when True
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        name = "unmute" if revert else "mute"
+        result = self.private_request(
+            f"friendships/{name}_posts_or_story_from_follow/",
+            {
+                # "media_id": media_pk,  # when feed_timeline
+                "target_posts_author_id": str(user_id),
+                "container_module": "media_mute_sheet",  # or "feed_timeline"
+            },
+        )
+        return result["status"] == "ok"
+
+    def unmute_posts_from_follow(self, user_id: int) -> bool:
+        """
+        Unmute posts from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.mute_posts_from_follow(user_id, True)
+
+    def mute_stories_from_follow(self, user_id: int, revert: bool = False) -> bool:
+        """
+        Mute stories from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+        revert: bool, optional
+            Unmute when True
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        name = "unmute" if revert else "mute"
+        result = self.private_request(
+            f"friendships/{name}_posts_or_story_from_follow/",
+            {
+                # "media_id": media_pk,  # when feed_timeline
+                "target_reel_author_id": str(user_id),
+                "container_module": "media_mute_sheet",  # or "feed_timeline"
+            },
+        )
+        return result["status"] == "ok"
+
+    def unmute_stories_from_follow(self, user_id: int) -> bool:
+        """
+        Unmute stories from following user
+
+        Parameters
+        ----------
+        user_id: int
+            Unique identifier of a User
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.mute_stories_from_follow(user_id, True)
