@@ -49,8 +49,8 @@ class PublicRequestMixin:
         params=None,
         headers=None,
         return_json=False,
-        retries_count=10,
-        retries_timeout=10,
+        retries_count=3,
+        retries_timeout=2,
     ):
         kwargs = dict(
             data=data,

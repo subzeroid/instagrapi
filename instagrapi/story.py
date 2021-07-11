@@ -88,7 +88,7 @@ class StoryBuilder:
         if self.mentions:
             mention = self.mentions[0]
             if getattr(mention, 'user', None):
-                caption = "@{mention.user.username}"
+                caption = f"@{mention.user.username}"
         if caption:
             text_clip = TextClip(
                 caption,
