@@ -101,4 +101,5 @@ cl.video_upload_to_story(
   * [`DirectMessage`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Message in Direct Message
   * [`Insight`](https://adw0rd.github.io/instagrapi/usage-guide/insight.html) - Insights for a post
 * [Development Guide](https://adw0rd.github.io/instagrapi/development-guide.html)
+* [Handle Exceptions](https://adw0rd.github.io/instagrapi/usage-guide/handle_exception.html)
 * [Exceptions](https://adw0rd.github.io/instagrapi/exceptions.html)
