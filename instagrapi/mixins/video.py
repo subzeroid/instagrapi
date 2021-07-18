@@ -327,7 +327,7 @@ class UploadVideoMixin:
     def video_upload_to_story(
         self,
         path: Path,
-        caption: str,
+        caption: str = "",
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
         locations: List[StoryLocation] = [],
@@ -343,7 +343,7 @@ class UploadVideoMixin:
         path: Path
             Path to the media
         caption: str
-            Media caption
+            Story caption
         thumbnail: str
             Path to thumbnail for video. When None, then thumbnail is generate automatically
         mentions: List[StoryMention], optional

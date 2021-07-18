@@ -274,7 +274,7 @@ class UploadPhotoMixin:
     def photo_upload_to_story(
         self,
         path: Path,
-        caption: str,
+        caption: str = "",
         upload_id: str = "",
         mentions: List[StoryMention] = [],
         locations: List[StoryLocation] = [],

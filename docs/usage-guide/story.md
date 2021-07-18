@@ -85,7 +85,7 @@ If you want to format your story correctly (correct resolution, user mentions, e
 Example:
 
 ``` python
-from instagrapi.story import StoryBuilder
+from instagrapi.story import StoryBuilder, StoryMention
 
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
@@ -110,5 +110,19 @@ cl.video_upload_to_story(
 Result:
 
 ![](https://raw.githubusercontent.com/adw0rd/instagrapi/master/examples/dhb.gif)
+
+Photo upload:
+
+``` python
+cl.photo_upload_to_story('/app/image.jpg')
+```
+
+Upload photo as video:
+
+``` python
+buildout = StoryBuilder('/app/image.jpg').photo()
+cl.video_upload_to_story(buildout.path)
+```
+
 
 More stories here [https://www.instagram.com/wrclive/](https://www.instagram.com/wrclive/)

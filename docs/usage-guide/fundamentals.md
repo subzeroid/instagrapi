@@ -1,7 +1,7 @@
 # Usage Guide
 
 This section provides detailed descriptions of all the ways `instagrapi` can be used. If you are new to `instagrapi`, the
-[Getting Started](getting-started.md) page provides a gradual introduction of the basic functionality with examples.
+[Getting Started](../getting-started.md) page provides a gradual introduction of the basic functionality with examples.
 
 ## Public vs Private Requests
 
