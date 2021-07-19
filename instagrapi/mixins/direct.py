@@ -63,6 +63,42 @@ class DirectMixin:
             threads = threads[:amount]
         return threads
 
+    def direct_pending_inbox(self, amount: int = 20) -> List[DirectThread]:
+        """
+        Get direct message pending threads
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 20
+
+        Returns
+        -------
+        List[DirectThread]
+            A list of objects of DirectThread
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "visual_message_return_type": "unseen",
+            "persistentBadging": "true",
+        }
+        cursor = None
+        threads = []
+        # self.private_request("direct_v2/get_presence/")
+        while True:
+            if cursor:
+                params["cursor"] = cursor
+            result = self.private_request("direct_v2/pending_inbox/", params=params)
+            inbox = result.get("inbox", {})
+            for thread in inbox.get("threads", []):
+                threads.append(extract_direct_thread(thread))
+            cursor = inbox.get("oldest_cursor")
+            if not cursor or (amount and len(threads) >= amount):
+                break
+        if amount:
+            threads = threads[:amount]
+        return threads
+
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """
         Get all the information about a Direct Message thread

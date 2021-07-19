@@ -2,7 +2,8 @@
 
 | Method                                                                    | Return                  | Description
 | ------------------------------------------------------------------------- | ----------------------- | ----------------------------------
-| direct_threads(amount: int = 20)                                          | List[DirectThread]      | Get all Threads
+| direct_threads(amount: int = 20)                                          | List[DirectThread]      | Get all threads from inbox
+| direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
 | direct_thread(thread_id: int, amount: int = 20)                           | DirectThread            | Get Thread with Messages
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage           | Add Message to exist Thread
