@@ -53,7 +53,7 @@ class StoryBuilder:
         self.mentions = mentions
         self.bgpath = Path(bgpath) if bgpath else None
 
-    def build_main(self, clip, max_duration: int = 0) -> StoryBuild:
+    def build_main(self, clip, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white') -> StoryBuild:
         """
         Build clip
 
@@ -63,6 +63,12 @@ class StoryBuilder:
             An object of either VideoFileClip or ImageClip
         max_duration: int, optional
             Duration of the clip if a video clip, default value is 0
+        font: str, optional
+            Name of font for text clip
+        fontsize: int, optional
+            Size of font
+        color: str, optional
+            Color of text
 
         Returns
         -------
@@ -92,10 +98,10 @@ class StoryBuilder:
         if caption:
             text_clip = TextClip(
                 caption,
-                color="white",
-                font="Arial",
+                color=color,
+                font=font,
                 kerning=-1,
-                fontsize=100,
+                fontsize=fontsize,
                 method="label",
             )
             text_clip_left = (self.width - 600) / 2
@@ -128,7 +134,7 @@ class StoryBuilder:
         )
         return StoryBuild(mentions=mentions, path=destination)
 
-    def video(self, max_duration: int = 0):
+    def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white'):
         """
         Build CompositeVideoClip from source video
 
@@ -136,6 +142,12 @@ class StoryBuilder:
         ----------
         max_duration: int, optional
             Duration of the clip if a video clip, default value is 0
+        font: str, optional
+            Name of font for text clip
+        fontsize: int, optional
+            Size of font
+        color: str, optional
+            Color of text
 
         Returns
         -------
@@ -143,9 +155,9 @@ class StoryBuilder:
             An object of StoryBuild
         """
         clip = VideoFileClip(str(self.path), has_mask=True)
-        return self.build_main(clip, max_duration)
+        return self.build_main(clip, max_duration, font, fontsize, color)
 
-    def photo(self, max_duration: int = 0):
+    def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white'):
         """
         Build CompositeVideoClip from source video
 
@@ -153,6 +165,12 @@ class StoryBuilder:
         ----------
         max_duration: int, optional
             Duration of the clip if a video clip, default value is 0
+        font: str, optional
+            Name of font for text clip
+        fontsize: int, optional
+            Size of font
+        color: str, optional
+            Color of text
 
         Returns
         -------
@@ -167,4 +185,4 @@ class StoryBuilder:
         height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
 
         clip = ImageClip(str(self.path)).resize(width=self.width, height=height_in_ratio)
-        return self.build_main(clip, max_duration or 15)
+        return self.build_main(clip, max_duration or 15, font, fontsize, color)
