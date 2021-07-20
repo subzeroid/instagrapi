@@ -433,7 +433,6 @@ class DirectMixin:
         assert self.user_id, "Login required"
         story_id = self.media_id(story_id)
         story_pk = self.media_pk(story_id)
-        thread_ids = dumps([int(tid) for tid in thread_ids])
         token = random.randint(6800011111111111111, 6800099999999999999)
         data = {
             "action": "send_item",
