@@ -412,6 +412,53 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
+    def direct_story_share(self, story_id: str, user_ids: List[int], thread_ids: List[int]) -> DirectMessage:
+        """
+        Share a story to list of users
+
+        Parameters
+        ----------
+        story_id: str
+            Unique Story ID
+        user_ids: List[int]
+            List of unique identifier of Users id
+        thread_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        story_id = self.media_id(story_id)
+        story_pk = self.media_pk(story_id)
+        thread_ids = dumps([int(tid) for tid in thread_ids])
+        token = random.randint(6800011111111111111, 6800099999999999999)
+        data = {
+            "action": "send_item",
+            "is_shh_mode": "0",
+            "send_attribution": "reel_feed_timeline",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "reel_id": story_pk,
+            "containermodule": "reel_feed_timeline",
+            "story_media_id": story_id,
+            "offline_threading_id": token
+        }
+        if user_ids:
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        result = self.private_request(
+            "direct_v2/threads/broadcast/story_share/",
+            # params={'story_type': 'video'},
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
+
     def direct_thread_mark_unread(self, thread_id: int) -> bool:
         """
         Mark a thread as unread
