@@ -18,7 +18,7 @@ Use the most recent version of the API from Instagram.
 '''
 
 requirements = [
-    'requests==2.25.1',
+    'requests==2.26.0',
     'PySocks==1.7.1',
     'pydantic==1.8.2',
     'pycryptodomex==3.9.9'
