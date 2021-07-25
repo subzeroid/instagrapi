@@ -12,6 +12,7 @@
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
+| direct_story_share(story_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage       | Share a story to list of users
 | direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
 | direct_message_delete(thread_id: int, message_id: int)                    | bool                    | Delete a message from thread
 | direct_thread_mute(thread_id: int, revert: bool = False)                  | bool                    | Mute the thread
