@@ -241,7 +241,7 @@ class StoryMixin:
             [self.media_id(mid) for mid in skipped_story_pks]
         )
 
-    def story_download(self, story_pk: int) -> Path:
+    def story_download(self, story_pk: int, filename: str = "", folder: Path = "") -> Path:
         """
         Download story media by media_type
 
@@ -257,7 +257,7 @@ class StoryMixin:
         story_pk = int(story_pk)
         story = self.story_info(story_pk)
         url = story.thumbnail_url if story.media_type == 1 else story.video_url
-        return self.story_download_by_url(url)
+        return self.story_download_by_url(url, filename, folder)
 
     def story_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
