@@ -14,8 +14,9 @@ from instagrapi.exceptions import (
     VideoNotDownload,
     VideoNotUpload,
 )
-from instagrapi.extractors import extract_media_v1
+from instagrapi.extractors import extract_direct_message, extract_media_v1
 from instagrapi.types import (
+    DirectMessage,
     Location,
     Media,
     Story,
@@ -334,6 +335,7 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        extra_data: Dict[str, str] = {},
     ) -> Story:
         """
         Upload video as a story and configure it
@@ -356,6 +358,8 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        extra_data: List[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -384,6 +388,7 @@ class UploadVideoMixin:
                     links,
                     hashtags,
                     stickers,
+                    extra_data=extra_data
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -422,6 +427,7 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        thread_ids: List[int] = [],
         extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
@@ -451,6 +457,8 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        thread_ids: List[int], optional
+            List of Direct Message Thread ID (to send a story to a thread)
         extra_data: List[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
@@ -462,9 +470,23 @@ class UploadVideoMixin:
         timestamp = int(time.time())
         story_sticker_ids = []
         data = {
-            "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
-            "has_original_sound": "1",
-            # Segment mode (when file is too big):
+            # USE extra_data TO EXTEND THE SETTINGS OF THE LOADED STORY, USE FOR EXAMPLE THE PROPERTIES SPECIFIED IN THE COMMENT:
+            # ---------------------------------
+            # When send to DIRECT:
+            # "allow_multi_configures": "1",
+            # "client_context":"6823316152962778207",  <-- token = random.randint(6800011111111111111, 6800099999999999999) from direct.py
+            # "is_shh_mode":"0",
+            # "mutation_token":"6824688191453546273",
+            # "nav_chain":"1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
+            # "recipient_users":"[]",
+            # "send_attribution":"direct_story_audience_picker",
+            # "thread_ids":"[\"340282366841710300949128149448121770626\"]",  <-- send story to direct
+            # "view_mode": "replayable",
+            # ---------------------------------
+            # Optional (markup for caption field) when tagging:
+            # "story_captions":"[{\"text\":\"@user1+\\n\\n@user2+\",\"position_data\":{\"x\":0.5,\"y\":0.5,\"height\":272.0,\"width\":670.0,\"rotation\":0.0},\"scale\":1.0,\"font_size\":24.0,\"format_type\":\"classic_v2\",\"effects\":[\"disabled\"],\"colors\":[\"#ffffff\"],\"alignment\":\"center\",\"animation\":\"\"}]",
+            # ---------------------------------
+            # SEGMENT MODE (when file is too big):
             # "allow_multi_configures": "1",
             # "segmented_video_group_id": str(uuid4()),
             # "multi_upload_session_id": str(uuid4()),
@@ -472,7 +494,11 @@ class UploadVideoMixin:
             # "segmented_video_index": "0",  # 0,1,2,3  # SEGMENT MODE
             # "is_multi_upload": "1",  # SEGMENT MODE
             # "is_segmented_video": "1",  # SEGMENT MODE
-            "filter_type": "0",
+            # ---------------------------------
+            # COMMON properties:
+            "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
+            # "has_original_sound": "1",
+            # "filter_type": "0",
             "camera_session_id": self.client_session_id,
             "camera_entry_point": str(random.randint(35, 45)),
             # "date_time_digitalized":"2021:03:12+00:59:35",
@@ -482,13 +508,14 @@ class UploadVideoMixin:
             "timezone_offset": "10800",
             "client_timestamp": str(timestamp),
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
-            "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
-            "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
-            "story_sticker_ids": "",
-            "media_folder": "Camera",
+            # "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
+            "date_time_original": time.strftime("%Y:%m:%d+%H:%M:%S", time.localtime()),
+            # "story_sticker_ids": "",
+            # "media_folder": "Camera",
             "configure_mode": "1",
-            "source_type": "4",
-            "video_result": "",
+            # "configure_mode": "2", <- when direct
+            "source_type": "4",  # "3"
+            # "video_result": "",
             "creation_surface": "camera",
             "software": config.SOFTWARE.format(**self.device_settings),
             "caption": caption,
@@ -496,7 +523,9 @@ class UploadVideoMixin:
             "rich_text_format_types": '["classic_v2"]',  # default, typewriter
             "upload_id": upload_id,
             "scene_capture_type": "standard",
+            "scene_type": "",
             "original_media_type": "video",
+            "camera_position": "back",
             # Facebook Sharing Part:
             # "xpost_surface": "auto_xpost",
             # "share_to_fb_destination_type": "USER",
@@ -505,8 +534,8 @@ class UploadVideoMixin:
             # "fb_access_token":"EAABwzLixnjYBACVgqBfLyDuPWs6RN2sTZC........cnNkjHCH2",
             # "attempt_id": str(uuid4()),
             "device": self.device,
-            "length": duration,
-            "clips": [{"length": duration, "source_type": "4"}],
+            # "length": duration,
+            # "clips": [{"length": duration, "source_type": "4"}],
             # "edits": {
             #     "crop_original_size": [
             #         960,
@@ -519,8 +548,8 @@ class UploadVideoMixin:
             #     "crop_zoom": 1
             # },
             "extra": {"source_width": width, "source_height": height},
-            "audio_muted": False,
-            "poster_frame_index": 0,
+            # "audio_muted": False,
+            # "poster_frame_index": 0,
         }
         data.update(extra_data)
         if links:
@@ -613,11 +642,94 @@ class UploadVideoMixin:
                 story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
-        data["tap_models"] = dumps(tap_models)
-        data["static_models"] = dumps(static_models)
-        data["story_sticker_ids"] = dumps(story_sticker_ids)
-        return self.private_request(
-            "media/configure_to_story/?video=1", self.with_default_data(data)
+        if thread_ids:
+            # Send to direct thread
+            data.update({
+                "configure_mode": "2",
+                "allow_multi_configures": "1",
+                "client_context": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "is_shh_mode": "0",
+                "mutation_token": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
+                "recipient_users": "[]",
+                "send_attribution": "direct_story_audience_picker",
+                "thread_ids": dumps([str(tid) for tid in thread_ids]),
+                "view_mode": "replayable"
+            })
+        if tap_models:
+            data["tap_models"] = dumps(tap_models)
+        if static_models:
+            data["static_models"] = dumps(static_models)
+        if story_sticker_ids:
+            data["story_sticker_ids"] = dumps(story_sticker_ids)
+        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+
+    def video_upload_to_direct(
+        self,
+        path: Path,
+        caption: str = "",
+        thumbnail: Path = None,
+        mentions: List[StoryMention] = [],
+        thread_ids: List[int] = [],
+        extra_data: Dict[str, str] = {},
+    ) -> DirectMessage:
+        """
+        Upload video to direct thread as a story and configure it
+
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Story caption
+        thumbnail: str
+            Path to thumbnail for video. When None, then thumbnail is generate automatically
+        mentions: List[StoryMention], optional
+            List of mentions to be tagged on this upload, default is empty list.
+        thread_ids: List[int], optional
+            List of Direct Message Thread ID (to send a story to a thread)
+        extra_data: List[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage class
+        """
+        path = Path(path)
+        if thumbnail is not None:
+            thumbnail = Path(thumbnail)
+        upload_id, width, height, duration, thumbnail = self.video_rupload(
+            path, thumbnail, to_story=True
+        )
+        for attempt in range(20):
+            self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
+            time.sleep(3)
+            try:
+                configured = self.video_configure_to_story(
+                    upload_id,
+                    width,
+                    height,
+                    duration,
+                    thumbnail,
+                    caption,
+                    mentions=mentions,
+                    thread_ids=thread_ids,
+                    extra_data=extra_data
+                )
+            except Exception as e:
+                if "Transcode not finished yet" in str(e):
+                    """
+                    Response 202 status:
+                    {"message": "Transcode not finished yet.", "status": "fail"}
+                    """
+                    time.sleep(10)
+                    continue
+                raise e
+            if configured and thread_ids:
+                return extract_direct_message(configured.get('message_metadata', [])[0])
+        raise VideoConfigureStoryError(
+            response=self.last_response, **self.last_json
         )
 
 

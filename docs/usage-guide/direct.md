@@ -18,6 +18,7 @@
 | direct_thread_unmute(thread_id: int)                                      | bool                    | Unmute the thread
 | direct_thread_mute_video_call(thread_id: int, revert: bool = False)       | bool                    | Mute video call for the thread
 | direct_thread_unmute_video_call(thread_id: int)                           | bool                    | Unmute video call for the thread
+| video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {}) | DirectMessage | Upload video to direct thread as a story and configure it
 
 Example:
 
