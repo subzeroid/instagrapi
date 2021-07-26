@@ -1,14 +1,14 @@
 # Story
 
-| Method                                                          | Return      | Description
-| --------------------------------------------------------------- | ----------- | ---------------------------------- |
-| user_stories(user_id: int, amount: int = None)                  | List[Story] | Get list of stories by user_id
-| story_info(story_pk: int, use_cache: bool = True)               | Story       | Return story info
-| story_delete(story_pk: int)                                     | bool        | Delete story
-| story_seen(story_pks: List[int], skipped_story_pks: List[int])  | bool        | Mark a story as seen
-| story_pk_from_url(url: str)                                     | int         | Get Story (media) PK from URL
-| story_download(story_pk: int)                                   | Path        | Download story media by media_type
-| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path | Download story media using URL
+| Method                                                                 | Return      | Description
+| ---------------------------------------------------------------------- | ----------- | ----------------------------------
+| user_stories(user_id: int, amount: int = None)                         | List[Story] | Get list of stories by user_id
+| story_info(story_pk: int, use_cache: bool = True)                      | Story       | Return story info
+| story_delete(story_pk: int)                                            | bool        | Delete story
+| story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool        | Mark a story as seen
+| story_pk_from_url(url: str)                                            | int         | Get Story (media) PK from URL
+| story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path        | Download story media by media_type
+| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path        | Download story media using URL
 
 ```
 >>> cl.story_download(2581281926631793076)
