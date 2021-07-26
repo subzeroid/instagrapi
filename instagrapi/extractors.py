@@ -56,6 +56,7 @@ def extract_media_v1(data):
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
+    media["has_liked"] = media.get("has_liked", False)
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
