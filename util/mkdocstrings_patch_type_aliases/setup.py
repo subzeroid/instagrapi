@@ -1,7 +1,6 @@
 # type: ignore
 import setuptools
 
-
 setuptools.setup(
     name="mkdocstrings_patch_type_aliases",
     version="0.1.alpha1",

@@ -23,9 +23,10 @@ from instagrapi.mixins.public import (
     TopSearchesPublicMixin,
 )
 from instagrapi.mixins.story import StoryMixin
+from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
-from instagrapi.mixins.timeline import ReelsMixin
+
 
 class Client(
     PublicRequestMixin,

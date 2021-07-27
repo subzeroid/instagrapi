@@ -62,7 +62,7 @@ jobs:
           test-requirements: "true"
 
       - name: Run isort
-        run: isort --recursive --check-only instagrapi
+        run: isort --check-only instagrapi
 
   test:
     runs-on: ubuntu-latest

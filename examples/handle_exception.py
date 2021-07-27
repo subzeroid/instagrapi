@@ -1,9 +1,15 @@
 from instagrapi import Client
 from instagrapi.exceptions import (
-    BadPassword, ReloginAttemptExceeded, ChallengeRequired,
-    SelectContactPointRecoveryForm, RecaptchaChallengeForm,
-    FeedbackRequired, PleaseWaitFewMinutes, LoginRequired
+    BadPassword,
+    ChallengeRequired,
+    FeedbackRequired,
+    LoginRequired,
+    PleaseWaitFewMinutes,
+    RecaptchaChallengeForm,
+    ReloginAttemptExceeded,
+    SelectContactPointRecoveryForm,
 )
+
 
 class Account:
     username = ""

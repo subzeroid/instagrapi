@@ -8,6 +8,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from instagrapi import Client
+from instagrapi.exceptions import DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -20,18 +21,17 @@ from instagrapi.types import (
     Media,
     MediaOembed,
     Story,
+    StoryHashtag,
     StoryLink,
     StoryLocation,
     StoryMention,
-    StoryHashtag,
     StorySticker,
     User,
     UserShort,
-    Usertag
+    Usertag,
 )
-from instagrapi.zones import UTC
 from instagrapi.utils import generate_jazoest
-from instagrapi.exceptions import DirectThreadNotFound
+from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
