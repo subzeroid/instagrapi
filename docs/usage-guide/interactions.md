@@ -94,13 +94,14 @@ cl = Client(settings)
 
 ### Settings
 
+Store and manage uuids, device configuration, user agent, authorization data (aka cookies) and other session settings
+
 | Method                         | Return  | Description
 | ------------------------------ | ------- | ------------------------------------------------------------------
 | get\_settings()                | dict    | Return settings dict
 | set\_settings(settings: dict)  | bool    | Set session settings
 | load\_settings(path: Path)     | dict    | Load session settings from file
 | dump\_settings(path: Path)     | bool    | Serialize and save session settings to file
-
 
 In order for Instagram [to trust you more](https://github.com/adw0rd/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
 
