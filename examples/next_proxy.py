@@ -19,10 +19,10 @@ def next_proxy():
         'http://username:password@147.123123.123:412347'
     ])
 
-cl = Client()
+cl = Client(proxy=next_proxy())
 
 try:
-    cl.login()
+    cl.login(USERNAME, PASSWORD)
 except (ProxyError, HTTPError, GenericRequestError, ClientConnectionError):
     # Network level
     cl.set_proxy(next_proxy())
