@@ -3,6 +3,7 @@ An example when you need to change proxy
 
 https://github.com/adw0rd/instagrapi/discussions/299
 """
+import random
 
 from urllib3.exceptions import HTTPError
 from requests.exceptions import ProxyError
