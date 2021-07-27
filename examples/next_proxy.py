@@ -7,6 +7,8 @@ import random
 
 from urllib3.exceptions import HTTPError
 from requests.exceptions import ProxyError
+
+from instagrapi import Client
 from instagrapi.exceptions import (
     GenericRequestError, ClientConnectionError,
     SentryBlock, RateLimitError, ClientThrottledError,
@@ -23,7 +25,7 @@ def next_proxy():
 cl = Client(proxy=next_proxy())
 
 try:
-    cl.login(USERNAME, PASSWORD)
+    cl.login('USERNAME', 'PASSWORD')
 except (ProxyError, HTTPError, GenericRequestError, ClientConnectionError):
     # Network level
     cl.set_proxy(next_proxy())
