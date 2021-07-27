@@ -12,14 +12,10 @@ A clear and concise description of what the bug is.
 Specify instagrapi version (moveipy and imagemagick if used)
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Provide a piece of code to reproduce the problem.
 
 **Traceback**
-Show your full traceback so that it is clear where exactly the error occurred
+Show your full traceback so that it is clear where exactly the error occurred.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
