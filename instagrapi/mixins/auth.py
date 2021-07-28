@@ -253,10 +253,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     device_id = ""
     phone_id = ""
     uuid = ""
+    mid = ""
     country = "US"
     locale = "en_US"
-    timezone_offset: int = 10800  # seconds
-    mid = ""
+    timezone_offset: int = -14400  # New York, GMT-4 in seconds
 
     def __init__(self):
         self.user_agent = None
@@ -355,7 +355,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         try:
             self.pre_login_flow()
         except (PleaseWaitFewMinutes, ClientThrottledError):
-            self.logger.info('Ignore 429 http code and continue login')
+            self.logger.warning('Ignore 429: Continue login')
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
             pass

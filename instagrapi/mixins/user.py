@@ -44,6 +44,7 @@ class UserMixin:
         -------
         'adw0rd' -> 1903424587
         """
+        username = str(username).lower()
         return int(self.user_info_by_username(username).pk)
 
     def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
@@ -138,6 +139,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
 
     def user_info_by_username_v1(self, username: str) -> User:
@@ -154,6 +156,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         try:
             result = self.private_request(f"users/{username}/usernameinfo/")
         except ClientNotFoundError as e:
@@ -180,6 +183,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         if not use_cache or username not in self._usernames_cache:
             try:
                 try:
