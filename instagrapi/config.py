@@ -10,7 +10,7 @@ USER_AGENT_BASE = (
     "Instagram {app_version} "
     "Android ({android_version}/{android_release}; "
     "{dpi}; {resolution}; {manufacturer}; "
-    "{device}; {model}; {cpu}; en_US; {version_code})"
+    "{device}; {model}; {cpu}; {locale}; {version_code})"
 )
 SOFTWARE = "{model}-user+{android_release}+OPR1.170623.012+V10.2.7.0.OAGMIXM+release-keys"
 

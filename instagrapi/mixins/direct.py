@@ -185,9 +185,7 @@ class DirectMixin:
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(
-            self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Send a direct message to list of users or threads
 

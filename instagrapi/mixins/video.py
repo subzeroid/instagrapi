@@ -315,7 +315,7 @@ class UploadVideoMixin:
             "usertags": dumps({"in": usertags}),
             "filter_type": "0",
             "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
-            "timezone_offset": "10800",
+            "timezone_offset": self.timezone_offset,
             "clips": [{"length": duration, "source_type": "4"}],
             "extra": {"source_width": width, "source_height": height},
             "device": self.device,
@@ -505,7 +505,7 @@ class UploadVideoMixin:
             # "composition_id":"ce3b1324-3761-4e8a-9212-fbac6c5e7d7d"
             "camera_make": self.device_settings.get("manufacturer", "Xiaomi"),
             "camera_model": self.device_settings.get("model", "MI+5s"),
-            "timezone_offset": "10800",
+            "timezone_offset": self.timezone_offset,
             "client_timestamp": str(timestamp),
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
             # "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago

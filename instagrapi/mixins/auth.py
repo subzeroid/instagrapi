@@ -20,7 +20,7 @@ from instagrapi.exceptions import (
     ReloginAttemptExceeded,
     TwoFactorRequired,
 )
-from instagrapi.utils import dumps, generate_jazoest
+from instagrapi.utils import dumps, generate_jazoest, gen_token
 from instagrapi.zones import CET
 
 
@@ -254,6 +254,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     uuid = ""
     country = "US"
     locale = "en_US"
+    timezone_offset = "10800"
+    mid = ''
 
     def __init__(self):
         self.user_agent = None
@@ -274,11 +276,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         self.authorization_data = self.settings.get('authorization_data', {})
         self.last_login = self.settings.get("last_login")
+        self.set_timezone_offset(self.settings.get("timezone_offset_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
+        self.mid = self.cookie_dict.get("mid", f'X--{gen_token(25)}')
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -448,7 +452,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     @property
     def token(self) -> str:
-        return self.cookie_dict.get("csrftoken")
+        """CSRF token
+        e.g. vUJGjpst6szjI38mZ6Pb1dROsWVerZelGSYGe0W1tuugpSUefVjRLj2Pom2SWNoA
+        """
+        if not getattr(self, '_token', None):
+            self._token = self.cookie_dict.get("csrftoken", gen_token(64))
+        return self._token
 
     @property
     def rank_token(self) -> str:
@@ -462,14 +471,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if user_id:
             return int(user_id)
         return None
-
-    # @property
-    # def username(self):
-    #     return self.cookie_dict.get("ds_user")
-
-    @property
-    def mid(self) -> str:
-        return self.cookie_dict.get("mid")
 
     @property
     def device(self) -> dict:
@@ -503,6 +504,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "user_agent": self.user_agent,
             "country": self.country,
             "locale": self.locale,
+            "timezone_offset": self.timezone_offset,
         }
 
     def set_settings(self, settings: Dict) -> bool:
@@ -579,7 +581,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "cpu": "qcom",
             "version_code": "301484483",
         }
-        self.settings["device_settings"] = self.device_settings
+        # self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
         return True
 
@@ -597,11 +599,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        self.user_agent = user_agent or config.USER_AGENT_BASE.format(
-            **self.device_settings
-        )
+        data = dict(self.device_settings, locale=self.locale)
+        self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
         self.private.headers.update({"User-Agent": self.user_agent})
-        self.settings["user_agent"] = self.user_agent
+        # self.settings["user_agent"] = self.user_agent
         self.set_uuids({})
         return True
 
@@ -626,7 +627,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.device_id = uuids.get("device_id", self.generate_device_id())
         return True
 
-    def generate_uuid(self) -> str:
+    def generate_uuid(self, prefix: str = '', suffix: str = '') -> str:
         """
         Helper to generate uuids
 
@@ -635,7 +636,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A stringified UUID
         """
-        return str(uuid.uuid4())
+        return f'{prefix}{uuid.uuid4()}{suffix}'
 
     def generate_device_id(self) -> str:
         """

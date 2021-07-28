@@ -241,7 +241,7 @@ class UploadIGTVMixin:
         data = {
             "igtv_ads_toggled_on": "0",
             "filter_type": "0",
-            "timezone_offset": "10800",
+            "timezone_offset": self.timezone_offset,
             "media_folder": "ScreenRecorder",
             "location": self.location_build(location),
             "source_type": "4",
