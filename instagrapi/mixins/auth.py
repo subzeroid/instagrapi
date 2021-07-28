@@ -15,12 +15,13 @@ import requests
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    ClientThrottledError,
     PleaseWaitFewMinutes,
     PrivateError,
     ReloginAttemptExceeded,
     TwoFactorRequired,
 )
-from instagrapi.utils import dumps, generate_jazoest, gen_token
+from instagrapi.utils import dumps, gen_token, generate_jazoest
 from instagrapi.zones import CET
 
 
@@ -242,7 +243,7 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
-    authorization = ''  # Bearer IGT:2:<base64:authorization_data>
+    authorization = ""  # Bearer IGT:2:<base64:authorization_data>
     authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
@@ -254,8 +255,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     uuid = ""
     country = "US"
     locale = "en_US"
-    timezone_offset = "10800"
-    mid = ''
+    timezone_offset: int = 10800  # seconds
+    mid = ""
 
     def __init__(self):
         self.user_agent = None
@@ -353,7 +354,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return True  # already login
         try:
             self.pre_login_flow()
-        except PleaseWaitFewMinutes:
+        except (PleaseWaitFewMinutes, ClientThrottledError):
+            self.logger.info('Ignore 429 http code and continue login')
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
             pass

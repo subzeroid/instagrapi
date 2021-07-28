@@ -123,7 +123,7 @@ class PrivateRequestMixin:
             "X-IG-Device-ID": self.uuid,
             "X-IG-Family-Device-ID": self.phone_id,
             "X-IG-Android-ID": self.device_id,
-            "X-IG-Timezone-Offset": self.timezone_offset,
+            "X-IG-Timezone-Offset": str(self.timezone_offset),
             "X-IG-Connection-Type": "WIFI",
             "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
             "X-IG-App-ID": "567067343352427",
@@ -163,7 +163,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.country = country
+        self.country = str(country)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -181,7 +181,7 @@ class PrivateRequestMixin:
             A boolean value
         """
         user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
-        self.locale = locale
+        self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if '_' in locale:
             self.set_country(locale.rsplit('_', 1)[1])
@@ -200,7 +200,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.timezone_offset = seconds
+        self.timezone_offset = int(seconds)
         return True
 
     @staticmethod

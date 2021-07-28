@@ -5,15 +5,20 @@ https://github.com/adw0rd/instagrapi/discussions/299
 """
 import random
 
-from urllib3.exceptions import HTTPError
 from requests.exceptions import ProxyError
+from urllib3.exceptions import HTTPError
 
 from instagrapi import Client
 from instagrapi.exceptions import (
-    GenericRequestError, ClientConnectionError,
-    SentryBlock, RateLimitError, ClientThrottledError,
-    ClientLoginRequired, PleaseWaitFewMinutes
+    ClientConnectionError,
+    ClientLoginRequired,
+    ClientThrottledError,
+    GenericRequestError,
+    PleaseWaitFewMinutes,
+    RateLimitError,
+    SentryBlock,
 )
+
 
 def next_proxy():
     return random.choices([

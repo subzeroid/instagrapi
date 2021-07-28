@@ -122,19 +122,50 @@ cl.get_timeline_feed()  # check session
 
 ### Manage device, proxy and other account settings
 
-| Method                                 | Return | Description
-|----------------------------------------|------|----------------------------------------------------------------------------
-| set\_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
-| private.proxies                        | dict | Stores used proxy servers for private (mobile, v1) requests
-| public.proxies                         | dict | Stores used proxy servers for public (web, graphql) requests
-| set\_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
-| device                                 | dict | Return device dict which we pass to Instagram
-| set\_user\_agent(user\_agent: str = "")| bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
-| cookie\_dict                           | dict | Return cookies
-| user\_id                               | int  | Return your user\_id (after login)
-| base\_headers                          | dict | Base headers for Instagram
-| set\_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
-| set\_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
+| Method                                | Return | Description
+|---------------------------------------|------|----------------------------------------------------------------------------
+| set_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| private.proxies                       | dict | Stores used proxy servers for private (mobile, v1) requests
+| public.proxies                        | dict | Stores used proxy servers for public (web, graphql) requests
+| set_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| device                                | dict | Return device dict which we pass to Instagram
+| set_user_agent(user_agent: str = "")  | bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| cookie_dict                           | dict | Return cookies
+| user_id                               | int  | Return your user_id (after login)
+| base_headers                          | dict | Base headers for Instagram
+| set_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
+| set_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
+| set_timezone_offset(seconds: int)     | bool | Set timezone offset in seconds
+
+``` python
+cl = Client()
+
+# Los Angles user:
+cl.set_proxy('http://los:angeles@proxy.address:8080')
+cl.set_locale('en_US')
+cl.set_timezone_offset(-7 * 60 * 60)  # Los Angeles UTC (GMT) -7 hours == -25200 seconds
+cl.get_settings()
+{
+    ...
+    'user_agent': 'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)',
+    'country': 'US',
+    'locale': 'en_US',
+    'timezone_offset': -25200
+}
+
+# Moscow user:
+cl.set_proxy('socks5://moscow:proxy@address:8080')
+cl.set_locale('ru_RU')
+cl.set_timezone_offset(3 * 3600)  # Moscow UTC+3
+cl.get_settings()
+{
+    ...
+    'user_agent': 'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; ru_RU; 301484483)',
+    'country': 'RU',
+    'locale': 'ru_RU',
+    'timezone_offset': 10800
+}
+```
 
 ## Challenge resolving
 
