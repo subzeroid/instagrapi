@@ -99,7 +99,7 @@ class PrivateRequestMixin:
     @property
     def base_headers(self):
         locale = self.locale.replace("-", "_")
-        next_year = time.time() + 31536000  # + 1 year in seconds
+        # next_year = time.time() + 31536000  # + 1 year in seconds
         return {
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
