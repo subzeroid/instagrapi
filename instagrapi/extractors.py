@@ -239,6 +239,12 @@ def extract_direct_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
         data["media_share"] = extract_media_v1(data["media_share"])
+    clip = data.get("clip", {})
+    if clip:
+        if "clip" in clip:
+            # Instagram ¯\_(ツ)_/¯
+            clip = clip.get("clip")
+        data["clip"] = extract_media_v1(clip)
     return DirectMessage(**data)
 
 

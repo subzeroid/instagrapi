@@ -229,6 +229,7 @@ class DirectMessage(BaseModel):
     reel_share: Optional[dict]
     story_share: Optional[dict]
     felix_share: Optional[dict]
+    clip: Optional[Media]
     placeholder: Optional[dict]
 
 
