@@ -24,8 +24,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Ubuntu 21.04]
- - Python version
- - instagrapi version
+ - Python version [e.g. 3.8.3]
+ - instagrapi version [e.g. 1.9.3, not "latest"]
  - moveipy version if used
  - imagemagick version if used
 
