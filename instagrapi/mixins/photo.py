@@ -252,7 +252,7 @@ class UploadPhotoMixin:
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
-            "timezone_offset": self.timezone_offset,
+            "timezone_offset": str(self.timezone_offset),
             "creation_logger_session_id": self.client_session_id,
             "multi_sharing": "1",
             "location": self.location_build(location),
@@ -391,7 +391,7 @@ class UploadPhotoMixin:
             "has_original_sound": "1",
             "camera_session_id": self.client_session_id,
             "scene_capture_type": "",
-            "timezone_offset": self.timezone_offset,
+            "timezone_offset": str(self.timezone_offset),
             "client_shared_at": str(timestamp - 5),  # 5 seconds ago
             "story_sticker_ids": "",
             "media_folder": "Camera",

@@ -225,7 +225,7 @@ class UploadAlbumMixin:
             ]
             childs[0]["usertags"] = dumps({"in": usertags})
         data = {
-            "timezone_offset": self.timezone_offset,
+            "timezone_offset": str(self.timezone_offset),
             "source_type": "4",
             "creation_logger_session_id": self.client_session_id,
             "location": self.location_build(location),
@@ -239,7 +239,7 @@ class UploadAlbumMixin:
             "children_metadata": [
                 {
                     "source_type": "4",
-                    "timezone_offset": self.timezone_offset,
+                    "timezone_offset": str(self.timezone_offset),
                     "device": dumps(self.device),
                     **child,
                 }
