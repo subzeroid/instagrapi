@@ -879,23 +879,21 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             cleanup(path)
             self.assertTrue(self.api.media_delete(media.id))
 
-    def test_reel_upload(self):
+    def test_clip_upload(self):
         # media_type: 2 (video, not IGTV)
         # product_type: clips
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/CEjXskWJ1on/"
         )
-        path = self.api.igtv_download(media_pk)
+        path = self.api.clip_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
-            title = "Test title"
-            caption_text = "Upload reel/clips as IGTV instead video"
-            media = self.api.igtv_upload(
-                path, title, caption_text,
+            caption_text = "Upload clip"
+            media = self.api.clip_upload(
+                path, caption_text,
                 location=self.get_location()
             )
             self.assertIsInstance(media, Media)
-            self.assertEqual(media.title, title)
             self.assertEqual(media.caption_text, caption_text)
             self.assertLocation(media.location)
         finally:
