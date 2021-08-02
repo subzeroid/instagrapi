@@ -2,11 +2,11 @@ flake8==3.9.2
 Pillow==8.3.1
 ipython==7.16.1
 pudb==2021.1
-isort==5.9.2
+isort==5.9.3
 bandit==1.7.0
 mike==1.0.1
 markdown-include==0.6.0
-mkdocs-material==7.2.1
+mkdocs-material==7.2.2
 mkdocs-minify-plugin==0.4.0
 mkdocstrings==0.15.2
 ./util/mkdocs-redirects
