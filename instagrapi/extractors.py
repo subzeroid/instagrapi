@@ -4,6 +4,7 @@ from .types import (
     Account,
     Collection,
     Comment,
+    DirectMedia,
     DirectMessage,
     DirectResponse,
     DirectShortThread,
@@ -239,6 +240,8 @@ def extract_direct_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
         data["media_share"] = extract_media_v1(data["media_share"])
+    if "media" in data:
+        data["media"] = extract_direct_media(data["media"])
     clip = data.get("clip", {})
     if clip:
         if "clip" in clip:
@@ -246,6 +249,23 @@ def extract_direct_message(data):
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
     return DirectMessage(**data)
+
+
+def extract_direct_media(data):
+    media = deepcopy(data)
+    if "video_versions" in media:
+        # Select Best Quality by Resolutiuon
+        media["video_url"] = sorted(
+            media["video_versions"], key=lambda o: o["height"] * o["width"]
+        )[-1]["url"]
+    if "image_versions2" in media:
+        media["thumbnail_url"] = sorted(
+            media["image_versions2"]["candidates"],
+            key=lambda o: o["height"] * o["width"],
+        )[-1]["url"]
+    if "user" in media:
+        media["user"] = extract_user_short(media.get("user"))
+    return DirectMedia(**media)
 
 
 def extract_account(data):
