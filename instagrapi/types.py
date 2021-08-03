@@ -219,10 +219,8 @@ class Story(BaseModel):
 class DirectMedia(BaseModel):
     id: str
     media_type: int
-    thumbnail_url: Optional[HttpUrl]
     user: Optional[UserShort]
-    like_count: int
-    caption_text: str
+    thumbnail_url: Optional[HttpUrl]
     video_url: Optional[HttpUrl]
 
 
