@@ -1,13 +1,14 @@
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Dict
+from urllib.parse import quote_plus
 
 import requests
 
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import gen_token
+from instagrapi.utils import dumps, gen_token
 
 
 class AccountMixin:
@@ -87,10 +88,33 @@ class AccountMixin:
             data = dict(user_data, **data)
         # Instagram original field-name for full user name is "first_name"
         data["first_name"] = data.pop("full_name")
-        result = self.private_request(
-            "accounts/edit_profile/", self.with_default_data(data)
-        )
+        # Biography with entities (markup)
+        result = self.private_request("accounts/edit_profile/", self.with_default_data(data))
+        biography = data.get("biography")
+        if biography:
+            self.account_set_biography(biography)
         return extract_account(result["user"])
+
+    def account_set_biography(self, biography: str) -> bool:
+        """
+        Set biography with entities (markup)
+
+        Parameters
+        ----------
+        biography: str
+            Biography raw text
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "logged_in_uids": dumps([str(self.user_id)]),
+            "raw_text": biography
+        }
+        result = self.private_request("accounts/set_biography/", self.with_default_data(data))
+        return result["status"] == "ok"
 
     def account_change_picture(self, path: Path) -> UserShort:
         """
