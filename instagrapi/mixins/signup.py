@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from uuid import uuid4
 
+from instagrapi import config
 from instagrapi.extractors import extract_user_short
 from instagrapi.types import UserShort
 

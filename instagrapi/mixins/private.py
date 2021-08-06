@@ -72,6 +72,7 @@ class PrivateRequestMixin:
     challenge_code_handler = manual_input_code
     request_logger = logging.getLogger("private_request")
     request_timeout = 1
+    timeout = 3
     last_response = None
     last_json = {}
 
@@ -80,6 +81,7 @@ class PrivateRequestMixin:
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -213,9 +215,13 @@ class PrivateRequestMixin:
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
-                response = self.private.post(api_url, data=data, params=params)
+                response = self.private.post(
+                    api_url, data=data, params=params, timeout=self.timeout
+                )
             else:  # GET
-                response = self.private.get(api_url, params=params)
+                response = self.private.get(
+                    api_url, params=params, timeout=self.timeout
+                )
             self.logger.debug(
                 "private_request %s: %s (%s)",
                 response.status_code,
@@ -353,8 +359,8 @@ class PrivateRequestMixin:
         if self.authorization:
             if not headers:
                 headers = {}
-            if 'authorization' not in headers:
-                headers.update({'Authorization': self.authorization})
+            if "authorization" not in headers:
+                headers.update({"Authorization": self.authorization})
         kwargs = dict(
             data=data,
             params=params,

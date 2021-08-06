@@ -207,14 +207,17 @@ class UploadPhotoMixin:
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
             if self.photo_configure(
-                upload_id, width, height, caption, usertags, location,
+                upload_id,
+                width,
+                height,
+                caption,
+                usertags,
+                location,
             ):
                 media = self.last_json.get("media")
                 self.expose()
                 return extract_media_v1(media)
-        raise PhotoConfigureError(
-            response=self.last_response, **self.last_json
-        )
+        raise PhotoConfigureError(response=self.last_response, **self.last_json)
 
     def photo_configure(
         self,
@@ -333,11 +336,9 @@ class UploadPhotoMixin:
                     hashtags=hashtags,
                     locations=locations,
                     stickers=stickers,
-                    **extract_media_v1(media).dict()
+                    **extract_media_v1(media).dict(),
                 )
-        raise PhotoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
 
     def photo_configure_to_story(
         self,
@@ -450,7 +451,7 @@ class UploadPhotoMixin:
                     "tag_name": mention.hashtag.name,
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "hashtag_sticker_gradient"
+                    "tap_state_str_id": "hashtag_sticker_gradient",
                 }
                 tap_models.append(item)
         if locations:
@@ -468,22 +469,24 @@ class UploadPhotoMixin:
                     "location_id": str(mention.location.pk),
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "location_sticker_vibrant"
+                    "tap_state_str_id": "location_sticker_vibrant",
                 }
                 tap_models.append(item)
         if stickers:
             for sticker in stickers:
                 str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
-                static_models.append({
-                    "x": sticker.x,
-                    "y": sticker.y,
-                    "z": sticker.z,
-                    "width": sticker.width,
-                    "height": sticker.height,
-                    "rotation": sticker.rotation,
-                    "str_id": str_id,
-                    "sticker_type": sticker.type,
-                })
+                static_models.append(
+                    {
+                        "x": sticker.x,
+                        "y": sticker.y,
+                        "z": sticker.z,
+                        "width": sticker.width,
+                        "height": sticker.height,
+                        "rotation": sticker.rotation,
+                        "str_id": str_id,
+                        "sticker_type": sticker.type,
+                    }
+                )
                 story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"

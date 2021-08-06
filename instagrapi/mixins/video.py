@@ -255,10 +255,7 @@ class UploadVideoMixin:
                     media = configured.get("media")
                     self.expose()
                     return extract_media_v1(media)
-        raise VideoConfigureError(
-            response=self.last_response,
-            **self.last_json
-        )
+        raise VideoConfigureError(response=self.last_response, **self.last_json)
 
     def video_configure(
         self,
@@ -403,11 +400,9 @@ class UploadVideoMixin:
                     hashtags=hashtags,
                     locations=locations,
                     stickers=stickers,
-                    **extract_media_v1(media).dict()
+                    **extract_media_v1(media).dict(),
                 )
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
     def video_configure_to_story(
         self,
@@ -576,7 +571,7 @@ class UploadVideoMixin:
                     "tag_name": mention.hashtag.name,
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "hashtag_sticker_gradient"
+                    "tap_state_str_id": "hashtag_sticker_gradient",
                 }
                 tap_models.append(item)
         if locations:
@@ -594,22 +589,24 @@ class UploadVideoMixin:
                     "location_id": str(mention.location.pk),
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "location_sticker_vibrant"
+                    "tap_state_str_id": "location_sticker_vibrant",
                 }
                 tap_models.append(item)
         if stickers:
             for sticker in stickers:
                 str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
-                static_models.append({
-                    "x": sticker.x,
-                    "y": sticker.y,
-                    "z": sticker.z,
-                    "width": sticker.width,
-                    "height": sticker.height,
-                    "rotation": sticker.rotation,
-                    "str_id": str_id,
-                    "sticker_type": sticker.type,
-                })
+                static_models.append(
+                    {
+                        "x": sticker.x,
+                        "y": sticker.y,
+                        "z": sticker.z,
+                        "width": sticker.width,
+                        "height": sticker.height,
+                        "rotation": sticker.rotation,
+                        "str_id": str_id,
+                        "sticker_type": sticker.type,
+                    }
+                )
                 story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"

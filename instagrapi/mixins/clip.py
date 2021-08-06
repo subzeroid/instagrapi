@@ -73,7 +73,7 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
-        feed_show : str  = '1',
+        feed_show: str = "1",
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -173,7 +173,7 @@ class UploadClipMixin:
                     caption,
                     usertags,
                     location,
-                    feed_show
+                    feed_show,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -201,7 +201,7 @@ class UploadClipMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        feed_show : str = '1',
+        feed_show: str = "1",
     ) -> Dict:
         """
         Post Configure CLIP (send caption, thumbnail and more to Instagram)

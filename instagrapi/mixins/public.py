@@ -5,6 +5,7 @@ from json.decoder import JSONDecodeError
 
 import requests
 
+from instagrapi import config
 from instagrapi.exceptions import (
     ClientBadRequestError,
     ClientConnectionError,
@@ -29,10 +30,12 @@ class PublicRequestMixin:
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     request_logger = logging.getLogger("public_request")
     request_timeout = 1
+    timeout = 3
 
     def __init__(self, *args, **kwargs):
         self.public = requests.Session()
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)
 
     @property
@@ -102,9 +105,13 @@ class PublicRequestMixin:
             time.sleep(self.request_timeout)
         try:
             if data is not None:  # POST
-                response = self.public.data(url, data=data, params=params)
+                response = self.public.data(
+                    url, data=data, params=params, timeout=self.timeout
+                )
             else:  # GET
-                response = self.public.get(url, params=params)
+                response = self.public.get(
+                    url, params=params, timeout=self.timeout
+                )
 
             expected_length = int(response.headers.get("Content-Length", 0))
             actual_length = response.raw.tell()
