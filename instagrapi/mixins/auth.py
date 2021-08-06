@@ -12,6 +12,7 @@ from typing import Dict, List
 from uuid import uuid4
 
 import requests
+from pydantic import ValidationError
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -313,7 +314,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         try:
             user = self.user_info_v1(int(user_id))
-        except PrivateError:
+        except (PrivateError, ValidationError):
             user = self.user_short_gql(int(user_id))
         self.username = user.username
         self.cookie_dict["ds_user_id"] = user.pk
