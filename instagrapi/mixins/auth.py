@@ -585,6 +585,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         # self.settings["device_settings"] = self.device_settings
         self.set_uuids({})
+        self.settings = self.get_settings()
         return True
 
     def set_user_agent(self, user_agent: str = "") -> bool:
@@ -606,6 +607,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.private.headers.update({"User-Agent": self.user_agent})
         # self.settings["user_agent"] = self.user_agent
         self.set_uuids({})
+        self.settings = self.get_settings()
         return True
 
     def set_uuids(self, uuids: Dict = None) -> bool:
