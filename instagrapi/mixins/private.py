@@ -121,7 +121,7 @@ class PrivateRequestMixin:
             "X-Bloks-Is-Panorama-Enabled": "true",
             "X-IG-Device-ID": self.uuid,
             "X-IG-Family-Device-ID": self.phone_id,
-            "X-IG-Android-ID": self.device_id,
+            "X-IG-Android-ID": self.android_device_id,
             "X-IG-Timezone-Offset": str(self.timezone_offset),
             "X-IG-Connection-Type": "WIFI",
             "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
@@ -130,8 +130,6 @@ class PrivateRequestMixin:
             "User-Agent": self.user_agent,
             "Accept-Language": locale.replace("_", "-"),
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o
-            "IG-INTENDED-USER-ID": str(self.user_id or 0),
-            "IG-U-DS-USER-ID": str(self.user_id or 0),
             "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",  # default for post
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
             # "Host": "i.instagram.com",
@@ -145,11 +143,13 @@ class PrivateRequestMixin:
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
             headers.update({
+                "IG-INTENDED-USER-ID": str(self.user_id),
+                "IG-U-DS-USER-ID": str(self.user_id),
                 # Direct:
                 "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
                 "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
                 "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
-                "IG-U-RUR": f"CLN,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
+                "IG-U-RUR": "ODN",  # f"CLN,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
             })
         return headers
 
@@ -353,7 +353,8 @@ class PrivateRequestMixin:
             response.request.method,
             response.url,
             "{app_version}, {manufacturer} {model}".format(
-                **self.device_settings),
+                **self.device_settings
+            ),
         )
 
     def private_request(

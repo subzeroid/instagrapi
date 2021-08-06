@@ -50,7 +50,7 @@ class ChallengeResolveMixin:
             user_id, nonce_code = challenge_url.split("/")[2:4]
             params = {
                 "guid": self.uuid,
-                "device_id": self.device_id,
+                "device_id": self.android_device_id,
                 "challenge_context": json.dumps(
                     {"step_name": "", "nonce_code": nonce_code, "user_id": user_id}
                 ),

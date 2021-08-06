@@ -1,7 +1,6 @@
 from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Dict
-from urllib.parse import quote_plus
 
 import requests
 

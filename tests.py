@@ -485,8 +485,8 @@ class ClientCommentTestCase(ClientPrivateTestCase):
         self.assertTrue(len(comments) > 5)
         comment = comments[0]
         self.assertIsInstance(comment, Comment)
-        comment_fields = comment.fields.keys()
-        user_fields = comment.user.fields.keys()
+        comment_fields = comment.__fields__.keys()
+        user_fields = comment.user.__fields__.keys()
         for field in [
             "pk",
             "text",
