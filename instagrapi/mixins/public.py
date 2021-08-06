@@ -1,7 +1,11 @@
 import json
 import logging
 import time
-from json.decoder import JSONDecodeError
+
+try:
+    from simplejson.errors import JSONDecodeError
+except ImportError:
+    from json.decoder import JSONDecodeError
 
 import requests
 
@@ -25,6 +29,8 @@ class PublicRequestMixin:
     public_requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
+    last_public_response = None
+    last_public_json = {}
     request_logger = logging.getLogger("public_request")
     request_timeout = 1
 
@@ -63,13 +69,10 @@ class PublicRequestMixin:
         for iteration in range(retries_count):
             try:
                 return self._send_public_request(url, **kwargs)
-            except (
-                ClientLoginRequired,
-                ClientNotFoundError,
-                ClientBadRequestError,
-            ) as e:
-                # Stop retries
-                raise e
+            except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
+                raise e  # Stop retries
+            # except JSONDecodeError as e:
+            #     raise ClientJSONDecodeError(e, respones=self.last_public_response)
             except ClientError as e:
                 msg = str(e)
                 if all((
@@ -120,9 +123,12 @@ class PublicRequestMixin:
                 "POST" if data else "GET",
                 response.url,
             )
-
+            self.last_public_response = response
             response.raise_for_status()
-            return response.json() if return_json else response.text
+            if return_json:
+                self.last_public_json = response.json()
+                return self.last_public_json
+            return response.text
 
         except JSONDecodeError as e:
             if "/login/" in response.url:
