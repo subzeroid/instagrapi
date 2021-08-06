@@ -131,6 +131,50 @@ True
 
 >>> cl.media_unarchive('2155832952940083788_1903424587')
 True
+
+>>> cl.user_medias_gql(1903424587, amount=1)[0].dict()
+{'pk': 2592252466151482347,
+ 'id': '2592252466151482347_1903424587',
+ 'code': 'CP5h-I1FuPr',
+ 'taken_at': datetime.datetime(2021, 6, 9, 12, 9, 56, tzinfo=datetime.timezone.utc),
+ 'media_type': 8,
+ 'product_type': '',
+ 'thumbnail_url': None,
+ 'location': None,
+ 'user': {'pk': 1903424587,
+  'username': 'adw0rd',
+  'full_name': '',
+  'profile_pic_url': None,
+  'profile_pic_url_hd': None,
+  'stories': []},
+ 'comment_count': 5,
+ 'like_count': 63,
+ 'has_liked': None,
+ 'caption_text': 'Любимые подвески ♥️ @daewon1song @tensortrucks',
+ 'usertags': [{'user': {'pk': 53860445,
+    'username': 'tensortrucks',
+    'full_name': '',
+    'profile_pic_url': None,
+    'profile_pic_url_hd': None,
+    'stories': []},
+   'x': 0.3146666667,
+   'y': 0.368159204}],
+ 'video_url': None,
+ 'view_count': 0,
+ 'video_duration': 0.0,
+ 'title': '',
+ 'resources': [{'pk': 2592252463089480898,
+   'video_url': None,
+   'thumbnail_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/198404255_317668533141074_749682826672118306_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=102&_nc_ohc=f8FR-bZNbp8AX-A6YQ4&edm=APU89FABAAAA&ccb=7-4&oh=864bb145a4fa7e523f5cc22f9ac5d015&oe=61145E4F&_nc_sid=86f79a', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/s1080x1080/198404255_317668533141074_749682826672118306_n.jpg', query='_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=102&_nc_ohc=f8FR-bZNbp8AX-A6YQ4&edm=APU89FABAAAA&ccb=7-4&oh=864bb145a4fa7e523f5cc22f9ac5d015&oe=61145E4F&_nc_sid=86f79a'),
+   'media_type': 1},
+  {'pk': 2592252463081081550,
+   'video_url': None,
+   'thumbnail_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/198228498_303261361473979_3031095263106513772_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=107&_nc_ohc=C9SeKrAO6poAX-nXhCG&edm=APU89FABAAAA&ccb=7-4&oh=6aab825e12fef746449be22c322762a1&oe=61132FB0&_nc_sid=86f79a', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/s1080x1080/198228498_303261361473979_3031095263106513772_n.jpg', query='_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=107&_nc_ohc=C9SeKrAO6poAX-nXhCG&edm=APU89FABAAAA&ccb=7-4&oh=6aab825e12fef746449be22c322762a1&oe=61132FB0&_nc_sid=86f79a'),
+   'media_type': 1},
+  {'pk': 2592252463056089912,
+   'video_url': None,
+   'thumbnail_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=_feIkorChpsAX_wzTff&edm=APU89FABAAAA&ccb=7-4&oh=a22a2f5b30772fbbb02db92b9394e981&oe=61147D59&_nc_sid=86f79a', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg', query='_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=_feIkorChpsAX_wzTff&edm=APU89FABAAAA&ccb=7-4&oh=a22a2f5b30772fbbb02db92b9394e981&oe=61147D59&_nc_sid=86f79a'),
+   'media_type': 1}]}
 ```
 
 ## Download media
