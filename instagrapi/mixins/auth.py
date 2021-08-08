@@ -1,4 +1,5 @@
 import base64
+
 # import datetime
 import hashlib
 import hmac
@@ -23,6 +24,7 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
 )
 from instagrapi.utils import dumps, gen_token, generate_jazoest
+
 # from instagrapi.zones import CET
 
 

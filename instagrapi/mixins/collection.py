@@ -113,7 +113,7 @@ class CollectionMixin:
         List[Media]
             A list of objects of Media
         """
-        if collection_pk.isdigit():
+        if isinstance(collection_pk, int) or collection_pk.isdigit():
             private_request_endpoint = f"feed/collection/{collection_pk}/"
         elif collection_pk.lower() == "liked":
             private_request_endpoint = "feed/liked/"
@@ -123,9 +123,9 @@ class CollectionMixin:
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
         next_max_id = ""
+        amount = int(amount)
+        found_last_media_pk = False
         while True:
-            if len(total_items) >= float(amount):
-                return total_items[:amount]
             try:
                 result = self.private_request(
                     private_request_endpoint,
@@ -133,15 +133,18 @@ class CollectionMixin:
                 )
             except Exception as e:
                 self.logger.exception(e)
-                return total_items
+                break
             for item in result["items"]:
                 if last_media_pk and last_media_pk == item["media"]["pk"]:
-                    return total_items
+                    found_last_media_pk = True
+                    break
                 total_items.append(extract_media_v1(item.get("media", item)))
+            if (amount and len(total_items) >= amount) or found_last_media_pk:
+                break
             if not result.get("more_available"):
-                return total_items
+                break
             next_max_id = result.get("next_max_id", "")
-        return total_items
+        return total_items[:amount] if amount else total_items
 
     def media_save(self, media_id: str, collection_pk: int = None, revert: bool = False) -> bool:
         """
