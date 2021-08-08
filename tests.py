@@ -105,7 +105,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         if ACCOUNT_SESSIONID:
             self.api.login_by_sessionid(ACCOUNT_SESSIONID)
         else:
-            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD, relogin=True)
         self.api.dump_settings(filename)
         super().__init__(*args, **kwargs)
 
