@@ -17,6 +17,7 @@ from instagrapi.exceptions import (
     PleaseWaitFewMinutes,
     RateLimitError,
     SentryBlock,
+    ClientForbiddenError
 )
 
 
@@ -37,6 +38,6 @@ except (ProxyError, HTTPError, GenericRequestError, ClientConnectionError):
 except (SentryBlock, RateLimitError, ClientThrottledError):
     # Instagram limit level
     cl.set_proxy(next_proxy())
-except (ClientLoginRequired, PleaseWaitFewMinutes):
+except (ClientLoginRequired, PleaseWaitFewMinutes, ClientForbiddenError):
     # Logical level
     cl.set_proxy(next_proxy())
