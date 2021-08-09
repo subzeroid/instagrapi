@@ -216,11 +216,15 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    api_url, data=data, params=params, timeout=self.timeout
+                    api_url,
+                    data=data,
+                    params=params,
+                    timeout=self.timeout,
+                    verify=False,
                 )
             else:  # GET
                 response = self.private.get(
-                    api_url, params=params, timeout=self.timeout
+                    api_url, params=params, timeout=self.timeout, verify=False
                 )
             self.logger.debug(
                 "private_request %s: %s (%s)",

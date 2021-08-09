@@ -110,7 +110,7 @@ class PublicRequestMixin:
                 )
             else:  # GET
                 response = self.public.get(
-                    url, params=params, timeout=self.timeout
+                    url, params=params, timeout=self.timeout, verify=False
                 )
 
             expected_length = int(response.headers.get("Content-Length", 0))
