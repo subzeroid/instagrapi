@@ -19,6 +19,8 @@ class CommentMixin:
         ----------
         media_id: str
             Unique identifier of a Media
+        amount: int, optional
+            Maximum number of media to return, default is 0 - Inf 
 
         Returns
         -------
