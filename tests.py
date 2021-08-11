@@ -3,7 +3,7 @@ import os
 import os.path
 import random
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
@@ -91,14 +91,17 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
     def __init__(self, *args, **kwargs):
         filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
         self.api = Client()
+        settings = {}
         try:
-            settings = self.api.load_settings(filename)
+            st = os.stat(filename)
+            if datetime.fromtimestamp(st.st_mtime) > (datetime.now() - timedelta(seconds=300)):
+                # use only fresh session (5 minutes)
+                settings = self.api.load_settings(filename)
         except FileNotFoundError:
-            settings = {}
+            pass
         except JSONDecodeError as e:
             print('JSONDecodeError when read stored client settings. Use empty settings')
             print(str(e))
-            settings = {}
         self.api.set_settings(settings)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
@@ -479,6 +482,12 @@ class ClientMediaTestCase(ClientPrivateTestCase):
 
 
 class ClientCommentTestCase(ClientPrivateTestCase):
+
+    def test_media_comments_amount(self):
+        comments = self.api.media_comments(2154602296692269830, amount=2)
+        self.assertTrue(len(comments) == 2)
+        comments = self.api.media_comments(2154602296692269830, amount=0)
+        self.assertTrue(len(comments) > 2)
 
     def test_media_comments(self):
         comments = self.api.media_comments(2154602296692269830)

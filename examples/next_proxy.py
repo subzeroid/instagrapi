@@ -11,13 +11,13 @@ from urllib3.exceptions import HTTPError
 from instagrapi import Client
 from instagrapi.exceptions import (
     ClientConnectionError,
+    ClientForbiddenError,
     ClientLoginRequired,
     ClientThrottledError,
     GenericRequestError,
     PleaseWaitFewMinutes,
     RateLimitError,
     SentryBlock,
-    ClientForbiddenError
 )
 
 
