@@ -59,7 +59,7 @@ class CommentMixin:
                 if "Media not found" in str(e):
                     raise MediaNotFound(e, media_id=media_id, **self.last_json)
                 raise e
-            if amount and amount >= len(comments):
+            if amount and len(comments) >= amount:
                 break
         if amount:
             comments = comments[:amount]
