@@ -40,7 +40,7 @@ class CommentMixin:
         )
         get_comments()
         while ((result.get("has_more_comments") and result.get("next_max_id"))
-               or (result.get("has_more_headload_comments") and result.get("next_min_id")))
+               or (result.get("has_more_headload_comments") and result.get("next_min_id"))
                and (True if not amount else len(comments) < amount)):
                 
             try:
