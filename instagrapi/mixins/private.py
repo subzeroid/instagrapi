@@ -33,6 +33,7 @@ from instagrapi.exceptions import (
     MediaNotFound,
     PrivateProfileUser,
     InvalidTargetUser,
+    DeleteRequestError,
 )
 from instagrapi.utils import dumps, generate_signature
 
@@ -302,6 +303,8 @@ class PrivateRequestMixin:
                     raise PrivateProfileUser(e, response=e.response, **last_json)
                 elif "Invalid target user" in message:
                     raise InvalidTargetUser(e, response=e.response, **last_json)
+                elif "You requested to delete" in message:
+                    raise DeleteRequestError(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}

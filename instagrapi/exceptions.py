@@ -23,6 +23,10 @@ class InactiveUserError(ClientError):
     """Your account has been disabled for violating our terms. Learn how you may be able to restore your account."""
 
 
+class DeleteRequestError(ClientError):
+    """You requested to delete USERNAME. If you want to keep it, you have until September 03, 2021 to let us know. Otherwise, all your posts and information will be deleted. Learn More"""
+
+
 class InvalidUserError(ClientError):
     """The username you entered doesn't appear to belong to an account. Please check your username and try again."""
 
