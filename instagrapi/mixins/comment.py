@@ -11,7 +11,7 @@ class CommentMixin:
     Helpers for managing comments on a Media
     """
 
-    def media_comments(self, media_id: str, amount: int = 0) -> List[Comment]:
+    def media_comments(self, media_id: str, amount: int = 20) -> List[Comment]:
         """
         Get comments on a media
 
