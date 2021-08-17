@@ -169,8 +169,8 @@ cl.get_settings()
 
 ## What's Next?
 
-* [Getting Started](getting-started.md)
-* [Usage Guide](usage-guide/fundamentals.md)
-* [Handle Exceptions](usage-guide/handle_exception.md)
-* [Challenge Resolver](usage-guide/challenge_resolver.md)
-* [Exceptions](exceptions.md)
+* [Getting Started](../getting-started.md)
+* [Usage Guide](fundamentals.md)
+* [Handle Exceptions](handle_exception.md)
+* [Challenge Resolver](challenge_resolver.md)
+* [Exceptions](../exceptions.md)
