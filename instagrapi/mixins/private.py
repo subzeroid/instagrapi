@@ -129,21 +129,20 @@ class PrivateRequestMixin:
             "Priority": "u=3",
             "User-Agent": self.user_agent,
             "Accept-Language": locale.replace("_", "-"),
-            "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",  # default for post
+            "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
-            # "Host": "i.instagram.com",
+            "Host": config.API_DOMAIN,
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",
             # "Pragma": "no-cache",
             # "Cache-Control": "no-cache",
             "X-FB-Client-IP": "True",
             "X-FB-Server-Cluster": "True",
+            "IG-INTENDED-USER-ID": str(self.user_id or 0),
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
             headers.update({
-                "IG-INTENDED-USER-ID": str(self.user_id),
                 "IG-U-DS-USER-ID": str(self.user_id),
                 # Direct:
                 "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
@@ -237,6 +236,7 @@ class PrivateRequestMixin:
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
+                self.private.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
@@ -246,6 +246,7 @@ class PrivateRequestMixin:
                     api_url, data=data, params=params
                 )
             else:  # GET
+                self.private.headers.pop('Content-Type')
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text

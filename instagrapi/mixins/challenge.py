@@ -48,12 +48,18 @@ class ChallengeResolveMixin:
         challenge_url = last_json["challenge"]["api_path"]
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
+            challenge_context = last_json.get('challenge', {}).get('challenge_context')
+            if not challenge_context:
+                challenge_context = json.dumps({
+                    "step_name": "",
+                    "nonce_code": nonce_code,
+                    "user_id": int(user_id),
+                    "is_stateless": False
+                })
             params = {
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
-                "challenge_context": json.dumps(
-                    {"step_name": "", "nonce_code": nonce_code, "user_id": user_id}
-                ),
+                "challenge_context": challenge_context,
             }
         except ValueError:
             # not enough values to unpack (expected 2, got 1)
