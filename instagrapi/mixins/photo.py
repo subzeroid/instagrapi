@@ -27,7 +27,7 @@ from instagrapi.types import (
     StorySticker,
     Usertag,
 )
-from instagrapi.utils import dumps
+from instagrapi.utils import dumps, date_time_original
 
 try:
     from PIL import Image
@@ -253,7 +253,15 @@ class UploadPhotoMixin:
         ]
         data = {
             "timezone_offset": str(self.timezone_offset),
+            "camera_model": self.device.get("model", ""),
+            "camera_make": self.device.get("manufacturer", ""),
+            "scene_type": "?",
+            "nav_chain": "8rL:self_profile:4,ProfileMediaTabFragment:self_profile:5,UniversalCreationMenuFragment:universal_creation_menu:7,ProfileMediaTabFragment:self_profile:8,MediaCaptureFragment:tabbed_gallery_camera:9,Dd3:photo_filter:10,FollowersShareFragment:metadata_followers_share:11",
+            "date_time_original": date_time_original(time.localtime()),
+            "date_time_digitalized": date_time_original(time.localtime()),
             "creation_logger_session_id": self.client_session_id,
+            "scene_capture_type": "standard",
+            "software": config.SOFTWARE.format(**self.device_settings),
             "multi_sharing": "1",
             "location": self.location_build(location),
             "media_folder": "Camera",

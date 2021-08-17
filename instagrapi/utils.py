@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import time
 import json
 import random
 import string
@@ -108,3 +109,7 @@ def dumps(data):
 def generate_jazoest(symbols: str) -> str:
     amount = sum(ord(s) for s in symbols)
     return f'2{amount}'
+
+
+def date_time_original(localtime):
+    return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)

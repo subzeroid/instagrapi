@@ -6,6 +6,7 @@ from typing import Dict, List
 from uuid import uuid4
 
 from instagrapi import config
+from instagrapi.utils import date_time_original
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
@@ -244,7 +245,7 @@ class UploadClipMixin:
             # "title": title,
             "caption": caption,
             "usertags": json.dumps({"in": usertags}),
-            "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
+            "date_time_original": date_time_original(time.localtime()),
             "clips_share_preview_to_feed": feed_show,
             "upload_id": upload_id,
             # "igtv_composer_session_id": self.igtv_composer_session_id,

@@ -103,6 +103,8 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             print('JSONDecodeError when read stored client settings. Use empty settings')
             print(str(e))
         self.api.set_settings(settings)
+        # self.api.set_locale('ru_RU')
+        # self.api.set_timezone_offset(10800)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
         if ACCOUNT_SESSIONID:

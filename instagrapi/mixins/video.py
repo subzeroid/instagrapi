@@ -27,7 +27,7 @@ from instagrapi.types import (
     StorySticker,
     Usertag,
 )
-from instagrapi.utils import dumps
+from instagrapi.utils import dumps, date_time_original
 
 
 class DownloadVideoMixin:
@@ -314,7 +314,7 @@ class UploadVideoMixin:
             "audio_muted": False,
             "usertags": dumps({"in": usertags}),
             "filter_type": "0",
-            "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
+            "date_time_original": date_time_original(time.localtime()),
             "timezone_offset": str(self.timezone_offset),
             "clips": [{"length": duration, "source_type": "4"}],
             "extra": {"source_width": width, "source_height": height},
@@ -509,7 +509,7 @@ class UploadVideoMixin:
             "client_timestamp": str(timestamp),
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
             # "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
-            "date_time_original": time.strftime("%Y:%m:%d+%H:%M:%S", time.localtime()),
+            "date_time_original": date_time_original(time.localtime()),
             # "story_sticker_ids": "",
             # "media_folder": "Camera",
             "configure_mode": "1",

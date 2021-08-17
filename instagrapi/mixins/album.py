@@ -10,7 +10,7 @@ from instagrapi.exceptions import (
 )
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
-from instagrapi.utils import dumps
+from instagrapi.utils import dumps, date_time_original
 
 
 class DownloadAlbumMixin:
@@ -157,9 +157,7 @@ class UploadAlbumMixin:
                         "poster_frame_index": "0",
                         "filter_type": "0",
                         "video_result": "",
-                        "date_time_original": time.strftime(
-                            "%Y%m%dT%H%M%S.000Z", time.localtime()
-                        ),
+                        "date_time_original": date_time_original(time.localtime()),
                         "audio_muted": "false",
                     }
                 )
