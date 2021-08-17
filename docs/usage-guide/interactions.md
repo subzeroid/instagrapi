@@ -167,8 +167,10 @@ cl.get_settings()
 }
 ```
 
-## Challenge resolving
+## What's Next?
 
-All challenges solved in the module [challenge.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/mixins/challenge.py)
-
-Automatic submission code from SMS/Email in examples [here](https://github.com/adw0rd/instagrapi/blob/master/examples/challenge_resolvers.py)
+* [Getting Started](getting-started.md)
+* [Usage Guide](usage-guide/fundamentals.md)
+* [Handle Exceptions](usage-guide/handle_exception.md)
+* [Challenge Resolver](usage-guide/challenge_resolver.md)
+* [Exceptions](exceptions.md)

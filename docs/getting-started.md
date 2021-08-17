@@ -16,5 +16,8 @@ python -m pip install instagrapi
 
 * [Usage Guide](usage-guide/fundamentals.md)
 * [Interactions](usage-guide/interactions.md)
+* [Handle Exceptions](usage-guide/handle_exception.md)
+* [Challenge Resolver](usage-guide/challenge_resolver.md)
+* [Exceptions](exceptions.md)
 
 [docs-main]: index.md
