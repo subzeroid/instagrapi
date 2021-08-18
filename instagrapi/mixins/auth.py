@@ -283,7 +283,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         self.authorization_data = self.settings.get('authorization_data', {})
         self.last_login = self.settings.get("last_login")
-        self.set_timezone_offset(self.settings.get("timezone_offset_offset", self.timezone_offset))
+        self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
         self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
