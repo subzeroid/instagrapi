@@ -11,7 +11,7 @@ from instagrapi.exceptions import (
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import User, UserShort
+from instagrapi.types import Relationship, User, UserShort
 from instagrapi.utils import json_value
 
 
@@ -282,6 +282,14 @@ class UserMixin:
         return deepcopy(
             self._users_cache[user_id]
         )  # return copy of cache (dict changes protection)
+
+    def user_friendship_v1(self, user_id: int) -> Relationship:
+        try:
+            results = self.private_request(f"friendships/show/{user_id}/")
+            return Relationship(**results)
+        except ClientError as e:
+            self.logger.exception(e)
+            return None
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
