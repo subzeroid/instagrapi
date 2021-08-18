@@ -10,7 +10,7 @@ from instagrapi.exceptions import (
 )
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
-from instagrapi.utils import dumps, date_time_original
+from instagrapi.utils import date_time_original, dumps
 
 
 class DownloadAlbumMixin:
