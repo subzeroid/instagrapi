@@ -1349,5 +1349,21 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         self.assertTrue(self.api.story_seen([story.pk]))
 
 
+# class BloksTestCase(ClientPrivateTestCase):
+#
+#     def test_bloks_change_password(self):
+#         last_json = {
+#             'step_name': 'change_password',
+#             'step_data': {'new_password1': 'None', 'new_password2': 'None'},
+#             'flow_render_type': 3,
+#             'bloks_action': 'com.instagram.challenge.navigation.take_challenge',
+#             'cni': 12346879508000123,
+#             'challenge_context': '{"step_name": "change_password", "cni": 12346879508000123, "is_stateless": false, "challenge_type_enum": "PASSWORD_RESET"}',
+#             'challenge_type_enum_str': 'PASSWORD_RESET',
+#             'status': 'ok'
+#         }
+#        self.assertTrue(self.api.bloks_change_password("2r9j20r9j4230t8hj39tHW4"))
+
+
 if __name__ == '__main__':
     unittest.main()

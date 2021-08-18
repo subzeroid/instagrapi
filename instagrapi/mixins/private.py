@@ -1,4 +1,3 @@
-import hashlib
 import json
 import logging
 import random
@@ -56,6 +55,13 @@ def manual_input_code(self, username: str, choice=None):
     return code  # is not int, because it can start from 0
 
 
+def manual_change_password(self, username: str):
+    pwd = None
+    while not pwd:
+        pwd = input(f"Enter password for {username}: ").strip()
+    return pwd
+
+
 class PrivateRequestMixin:
     """
     Helpers for private request
@@ -63,6 +69,7 @@ class PrivateRequestMixin:
     private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
+    change_password_handler = manual_change_password
     request_logger = logging.getLogger("private_request")
     request_timeout = 1
     last_response = None
@@ -117,9 +124,7 @@ class PrivateRequestMixin:
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
             "X-IG-App-Startup-Country": self.country.upper(),
-            "X-Bloks-Version-Id": hashlib.sha256(
-                json.dumps(self.device_settings).encode()
-            ).hexdigest(),
+            "X-Bloks-Version-Id": self.bloks_versioning_id,
             "X-IG-WWW-Claim": "0",
             # X-IG-WWW-Claim: hmac.AR3zruvyGTlwHvVd2ACpGCWLluOppXX4NAVDV-iYslo9CaDd
             "X-Bloks-Is-Layout-RTL": "false",
@@ -130,7 +135,7 @@ class PrivateRequestMixin:
             "X-IG-Timezone-Offset": str(self.timezone_offset),
             "X-IG-Connection-Type": "WIFI",
             "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
-            "X-IG-App-ID": "567067343352427",
+            "X-IG-App-ID": self.app_id,
             "Priority": "u=3",
             "User-Agent": self.user_agent,
             "Accept-Language": ', '.join(accept_language),

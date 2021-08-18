@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
+from instagrapi.mixins.bloks import BloksMixin
 from instagrapi.mixins.challenge import ChallengeResolveMixin
 from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
@@ -56,7 +57,8 @@ class Client(
     PasswordMixin,
     DownloadClipMixin,
     UploadClipMixin,
-    ReelsMixin
+    ReelsMixin,
+    BloksMixin,
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")

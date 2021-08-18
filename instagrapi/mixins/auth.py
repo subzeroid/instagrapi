@@ -199,7 +199,7 @@ class PostLoginFlowMixin:
             "is_charging": random.randint(0, 1),
             "will_sound_on": random.randint(0, 1),
             "session_id": self.client_session_id,
-            "bloks_versioning_id": "fd16828964e43a367fe1e9a42740151f6d917073c27ca07ccfe0e359c3c82482",
+            "bloks_versioning_id": self.bloks_versioning_id,
         }
         if "pull_to_refresh" in options:
             data["reason"] = "pull_to_refresh"
@@ -285,6 +285,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
+        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_country(self.settings.get("country", self.country))
