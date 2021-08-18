@@ -192,12 +192,15 @@ class StoryMixin:
             "reel"
         ]
         stories = []
-        for item in reel["items"]:
-            stories.append(extract_story_v1(item))
-        if amount:
-            amount = int(amount)
-            stories = stories[:amount]
-        return stories
+        if reel != None:
+            for item in reel.get("items", []):
+                stories.append(extract_story_v1(item))
+            if amount:
+                amount = int(amount)
+                stories = stories[:amount]
+            return stories
+        else:
+            return []
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
         """
