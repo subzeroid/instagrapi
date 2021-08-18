@@ -251,7 +251,7 @@ class PrivateRequestMixin:
                     api_url, data=data, params=params
                 )
             else:  # GET
-                self.private.headers.pop('Content-Type')
+                self.private.headers.pop('Content-Type', None)
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text
