@@ -285,11 +285,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
-        self.set_user_agent(self.settings.get("user_agent"))
-        self.set_uuids(self.settings.get("uuids", {}))
         self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        self.set_user_agent(self.settings.get("user_agent"))
+        self.set_uuids(self.settings.get("uuids", {}))
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
