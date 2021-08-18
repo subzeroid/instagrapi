@@ -188,19 +188,13 @@ class StoryMixin:
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
         }
         user_id = int(user_id)
-        reel = self.private_request(f"feed/user/{user_id}/story/", params=params)[
-            "reel"
-        ]
+        reel = self.private_request(f"feed/user/{user_id}/story/", params=params).get("reel") or {}
         stories = []
-        if reel != None:
-            for item in reel.get("items", []):
-                stories.append(extract_story_v1(item))
-            if amount:
-                amount = int(amount)
-                stories = stories[:amount]
-            return stories
-        else:
-            return []
+        for item in reel.get("items", []):
+            stories.append(extract_story_v1(item))
+        if amount:
+            stories = stories[:int(amount)]
+        return stories
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
         """

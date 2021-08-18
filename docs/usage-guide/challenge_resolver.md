@@ -4,7 +4,7 @@ You can automatically process the codes sent to you to solve the challenge from 
 
 You need to declare `challenge_code_handler` which will return the code received from Instagram via Email or SMS:
 
-```
+``` python
 def challenge_code_handler(username, choice):
     if choice == 0:
         return get_code_from_sms(username)
@@ -19,7 +19,7 @@ cl.login(IG_USERNAME, IG_PASSWORD)
 
 For example, you can get the code through the IMAP of Gmail:
 
-```
+``` python
 def get_code_from_email(username):
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
     mail.login(CHALLENGE_EMAIL, CHALLENGE_PASSWORD)
