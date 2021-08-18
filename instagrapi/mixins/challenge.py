@@ -65,12 +65,7 @@ class ChallengeResolveMixin:
             # not enough values to unpack (expected 2, got 1)
             params = {}
         try:
-            self._send_private_request(
-                challenge_url[1:],
-                None,
-                params=params,
-                with_signature=False,
-            )
+            self._send_private_request(challenge_url[1:], params=params)
         except ChallengeRequired:
             assert self.last_json["message"] == "challenge_required", self.last_json
             return self.challenge_resolve_contact_form(challenge_url)

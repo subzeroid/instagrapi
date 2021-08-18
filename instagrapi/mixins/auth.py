@@ -289,7 +289,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
-        self.mid = self.cookie_dict.get("mid", f'X--{gen_token(25)}')
+        self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -508,6 +508,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "request_id": self.request_id,
                 "tray_session_id": self.tray_session_id,
             },
+            "mid": self.mid,
             "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,

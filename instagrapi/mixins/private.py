@@ -99,6 +99,11 @@ class PrivateRequestMixin:
     @property
     def base_headers(self):
         locale = self.locale.replace("-", "_")
+        accept_language = ['en-US']
+        if locale:
+            lang = locale.replace("_", "-")
+            if lang not in accept_language:
+                accept_language.insert(0, lang)
         headers = {
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
@@ -128,7 +133,7 @@ class PrivateRequestMixin:
             "X-IG-App-ID": "567067343352427",
             "Priority": "u=3",
             "User-Agent": self.user_agent,
-            "Accept-Language": locale.replace("_", "-"),
+            "Accept-Language": ', '.join(accept_language),
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
             "Host": config.API_DOMAIN,
@@ -228,7 +233,7 @@ class PrivateRequestMixin:
         if not login:
             time.sleep(self.request_timeout)
         if self.user_id and login:
-            raise Exception(f"User already login ({self.user_id})")
+            raise Exception(f"User already logged ({self.user_id})")
         try:
             if not endpoint.startswith('/'):
                 endpoint = f"/v1/{endpoint}"
@@ -251,6 +256,9 @@ class PrivateRequestMixin:
             self.logger.debug(
                 "private_request %s: %s (%s)", response.status_code, response.url, response.text
             )
+            mid = response.headers.get("ig-set-x-mid")
+            if mid:
+                self.mid = mid
             self.request_log(response)
             self.last_response = response
             response.raise_for_status()
