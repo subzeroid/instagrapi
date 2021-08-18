@@ -372,6 +372,7 @@ class ChallengeResolveMixin:
                 'status': 'ok'}
                 """
                 steps = self.last_json["step_data"].keys()
+                challenge_url = challenge_url[1:]
                 if "email" in steps:
                     self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
                 elif "phone_number" in steps:
