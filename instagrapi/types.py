@@ -301,3 +301,18 @@ class DirectThread(BaseModel):
             if k != user_id
         ]
         return not any(timestamps)
+
+
+class Relationship(BaseModel):
+    blocking: bool
+    followed_by: bool
+    following: bool
+    incoming_request: bool
+    is_bestie: bool
+    is_blocking_reel: bool
+    is_muting_reel: bool
+    is_private: bool
+    is_restricted: bool
+    muting: bool
+    outgoing_request: bool
+    status: str
