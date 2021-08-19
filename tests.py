@@ -174,8 +174,11 @@ class ClientTestCase(unittest.TestCase):
                 "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
                 "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
                 "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
-                "device_id": "android-e021b636049dc0e9"
+                "android_device_id": "android-e021b636049dc0e9",
+                "request_id": "72d0f808-b5cd-40e2-910b-01ae7ae60a5b",
+                "tray_session_id": "bc44ef1d-c083-4ecd-b369-6f4a9e1a077c",
             },
+            "mid": "YA1YMAACAAGtxxnZ1p4AYc8ufNMn",
             "device_settings": {
                 "cpu": "h1",
                 "dpi": "640dpi",
@@ -189,12 +192,86 @@ class ClientTestCase(unittest.TestCase):
                 "android_version": 23
             },
             # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
-            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)",
+            "country": "RU",
+            "locale": "ru_RU",
+            "timezone_offset": 10800,  # Moscow, GMT+3
         }
         api = Client(settings)
         api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
         self.assertIsInstance(api.user_id, int)
         self.assertEqual(api.username, ACCOUNT_USERNAME)
+
+    def test_country_locale_timezone(self):
+        cl = Client()
+        # defaults:
+        self.assertEqual(cl.country, "US")
+        self.assertEqual(cl.locale, "en_US")
+        self.assertEqual(cl.timezone_offset, -14400)
+        settings = {
+            "uuids": {
+                "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
+                "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
+                "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
+                "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
+                "android_device_id": "android-e021b636049dc0e9",
+                "request_id": "72d0f808-b5cd-40e2-910b-01ae7ae60a5b",
+                "tray_session_id": "bc44ef1d-c083-4ecd-b369-6f4a9e1a077c",
+            },
+            "mid": "YA1YMAACAAGtxxnZ1p4AYc8ufNMn",
+            "device_settings": {
+                "app_version": "194.0.0.36.172",
+                "android_version": 26,
+                "android_release": "8.0.0",
+                "dpi": "480dpi",
+                "resolution": "1080x1920",
+                "manufacturer": "Xiaomi",
+                "device": "MI 5s",
+                "model": "capricorn",
+                "cpu": "qcom",
+                "version_code": "301484483"
+            },
+            "user_agent": "Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)",
+            "country": "UK",
+            "locale": "en_US",
+            "timezone_offset": 3600,  # London, GMT+1
+        }
+        device = {
+            "app_version": "165.1.0.20.119",
+            "android_version": 27,
+            "android_release": "8.1.0",
+            "dpi": "480dpi",
+            "resolution": "1080x1776",
+            "manufacturer": "motorola",
+            "device": "Moto G (5S)",
+            "model": "montana",
+            "cpu": "qcom",
+            "version_code": "253447809",
+        }
+        # change settings
+        cl.set_settings(settings)
+
+        def check(country, locale, timezone_offset):
+            self.assertDictEqual(cl.get_settings()["uuids"], settings["uuids"])
+            self.assertEqual(cl.country, country)
+            self.assertEqual(cl.locale, locale)
+            self.assertEqual(cl.timezone_offset, timezone_offset)
+            self.assertIn(cl.locale, cl.user_agent)
+
+        cl.set_country("AU")  # change only country
+        check("AU", "en_US", 3600)
+        cl.set_locale("ru_RU")  # locale change country
+        check("RU", "ru_RU", 3600)
+        cl.set_timezone_offset(10800)  # change timezone_offset
+        check("RU", "ru_RU", 10800)
+        cl.set_user_agent("TEST")  # change user-agent
+        self.assertEqual(cl.get_settings()["user_agent"], "TEST")
+        cl.set_device(device)  # change device
+        self.assertDictEqual(cl.get_settings()["device_settings"], device)
+        cl.set_settings(settings)  # load source settings
+        check("UK", "en_US", 3600)
+        self.assertEqual(cl.get_settings()["user_agent"], settings["user_agent"])
+        self.assertEqual(cl.get_settings()["device_settings"], settings["device_settings"])
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):

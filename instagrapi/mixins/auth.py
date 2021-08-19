@@ -283,13 +283,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         self.authorization_data = self.settings.get('authorization_data', {})
         self.last_login = self.settings.get("last_login")
-        self.set_timezone_offset(self.settings.get("timezone_offset_offset", self.timezone_offset))
+        self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
         self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
-        self.set_country(self.settings.get("country", self.country))
         self.set_locale(self.settings.get("locale", self.locale))
+        self.set_country(self.settings.get("country", self.country))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         return True
 
@@ -568,7 +568,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             json.dump(self.get_settings(), fp)
         return True
 
-    def set_device(self, device: Dict = None) -> bool:
+    def set_device(self, device: Dict = None, reset: bool = False) -> bool:
         """
         Helper to set a device for login
 
@@ -595,11 +595,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "version_code": "301484483",
         }
         # self.settings["device_settings"] = self.device_settings
-        self.set_uuids({})
-        self.settings = self.get_settings()
+        if reset:
+            self.set_uuids({})
+            # self.settings = self.get_settings()
         return True
 
-    def set_user_agent(self, user_agent: str = "") -> bool:
+    def set_user_agent(self, user_agent: str = "", reset: bool = False) -> bool:
         """
         Helper to set user agent
 
@@ -615,10 +616,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         data = dict(self.device_settings, locale=self.locale)
         self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
-        self.private.headers.update({"User-Agent": self.user_agent})
+        # self.private.headers.update({"User-Agent": self.user_agent})  # changed in base_headers
         # self.settings["user_agent"] = self.user_agent
-        self.set_uuids({})
-        self.settings = self.get_settings()
+        if reset:
+            self.set_uuids({})
+            # self.settings = self.get_settings()
         return True
 
     def set_uuids(self, uuids: Dict = None) -> bool:
