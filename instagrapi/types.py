@@ -79,7 +79,13 @@ class Usertag(BaseModel):
 class Location(BaseModel):
     pk: Optional[int]
     name: str
+    phone: Optional[str] = ""
+    website: Optional[str] = ""
+    category: Optional[str] = ""
+    hours: Optional[dict] = {}  # opening hours
     address: Optional[str] = ""
+    city: Optional[str] = ""
+    zip: Optional[str] = ""
     lng: Optional[float]
     lat: Optional[float]
     external_id: Optional[int]

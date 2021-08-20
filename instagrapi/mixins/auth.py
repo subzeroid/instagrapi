@@ -711,6 +711,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         return dict(self.with_default_data({"radio_type": "wifi-none"}), **data)
 
+
     def gen_user_breadcrumb(self, size: int) -> str:
         """
         Helper to generate user breadcrumbs

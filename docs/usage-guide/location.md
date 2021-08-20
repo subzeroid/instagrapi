@@ -123,3 +123,18 @@ Example:
  'title': '',
  'resources': []}
 ```
+
+Low level methods:
+
+| Method                                         | Return  | Description
+| ---------------------------------------------- | ------- | --------------------------------------------
+| location_info_a1(location_pk: int) | Location | Get a location using location pk (Public Web API)
+| location_info_v1(location_pk: int) | Location | Get a location using location pk (Private Mobile API)
+| location_medias_a1_chunk(location_pk: int, max_amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts\|edge_location_to_media", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor (Public Web API)
+| location_medias_a1(location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts\|edge_location_to_media") | List[Media] | Get medias for a location (Public Web API)
+| location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: str = "ranked\|recent", max_id: str = None) | Tuple[List[Media], str] Get chunk of medias for a location and max_id (cursor) by Private Mobile API
+| location_medias_v1(location_pk: int, amount: int = 63, tab_key: str = "ranked\|recent") | List[Media] | Get medias for a location (Private Mobile API)
+| location_medias_top_a1(location_pk: int, amount: int = 9, sleep: float = 0.5) | List[Media] | Get top medias for a location (Public Web API)
+| location_medias_top_v1(location_pk: int, amount: int = 21) | List[Media] | Get top medias for a location (Private Mobile API)
+| location_medias_recent_a1(location_pk: int, amount: int = 24, sleep: float = 0.5) | List[Media] | Get recent medias for a location (Public Web API)
+| location_medias_recent_v1(location_pk: int, amount: int = 63) | List[Media] | Get recent medias for a location (Private Mobile API)

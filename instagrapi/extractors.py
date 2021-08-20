@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 
 from .types import (
@@ -177,15 +178,20 @@ def extract_location(data):
     """Extract location info"""
     if not data:
         return None
-    data["pk"] = data.get("id", data.get("pk", None))
+    data["pk"] = data.get("id", data.get("pk", data.get("location_id", None)))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(
         "external_id_source", data.get("external_source")
     )
-    # address_json = data.get("address_json", "{}")
-    # if isinstance(address_json, str):
-    #     address_json = json.loads(address_json)
-    # data['address_json'] = address_json
+    data["address"] = data.get("address", data.get("location_address"))
+    data["city"] = data.get("city", data.get("location_city"))
+    data["zip"] = data.get("zip", data.get("location_zip"))
+    address_json = data.get("address_json", "{}")
+    if isinstance(address_json, str):
+        address = json.loads(address_json)
+        data["address"] = address.get("street_address")
+        data["city"] = address.get("city_name")
+        data["zip"] = address.get("zip_code")
     return Location(**data)
 
 
