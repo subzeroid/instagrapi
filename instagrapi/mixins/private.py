@@ -237,8 +237,8 @@ class PrivateRequestMixin:
             self.private.headers.update(headers)
         if not login:
             time.sleep(self.request_timeout)
-        if self.user_id and login:
-            raise Exception(f"User already logged ({self.user_id})")
+        # if self.user_id and login:
+        #     raise Exception(f"User already logged ({self.user_id})")
         try:
             if not endpoint.startswith('/'):
                 endpoint = f"/v1/{endpoint}"

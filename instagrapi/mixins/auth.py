@@ -357,7 +357,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         # if self.user_id and self.last_login:
         #     if time.time() - self.last_login < 60 * 60 * 24:
         #        return True  # already login
-        if self.user_id:
+        if self.user_id and not relogin:
             return True  # already login
         try:
             self.pre_login_flow()

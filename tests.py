@@ -1320,7 +1320,8 @@ class ClientStoryTestCase(ClientPrivateTestCase):
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
         finally:
-            cleanup(path)
+            if path:
+                cleanup(path)
             self.assertTrue(self.api.story_delete(story.id))
 
     def test_upload_video_story(self):
