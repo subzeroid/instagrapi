@@ -6,6 +6,7 @@
 * [`Resource`](media.md) - Part of Media (for albums)
 * [`MediaOembed`](media.md) - Short version of Media
 * [`Account`](account.md) - Full private info for your account (e.g. email, phone_number)
+* [`TOTP`](totp.md) - 2FA TOTP helpers (generate seed, enable/disable TOTP, generate code as Google Authenticator)
 * [`User`](user.md) - Full public user data
 * [`UserShort`](user.md) - Short public user data (used in Usertag, Comment, Media, Direct)
 * [`Usertag`](user.md) - Tag user in Media (coordinates + UserShort)

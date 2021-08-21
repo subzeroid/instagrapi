@@ -96,6 +96,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Resource`](usage-guide/media.md) - Part of Media (for albums)
   * [`MediaOembed`](usage-guide/media.md) - Short version of Media
   * [`Account`](usage-guide/account.md) - Full private info for your account (e.g. email, phone_number)
+  * [`TOTP`](usage-guide/totp.md) - 2FA TOTP helpers (generate seed, enable/disable TOTP, generate code as Google Authenticator)
   * [`User`](usage-guide/user.md) - Full public user data
   * [`UserShort`](usage-guide/user.md) - Short public user data (used in Usertag, Comment, Media, Direct Message)
   * [`Usertag`](usage-guide/user.md) - Tag user in Media (coordinates + UserShort)

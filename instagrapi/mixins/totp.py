@@ -79,7 +79,7 @@ class TOTPMixin:
         Returns
         -------
         str
-            TOTP seed (token, secret key)
+            TOTP seed (also known as "token" and "secret key")
         """
         result = self.private_request(
             "accounts/generate_two_factor_totp_key/",
@@ -123,7 +123,7 @@ class TOTPMixin:
 
     def totp_generate_code(self, seed: str) -> str:
         """
-        Disable TOTP 2FA
+        Generate 2FA TOTP code
 
         Parameters
         ----------
