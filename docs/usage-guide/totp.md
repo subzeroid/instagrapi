@@ -20,6 +20,12 @@ Example:
 >>> seed = cl.totp_generate_seed()
 "67EIYPWCIJDTTVX632NEODKEU2PY5BIW"
 
->>> code = c.totp_generate_code(seed)
+>>> code = cl.totp_generate_code(seed)
 "123456"
+
+>>> cl.totp_enable(code)
+["1234 5678", "1234 5678", "1234 5678", "1234 5678", "1234 5678"]
+
+>>> cl.totp_disable()
+True
 ```
