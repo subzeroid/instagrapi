@@ -57,6 +57,31 @@ class AccountMixin:
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
 
+    def account_security_info(self) -> dict:
+        """
+        Fetch your account security info
+
+        Returns
+        -------
+        dict
+            Contains useful information on security settings: {
+            "is_phone_confirmed": true,
+            "is_two_factor_enabled": false,
+            "is_totp_two_factor_enabled": true,
+            "is_trusted_notifications_enabled": true,
+            "is_eligible_for_whatsapp_two_factor": true,
+            "is_whatsapp_two_factor_enabled": false,
+            "backup_codes": [...],
+            "trusted_devices": [],
+            "has_reachable_email": true,
+            "eligible_for_trusted_notifications": true,
+            "is_eligible_for_multiple_totp": false,
+            "totp_seeds": [],
+            "can_add_additional_totp_seed": false
+            }
+        """
+        return self.private_request("accounts/account_security_info/", self.with_default_data({}))
+
     def account_edit(self, **data: Dict) -> Account:
         """
         Edit your profile (authorized account)
