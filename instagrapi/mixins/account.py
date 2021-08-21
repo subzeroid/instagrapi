@@ -162,7 +162,8 @@ class AccountMixin:
         return extract_user_short(result["user"])
 
     def news_inbox_v1(self, mark_as_seen: bool = False) -> dict:
-        """Get old and new stories as is
+        """
+        Get old and new stories as is
 
         Parameters
         ----------

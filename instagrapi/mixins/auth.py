@@ -334,12 +334,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         ----------
         username: str
             Instagram Username
-
         password: str
             Instagram Password
-
         relogin: bool
             Whether or not to re login, default False
+        verification_code: str
+            2FA verification code
 
         Returns
         -------

@@ -1447,6 +1447,15 @@ class ClientStoryTestCase(ClientPrivateTestCase):
 #         }
 #        self.assertTrue(self.api.bloks_change_password("2r9j20r9j4230t8hj39tHW4"))
 
+class TOTPTestCase(ClientPrivateTestCase):
+
+    def test_totp_code(self):
+        seed = self.api.totp_generate_seed()
+        code = self.api.totp_generate_code(seed)
+        self.assertIsInstance(code, str)
+        self.assertTrue(code.isdigit())
+        self.assertEqual(len(code), 6)
+
 
 if __name__ == '__main__':
     unittest.main()
