@@ -102,7 +102,7 @@ class TOTPMixin:
             Backup codes
         """
         result = self.private_request(
-            "accounts/enable_totp_two_factor",
+            "accounts/enable_totp_two_factor/",
             data=self.with_default_data({'verification_code': verification_code})
         )
         return result["backup_codes"]
@@ -116,7 +116,7 @@ class TOTPMixin:
         bool
         """
         result = self.private_request(
-            "accounts/disable_totp_two_factor",
+            "accounts/disable_totp_two_factor/",
             data=self.with_default_data({})
         )
         return result["status"] == "ok"
