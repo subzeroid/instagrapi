@@ -283,7 +283,33 @@ class UserMixin:
             self._users_cache[user_id]
         )  # return copy of cache (dict changes protection)
 
+    def new_feed_exist(self) -> bool:
+        """
+        Returns bool
+        -------
+        Check if new feed exist
+        -------
+        True if new feed exist ,
+        After Login or load Settings always return False
+        """
+        results = self.private_request(f"feed/new_feed_posts_exist/")
+        return results.get("new_feed_posts_exist", False)
+
     def user_friendship_v1(self, user_id: int) -> Relationship:
+        """
+        Get user friendship status
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+
+        Returns
+        -------
+        Relationship
+            An object of Relationship type
+        """
+
         try:
             results = self.private_request(f"friendships/show/{user_id}/")
             return Relationship(**results)
@@ -292,12 +318,42 @@ class UserMixin:
             return None
 
     def search_followers_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search users by query
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query to search
+
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
         results = self.private_request(
             f"friendships/{user_id}/followers/?search_surface=follow_list_page&query={query}&enable_groups=true")
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
 
     def search_following_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search users by query
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query to search
+
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
         results = self.private_request(
             f"friendships/{user_id}/following/?includes_hashtags=false&search_surface=follow_list_page&query={query}&enable_groups=true")
         users = results.get("users", [])
