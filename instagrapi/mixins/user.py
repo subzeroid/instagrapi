@@ -380,7 +380,7 @@ class UserMixin:
         List[UserShort]
             List of User short object
         """
-        return search_following_v1(user_id, query)
+        return self.search_following_v1(user_id, query)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
