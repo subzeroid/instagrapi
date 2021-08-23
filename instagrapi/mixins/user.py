@@ -292,16 +292,95 @@ class UserMixin:
             return None
 
     def search_followers_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by followers (Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
         results = self.private_request(
-            f"friendships/{user_id}/followers/?search_surface=follow_list_page&query={query}&enable_groups=true")
+            f"friendships/{user_id}/followers/",
+            params={
+                "search_surface": "follow_list_page",
+                "query": query,
+                "enable_groups": "true"
+            }
+        )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
 
+    def search_followers(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by followers
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return self.search_followers_v1(user_id, query)
+
     def search_following_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by following (Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
         results = self.private_request(
-            f"friendships/{user_id}/following/?includes_hashtags=false&search_surface=follow_list_page&query={query}&enable_groups=true")
+            f"friendships/{user_id}/following/",
+            params={
+                "includes_hashtags": "false",
+                "search_surface": "follow_list_page",
+                "query": query,
+                "enable_groups": "true"
+            }
+        )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
+
+    def search_following(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by following
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return search_following_v1(user_id, query)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
