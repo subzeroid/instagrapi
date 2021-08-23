@@ -291,6 +291,18 @@ class UserMixin:
             self.logger.exception(e)
             return None
 
+    def search_followers_v1(self, user_id: int, query: str) -> List[UserShort]:
+        results = self.private_request(
+            f"friendships/{user_id}/followers/?search_surface=follow_list_page&query={query}&enable_groups=true")
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+
+    def search_following_v1(self, user_id: int, query: str) -> List[UserShort]:
+        results = self.private_request(
+            f"friendships/{user_id}/following/?includes_hashtags=false&search_surface=follow_list_page&query={query}&enable_groups=true")
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """
         Get user's following information by Public Graphql API
