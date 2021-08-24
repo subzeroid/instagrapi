@@ -31,6 +31,10 @@ from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
 from instagrapi.mixins.signup import SignUpMixin
 
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class Client(
     PublicRequestMixin,
