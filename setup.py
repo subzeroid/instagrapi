@@ -5,11 +5,11 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Use the most recent version of the API from Instagram.
 
-### Features
+Features:
 
 1. Performs Public API (web, anonymous) or Private API (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
 2. Challenge Resolver have Email (as well as recipes for automating receive a code from email) and SMS handlers
-3. Support upload a Photo, Video, IGTV, Albums and Stories
+3. Support upload a Photo, Video, IGTV, Clips (Reels), Albums and Stories
 4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
 5. Like, Follow, Edit account (Bio) and much more else
 6. Insights by account, posts and stories
@@ -18,7 +18,7 @@ Use the most recent version of the API from Instagram.
 '''
 
 requirements = [
-    'requests==2.25.1',
+    'requests<3.0,>=2.25.1',
     'PySocks==1.7.1',
     'pydantic==1.8.2',
     'pycryptodomex==3.9.9'
@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.8.3',
+    version='1.12.3',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',

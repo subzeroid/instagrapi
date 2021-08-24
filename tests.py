@@ -3,11 +3,12 @@ import os
 import os.path
 import random
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from instagrapi import Client
+from instagrapi.exceptions import DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -20,18 +21,17 @@ from instagrapi.types import (
     Media,
     MediaOembed,
     Story,
+    StoryHashtag,
     StoryLink,
     StoryLocation,
     StoryMention,
-    StoryHashtag,
     StorySticker,
     User,
     UserShort,
-    Usertag
+    Usertag,
 )
-from instagrapi.zones import UTC
 from instagrapi.utils import generate_jazoest
-from instagrapi.exceptions import DirectThreadNotFound
+from instagrapi.zones import UTC
 
 ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
 ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
@@ -56,6 +56,11 @@ def cleanup(*paths):
             os.remove(f'{path}.jpg')
         except FileNotFoundError:
             continue
+
+
+def keep_path(user):
+    user.profile_pic_url = user.profile_pic_url.path
+    return user
 
 
 class BaseClientMixin:
@@ -91,21 +96,26 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
     def __init__(self, *args, **kwargs):
         filename = f'/tmp/instagrapi_tests_client_settings_{ACCOUNT_USERNAME}.json'
         self.api = Client()
+        settings = {}
         try:
-            settings = self.api.load_settings(filename)
+            st = os.stat(filename)
+            if datetime.fromtimestamp(st.st_mtime) > (datetime.now() - timedelta(seconds=300)):
+                # use only fresh session (5 minutes)
+                settings = self.api.load_settings(filename)
         except FileNotFoundError:
-            settings = {}
+            pass
         except JSONDecodeError as e:
             print('JSONDecodeError when read stored client settings. Use empty settings')
             print(str(e))
-            settings = {}
         self.api.set_settings(settings)
+        # self.api.set_locale('ru_RU')
+        # self.api.set_timezone_offset(10800)
         self.api.request_timeout = 1
         self.set_proxy_if_exists()
         if ACCOUNT_SESSIONID:
             self.api.login_by_sessionid(ACCOUNT_SESSIONID)
         else:
-            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+            self.api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD, relogin=True)
         self.api.dump_settings(filename)
         super().__init__(*args, **kwargs)
 
@@ -169,8 +179,11 @@ class ClientTestCase(unittest.TestCase):
                 "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
                 "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
                 "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
-                "device_id": "android-e021b636049dc0e9"
+                "android_device_id": "android-e021b636049dc0e9",
+                "request_id": "72d0f808-b5cd-40e2-910b-01ae7ae60a5b",
+                "tray_session_id": "bc44ef1d-c083-4ecd-b369-6f4a9e1a077c",
             },
+            "mid": "YA1YMAACAAGtxxnZ1p4AYc8ufNMn",
             "device_settings": {
                 "cpu": "h1",
                 "dpi": "640dpi",
@@ -184,12 +197,86 @@ class ClientTestCase(unittest.TestCase):
                 "android_version": 23
             },
             # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
-            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)"
+            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)",
+            "country": "RU",
+            "locale": "ru_RU",
+            "timezone_offset": 10800,  # Moscow, GMT+3
         }
         api = Client(settings)
         api.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
         self.assertIsInstance(api.user_id, int)
         self.assertEqual(api.username, ACCOUNT_USERNAME)
+
+    def test_country_locale_timezone(self):
+        cl = Client()
+        # defaults:
+        self.assertEqual(cl.country, "US")
+        self.assertEqual(cl.locale, "en_US")
+        self.assertEqual(cl.timezone_offset, -14400)
+        settings = {
+            "uuids": {
+                "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
+                "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
+                "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
+                "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
+                "android_device_id": "android-e021b636049dc0e9",
+                "request_id": "72d0f808-b5cd-40e2-910b-01ae7ae60a5b",
+                "tray_session_id": "bc44ef1d-c083-4ecd-b369-6f4a9e1a077c",
+            },
+            "mid": "YA1YMAACAAGtxxnZ1p4AYc8ufNMn",
+            "device_settings": {
+                "app_version": "194.0.0.36.172",
+                "android_version": 26,
+                "android_release": "8.0.0",
+                "dpi": "480dpi",
+                "resolution": "1080x1920",
+                "manufacturer": "Xiaomi",
+                "device": "MI 5s",
+                "model": "capricorn",
+                "cpu": "qcom",
+                "version_code": "301484483"
+            },
+            "user_agent": "Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)",
+            "country": "UK",
+            "locale": "en_US",
+            "timezone_offset": 3600,  # London, GMT+1
+        }
+        device = {
+            "app_version": "165.1.0.20.119",
+            "android_version": 27,
+            "android_release": "8.1.0",
+            "dpi": "480dpi",
+            "resolution": "1080x1776",
+            "manufacturer": "motorola",
+            "device": "Moto G (5S)",
+            "model": "montana",
+            "cpu": "qcom",
+            "version_code": "253447809",
+        }
+        # change settings
+        cl.set_settings(settings)
+
+        def check(country, locale, timezone_offset):
+            self.assertDictEqual(cl.get_settings()["uuids"], settings["uuids"])
+            self.assertEqual(cl.country, country)
+            self.assertEqual(cl.locale, locale)
+            self.assertEqual(cl.timezone_offset, timezone_offset)
+            self.assertIn(cl.locale, cl.user_agent)
+
+        cl.set_country("AU")  # change only country
+        check("AU", "en_US", 3600)
+        cl.set_locale("ru_RU")  # locale change country
+        check("RU", "ru_RU", 3600)
+        cl.set_timezone_offset(10800)  # change timezone_offset
+        check("RU", "ru_RU", 10800)
+        cl.set_user_agent("TEST")  # change user-agent
+        self.assertEqual(cl.get_settings()["user_agent"], "TEST")
+        cl.set_device(device)  # change device
+        self.assertDictEqual(cl.get_settings()["device_settings"], device)
+        cl.set_settings(settings)  # load source settings
+        check("UK", "en_US", 3600)
+        self.assertEqual(cl.get_settings()["user_agent"], settings["user_agent"])
+        self.assertEqual(cl.get_settings()["device_settings"], settings["device_settings"])
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):
@@ -480,13 +567,19 @@ class ClientMediaTestCase(ClientPrivateTestCase):
 
 class ClientCommentTestCase(ClientPrivateTestCase):
 
+    def test_media_comments_amount(self):
+        comments = self.api.media_comments(2154602296692269830, amount=2)
+        self.assertTrue(len(comments) == 2)
+        comments = self.api.media_comments(2154602296692269830, amount=0)
+        self.assertTrue(len(comments) > 2)
+
     def test_media_comments(self):
         comments = self.api.media_comments(2154602296692269830)
         self.assertTrue(len(comments) > 5)
         comment = comments[0]
         self.assertIsInstance(comment, Comment)
-        comment_fields = comment.fields.keys()
-        user_fields = comment.user.fields.keys()
+        comment_fields = comment.__fields__.keys()
+        user_fields = comment.user.__fields__.keys()
         for field in [
             "pk",
             "text",
@@ -841,19 +934,20 @@ class ClienUploadTestCase(ClientPrivateTestCase):
         [self.assertIsInstance(path, Path) for path in paths]
         try:
             adw0rd = self.api.user_info_by_username('adw0rd')
+            usertag = Usertag(user=adw0rd, x=0.5, y=0.5)
             location = self.get_location()
             media = self.api.album_upload(
                 paths, "Test caption for album",
-                usertags=[Usertag(user=adw0rd, x=0.5, y=0.5)],
+                usertags=[usertag],
                 location=location
             )
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, "Test caption for album")
             self.assertEqual(len(media.resources), 3)
             self.assertLocation(media.location)
-            self.assertEqual(
-                media.usertags, [Usertag(user=adw0rd, x=0.5, y=0.5)]
-            )
+            keep_path(media.usertags[0].user)
+            keep_path(usertag.user)
+            self.assertEqual(media.usertags, [usertag])
         finally:
             cleanup(*paths)
             self.assertTrue(self.api.media_delete(media.id))
@@ -879,25 +973,22 @@ class ClienUploadTestCase(ClientPrivateTestCase):
             cleanup(path)
             self.assertTrue(self.api.media_delete(media.id))
 
-    def test_reel_upload(self):
+    def test_clip_upload(self):
         # media_type: 2 (video, not IGTV)
         # product_type: clips
-        media_pk = self.api.media_pk_from_url(
-            "https://www.instagram.com/p/CEjXskWJ1on/"
-        )
-        path = self.api.igtv_download(media_pk)
+        media_pk = self.api.media_pk_from_url("https://www.instagram.com/p/CEjXskWJ1on/")
+        path = self.api.clip_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
-            title = "Test title"
-            caption_text = "Upload reel/clips as IGTV instead video"
-            media = self.api.igtv_upload(
-                path, title, caption_text,
-                location=self.get_location()
+            # location = self.get_location()
+            caption_text = "Upload clip"
+            media = self.api.clip_upload(
+                path, caption_text,
+                # location=location
             )
             self.assertIsInstance(media, Media)
-            self.assertEqual(media.title, title)
             self.assertEqual(media.caption_text, caption_text)
-            self.assertLocation(media.location)
+            # self.assertLocation(media.location)
         finally:
             cleanup(path)
             self.assertTrue(self.api.media_delete(media.id))
@@ -1229,7 +1320,8 @@ class ClientStoryTestCase(ClientPrivateTestCase):
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
         finally:
-            cleanup(path)
+            if path:
+                cleanup(path)
             self.assertTrue(self.api.story_delete(story.id))
 
     def test_upload_video_story(self):
@@ -1338,6 +1430,31 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         story = self.api.story_info(stories[0].id)
         self.assertIsInstance(story, Story)
         self.assertTrue(self.api.story_seen([story.pk]))
+
+
+# class BloksTestCase(ClientPrivateTestCase):
+#
+#     def test_bloks_change_password(self):
+#         last_json = {
+#             'step_name': 'change_password',
+#             'step_data': {'new_password1': 'None', 'new_password2': 'None'},
+#             'flow_render_type': 3,
+#             'bloks_action': 'com.instagram.challenge.navigation.take_challenge',
+#             'cni': 12346879508000123,
+#             'challenge_context': '{"step_name": "change_password", "cni": 12346879508000123, "is_stateless": false, "challenge_type_enum": "PASSWORD_RESET"}',
+#             'challenge_type_enum_str': 'PASSWORD_RESET',
+#             'status': 'ok'
+#         }
+#        self.assertTrue(self.api.bloks_change_password("2r9j20r9j4230t8hj39tHW4"))
+
+class TOTPTestCase(ClientPrivateTestCase):
+
+    def test_totp_code(self):
+        seed = self.api.totp_generate_seed()
+        code = self.api.totp_generate_code(seed)
+        self.assertIsInstance(code, str)
+        self.assertTrue(code.isdigit())
+        self.assertEqual(len(code), 6)
 
 
 if __name__ == '__main__':

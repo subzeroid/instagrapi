@@ -27,7 +27,7 @@ from instagrapi.types import (
     StorySticker,
     Usertag,
 )
-from instagrapi.utils import dumps
+from instagrapi.utils import date_time_original, dumps
 
 try:
     from PIL import Image
@@ -255,8 +255,16 @@ class UploadPhotoMixin:
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
         data = {
-            "timezone_offset": "10800",
+            "timezone_offset": str(self.timezone_offset),
+            "camera_model": self.device.get("model", ""),
+            "camera_make": self.device.get("manufacturer", ""),
+            "scene_type": "?",
+            "nav_chain": "8rL:self_profile:4,ProfileMediaTabFragment:self_profile:5,UniversalCreationMenuFragment:universal_creation_menu:7,ProfileMediaTabFragment:self_profile:8,MediaCaptureFragment:tabbed_gallery_camera:9,Dd3:photo_filter:10,FollowersShareFragment:metadata_followers_share:11",
+            "date_time_original": date_time_original(time.localtime()),
+            "date_time_digitalized": date_time_original(time.localtime()),
             "creation_logger_session_id": self.client_session_id,
+            "scene_capture_type": "standard",
+            "software": config.SOFTWARE.format(**self.device_settings),
             "multi_sharing": "1",
             "location": self.location_build(location),
             "media_folder": "Camera",
@@ -277,7 +285,7 @@ class UploadPhotoMixin:
     def photo_upload_to_story(
         self,
         path: Path,
-        caption: str,
+        caption: str = "",
         upload_id: str = "",
         mentions: List[StoryMention] = [],
         locations: List[StoryLocation] = [],
@@ -392,7 +400,7 @@ class UploadPhotoMixin:
             "has_original_sound": "1",
             "camera_session_id": self.client_session_id,
             "scene_capture_type": "",
-            "timezone_offset": "10800",
+            "timezone_offset": str(self.timezone_offset),
             "client_shared_at": str(timestamp - 5),  # 5 seconds ago
             "story_sticker_ids": "",
             "media_folder": "Camera",

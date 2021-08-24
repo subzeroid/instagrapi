@@ -78,7 +78,13 @@ class Usertag(BaseModel):
 class Location(BaseModel):
     pk: Optional[int]
     name: str
+    phone: Optional[str] = ""
+    website: Optional[str] = ""
+    category: Optional[str] = ""
+    hours: Optional[dict] = {}  # opening hours
     address: Optional[str] = ""
+    city: Optional[str] = ""
+    zip: Optional[str] = ""
     lng: Optional[float]
     lat: Optional[float]
     external_id: Optional[int]
@@ -221,6 +227,14 @@ class Story(BaseModel):
     stickers: List[StorySticker]
 
 
+class DirectMedia(BaseModel):
+    id: str
+    media_type: int
+    user: Optional[UserShort]
+    thumbnail_url: Optional[HttpUrl]
+    video_url: Optional[HttpUrl]
+
+
 class DirectMessage(BaseModel):
     id: int  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
@@ -230,10 +244,12 @@ class DirectMessage(BaseModel):
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    media: Optional[DirectMedia]
     media_share: Optional[Media]
     reel_share: Optional[dict]
     story_share: Optional[dict]
     felix_share: Optional[dict]
+    clip: Optional[Media]
     placeholder: Optional[dict]
 
 
@@ -296,3 +312,18 @@ class DirectThread(BaseModel):
             if k != user_id
         ]
         return not any(timestamps)
+
+
+class Relationship(BaseModel):
+    blocking: bool
+    followed_by: bool
+    following: bool
+    incoming_request: bool
+    is_bestie: bool
+    is_blocking_reel: bool
+    is_muting_reel: bool
+    is_private: bool
+    is_restricted: bool
+    muting: bool
+    outgoing_request: bool
+    status: str

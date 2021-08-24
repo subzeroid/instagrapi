@@ -6,6 +6,7 @@
 * [`Resource`](media.md) - Part of Media (for albums)
 * [`MediaOembed`](media.md) - Short version of Media
 * [`Account`](account.md) - Full private info for your account (e.g. email, phone_number)
+* [`TOTP`](totp.md) - 2FA TOTP helpers (generate seed, enable/disable TOTP, generate code as Google Authenticator)
 * [`User`](user.md) - Full public user data
 * [`UserShort`](user.md) - Short public user data (used in Usertag, Comment, Media, Direct)
 * [`Usertag`](user.md) - Tag user in Media (coordinates + UserShort)
@@ -94,13 +95,14 @@ cl = Client(settings)
 
 ### Settings
 
+Store and manage uuids, device configuration, user agent, authorization data (aka cookies) and other session settings
+
 | Method                         | Return  | Description
 | ------------------------------ | ------- | ------------------------------------------------------------------
 | get\_settings()                | dict    | Return settings dict
 | set\_settings(settings: dict)  | bool    | Set session settings
 | load\_settings(path: Path)     | dict    | Load session settings from file
 | dump\_settings(path: Path)     | bool    | Serialize and save session settings to file
-
 
 In order for Instagram [to trust you more](https://github.com/adw0rd/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
 
@@ -116,26 +118,60 @@ Next time:
 cl = Client()
 cl.load_settings('/tmp/dump.json')
 cl.login(USERNAME, PASSWORD)
+cl.get_timeline_feed()  # check session
 ```
 
 ### Manage device, proxy and other account settings
 
-| Method                                 | Return | Description
-|----------------------------------------|------|----------------------------------------------------------------------------
-| set\_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
-| private.proxies                        | dict | Stores used proxy servers for private (mobile, v1) requests
-| public.proxies                         | dict | Stores used proxy servers for public (web, graphql) requests
-| set\_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
-| device                                 | dict | Return device dict which we pass to Instagram
-| set\_user\_agent(user\_agent: str = "")| bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
-| cookie\_dict                           | dict | Return cookies
-| user\_id                               | int  | Return your user\_id (after login)
-| base\_headers                          | dict | Base headers for Instagram
-| set\_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
-| set\_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
+| Method                                | Return | Description
+|---------------------------------------|------|----------------------------------------------------------------------------
+| set_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| private.proxies                       | dict | Stores used proxy servers for private (mobile, v1) requests
+| public.proxies                        | dict | Stores used proxy servers for public (web, graphql) requests
+| set_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| device                                | dict | Return device dict which we pass to Instagram
+| set_user_agent(user_agent: str = "")  | bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| cookie_dict                           | dict | Return cookies
+| user_id                               | int  | Return your user_id (after login)
+| base_headers                          | dict | Base headers for Instagram
+| set_country(country: str = "US")      | bool | Set country (advice: use the country of your proxy)
+| set_locale(locale: str = "en_US")     | bool | Set locale (advice: use the locale of your proxy)
+| set_timezone_offset(seconds: int)     | bool | Set timezone offset in seconds
 
-## Challenge resolving
+``` python
+cl = Client()
 
-All challenges solved in the module [challenge.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/mixins/challenge.py)
+# Los Angles user:
+cl.set_proxy('http://los:angeles@proxy.address:8080')
+cl.set_locale('en_US')
+cl.set_timezone_offset(-7 * 60 * 60)  # Los Angeles UTC (GMT) -7 hours == -25200 seconds
+cl.get_settings()
+{
+    ...
+    'user_agent': 'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)',
+    'country': 'US',
+    'locale': 'en_US',
+    'timezone_offset': -25200
+}
 
-Automatic submission code from SMS/Email in examples [here](https://github.com/adw0rd/instagrapi/blob/master/examples/challenge_resolvers.py)
+# Moscow user:
+cl.set_proxy('socks5://moscow:proxy@address:8080')
+cl.set_locale('ru_RU')
+cl.set_timezone_offset(3 * 3600)  # Moscow UTC+3
+cl.get_settings()
+{
+    ...
+    'user_agent': 'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; ru_RU; 301484483)',
+    'country': 'RU',
+    'locale': 'ru_RU',
+    'timezone_offset': 10800
+}
+```
+
+## What's Next?
+
+* [Getting Started](../getting-started.md)
+* [Usage Guide](fundamentals.md)
+* [Handle Exceptions](handle_exception.md)
+* [Challenge Resolver](challenge_resolver.md)
+* [Exceptions](../exceptions.md)

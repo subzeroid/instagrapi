@@ -63,6 +63,42 @@ class DirectMixin:
             threads = threads[:amount]
         return threads
 
+    def direct_pending_inbox(self, amount: int = 20) -> List[DirectThread]:
+        """
+        Get direct message pending threads
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 20
+
+        Returns
+        -------
+        List[DirectThread]
+            A list of objects of DirectThread
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "visual_message_return_type": "unseen",
+            "persistentBadging": "true",
+        }
+        cursor = None
+        threads = []
+        # self.private_request("direct_v2/get_presence/")
+        while True:
+            if cursor:
+                params["cursor"] = cursor
+            result = self.private_request("direct_v2/pending_inbox/", params=params)
+            inbox = result.get("inbox", {})
+            for thread in inbox.get("threads", []):
+                threads.append(extract_direct_thread(thread))
+            cursor = inbox.get("oldest_cursor")
+            if not cursor or (amount and len(threads) >= amount):
+                break
+        if amount:
+            threads = threads[:amount]
+        return threads
+
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """
         Get all the information about a Direct Message thread
@@ -149,9 +185,7 @@ class DirectMixin:
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(
-            self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Send a direct message to list of users or threads
 
@@ -371,6 +405,52 @@ class DirectMixin:
         result = self.private_request(
             "direct_v2/threads/broadcast/media_share/",
             # params={'media_type': 'video'},
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
+
+    def direct_story_share(self, story_id: str, user_ids: List[int], thread_ids: List[int]) -> DirectMessage:
+        """
+        Share a story to list of users
+
+        Parameters
+        ----------
+        story_id: str
+            Unique Story ID
+        user_ids: List[int]
+            List of unique identifier of Users id
+        thread_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        story_id = self.media_id(story_id)
+        story_pk = self.media_pk(story_id)
+        token = random.randint(6800011111111111111, 6800099999999999999)
+        data = {
+            "action": "send_item",
+            "is_shh_mode": "0",
+            "send_attribution": "reel_feed_timeline",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "reel_id": story_pk,
+            "containermodule": "reel_feed_timeline",
+            "story_media_id": story_id,
+            "offline_threading_id": token
+        }
+        if user_ids:
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        result = self.private_request(
+            "direct_v2/threads/broadcast/story_share/",
+            # params={'story_type': 'video'},
             data=self.with_default_data(data),
             with_signature=False,
         )

@@ -5,7 +5,7 @@ Post comment, viewing, like and unlike comments
 | Method                                                     | Return             | Description
 | ---------------------------------------------------------- | ------------------ | --------------------------
 | media_comment(media_id: str, message: str)                 | Comment            | Add new comment to media
-| media_comments(media_id: str)                              | List\[Comment]     | Get all comments for media
+| media_comments(media_id: str, amount: int = 0)             | List\[Comment]     | Get a list comments for media (amount=0 - fetch all comments)
 | comment_like(comment_pk: int)                              | bool               | Like a comment
 | comment_unlike(comment_pk: int)                            | bool               | Unlike a comment
 | comment_bulk_delete(media_id: str, comment_pks: List[int]) | bool               | Delete a comment

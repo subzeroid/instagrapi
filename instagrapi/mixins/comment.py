@@ -11,7 +11,7 @@ class CommentMixin:
     Helpers for managing comments on a Media
     """
 
-    def media_comments(self, media_id: str) -> List[Comment]:
+    def media_comments(self, media_id: str, amount: int = 20) -> List[Comment]:
         """
         Get comments on a media
 
@@ -19,6 +19,8 @@ class CommentMixin:
         ----------
         media_id: str
             Unique identifier of a Media
+        amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
@@ -58,6 +60,10 @@ class CommentMixin:
                 if "Media not found" in str(e):
                     raise MediaNotFound(e, media_id=media_id, **self.last_json)
                 raise e
+            if amount and len(comments) >= amount:
+                break
+        if amount:
+            comments = comments[:amount]
         return comments
 
     def media_comment(self, media_id: str, text: str) -> Comment:

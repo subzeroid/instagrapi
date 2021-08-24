@@ -7,7 +7,7 @@ import requests
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import gen_token
+from instagrapi.utils import dumps, gen_token
 
 
 class AccountMixin:
@@ -57,6 +57,31 @@ class AccountMixin:
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
 
+    def account_security_info(self) -> dict:
+        """
+        Fetch your account security info
+
+        Returns
+        -------
+        dict
+            Contains useful information on security settings: {
+            "is_phone_confirmed": true,
+            "is_two_factor_enabled": false,
+            "is_totp_two_factor_enabled": true,
+            "is_trusted_notifications_enabled": true,
+            "is_eligible_for_whatsapp_two_factor": true,
+            "is_whatsapp_two_factor_enabled": false,
+            "backup_codes": [...],
+            "trusted_devices": [],
+            "has_reachable_email": true,
+            "eligible_for_trusted_notifications": true,
+            "is_eligible_for_multiple_totp": false,
+            "totp_seeds": [],
+            "can_add_additional_totp_seed": false
+            }
+        """
+        return self.private_request("accounts/account_security_info/", self.with_default_data({}))
+
     def account_edit(self, **data: Dict) -> Account:
         """
         Edit your profile (authorized account)
@@ -87,10 +112,33 @@ class AccountMixin:
             data = dict(user_data, **data)
         # Instagram original field-name for full user name is "first_name"
         data["first_name"] = data.pop("full_name")
-        result = self.private_request(
-            "accounts/edit_profile/", self.with_default_data(data)
-        )
+        # Biography with entities (markup)
+        result = self.private_request("accounts/edit_profile/", self.with_default_data(data))
+        biography = data.get("biography")
+        if biography:
+            self.account_set_biography(biography)
         return extract_account(result["user"])
+
+    def account_set_biography(self, biography: str) -> bool:
+        """
+        Set biography with entities (markup)
+
+        Parameters
+        ----------
+        biography: str
+            Biography raw text
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "logged_in_uids": dumps([str(self.user_id)]),
+            "raw_text": biography
+        }
+        result = self.private_request("accounts/set_biography/", self.with_default_data(data))
+        return result["status"] == "ok"
 
     def account_change_picture(self, path: Path) -> UserShort:
         """
@@ -114,7 +162,8 @@ class AccountMixin:
         return extract_user_short(result["user"])
 
     def news_inbox_v1(self, mark_as_seen: bool = False) -> dict:
-        """Get old and new stories as is
+        """
+        Get old and new stories as is
 
         Parameters
         ----------
