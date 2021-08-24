@@ -10,7 +10,7 @@ from instagrapi.exceptions import (
 )
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
-from instagrapi.utils import dumps
+from instagrapi.utils import date_time_original, dumps
 
 
 class DownloadAlbumMixin:
@@ -157,9 +157,7 @@ class UploadAlbumMixin:
                         "poster_frame_index": "0",
                         "filter_type": "0",
                         "video_result": "",
-                        "date_time_original": time.strftime(
-                            "%Y%m%dT%H%M%S.000Z", time.localtime()
-                        ),
+                        "date_time_original": date_time_original(time.localtime()),
                         "audio_muted": "false",
                     }
                 )
@@ -225,7 +223,7 @@ class UploadAlbumMixin:
             ]
             childs[0]["usertags"] = dumps({"in": usertags})
         data = {
-            "timezone_offset": "10800",
+            "timezone_offset": str(self.timezone_offset),
             "source_type": "4",
             "creation_logger_session_id": self.client_session_id,
             "location": self.location_build(location),
@@ -239,7 +237,7 @@ class UploadAlbumMixin:
             "children_metadata": [
                 {
                     "source_type": "4",
-                    "timezone_offset": "10800",
+                    "timezone_offset": str(self.timezone_offset),
                     "device": dumps(self.device),
                     **child,
                 }

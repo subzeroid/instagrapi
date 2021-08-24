@@ -1,14 +1,14 @@
 # Story
 
-| Method                                                          | Return      | Description
-| --------------------------------------------------------------- | ----------- | ---------------------------------- |
-| user_stories(user_id: int, amount: int = None)                  | List[Story] | Get list of stories by user_id
-| story_info(story_pk: int, use_cache: bool = True)               | Story       | Return story info
-| story_delete(story_pk: int)                                     | bool        | Delete story
-| story_seen(story_pks: List[int], skipped_story_pks: List[int])  | bool        | Mark a story as seen
-| story_pk_from_url(url: str)                                     | int         | Get Story (media) PK from URL
-| story_download(story_pk: int)                                   | Path        | Download story media by media_type
-| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path | Download story media using URL
+| Method                                                                 | Return      | Description
+| ---------------------------------------------------------------------- | ----------- | ----------------------------------
+| user_stories(user_id: int, amount: int = None)                         | List[Story] | Get list of stories by user_id
+| story_info(story_pk: int, use_cache: bool = True)                      | Story       | Return story info
+| story_delete(story_pk: int)                                            | bool        | Delete story
+| story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool        | Mark a story as seen
+| story_pk_from_url(url: str)                                            | int         | Get Story (media) PK from URL
+| story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path        | Download story media by media_type
+| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path        | Download story media using URL
 
 ```
 >>> cl.story_download(2581281926631793076)
@@ -41,10 +41,10 @@ Common arguments:
 * `hashtags` - Add hashtags to story
 * `stickers` - Add stickers to story
 
-| Method                                                                                           | Return   | Description   |
-| ------------------------------------------------------------------------------------------------ | -------- | ------------- |
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker])  | Story  | Upload photo (Support JPG files)
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker]) | Story  | Upload video (Support MP4 files)
+| Method                               | Return   | Description
+| ------------------------------------ | -------- | -------------
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
 
 Examples:
 
@@ -85,7 +85,7 @@ If you want to format your story correctly (correct resolution, user mentions, e
 Example:
 
 ``` python
-from instagrapi.story import StoryBuilder
+from instagrapi.story import StoryBuilder, StoryMention
 
 media_path = cl.video_download(
     cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
@@ -110,5 +110,19 @@ cl.video_upload_to_story(
 Result:
 
 ![](https://raw.githubusercontent.com/adw0rd/instagrapi/master/examples/dhb.gif)
+
+Photo upload:
+
+``` python
+cl.photo_upload_to_story('/app/image.jpg')
+```
+
+Upload photo as video:
+
+``` python
+buildout = StoryBuilder('/app/image.jpg').photo()
+cl.video_upload_to_story(buildout.path)
+```
+
 
 More stories here [https://www.instagram.com/wrclive/](https://www.instagram.com/wrclive/)

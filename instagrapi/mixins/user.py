@@ -11,7 +11,7 @@ from instagrapi.exceptions import (
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import User, UserShort
+from instagrapi.types import Relationship, User, UserShort
 from instagrapi.utils import json_value
 
 
@@ -44,6 +44,7 @@ class UserMixin:
         -------
         'adw0rd' -> 1903424587
         """
+        username = str(username).lower()
         return int(self.user_info_by_username(username).pk)
 
     def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
@@ -138,6 +139,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
 
     def user_info_by_username_v1(self, username: str) -> User:
@@ -154,6 +156,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         try:
             result = self.private_request(f"users/{username}/usernameinfo/")
         except ClientNotFoundError as e:
@@ -180,6 +183,7 @@ class UserMixin:
         User
             An object of User type
         """
+        username = str(username).lower()
         if not use_cache or username not in self._usernames_cache:
             try:
                 try:
@@ -278,6 +282,131 @@ class UserMixin:
         return deepcopy(
             self._users_cache[user_id]
         )  # return copy of cache (dict changes protection)
+
+    def new_feed_exist(self) -> bool:
+        """
+        Returns bool
+        -------
+        Check if new feed exist
+        -------
+        True if new feed exist ,
+        After Login or load Settings always return False
+        """
+        results = self.private_request(f"feed/new_feed_posts_exist/")
+        return results.get("new_feed_posts_exist", False)
+
+    def user_friendship_v1(self, user_id: int) -> Relationship:
+        """
+        Get user friendship status
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+
+        Returns
+        -------
+        Relationship
+            An object of Relationship type
+        """
+
+        try:
+            results = self.private_request(f"friendships/show/{user_id}/")
+            return Relationship(**results)
+        except ClientError as e:
+            self.logger.exception(e)
+            return None
+
+    def search_followers_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search users by followers (Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query to search
+
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
+        results = self.private_request(
+            f"friendships/{user_id}/followers/",
+            params={
+                "search_surface": "follow_list_page",
+                "query": query,
+                "enable_groups": "true"
+            }
+        )
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+
+    def search_followers(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by followers
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return self.search_followers_v1(user_id, query)
+
+    def search_following_v1(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search following users (Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query to search
+
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
+        results = self.private_request(
+            f"friendships/{user_id}/following/",
+            params={
+                "includes_hashtags": "false",
+                "search_surface": "follow_list_page",
+                "query": query,
+                "enable_groups": "true"
+            }
+        )
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+
+    def search_following(self, user_id: int, query: str) -> List[UserShort]:
+        """
+        Search by following
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        query: str
+            Query string
+
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return self.search_following_v1(user_id, query)
 
     def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
         """

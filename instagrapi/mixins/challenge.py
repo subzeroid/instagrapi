@@ -1,7 +1,6 @@
 import hashlib
 import json
 import time
-from datetime import datetime
 from typing import Dict
 
 import requests
@@ -49,23 +48,24 @@ class ChallengeResolveMixin:
         challenge_url = last_json["challenge"]["api_path"]
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
+            challenge_context = last_json.get('challenge', {}).get('challenge_context')
+            if not challenge_context:
+                challenge_context = json.dumps({
+                    "step_name": "",
+                    "nonce_code": nonce_code,
+                    "user_id": int(user_id),
+                    "is_stateless": False
+                })
             params = {
                 "guid": self.uuid,
-                "device_id": self.device_id,
-                "challenge_context": json.dumps(
-                    {"step_name": "", "nonce_code": nonce_code, "user_id": user_id}
-                ),
+                "device_id": self.android_device_id,
+                "challenge_context": challenge_context,
             }
         except ValueError:
             # not enough values to unpack (expected 2, got 1)
             params = {}
         try:
-            self._send_private_request(
-                challenge_url[1:],
-                None,
-                params=params,
-                with_signature=False,
-            )
+            self._send_private_request(challenge_url[1:], params=params)
         except ChallengeRequired:
             assert self.last_json["message"] == "challenge_required", self.last_json
             return self.challenge_resolve_contact_form(challenge_url)
@@ -101,7 +101,7 @@ class ChallengeResolveMixin:
         """
         result = self.last_json
         challenge_url = "https://i.instagram.com%s" % challenge_url
-        enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % datetime.now().strftime("%s")
+        enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
         instagram_ajax = hashlib.md5(enc_password.encode()).hexdigest()[:12]
         session = requests.Session()
         session.proxies = self.private.proxies
@@ -372,25 +372,20 @@ class ChallengeResolveMixin:
                 'status': 'ok'}
                 """
                 steps = self.last_json["step_data"].keys()
+                challenge_url = challenge_url[1:]
                 if "email" in steps:
                     self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
                 elif "phone_number" in steps:
                     self._send_private_request(challenge_url, {"choice": CHOICE_SMS})
                 else:
-                    raise ChallengeError(
-                        'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account %s'
-                        % self.last_json
-                    )
+                    raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, CHOICE_EMAIL)
                 if code:
                     break
                 time.sleep(wait_seconds)
-            print(
-                'Enter code "%s" for %s (%d attempts by %d seconds)'
-                % (code, self.username, attempt, wait_seconds)
-            )
+            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
             self._send_private_request(challenge_url, {"security_code": code})
             # assert 'logged_in_user' in client.last_json
             assert self.last_json.get("action", "") == "close"
@@ -400,9 +395,23 @@ class ChallengeResolveMixin:
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
             return True
+        elif step_name == "change_password":
+            # Example: {'step_name': 'change_password',
+            #  'step_data': {'new_password1': 'None', 'new_password2': 'None'},
+            #  'flow_render_type': 3,
+            #  'bloks_action': 'com.instagram.challenge.navigation.take_challenge',
+            #  'cni': 18226879502000588,
+            #  'challenge_context': '{"step_name": "change_password", "cni": 18226879502000588, "is_stateless": false, "challenge_type_enum": "PASSWORD_RESET"}',
+            #  'challenge_type_enum_str': 'PASSWORD_RESET',
+            #  'status': 'ok'}
+            wait_seconds = 5
+            for attempt in range(24):
+                pwd = self.change_password_handler(self.username)
+                if pwd:
+                    break
+                time.sleep(wait_seconds)
+            print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            return self.bloks_change_password(pwd, self.last_json['challenge_context'])
         else:
-            raise Exception(
-                'ChallengeResolve: Unknown step_name "%s" for "%s" in challenge resolver: %s'
-                % (step_name, self.username, self.last_json)
-            )
+            raise Exception(f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
         return True

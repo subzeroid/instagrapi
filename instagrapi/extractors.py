@@ -1,9 +1,11 @@
+import json
 from copy import deepcopy
 
 from .types import (
     Account,
     Collection,
     Comment,
+    DirectMedia,
     DirectMessage,
     DirectResponse,
     DirectShortThread,
@@ -56,6 +58,7 @@ def extract_media_v1(data):
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
+    media["has_liked"] = media.get("has_liked", False)
 
     if media["media_type"] == 8:
         width = media["carousel_media"][0]["original_width"]
@@ -193,15 +196,20 @@ def extract_location(data):
     """Extract location info"""
     if not data:
         return None
-    data["pk"] = data.get("id", data.get("pk", None))
+    data["pk"] = data.get("id", data.get("pk", data.get("location_id", None)))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(
         "external_id_source", data.get("external_source")
     )
-    # address_json = data.get("address_json", "{}")
-    # if isinstance(address_json, str):
-    #     address_json = json.loads(address_json)
-    # data['address_json'] = address_json
+    data["address"] = data.get("address", data.get("location_address"))
+    data["city"] = data.get("city", data.get("location_city"))
+    data["zip"] = data.get("zip", data.get("location_zip"))
+    address_json = data.get("address_json", "{}")
+    if isinstance(address_json, str):
+        address = json.loads(address_json)
+        data["address"] = address.get("street_address")
+        data["city"] = address.get("city_name")
+        data["zip"] = address.get("zip_code")
     return Location(**data)
 
 
@@ -256,7 +264,32 @@ def extract_direct_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
         data["media_share"] = extract_media_v1(data["media_share"])
+    if "media" in data:
+        data["media"] = extract_direct_media(data["media"])
+    clip = data.get("clip", {})
+    if clip:
+        if "clip" in clip:
+            # Instagram ¯\_(ツ)_/¯
+            clip = clip.get("clip")
+        data["clip"] = extract_media_v1(clip)
     return DirectMessage(**data)
+
+
+def extract_direct_media(data):
+    media = deepcopy(data)
+    if "video_versions" in media:
+        # Select Best Quality by Resolutiuon
+        media["video_url"] = sorted(
+            media["video_versions"], key=lambda o: o["height"] * o["width"]
+        )[-1]["url"]
+    if "image_versions2" in media:
+        media["thumbnail_url"] = sorted(
+            media["image_versions2"]["candidates"],
+            key=lambda o: o["height"] * o["width"],
+        )[-1]["url"]
+    if "user" in media:
+        media["user"] = extract_user_short(media.get("user"))
+    return DirectMedia(**media)
 
 
 def extract_account(data):

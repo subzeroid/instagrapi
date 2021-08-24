@@ -187,19 +187,17 @@ class StoryMixin:
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
         }
         user_id = int(user_id)
-        reel = self.private_request(f"feed/user/{user_id}/story/", params=params)[
-            "reel"
-        ]
+        reel = (
+            self.private_request(f"feed/user/{user_id}/story/", params=params).get(
+                "reel"
+            )
+            or {}
+        )
         stories = []
-
-        if not reel:
-            return stories
-
-        for item in reel["items"]:
+        for item in reel.get("items", []):
             stories.append(extract_story_v1(item))
         if amount:
-            amount = int(amount)
-            stories = stories[:amount]
+            stories = stories[: int(amount)]
         return stories
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
@@ -244,7 +242,9 @@ class StoryMixin:
             [self.media_id(mid) for mid in skipped_story_pks],
         )
 
-    def story_download(self, story_pk: int) -> Path:
+    def story_download(
+        self, story_pk: int, filename: str = "", folder: Path = ""
+    ) -> Path:
         """
         Download story media by media_type
 
@@ -260,9 +260,11 @@ class StoryMixin:
         story_pk = int(story_pk)
         story = self.story_info(story_pk)
         url = story.thumbnail_url if story.media_type == 1 else story.video_url
-        return self.story_download_by_url(url)
+        return self.story_download_by_url(url, filename, folder)
 
-    def story_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+    def story_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
         """
         Download story media using URL
 
