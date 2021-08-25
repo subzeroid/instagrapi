@@ -594,7 +594,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "cpu": "qcom",
             "version_code": "301484483",
         }
-        # self.settings["device_settings"] = self.device_settings
+        self.settings["device_settings"] = self.device_settings
         if reset:
             self.set_uuids({})
             # self.settings = self.get_settings()
@@ -645,6 +645,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.request_id = uuids.get("request_id", self.generate_uuid())
         self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
         # self.device_id = uuids.get("device_id", self.generate_uuid())
+        self.settings["uuids"] = uuids
         return True
 
     def generate_uuid(self, prefix: str = '', suffix: str = '') -> str:
@@ -710,7 +711,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A dictionary of action data
         """
         return dict(self.with_default_data({"radio_type": "wifi-none"}), **data)
-
 
     def gen_user_breadcrumb(self, size: int) -> str:
         """
