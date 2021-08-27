@@ -4,6 +4,7 @@ Example to handle Email/SMS challenges
 import email
 import imaplib
 import re
+import random
 
 from instagrapi import Client
 
@@ -63,7 +64,15 @@ def challenge_code_handler(username, choice):
     return False
 
 
+def change_password_handler(username):
+    # Simple way to generate a random string
+    chars = list("abcdefghijklmnopqrstuvwxyz1234567890!&£@#")
+    password = "".join(random.sample(chars, 10))
+    return password
+
+
 if __name__ == '__main__':
     cl = Client()
     cl.challenge_code_handler = challenge_code_handler
+    cl.change_password_handler = change_password_handler
     cl.login(IG_USERNAME, IG_PASSWORD)
