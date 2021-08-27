@@ -75,6 +75,7 @@ class UploadClipMixin:
         location: Location = None,
         configure_timeout: int = 10,
         feed_show : str  = '1',
+        extra_data: Dict[str, str] = {},
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -93,6 +94,8 @@ class UploadClipMixin:
             Location tag for this upload, default is none
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -174,7 +177,8 @@ class UploadClipMixin:
                     caption,
                     usertags,
                     location,
-                    feed_show
+                    feed_show,
+                    extra_data=extra_data
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -203,6 +207,7 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         feed_show : str = '1',
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Post Configure CLIP (send caption, thumbnail and more to Instagram)
@@ -225,6 +230,8 @@ class UploadClipMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -255,6 +262,7 @@ class UploadClipMixin:
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 70,
+            **extra_data
         }
         return self.private_request(
             "media/configure_to_clips/?video=1",
