@@ -207,7 +207,15 @@ class DirectMixin:
         """
         assert self.user_id, "Login required"
         method = "text"
-        kwargs = {}
+        token = self.generate_mutation_token()
+        kwargs = {
+            "is_shh_mode": "0",
+            "send_attribution": "direct_thread",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
+            "offline_threading_id": token,
+        }
         if "http" in text:
             method = "link"
             kwargs["link_text"] = text
@@ -388,9 +396,9 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
+        token = self.generate_mutation_token()
         media_id = self.media_id(media_id)
         recipient_users = dumps([[int(uid) for uid in user_ids]])
-        token = random.randint(6800011111111111111, 6800099999999999999)
         data = {
             'recipient_users': recipient_users,
             'action': 'send_item',
@@ -400,7 +408,7 @@ class DirectMixin:
             'media_id': media_id,
             'mutation_token': token,
             'nav_chain': '1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6',
-            'offline_threading_id': token
+            'offline_threading_id': token,
         }
         result = self.private_request(
             "direct_v2/threads/broadcast/media_share/",
@@ -431,7 +439,7 @@ class DirectMixin:
         assert self.user_id, "Login required"
         story_id = self.media_id(story_id)
         story_pk = self.media_pk(story_id)
-        token = random.randint(6800011111111111111, 6800099999999999999)
+        token = self.generate_mutation_token()
         data = {
             "action": "send_item",
             "is_shh_mode": "0",
@@ -442,7 +450,7 @@ class DirectMixin:
             "reel_id": story_pk,
             "containermodule": "reel_feed_timeline",
             "story_media_id": story_id,
-            "offline_threading_id": token
+            "offline_threading_id": token,
         }
         if user_ids:
             data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])

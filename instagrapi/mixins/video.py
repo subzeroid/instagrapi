@@ -652,12 +652,13 @@ class UploadVideoMixin:
                     data["has_animated_sticker"] = "1"
         if thread_ids:
             # Send to direct thread
+            token = self.generate_mutation_token()
             data.update({
                 "configure_mode": "2",
                 "allow_multi_configures": "1",
-                "client_context": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "client_context": token,
                 "is_shh_mode": "0",
-                "mutation_token": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "mutation_token": token,
                 "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
                 "recipient_users": "[]",
                 "send_attribution": "direct_story_audience_picker",

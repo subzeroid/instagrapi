@@ -659,6 +659,17 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         return f'{prefix}{uuid.uuid4()}{suffix}'
 
+    def generate_mutation_token(self) -> str:
+        """
+        Token used when DM sending and upload media
+
+        Returns
+        -------
+        str
+            A stringified int
+        """
+        return str(random.randint(6800011111111111111, 6800099999999999999))
+
     def generate_android_device_id(self) -> str:
         """
         Helper to generate Android Device ID
