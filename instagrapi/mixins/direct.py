@@ -209,6 +209,7 @@ class DirectMixin:
         method = "text"
         token = self.generate_mutation_token()
         kwargs = {
+            "_uuid": self.uuid,
             "is_shh_mode": "0",
             "send_attribution": "direct_thread",
             "client_context": token,
@@ -227,11 +228,7 @@ class DirectMixin:
         if user_ids:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
-        result = self.private_request(
-            f"direct_v2/threads/broadcast/{method}/",
-            data=self.with_default_data(data),
-            with_signature=False,
-        )
+        result = self.private_request(f"direct_v2/threads/broadcast/{method}/", data=data, with_signature=False)
         return extract_direct_message(result["payload"])
 
     def direct_send_photo(
