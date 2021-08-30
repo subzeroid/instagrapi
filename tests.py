@@ -508,6 +508,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             "pk": 1903424587,
             "username": "adw0rd",
             "full_name": "Mikhail Andreev",
+            "is_private": False,
         }.items():
             self.assertEqual(getattr(user, key), val)
         self.assertTrue(user.profile_pic_url.startswith("https://"))
