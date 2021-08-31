@@ -65,7 +65,7 @@ class UserShort(BaseModel):
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
     profile_pic_url_hd: Optional[HttpUrl]
-    is_private: bool
+    is_private: Optional[bool]
     # is_verified: bool  # not found in hashtag_medias_v1
     stories: List = []
 
