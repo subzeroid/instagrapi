@@ -705,9 +705,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return dict(
             {
                 "_uuid": self.uuid,
-                "_uid": str(self.user_id),
-                "_csrftoken": self.token,
-                "device_id": self.uuid,
+                # "_uid": str(self.user_id),
+                # "_csrftoken": self.token,
+                "device_id": self.android_device_id,
             },
             **data,
         )

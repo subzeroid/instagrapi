@@ -209,7 +209,7 @@ class DirectMixin:
         method = "text"
         token = self.generate_mutation_token()
         kwargs = {
-            "_uuid": self.uuid,
+            "action": "send_item",
             "is_shh_mode": "0",
             "send_attribution": "direct_thread",
             "client_context": token,
@@ -227,24 +227,63 @@ class DirectMixin:
             kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         if user_ids:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
-        data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
-        result = self.private_request(f"direct_v2/threads/broadcast/{method}/", data=data, with_signature=False)
+        result = self.private_request(
+            f"direct_v2/threads/broadcast/{method}/",
+            data=self.with_default_data(kwargs),
+            with_signature=False
+        )
         return extract_direct_message(result["payload"])
 
-    def direct_send_photo(
-            self, filepath: str, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_send_photo(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Send a direct photo to list of users or threads
 
         Parameters
         ----------
-        filepath: str
+        path: Path
             Path to photo that will be posted on the thread
-
         user_ids: List[int]
             List of unique identifier of Users id
+        thread_ids: List[int]
+            List of unique identifier of Direct Message thread id
 
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        return self.direct_send_file(path, user_ids, thread_ids, content_type='photo')
+
+    def direct_send_video(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+        """
+        Send a direct video to list of users or threads
+
+        Parameters
+        ----------
+        path: Path
+            Path to video that will be posted on the thread
+        user_ids: List[int]
+            List of unique identifier of Users id
+        thread_ids: List[int]
+            List of unique identifier of Direct Message thread id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        return self.direct_send_file(path, user_ids, thread_ids, content_type='video')
+
+    def direct_send_file(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = [], content_type: str = 'photo') -> DirectMessage:
+        """
+        Send a direct file to list of users or threads
+
+        Parameters
+        ----------
+        path: Path
+            Path to file that will be posted on the thread
+        user_ids: List[int]
+            List of unique identifier of Users id
         thread_ids: List[int]
             List of unique identifier of Direct Message thread id
 
@@ -254,23 +293,37 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        method = "configure_photo"
+        method = f"configure_{content_type}"
+        token = self.generate_mutation_token()
+        nav_chains = [
+            "6xQ:direct_media_picker_photos_fragment:1,5rG:direct_thread:2,5ME:direct_quick_camera_fragment:3,5ME:direct_quick_camera_fragment:4,4ju:reel_composer_preview:5,5rG:direct_thread:6,5rG:direct_thread:7,6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9",
+            "1qT:feed_timeline:1,7Az:direct_inbox:2,7Az:direct_inbox:3,5rG:direct_thread:4,6xQ:direct_media_picker_photos_fragment:5,5rG:direct_thread:6,5rG:direct_thread:7,6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9",
+        ]
         kwargs = {}
+        data = {
+            "action": "send_item",
+            "is_shh_mode": "0",
+            "send_attribution": "direct_thread",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": random.choices(nav_chains),
+            "offline_threading_id": token,
+        }
+        if content_type == "video":
+            data["video_result"] = ""
+            kwargs["to_direct"] = True
+        if content_type == "photo":
+            data["send_attribution"] = "inbox"
+            data["allow_full_aspect_ratio"] = "true"
         if user_ids:
-            kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         if thread_ids:
-            kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
-
-        path = Path(filepath)
-
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        path = Path(path)
         upload_id = str(int(time.time() * 1000))
-        upload_id, width, height = self.photo_rupload(path, upload_id)
-
-        kwargs['upload_id'] = upload_id
-        kwargs['content_type'] = 'photo'
-
-        data = {"client_context": self.generate_uuid(), "action": "send_item", **kwargs}
-
+        upload_id, width, height = getattr(self, f'{content_type}_rupload')(path, upload_id, **kwargs)[:3]
+        data['upload_id'] = upload_id
+        # data['content_type'] = content_type
         result = self.private_request(
             f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(data),
@@ -505,7 +558,7 @@ class DirectMixin:
         data.pop('device_id', None)
         data['is_shh_mode'] = 0
         data['send_attribution'] = 'direct_thread'
-        data['original_message_client_context'] = random.randint(6800011111111111111, 6800099999999999999)
+        data['original_message_client_context'] = self.generate_mutation_token()
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/items/{message_id}/delete/",
             data=data

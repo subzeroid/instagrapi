@@ -292,6 +292,8 @@ class PrivateRequestMixin:
             if e.response.status_code == 403:
                 if message == "login_required":
                     raise LoginRequired(response=e.response, **last_json)
+                if len(e.response.text) < 512:
+                    last_json['message'] = e.response.text
                 raise ClientForbiddenError(e, response=e.response, **last_json)
             elif e.response.status_code == 400:
                 error_type = last_json.get("error_type")

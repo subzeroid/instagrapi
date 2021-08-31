@@ -107,6 +107,7 @@ class UploadVideoMixin:
         thumbnail: Path = None,
         to_album: bool = False,
         to_story: bool = False,
+        to_direct: bool = False,
     ) -> tuple:
         """
         Upload video to Instagram
@@ -119,6 +120,7 @@ class UploadVideoMixin:
             Path to thumbnail for video. When None, then thumbnail is generate automatically
         to_album: bool, optional
         to_story: bool, optional
+        to_direct: bool, optional
 
         Returns
         -------
@@ -142,6 +144,10 @@ class UploadVideoMixin:
             "upload_media_width": str(width),
             "upload_media_height": str(height),  # "1138" for Mi5s
         }
+        if to_direct:
+            rupload_params["direct_v2"] = "1"
+            # "hflip": "false",
+            # "rotate":"3",
         if to_album:
             rupload_params["is_sidecar"] = "1"
         if to_story:
