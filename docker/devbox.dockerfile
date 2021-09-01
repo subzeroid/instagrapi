@@ -1,4 +1,4 @@
-FROM python:3.9.6-buster
+FROM python:3.9.7-buster
 
 ARG _USER="instagrapi"
 ARG _UID="1001"
