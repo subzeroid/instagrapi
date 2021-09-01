@@ -468,7 +468,7 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def direct_story_share(self, story_id: str, user_ids: List[int], thread_ids: List[int]) -> DirectMessage:
+    def direct_story_share(self, story_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Share a story to list of users
 
