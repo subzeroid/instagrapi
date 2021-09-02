@@ -635,3 +635,112 @@ class MediaMixin:
             A boolean value
         """
         return self.media_archive(media_id, revert=True)
+
+    def usertag_medias_gql(
+        self, user_id: int, amount: int = 0, sleep: int = 2
+    ) -> List[Media]:
+        """
+        Get medias where a user is tagged (by Public GraphQL API)
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        sleep: int, optional
+            Timeout between pages iterations, default is 2
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        medias = []
+        end_cursor = None
+        variables = {
+            "id": user_id,
+            "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
+        }
+        while True:
+            if end_cursor:
+                variables["after"] = end_cursor
+            data = self.public_graphql_request(
+                variables, query_hash="be13233562af2d229b008d2976b998b5"
+            )
+            page_info = json_value(
+                data, "user", "edge_user_to_photos_of_you", "page_info", default={}
+            )
+            edges = json_value(
+                data, "user", "edge_user_to_photos_of_you", "edges", default=[]
+            )
+            for edge in edges:
+                medias.append(edge["node"])
+            end_cursor = page_info.get("end_cursor")
+            if not page_info.get("has_next_page") or not end_cursor:
+                break
+            if amount and len(medias) >= amount:
+                break
+            time.sleep(sleep)
+        if amount:
+            medias = medias[:amount]
+        return [extract_media_gql(media) for media in medias]
+
+    def usertag_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+        """
+        Get medias where a user is tagged (by Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        medias = []
+        next_max_id = ""
+        while True:
+            try:
+                items = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": next_max_id})["items"]
+            except Exception as e:
+                self.logger.exception(e)
+                break
+            medias.extend(items)
+            if not self.last_json.get("more_available"):
+                break
+            if amount and len(medias) >= amount:
+                break
+            next_max_id = self.last_json.get("next_max_id", "")
+        if amount:
+            medias = medias[:amount]
+        return [extract_media_v1(media) for media in medias]
+
+    def usertag_medias(self, user_id: int, amount: int = 0) -> List[Media]:
+        """
+        Get medias where a user is tagged
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        try:
+            medias = self.usertag_medias_gql(user_id, amount)
+        except ClientError:
+            medias = self.usertag_medias_v1(user_id, amount)
+        return medias

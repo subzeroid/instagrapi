@@ -82,11 +82,14 @@ def extract_media_gql(data):
         media["media_type"] = 0
     if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
-    media["thumbnail_url"] = sorted(
-        # display_resources - user feed, thumbnail_resources - hashtag feed
-        media.get("display_resources", media.get("thumbnail_resources")),
-        key=lambda o: o["config_width"] * o["config_height"],
-    )[-1]["src"]
+    if "thumbnail_src" in media:
+        media["thumbnail_url"] = media["thumbnail_src"]
+    else:
+        media["thumbnail_url"] = sorted(
+            # display_resources - user feed, thumbnail_resources - hashtag feed
+            media.get("display_resources", media.get("thumbnail_resources")),
+            key=lambda o: o["config_width"] * o["config_height"],
+        )[-1]["src"]
     if media.get("media_type") == 8:
         # remove thumbnail_url and video_url for albums
         # see resources

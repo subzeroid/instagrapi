@@ -346,6 +346,15 @@ class ClientUserTestCase(ClientPrivateTestCase):
         for field in REQUIRED_MEDIA_FIELDS:
             self.assertTrue(hasattr(media, field))
 
+    def test_usertag_medias(self):
+        user_id = self.api.user_id_from_username("adw0rd")
+        medias = self.api.usertag_medias(user_id)
+        self.assertGreater(len(medias), 50)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
     def test_user_followers(self):
         user_id = self.api.user_id_from_username("asphalt_kings_lb")
         followers = self.api.user_followers(self.api.user_id)
