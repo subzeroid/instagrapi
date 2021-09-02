@@ -414,7 +414,7 @@ class MediaMixin:
         return self.media_like(media_id, revert=True)
 
     def user_medias_gql(
-        self, user_id: int, amount: int = 50, sleep: int = 2
+        self, user_id: int, amount: int = 0, sleep: int = 2
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -423,7 +423,7 @@ class MediaMixin:
         ----------
         user_id: int
         amount: int, optional
-            Maximum number of media to return, default is 50 (0 - infinity)
+            Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
             Timeout between pages iterations, default is 2
 
@@ -464,7 +464,7 @@ class MediaMixin:
             medias = medias[:amount]
         return [extract_media_gql(media) for media in medias]
 
-    def user_medias_v1(self, user_id: int, amount: int = 18) -> List[Media]:
+    def user_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
         """
         Get a user's media by Private Mobile API
 
@@ -472,7 +472,7 @@ class MediaMixin:
         ----------
         user_id: int
         amount: int, optional
-            Maximum number of media to return, default is 18 (0 - infinity)
+            Maximum number of media to return, default is 0 (all medias)
 
         Returns
         -------
@@ -508,7 +508,7 @@ class MediaMixin:
             medias = medias[:amount]
         return [extract_media_v1(media) for media in medias]
 
-    def user_medias(self, user_id: int, amount: int = 50) -> List[Media]:
+    def user_medias(self, user_id: int, amount: int = 0) -> List[Media]:
         """
         Get a user's media
 
@@ -516,7 +516,7 @@ class MediaMixin:
         ----------
         user_id: int
         amount: int, optional
-            Maximum number of media to return, default is 50
+            Maximum number of media to return, default is 0 (all medias)
 
         Returns
         -------

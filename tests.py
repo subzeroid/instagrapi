@@ -339,8 +339,8 @@ class ClientUserTestCase(ClientPrivateTestCase):
 
     def test_user_medias(self):
         user_id = self.api.user_id_from_username("adw0rd")
-        medias = self.api.user_medias(user_id, 20)
-        self.assertEqual(len(medias), 20)
+        medias = self.api.user_medias(user_id)
+        self.assertGreater(len(medias), 100)
         media = medias[0]
         self.assertIsInstance(media, Media)
         for field in REQUIRED_MEDIA_FIELDS:
