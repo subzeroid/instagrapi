@@ -7,7 +7,7 @@ assignees: adw0rd
 
 ---
 
-### Compensate with donations ($5 and more) for the time I spent to fix problems or send  me your [Pull Request](https://github.com/adw0rd/instagrapi/pulls) with fixes
+### Compensate with donations ($20 and more) for the time I spent to fix problems or send  me your [Pull Request](https://github.com/adw0rd/instagrapi/pulls) with fixes
 
 * Bitcoin: 3KHgnvNNWio6wyQ71cgNeBQojXStxzkzfd
 * Ethereum: 0x6e644c6b975B47801072b07a9a57DDfEC10DE74F
