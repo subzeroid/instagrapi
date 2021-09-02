@@ -618,6 +618,7 @@ class UserMixin:
         Tuple[List[UserShort], str]
             Tuple of List of users and max_id
         """
+        unique_set = set()
         users = []
         while True:
             result = self.private_request(f"friendships/{user_id}/followers/", params={
@@ -628,7 +629,11 @@ class UserMixin:
                 "enable_groups": "true"
             })
             for user in result["users"]:
-                users.append(extract_user_short(user))
+                user = extract_user_short(user)
+                if user.pk in unique_set:
+                    continue
+                unique_set.add(user.pk)
+                users.append(user)
             max_id = result.get("next_max_id")
             if not max_id or (max_amount and len(users) >= max_amount):
                 break
