@@ -6,6 +6,7 @@ from .types import StoryBuild, StoryMention
 
 try:
     from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+    from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 except ImportError:
     raise Exception("Please install moviepy==1.0.3 and retry")
 
@@ -123,16 +124,21 @@ class StoryBuilder:
             mention.width = text_clip.size[0] / self.width
             mention.height = text_clip.size[1] / self.height
             mentions = [mention]
-        duration = max_duration
-        if max_duration and clip.duration and max_duration > clip.duration:
-            duration = clip.duration
+        duration = max_duration if max_duration else int(clip.duration)
         destination = tempfile.mktemp(".mp4")
         CompositeVideoClip(clips, size=(self.width, self.height)).set_fps(
             24
         ).set_duration(duration).write_videofile(
             destination, codec="libx264", audio=True, audio_codec="aac"
         )
-        return StoryBuild(mentions=mentions, path=destination)
+        paths = []
+        if duration > 15:
+            for i in range(duration // 15 + (1 if duration % 15 else 0)):
+                path = tempfile.mktemp(".mp4")
+                start = i * 15
+                ffmpeg_extract_subclip(destination, start, start + 15, targetname=path)
+                paths.append(path)
+        return StoryBuild(mentions=mentions, path=destination, paths=paths)
 
     def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white'):
         """

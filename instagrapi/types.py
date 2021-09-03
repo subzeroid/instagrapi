@@ -198,6 +198,7 @@ class StorySticker(BaseModel):
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
+    paths: List[FilePath] = []
 
 
 class StoryLink(BaseModel):
