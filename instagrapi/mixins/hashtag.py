@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound
+from instagrapi.exceptions import ClientError, HashtagNotFound
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
