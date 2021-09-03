@@ -354,15 +354,8 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            try:
-                medias = self.hashtag_medias_top_a1(name, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.hashtag_medias_top_a1(name, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+            medias = self.hashtag_medias_top_a1(name, amount)
+        except ClientError:
             medias = self.hashtag_medias_top_v1(name, amount)
         return medias
 
@@ -419,14 +412,7 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            try:
-                medias = self.hashtag_medias_recent_a1(name, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.hashtag_medias_recent_a1(name, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+            medias = self.hashtag_medias_recent_a1(name, amount)
+        except ClientError:
             medias = self.hashtag_medias_recent_v1(name, amount)
         return medias
