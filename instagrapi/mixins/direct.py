@@ -206,6 +206,7 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         method = "text"
         token = self.generate_mutation_token()
         kwargs = {
@@ -293,6 +294,7 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         method = f"configure_{content_type}"
         token = self.generate_mutation_token()
         nav_chains = [
@@ -487,6 +489,7 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         story_id = self.media_id(story_id)
         story_pk = self.media_pk(story_id)
         token = self.generate_mutation_token()
