@@ -1,9 +1,21 @@
 import time
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
 
+POST_TYPE = Literal[
+    "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO"
+]
+TIME_FRAME = Literal[
+    "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS",
+    "ONE_YEAR", "TWO_YEARS"
+]
+DATA_ORDERING = Literal[
+    "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT",
+    "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT",
+    "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"
+]
 
 class InsightsMixin:
     """
@@ -12,9 +24,9 @@ class InsightsMixin:
 
     def insights_media_feed_all(
         self,
-        post_type: str = "ALL",
-        time_frame: str = "TWO_YEARS",
-        data_ordering: str = "REACH_COUNT",
+        post_type: POST_TYPE = "ALL",
+        time_frame: TIME_FRAME = "TWO_YEARS",
+        data_ordering: DATA_ORDERING = "REACH_COUNT",
         count: int = 0,
         sleep: int = 2,
     ) -> List[Dict]:
@@ -25,13 +37,10 @@ class InsightsMixin:
         ----------
         post_type: str, optional
             Types of posts, default is "ALL"
-            Options: ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
         time_frame: str, optional
             Time frame to pull media insights, default is "TWO_YEARS"
-            Options: ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
         data_ordering: str, optional
             Ordering strategy for the data, default is "REACH_COUNT"
-            Options: ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
         count: int, optional
             Max media count for retrieving, default is 0
         sleep: int, optional
@@ -42,19 +51,13 @@ class InsightsMixin:
         List[Dict]
             List of dictionaries of response from the call
         """
+        assert post_type in POST_TYPE.__args__, \
+            f'Unsupported post_type="{post_type}" {POST_TYPE.__args__}'
+        assert time_frame in TIME_FRAME.__args__, \
+            f'Unsupported time_frame="{time_frame}" {TIME_FRAME.__args__}'
+        assert data_ordering in DATA_ORDERING.__args__, \
+            f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERING.__args__}'
         assert self.user_id, "Login required"
-        supported_post_types = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
-        supported_time_frames = (
-            "ONE_WEEK",
-            "ONE_MONTH",
-            "THREE_MONTHS",
-            "SIX_MONTHS",
-            "ONE_YEAR",
-            "TWO_YEARS",
-        )
-        assert post_type in supported_post_types, "Unsupported post type"
-        assert time_frame in supported_time_frames, "Unsupported time frame"
-
         medias = []
         cursor = None
         data = {
@@ -79,7 +82,6 @@ class InsightsMixin:
         while True:
             if cursor:
                 query_params["cursor"] = cursor
-
             result = self.private_request(
                 "ads/graphql/",
                 self.with_query_params(data, query_params),
@@ -92,10 +94,10 @@ class InsightsMixin:
                 default=None,
             ):
                 raise UserError("Account is not business account", **self.last_json)
-
-            stats = result["data"]["shadow_instagram_user"]["business_manager"][
-                "top_posts_unit"
-            ]["top_posts"]
+            stats = json_value(
+                result, "data", "shadow_instagram_user",
+                "business_manager", "top_posts_unit", "top_posts"
+            )
             cursor = stats["page_info"]["end_cursor"]
             medias.extend(stats["edges"])
             if not stats["page_info"]["has_next_page"]:

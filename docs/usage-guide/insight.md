@@ -8,6 +8,23 @@ Get statistics by medias. Common arguments:
 
 | Method                                                                                             | Return             | Description
 | -------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------- 
-| insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | list | Return medias with insights
-| insights_account()                                                                                 | dict               | Get statistics by your account
-| insights_media(media_pk: int)                                                                      | dict               | Get statistics by your media
+| insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | List[Dict] | Return medias with insights
+| insights_account()                                                                                 | Dict               | Get statistics by your account
+| insights_media(media_pk: int)                                                                      | Dict               | Get statistics by your media
+
+
+Example:
+
+``` python
+from instagrapi import Client
+from instagrapi.types import PostType, TimeFrame, DataOrdering
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+cl.insights_media_feed_all("VIDEO", "ONE_WEEK", "LIKE_COUNT", 42)
+cl.insights_account()
+
+media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CP5h-I1FuPr/')
+cl.insights_media(media_pk)
+```
