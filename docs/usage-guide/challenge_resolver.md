@@ -25,10 +25,13 @@ You can automatically process the codes sent to you to solve the challenge from 
 You need to declare `challenge_code_handler` which will return the code received from Instagram via Email or SMS:
 
 ``` python
+from instagrapi.challenge import ChallengeChoice
+
+
 def challenge_code_handler(username, choice):
-    if choice == 0:
+    if choice == ChallengeChoice.SMS:
         return get_code_from_sms(username)
-    elif choice == 1:
+    elif choice == ChallengeChoice.EMAIL:
         return get_code_from_email(username)
     return False
 
