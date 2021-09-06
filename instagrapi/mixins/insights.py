@@ -1,21 +1,29 @@
 import time
-from typing import Dict, List, Literal
+from typing import Dict, List
 
 from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
 
-POST_TYPE = Literal[
-    "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO"
-]
-TIME_FRAME = Literal[
+POST_TYPES = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
+TIME_FRAMES = (
     "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS",
     "ONE_YEAR", "TWO_YEARS"
-]
-DATA_ORDERING = Literal[
+)
+DATA_ORDERS = (
     "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT",
     "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT",
     "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"
-]
+)
+
+try:
+    from typing import Literal
+    POST_TYPE = Literal[POST_TYPES]
+    TIME_FRAME = Literal[TIME_FRAMES]
+    DATA_ORDERING = Literal[DATA_ORDERS]
+except ImportError:
+    # python <= 3.8
+    POST_TYPE = TIME_FRAME = DATA_ORDERING = str
+
 
 class InsightsMixin:
     """
@@ -51,12 +59,12 @@ class InsightsMixin:
         List[Dict]
             List of dictionaries of response from the call
         """
-        assert post_type in POST_TYPE.__args__, \
-            f'Unsupported post_type="{post_type}" {POST_TYPE.__args__}'
-        assert time_frame in TIME_FRAME.__args__, \
-            f'Unsupported time_frame="{time_frame}" {TIME_FRAME.__args__}'
-        assert data_ordering in DATA_ORDERING.__args__, \
-            f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERING.__args__}'
+        assert post_type in POST_TYPES, \
+            f'Unsupported post_type="{post_type}" {POST_TYPES}'
+        assert time_frame in TIME_FRAMES, \
+            f'Unsupported time_frame="{time_frame}" {TIME_FRAMES}'
+        assert data_ordering in DATA_ORDERS, \
+            f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERS}'
         assert self.user_id, "Login required"
         medias = []
         cursor = None
