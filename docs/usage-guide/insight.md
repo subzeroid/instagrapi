@@ -17,7 +17,6 @@ Example:
 
 ``` python
 from instagrapi import Client
-from instagrapi.types import PostType, TimeFrame, DataOrdering
 
 cl = Client()
 cl.login(USERNAME, PASSWORD)
