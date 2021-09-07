@@ -7,6 +7,7 @@ import re
 import random
 
 from instagrapi import Client
+from instagrapi.challenge import ChallengeChoice
 
 CHALLENGE_EMAIL = ''
 CHALLENGE_PASSWORD = ''
@@ -57,9 +58,9 @@ def get_code_from_sms(username):
 
 
 def challenge_code_handler(username, choice):
-    if choice == 0:
+    if choice == ChallengeChoice.SMS:
         return get_code_from_sms(username)
-    elif choice == 1:
+    elif choice == ChallengeChoice.EMAIL:
         return get_code_from_email(username)
     return False
 
