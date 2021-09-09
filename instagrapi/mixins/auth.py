@@ -583,7 +583,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "194.0.0.36.172",
+            "app_version": "203.0.0.29.118",
             "android_version": 26,
             "android_release": "8.0.0",
             "dpi": "480dpi",
@@ -592,7 +592,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "device": "MI 5s",
             "model": "capricorn",
             "cpu": "qcom",
-            "version_code": "301484483",
+            "version_code": "314665256",
         }
         self.settings["device_settings"] = self.device_settings
         if reset:

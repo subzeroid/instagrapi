@@ -478,14 +478,16 @@ class UserMixin:
         while True:
             if amount and len(users) >= amount:
                 break
-            result = self.private_request(
-                f"friendships/{user_id}/following/",
-                params={
-                    "max_id": max_id,
-                    "rank_token": self.rank_token,
-                    "ig_sig_key_version": config.SIG_KEY_VERSION,
-                },
-            )
+            params = {
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "includes_hashtags": "true",
+                "enable_groups": "true",
+                "query": "",
+            }
+            if max_id:
+                params["max_id"] = max_id
+            result = self.private_request(f"friendships/{user_id}/following/", params=params)
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")

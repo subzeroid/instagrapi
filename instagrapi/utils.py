@@ -41,24 +41,6 @@ class InstagramIdCodec:
         return num
 
 
-def generate_signature_old(data):
-    """Generate signature of POST data for Private API
-
-    Returns
-    -------
-    str
-        e.g. "signed_body=57310ea0133ba7683871e87f86f45756ac4d40c5b454e470d71eff728579a7ac.asdasd&ig_sig_key_version=4"
-    """
-    body = hmac.new(
-        config.IG_SIG_KEY.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
-    return "signed_body={body}.{data}&ig_sig_key_version={sig_key}".format(
-        body=body,
-        data=urllib.parse.quote(data),
-        sig_key=config.SIG_KEY_VERSION,
-    )
-
-
 def generate_signature(data):
     """Generate signature of POST data for Private API
 
