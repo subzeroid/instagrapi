@@ -240,6 +240,7 @@ class DirectMessage(BaseModel):
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    link: Optional[dict]
     media: Optional[DirectMedia]
     media_share: Optional[Media]
     reel_share: Optional[dict]
