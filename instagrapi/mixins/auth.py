@@ -68,6 +68,7 @@ class PreLoginFlowMixin:
             "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
+            "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
             "device_id": self.uuid,
         }
         # if login is False:
