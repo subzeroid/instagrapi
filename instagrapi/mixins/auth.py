@@ -365,18 +365,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.logger.warning('Ignore 429: Continue login')
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
-            pass
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            # "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
+            "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
             "phone_id": self.phone_id,
             "enc_password": enc_password,
-            # "_csrftoken": self.token,
             "username": username,
             "adid": self.advertising_id,
             "guid": self.uuid,
-            "device_id": self.uuid,
+            "device_id": self.android_device_id,
             "google_tokens": "[]",
             "login_attempt_count": "0"
         }
