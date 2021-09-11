@@ -292,6 +292,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        # init headers
+        headers = self.base_headers
+        headers.update({'Authorization': self.authorization})
+        self.private.headers.update(headers)
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
