@@ -47,9 +47,8 @@ def manual_input_code(self, username: str, choice=None):
         Code
     """
     code = None
-    choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
-        code = input(f"Enter code (6 digits) for {username} ({choice_name}): ").strip()
+        code = input(f"Enter code (6 digits) for {username} ({choice}): ").strip()
         if code and code.isdigit():
             break
     return code  # is not int, because it can start from 0
