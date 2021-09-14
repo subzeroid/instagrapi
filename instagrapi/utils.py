@@ -1,12 +1,10 @@
-import hashlib
-import hmac
+import datetime
+import enum
 import json
 import random
 import string
 import time
 import urllib
-
-from . import config
 
 
 class InstagramIdCodec:
@@ -39,6 +37,19 @@ class InstagramIdCodec:
             num += alphabet.index(char) * (base ** power)
             idx += 1
         return num
+
+
+class InstagrapiJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, enum.Enum):
+            return obj.value
+        elif isinstance(obj, datetime.time):
+            return obj.strftime("%H:%M")
+        elif isinstance(obj, (datetime.datetime, datetime.date)):
+            return int(obj.strftime("%s"))
+        elif isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def generate_signature(data):
@@ -85,7 +96,7 @@ def gen_password(size=10):
 def dumps(data):
     """Json dumps format as required Instagram
     """
-    return json.dumps(data, separators=(",", ":"))
+    return InstagrapiJSONEncoder(separators=(",", ":")).encode(data)
 
 
 def generate_jazoest(symbols: str) -> str:

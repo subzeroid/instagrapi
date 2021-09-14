@@ -2,7 +2,6 @@ from copy import deepcopy
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
-from instagrapi import config
 from instagrapi.exceptions import (
     ClientError,
     ClientJSONDecodeError,
