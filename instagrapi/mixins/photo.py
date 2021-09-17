@@ -179,6 +179,7 @@ class UploadPhotoMixin:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Media:
         """
         Upload photo and configure to feed
@@ -195,6 +196,8 @@ class UploadPhotoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -213,6 +216,7 @@ class UploadPhotoMixin:
                 caption,
                 usertags,
                 location,
+                extra_data=extra_data,
             ):
                 media = self.last_json.get("media")
                 self.expose()
@@ -227,6 +231,7 @@ class UploadPhotoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Post Configure Photo (send caption to Instagram)
@@ -245,6 +250,8 @@ class UploadPhotoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -279,6 +286,7 @@ class UploadPhotoMixin:
                 "crop_zoom": 1.0,
             },
             "extra": {"source_width": width, "source_height": height},
+            **extra_data,
         }
         return self.private_request("media/configure/", self.with_default_data(data))
 
@@ -292,6 +300,7 @@ class UploadPhotoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        extra_data: Dict[str, str] = {},
     ) -> Story:
         """
         Upload photo as a story and configure it
@@ -314,6 +323,8 @@ class UploadPhotoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -335,6 +346,7 @@ class UploadPhotoMixin:
                 links,
                 hashtags,
                 stickers,
+                extra_data=extra_data,
             ):
                 media = self.last_json.get("media")
                 self.expose()
@@ -384,7 +396,7 @@ class UploadPhotoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
-        extra_data: List[str, str], optional
+        extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns

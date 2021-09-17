@@ -339,8 +339,17 @@ class ClientUserTestCase(ClientPrivateTestCase):
 
     def test_user_medias(self):
         user_id = self.api.user_id_from_username("adw0rd")
-        medias = self.api.user_medias(user_id, 20)
-        self.assertEqual(len(medias), 20)
+        medias = self.api.user_medias(user_id)
+        self.assertGreater(len(medias), 100)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
+    def test_usertag_medias(self):
+        user_id = self.api.user_id_from_username("adw0rd")
+        medias = self.api.usertag_medias(user_id)
+        self.assertGreater(len(medias), 50)
         media = medias[0]
         self.assertIsInstance(media, Media)
         for field in REQUIRED_MEDIA_FIELDS:
@@ -508,6 +517,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             "pk": 1903424587,
             "username": "adw0rd",
             "full_name": "Mikhail Andreev",
+            "is_private": False,
         }.items():
             self.assertEqual(getattr(user, key), val)
         self.assertTrue(user.profile_pic_url.startswith("https://"))
@@ -1052,7 +1062,7 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         self.assertIsInstance(pong, DirectMessage)
         self.assertEqual(ping.thread_id, pong.thread_id)
         # send direct photo
-        photo = self.api.direct_send_photo(filepath='examples/kanada.jpg', user_ids=[adw0rd])
+        photo = self.api.direct_send_photo(path='examples/kanada.jpg', user_ids=[adw0rd])
         self.assertIsInstance(photo, DirectMessage)
         self.assertEqual(photo.thread_id, pong.thread_id)
         # send seen
@@ -1064,6 +1074,22 @@ class ClientDirectTestCase(ClientPrivateTestCase):
         # mute video call and unmute
         self.assertTrue(self.api.direct_thread_mute_video_call(thread.id))
         self.assertTrue(self.api.direct_thread_unmute_video_call(thread.id))
+
+    def test_direct_send_photo(self):
+        adw0rd = self.api.user_id_from_username('adw0rd')
+        dm = self.api.direct_send_photo(
+            path='examples/kanada.jpg',
+            user_ids=[adw0rd]
+        )
+        self.assertIsInstance(dm, DirectMessage)
+
+    def test_direct_send_video(self):
+        adw0rd = self.api.user_id_from_username('adw0rd')
+        path = self.api.video_download(
+            self.api.media_pk_from_url('https://www.instagram.com/p/B3rFQPblq40/')
+        )
+        dm = self.api.direct_send_video(path=path, user_ids=[adw0rd])
+        self.assertIsInstance(dm, DirectMessage)
 
     def test_direct_thread_by_participants(self):
         try:

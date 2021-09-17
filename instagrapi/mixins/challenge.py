@@ -1,6 +1,7 @@
 import hashlib
 import json
 import time
+from enum import Enum
 from typing import Dict
 
 import requests
@@ -15,9 +16,12 @@ from instagrapi.exceptions import (
     SubmitPhoneNumberForm,
 )
 
-CHOICE_SMS = 0
-CHOICE_EMAIL = 1
 WAIT_SECONDS = 5
+
+
+class ChallengeChoice(Enum):
+    SMS = 0
+    EMAIL = 1
 
 
 def extract_messages(challenge):
@@ -144,7 +148,7 @@ class ChallengeResolveMixin:
             }
         )
         time.sleep(WAIT_SECONDS)
-        choice = CHOICE_EMAIL
+        choice = ChallengeChoice.EMAIL
         result = session.post(challenge_url, {"choice": choice})
         result = result.json()
         for retry in range(8):
@@ -154,9 +158,9 @@ class ChallengeResolveMixin:
                 result = self.handle_challenge_result(result)
                 break
             except SelectContactPointRecoveryForm as e:
-                if choice == CHOICE_SMS:  # last iteration
+                if choice == ChallengeChoice.SMS:  # last iteration
                     raise e
-                choice = CHOICE_SMS
+                choice = ChallengeChoice.SMS
                 result = session.post(challenge_url, {"choice": choice})
                 result = result.json()
                 continue  # next choice attempt
@@ -374,14 +378,14 @@ class ChallengeResolveMixin:
                 steps = self.last_json["step_data"].keys()
                 challenge_url = challenge_url[1:]
                 if "email" in steps:
-                    self._send_private_request(challenge_url, {"choice": CHOICE_EMAIL})
+                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
                 elif "phone_number" in steps:
-                    self._send_private_request(challenge_url, {"choice": CHOICE_SMS})
+                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
                 else:
                     raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
             wait_seconds = 5
             for attempt in range(24):
-                code = self.challenge_code_handler(self.username, CHOICE_EMAIL)
+                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
                 if code:
                     break
                 time.sleep(wait_seconds)

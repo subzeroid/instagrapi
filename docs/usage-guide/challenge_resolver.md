@@ -1,14 +1,37 @@
 
+## New password challenge
+
+You can automatically change your password to solve the challenge from Instagram.
+
+Declare `change_password_handler` which will return a new password. 
+
+``` python
+def change_password_handler(username):
+    # Simple way to generate a random string
+    chars = list("abcdefghijklmnopqrstuvwxyz1234567890!&£@#")
+    password = "".join(random.sample(chars, 8))
+    return password
+
+cl = Client()
+cl.change_password_handler = change_password_handler
+cl.login(IG_USERNAME, IG_PASSWORD)
+```
+
+
+## Code verification challenge
 
 You can automatically process the codes sent to you to solve the challenge from Instagram.
 
 You need to declare `challenge_code_handler` which will return the code received from Instagram via Email or SMS:
 
 ``` python
+from instagrapi.challenge import ChallengeChoice
+
+
 def challenge_code_handler(username, choice):
-    if choice == 0:
+    if choice == ChallengeChoice.SMS:
         return get_code_from_sms(username)
-    elif choice == 1:
+    elif choice == ChallengeChoice.EMAIL:
         return get_code_from_email(username)
     return False
 

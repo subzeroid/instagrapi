@@ -2,7 +2,7 @@ import json
 import time
 from typing import List, Tuple
 
-from instagrapi.exceptions import ClientError, ClientNotFoundError, LocationNotFound
+from instagrapi.exceptions import ClientNotFoundError, LocationNotFound
 from instagrapi.extractors import extract_location, extract_media_v1
 from instagrapi.types import Location, Media
 
@@ -169,9 +169,11 @@ class LocationMixin:
         """
         try:
             location = self.location_info_a1(location_pk)
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+        except Exception:
+            # Users do not understand the output of such information and create bug reports
+            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # if not isinstance(e, ClientError):
+            #     self.logger.exception(e)
             location = self.location_info_v1(location_pk)
         return location
 
@@ -399,9 +401,11 @@ class LocationMixin:
         """
         try:
             return self.location_medias_top_a1(location_pk, amount, sleep)
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+        except Exception:
+            # Users do not understand the output of such information and create bug reports
+            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # if not isinstance(e, ClientError):
+            #     self.logger.exception(e)
             return self.location_medias_top_v1(location_pk, amount)
 
     def location_medias_recent_a1(
@@ -470,7 +474,9 @@ class LocationMixin:
         """
         try:
             return self.location_medias_recent_a1(location_pk, amount, sleep)
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+        except Exception:
+            # Users do not understand the output of such information and create bug reports
+            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # if not isinstance(e, ClientError):
+            #     self.logger.exception(e)
             return self.location_medias_recent_v1(location_pk, amount)

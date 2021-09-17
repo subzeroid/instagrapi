@@ -4,8 +4,10 @@ Example to handle Email/SMS challenges
 import email
 import imaplib
 import re
+import random
 
 from instagrapi import Client
+from instagrapi.challenge import ChallengeChoice
 
 CHALLENGE_EMAIL = ''
 CHALLENGE_PASSWORD = ''
@@ -56,14 +58,22 @@ def get_code_from_sms(username):
 
 
 def challenge_code_handler(username, choice):
-    if choice == 0:
+    if choice == ChallengeChoice.SMS:
         return get_code_from_sms(username)
-    elif choice == 1:
+    elif choice == ChallengeChoice.EMAIL:
         return get_code_from_email(username)
     return False
+
+
+def change_password_handler(username):
+    # Simple way to generate a random string
+    chars = list("abcdefghijklmnopqrstuvwxyz1234567890!&£@#")
+    password = "".join(random.sample(chars, 10))
+    return password
 
 
 if __name__ == '__main__':
     cl = Client()
     cl.challenge_code_handler = challenge_code_handler
+    cl.change_password_handler = change_password_handler
     cl.login(IG_USERNAME, IG_PASSWORD)

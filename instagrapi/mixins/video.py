@@ -107,6 +107,7 @@ class UploadVideoMixin:
         thumbnail: Path = None,
         to_album: bool = False,
         to_story: bool = False,
+        to_direct: bool = False,
     ) -> tuple:
         """
         Upload video to Instagram
@@ -119,6 +120,7 @@ class UploadVideoMixin:
             Path to thumbnail for video. When None, then thumbnail is generate automatically
         to_album: bool, optional
         to_story: bool, optional
+        to_direct: bool, optional
 
         Returns
         -------
@@ -142,6 +144,10 @@ class UploadVideoMixin:
             "upload_media_width": str(width),
             "upload_media_height": str(height),  # "1138" for Mi5s
         }
+        if to_direct:
+            rupload_params["direct_v2"] = "1"
+            # "hflip": "false",
+            # "rotate":"3",
         if to_album:
             rupload_params["is_sidecar"] = "1"
         if to_story:
@@ -200,6 +206,7 @@ class UploadVideoMixin:
         thumbnail: Path = None,
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Media:
         """
         Upload video and configure to feed
@@ -216,6 +223,8 @@ class UploadVideoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -241,6 +250,7 @@ class UploadVideoMixin:
                     caption,
                     usertags,
                     location,
+                    extra_data=extra_data
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -268,6 +278,7 @@ class UploadVideoMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Post Configure Video (send caption, thumbnail and more to Instagram)
@@ -290,6 +301,8 @@ class UploadVideoMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -317,6 +330,7 @@ class UploadVideoMixin:
             "extra": {"source_width": width, "source_height": height},
             "device": self.device,
             "caption": caption,
+            **extra_data
         }
         return self.private_request(
             "media/configure/?video=1", self.with_default_data(data)
@@ -355,7 +369,7 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
-        extra_data: List[str, str], optional
+        extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
@@ -454,7 +468,7 @@ class UploadVideoMixin:
             List of stickers to be tagged on this upload, default is empty list.
         thread_ids: List[int], optional
             List of Direct Message Thread ID (to send a story to a thread)
-        extra_data: List[str, str], optional
+        extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
@@ -641,12 +655,13 @@ class UploadVideoMixin:
                     data["has_animated_sticker"] = "1"
         if thread_ids:
             # Send to direct thread
+            token = self.generate_mutation_token()
             data.update({
                 "configure_mode": "2",
                 "allow_multi_configures": "1",
-                "client_context": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "client_context": token,
                 "is_shh_mode": "0",
-                "mutation_token": str(random.randint(6800011111111111111, 6800099999999999999)),
+                "mutation_token": token,
                 "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
                 "recipient_users": "[]",
                 "send_attribution": "direct_story_audience_picker",
