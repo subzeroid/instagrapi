@@ -64,8 +64,9 @@ class UserShort(BaseModel):
     username: Optional[str]
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
-    is_private: bool = False
-    is_verified: bool = False
+    profile_pic_url_hd: Optional[HttpUrl]
+    is_private: Optional[bool]
+    # is_verified: bool  # not found in hashtag_medias_v1
     stories: List = []
 
 
@@ -200,6 +201,7 @@ class StorySticker(BaseModel):
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
+    paths: List[FilePath] = []
 
 
 class StoryLink(BaseModel):
@@ -244,6 +246,7 @@ class DirectMessage(BaseModel):
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    link: Optional[dict]
     media: Optional[DirectMedia]
     media_share: Optional[Media]
     reel_share: Optional[dict]

@@ -92,6 +92,7 @@ class UploadAlbumMixin:
         configure_handler=None,
         configure_exception=None,
         to_story=False,
+        extra_data: Dict[str, str] = {},
     ) -> Media:
         """
         Upload album to feed
@@ -114,6 +115,8 @@ class UploadAlbumMixin:
             Configure exception class, default is None
         to_story: bool
             Currently not used, default is False
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -170,7 +173,7 @@ class UploadAlbumMixin:
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.album_configure)(
-                    children, caption, usertags, location
+                    children, caption, usertags, location, extra_data=extra_data
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -196,6 +199,7 @@ class UploadAlbumMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Post Configure Album
@@ -210,6 +214,8 @@ class UploadAlbumMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -243,6 +249,7 @@ class UploadAlbumMixin:
                 }
                 for child in childs
             ],
+            **extra_data
         }
         return self.private_request(
             "media/configure_sidecar/", self.with_default_data(data)

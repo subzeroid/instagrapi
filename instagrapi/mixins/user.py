@@ -2,7 +2,6 @@ from copy import deepcopy
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
-from instagrapi import config
 from instagrapi.exceptions import (
     ClientError,
     ClientJSONDecodeError,
@@ -292,7 +291,7 @@ class UserMixin:
         True if new feed exist ,
         After Login or load Settings always return False
         """
-        results = self.private_request(f"feed/new_feed_posts_exist/")
+        results = self.private_request("feed/new_feed_posts_exist/")
         return results.get("new_feed_posts_exist", False)
 
     def user_friendship_v1(self, user_id: int) -> Relationship:
@@ -478,14 +477,16 @@ class UserMixin:
         while True:
             if amount and len(users) >= amount:
                 break
-            result = self.private_request(
-                f"friendships/{user_id}/following/",
-                params={
-                    "max_id": max_id,
-                    "rank_token": self.rank_token,
-                    "ig_sig_key_version": config.SIG_KEY_VERSION,
-                },
-            )
+            params = {
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "includes_hashtags": "true",
+                "enable_groups": "true",
+                "query": "",
+            }
+            if max_id:
+                params["max_id"] = max_id
+            result = self.private_request(f"friendships/{user_id}/following/", params=params)
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
@@ -624,6 +625,7 @@ class UserMixin:
         Tuple[List[UserShort], str]
             Tuple of List of users and max_id
         """
+        unique_set = set()
         users = []
         while True:
             result = self.private_request(
@@ -637,7 +639,11 @@ class UserMixin:
                 },
             )
             for user in result["users"]:
-                users.append(extract_user_short(user))
+                user = extract_user_short(user)
+                if user.pk in unique_set:
+                    continue
+                unique_set.add(user.pk)
+                users.append(user)
             max_id = result.get("next_max_id")
             if not max_id or (max_amount and len(users) >= max_amount):
                 break

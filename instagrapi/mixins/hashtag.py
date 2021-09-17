@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound
+from instagrapi.exceptions import ClientError, HashtagNotFound
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
@@ -104,9 +104,11 @@ class HashtagMixin:
         """
         try:
             hashtag = self.hashtag_info_a1(name)
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+        except Exception:
+            # Users do not understand the output of such information and create bug reports
+            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # if not isinstance(e, ClientError):
+            #     self.logger.exception(e)
             hashtag = self.hashtag_info_v1(name)
         return hashtag
 
@@ -354,15 +356,8 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            try:
-                medias = self.hashtag_medias_top_a1(name, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.hashtag_medias_top_a1(name, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+            medias = self.hashtag_medias_top_a1(name, amount)
+        except ClientError:
             medias = self.hashtag_medias_top_v1(name, amount)
         return medias
 
@@ -419,14 +414,7 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            try:
-                medias = self.hashtag_medias_recent_a1(name, amount)
-            except ClientLoginRequired as e:
-                if not self.inject_sessionid_to_public():
-                    raise e
-                medias = self.hashtag_medias_recent_a1(name, amount)  # retry
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
+            medias = self.hashtag_medias_recent_a1(name, amount)
+        except ClientError:
             medias = self.hashtag_medias_recent_v1(name, amount)
         return medias

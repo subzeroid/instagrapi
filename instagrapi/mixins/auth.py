@@ -95,6 +95,7 @@ class PreLoginFlowMixin:
             % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
+            "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
             "device_id": self.uuid,
         }
         # if login is False:
@@ -324,6 +325,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        # init headers
+        headers = self.base_headers
+        headers.update({"Authorization": self.authorization})
+        self.private.headers.update(headers)
         self.username = self.settings.get("username", "")
         self.web_user_agent = self.settings.get(
             "web_user_agent",
@@ -409,18 +414,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.logger.warning("Ignore 429: Continue login")
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
-            pass
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            # "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
+            "country_codes": '[{"country_code":"7","source":["default"]}]',
             "phone_id": self.phone_id,
             "enc_password": enc_password,
-            # "_csrftoken": self.token,
             "username": username,
             "adid": self.advertising_id,
             "guid": self.uuid,
-            "device_id": self.uuid,
+            "device_id": self.android_device_id,
             "google_tokens": "[]",
             "login_attempt_count": "0",
         }
@@ -633,7 +636,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "194.0.0.36.172",
+            "app_version": "203.0.0.29.118",
             "android_version": 26,
             "android_release": "8.0.0",
             "dpi": "480dpi",
@@ -642,9 +645,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "device": "MI 5s",
             "model": "capricorn",
             "cpu": "qcom",
-            "version_code": "301484483",
+            "version_code": "314665256",
         }
-        # self.settings["device_settings"] = self.device_settings
+        self.settings["device_settings"] = self.device_settings
         if reset:
             self.set_uuids({})
             # self.settings = self.get_settings()
@@ -697,6 +700,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.request_id = uuids.get("request_id", self.generate_uuid())
         self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
         # self.device_id = uuids.get("device_id", self.generate_uuid())
+        self.settings["uuids"] = uuids
         return True
 
     def generate_uuid(self, prefix: str = "", suffix: str = "") -> str:
@@ -709,6 +713,17 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A stringified UUID
         """
         return f"{prefix}{uuid.uuid4()}{suffix}"
+
+    def generate_mutation_token(self) -> str:
+        """
+        Token used when DM sending and upload media
+
+        Returns
+        -------
+        str
+            A stringified int
+        """
+        return str(random.randint(6800011111111111111, 6800099999999999999))
 
     def generate_android_device_id(self) -> str:
         """
@@ -745,9 +760,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return dict(
             {
                 "_uuid": self.uuid,
-                "_uid": str(self.user_id),
-                "_csrftoken": self.token,
-                "device_id": self.uuid,
+                # "_uid": str(self.user_id),
+                # "_csrftoken": self.token,
+                "device_id": self.android_device_id,
             },
             **data,
         )
