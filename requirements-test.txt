@@ -5,7 +5,7 @@ bandit==1.7.0
 mike==1.1.1
 markdown-include==0.6.0
 mkdocs-material==7.2.8
-mkdocs-minify-plugin==0.4.0
+mkdocs-minify-plugin==0.4.1
 mkdocstrings==0.16.0
 ./util/mkdocs-redirects
 ./util/mkdocstrings_patch_type_aliases
