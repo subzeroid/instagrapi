@@ -275,7 +275,9 @@ class StoryMixin:
         Path
             Path for the file downloaded
         """
-        fname = urlparse(url).path.rsplit("/", 1)[1]
+        fname = urlparse(url).path.rsplit("/", 1)[1].strip()
+        assert fname, """The URL must contain the path to the file (mp4 or jpg).\n"""\
+            """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)

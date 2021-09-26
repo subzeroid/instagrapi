@@ -8,18 +8,18 @@
 | story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool        | Mark a story as seen
 | story_pk_from_url(url: str)                                            | int         | Get Story (media) PK from URL
 | story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path        | Download story media by media_type
-| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path        | Download story media using URL
+| story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path        | Download story media using URL to file (mp4 or jpg)
 
 ```
->>> cl.story_download(2581281926631793076)
+>>> cl.story_download(cl.story_pk_from_url('https://www.instagram.com/stories/adw0rd/2581281926631793076/'))
 PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
 
 >>> s = cl.story_info(2581281926631793076)
 
->>> cl.story_download_by_url(s.video_url)
+>>> cl.story_download_by_url(s.video_url)  # url to mp4 file
 PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
 
->>> cl.story_download_by_url(s.thumbnail_url)
+>>> cl.story_download_by_url(s.thumbnail_url)  # URL to jpg file
 PosixPath('/app/191260083_2908005872746895_8988438451809588865_n.jpg')
 ```
 
