@@ -242,10 +242,11 @@ Upload medias to your feed. Common arguments:
 
 In `extra_data`, you can pass additional media settings, for example:
 
-| Method                           | Type   | Description
-| -------------------------------- | ------ | ------------------
-| custom_accessibility_caption     | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `cl.video_upload(path, caption, extra_data={"custom_accessibility_caption": "ALT TEXT HERE"})`
-| like_and_view_counts_disabled    | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `cl.video_upload(path, caption, extra_data={"like_and_view_counts_disabled": 1})`
+| Method                        | Type   | Description
+| ----------------------------- | ------ | ------------------
+| custom_accessibility_caption  | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `cl.video_upload(path, caption, extra_data={"custom_accessibility_caption": "ALT TEXT HERE"})`
+| like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `cl.video_upload(path, caption, extra_data={"like_and_view_counts_disabled": 1})`
+| disable_comments              | Int    | Disable comments `cl.video_upload(path, caption, extra_data={"disable_comments": 1})`
 
 ### Example:
 
@@ -257,7 +258,12 @@ In `extra_data`, you can pass additional media settings, for example:
 
 >>> media = cl.photo_upload(
     "/app/image.jpg",
-    "Test caption for photo with #hashtags and mention users such @adw0rd"
+    "Test caption for photo with #hashtags and mention users such @adw0rd",
+    extra_data={
+        "custom_accessibility_caption": "alt text example",
+        "like_and_view_counts_disabled: 1,
+        "disable_comments": 1,
+    }
 )
 
 >>> media.dict()
