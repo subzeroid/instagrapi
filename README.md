@@ -50,7 +50,7 @@ medias = cl.user_medias(user_id, 20)
 ```
 
 <details>
-    <summary>The full example</summary>
+    <summary>Additional example</summary>
 
 ```python
 from instagrapi import Client
