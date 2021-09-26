@@ -232,14 +232,20 @@ Upload medias to your feed. Common arguments:
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
-| Method                                                                                                          | Return  | Description
-| --------------------------------------------------------------------------------------------------------------- | ------- | ------------------
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location)             | Media   | Upload photo (Support JPG files)
-| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)            | Media   | Upload video (Support MP4 files)
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location)                      | Media   | Upload Album (Support JPG/MP4 files)
-| igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location) | Media   | Upload IGTV (Support MP4 files)
-| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location)             | Media   | Upload Reels Clip (Support MP4 files)
+| Method                                                                                                                                 | Return  | Description
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})             | Media   | Upload photo (Support JPG files)
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})            | Media   | Upload video (Support MP4 files)
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})                      | Media   | Upload Album (Support JPG/MP4 files)
+| igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})             | Media   | Upload Reels Clip (Support MP4 files)
 
+In `extra_data`, you can pass additional media settings, for example:
+
+| Method                           | Type   | Description
+| -------------------------------- | ------ | ------------------
+| custom_accessibility_caption     | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `cl.video_upload(path, caption, extra_data={"custom_accessibility_caption": "ALT TEXT HERE"})`
+| like_and_view_counts_disabled    | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `cl.video_upload(path, caption, extra_data={"like_and_view_counts_disabled": 1})`
 
 ### Example:
 

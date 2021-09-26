@@ -128,9 +128,9 @@ cl.get_timeline_feed()  # check session
 | set_proxy(dsn: str)                   | dict | Support socks and http/https proxy "scheme://username:password@host:port"
 | private.proxies                       | dict | Stores used proxy servers for private (mobile, v1) requests
 | public.proxies                        | dict | Stores used proxy servers for public (web, graphql) requests
-| set_device(device: dict)              | bool | Change device settings (https://www.myfakeinfo.com/mobile/get-android-device-information.php)
+| set_device(device: dict)              | bool | Change device settings ([Android Device Information Generator Online](https://www.myfakeinfo.com/mobile/get-android-device-information.php))
 | device                                | dict | Return device dict which we pass to Instagram
-| set_user_agent(user_agent: str = "")  | bool | Change User-Agent header (https://user-agents.net/applications/instagram-app)
+| set_user_agent(user_agent: str = "")  | bool | Change User-Agent header ([User Agents](https://user-agents.net/applications/instagram-app))
 | cookie_dict                           | dict | Return cookies
 | user_id                               | int  | Return your user_id (after login)
 | base_headers                          | dict | Base headers for Instagram

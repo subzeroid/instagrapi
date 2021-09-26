@@ -10,6 +10,7 @@ Viewing location info and medias by location
 | location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
 | location_medias_top(location_pk: int, amount: int = 9)     | List[Media]    | Return Top posts by Location
 | location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
+| fbsearch_places(query: str, lat: float = 40.74, lng: float = -73.94) | List[Location] | >Search places via Facebook Search (40.74/-73.94 - New York, default GEO)
 
 
 Example:
@@ -122,6 +123,45 @@ Example:
  'video_duration': 0.0,
  'title': '',
  'resources': []}
+
+```
+
+Facebook Search:
+```
+>>> place = cl.fbsearch_places('Perch')[2]
+>>> place.dict()
+{
+ 'pk': 3824034,
+ 'name': 'Perch',
+ 'phone': '',
+ 'website': '',
+ 'category': '',
+ 'hours': {},
+ 'address': None,
+ 'city': None,
+ 'zip': None,
+ 'lng': -118.25135,
+ 'lat': 34.04882,
+ 'external_id': 207298912632228,
+ 'external_id_source': 'facebook_places'
+}
+
+>>> cl.location_info(place.pk).dict()
+{
+ 'pk': 3824034,
+ 'name': 'Perch',
+ 'phone': '(213) 802-1770',
+ 'website': 'http://www.perchla.com',
+ 'category': '',
+ 'hours': {},
+ 'address': '448 S Hill St',
+ 'city': 'Los Angeles, California',
+ 'zip': '90013',
+ 'lng': -118.25135,
+ 'lat': 34.04882,
+ 'external_id': None,
+ 'external_id_source': None
+}
 ```
 
 Low level methods:
