@@ -7,7 +7,7 @@
 
 Example:
 
-```
+``` python
 >>> cl.highlight_info(17895485201104054).dict()
 {
     'pk': 17895485201104054,

@@ -127,7 +127,7 @@ Example:
 ```
 
 Facebook Search:
-```
+``` python
 >>> place = cl.fbsearch_places('Perch')[2]
 >>> place.dict()
 {

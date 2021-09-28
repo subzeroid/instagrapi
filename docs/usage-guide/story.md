@@ -10,7 +10,9 @@
 | story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path        | Download story media by media_type
 | story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path        | Download story media using URL to file (mp4 or jpg)
 
-```
+Example:
+
+``` python
 >>> cl.story_download(cl.story_pk_from_url('https://www.instagram.com/stories/adw0rd/2581281926631793076/'))
 PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
 
