@@ -17,6 +17,7 @@ from instagrapi.types import (
     DirectMessage,
     DirectThread,
     Hashtag,
+    Highlight,
     Location,
     Media,
     MediaOembed,
@@ -1481,6 +1482,23 @@ class TOTPTestCase(ClientPrivateTestCase):
         self.assertIsInstance(code, str)
         self.assertTrue(code.isdigit())
         self.assertEqual(len(code), 6)
+
+
+class ClientHighlightTestCase(ClientPrivateTestCase):
+
+    def test_highlight_pk_from_url(self):
+        highlight_pk = self.api.highlight_pk_from_url(
+            "https://www.instagram.com/stories/highlights/17933911816568671/"
+        )
+        self.assertEqual(highlight_pk, 17933911816568671)
+
+    def test_highlight_info(self):
+        highlight = self.api.highlight_info(17933911816568671)
+        self.assertIsInstance(highlight, Highlight)
+        self.assertEqual(highlight.pk, 17933911816568671)
+        self.assertTrue(len(highlight.items) > 0)
+        self.assertEqual(len(highlight.items), highlight.media_count)
+        self.assertEqual(len(highlight.items), len(highlight.media_ids))
 
 
 if __name__ == '__main__':
