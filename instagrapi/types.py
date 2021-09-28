@@ -324,3 +324,17 @@ class Relationship(BaseModel):
     muting: bool
     outgoing_request: bool
     status: str
+
+
+class Highlight(BaseModel):
+    pk: int  # 17895485401104052
+    id: str  # highlight:17895485401104052
+    latest_reel_media: int
+    cover_media: dict
+    user: UserShort
+    title: str
+    created_at: datetime
+    is_pinned_highlight: bool
+    media_count: int
+    media_ids: List[int]
+    items: List[Story]

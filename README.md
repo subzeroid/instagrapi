@@ -95,6 +95,7 @@ cl.video_upload_to_story(
   * [`Hashtag`](https://adw0rd.github.io/instagrapi/usage-guide/hashtag.html) - Hashtag object (id, name, picture)
   * [`Collection`](https://adw0rd.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)
   * [`Comment`](https://adw0rd.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
+  * [`Highlight`](https://adw0rd.github.io/instagrapi/usage-guide/highlight.html) - Highlights
   * [`Story`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Story
   * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link (Swipe up)
   * [`StoryLocation`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)

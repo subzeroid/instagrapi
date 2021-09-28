@@ -14,6 +14,7 @@
 * [`Hashtag`](hashtag.md) - Hashtag object (id, name, picture)
 * [`Collection`](collection.md) - Collection of medias (name, picture and list of medias)
 * [`Comment`](comment.md) - Comments to Media
+* [`Highlight`](highlight.md) - Highlights
 * [`Story`](story.md) - Story
 * [`StoryLink`](story.md) - Link (Swipe up)
 * [`StoryLocation`](story.md) - Tag Location in Story (as sticker)
