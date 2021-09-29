@@ -71,6 +71,10 @@ class PrivateError(ClientError):
     """For Private API and last_json logic"""
 
 
+class NotFoundError(PrivateError):
+    reason = 'Not found'
+
+
 class FeedbackRequired(PrivateError):
     pass
 
@@ -139,7 +143,7 @@ class MediaError(PrivateError):
     pass
 
 
-class MediaNotFound(MediaError):
+class MediaNotFound(NotFoundError, MediaError):
     pass
 
 
@@ -147,7 +151,7 @@ class UserError(PrivateError):
     pass
 
 
-class UserNotFound(UserError):
+class UserNotFound(NotFoundError, UserError):
     pass
 
 
@@ -155,23 +159,19 @@ class CollectionError(PrivateError):
     pass
 
 
-class CollectionNotFound(CollectionError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Collection \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
-        )
+class CollectionNotFound(NotFoundError, CollectionError):
+    pass
 
 
 class DirectError(PrivateError):
     pass
 
 
-class DirectThreadNotFound(DirectError):
+class DirectThreadNotFound(NotFoundError, DirectError):
     pass
 
 
-class DirectMessageNotFound(DirectError):
+class DirectMessageNotFound(NotFoundError, DirectError):
     pass
 
 
@@ -244,24 +244,21 @@ class HashtagError(PrivateError):
     pass
 
 
-class HashtagNotFound(HashtagError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Hashtag \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
-        )
+class HashtagNotFound(NotFoundError, HashtagError):
+    pass
 
 
 class LocationError(PrivateError):
     pass
 
 
-class LocationNotFound(LocationError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Location \"{kwargs.get('location_pk')}\" not found",
-            *args, **kwargs
-        )
+class LocationNotFound(NotFoundError, LocationError):
+    pass
+
 
 class TwoFactorRequired(PrivateError):
+    pass
+
+
+class HighlightNotFound(NotFoundError, PrivateError):
     pass

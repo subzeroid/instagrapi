@@ -2,6 +2,7 @@ import json
 from urllib.parse import urlparse
 
 from instagrapi import config
+from instagrapi.exceptions import HighlightNotFound
 from instagrapi.extractors import extract_highlight_v1
 from instagrapi.types import Highlight
 
@@ -55,7 +56,10 @@ class HighlightMixin:
             "user_ids": [highlight_id]
         }
         result = self.private_request('feed/reels_media/', data)
-        return extract_highlight_v1(result['reels'][highlight_id])
+        data = result['reels']
+        if highlight_id not in data:
+            raise HighlightNotFound(highlight_pk=highlight_pk, **data)
+        return extract_highlight_v1(data[highlight_id])
 
     def highlight_info(self, highlight_pk: int) -> Highlight:
         """
