@@ -443,6 +443,14 @@ class ClientMediaTestCase(ClientPrivateTestCase):
             2243811726252050162,
         )
 
+    def test_code_from_media_pk(self):
+        self.assertEqual(
+            self.api.media_code_from_pk(2278584739065882267), "B-fKL9qpeab"
+        )
+        self.assertEqual(
+            self.api.media_code_from_pk(2243811726252050162), "B8jnuB2HAby"
+        )
+
     def test_media_pk_from_url(self):
         self.assertEqual(
             self.api.media_pk_from_url("https://instagram.com/p/B1LbfVPlwIA/"),

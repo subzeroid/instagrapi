@@ -81,6 +81,27 @@ class MediaMixin:
             media_pk, _ = media_id.split("_")
         return int(media_pk)
 
+    def media_code_from_pk(self, media_pk: int) -> str:
+        """
+        Get Code from Media PK
+
+        Parameters
+        ----------
+        media_pk: int
+            Media PK
+
+        Returns
+        -------
+        str
+            Code (aka shortcode)
+
+        Examples
+        --------
+        2110901750722920960 -> B1LbfVPlwIA
+        2278584739065882267 -> B-fKL9qpeab
+        """
+        return InstagramIdCodec.encode(media_pk)
+
     def media_pk_from_code(self, code: str) -> int:
         """
         Get Media PK from Code
@@ -143,7 +164,7 @@ class MediaMixin:
             An object of Media type
         """
         media_pk = self.media_pk(media_pk)
-        shortcode = InstagramIdCodec.encode(media_pk)
+        shortcode = self.media_code_from_pk(media_pk)
         """Use Client.media_info
         """
         params = {"max_id": max_id} if max_id else None
@@ -169,7 +190,7 @@ class MediaMixin:
             An object of Media type
         """
         media_pk = self.media_pk(media_pk)
-        shortcode = InstagramIdCodec.encode(media_pk)
+        shortcode = self.media_code_from_pk(media_pk)
         """Use Client.media_info
         """
         variables = {
