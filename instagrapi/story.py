@@ -124,8 +124,9 @@ class StoryBuilder:
             mention.height = text_clip.size[1] / self.height
             mentions = [mention]
         duration = max_duration
-        if duration > int(clip.duration) or not duration:
-            duration = int(clip.duration)
+        if getattr(clip, 'duration', None):
+            if duration > int(clip.duration) or not duration:
+                duration = int(clip.duration)
         destination = tempfile.mktemp(".mp4")
         cvc = CompositeVideoClip(clips, size=(self.width, self.height))\
             .set_fps(24)\
