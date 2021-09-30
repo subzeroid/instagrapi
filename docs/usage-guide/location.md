@@ -164,7 +164,7 @@ Facebook Search:
 }
 ```
 
-```
+``` python
 >>> place = cl.fbsearch_places("Villa Sirot", 46.7032028502, 4.3093986902)[0]
 >>> place.dict()
 {'pk': 1001956449,
