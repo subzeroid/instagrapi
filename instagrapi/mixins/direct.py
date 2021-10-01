@@ -19,13 +19,22 @@ from instagrapi.types import (
 )
 from instagrapi.utils import dumps
 
+SELECTED_FILTERS = ("flagged", "unread")
+
+try:
+    from typing import Literal
+    SELECTED_FILTER = Literal[SELECTED_FILTERS]
+except ImportError:
+    # python <= 3.8
+    SELECTED_FILTER = str
+
 
 class DirectMixin:
     """
     Helpers for managing Direct Messaging
     """
 
-    def direct_threads(self, amount: int = 20) -> List[DirectThread]:
+    def direct_threads(self, amount: int = 20, selected_filter: SELECTED_FILTER = "") -> List[DirectThread]:
         """
         Get direct message threads
 
@@ -46,6 +55,13 @@ class DirectMixin:
             "persistentBadging": "true",
             "limit": "20",
         }
+        if selected_filter:
+            assert selected_filter in SELECTED_FILTERS, \
+                f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
+            params.update({
+                "selected_filter": selected_filter,
+                "fetch_reason": "manual_refresh",
+            })
         cursor = None
         threads = []
         self.private_request("direct_v2/get_presence/")

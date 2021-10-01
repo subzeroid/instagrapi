@@ -7,13 +7,13 @@ assignees: adw0rd
 
 ---
 
-### Compensate with donations ($20 and more) for the time I spent to fix problems or send  me your [Pull Request](https://github.com/adw0rd/instagrapi/pulls) with fixes
+### Compensate with donations ($10 and more) for the time I spent to fix problems or send  me your [Pull Request](https://github.com/adw0rd/instagrapi/pulls) with fixes
+
+[![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
 * Bitcoin: 3KHgnvNNWio6wyQ71cgNeBQojXStxzkzfd
 * Ethereum: 0x6e644c6b975B47801072b07a9a57DDfEC10DE74F
 * https://paypal.me/adw0rd
-* https://www.patreon.com/adw0rd
-* https://www.buymeacoffee.com/adw0rd
 * For Russia: СБП, Qiwi и тп: **+79118107609**
 
 **Describe the bug**

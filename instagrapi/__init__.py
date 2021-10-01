@@ -10,7 +10,9 @@ from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.fbsearch import FbSearchMixin
 from instagrapi.mixins.hashtag import HashtagMixin
+from instagrapi.mixins.highlight import HighlightMixin
 from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
@@ -43,6 +45,8 @@ class Client(
     TopSearchesPublicMixin,
     ProfilePublicMixin,
     LoginMixin,
+    FbSearchMixin,
+    HighlightMixin,
     DownloadPhotoMixin,
     UploadPhotoMixin,
     DownloadVideoMixin,

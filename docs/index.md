@@ -6,7 +6,7 @@
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **2 September 2021** (last reverse-engineering check)*
+*Instagram API valid for **26 September 2021** (last reverse-engineering check)*
 
 Support **Python >= 3.6**
 
@@ -104,6 +104,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Hashtag`](usage-guide/hashtag.md) - Hashtag object (id, name, picture)
   * [`Collection`](usage-guide/collection.md) - Collection of medias (name, picture and list of medias)
   * [`Comment`](usage-guide/comment.md) - Comments to Media
+  * [`Highlight`](usage-guide/highlight.md) - Highlights
   * [`Story`](usage-guide/story.md) - Story
   * [`StoryLink`](usage-guide/story.md) - Link (Swipe up)
   * [`StoryLocation`](usage-guide/story.md) - Tag Location in Story (as sticker)

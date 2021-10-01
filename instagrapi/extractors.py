@@ -11,6 +11,7 @@ from .types import (
     DirectShortThread,
     DirectThread,
     Hashtag,
+    Highlight,
     Location,
     Media,
     MediaOembed,
@@ -377,3 +378,13 @@ def extract_story_gql(data):
     story["width"] = story["dimensions"]["width"]
     story["height"] = story["dimensions"]["height"]
     return Story(**story)
+
+
+def extract_highlight_v1(data):
+    highlight = deepcopy(data)
+    highlight['pk'] = highlight['id'].split(':')[1]
+    highlight['items'] = [
+        extract_story_v1(item)
+        for item in highlight['items']
+    ]
+    return Highlight(**highlight)

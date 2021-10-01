@@ -13,9 +13,10 @@
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **2 September 2021** (last reverse-engineering check)*
+*Instagram API valid for **26 September 2021** (last reverse-engineering check)*
 
 Support **Python >= 3.6**
+
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
 
@@ -35,7 +36,11 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 8. [Build stories](https://adw0rd.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, swipe up link and mention users
 9. In the next release, account registration and captcha passing will appear
 
-## Example
+## Examples of apps that use instagrapi
+
+* [Web-service for Download Posts, Stories and Highlights](https://igdl.club/)
+* [Instagram Bot for Download Posts, Stories and Highlights](https://www.instagram.com/fetch_story/)
+* [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
 ### Basic Usage
 
@@ -50,7 +55,7 @@ medias = cl.user_medias(user_id, 20)
 ```
 
 <details>
-    <summary>The full example</summary>
+    <summary>Additional example</summary>
 
 ```python
 from instagrapi import Client
@@ -95,6 +100,7 @@ cl.video_upload_to_story(
   * [`Hashtag`](https://adw0rd.github.io/instagrapi/usage-guide/hashtag.html) - Hashtag object (id, name, picture)
   * [`Collection`](https://adw0rd.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)
   * [`Comment`](https://adw0rd.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
+  * [`Highlight`](https://adw0rd.github.io/instagrapi/usage-guide/highlight.html) - Highlights
   * [`Story`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Story
   * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link (Swipe up)
   * [`StoryLocation`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
