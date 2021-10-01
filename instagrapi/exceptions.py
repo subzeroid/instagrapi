@@ -11,8 +11,8 @@ class ClientError(Exception):
             setattr(self, key, kwargs.pop(key))
         if not self.message:
             self.message = "{title} ({body})".format(
-                title=getattr(self, 'reason', 'Unknown'),
-                body=getattr(self, 'error_type', vars(self))
+                title=getattr(self, "reason", "Unknown"),
+                body=getattr(self, "error_type", vars(self)),
             )
         super().__init__(self.message, *args, **kwargs)
         if self.response:
@@ -100,7 +100,7 @@ class PrivateError(ClientError):
 
 
 class NotFoundError(PrivateError):
-    reason = 'Not found'
+    reason = "Not found"
 
 
 class FeedbackRequired(PrivateError):
@@ -243,7 +243,6 @@ class IGTVConfigureError(IGTVNotUpload):
     pass
 
 
-
 class ClipNotUpload(PrivateError):
     pass
 
@@ -272,31 +271,17 @@ class HashtagError(PrivateError):
     pass
 
 
-<<<<<<< HEAD
-class HashtagNotFound(HashtagError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(f"Hashtag \"{kwargs.get('name')}\" not found", *args, **kwargs)
-=======
 class HashtagNotFound(NotFoundError, HashtagError):
     pass
->>>>>>> 148a3984bacc6d2f60d0b5046ba6110dc22f94e3
 
 
 class LocationError(PrivateError):
     pass
 
 
-<<<<<<< HEAD
-class LocationNotFound(LocationError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Location \"{kwargs.get('location_pk')}\" not found", *args, **kwargs
-        )
-=======
 class LocationNotFound(NotFoundError, LocationError):
     pass
 
->>>>>>> 148a3984bacc6d2f60d0b5046ba6110dc22f94e3
 
 class TwoFactorRequired(PrivateError):
     pass
