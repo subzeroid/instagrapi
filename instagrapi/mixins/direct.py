@@ -2,7 +2,7 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
@@ -34,7 +34,8 @@ class DirectMixin:
     Helpers for managing Direct Messaging
     """
 
-    def direct_threads(self, amount: int = 20, selected_filter: SELECTED_FILTER = "") -> List[DirectThread]:
+    def direct_threads(self, amount: int = 20, selected_filter: SELECTED_FILTER = "",
+                       thread_message_limit: Optional[int] = None) -> List[DirectThread]:
         """
         Get direct message threads
 
@@ -61,6 +62,10 @@ class DirectMixin:
             params.update({
                 "selected_filter": selected_filter,
                 "fetch_reason": "manual_refresh",
+            })
+        if thread_message_limit:
+            params.update({
+                "thread_message_limit": thread_message_limit
             })
         cursor = None
         threads = []

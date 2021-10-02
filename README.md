@@ -17,6 +17,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**
 
+
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
@@ -35,7 +36,11 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 8. [Build stories](https://adw0rd.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, swipe up link and mention users
 9. In the next release, account registration and captcha passing will appear
 
-## Example
+## Examples of apps that use instagrapi
+
+* [Web-service for Download Posts, Stories and Highlights](https://igdl.club/)
+* [Instagram Bot for Download Posts, Stories and Highlights](https://www.instagram.com/fetch_story/)
+* [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
 ### Basic Usage
 
