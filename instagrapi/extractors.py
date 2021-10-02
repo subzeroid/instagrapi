@@ -249,7 +249,10 @@ def extract_direct_response(data):
 def extract_direct_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
-        data["media_share"] = extract_media_v1(data["media_share"])
+        ms = data["media_share"]
+        if not ms.get("code"):
+            ms["code"] = InstagramIdCodec.encode(ms["id"])
+        data["media_share"] = extract_media_v1(ms)
     if "media" in data:
         data["media"] = extract_direct_media(data["media"])
     clip = data.get("clip", {})
