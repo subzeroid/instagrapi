@@ -45,7 +45,8 @@ def get_code_from_email(username):
                 print('Skip this email, "code" not found')
                 continue
             code = match.group(1)
-        return code
+            if code:
+                return code
     return False
 
 
