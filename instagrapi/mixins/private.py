@@ -177,7 +177,22 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.country = str(country)
+        self.settings['country'] = self.country = str(country)
+        return True
+
+    def set_country_code(self, country_code: int = 1):
+        """Set country calling code
+
+        Parameters
+        ----------
+        country_code: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.settings['country_code'] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -195,7 +210,7 @@ class PrivateRequestMixin:
             A boolean value
         """
         user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
-        self.locale = str(locale)
+        self.settings['locale'] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if '_' in locale:
             self.set_country(locale.rsplit('_', 1)[1])
@@ -214,7 +229,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.timezone_offset = int(seconds)
+        self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
         return True
 
     @staticmethod

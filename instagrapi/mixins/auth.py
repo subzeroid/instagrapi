@@ -262,6 +262,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     uuid = ""
     mid = ""
     country = "US"
+    country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
 
@@ -291,6 +292,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
+        self.set_country_code(self.settings.get("country_code", self.country_code))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         # init headers
         headers = self.base_headers
@@ -373,7 +375,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
+            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -519,6 +521,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
             "country": self.country,
+            "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
         }
