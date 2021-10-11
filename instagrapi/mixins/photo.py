@@ -23,6 +23,7 @@ from instagrapi.types import (
     StoryHashtag,
     StoryLink,
     StoryLocation,
+    StoryMedia,
     StoryMention,
     StorySticker,
     Usertag,
@@ -297,6 +298,7 @@ class UploadPhotoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
         extra_data: Dict[str, str] = {},
     ) -> Story:
         """
@@ -320,6 +322,8 @@ class UploadPhotoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        medias: List[StoryMedia], optional
+            List of medias to be tagged on this upload, default is empty list.
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
@@ -343,6 +347,7 @@ class UploadPhotoMixin:
                 links,
                 hashtags,
                 stickers,
+                medias,
                 extra_data=extra_data
             ):
                 media = self.last_json.get("media")
@@ -353,6 +358,7 @@ class UploadPhotoMixin:
                     hashtags=hashtags,
                     locations=locations,
                     stickers=stickers,
+                    medias=medias,
                     **extract_media_v1(media).dict()
                 )
         raise PhotoConfigureStoryError(
@@ -370,6 +376,7 @@ class UploadPhotoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
         extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
@@ -395,6 +402,8 @@ class UploadPhotoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        medias: List[StoryMedia], optional
+            List of medias to be tagged on this upload, default is empty list.
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
@@ -507,6 +516,29 @@ class UploadPhotoMixin:
                 story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
+        if medias:
+            for feed_media in medias:
+                assert feed_media.media_pk, 'Required StoryMedia.media_pk'
+                # if not feed_media.user_id:
+                #     user = self.media_user(feed_media.media_pk)
+                #     feed_media.user_id = user.pk
+                item = {
+                    'x': feed_media.x,
+                    'y': feed_media.y,
+                    'z': feed_media.z,
+                    'width': feed_media.width,
+                    'height': feed_media.height,
+                    'rotation': feed_media.rotation,
+                    'type': 'feed_media',
+                    'media_id': str(feed_media.media_pk),
+                    'media_owner_id': str(feed_media.user_id or ""),
+                    'product_type': 'feed',
+                    'is_sticker': True,
+                    'tap_state': 0,
+                    'tap_state_str_id': 'feed_post_sticker_square'
+                }
+                tap_models.append(item)
+            data["reshared_media_id"] = str(feed_media.media_pk)
         data["tap_models"] = dumps(tap_models)
         data["static_models"] = dumps(static_models)
         data["story_sticker_ids"] = dumps(story_sticker_ids)

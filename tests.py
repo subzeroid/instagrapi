@@ -26,6 +26,7 @@ from instagrapi.types import (
     StoryLink,
     StoryLocation,
     StoryMention,
+    StoryMedia,
     StorySticker,
     User,
     UserShort,
@@ -1320,18 +1321,17 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         adw0rd = self.api.user_info_by_username('adw0rd')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
+        medias = [StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
-        hashtags = [
-            StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))
-        ]
-        locations = [
-            StoryLocation(
-                location=Location(
-                    pk=150300262230285,
-                    name='Blaues Wunder (Dresden)',
-                )
-            )
-        ]
+        # hashtags = [StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))]
+        # locations = [
+        #     StoryLocation(
+        #         location=Location(
+        #             pk=150300262230285,
+        #             name='Blaues Wunder (Dresden)',
+        #         )
+        #     )
+        # ]
         stickers = [
             StorySticker(
                 id="Igjf05J559JWuef4N5",
@@ -1348,12 +1348,20 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 caption,
                 mentions=mentions,
                 links=links,
-                hashtags=hashtags,
-                locations=locations,
-                stickers=stickers
+                # hashtags=hashtags,
+                # locations=locations,
+                stickers=stickers,
+                medias=medias
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
+            s = self.api.story_info(story.pk)
+            self.assertIsInstance(s, Story)
+            self.assertTrue(s)
+            m, sm = medias[0], s.medias[0]
+            self.assertEqual(m.media_pk, sm.media_pk)
+            self.assertEqual(m.x, sm.x)
+            self.assertEqual(m.y, sm.y)
         finally:
             if path:
                 cleanup(path)
@@ -1363,42 +1371,48 @@ class ClientStoryTestCase(ClientPrivateTestCase):
         media_pk = self.api.media_pk_from_url(
             "https://www.instagram.com/p/Bk2tOgogq9V/"
         )
+        story = None
         path = self.api.video_download(media_pk)
         self.assertIsInstance(path, Path)
         caption = 'Test video caption'
         adw0rd = self.api.user_info_by_username('adw0rd')
         self.assertIsInstance(adw0rd, User)
         mentions = [StoryMention(user=adw0rd)]
+        medias = [StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)]
         links = [StoryLink(webUri='https://adw0rd.com/')]
-        hashtags = [
-            StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))
-        ]
-        locations = [
-            StoryLocation(
-                location=Location(
-                    pk=150300262230285,
-                    name='Blaues Wunder (Dresden)',
-                )
-            )
-        ]
+        # hashtags = [StoryHashtag(hashtag=self.api.hashtag_info('dhbastards'))]
+        # locations = [
+        #     StoryLocation(
+        #         location=Location(
+        #             pk=150300262230285,
+        #             name='Blaues Wunder (Dresden)',
+        #         )
+        #     )
+        # ]
         try:
-            buildout = StoryBuilder(
-                path, caption, mentions,
-                Path('./examples/background.png')
-            ).video(1)
+            buildout = StoryBuilder(path, caption, mentions, Path('./examples/background.png')).video(1)
             story = self.api.video_upload_to_story(
                 buildout.path,
                 caption,
                 mentions=buildout.mentions,
                 links=links,
-                hashtags=hashtags,
-                locations=locations,
+                # hashtags=hashtags,
+                # locations=locations,
+                medias=medias
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
+            s = self.api.story_info(story.pk)
+            self.assertIsInstance(s, Story)
+            self.assertTrue(s)
+            m, sm = medias[0], s.medias[0]
+            self.assertEqual(m.media_pk, sm.media_pk)
+            self.assertEqual(m.x, sm.x)
+            self.assertEqual(m.y, sm.y)
         finally:
             cleanup(path)
-            self.assertTrue(self.api.story_delete(story.id))
+            if story:
+                self.assertTrue(self.api.story_delete(story.id))
 
     def test_user_stories(self):
         user_id = self.api.user_id_from_username("dhbastards")
@@ -1437,6 +1451,10 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                 elif f == "user":
                     gql_val.pop('full_name')
                     v1_val.pop('full_name')
+                    gql_val.pop('is_private')
+                    v1_val.pop('is_private')
+                    gql_val["profile_pic_url"] = gql_val["profile_pic_url"].path
+                    v1_val["profile_pic_url"] = v1_val["profile_pic_url"].path
                 elif f == "mentions":
                     for item in [*gql_val, *v1_val]:
                         item['user'].pop('pk')
@@ -1455,6 +1473,8 @@ class ClientStoryTestCase(ClientPrivateTestCase):
                             v1_val[0]['webUri'].query
                         )
                     continue
+                if gql_val != v1_val:
+                    import pudb;pudb.set_trace()
                 self.assertEqual(gql_val, v1_val)
 
     def test_story_info(self):

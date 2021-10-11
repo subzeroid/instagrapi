@@ -168,6 +168,26 @@ class StoryMention(BaseModel):
     height: Optional[float]
 
 
+class StoryMedia(BaseModel):
+    # Instagram does not return the feed_media object when requesting story,
+    # so you will have to make an additional request to get media and this is overhead:
+    # media: Media
+    x: float = 0.5
+    y: float = 0.4997396
+    z: float = 0
+    width: float = 0.8
+    height: float = 0.60572916
+    rotation: float = 0.0
+    is_pinned: Optional[bool]
+    is_hidden: Optional[bool]
+    is_sticker: Optional[bool]
+    is_fb_sticker: Optional[bool]
+    media_pk: int
+    user_id: Optional[int]
+    product_type: Optional[str]
+    media_code: Optional[str]
+
+
 class StoryHashtag(BaseModel):
     hashtag: Hashtag
     x: Optional[float]
@@ -221,6 +241,7 @@ class Story(BaseModel):
     hashtags: List[StoryHashtag]
     locations: List[StoryLocation]
     stickers: List[StorySticker]
+    medias: List[StoryMedia] = []
 
 
 class DirectMedia(BaseModel):

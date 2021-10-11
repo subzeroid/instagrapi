@@ -23,6 +23,7 @@ from instagrapi.types import (
     StoryHashtag,
     StoryLink,
     StoryLocation,
+    StoryMedia,
     StoryMention,
     StorySticker,
     Usertag,
@@ -349,6 +350,7 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
         extra_data: Dict[str, str] = {},
     ) -> Story:
         """
@@ -372,6 +374,8 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        medias: List[StoryMedia], optional
+            List of medias to be tagged on this upload, default is empty list.
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
@@ -402,6 +406,7 @@ class UploadVideoMixin:
                     links,
                     hashtags,
                     stickers,
+                    medias,
                     extra_data=extra_data
                 )
             except Exception as e:
@@ -422,6 +427,7 @@ class UploadVideoMixin:
                     hashtags=hashtags,
                     locations=locations,
                     stickers=stickers,
+                    medias=medias,
                     **extract_media_v1(media).dict()
                 )
         raise VideoConfigureStoryError(
@@ -441,6 +447,7 @@ class UploadVideoMixin:
         links: List[StoryLink] = [],
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
         thread_ids: List[int] = [],
         extra_data: Dict[str, str] = {},
     ) -> Dict:
@@ -471,6 +478,8 @@ class UploadVideoMixin:
             List of hashtags to be tagged on this upload, default is empty list.
         stickers: List[StorySticker], optional
             List of stickers to be tagged on this upload, default is empty list.
+        medias: List[StoryMedia], optional
+            List of medias to be tagged on this upload, default is empty list.
         thread_ids: List[int], optional
             List of Direct Message Thread ID (to send a story to a thread)
         extra_data: Dict[str, str], optional
@@ -656,6 +665,29 @@ class UploadVideoMixin:
                 story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
+        if medias:
+            for feed_media in medias:
+                assert feed_media.media_pk, 'Required StoryMedia.media_pk'
+                # if not feed_media.user_id:
+                #     user = self.media_user(feed_media.media_pk)
+                #     feed_media.user_id = user.pk
+                item = {
+                    'x': feed_media.x,
+                    'y': feed_media.y,
+                    'z': feed_media.z,
+                    'width': feed_media.width,
+                    'height': feed_media.height,
+                    'rotation': feed_media.rotation,
+                    'type': 'feed_media',
+                    'media_id': str(feed_media.media_pk),
+                    'media_owner_id': str(feed_media.user_id or ""),
+                    'product_type': 'feed',
+                    'is_sticker': True,
+                    'tap_state': 0,
+                    'tap_state_str_id': 'feed_post_sticker_square'
+                }
+                tap_models.append(item)
+            data["reshared_media_id"] = str(feed_media.media_pk)
         if thread_ids:
             # Send to direct thread
             token = self.generate_mutation_token()
@@ -685,6 +717,7 @@ class UploadVideoMixin:
         caption: str = "",
         thumbnail: Path = None,
         mentions: List[StoryMention] = [],
+        medias: List[StoryMedia] = [],
         thread_ids: List[int] = [],
         extra_data: Dict[str, str] = {},
     ) -> DirectMessage:
@@ -729,6 +762,7 @@ class UploadVideoMixin:
                     thumbnail,
                     caption,
                     mentions=mentions,
+                    medias=medias,
                     thread_ids=thread_ids,
                     extra_data=extra_data
                 )

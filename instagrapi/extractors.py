@@ -18,6 +18,7 @@ from .types import (
     Resource,
     Story,
     StoryLink,
+    StoryMedia,
     StoryMention,
     User,
     UserShort,
@@ -305,7 +306,7 @@ def extract_story_v1(data):
             story["video_versions"], key=lambda o: o["height"] * o["width"]
         )[-1]["url"]
     if story["media_type"] == 2 and not story.get("product_type"):
-        story["product_type"] = "feed"
+        story["product_type"] = "story"
     if "image_versions2" in story:
         story["thumbnail_url"] = sorted(
             story["image_versions2"]["candidates"],
@@ -317,6 +318,12 @@ def extract_story_v1(data):
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
+    feed_medias = []
+    story_feed_medias = data.get('story_feed_media') or []
+    for feed_media in story_feed_medias:
+        feed_media["media_pk"] = int(feed_media["media_id"])
+        feed_medias.append(StoryMedia(**feed_media))
+    story["medias"] = feed_medias
     story["links"] = []
     for cta in story.get("story_cta", []):
         for link in cta.get("links", []):
@@ -333,15 +340,21 @@ def extract_story_gql(data):
         story["video_url"] = sorted(
             story["video_resources"], key=lambda o: o["config_height"] * o["config_width"]
         )[-1]["src"]
-    # if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
-    story["product_type"] = "feed"
+    story["product_type"] = "story"
     story["thumbnail_url"] = story.get("display_url")
     story["mentions"] = []
-    for mention in story.get("tappable_objects", []):
-        if mention["__typename"] == "GraphTappableMention":
-            mention["id"] = 1
-            mention["user"] = extract_user_short(mention)
-            story["mentions"].append(StoryMention(**mention))
+    story["medias"] = []
+    for item in story.get("tappable_objects", []):
+        if item["__typename"] == "GraphTappableMention":
+            item["id"] = 1
+            item["user"] = extract_user_short(item)
+            story["mentions"].append(StoryMention(**item))
+        if item["__typename"] == "GraphTappableFeedMedia":
+            media = item.get("media")
+            if media:
+                item["media_pk"] = int(media["id"])
+                item["media_code"] = media["shortcode"]
+            story["medias"].append(StoryMedia(**item))
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []

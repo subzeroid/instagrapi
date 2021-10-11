@@ -110,13 +110,16 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
-    def users_stories_gql(self, user_ids: List[int]) -> List[UserShort]:
+    def users_stories_gql(self, user_ids: List[int], amount: int = 0) -> List[UserShort]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
         user_ids: List[int]
+            List of users
+        amount: int
+            Max amount of stories
 
         Returns
         -------
@@ -141,10 +144,10 @@ class StoryMixin:
         users = []
         for media in stories_un['reels_media']:
             user = extract_user_short(media['owner'])
-            user.stories = [
-                extract_story_gql(m)
-                for m in media['items']
-            ]
+            items = media['items']
+            if amount:
+                items = items[:amount]
+            user.stories = [extract_story_gql(m) for m in items]
             users.append(user)
         return users
 
@@ -163,7 +166,7 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
-        user = self.users_stories_gql([user_id])[0]
+        user = self.users_stories_gql([user_id], amount=amount)[0]
         stories = deepcopy(user.stories)
         if amount:
             stories = stories[:amount]
