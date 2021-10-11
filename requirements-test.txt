@@ -1,10 +1,10 @@
-flake8==3.9.2
+flake8==4.0.1
 Pillow==8.3.2
 isort==5.9.3
 bandit==1.7.0
 mike==1.1.2
 markdown-include==0.6.0
-mkdocs-material==7.3.2
+mkdocs-material==7.3.3
 mkdocs-minify-plugin==0.4.1
 mkdocstrings==0.16.2
 ./util/mkdocs-redirects
