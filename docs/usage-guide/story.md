@@ -48,6 +48,12 @@ Common arguments:
 | photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
 | video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
 
+In `extra_data`, you can pass additional media settings, for example:
+
+| Method                        | Type   | Description
+| ----------------------------- | ------ | ------------------
+| reshared_media_id             | String | Link to post (str(media_pk), e.g. "2682056022293521200")
+
 Examples:
 
 ``` python
@@ -57,9 +63,8 @@ from instagrapi.types import Location, StoryMention, StoryLocation, StoryLink, S
 cl = Client()
 cl.login(USERNAME, PASSWORD)
 
-media_path = cl.video_download(
-    cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
-)
+media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+media_path = cl.video_download(media_pk)
 adw0rd = cl.user_info_by_username('adw0rd')
 loc = cl.location_complete(Location(name='Test', lat=42.0, lng=42.0))
 ht = cl.hashtag_info('dhbastards')
@@ -71,6 +76,7 @@ cl.video_upload_to_story(
     locations=[StoryLocation(location=loc, x=0.33, y=0.22, width=0.4, height=0.7)],
     links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
     hashtags=[StoryHashtag(hashtag=ht, x=0.23, y=0.32, width=0.5, height=0.22)],
+    extra_data={"reshared_media_id": str(media_pk)}
 )
 ```
 
@@ -89,9 +95,8 @@ Example:
 ``` python
 from instagrapi.story import StoryBuilder, StoryMention
 
-media_path = cl.video_download(
-    cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
-)
+media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+media_path = cl.video_download(media_pk)
 adw0rd = cl.user_info_by_username('adw0rd')
 
 buildout = StoryBuilder(
@@ -105,7 +110,8 @@ cl.video_upload_to_story(
     buildout.path,
     "Credits @adw0rd",
     mentions=buildout.mentions,
-    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')]
+    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
+    extra_data={"reshared_media_id": str(media_pk)}
 )
 ```
 
