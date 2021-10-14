@@ -7,7 +7,7 @@ import re
 import random
 
 from instagrapi import Client
-from instagrapi.challenge import ChallengeChoice
+from instagrapi.mixins.challenge import ChallengeChoice
 
 CHALLENGE_EMAIL = ''
 CHALLENGE_PASSWORD = ''
