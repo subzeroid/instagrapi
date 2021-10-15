@@ -238,7 +238,7 @@ class UploadVideoMixin:
         upload_id, width, height, duration, thumbnail = self.video_rupload(
             path, thumbnail, to_story=False
         )
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:
@@ -390,7 +390,7 @@ class UploadVideoMixin:
         upload_id, width, height, duration, thumbnail = self.video_rupload(
             path, thumbnail, to_story=True
         )
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:
@@ -750,7 +750,7 @@ class UploadVideoMixin:
         upload_id, width, height, duration, thumbnail = self.video_rupload(
             path, thumbnail, to_story=True
         )
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:

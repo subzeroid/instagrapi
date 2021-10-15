@@ -168,7 +168,7 @@ class UploadAlbumMixin:
             else:
                 raise AlbumUnknownFormat()
 
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")
             time.sleep(configure_timeout)
             try:
@@ -181,7 +181,7 @@ class UploadAlbumMixin:
                     Response 202 status:
                     {"message": "Transcode not finished yet.", "status": "fail"}
                     """
-                    time.sleep(10)
+                    time.sleep(configure_timeout)
                     continue
                 raise e
             else:
