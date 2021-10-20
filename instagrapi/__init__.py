@@ -25,6 +25,7 @@ from instagrapi.mixins.public import (
     PublicRequestMixin,
     TopSearchesPublicMixin,
 )
+from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
@@ -39,6 +40,7 @@ class Client(
     TopSearchesPublicMixin,
     ProfilePublicMixin,
     LoginMixin,
+    ShareMixin,
     FbSearchMixin,
     HighlightMixin,
     DownloadPhotoMixin,
