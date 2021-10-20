@@ -40,7 +40,7 @@ class ShareMixin:
             Share object
         """
         return self.share_info(self.share_code_from_url(url))
-        
+
     def share_code_from_url(self, url: str) -> str:
         """
         Get Share code from URL
