@@ -1547,6 +1547,12 @@ class ClientShareTestCase(ClientPrivateTestCase):
         self.assertIsInstance(share, Share)
         self.assertEqual(share.pk, 17933911816568671)
         self.assertEqual(share.type, "highlight")
+        # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb1 in position 6: invalid start byte
+        share = self.api.share_info("aGlnaGxpsdsdZ2h0OjE3OTg4MDg5NjI5MzgzNzcw")
+        self.assertIsInstance(share, Share)
+        self.assertEqual(share.pk, 17988089629383770)
+        self.assertEqual(share.type, "highlight")
+
 
 
 if __name__ == '__main__':
