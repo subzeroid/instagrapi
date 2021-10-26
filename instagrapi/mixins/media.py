@@ -439,7 +439,7 @@ class MediaMixin:
             end_cursor=None
     ) -> Tuple[List[Media], str]:
         """
-        Get a user's media by Public Graphql API
+        Get a page of a user's media by Public Graphql API
 
         Parameters
         ----------
@@ -448,11 +448,12 @@ class MediaMixin:
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
             Timeout between pages iterations, default is 2
-
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
         """
         amount = int(amount)
         user_id = int(user_id)
@@ -528,7 +529,23 @@ class MediaMixin:
         return medias
 
 
-    def user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor="") -> Tuple[List[Media], str]:
+    def user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Get a page of user's media by Private Mobile API
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
 
         amount = int(amount)
         user_id = int(user_id)
@@ -593,7 +610,23 @@ class MediaMixin:
         return medias
 
 
-    def user_medias_paginated(self, user_id: int, amount: int = 0, end_cursor="") -> Tuple[List[Media], str]:
+    def user_medias_paginated(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Get a page of user's media
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
 
         class EndCursorIsV1(Exception):
             pass
