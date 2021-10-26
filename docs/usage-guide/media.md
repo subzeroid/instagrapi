@@ -28,6 +28,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk_from_code(code: str)                                   | int                | Return media_pk
 | media_pk_from_url(url: str)                                     | int                | Return media_pk
 | user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
+| user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id 
 | usertag_medias(user_id: int, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
 | media_info(media_pk: int)                                       | Media              | Return media info
 | media_delete(media_pk: int)                                     | bool               | Delete media
@@ -49,7 +50,9 @@ Low level methods:
 | media_info_gql(media_pk: int)                                   | Media        | Get Media from PK by Public Graphql API
 | media_info_v1(media_pk: int)                                    | Media        | Get Media from PK by Private Mobile API
 | user_medias_gql(user_id: int, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
+| user_medias_paginated_gql(user_id: int, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
 | user_medias_v1(user_id: int, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
+| user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
 | usertag_medias_gql(user_id: int, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
 | usertag_medias_v1(user_id: int, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
 
@@ -177,6 +180,19 @@ True
    'video_url': None,
    'thumbnail_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=_feIkorChpsAX_wzTff&edm=APU89FABAAAA&ccb=7-4&oh=a22a2f5b30772fbbb02db92b9394e981&oe=61147D59&_nc_sid=86f79a', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg', query='_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=108&_nc_ohc=_feIkorChpsAX_wzTff&edm=APU89FABAAAA&ccb=7-4&oh=a22a2f5b30772fbbb02db92b9394e981&oe=61147D59&_nc_sid=86f79a'),
    'media_type': 1}]}
+
+# Use paginated interface to resume fetch from stored cursor
+
+>>> end_cursor = None
+... for page in range(3):
+...     medias, end_cursor = client.user_medias_paginated(1903424587, 5, end_cursor=end_cursor)
+...     print([ m.taken_at.date().isoformat() for m in medias ])
+...
+
+['2021-06-09', '2019-10-16', '2019-10-14', '2019-06-13', '2019-06-06']
+['2019-06-05', '2019-03-23', '2019-03-23', '2018-11-15', '2018-10-16']
+['2018-10-16', '2018-10-11', '2018-10-09', '2018-10-09', '2018-08-02']
+
 ```
 
 ## Download media
