@@ -526,7 +526,6 @@ class MediaMixin:
             medias = medias[:amount]
         return medias
 
-
     def user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
         """
         Get a page of user's media by Private Mobile API
@@ -544,7 +543,6 @@ class MediaMixin:
         Tuple[List[Media], str]
             A tuple containing a list of medias and the next end_cursor value
         """
-
         amount = int(amount)
         user_id = int(user_id)
         medias = []
@@ -593,7 +591,11 @@ class MediaMixin:
         min_timestamp = None
         while True:
             try:
-                medias_page, next_max_id = self.user_medias_paginated_v1(user_id, amount)
+                medias_page, next_max_id = self.user_medias_paginated_v1(
+                    user_id,
+                    amount,
+                    end_cursor=next_max_id
+                )
             except Exception as e:
                 self.logger.exception(e)
                 break
@@ -624,7 +626,7 @@ class MediaMixin:
         Tuple[List[Media], str]
             A tuple containing a list of medias and the next end_cursor value
         """
-        
+
         class EndCursorIsV1(Exception):
             pass
 
@@ -644,7 +646,7 @@ class MediaMixin:
             elif not isinstance(e, ClientError):
                 self.logger.exception(e)
             medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
-        return (medias, end_cursor)
+        return medias, end_cursor
 
     def user_medias(self, user_id: int, amount: int = 0) -> List[Media]:
         """
