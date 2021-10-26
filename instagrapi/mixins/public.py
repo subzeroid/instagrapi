@@ -36,6 +36,7 @@ class PublicRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.public = requests.Session()
+        self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
             {
                 "Connection": "Keep-Alive",

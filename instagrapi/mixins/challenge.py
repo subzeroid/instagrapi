@@ -108,6 +108,7 @@ class ChallengeResolveMixin:
         enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
         instagram_ajax = hashlib.md5(enc_password.encode()).hexdigest()[:12]
         session = requests.Session()
+        session.verify = False  # fix SSLError/HTTPSConnectionPool
         session.proxies = self.private.proxies
         session.headers.update(
             {

@@ -21,12 +21,11 @@ from instagrapi.types import (
     Location,
     Media,
     MediaOembed,
+    Share,
     Story,
-    StoryHashtag,
     StoryLink,
-    StoryLocation,
-    StoryMention,
     StoryMedia,
+    StoryMention,
     StorySticker,
     User,
     UserShort,
@@ -101,7 +100,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         settings = {}
         try:
             st = os.stat(filename)
-            if datetime.fromtimestamp(st.st_mtime) > (datetime.now() - timedelta(seconds=300)):
+            if datetime.fromtimestamp(st.st_mtime) > (datetime.now() - timedelta(seconds=3600)):
                 # use only fresh session (5 minutes)
                 settings = self.api.load_settings(filename)
         except FileNotFoundError:
@@ -1527,6 +1526,33 @@ class ClientHighlightTestCase(ClientPrivateTestCase):
         self.assertTrue(len(highlight.items) > 0)
         self.assertEqual(len(highlight.items), highlight.media_count)
         self.assertEqual(len(highlight.items), len(highlight.media_ids))
+
+
+class ClientShareTestCase(ClientPrivateTestCase):
+
+    def test_share_code_from_url(self):
+        url = "https://www.instagram.com/s/aGlnaGxpZ2h0OjE3OTMzOTExODE2NTY4Njcx?utm_medium=share_sheet"
+        code = self.api.share_code_from_url(url)
+        self.assertEqual(code, "aGlnaGxpZ2h0OjE3OTMzOTExODE2NTY4Njcx")
+
+    def test_share_info_by_url(self):
+        url = "https://www.instagram.com/s/aGlnaGxpZ2h0OjE3OTMzOTExODE2NTY4Njcx?utm_medium=share_sheet"
+        share = self.api.share_info_by_url(url)
+        self.assertIsInstance(share, Share)
+        self.assertEqual(share.pk, 17933911816568671)
+        self.assertEqual(share.type, "highlight")
+
+    def test_share_info(self):
+        share = self.api.share_info("aGlnaGxpZ2h0OjE3OTMzOTExODE2NTY4Njcx")
+        self.assertIsInstance(share, Share)
+        self.assertEqual(share.pk, 17933911816568671)
+        self.assertEqual(share.type, "highlight")
+        # UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb1 in position 6: invalid start byte
+        share = self.api.share_info("aGlnaGxpsdsdZ2h0OjE3OTg4MDg5NjI5MzgzNzcw")
+        self.assertIsInstance(share, Share)
+        self.assertEqual(share.pk, 17988089629383770)
+        self.assertEqual(share.type, "highlight")
+
 
 
 if __name__ == '__main__':

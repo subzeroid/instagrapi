@@ -475,9 +475,8 @@ class MediaMixin:
         for edge in edges:
             medias.append(edge["node"])
         end_cursor = page_info.get("end_cursor")
-
-        medias = medias[:amount]
-
+        if amount:
+            medias = medias[:amount]
         return (
             [extract_media_gql(media) for media in medias],
             end_cursor
@@ -511,14 +510,13 @@ class MediaMixin:
             "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
         }
         while True:
-            print(f"user_medias_gql: {amount}, {end_cursor}")
+            self.logger.info(f"user_medias_gql: {amount}, {end_cursor}")
             if end_cursor:
                 variables["after"] = end_cursor
-
             medias_page, end_cursor = self.user_medias_paginated_gql(
                 user_id, amount, sleep, end_cursor=end_cursor
             )
-            medias.extend(medias_page[:amount])
+            medias.extend(medias_page)
             if not end_cursor:
                 break
             if amount and len(medias) >= amount:
@@ -564,7 +562,7 @@ class MediaMixin:
             )["items"]
         except Exception as e:
             self.logger.exception(e)
-            return
+            return None
         medias.extend(items)
         next_max_id = self.last_json.get("next_max_id", "")
         medias = medias[:amount]
@@ -595,11 +593,11 @@ class MediaMixin:
         min_timestamp = None
         while True:
             try:
-                (medias_page, next_max_id) = self.user_medias_paginated_v1(user_id, amount)
+                medias_page, next_max_id = self.user_medias_paginated_v1(user_id, amount)
             except Exception as e:
                 self.logger.exception(e)
                 break
-            medias.extend(medias_page[:amount])
+            medias.extend(medias_page)
             if not self.last_json.get("more_available"):
                 break
             if amount and len(medias) >= amount:
@@ -608,7 +606,6 @@ class MediaMixin:
         if amount:
             medias = medias[:amount]
         return medias
-
 
     def user_medias_paginated(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
         """
@@ -627,7 +624,7 @@ class MediaMixin:
         Tuple[List[Media], str]
             A tuple containing a list of medias and the next end_cursor value
         """
-
+        
         class EndCursorIsV1(Exception):
             pass
 
@@ -647,7 +644,6 @@ class MediaMixin:
             elif not isinstance(e, ClientError):
                 self.logger.exception(e)
             medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
-
         return (medias, end_cursor)
 
     def user_medias(self, user_id: int, amount: int = 0) -> List[Media]:

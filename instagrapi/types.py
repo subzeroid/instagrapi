@@ -359,3 +359,8 @@ class Highlight(BaseModel):
     media_count: int
     media_ids: List[int]
     items: List[Story]
+
+
+class Share(BaseModel):
+    pk: int
+    type: str
