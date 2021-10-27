@@ -296,6 +296,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_country(self.settings.get("country", self.country))
         self.set_country_code(self.settings.get("country_code", self.country_code))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        self.set_ig_u_rur(self.settings.get("ig_u_rur"))
+        self.set_ig_www_claim(self.settings.get("ig_www_claim"))
         # init headers
         headers = self.base_headers
         headers.update({'Authorization': self.authorization})
