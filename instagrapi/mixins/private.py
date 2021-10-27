@@ -162,6 +162,10 @@ class PrivateRequestMixin:
                 "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
                 "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
             })
+        if self.ig_u_rur:
+            headers.update({"IG-U-RUR": self.ig_u_rur})
+        if self.ig_www_claim:
+            headers.update({"X-IG-WWW-Claim": self.ig_www_claim})
         return headers
 
     def set_country(self, country: str = "US"):
@@ -231,6 +235,14 @@ class PrivateRequestMixin:
             A boolean value
         """
         self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
+        return True
+
+    def set_ig_u_rur(self, value):
+        self.settings['ig_u_rur'] = self.ig_u_rur = value
+        return True
+
+    def set_ig_www_claim(self, value):
+        self.settings['ig_www_claim'] = self.ig_www_claim = value
         return True
 
     @staticmethod

@@ -588,7 +588,6 @@ class MediaMixin:
         user_id = int(user_id)
         medias = []
         next_max_id = ""
-        min_timestamp = None
         while True:
             try:
                 medias_page, next_max_id = self.user_medias_paginated_v1(

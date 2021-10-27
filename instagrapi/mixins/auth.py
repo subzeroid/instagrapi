@@ -265,6 +265,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    ig_u_rur = ""  # e.g. CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
         self.user_agent = None
@@ -515,6 +517,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "tray_session_id": self.tray_session_id,
             },
             "mid": self.mid,
+            "ig_u_rur": self.ig_u_rur,
+            "ig_www_claim": self.ig_www_claim,
             "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
