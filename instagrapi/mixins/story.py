@@ -290,7 +290,7 @@ class StoryMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
-    def story_viewers(self, story_pk: int, amount: int = 20) -> List[UserShort]:
+    def story_viewers(self, story_pk: int, amount: int = 0) -> List[UserShort]:
         """
         List of story viewers (Private API)
 
