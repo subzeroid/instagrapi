@@ -292,7 +292,7 @@ class StoryMixin:
 
     def story_viewers(self, story_pk: int, amount: int = 20) -> List[UserShort]:
         """
-        List of users (Private API)
+        List of story viewers (Private API)
 
         Parameters
         ----------
@@ -311,12 +311,16 @@ class StoryMixin:
         params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
         while True:
             try:
+                if next_max_id:
+                    params["max_id"] = next_max_id
                 result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
                 for item in result['users']:
                     users.append(extract_user_short(item))
-                next_max_id = result.get('next_max_id')
                 if not next_max_id:
                     break
+                if amount and len(users) >= amount:
+                    break
+                next_max_id = result.get('next_max_id')
             except Exception as e:
                 self.logger.exception(e)
                 break
