@@ -4,7 +4,7 @@ isort==5.9.3
 bandit==1.7.0
 mike==1.1.2
 markdown-include==0.6.0
-mkdocs-material==7.3.5
+mkdocs-material==7.3.6
 mkdocs-minify-plugin==0.5.0
 mkdocstrings==0.16.2
 ./util/mkdocs-redirects
