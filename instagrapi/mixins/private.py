@@ -398,7 +398,9 @@ class PrivateRequestMixin:
             response.request.method,
             response.url,
             "{app_version}, {manufacturer} {model}".format(
-                **self.device_settings
+                app_version=self.device_settings.get("app_version"),
+                manufacturer=self.device_settings.get("manufacturer"),
+                model=self.device_settings.get("model"),
             ),
         )
 
