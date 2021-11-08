@@ -9,6 +9,23 @@
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
+## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Instagrapi SaaS](https://instagrapi.com)
+
+Features:
+
+* Anonymous getting of user, posts, stories, highlights, followers and following users
+* Anonymous getting an email and phone number, if the user specified them in his business profile
+* Anonymous getting of post, story, album, Reels, IGTV data and the ability to download content
+* Anonymous getting of hashtag and location data, as well as a list of posts for them
+* Anonymous getting of all comments on a post and a list of users who liked it
+* Management of proxy servers, mobile devices, solving captcha and challenge resolver
+* Login by username and password, sessionid and support 2FA
+* Managing messages and threads for Direct and attach files
+* Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
+* Work with Users, Posts, Comments, Insights, Collections, Location and Hashtag
+* Insights by account, posts and stories
+* Like, following, commenting, editing account (Bio) and much more else
+
 # instagrapi - Unofficial Instagram API for Python
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
@@ -17,7 +34,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.6**, recommend 3.8+
 
-For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
+For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Instagrapi SaaS](https://instagrapi.com)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -37,6 +54,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 
 ## Examples of apps that use instagrapi
 
+* [Instagrapi SaaS](https://instagrapi.com) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
 * [Web-service for Download Posts, Stories and Highlights](https://igdl.club/)
 * [Instagram Bot for Download Posts, Stories and Highlights](https://www.instagram.com/fetch_story/)
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
