@@ -560,7 +560,7 @@ class MediaMixin:
             )["items"]
         except Exception as e:
             self.logger.exception(e)
-            return None
+            return [], None
         medias.extend(items)
         next_max_id = self.last_json.get("next_max_id", "")
         medias = medias[:amount]

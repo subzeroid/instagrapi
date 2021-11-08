@@ -91,6 +91,14 @@ class ChallengeRequired(ChallengeError):
     pass
 
 
+class ChallengeSelfieCaptcha(ChallengeError):
+    pass
+
+
+class ChallengeUnknownStep(ChallengeError):
+    pass
+
+
 class SelectContactPointRecoveryForm(ChallengeError):
     pass
 
@@ -213,7 +221,6 @@ class IGTVNotUpload(PrivateError):
 
 class IGTVConfigureError(IGTVNotUpload):
     pass
-
 
 
 class ClipNotUpload(PrivateError):
