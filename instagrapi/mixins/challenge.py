@@ -10,12 +10,12 @@ from instagrapi.exceptions import (
     ChallengeError,
     ChallengeRedirection,
     ChallengeRequired,
+    ChallengeSelfieCaptcha,
+    ChallengeUnknownStep,
     LegacyForceSetNewPasswordForm,
     RecaptchaChallengeForm,
     SelectContactPointRecoveryForm,
     SubmitPhoneNumberForm,
-    ChallengeUnknownStep,
-    ChallengeSelfieCaptcha,
 )
 
 WAIT_SECONDS = 5
