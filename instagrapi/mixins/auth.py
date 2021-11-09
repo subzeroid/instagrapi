@@ -291,8 +291,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     uuid = ""
     mid = ""
     country = "US"
+    country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    ig_u_rur = ""  # e.g. CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
         self.user_agent = None
@@ -324,7 +327,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
+        self.set_country_code(self.settings.get("country_code", self.country_code))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        self.set_ig_u_rur(self.settings.get("ig_u_rur"))
+        self.set_ig_www_claim(self.settings.get("ig_www_claim"))
         # init headers
         headers = self.base_headers
         headers.update({"Authorization": self.authorization})
@@ -417,7 +423,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"7","source":["default"]}]',
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -561,6 +568,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "tray_session_id": self.tray_session_id,
             },
             "mid": self.mid,
+            "ig_u_rur": self.ig_u_rur,
+            "ig_www_claim": self.ig_www_claim,
             "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
@@ -569,6 +578,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "web_user_agent": self.web_user_agent,
             "username": self.username,
             "country": self.country,
+            "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
         }

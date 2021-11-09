@@ -1,6 +1,9 @@
 import logging
 from urllib.parse import urlparse
 
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
@@ -25,17 +28,14 @@ from instagrapi.mixins.public import (
     PublicRequestMixin,
     TopSearchesPublicMixin,
 )
+from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
-from instagrapi.mixins.signup import SignUpMixin
-
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class Client(
@@ -45,6 +45,7 @@ class Client(
     TopSearchesPublicMixin,
     ProfilePublicMixin,
     LoginMixin,
+    ShareMixin,
     FbSearchMixin,
     HighlightMixin,
     DownloadPhotoMixin,

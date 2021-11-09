@@ -40,6 +40,16 @@ class PublicRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.public = requests.Session()
+        self.public.verify = False  # fix SSLError/HTTPSConnectionPool
+        self.public.headers.update(
+            {
+                "Connection": "Keep-Alive",
+                "Accept": "*/*",
+                "Accept-Encoding": "gzip,deflate",
+                "Accept-Language": "en-US",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+            }
+        )
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)

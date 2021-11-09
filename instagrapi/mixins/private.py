@@ -85,6 +85,7 @@ class PrivateRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
+        self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
@@ -176,6 +177,10 @@ class PrivateRequestMixin:
                     "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
                 }
             )
+        if self.ig_u_rur:
+            headers.update({"IG-U-RUR": self.ig_u_rur})
+        if self.ig_www_claim:
+            headers.update({"X-IG-WWW-Claim": self.ig_www_claim})
         return headers
 
     def set_country(self, country: str = "US"):
@@ -192,7 +197,22 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.country = str(country)
+        self.settings["country"] = self.country = str(country)
+        return True
+
+    def set_country_code(self, country_code: int = 1):
+        """Set country calling code
+
+        Parameters
+        ----------
+        country_code: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.settings["country_code"] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -212,7 +232,7 @@ class PrivateRequestMixin:
         user_agent = (self.settings.get("user_agent") or "").replace(
             self.locale, locale
         )
-        self.locale = str(locale)
+        self.settings["locale"] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if "_" in locale:
             self.set_country(locale.rsplit("_", 1)[1])
@@ -231,7 +251,15 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.timezone_offset = int(seconds)
+        self.settings["timezone_offset"] = self.timezone_offset = int(seconds)
+        return True
+
+    def set_ig_u_rur(self, value):
+        self.settings["ig_u_rur"] = self.ig_u_rur = value
+        return True
+
+    def set_ig_www_claim(self, value):
+        self.settings["ig_www_claim"] = self.ig_www_claim = value
         return True
 
     @staticmethod
@@ -412,7 +440,11 @@ class PrivateRequestMixin:
             response.status_code,
             response.request.method,
             response.url,
-            "{app_version}, {manufacturer} {model}".format(**self.device_settings),
+            "{app_version}, {manufacturer} {model}".format(
+                app_version=self.device_settings.get("app_version"),
+                manufacturer=self.device_settings.get("manufacturer"),
+                model=self.device_settings.get("model"),
+            ),
         )
 
     def private_request(

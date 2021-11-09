@@ -2,7 +2,7 @@
 
 | Method                                                                    | Return                  | Description
 | ------------------------------------------------------------------------- | ----------------------- | ----------------------------------
-| direct_threads(amount: int = 20)                                          | List[DirectThread]      | Get all threads from inbox
+| `direct_threads(amount: int = 20, selected_filter: str = "", thread_message_limit: Optional[int] = None)` <br> Note: selected_filter = "", "flagged" or "unread" | List[DirectThread] | Get all threads from inbox
 | direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
 | direct_thread(thread_id: int, amount: int = 20)                           | DirectThread            | Get Thread with Messages
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread

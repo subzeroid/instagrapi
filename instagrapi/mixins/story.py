@@ -110,13 +110,18 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
-    def users_stories_gql(self, user_ids: List[int]) -> List[UserShort]:
+    def users_stories_gql(
+        self, user_ids: List[int], amount: int = 0
+    ) -> List[UserShort]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
         user_ids: List[int]
+            List of users
+        amount: int
+            Max amount of stories
 
         Returns
         -------
@@ -141,7 +146,10 @@ class StoryMixin:
         users = []
         for media in stories_un["reels_media"]:
             user = extract_user_short(media["owner"])
-            user.stories = [extract_story_gql(m) for m in media["items"]]
+            items = media["items"]
+            if amount:
+                items = items[:amount]
+            user.stories = [extract_story_gql(m) for m in items]
             users.append(user)
         return users
 
@@ -160,10 +168,8 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
-        user = self.users_stories_gql([user_id])
-        if len(user) == 0:
-            return []
-        stories = deepcopy(user[0].stories)
+        user = self.users_stories_gql([user_id], amount=amount)[0]
+        stories = deepcopy(user.stories)
         if amount:
             stories = stories[:amount]
         return stories
@@ -284,8 +290,10 @@ class StoryMixin:
             Path for the file downloaded
         """
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
-        assert fname, """The URL must contain the path to the file (mp4 or jpg).\n"""\
+        assert fname, (
+            """The URL must contain the path to the file (mp4 or jpg).\n"""
             """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
+        )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
@@ -294,3 +302,45 @@ class StoryMixin:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
+
+    def story_viewers(self, story_pk: int, amount: int = 0) -> List[UserShort]:
+        """
+        List of story viewers (Private API)
+
+        Parameters
+        ----------
+        story_pk: int
+        amount: int, optional
+            Maximum number of story viewers
+
+        Returns
+        -------
+        List[UserShort]
+            A list of objects of UserShort
+        """
+        users = []
+        next_max_id = None
+        story_pk = self.media_pk(story_pk)
+        params = {
+            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
+        }
+        while True:
+            try:
+                if next_max_id:
+                    params["max_id"] = next_max_id
+                result = self.private_request(
+                    f"media/{story_pk}/list_reel_media_viewer/", params=params
+                )
+                for item in result["users"]:
+                    users.append(extract_user_short(item))
+                if amount and len(users) >= amount:
+                    break
+                next_max_id = result.get("next_max_id")
+                if not next_max_id:
+                    break
+            except Exception as e:
+                self.logger.exception(e)
+                break
+        if amount:
+            users = users[: int(amount)]
+        return users
