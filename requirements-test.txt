@@ -1,6 +1,6 @@
 flake8==4.0.1
 Pillow==8.4.0
-isort==5.9.3
+isort==5.10.1
 bandit==1.7.0
 mike==1.1.2
 markdown-include==0.6.0
