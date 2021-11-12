@@ -255,7 +255,7 @@ class DirectMedia(BaseModel):
 class DirectMessage(BaseModel):
     id: int  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
-    thread_id: Optional[int]
+    thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
     is_shh_mode: Optional[bool]
