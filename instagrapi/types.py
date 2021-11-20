@@ -364,3 +364,26 @@ class Highlight(BaseModel):
 class Share(BaseModel):
     pk: int
     type: str
+
+
+class Track(BaseModel):
+    id: int
+    title: str
+    subtitle: str
+    display_artist: str
+    audio_cluster_id: int
+    artist_id: Optional[int]
+    cover_artwork_uri: HttpUrl
+    cover_artwork_thumbnail_uri: HttpUrl
+    progressive_download_url: HttpUrl
+    fast_start_progressive_download_url: HttpUrl
+    reactive_audio_download_url: Optional[HttpUrl]
+    highlight_start_times_in_ms: List[int]
+    is_explicit: bool
+    dash_manifest: str
+    has_lyrics: bool
+    audio_asset_id: int
+    duration_in_ms: int
+    dark_message: Optional[str]
+    allows_saving: bool
+    territory_validity_periods: dict
