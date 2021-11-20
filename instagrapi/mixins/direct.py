@@ -69,7 +69,7 @@ class DirectMixin:
             })
         cursor = None
         threads = []
-        self.private_request("direct_v2/get_presence/")
+        # self.private_request("direct_v2/get_presence/")
         while True:
             if cursor:
                 params["cursor"] = cursor
