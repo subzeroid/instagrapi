@@ -1,10 +1,12 @@
 from typing import List
 
-from instagrapi.types import Hashtag, Location, UserShort, Track
 from instagrapi.extractors import (
-    extract_location, extract_hashtag_v1, extract_track,
-    extract_user_short
+    extract_hashtag_v1,
+    extract_location,
+    extract_track,
+    extract_user_short,
 )
+from instagrapi.types import Hashtag, Location, Track, UserShort
 
 
 class FbSearchMixin:

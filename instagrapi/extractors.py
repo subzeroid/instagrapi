@@ -20,10 +20,10 @@ from .types import (
     StoryLink,
     StoryMedia,
     StoryMention,
+    Track,
     User,
     UserShort,
     Usertag,
-    Track,
 )
 from .utils import InstagramIdCodec, json_value
 
