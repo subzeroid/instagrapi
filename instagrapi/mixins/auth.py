@@ -408,11 +408,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "username": username,
                 "trust_this_device": "0",
                 "guid": self.uuid,
-                "device_id": self.uuid,
+                "device_id": self.android_device_id,
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3"
             }
             logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get('ig-set-authorization')
+            )
         if logged:
             self.login_flow()
             self.last_login = time.time()
