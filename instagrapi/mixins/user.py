@@ -483,6 +483,7 @@ class UserMixin:
                 "includes_hashtags": "true",
                 "enable_groups": "true",
                 "query": "",
+                "count": 10000
             }
             if max_id:
                 params["max_id"] = max_id
@@ -624,6 +625,7 @@ class UserMixin:
         while True:
             result = self.private_request(f"friendships/{user_id}/followers/", params={
                 "max_id": max_id,
+                "count": 10000,
                 "rank_token": self.rank_token,
                 "search_surface": "follow_list_page",
                 "query": "",
