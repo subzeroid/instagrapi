@@ -11,14 +11,14 @@ def validate_external_url(cls, v):
 
 
 class Resource(BaseModel):
-    pk: int
+    pk: str
     video_url: Optional[HttpUrl]  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
 
 
 class User(BaseModel):
-    pk: int
+    pk: str
     username: str
     full_name: str
     is_private: bool
@@ -42,7 +42,7 @@ class User(BaseModel):
 
 
 class Account(BaseModel):
-    pk: int
+    pk: str
     username: str
     full_name: str
     is_private: bool
@@ -60,7 +60,7 @@ class Account(BaseModel):
 
 
 class UserShort(BaseModel):
-    pk: int
+    pk: str
     username: Optional[str]
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
@@ -96,7 +96,7 @@ class Location(BaseModel):
 
 
 class Media(BaseModel):
-    pk: int
+    pk: str
     id: str
     code: str
     taken_at: datetime
@@ -121,7 +121,7 @@ class MediaOembed(BaseModel):
     title: str
     author_name: str
     author_url: str
-    author_id: int
+    author_id: str
     media_id: str
     provider_name: str
     provider_url: HttpUrl
@@ -143,7 +143,7 @@ class Collection(BaseModel):
 
 
 class Comment(BaseModel):
-    pk: int
+    pk: str
     text: str
     user: UserShort
     created_at_utc: datetime
@@ -154,7 +154,7 @@ class Comment(BaseModel):
 
 
 class Hashtag(BaseModel):
-    id: int
+    id: str
     name: str
     media_count: Optional[int]
     profile_pic_url: Optional[HttpUrl]
@@ -226,7 +226,7 @@ class StoryLink(BaseModel):
 
 
 class Story(BaseModel):
-    pk: int
+    pk: str
     id: str
     code: str
     taken_at: datetime
@@ -253,7 +253,7 @@ class DirectMedia(BaseModel):
 
 
 class DirectMessage(BaseModel):
-    id: int  # e.g. 28597946203914980615241927545176064
+    id: str  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
     thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
@@ -278,19 +278,19 @@ class DirectResponse(BaseModel):
 
 
 class DirectShortThread(BaseModel):
-    id: int
+    id: str
     users: List[UserShort]
     named: bool
     thread_title: str
     pending: bool
     thread_type: str
-    viewer_id: int
+    viewer_id: str
     is_group: bool
 
 
 class DirectThread(BaseModel):
-    pk: int  # thread_v2_id, e.g. 17898572618026348
-    id: int  # thread_id, e.g. 340282366841510300949128268610842297468
+    pk: str  # thread_v2_id, e.g. 17898572618026348
+    id: str  # thread_id, e.g. 340282366841510300949128268610842297468
     messages: List[DirectMessage]
     users: List[UserShort]
     inviter: Optional[UserShort]
@@ -318,7 +318,7 @@ class DirectThread(BaseModel):
     shh_mode_enabled: bool
     last_seen_at: dict
 
-    def is_seen(self, user_id: int):
+    def is_seen(self, user_id: str):
         """Have I seen this thread?
         :param user_id: You account user_id
         """
@@ -348,7 +348,7 @@ class Relationship(BaseModel):
 
 
 class Highlight(BaseModel):
-    pk: int  # 17895485401104052
+    pk: str  # 17895485401104052
     id: str  # highlight:17895485401104052
     latest_reel_media: int
     cover_media: dict
@@ -362,12 +362,12 @@ class Highlight(BaseModel):
 
 
 class Share(BaseModel):
-    pk: int
+    pk: str
     type: str
 
 
 class Track(BaseModel):
-    id: int
+    id: str
     title: str
     subtitle: str
     display_artist: str
