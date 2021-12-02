@@ -1,5 +1,5 @@
 import random
-from typing import List
+from typing import List, Optional
 
 from instagrapi.exceptions import ClientError, ClientNotFoundError, MediaNotFound
 from instagrapi.extractors import extract_comment
@@ -65,7 +65,7 @@ class CommentMixin:
             comments = comments[:amount]
         return comments
 
-    def media_comment(self, media_id: str, text: str) -> Comment:
+    def media_comment(self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None) -> Comment:
         """
         Post a comment on a media
 
@@ -83,18 +83,19 @@ class CommentMixin:
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
+        data = {
+            "delivery_class": "organic",
+            "feed_position": "0",
+            "container_module": "self_comments_v2_feed_contextual_self_profile",  # "comments_v2",
+            "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
+            "idempotence_token": self.generate_uuid(),
+            "comment_text": text,
+        }
+        if replied_to_comment_id:
+            data["replied_to_comment_id"] = int(replied_to_comment_id)
         result = self.private_request(
             f"media/{media_id}/comment/",
-            self.with_action_data(
-                {
-                    "delivery_class": "organic",
-                    "feed_position": "0",
-                    "container_module": "self_comments_v2_feed_contextual_self_profile",  # "comments_v2",
-                    "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
-                    "idempotence_token": self.generate_uuid(),
-                    "comment_text": text,
-                }
-            ),
+            self.with_action_data(data),
         )
         return extract_comment(result["comment"])
 
