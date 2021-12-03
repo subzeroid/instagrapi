@@ -564,7 +564,8 @@ class MediaMixin:
             return [], None
         medias.extend(items)
         next_max_id = self.last_json.get("next_max_id", "")
-        medias = medias[:amount]
+        if amount:
+            medias = medias[:amount]
         return (
             [extract_media_v1(media) for media in medias],
             next_max_id
