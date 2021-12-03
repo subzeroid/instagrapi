@@ -252,6 +252,7 @@ class HashtagMixin:
             # 'lng': 30.5126682,
             "include_persistent": "true",
             "rank_token": self.rank_token,
+            "count": 10000,
         }
         medias = []
         while True:

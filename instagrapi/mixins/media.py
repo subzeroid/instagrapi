@@ -553,6 +553,7 @@ class MediaMixin:
                 f"feed/user/{user_id}/",
                 params={
                     "max_id": next_max_id,
+                    "count": 1000,
                     "min_timestamp": min_timestamp,
                     "rank_token": self.rank_token,
                     "ranked_content": "true",
