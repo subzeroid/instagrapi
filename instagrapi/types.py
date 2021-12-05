@@ -357,8 +357,8 @@ class Highlight(BaseModel):
     created_at: datetime
     is_pinned_highlight: bool
     media_count: int
-    media_ids: List[int]
-    items: List[Story]
+    media_ids: List[int] = []
+    items: List[Story] = []
 
 
 class Share(BaseModel):

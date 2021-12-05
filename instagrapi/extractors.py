@@ -384,7 +384,7 @@ def extract_highlight_v1(data):
     highlight['pk'] = highlight['id'].split(':')[1]
     highlight['items'] = [
         extract_story_v1(item)
-        for item in highlight['items']
+        for item in highlight.get('items', [])
     ]
     return Highlight(**highlight)
 
