@@ -1,8 +1,8 @@
-import time
 import json
 import random
+import time
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 from urllib.parse import urlparse
 
 from instagrapi import config
