@@ -23,6 +23,7 @@ from instagrapi.mixins.media import MediaMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
 from instagrapi.mixins.private import PrivateRequestMixin
+from instagrapi.mixins.notification import NotificationMixin
 from instagrapi.mixins.public import (
     ProfilePublicMixin,
     PublicRequestMixin,
@@ -53,6 +54,7 @@ class Client(
     DownloadVideoMixin,
     UploadVideoMixin,
     DownloadAlbumMixin,
+    NotificationMixin,
     UploadAlbumMixin,
     DownloadIGTVMixin,
     UploadIGTVMixin,
