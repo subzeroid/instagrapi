@@ -294,6 +294,25 @@ class UserMixin:
         results = self.private_request("feed/new_feed_posts_exist/")
         return results.get("new_feed_posts_exist", False)
 
+    def user_friendships_v1(self, user_ids: List[str]) -> dict:
+        """
+        Get user friendship status
+
+        Parameters
+        ----------
+        user_ids: List[str]
+            List of user id of an instagram account
+
+        Returns
+        -------
+        dict
+        """
+        result = self.private_request(
+            "friendships/show_many/",
+            data={"user_ids": user_ids}
+        )
+        return result["friendship_statuses"]
+
     def user_friendship_v1(self, user_id: str) -> Relationship:
         """
         Get user friendship status
