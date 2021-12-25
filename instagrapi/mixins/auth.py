@@ -604,8 +604,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "dpi": "480dpi",
             "resolution": "1080x1920",
             "manufacturer": "Xiaomi",
-            "device": "MI 5s",
-            "model": "capricorn",
+            "device": "capricorn",
+            "model": "MI 5s",
             "cpu": "qcom",
             "version_code": "314665256",
         }

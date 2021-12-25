@@ -8,12 +8,12 @@ USER_AGENT_BASE = (
     "Instagram {app_version} "
     "Android ({android_version}/{android_release}; "
     "{dpi}; {resolution}; {manufacturer}; "
-    "{device}; {model}; {cpu}; {locale}; {version_code})"
+    "{model}; {device}; {cpu}; {locale}; {version_code})"
 )
 # Instagram 76.0.0.15.395 (iPhone9,2; iOS 10_0_2; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/420+
 # Instagram 208.0.0.32.135 (iPhone; iOS 14_7_1; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/605.1.15
 
-SOFTWARE = "{model}-user+{android_release}+OPR1.170623.012+V10.2.7.0.OAGMIXM+release-keys"
+SOFTWARE = "{model}-user+{android_release}+OPR1.170623.032+V10.2.3.0.OAGMIXM+release-keys"
 
 # QUERY_HASH_PROFILE = 'c9100bf9110dd6361671f113dd02e7d6'
 # QUERY_HASH_MEDIAS = '42323d64886122307be10013ad2dcc44'
@@ -32,11 +32,11 @@ LOGIN_EXPERIMENTS = "ig_android_reg_nux_headers_cleanup_universe,ig_android_devi
 SUPPORTED_CAPABILITIES = [
     {
         "name": "SUPPORTED_SDK_VERSIONS",
-        "value": "80.0,81.0,82.0,83.0,84.0,85.0,86.0,87.0,88.0,89.0,90.0,91.0,92.0,93.0,94.0,95.0,96.0,97.0,98.0,99.0,100.0,101.0,102.0,103.0,104.0,105.0,106.0,107.0,108.0,109.0,110.0,111.0"
+        "value": "108.0,109.0,110.0,111.0,112.0,113.0,114.0,115.0,116.0,117.0,118.0,119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0"
     },
-    {"name": "FACE_TRACKER_VERSION", "value": "14"},
-    {"name": "segmentation", "value": "segmentation_enabled"},
-    {"name": "COMPRESSION", "value": "ETC2_COMPRESSION"},
-    {"name": "world_tracker", "value": "world_tracker_enabled"},
-    {"name": "gyroscope", "value": "gyroscope_enabled"}
+    {"name": "FACE_TRACKER_VERSION","value": "14"},
+    {"name": "segmentation","value": "segmentation_enabled"},
+    {"name": "COMPRESSION","value": "ETC2_COMPRESSION"},
+    {"name": "world_tracker","value": "world_tracker_enabled"},
+    {"name": "gyroscope","value": "gyroscope_enabled"}
 ]
