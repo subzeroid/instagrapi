@@ -442,11 +442,11 @@ class UploadPhotoMixin:
             "media_transformation_info": dumps({
                 "width": str(width),
                 "height": str(height),
-                "x_transform":"0",
-                "y_transform":"0",
-                "zoom":"1.0",
-                "rotation":"0.0",
-                "background_coverage":"0.0"
+                "x_transform": "0",
+                "y_transform": "0",
+                "zoom": "1.0",
+                "rotation": "0.0",
+                "background_coverage": "0.0"
             }),
             "original_media_type": "photo",
             "camera_entry_point": str(random.randint(25, 164)),  # e.g. 25
@@ -586,7 +586,8 @@ class UploadPhotoMixin:
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
-        data["tap_models"] = dumps(tap_models)
+        if tap_models:
+            data["tap_models"] = dumps(tap_models)
         if static_models:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:

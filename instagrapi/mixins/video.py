@@ -519,34 +519,35 @@ class UploadVideoMixin:
             # "is_segmented_video": "1",  # SEGMENT MODE
             # ---------------------------------
             # COMMON properties:
+            "_uid": str(self.user_id),
             "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
-            # "has_original_sound": "1",
-            # "filter_type": "0",
+            "has_original_sound": "1",
+            "filter_type": "0",
             "camera_session_id": self.client_session_id,
-            "camera_entry_point": str(random.randint(35, 45)),
-            # "date_time_digitalized":"2021:03:12+00:59:35",
-            # "composition_id":"ce3b1324-3761-4e8a-9212-fbac6c5e7d7d"
-            "camera_make": self.device_settings.get("manufacturer", "Xiaomi"),
-            "camera_model": self.device_settings.get("model", "MI+5s"),
+            "camera_entry_point": str(random.randint(35, 164)),
+            "composition_id": self.generate_uuid(),
+            # "camera_make": self.device_settings.get("manufacturer", "Xiaomi"),
+            # "camera_model": self.device_settings.get("model", "MI+5s"),
             "timezone_offset": str(self.timezone_offset),
             "client_timestamp": str(timestamp),
             "client_shared_at": str(timestamp - 7),  # 7 seconds ago
             # "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
             "date_time_original": date_time_original(time.localtime()),
+            # "date_time_digitalized": date_time_original(time.localtime()),
             # "story_sticker_ids": "",
             # "media_folder": "Camera",
             "configure_mode": "1",
             # "configure_mode": "2", <- when direct
-            "source_type": "4",  # "3"
-            # "video_result": "",
+            "source_type": "3",  # "3"
+            "video_result": "",
             "creation_surface": "camera",
-            "software": config.SOFTWARE.format(**self.device_settings),
-            "caption": caption,
+            # "software": config.SOFTWARE.format(**self.device_settings),
+            # "caption": caption,
             "capture_type": "normal",
-            "rich_text_format_types": '["classic_v2"]',  # default, typewriter
+            # "rich_text_format_types": '["classic_v2"]',  # default, typewriter
             "upload_id": upload_id,
-            "scene_capture_type": "standard",
-            "scene_type": "",
+            # "scene_capture_type": "standard",
+            # "scene_type": "",
             "original_media_type": "video",
             "camera_position": "back",
             # Facebook Sharing Part:
@@ -557,27 +558,30 @@ class UploadVideoMixin:
             # "fb_access_token":"EAABwzLixnjYBACVgqBfLyDuPWs6RN2sTZC........cnNkjHCH2",
             # "attempt_id": str(uuid4()),
             "device": self.device,
-            # "length": duration,
-            # "clips": [{"length": duration, "source_type": "4"}],
+            "length": duration,
+            "clips": [{"length": duration, "source_type": "3", "camera_position": "back"}],
             # "edits": {
-            #     "crop_original_size": [
-            #         960,
-            #         960
-            #     ],
-            #     "crop_center": [
-            #         0,
-            #         0
-            #     ],
-            #     "crop_zoom": 1
+            #     "filter_type": 0,
+            #     "filter_strength": 1.0,
+            #     "crop_original_size": [width, height],
+            #     # "crop_center": [0, 0],
+            #     # "crop_zoom": 1
             # },
+            "media_transformation_info": dumps({
+                "width": str(width),
+                "height": str(height),
+                "x_transform": "0",
+                "y_transform": "0",
+                "zoom": "1.0",
+                "rotation": "0.0",
+                "background_coverage": "0.0"
+            }),
             "extra": {"source_width": width, "source_height": height},
-            # "audio_muted": False,
-            # "poster_frame_index": 0,
+            "audio_muted": False,
+            "poster_frame_index": 0,
+            # "app_attribution_android_namespace": "",
         }
         data.update(extra_data)
-        if links:
-            links = [link.dict() for link in links]
-            data["story_cta"] = dumps([{"links": links}])
         tap_models = []
         static_models = []
         if mentions:
@@ -649,42 +653,72 @@ class UploadVideoMixin:
                     "tap_state_str_id": "location_sticker_vibrant"
                 }
                 tap_models.append(item)
+        if links:
+            # instagram allow one link now
+            link = links[0]
+            self.private_request("media/validate_reel_url/", {
+                "url": link.webUri,
+                "_uid": str(self.user_id),
+                "_uuid": str(self.uuid),
+            })
+            stickers.append(
+                StorySticker(
+                    type="story_link",
+                    x=link.x,
+                    y=link.y,
+                    z=link.z,
+                    width=link.width,
+                    height=link.height,
+                    rotation=link.rotation,
+                    extra=dict(
+                        link_type="web",
+                        url=link.webUri,
+                        tap_state_str_id="link_sticker_default"
+                    )
+                )
+            )
+            story_sticker_ids.append("link_sticker_default")
         if stickers:
             for sticker in stickers:
-                str_id = sticker.id  # "gif_Igjf05J559JWuef4N5"
-                static_models.append({
-                    "x": sticker.x,
-                    "y": sticker.y,
+                sticker_extra = sticker.extra or {}
+                if sticker.id:
+                    sticker_extra["str_id"] = sticker.id
+                    story_sticker_ids.append(sticker.id)
+                tap_models.append({
+                    "x": round(sticker.x, 7),
+                    "y": round(sticker.y, 7),
                     "z": sticker.z,
-                    "width": sticker.width,
-                    "height": sticker.height,
+                    "width": round(sticker.width, 7),
+                    "height": round(sticker.height, 7),
                     "rotation": sticker.rotation,
-                    "str_id": str_id,
-                    "sticker_type": sticker.type,
+                    "type": sticker.type,
+                    "is_sticker": True,
+                    "selected_index": 0,
+                    "tap_state": 0,
+                    **sticker_extra
                 })
-                story_sticker_ids.append(str_id)
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
         if medias:
             for feed_media in medias:
-                assert feed_media.media_pk, 'Required StoryMedia.media_pk'
+                assert feed_media.media_pk, "Required StoryMedia.media_pk"
                 # if not feed_media.user_id:
                 #     user = self.media_user(feed_media.media_pk)
                 #     feed_media.user_id = user.pk
                 item = {
-                    'x': feed_media.x,
-                    'y': feed_media.y,
-                    'z': feed_media.z,
-                    'width': feed_media.width,
-                    'height': feed_media.height,
-                    'rotation': feed_media.rotation,
-                    'type': 'feed_media',
-                    'media_id': str(feed_media.media_pk),
-                    'media_owner_id': str(feed_media.user_id or ""),
-                    'product_type': 'feed',
-                    'is_sticker': True,
-                    'tap_state': 0,
-                    'tap_state_str_id': 'feed_post_sticker_square'
+                    "x": feed_media.x,
+                    "y": feed_media.y,
+                    "z": feed_media.z,
+                    "width": feed_media.width,
+                    "height": feed_media.height,
+                    "rotation": feed_media.rotation,
+                    "type": "feed_media",
+                    "media_id": str(feed_media.media_pk),
+                    "media_owner_id": str(feed_media.user_id or ""),
+                    "product_type": "feed",
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "feed_post_sticker_square"
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
@@ -708,8 +742,8 @@ class UploadVideoMixin:
         if static_models:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
-            data["story_sticker_ids"] = dumps(story_sticker_ids)
-        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+            data["story_sticker_ids"] = story_sticker_ids[0]
+        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
 
     def video_upload_to_direct(
         self,
@@ -776,7 +810,7 @@ class UploadVideoMixin:
                     continue
                 raise e
             if configured and thread_ids:
-                return extract_direct_message(configured.get('message_metadata', [])[0])
+                return extract_direct_message(configured.get("message_metadata", [])[0])
         raise VideoConfigureStoryError(
             response=self.last_response, **self.last_json
         )

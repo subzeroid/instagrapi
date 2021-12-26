@@ -1,8 +1,9 @@
 import tempfile
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import List
 
-from .types import StoryBuild, StoryMention
+from .types import StoryBuild, StoryMention, StorySticker
 
 try:
     from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
@@ -53,7 +54,7 @@ class StoryBuilder:
         self.mentions = mentions
         self.bgpath = Path(bgpath) if bgpath else None
 
-    def build_main(self, clip, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white') -> StoryBuild:
+    def build_main(self, clip, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = "") -> StoryBuild:
         """
         Build clip
 
@@ -76,6 +77,7 @@ class StoryBuilder:
             An object of StoryBuild
         """
         clips = []
+        stickers = []
         # Background
         if self.bgpath:
             assert self.bgpath.exists(), f"Wrong path to background {self.bgpath}"
@@ -115,6 +117,42 @@ class StoryBuilder:
                 .fadein(3)
             )
             clips.append(text_clip)
+        if link:
+            url = urlparse(link)
+            link_clip = TextClip(
+                url.netloc,
+                color="blue",
+                bg_color="white",
+                font=font,
+                kerning=-1,
+                fontsize=32,
+                method="label",
+            )
+            link_clip_left = (self.width - 400) / 2
+            link_clip_top = clip.size[1] / 2
+            link_clip = (
+                link_clip.resize(width=400)
+                .set_position((link_clip_left, link_clip_top))
+                .fadein(3)
+            )
+            link_sticker = StorySticker(
+                # x=160.0, y=641.0, z=0, width=400.0, height=88.0,
+                x=link_clip_left / self.width,  # e.g. 0.49953705
+                y=link_clip_top / self.height,  # e.g. 0.5
+                z=0,
+                width=link_clip.size[0] / self.width,  # e.g. 0.50912
+                height=link_clip.size[1] / self.height,  # e.g. 0.06875
+                rotation=0.0,
+                # id="link_sticker_default",
+                type="story_link",
+                extra=dict(
+                    link_type="web",
+                    url=link,  # e.g. "https//github.com/"
+                    tap_state_str_id="link_sticker_default",
+                )
+            )
+            stickers.append(link_sticker)
+            clips.append(link_clip)
         # Mentions
         mentions = []
         if mention:
@@ -142,9 +180,9 @@ class StoryBuilder:
                 sub = cvc.subclip(start, end)
                 sub.write_videofile(path, codec="libx264", audio=True, audio_codec="aac")
                 paths.append(path)
-        return StoryBuild(mentions=mentions, path=destination, paths=paths)
+        return StoryBuild(mentions=mentions, path=destination, paths=paths, stickers=stickers)
 
-    def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white'):
+    def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
         """
         Build CompositeVideoClip from source video
 
@@ -165,9 +203,9 @@ class StoryBuilder:
             An object of StoryBuild
         """
         clip = VideoFileClip(str(self.path), has_mask=True)
-        return self.build_main(clip, max_duration, font, fontsize, color)
+        return self.build_main(clip, max_duration, font, fontsize, color, link)
 
-    def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white'):
+    def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
         """
         Build CompositeVideoClip from source video
 
@@ -195,4 +233,4 @@ class StoryBuilder:
         height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
 
         clip = ImageClip(str(self.path)).resize(width=self.width, height=height_in_ratio)
-        return self.build_main(clip, max_duration or 15, font, fontsize, color)
+        return self.build_main(clip, max_duration or 15, font, fontsize, color, link)
