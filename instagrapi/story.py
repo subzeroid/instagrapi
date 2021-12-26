@@ -1,7 +1,7 @@
 import tempfile
-from urllib.parse import urlparse
 from pathlib import Path
 from typing import List
+from urllib.parse import urlparse
 
 from .types import StoryBuild, StoryMention, StorySticker
 
@@ -137,17 +137,17 @@ class StoryBuilder:
             )
             link_sticker = StorySticker(
                 # x=160.0, y=641.0, z=0, width=400.0, height=88.0,
-                x=link_clip_left / self.width,  # e.g. 0.49953705
-                y=link_clip_top / self.height,  # e.g. 0.5
+                x=round(link_clip_left / self.width, 7),  # e.g. 0.49953705
+                y=round(link_clip_top / self.height, 7),  # e.g. 0.5
                 z=0,
-                width=link_clip.size[0] / self.width,  # e.g. 0.50912
-                height=link_clip.size[1] / self.height,  # e.g. 0.06875
+                width=round(link_clip.size[0] / self.width, 7),  # e.g. 0.50912
+                height=round(link_clip.size[1] / self.height, 7),  # e.g. 0.06875
                 rotation=0.0,
                 # id="link_sticker_default",
                 type="story_link",
                 extra=dict(
                     link_type="web",
-                    url=link,  # e.g. "https//github.com/"
+                    url=str(link),  # e.g. "https//github.com/"
                     tap_state_str_id="link_sticker_default",
                 )
             )
