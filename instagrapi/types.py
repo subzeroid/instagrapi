@@ -205,7 +205,7 @@ class StoryLocation(BaseModel):
 
 
 class StorySticker(BaseModel):
-    id: str
+    id: Optional[str]
     type: Optional[str] = 'gif'
     x: float
     y: float
@@ -213,16 +213,24 @@ class StorySticker(BaseModel):
     width: float
     height: float
     rotation: Optional[float] = 0.0
+    extra: dict
 
 
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
     paths: List[FilePath] = []
+    stickers: List[StorySticker] = []
 
 
 class StoryLink(BaseModel):
     webUri: HttpUrl
+    x: float = 0.5126011
+    y: float = 0.5168225
+    z: float = 0.0
+    width: float = 0.50998676
+    height: float = 0.25875
+    rotation: float = 0.0
 
 
 class Story(BaseModel):
