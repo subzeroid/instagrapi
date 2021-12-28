@@ -115,6 +115,7 @@ class Media(BaseModel):
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""
     resources: List[Resource] = []
+    clips_metadata: dict = {}
 
 
 class MediaOembed(BaseModel):
