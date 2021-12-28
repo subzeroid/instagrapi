@@ -521,7 +521,7 @@ class UploadPhotoMixin:
             # instagram allow one link now
             link = links[0]
             self.private_request("media/validate_reel_url/", {
-                "url": link.webUri,
+                "url": str(link.webUri),
                 "_uid": str(self.user_id),
                 "_uuid": str(self.uuid),
             })
@@ -536,7 +536,7 @@ class UploadPhotoMixin:
                     rotation=link.rotation,
                     extra=dict(
                         link_type="web",
-                        url=link.webUri,
+                        url=str(link.webUri),
                         tap_state_str_id="link_sticker_default"
                     )
                 )
