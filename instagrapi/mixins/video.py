@@ -95,6 +95,32 @@ class DownloadVideoMixin:
             f.write(response.content)
             f.close()
         return path.resolve()
+    
+    def video_download_by_url_origin(
+        self, url: str
+    ) -> bytes:
+        """
+        Download video using URL
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+
+        Returns
+        -------
+        bytes
+            Bytes for the file downloaded
+        """
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        content_length = int(response.headers.get("Content-Length"))
+        file_length = len(response.content)
+        if content_length != file_length:
+            raise VideoNotDownload(
+                f'Broken file from url "{url}" (Content-length={content_length}, but file length={file_length})'
+            )
+        return response.content
 
 
 class UploadVideoMixin:
