@@ -96,6 +96,26 @@ class DownloadPhotoMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
+    def photo_download_by_url_origin(
+        self, url: str
+    ) -> bytes:
+        """
+        Download photo using URL
+
+        Parameters
+        ----------
+        url: str
+            URL for a media
+
+        Returns
+        -------
+        bytes
+        """
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        response.raw.decode_content = True
+        return response.content
+
 
 class UploadPhotoMixin:
     """
