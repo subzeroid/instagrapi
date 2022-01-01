@@ -20,7 +20,7 @@ Features:
 requirements = [
     'requests<3.0,>=2.25.1',
     'PySocks==1.7.1',
-    'pydantic==1.8.2',
+    'pydantic==1.9.0',
     'pycryptodomex==3.12.0'
 ]
 # requirements = [
