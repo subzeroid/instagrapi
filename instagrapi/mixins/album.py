@@ -97,7 +97,6 @@ class DownloadAlbumMixin:
         assert media.media_type == 8, "Must been album"
         files = []
         for resource in media.resources:
-            filename = f"{media.user.username}_{resource.pk}"
             if resource.media_type == 1:
                 files.append(
                     self.photo_download_by_url_origin(resource.thumbnail_url)

@@ -243,10 +243,6 @@ class AlbumConfigureError(PrivateError):
     pass
 
 
-class StoryNotFound(MediaNotFound):
-    pass
-
-
 class HashtagError(PrivateError):
     pass
 

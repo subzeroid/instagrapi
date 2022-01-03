@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
+from instagrapi.exceptions import ClientNotFoundError, UserNotFound
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
@@ -20,7 +20,7 @@ from instagrapi.types import Story, UserShort
 class StoryMixin:
     _stories_cache = {}  # pk -> object
 
-    def story_pk_from_url(self, url: str) -> int:
+    def story_pk_from_url(self, url: str) -> str:
         """
         Get Story (media) PK from URL
 
@@ -31,7 +31,7 @@ class StoryMixin:
 
         Returns
         -------
-        int
+        str
             Media PK
 
         Examples
@@ -40,19 +40,19 @@ class StoryMixin:
         """
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p and p.isdigit()]
-        return int(parts[0])
+        return str(parts[0])
 
-    # def story_info_gql(self, story_pk: int):
+    # def story_info_gql(self, story_pk: str):
     #     # GQL havent video_url :-(
-    #     return self.media_info_gql(self, int(story_pk))
+    #     return self.media_info_gql(self, str(story_pk))
 
-    def story_info_v1(self, story_pk: int) -> Story:
+    def story_info_v1(self, story_pk: str) -> Story:
         """
         Get Story by pk or id
 
         Parameters
         ----------
-        story_pk: int
+        story_pk: str
             Unique identifier of the story
 
         Returns
@@ -62,21 +62,18 @@ class StoryMixin:
         """
         story_id = self.media_id(story_pk)
         story_pk, user_id = story_id.split("_")
-        stories = self.user_stories_v1(user_id)
-        story_pk = int(story_pk)
-        for story in stories:
-            self._stories_cache[story.pk] = story
-        if story_pk in self._stories_cache:
-            return deepcopy(self._stories_cache[story_pk])
-        raise StoryNotFound(story_pk=story_pk, user_id=user_id)
+        result = self.private_request(f"media/{story_pk}/info/")
+        story = extract_story_v1(result["items"][0])
+        self._stories_cache[story.pk] = story
+        return deepcopy(story)
 
-    def story_info(self, story_pk: int, use_cache: bool = True) -> Story:
+    def story_info(self, story_pk: str, use_cache: bool = True) -> Story:
         """
         Get Story by pk or id
 
         Parameters
         ----------
-        story_pk: int
+        story_pk: str
             Unique identifier of the story
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
@@ -91,13 +88,13 @@ class StoryMixin:
             self._stories_cache[story_pk] = story
         return deepcopy(self._stories_cache[story_pk])
 
-    def story_delete(self, story_pk: int) -> bool:
+    def story_delete(self, story_pk: str) -> bool:
         """
         Delete story
 
         Parameters
         ----------
-        story_pk: int
+        story_pk: str
             Unique identifier of the story
 
         Returns
