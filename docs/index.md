@@ -6,7 +6,7 @@
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **25 December 2021** (last reverse-engineering check)*
+*Instagram API valid for **3 January 2022** (last reverse-engineering check)*
 
 Support **Python >= 3.6**, recommend 3.8+
 

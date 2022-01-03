@@ -44,6 +44,8 @@ print(cl.get_settings())
 print(cl.user_info(cl.user_id))
 ```
 
+We recommend using [these proxies](https://soax.com/?r=sEysufQI)
+
 ### Request
 
 | Property            | Description
@@ -126,7 +128,7 @@ cl.get_timeline_feed()  # check session
 
 | Method                                   | Return | Description
 |------------------------------------------|------|----------------------------------------------------------------------------
-| set_proxy(dsn: str)                      | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| set_proxy(dsn: str)                      | dict | Support socks and http/https proxy "scheme://username:password@host:port". We recommend using [these proxies](https://soax.com/?r=sEysufQI)
 | private.proxies                          | dict | Stores used proxy servers for private (mobile, v1) requests
 | public.proxies                           | dict | Stores used proxy servers for public (web, graphql) requests
 | set_device(device: dict)                 | bool | Change device settings ([Android Device Information Generator Online](https://www.myfakeinfo.com/mobile/get-android-device-information.php))
