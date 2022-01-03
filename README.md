@@ -18,7 +18,7 @@ Features:
 * Anonymous getting of post, story, album, Reels, IGTV data and the ability to download content
 * Anonymous getting of hashtag and location data, as well as a list of posts for them
 * Anonymous getting of all comments on a post and a list of users who liked it
-* Management of proxy servers, mobile devices, solving captcha and challenge resolver
+* Management of [proxy servers](https://soax.com/?r=sEysufQI), mobile devices, solving captcha and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
 * Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
