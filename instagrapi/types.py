@@ -109,6 +109,7 @@ class Media(BaseModel):
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
+    accessibility_caption: Optional[str]
     usertags: List[Usertag]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
