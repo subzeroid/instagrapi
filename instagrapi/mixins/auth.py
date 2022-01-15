@@ -708,6 +708,22 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
+    def with_extra_data(self, data: Dict) -> Dict:
+        """
+        Helper to get extra data
+
+        Returns
+        -------
+        Dict
+            A dictionary of default data
+        """
+        return self.with_default_data({
+            "phone_id": self.phone_id,
+            "_uid": str(self.user_id),
+            "guid": self.uuid,
+            **data
+        })
+
     def with_default_data(self, data: Dict) -> Dict:
         """
         Helper to get default data
@@ -717,15 +733,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return dict(
-            {
-                "_uuid": self.uuid,
-                # "_uid": str(self.user_id),
-                # "_csrftoken": self.token,
-                "device_id": self.android_device_id,
-            },
+        return {
+            "_uuid": self.uuid,
+            # "_uid": str(self.user_id),
+            # "_csrftoken": self.token,
+            "device_id": self.android_device_id,
             **data,
-        )
+        }
 
     def with_action_data(self, data: Dict) -> Dict:
         """
