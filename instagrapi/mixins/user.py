@@ -870,3 +870,86 @@ class UserMixin:
             A boolean value
         """
         return self.mute_stories_from_follow(user_id, True)
+
+    #get user followings
+
+    def user_following_v1_chunk(self, user_id: int, max_amount: int = 0, max_id: str = ""):
+        """
+        Get user's followers information by Private Mobile API and max_id (cursor)
+
+        Parameters
+        ----------
+        user_id: int
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        max_id: str, optional
+            Max ID, default value is empty String
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            Tuple of List of users and max_id
+        """
+        users = []
+        while True:
+            result = self.private_request(f"friendships/{user_id}/following/", params={
+                "max_id": max_id,
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "query": "",
+                "enable_groups": "true"
+            })
+            for user in result["users"]:
+                # users.append(extract_user_short(user))
+                users.append(user)
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(users) >= max_amount):
+                break
+        return users, max_id
+
+    # returning following hashtags
+    def user_following_hashtags_gql(self, user_id: int, amount: int = 0):
+            """
+            Get user's following information by Public Graphql API
+
+            Parameters
+            ----------
+            user_id: int
+                User id of an instagram account
+            amount: int, optional
+                Maximum number of media to return, default is 0
+
+            Returns
+            -------
+            List[UserShort]
+                List of objects of User type
+            """
+            user_id = int(user_id)
+            end_cursor = None
+            users = []
+            variables = {
+                "id": user_id,
+            }
+            self.inject_sessionid_to_public()
+            while True:
+                if end_cursor:
+                    variables["after"] = end_cursor
+                data = self.public_graphql_request(
+                    variables, query_hash="e6306cc3dbe69d6a82ef8b5f8654c50b"
+                )
+                if not data["user"] and not users:
+                    raise UserNotFound(user_id=user_id, **data)
+                #page_info = json_value(data, "user", "edge_following_hashtag", "page_info", default={})
+                edges = json_value(data, "user", "edge_following_hashtag", "edges", default=[])
+                for edge in edges:
+                    users.append(edge["node"])
+                """end_cursor = page_info.get("end_cursor")
+                if not page_info.get("has_next_page") or not end_cursor:
+                    break"""
+                if amount and len(users) >= amount:
+                    break
+                # time.sleep(sleep)
+            if amount:
+                users = users[:amount]
+            return users
