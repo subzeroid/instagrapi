@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.16.13',
+    version='1.16.14',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
