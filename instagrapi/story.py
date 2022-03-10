@@ -203,7 +203,9 @@ class StoryBuilder:
             An object of StoryBuild
         """
         clip = VideoFileClip(str(self.path), has_mask=True)
-        return self.build_main(clip, max_duration, font, fontsize, color, link)
+        build = self.build_main(clip, max_duration, font, fontsize, color, link)
+        clip.close()
+        return build
 
     def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
         """
