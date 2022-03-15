@@ -39,6 +39,8 @@ cl.login("instagrapi", "42")
 cl.set_proxy("socks5://127.0.0.1:30235")
 # cl.set_proxy("http://username:password@127.0.0.1:8080")
 # cl.set_proxy("socks5://username:password@127.0.0.1:30235")
+# when addressing the proxy via hostname:
+# cl.set_proxy("socks5h://username:password@exampleproxy.tld:30235")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
