@@ -263,6 +263,7 @@ In `extra_data`, you can pass additional media settings, for example:
 | custom_accessibility_caption  | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `{"custom_accessibility_caption": "ALT TEXT HERE"}`
 | like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
+| invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
 
 ### Example:
 
