@@ -27,13 +27,15 @@ Low level methods:
 | Method                                            | Return          | Description
 | ------------------------------------------------- | --------------- | ---------------------------------------------------------
 | user_followers_gql_chunk(user_id: int, max_amount: int = 0, end_cursor: str = None) | Tuple[List[UserShort], str] | Get user's followers information by Public Graphql API and end_cursor
-| user_followers_gql(user_id: int, amount: int = 0) | List[UserShort] | Get user's followers information by Public Graphql API
-| user_followers_v1_chunk(user_id: int, max_amount: int = 0, max_id: str = "") | Tuple[List[UserShort], str] | Get user's followers information by Private Mobile API and max_id (cursor)
-| user_followers_v1(user_id: int, amount: int = 0)  | List[UserShort] | Get user's followers information by Private Mobile API
-| user_following_v1(user_id: int, amount: int = 0)  | List[UserShort] | Get user's following users information by Private Mobile API
-| user_following_gql(user_id: int, amount: int = 0) | List[UserShort] | Get user's following information by Public Graphql API
+| user_followers_gql(user_id: int, amount: int = 0) | List[Dict] Full JSON Response| Get user's followers information by Public Graphql API
+| user_followers_v1_chunk(user_id: int, max_amount: int = 0, max_id: str = "") | Full JSON Response, str] | Get user's followers information by Private Mobile API and max_id (cursor)
+| user_followers_v1(user_id: int, amount: int = 0)  | List[Dict], Full JSON Response| Get user's followers information by Private Mobile API
+| user_following_v1(user_id: int, amount: int = 0)  | List[Dict], Full JSON Response| Get user's following users information by Private Mobile API
+| user_following_v1_chunk(user_id: int, max_amount: int = 0, max_id: str = "") | List[Dict], Full JSON Response] | Get user's followings information by Private Mobile API and max_id (cursor)
+| user_following_gql(user_id: int, amount: int = 0) | List[Dict] Full JSON Response| Get user's following information by Public Graphql API
 | search_followers_v1(user_id: int, query: str)     | List[UserShort] | Search by followers by Private Mobile API
 | search_following_v1(user_id: int, query: str)     | List[UserShort] | Search by following by Private Mobile API
+| user_following_hashtags_gql(user_id: int, amount: int = 0) | List[Dict] Full JSON Response | Get user's following hashtags by Public Graphql API 
 
 Example:
 
