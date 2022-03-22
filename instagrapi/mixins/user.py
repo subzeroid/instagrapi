@@ -948,3 +948,41 @@ class UserMixin:
             A boolean value
         """
         return self.enable_videos_notifications(user_id, True)
+
+    def enable_reels_notifications(self, user_id: str, disable: bool = False) -> bool:
+        """
+        Enable reels notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        disable: bool, optional
+            Unfavorite when True
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
+        name = "unfavorite" if disable else "favorite"
+        result = self.private_request(f"friendships/{name}_for_clips/{user_id}/", data)
+        return result["status"] == "ok"
+
+    def disable_reels_notifications(self, user_id: str) -> bool:
+        """
+        Disable reels notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.enable_reels_notifications(user_id, True)
