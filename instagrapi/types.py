@@ -215,7 +215,7 @@ class StorySticker(BaseModel):
     width: float
     height: float
     rotation: Optional[float] = 0.0
-    extra: dict
+    extra: Optional[dict] = {}
 
 
 class StoryBuild(BaseModel):
