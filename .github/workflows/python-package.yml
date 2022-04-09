@@ -107,7 +107,7 @@ jobs:
       # upload artifact for dev build
       - name: Upload coverage results artifact
         if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docs-site
           path: site/
