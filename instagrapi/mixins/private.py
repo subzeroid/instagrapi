@@ -33,6 +33,7 @@ from instagrapi.exceptions import (
     PrivateProfileUser,
     InvalidTargetUser,
     DeleteRequestError,
+    CheckpointRequired,
 )
 from instagrapi.utils import dumps, generate_signature
 
@@ -361,6 +362,8 @@ class PrivateRequestMixin:
                 error_type = last_json.get("error_type")
                 if message == "challenge_required":
                     raise ChallengeRequired(**last_json)
+                if message == "checkpoint_required":
+                    raise CheckpointRequired(**last_json)
                 elif message == "feedback_required":
                     raise FeedbackRequired(
                         **dict(

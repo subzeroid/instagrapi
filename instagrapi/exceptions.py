@@ -297,3 +297,7 @@ class TwoFactorRequired(PrivateError):
 
 class HighlightNotFound(NotFoundError, PrivateError):
     pass
+
+
+class CheckpointRequired(PrivateError):
+    pass
