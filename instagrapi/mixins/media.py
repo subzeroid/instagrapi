@@ -205,7 +205,7 @@ class MediaMixin:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        if data["shortcode_media"]["location"]:
+        if data["shortcode_media"]["location"] and self.authorization:
             data["shortcode_media"]["location"] = self.location_complete(
                 extract_location(data["shortcode_media"]["location"])
             ).dict()
