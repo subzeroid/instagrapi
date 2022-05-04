@@ -1,6 +1,7 @@
 import json
 import random
 import time
+import logging
 from copy import deepcopy
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -482,8 +483,9 @@ class MediaMixin:
             end_cursor
         )
 
+
     def user_medias_gql(
-        self, user_id: int, amount: int = 0, sleep: int = 2
+        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -495,16 +497,16 @@ class MediaMixin:
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
             Timeout between pages iterations, default is 2
-
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        generator<Media>
+            A generator of objects of Media
         """
         amount = int(amount)
         user_id = int(user_id)
-        medias = []
-        end_cursor = None
+        nb_media = 0
         variables = {
             "id": user_id,
             "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
@@ -513,18 +515,19 @@ class MediaMixin:
             self.logger.info(f"user_medias_gql: {amount}, {end_cursor}")
             if end_cursor:
                 variables["after"] = end_cursor
+                self.last_cursor = end_cursor
             medias_page, end_cursor = self.user_medias_paginated_gql(
                 user_id, amount, sleep, end_cursor=end_cursor
             )
-            medias.extend(medias_page)
-            if not end_cursor:
-                break
-            if amount and len(medias) >= amount:
+            for media in medias_page:
+                yield media
+                nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+            if not end_cursor or (amount and nb_media >= amount):
+                self.logger.info(f"BREAK: {end_cursor}: {nb_media}")
                 break
             time.sleep(sleep)
-        if amount:
-            medias = medias[:amount]
-        return medias
 
     def user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
         """
@@ -571,7 +574,7 @@ class MediaMixin:
             next_max_id
         )
 
-    def user_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_medias_v1(self, user_id: int, amount: int = 0, next_max_id: str = None) -> List[Media]:
         """
         Get a user's media by Private Mobile API
 
@@ -580,17 +583,18 @@ class MediaMixin:
         user_id: int
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
-
+        next_max_id: str, optional
+            Cursor value to start at, obtained from previous call to this method
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        generator<Media>
+            A generator of objects of Media
         """
         amount = int(amount)
         user_id = int(user_id)
-        medias = []
-        next_max_id = ""
+        nb_media = 0
         while True:
+            self.last_cursor = next_max_id
             try:
                 medias_page, next_max_id = self.user_medias_paginated_v1(
                     user_id,
@@ -600,15 +604,15 @@ class MediaMixin:
             except Exception as e:
                 self.logger.exception(e)
                 break
-            medias.extend(medias_page)
-            if not self.last_json.get("more_available"):
-                break
-            if amount and len(medias) >= amount:
+            for media in medias_page:
+                self.logger.info(f"media: {nb_media} {media.pk}")
+                yield media
+                nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+            if not self.last_json.get("more_available") or (amount and nb_media >= amount):
                 break
             next_max_id = self.last_json.get("next_max_id", "")
-        if amount:
-            medias = medias[:amount]
-        return medias
 
     def user_medias_paginated(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
         """
@@ -661,26 +665,29 @@ class MediaMixin:
 
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        generator<Media>
+            A generator of objects of Media
         """
         amount = int(amount)
         user_id = int(user_id)
         try:
             try:
-                medias = self.user_medias_gql(user_id, amount)
+                self.logger.info("Use GQL method")
+                yield from self.user_medias_gql(user_id, amount)
             except ClientLoginRequired as e:
                 if not self.inject_sessionid_to_public():
                     raise e
-                medias = self.user_medias_gql(user_id, amount)  # retry
+                self.logger.info("Use GQL method (retry)")
+                yield from self.user_medias_gql(user_id, amount)  # retry
+
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
             # User may been private, attempt via Private API
             # (You can check is_private, but there may be other reasons,
             #  it is better to try through a Private API)
-            medias = self.user_medias_v1(user_id, amount)
-        return medias
+            self.logger.info("Use V1 method")
+            yield from self.user_medias_v1(user_id, amount)
 
     def media_seen(self, media_ids: List[str], skipped_media_ids: List[str] = []):
         """
@@ -778,7 +785,7 @@ class MediaMixin:
         return self.media_archive(media_id, revert=True)
 
     def usertag_medias_gql(
-        self, user_id: int, amount: int = 0, sleep: int = 2
+            self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None
     ) -> List[Media]:
         """
         Get medias where a user is tagged (by Public GraphQL API)
@@ -790,7 +797,8 @@ class MediaMixin:
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
             Timeout between pages iterations, default is 2
-
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
         Returns
         -------
         List[Media]
@@ -798,8 +806,7 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
-        medias = []
-        end_cursor = None
+        nb_media = 0
         variables = {
             "id": user_id,
             "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
@@ -807,28 +814,38 @@ class MediaMixin:
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
-            data = self.public_graphql_request(
-                variables, query_hash="be13233562af2d229b008d2976b998b5"
-            )
+                self.last_cursor = end_cursor
+            try:
+                data = self.public_graphql_request(
+                    variables, query_hash="be13233562af2d229b008d2976b998b5"
+                )
+            except Exception as e:
+                if "Please wait a few minutes before you try again" in str(e):
+                    logging.info(f"{e}: sleeping 10 min")
+                    time.sleep(60*10)
+                    continue
+                else:
+                    logging.info(f"{e}: sleeping 1 min")
+                    time.sleep(60)
+                    continue
+
             page_info = json_value(
                 data, "user", "edge_user_to_photos_of_you", "page_info", default={}
             )
             edges = json_value(
                 data, "user", "edge_user_to_photos_of_you", "edges", default=[]
             )
-            for edge in edges:
-                medias.append(edge["node"])
             end_cursor = page_info.get("end_cursor")
-            if not page_info.get("has_next_page") or not end_cursor:
-                break
-            if amount and len(medias) >= amount:
+            for edge in edges:
+                yield edge["node"]
+                nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+            if not page_info.get("has_next_page") or not end_cursor or (amount and nb_media >= amount):
                 break
             time.sleep(sleep)
-        if amount:
-            medias = medias[:amount]
-        return [extract_media_gql(media) for media in medias]
 
-    def usertag_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def usertag_medias_v1(self, user_id: int, amount: int = 0, next_max_id: str = None) -> List[Media]:
         """
         Get medias where a user is tagged (by Private Mobile API)
 
@@ -837,31 +854,38 @@ class MediaMixin:
         user_id: int
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
-
+        next_max_id: str, optional
+            Cursor value to start at, obtained from previous call to this method
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        generator<Media>
+            A generator of objects of Media
         """
         amount = int(amount)
         user_id = int(user_id)
-        medias = []
-        next_max_id = ""
+        nb_media = 0
         while True:
             try:
                 items = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": next_max_id})["items"]
             except Exception as e:
-                self.logger.exception(e)
-                break
-            medias.extend(items)
-            if not self.last_json.get("more_available"):
-                break
-            if amount and len(medias) >= amount:
-                break
+                if "Please wait a few minutes before you try again" in str(e):
+                    logging.info(f"[429]: sleeping 10 min")
+                    time.sleep(60*10)
+                    continue
+                else:
+                    logging.info(f"{e}: sleeping 1 min")
+                    time.sleep(60)
+                    continue
+                raise e
             next_max_id = self.last_json.get("next_max_id", "")
-        if amount:
-            medias = medias[:amount]
-        return [extract_media_v1(media) for media in medias]
+            for item in items:
+                yield item
+                nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+            if not self.last_json.get("more_available") or (amount and nb_media >= amount):
+                break
+
 
     def usertag_medias(self, user_id: int, amount: int = 0) -> List[Media]:
         """
@@ -875,13 +899,12 @@ class MediaMixin:
 
         Returns
         -------
-        List[Media]
-            A list of objects of Media
+        generator<Media>
+            A generator of objects of Media
         """
         amount = int(amount)
         user_id = int(user_id)
         try:
-            medias = self.usertag_medias_gql(user_id, amount)
+            yield from self.usertag_medias_gql(user_id, amount)
         except ClientError:
-            medias = self.usertag_medias_v1(user_id, amount)
-        return medias
+            yield from self.usertag_medias_v1(user_id, amount)

@@ -31,6 +31,7 @@ class PublicRequestMixin:
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     last_public_response = None
     last_public_json = {}
+    last_cursor = None
     request_logger = logging.getLogger("public_request")
     request_timeout = 1
 
@@ -103,7 +104,7 @@ class PublicRequestMixin:
             else:  # GET
                 response = self.public.get(url, params=params)
 
-            expected_length = int(response.headers.get("Content-Length"))
+            expected_length = int(response.headers.get("Content-Length", 0))
             actual_length = response.raw.tell()
             if actual_length < expected_length:
                 raise ClientIncompleteReadError(

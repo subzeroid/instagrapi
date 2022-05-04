@@ -1,3 +1,5 @@
+import logging
+import time
 from copy import deepcopy
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
@@ -426,7 +428,7 @@ class UserMixin:
         """
         return self.search_following_v1(user_id, query)
 
-    def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
+    def user_following_gql(self, user_id: str, amount: int = 0, end_cursor: str = None) -> List[UserShort]:
         """
         Get user's following information by Public Graphql API
 
@@ -436,15 +438,16 @@ class UserMixin:
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0
+        end_cursor: str, optional
+            The cursor from which it is worth continuing to receive the list of following
 
         Returns
         -------
-        List[UserShort]
-            List of objects of User type
+        generator<UserShort>
+            generator of objects of User type
         """
         user_id = str(user_id)
-        end_cursor = None
-        users = []
+        nb_users = 0
         variables = {
             "id": user_id,
             "include_reel": True,
@@ -454,27 +457,27 @@ class UserMixin:
         self.inject_sessionid_to_public()
         while True:
             if end_cursor:
+                self.last_cursor = end_cursor
                 variables["after"] = end_cursor
             data = self.public_graphql_request(
                 variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
             )
-            if not data["user"] and not users:
+            if not data["user"]:
                 raise UserNotFound(user_id=user_id, **data)
             page_info = json_value(data, "user", "edge_follow", "page_info", default={})
             edges = json_value(data, "user", "edge_follow", "edges", default=[])
-            for edge in edges:
-                users.append(extract_user_short(edge["node"]))
             end_cursor = page_info.get("end_cursor")
-            if not page_info.get("has_next_page") or not end_cursor:
-                break
-            if amount and len(users) >= amount:
+            for edge in edges:
+                yield extract_user_short(edge["node"])
+                nb_users += 1
+                if amount and nb_users >= amount:
+                    break
+
+            if not page_info.get("has_next_page") or not end_cursor or (amount and nb_users >= amount):
                 break
             # time.sleep(sleep)
-        if amount:
-            users = users[:amount]
-        return users
 
-    def user_following_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
+    def user_following_v1(self, user_id: str, amount: int = 0, max_id: str = None) -> List[UserShort]:
         """
         Get user's following users information by Private Mobile API
 
@@ -484,18 +487,17 @@ class UserMixin:
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0
+        max_id: str, optional
+            The cursor from which it is worth continuing to receive the list of following
 
         Returns
         -------
-        List[UserShort]
-            List of objects of User type
+        generator<UserShort>
+            generator of objects of User type
         """
         user_id = str(user_id)
-        max_id = ""
-        users = []
+        nb_users = 0
         while True:
-            if amount and len(users) >= amount:
-                break
             params = {
                 "rank_token": self.rank_token,
                 "search_surface": "follow_list_page",
@@ -507,14 +509,15 @@ class UserMixin:
             if max_id:
                 params["max_id"] = max_id
             result = self.private_request(f"friendships/{user_id}/following/", params=params)
-            for user in result["users"]:
-                users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
-            if not max_id:
+            for user in result["users"]:
+                yield extract_user_short(user), max_id
+                nb_users += 1
+                if amount and nb_users >= amount:
+                    break
+
+            if not max_id or (amount and nb_users >= amount):
                 break
-        if amount:
-            users = users[:amount]
-        return users
 
     def user_following(
         self, user_id: str, use_cache: bool = True, amount: int = 0
@@ -533,8 +536,8 @@ class UserMixin:
 
         Returns
         -------
-        Dict[str, UserShort]
-            Dict of user_id and User object
+        generator[str, UserShort]
+            generator of user_id and User object
         """
         user_id = str(user_id)
         users = self._users_following.get(user_id, {})
@@ -547,14 +550,16 @@ class UserMixin:
             #     if not isinstance(e, ClientError):
             #         self.logger.exception(e)
             #     users = self.user_following_v1(user_id, amount)
-            users = self.user_following_v1(user_id, amount)
-            self._users_following[user_id] = {user.pk: user for user in users}
-        following = self._users_following[user_id]
-        if amount and len(following) > amount:
-            following = dict(list(following.items())[:amount])
-        return following
+            if user_id not in self._users_following:
+                self._users_following[user_id] = {}
+            for user in self.user_following_v1(user_id, amount):
+                self._users_following[user_id][user.pk] = user
+                yield user.pk, user
+        else:
+            for user_pk in self._users_following[user_id]:
+                yield user_pk, self._users_following[user_id][user_pk]
 
-    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> Tuple[List[UserShort], str]:
+    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> List[UserShort]:
         """
         Get user's followers information by Public Graphql API and end_cursor
 
@@ -569,11 +574,11 @@ class UserMixin:
 
         Returns
         -------
-        Tuple[List[UserShort], str]
-            List of objects of User type with cursor
+        generator<UserShort>
+            generator of objects of User type with cursor
         """
         user_id = str(user_id)
-        users = []
+        nb_users = 0
         variables = {
             "id": user_id,
             "include_reel": True,
@@ -584,21 +589,23 @@ class UserMixin:
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
+                self.last_cursor = end_cursor
             data = self.public_graphql_request(
                 variables, query_hash="5aefa9893005572d237da5068082d8d5"
             )
-            if not data["user"] and not users:
+            if not data["user"]:
                 raise UserNotFound(user_id=user_id, **data)
             page_info = json_value(data, "user", "edge_followed_by", "page_info", default={})
             edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
-            for edge in edges:
-                users.append(extract_user_short(edge["node"]))
             end_cursor = page_info.get("end_cursor")
-            if not page_info.get("has_next_page") or not end_cursor:
+
+            for edge in edges:
+                yield extract_user_short(edge["node"]), end_cursor
+                nb_users += 1
+                if max_amount and nb_users >= max_amount:
+                    break
+            if not page_info.get("has_next_page") or not end_cursor or (max_amount and nb_users >= max_amount):
                 break
-            if max_amount and len(users) >= max_amount:
-                break
-        return users, end_cursor
 
     def user_followers_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
@@ -613,15 +620,12 @@ class UserMixin:
 
         Returns
         -------
-        List[UserShort]
-            List of objects of User type
+        generator<UserShort>
+            generator of objects of User type
         """
-        users, _ = self.user_followers_gql_chunk(str(user_id), amount)
-        if amount:
-            users = users[:amount]
-        return users
+        yield from self.user_followers_gql_chunk(str(user_id), amount)
 
-    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> Tuple[List[UserShort], str]:
+    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> List[UserShort]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
 
@@ -636,30 +640,47 @@ class UserMixin:
 
         Returns
         -------
-        Tuple[List[UserShort], str]
-            Tuple of List of users and max_id
+        generator<UserShort>
+            generator of usershort
         """
         unique_set = set()
-        users = []
+        nb_users = 0
+        count = 10000
         while True:
-            result = self.private_request(f"friendships/{user_id}/followers/", params={
-                "max_id": max_id,
-                "count": 10000,
-                "rank_token": self.rank_token,
-                "search_surface": "follow_list_page",
-                "query": "",
-                "enable_groups": "true"
-            })
+            self.last_cursor = max_id
+            try:
+                result = self.private_request(f"friendships/{user_id}/followers/", params={
+                    "max_id": max_id,
+                    "count": int(count),
+                    "rank_token": self.rank_token,
+                    #                "search_surface": "follow_list_page",
+                    #                "query": "",
+                    #                "enable_groups": "true"
+                })
+            except Exception as e:
+                if "Please wait a few minutes before you try again" in str(e):
+                    logging.info(f"{e}: sleeping 10 min")
+                    time.sleep(60*10)
+                    continue
+                count /= 2
+                if count < 1000:
+                    logging.info("Count to small, break")
+                    break
+                continue
+            if count < 10000:
+                count *= 2
+            max_id = result.get("next_max_id")
             for user in result["users"]:
                 user = extract_user_short(user)
                 if user.pk in unique_set:
                     continue
                 unique_set.add(user.pk)
-                users.append(user)
-            max_id = result.get("next_max_id")
-            if not max_id or (max_amount and len(users) >= max_amount):
+                yield user
+                nb_users += 1
+                if max_amount and nb_users >= max_amount:
+                    break
+            if not max_id or (max_amount and nb_users >= max_amount):
                 break
-        return users, max_id
 
     def user_followers_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
@@ -674,13 +695,10 @@ class UserMixin:
 
         Returns
         -------
-        List[UserShort]
-            List of objects of User type
+        generator<UserShort>
+            generator of objects of User type
         """
-        users, _ = self.user_followers_v1_chunk(str(user_id), amount)
-        if amount:
-            users = users[:amount]
-        return users
+        yield from self.user_followers_v1_chunk(str(user_id), amount)
 
     def user_followers(
         self, user_id: str, use_cache: bool = True, amount: int = 0
@@ -699,8 +717,8 @@ class UserMixin:
 
         Returns
         -------
-        Dict[str, UserShort]
-            Dict of user_id and User object
+        generator<str, UserShort>
+            generator of user_id and User object
         """
         user_id = str(user_id)
         users = self._users_followers.get(user_id, {})
@@ -711,11 +729,14 @@ class UserMixin:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)
                 users = self.user_followers_v1(user_id, amount)
-            self._users_followers[user_id] = {user.pk: user for user in users}
-        followers = self._users_followers[user_id]
-        if amount and len(followers) > amount:
-            followers = dict(list(followers.items())[:amount])
-        return followers
+            if user_id not in self._users_followers:
+                self._users_followers[user_id] = {}
+            for user in users:
+                self._users_followers[user_id][user.pk] = user
+                yield user.pk, user
+        else:
+            for user_pk in self._users_followers[user_id]:
+                yield user_pk, self._users_followers[user_id][user_pk]
 
     def user_follow(self, user_id: str) -> bool:
         """
@@ -870,3 +891,6 @@ class UserMixin:
             A boolean value
         """
         return self.mute_stories_from_follow(user_id, True)
+
+#    def private_request(self, param, params):
+#        pass

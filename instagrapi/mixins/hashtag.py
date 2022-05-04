@@ -136,7 +136,7 @@ class HashtagMixin:
 
     def hashtag_medias_a1_chunk(
         self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
-    ) -> Tuple[List[Media], str]:
+    ) -> List[Media]:
         """
         Get chunk of medias and end_cursor by Public Web API
 
@@ -153,49 +153,40 @@ class HashtagMixin:
 
         Returns
         -------
-        Tuple[List[Media], str]
-            List of objects of Media and end_cursor
+        generator<Media>
+            generator of objects of Media
         """
         assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
             'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
         unique_set = set()
-        medias = []
+        nb_media = 0
         while True:
+            self.last_cursor = end_cursor
             data = self.public_a1_request(
                 f"/explore/tags/{name}/",
                 params={"max_id": end_cursor} if end_cursor else {},
             )["hashtag"]
             page_info = data["edge_hashtag_to_media"]["page_info"]
-            end_cursor = page_info["end_cursor"]
             edges = data[tab_key]["edges"]
             for edge in edges:
-                if max_amount and len(medias) >= max_amount:
-                    break
-                # check uniq
                 media_pk = edge["node"]["id"]
                 if media_pk in unique_set:
                     continue
                 unique_set.add(media_pk)
                 # check contains hashtag in caption
                 media = extract_media_gql(edge["node"])
-                if f"#{name}" not in media.caption_text:
-                    continue
+#                if f"#{name}" not in media.caption_text:
+#                    continue
+                yield media
                 # Enrich media: Full user, usertags and video_url
-                medias.append(self.media_info_gql(media_pk))
-            ######################################################
-            # infinity loop in hashtag_medias_top_a1
-            # https://github.com/adw0rd/instagrapi/issues/52
-            ######################################################
-            # Mikhail Andreev, [30.12.20 02:17]:
-            # Instagram always returns the same 9 medias for top
-            # I think we should return them without a loop
-            ######################################################
-            # if not page_info["has_next_page"] or not end_cursor:
-            #     break
-            # if max_amount and len(medias) >= max_amount:
-            #     break
-            break
-        return medias, end_cursor
+                #                yield self.media_info_gql(media_pk), end_cursor, page_info["end_cursor"]
+                nb_media += 1
+                if max_amount and nb_media >= max_amount:
+                    break
+
+            if not page_info.get("has_next_page") or not page_info.get("end_cursor") or (max_amount and nb_media >= max_amount):
+                break
+            end_cursor = page_info["end_cursor"]
 
     def hashtag_medias_a1(
         self, name: str, amount: int = 27, tab_key: str = ""
@@ -214,17 +205,14 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        medias, _ = self.hashtag_medias_a1_chunk(name, amount, tab_key)
-        if amount:
-            medias = medias[:amount]
-        return medias
+        yield from self.hashtag_medias_a1_chunk(name, amount, tab_key)
 
     def hashtag_medias_v1_chunk(
         self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None
-    ) -> Tuple[List[Media], str]:
+    ) -> List[Media]:
         """
         Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
 
@@ -241,8 +229,8 @@ class HashtagMixin:
 
         Returns
         -------
-        Tuple[List[Media], str]
-            List of objects of Media and max_id
+        generator<Media>
+            generator of objects of Media
         """
         assert tab_key in ("top", "recent"), \
             'You must specify one of the options for "tab_key" ("top" or "recent")'
@@ -254,8 +242,9 @@ class HashtagMixin:
             "rank_token": self.rank_token,
             "count": 10000,
         }
-        medias = []
+        nb_media = 0
         while True:
+            self.last_cursor = max_id
             result = self.private_request(
                 f"tags/{name}/sections/",
                 params={"max_id": max_id} if max_id else {},
@@ -265,19 +254,17 @@ class HashtagMixin:
                 layout_content = section.get("layout_content") or {}
                 nodes = layout_content.get("medias") or []
                 for node in nodes:
-                    if max_amount and len(medias) >= max_amount:
-                        break
                     media = extract_media_v1(node["media"])
                     # check contains hashtag in caption
-                    if f"#{name}" not in media.caption_text:
-                        continue
-                    medias.append(media)
-            if not result["more_available"]:
-                break
-            if max_amount and len(medias) >= max_amount:
+#                    if f"#{name}" not in media.caption_text:
+#                        continue
+                    yield media
+                    nb_media += 1
+                    if max_amount and nb_media >= max_amount:
+                        break
+            if not result["more_available"] or (max_amount and nb_media >= max_amount):
                 break
             max_id = result["next_max_id"]
-        return medias, max_id
 
     def hashtag_medias_v1(
         self, name: str, amount: int = 27, tab_key: str = ""
@@ -296,13 +283,10 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        medias, _ = self.hashtag_medias_v1_chunk(name, amount, tab_key)
-        if amount:
-            medias = medias[:amount]
-        return medias
+        yield from self.hashtag_medias_v1_chunk(name, amount, tab_key)
 
     def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
         """
@@ -317,10 +301,10 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts")
+        yield from self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts")
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
         """
@@ -335,10 +319,10 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        return self.hashtag_medias_v1(name, amount, tab_key="top")
+        yield from self.hashtag_medias_v1(name, amount, tab_key="top")
 
     def hashtag_medias_top(self, name: str, amount: int = 9) -> List[Media]:
         """
@@ -353,14 +337,16 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
+
         try:
-            medias = self.hashtag_medias_top_a1(name, amount)
+            self.logger.info("Use A1 method")
+            yield from self.hashtag_medias_top_a1(name, amount)
         except ClientError:
-            medias = self.hashtag_medias_top_v1(name, amount)
-        return medias
+            self.logger.info("Use V1 method")
+            yield from self.hashtag_medias_top_v1(name, amount)
 
     def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
         """
@@ -375,10 +361,10 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media")
+        yield from self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media")
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
         """
@@ -393,10 +379,10 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
-        return self.hashtag_medias_v1(name, amount, tab_key="recent")
+        yield from self.hashtag_medias_v1(name, amount, tab_key="recent")
 
     def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
         """
@@ -411,11 +397,12 @@ class HashtagMixin:
 
         Returns
         -------
-        List[Media]
-            List of objects of Media
+        generator<Media>
+            generator of objects of Media
         """
         try:
-            medias = self.hashtag_medias_recent_a1(name, amount)
+            self.logger.info("Use A1 method")
+            yield from self.hashtag_medias_recent_a1(name, amount)
         except ClientError:
-            medias = self.hashtag_medias_recent_v1(name, amount)
-        return medias
+            self.logger.info("Use V1 method")
+            yield from self.hashtag_medias_recent_v1(name, amount)
