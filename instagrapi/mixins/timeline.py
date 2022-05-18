@@ -8,6 +8,38 @@ class ReelsMixin:
     """
     Helpers for Reels
     """
+    def feed(self, amount: int = None, next_max_id: str = None):
+        nb_posts = 0
+        data = {
+            '_uuid': self.uuid,
+            '_csrftoken': self.token,
+            'is_prefetch': '0',
+            'is_pull_to_refresh': '0',
+            'phone_id': self.phone_id,
+            'timezone_offset': self.timezone_offset,
+        }
+
+        while True:
+            if amount and nb_posts >= amount:
+                break
+            if next_max_id:
+                data["max_id"] = next_max_id
+            result = self.private_request(
+                "feed/timeline/", data=data, with_signature=False
+            )
+
+            for item in result["feed_items"]:
+                media = item.get("media_or_ad")
+                if media:
+                    yield extract_media_v1(media)
+                    nb_posts += 1
+                    if amount and nb_posts >= amount:
+                        break
+
+            if not result.get("more_available"):
+                break
+            next_max_id = result.get('next_max_id')
+            self.last_cursor = next_max_id
 
     def reels(self, amount: int = 10, last_media_pk: int = 0) -> List[Media]:
         """

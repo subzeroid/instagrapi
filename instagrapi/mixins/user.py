@@ -194,6 +194,7 @@ class UserMixin:
                         raise e
                     user = self.user_info_by_username_gql(username)  # retry
             except Exception as e:
+                self.logger.exception(e)  # Register unknown error
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error
                 user = self.user_info_by_username_v1(username)
@@ -467,6 +468,8 @@ class UserMixin:
             page_info = json_value(data, "user", "edge_follow", "page_info", default={})
             edges = json_value(data, "user", "edge_follow", "edges", default=[])
             end_cursor = page_info.get("end_cursor")
+            self.last_cursor = end_cursor
+
             for edge in edges:
                 yield extract_user_short(edge["node"])
                 nb_users += 1
@@ -510,8 +513,9 @@ class UserMixin:
                 params["max_id"] = max_id
             result = self.private_request(f"friendships/{user_id}/following/", params=params)
             max_id = result.get("next_max_id")
+            self.last_cursor = max_id
             for user in result["users"]:
-                yield extract_user_short(user), max_id
+                yield extract_user_short(user)
                 nb_users += 1
                 if amount and nb_users >= amount:
                     break
@@ -598,9 +602,10 @@ class UserMixin:
             page_info = json_value(data, "user", "edge_followed_by", "page_info", default={})
             edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
             end_cursor = page_info.get("end_cursor")
+            self.last_cursor = end_cursor
 
             for edge in edges:
-                yield extract_user_short(edge["node"]), end_cursor
+                yield extract_user_short(edge["node"])
                 nb_users += 1
                 if max_amount and nb_users >= max_amount:
                     break
@@ -659,8 +664,8 @@ class UserMixin:
                 })
             except Exception as e:
                 if "Please wait a few minutes before you try again" in str(e):
-                    logging.info(f"{e}: sleeping 10 min")
-                    time.sleep(60*10)
+                    logging.info(f"{e}: sleeping 60 min")
+                    time.sleep(60*60)
                     continue
                 count /= 2
                 if count < 1000:
@@ -670,6 +675,7 @@ class UserMixin:
             if count < 10000:
                 count *= 2
             max_id = result.get("next_max_id")
+            self.last_cursor = max_id
             for user in result["users"]:
                 user = extract_user_short(user)
                 if user.pk in unique_set:
