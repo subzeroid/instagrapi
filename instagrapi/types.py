@@ -285,6 +285,7 @@ class DirectMessage(BaseModel):
     reactions: Optional[dict]
     text: Optional[str]
     link: Optional[dict]
+    animated_media: Optional[dict]
     media: Optional[DirectMedia]
     media_share: Optional[Media]
     reel_share: Optional[dict]
