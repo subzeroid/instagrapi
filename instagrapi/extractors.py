@@ -45,11 +45,11 @@ def extract_media_v1(data):
             media["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         )[-1]["url"]
-    if media["media_type"] == 8:
+#    if media["media_type"] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        media.pop("thumbnail_url", "")
-        media.pop("video_url", "")
+#        media.pop("thumbnail_url", "")
+#        media.pop("video_url", "")
     location = media.get("location")
     media["location"] = location and extract_location(location)
     media["user"] = extract_user_short(media.get("user"))
@@ -93,11 +93,11 @@ def extract_media_gql(data):
             media.get("display_resources", media.get("thumbnail_resources")),
             key=lambda o: o["config_width"] * o["config_height"],
         )[-1]["src"]
-    if media.get("media_type") == 8:
+#    if media.get("media_type") == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-        media.pop("thumbnail_url", "")
-        media.pop("video_url", "")
+#        media.pop("thumbnail_url", "")
+#        media.pop("video_url", "")
     location = media.pop("location", None)
     media_id = media.get("id")
     media["pk"] = media_id
