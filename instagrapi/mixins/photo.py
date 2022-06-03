@@ -485,23 +485,24 @@ class UploadPhotoMixin:
         tap_models = []
         static_models = []
         if mentions:
-            reel_mentions = [
-                {
-                    "x": 0.5002546,
-                    "y": 0.8583542,
-                    "z": 0,
-                    "width": 0.4712963,
-                    "height": 0.0703125,
-                    "rotation": 0.0,
-                    "type": "mention",
-                    "user_id": str(mention.user.pk),
-                    "is_sticker": False,
-                    "display_type": "mention_username",
-                }
-                for mention in mentions
-            ]
-            data["reel_mentions"] = json.dumps(reel_mentions)
-            tap_models.extend(reel_mentions)
+            for mention in mentions:
+                reel_mentions = [
+                    {
+                        "x": mention.x,
+                        "y": mention.y,
+                        "z": 1,
+                        "width": mention.width,
+                        "height": mention.height,
+                        "rotation": 0.0,
+                        "type": "mention",
+                        "user_id": str(mention.user.pk),
+                        "is_sticker": False,
+                        "display_type": "mention_username",
+                    }
+                    
+                ]
+                data["reel_mentions"] = json.dumps(reel_mentions)
+                tap_models.extend(reel_mentions)
         if hashtags:
             story_sticker_ids.append("hashtag_sticker")
             for mention in hashtags:
