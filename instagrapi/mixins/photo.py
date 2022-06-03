@@ -490,7 +490,7 @@ class UploadPhotoMixin:
                     {
                         "x": mention.x,
                         "y": mention.y,
-                        "z": 1,
+                        "z": 0,
                         "width": mention.width,
                         "height": mention.height,
                         "rotation": 0.0,
