@@ -6,6 +6,6 @@ mike==1.1.2
 markdown-include==0.6.0
 mkdocs-material==8.3.0
 mkdocs-minify-plugin==0.5.0
-mkdocstrings==0.17.0
+mkdocstrings==0.19.0
 ./util/mkdocs-redirects
 ./util/mkdocstrings_patch_type_aliases
