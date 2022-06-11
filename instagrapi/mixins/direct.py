@@ -666,3 +666,45 @@ class DirectMixin:
             A boolean value
         """
         return self.direct_thread_mute_video_call(thread_id, revert=True)
+
+    def direct_profile_share(self, user_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+        """
+        Share a profile to list of users
+
+        Parameters
+        ----------
+        user_id: str
+            Unique User ID (profile)
+        user_ids: List[int]
+            List of unique identifier of Users id (recipients)
+        thread_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
+        token = self.generate_mutation_token()
+        data = {
+            "action": "send_item",
+            "is_shh_mode": "0",
+            "send_attribution": "profile",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "profile_user_id": user_id,
+            "offline_threading_id": token,
+        }
+        if user_ids:
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        result = self.private_request(
+            "direct_v2/threads/broadcast/profile/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
