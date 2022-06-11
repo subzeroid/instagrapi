@@ -334,8 +334,49 @@ class UserMixin:
         except ClientError as e:
             self.logger.exception(e)
             return None
+             
+    def search_users_v1(self, query: str, count: int) -> List[UserShort]:
+        """
+        Search users by a query (Private Mobile API)
+        Parameters
+        ----------
+        query: str
+            Query to search
+        count: int
+            The count of search results
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
+        results = self.private_request(
+            "users/search/",
+            params={
+                "query": query,
+                "count": count
+            }
+        )
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+    
+    def search_users(self, query: str, count: int = 50) -> List[UserShort]:
+        """
+        Search users by a query
+        Parameters
+        ----------
+        query: str
+            Query string to search
+        count: int
+            The count of search results
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return self.search_users_v1(query, count)
 
     def search_followers_v1(self, user_id: str, query: str) -> List[UserShort]:
+
         """
         Search users by followers (Private Mobile API)
 
