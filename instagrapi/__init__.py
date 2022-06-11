@@ -1,6 +1,9 @@
 import logging
 from urllib.parse import urlparse
 
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
@@ -10,11 +13,14 @@ from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.fbsearch import FbSearchMixin
 from instagrapi.mixins.hashtag import HashtagMixin
+from instagrapi.mixins.highlight import HighlightMixin
 from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.notification import NotificationMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
 from instagrapi.mixins.private import PrivateRequestMixin
@@ -23,11 +29,14 @@ from instagrapi.mixins.public import (
     PublicRequestMixin,
     TopSearchesPublicMixin,
 )
+from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class Client(
@@ -37,11 +46,15 @@ class Client(
     TopSearchesPublicMixin,
     ProfilePublicMixin,
     LoginMixin,
+    ShareMixin,
+    FbSearchMixin,
+    HighlightMixin,
     DownloadPhotoMixin,
     UploadPhotoMixin,
     DownloadVideoMixin,
     UploadVideoMixin,
     DownloadAlbumMixin,
+    NotificationMixin,
     UploadAlbumMixin,
     DownloadIGTVMixin,
     UploadIGTVMixin,

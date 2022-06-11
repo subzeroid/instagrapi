@@ -166,7 +166,7 @@ class UploadIGTVMixin:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
         # CONFIGURE
         self.igtv_composer_session_id = self.generate_uuid()
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure IGTV: {path}")
             time.sleep(configure_timeout)
             try:
@@ -188,7 +188,7 @@ class UploadIGTVMixin:
                     Response 202 status:
                     {"message": "Transcode not finished yet.", "status": "fail"}
                     """
-                    time.sleep(10)
+                    time.sleep(configure_timeout)
                     continue
                 raise e
             else:

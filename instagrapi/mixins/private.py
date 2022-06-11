@@ -47,9 +47,8 @@ def manual_input_code(self, username: str, choice=None):
         Code
     """
     code = None
-    choice_name = {0: 'sms', 1: 'email'}.get(choice)
     while True:
-        code = input(f"Enter code (6 digits) for {username} ({choice_name}): ").strip()
+        code = input(f"Enter code (6 digits) for {username} ({choice}): ").strip()
         if code and code.isdigit():
             break
     return code  # is not int, because it can start from 0
@@ -77,6 +76,7 @@ class PrivateRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
+        self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop(
@@ -149,6 +149,8 @@ class PrivateRequestMixin:
             "X-FB-Client-IP": "True",
             "X-FB-Server-Cluster": "True",
             "IG-INTENDED-USER-ID": str(self.user_id or 0),
+            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
+            "X-IG-SALT-IDS": str(random.randint(1061162222, 1061262222)),
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
@@ -158,8 +160,12 @@ class PrivateRequestMixin:
                 "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
                 "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
                 "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
-                "IG-U-RUR": "ODN",  # f"CLN,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
+                "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
             })
+        if self.ig_u_rur:
+            headers.update({"IG-U-RUR": self.ig_u_rur})
+        if self.ig_www_claim:
+            headers.update({"X-IG-WWW-Claim": self.ig_www_claim})
         return headers
 
     def set_country(self, country: str = "US"):
@@ -176,7 +182,22 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.country = str(country)
+        self.settings['country'] = self.country = str(country)
+        return True
+
+    def set_country_code(self, country_code: int = 1):
+        """Set country calling code
+
+        Parameters
+        ----------
+        country_code: int
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.settings['country_code'] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -194,7 +215,7 @@ class PrivateRequestMixin:
             A boolean value
         """
         user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
-        self.locale = str(locale)
+        self.settings['locale'] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if '_' in locale:
             self.set_country(locale.rsplit('_', 1)[1])
@@ -213,7 +234,15 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.timezone_offset = int(seconds)
+        self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
+        return True
+
+    def set_ig_u_rur(self, value):
+        self.settings['ig_u_rur'] = self.ig_u_rur = value
+        return True
+
+    def set_ig_www_claim(self, value):
+        self.settings['ig_www_claim'] = self.ig_www_claim = value
         return True
 
     @staticmethod
@@ -369,7 +398,9 @@ class PrivateRequestMixin:
             response.request.method,
             response.url,
             "{app_version}, {manufacturer} {model}".format(
-                **self.device_settings
+                app_version=self.device_settings.get("app_version"),
+                manufacturer=self.device_settings.get("manufacturer"),
+                model=self.device_settings.get("model"),
             ),
         )
 
@@ -400,7 +431,7 @@ class PrivateRequestMixin:
             self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
-            print('Wait 60 seconds and try one more time (ClientRequestTimeout)')
+            self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
             time.sleep(60)
             return self._send_private_request(endpoint, **kwargs)
         # except BadPassword as e:

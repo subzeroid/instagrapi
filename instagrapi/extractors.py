@@ -11,13 +11,16 @@ from .types import (
     DirectShortThread,
     DirectThread,
     Hashtag,
+    Highlight,
     Location,
     Media,
     MediaOembed,
     Resource,
     Story,
     StoryLink,
+    StoryMedia,
     StoryMention,
+    Track,
     User,
     UserShort,
     Usertag,
@@ -225,12 +228,17 @@ def extract_media_oembed(data):
 
 
 def extract_direct_thread(data):
-    data["messages"] = [extract_direct_message(item) for item in data["items"]]
+    data["pk"] = data.get("thread_v2_id")
+    data["id"] = data.get("thread_id")
+    data["messages"] = []
+    for item in data["items"]:
+        item["thread_id"] = data["id"]
+        data["messages"].append(
+            extract_direct_message(item)
+        )
     data["users"] = [extract_user_short(u) for u in data["users"]]
     if "inviter" in data:
         data["inviter"] = extract_user_short(data["inviter"])
-    data["pk"] = data.get("thread_v2_id")
-    data["id"] = data.get("thread_id")
     data["left_users"] = data.get("left_users", [])
     return DirectThread(**data)
 
@@ -248,7 +256,10 @@ def extract_direct_response(data):
 def extract_direct_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
-        data["media_share"] = extract_media_v1(data["media_share"])
+        ms = data["media_share"]
+        if not ms.get("code"):
+            ms["code"] = InstagramIdCodec.encode(ms["id"])
+        data["media_share"] = extract_media_v1(ms)
     if "media" in data:
         data["media"] = extract_direct_media(data["media"])
     clip = data.get("clip", {})
@@ -284,11 +295,13 @@ def extract_account(data):
 
 def extract_hashtag_gql(data):
     data["media_count"] = data.get("edge_hashtag_to_media", {}).get("count")
+    data["profile_pic_url"] = data["profile_pic_url"] or None
     return Hashtag(**data)
 
 
 def extract_hashtag_v1(data):
     data["allow_following"] = data.get("allow_following") == 1
+    data["profile_pic_url"] = data["profile_pic_url"] or None
     return Hashtag(**data)
 
 
@@ -301,7 +314,7 @@ def extract_story_v1(data):
             story["video_versions"], key=lambda o: o["height"] * o["width"]
         )[-1]["url"]
     if story["media_type"] == 2 and not story.get("product_type"):
-        story["product_type"] = "feed"
+        story["product_type"] = "story"
     if "image_versions2" in story:
         story["thumbnail_url"] = sorted(
             story["image_versions2"]["candidates"],
@@ -313,6 +326,12 @@ def extract_story_v1(data):
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
+    feed_medias = []
+    story_feed_medias = data.get('story_feed_media') or []
+    for feed_media in story_feed_medias:
+        feed_media["media_pk"] = int(feed_media["media_id"])
+        feed_medias.append(StoryMedia(**feed_media))
+    story["medias"] = feed_medias
     story["links"] = []
     for cta in story.get("story_cta", []):
         for link in cta.get("links", []):
@@ -329,15 +348,21 @@ def extract_story_gql(data):
         story["video_url"] = sorted(
             story["video_resources"], key=lambda o: o["config_height"] * o["config_width"]
         )[-1]["src"]
-    # if story["tappable_objects"] and "GraphTappableFeedMedia" in [x["__typename"] for x in story["tappable_objects"]]:
-    story["product_type"] = "feed"
+    story["product_type"] = "story"
     story["thumbnail_url"] = story.get("display_url")
     story["mentions"] = []
-    for mention in story.get("tappable_objects", []):
-        if mention["__typename"] == "GraphTappableMention":
-            mention["id"] = 1
-            mention["user"] = extract_user_short(mention)
-            story["mentions"].append(StoryMention(**mention))
+    story["medias"] = []
+    for item in story.get("tappable_objects", []):
+        if item["__typename"] == "GraphTappableMention":
+            item["id"] = 1
+            item["user"] = extract_user_short(item)
+            story["mentions"].append(StoryMention(**item))
+        if item["__typename"] == "GraphTappableFeedMedia":
+            media = item.get("media")
+            if media:
+                item["media_pk"] = int(media["id"])
+                item["media_code"] = media["shortcode"]
+            story["medias"].append(StoryMedia(**item))
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
@@ -352,3 +377,17 @@ def extract_story_gql(data):
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
     return Story(**story)
+
+
+def extract_highlight_v1(data):
+    highlight = deepcopy(data)
+    highlight['pk'] = highlight['id'].split(':')[1]
+    highlight['items'] = [
+        extract_story_v1(item)
+        for item in highlight.get('items', [])
+    ]
+    return Highlight(**highlight)
+
+
+def extract_track(data):
+    return Track(**data)

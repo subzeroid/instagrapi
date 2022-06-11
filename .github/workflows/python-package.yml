@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/setup-python@v2.2.2
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -32,8 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/setup-python@v2.2.2
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/setup-python@v2.2.2
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -71,8 +71,8 @@ jobs:
         python-version: [ 3.6, 3.7, 3.8, 3.9 ]
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
-      - uses: actions/setup-python@v2.2.2
+        uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -89,9 +89,9 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2.2.2
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -107,7 +107,7 @@ jobs:
       # upload artifact for dev build
       - name: Upload coverage results artifact
         if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: docs-site
           path: site/
@@ -117,9 +117,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2.2.2
+      - uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 

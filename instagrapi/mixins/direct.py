@@ -2,7 +2,7 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
@@ -19,13 +19,23 @@ from instagrapi.types import (
 )
 from instagrapi.utils import dumps
 
+SELECTED_FILTERS = ("flagged", "unread")
+
+try:
+    from typing import Literal
+    SELECTED_FILTER = Literal[SELECTED_FILTERS]
+except ImportError:
+    # python <= 3.8
+    SELECTED_FILTER = str
+
 
 class DirectMixin:
     """
     Helpers for managing Direct Messaging
     """
 
-    def direct_threads(self, amount: int = 20) -> List[DirectThread]:
+    def direct_threads(self, amount: int = 20, selected_filter: SELECTED_FILTER = "",
+                       thread_message_limit: Optional[int] = None) -> List[DirectThread]:
         """
         Get direct message threads
 
@@ -46,9 +56,20 @@ class DirectMixin:
             "persistentBadging": "true",
             "limit": "20",
         }
+        if selected_filter:
+            assert selected_filter in SELECTED_FILTERS, \
+                f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
+            params.update({
+                "selected_filter": selected_filter,
+                "fetch_reason": "manual_refresh",
+            })
+        if thread_message_limit:
+            params.update({
+                "thread_message_limit": thread_message_limit
+            })
         cursor = None
         threads = []
-        self.private_request("direct_v2/get_presence/")
+        # self.private_request("direct_v2/get_presence/")
         while True:
             if cursor:
                 params["cursor"] = cursor
@@ -645,3 +666,45 @@ class DirectMixin:
             A boolean value
         """
         return self.direct_thread_mute_video_call(thread_id, revert=True)
+
+    def direct_profile_share(self, user_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+        """
+        Share a profile to list of users
+
+        Parameters
+        ----------
+        user_id: str
+            Unique User ID (profile)
+        user_ids: List[int]
+            List of unique identifier of Users id (recipients)
+        thread_ids: List[int]
+            List of unique identifier of Users id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
+        token = self.generate_mutation_token()
+        data = {
+            "action": "send_item",
+            "is_shh_mode": "0",
+            "send_attribution": "profile",
+            "client_context": token,
+            "mutation_token": token,
+            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "profile_user_id": user_id,
+            "offline_threading_id": token,
+        }
+        if user_ids:
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+        result = self.private_request(
+            "direct_v2/threads/broadcast/profile/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])

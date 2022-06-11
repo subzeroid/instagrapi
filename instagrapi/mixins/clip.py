@@ -164,7 +164,7 @@ class UploadClipMixin:
             raise ClipNotUpload(response=self.last_response, **self.last_json)
         # CONFIGURE
         # self.igtv_composer_session_id = self.generate_uuid()  #issue
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure CLIP: {path}")
             time.sleep(configure_timeout)
             try:
@@ -186,7 +186,7 @@ class UploadClipMixin:
                     Response 202 status:
                     {"message": "Transcode not finished yet.", "status": "fail"}
                     """
-                    time.sleep(10)
+                    time.sleep(configure_timeout)
                     continue
                 raise e
             else:

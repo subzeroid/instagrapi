@@ -25,7 +25,7 @@ You can automatically process the codes sent to you to solve the challenge from 
 You need to declare `challenge_code_handler` which will return the code received from Instagram via Email or SMS:
 
 ``` python
-from instagrapi.challenge import ChallengeChoice
+from instagrapi.mixins.challenge import ChallengeChoice
 
 
 def challenge_code_handler(username, choice):
@@ -72,7 +72,8 @@ def get_code_from_email(username):
                 print('Skip this email, "code" not found')
                 continue
             code = match.group(1)
-        return code
+            if code:
+                return code
     return False
 ```
 

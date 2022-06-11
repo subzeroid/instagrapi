@@ -11,14 +11,14 @@ def validate_external_url(cls, v):
 
 
 class Resource(BaseModel):
-    pk: int
+    pk: str
     video_url: Optional[HttpUrl]  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
 
 
 class User(BaseModel):
-    pk: int
+    pk: str
     username: str
     full_name: str
     is_private: bool
@@ -30,19 +30,32 @@ class User(BaseModel):
     following_count: int
     biography: Optional[str] = ""
     external_url: Optional[str]
+    account_type: Optional[int]
     is_business: bool
 
     public_email: Optional[str]
     contact_phone_number: Optional[str]
+    public_phone_country_code: Optional[str]
+    public_phone_number: Optional[str]
     business_contact_method: Optional[str]
     business_category_name: Optional[str]
     category_name: Optional[str]
+    category: Optional[str]
+
+    address_street: Optional[str]
+    city_id: Optional[str]
+    city_name: Optional[str]
+    latitude: Optional[float]
+    longitude: Optional[float]
+    zip: Optional[str]
+    instagram_location_id: Optional[str]
+    interop_messaging_user_fbid: Optional[str]
 
     _external_url = validator('external_url', allow_reuse=True)(validate_external_url)
 
 
 class Account(BaseModel):
-    pk: int
+    pk: str
     username: str
     full_name: str
     is_private: bool
@@ -60,7 +73,7 @@ class Account(BaseModel):
 
 
 class UserShort(BaseModel):
-    pk: int
+    pk: str
     username: Optional[str]
     full_name: Optional[str] = ""
     profile_pic_url: Optional[HttpUrl]
@@ -96,7 +109,7 @@ class Location(BaseModel):
 
 
 class Media(BaseModel):
-    pk: int
+    pk: str
     id: str
     code: str
     taken_at: datetime
@@ -109,19 +122,21 @@ class Media(BaseModel):
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
+    accessibility_caption: Optional[str]
     usertags: List[Usertag]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""
     resources: List[Resource] = []
+    clips_metadata: dict = {}
 
 
 class MediaOembed(BaseModel):
     title: str
     author_name: str
     author_url: str
-    author_id: int
+    author_id: str
     media_id: str
     provider_name: str
     provider_url: HttpUrl
@@ -143,7 +158,7 @@ class Collection(BaseModel):
 
 
 class Comment(BaseModel):
-    pk: int
+    pk: str
     text: str
     user: UserShort
     created_at_utc: datetime
@@ -154,7 +169,7 @@ class Comment(BaseModel):
 
 
 class Hashtag(BaseModel):
-    id: int
+    id: str
     name: str
     media_count: Optional[int]
     profile_pic_url: Optional[HttpUrl]
@@ -166,6 +181,26 @@ class StoryMention(BaseModel):
     y: Optional[float]
     width: Optional[float]
     height: Optional[float]
+
+
+class StoryMedia(BaseModel):
+    # Instagram does not return the feed_media object when requesting story,
+    # so you will have to make an additional request to get media and this is overhead:
+    # media: Media
+    x: float = 0.5
+    y: float = 0.4997396
+    z: float = 0
+    width: float = 0.8
+    height: float = 0.60572916
+    rotation: float = 0.0
+    is_pinned: Optional[bool]
+    is_hidden: Optional[bool]
+    is_sticker: Optional[bool]
+    is_fb_sticker: Optional[bool]
+    media_pk: int
+    user_id: Optional[int]
+    product_type: Optional[str]
+    media_code: Optional[str]
 
 
 class StoryHashtag(BaseModel):
@@ -185,7 +220,7 @@ class StoryLocation(BaseModel):
 
 
 class StorySticker(BaseModel):
-    id: str
+    id: Optional[str]
     type: Optional[str] = 'gif'
     x: float
     y: float
@@ -193,20 +228,28 @@ class StorySticker(BaseModel):
     width: float
     height: float
     rotation: Optional[float] = 0.0
+    extra: Optional[dict] = {}
 
 
 class StoryBuild(BaseModel):
     mentions: List[StoryMention]
     path: FilePath
     paths: List[FilePath] = []
+    stickers: List[StorySticker] = []
 
 
 class StoryLink(BaseModel):
     webUri: HttpUrl
+    x: float = 0.5126011
+    y: float = 0.5168225
+    z: float = 0.0
+    width: float = 0.50998676
+    height: float = 0.25875
+    rotation: float = 0.0
 
 
 class Story(BaseModel):
-    pk: int
+    pk: str
     id: str
     code: str
     taken_at: datetime
@@ -221,6 +264,7 @@ class Story(BaseModel):
     hashtags: List[StoryHashtag]
     locations: List[StoryLocation]
     stickers: List[StorySticker]
+    medias: List[StoryMedia] = []
 
 
 class DirectMedia(BaseModel):
@@ -232,15 +276,18 @@ class DirectMedia(BaseModel):
 
 
 class DirectMessage(BaseModel):
-    id: int  # e.g. 28597946203914980615241927545176064
+    id: str  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
-    thread_id: Optional[int]
+    thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    link: Optional[dict]
+    animated_media: Optional[dict]
     media: Optional[DirectMedia]
+    visual_media: Optional[dict]
     media_share: Optional[Media]
     reel_share: Optional[dict]
     story_share: Optional[dict]
@@ -256,19 +303,19 @@ class DirectResponse(BaseModel):
 
 
 class DirectShortThread(BaseModel):
-    id: int
+    id: str
     users: List[UserShort]
     named: bool
     thread_title: str
     pending: bool
     thread_type: str
-    viewer_id: int
+    viewer_id: str
     is_group: bool
 
 
 class DirectThread(BaseModel):
-    pk: int  # thread_v2_id, e.g. 17898572618026348
-    id: int  # thread_id, e.g. 340282366841510300949128268610842297468
+    pk: str  # thread_v2_id, e.g. 17898572618026348
+    id: str  # thread_id, e.g. 340282366841510300949128268610842297468
     messages: List[DirectMessage]
     users: List[UserShort]
     inviter: Optional[UserShort]
@@ -296,7 +343,7 @@ class DirectThread(BaseModel):
     shh_mode_enabled: bool
     last_seen_at: dict
 
-    def is_seen(self, user_id: int):
+    def is_seen(self, user_id: str):
         """Have I seen this thread?
         :param user_id: You account user_id
         """
@@ -323,3 +370,45 @@ class Relationship(BaseModel):
     muting: bool
     outgoing_request: bool
     status: str
+
+
+class Highlight(BaseModel):
+    pk: str  # 17895485401104052
+    id: str  # highlight:17895485401104052
+    latest_reel_media: int
+    cover_media: dict
+    user: UserShort
+    title: str
+    created_at: datetime
+    is_pinned_highlight: bool
+    media_count: int
+    media_ids: List[int] = []
+    items: List[Story] = []
+
+
+class Share(BaseModel):
+    pk: str
+    type: str
+
+
+class Track(BaseModel):
+    id: str
+    title: str
+    subtitle: str
+    display_artist: str
+    audio_cluster_id: int
+    artist_id: Optional[int]
+    cover_artwork_uri: HttpUrl
+    cover_artwork_thumbnail_uri: HttpUrl
+    progressive_download_url: HttpUrl
+    fast_start_progressive_download_url: HttpUrl
+    reactive_audio_download_url: Optional[HttpUrl]
+    highlight_start_times_in_ms: List[int]
+    is_explicit: bool
+    dash_manifest: str
+    has_lyrics: bool
+    audio_asset_id: int
+    duration_in_ms: int
+    dark_message: Optional[str]
+    allows_saving: bool
+    territory_validity_periods: dict

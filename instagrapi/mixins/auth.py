@@ -68,6 +68,7 @@ class PreLoginFlowMixin:
             "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
+            "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
             "device_id": self.uuid,
         }
         # if login is False:
@@ -261,8 +262,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     uuid = ""
     mid = ""
     country = "US"
+    country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    ig_u_rur = ""  # e.g. CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
         self.user_agent = None
@@ -290,7 +294,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
+        self.set_country_code(self.settings.get("country_code", self.country_code))
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        self.set_ig_u_rur(self.settings.get("ig_u_rur"))
+        self.set_ig_www_claim(self.settings.get("ig_www_claim"))
+        # init headers
+        headers = self.base_headers
+        headers.update({'Authorization': self.authorization})
+        self.private.headers.update(headers)
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -308,16 +319,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
-        self.settings = {"cookies": {"sessionid": sessionid}}
+        self.settings["cookies"] = {"sessionid": sessionid}
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
-
         self.authorization_data = {
             "ds_user_id": user_id,
             "sessionid": sessionid,
             "should_use_header_over_cookies": True
         }
-
         try:
             user = self.user_info_v1(int(user_id))
         except (PrivateError, ValidationError):
@@ -365,18 +374,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.logger.warning('Ignore 429: Continue login')
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
-            pass
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            # "country_codes": "[{\"country_code\":\"7\",\"source\":[\"default\"]}]",
+            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
-            # "_csrftoken": self.token,
             "username": username,
             "adid": self.advertising_id,
             "guid": self.uuid,
-            "device_id": self.uuid,
+            "device_id": self.android_device_id,
             "google_tokens": "[]",
             "login_attempt_count": "0"
         }
@@ -399,11 +406,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "username": username,
                 "trust_this_device": "0",
                 "guid": self.uuid,
-                "device_id": self.uuid,
+                "device_id": self.android_device_id,
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3"
             }
             logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get('ig-set-authorization')
+            )
         if logged:
             self.login_flow()
             self.last_login = time.time()
@@ -510,12 +520,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "tray_session_id": self.tray_session_id,
             },
             "mid": self.mid,
+            "ig_u_rur": self.ig_u_rur,
+            "ig_www_claim": self.ig_www_claim,
             "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
             "country": self.country,
+            "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
         }
@@ -583,16 +596,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "194.0.0.36.172",
+            "app_version": "203.0.0.29.118",
             "android_version": 26,
             "android_release": "8.0.0",
             "dpi": "480dpi",
             "resolution": "1080x1920",
             "manufacturer": "Xiaomi",
-            "device": "MI 5s",
-            "model": "capricorn",
+            "device": "capricorn",
+            "model": "MI 5s",
             "cpu": "qcom",
-            "version_code": "301484483",
+            "version_code": "314665256",
         }
         self.settings["device_settings"] = self.device_settings
         if reset:
@@ -679,7 +692,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A random android device id
         """
-        return "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
+        return "android-%s" % hashlib.sha256(str(time.time()).encode()).hexdigest()[:16]
 
     def expose(self) -> Dict:
         """
@@ -693,6 +706,22 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
+    def with_extra_data(self, data: Dict) -> Dict:
+        """
+        Helper to get extra data
+
+        Returns
+        -------
+        Dict
+            A dictionary of default data
+        """
+        return self.with_default_data({
+            "phone_id": self.phone_id,
+            "_uid": str(self.user_id),
+            "guid": self.uuid,
+            **data
+        })
+
     def with_default_data(self, data: Dict) -> Dict:
         """
         Helper to get default data
@@ -702,15 +731,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return dict(
-            {
-                "_uuid": self.uuid,
-                # "_uid": str(self.user_id),
-                # "_csrftoken": self.token,
-                "device_id": self.android_device_id,
-            },
+        return {
+            "_uuid": self.uuid,
+            # "_uid": str(self.user_id),
+            # "_csrftoken": self.token,
+            "device_id": self.android_device_id,
             **data,
-        )
+        }
 
     def with_action_data(self, data: Dict) -> Dict:
         """

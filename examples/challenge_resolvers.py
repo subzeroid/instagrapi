@@ -7,7 +7,7 @@ import re
 import random
 
 from instagrapi import Client
-from instagrapi.challenge import ChallengeChoice
+from instagrapi.mixins.challenge import ChallengeChoice
 
 CHALLENGE_EMAIL = ''
 CHALLENGE_PASSWORD = ''
@@ -45,7 +45,8 @@ def get_code_from_email(username):
                 print('Skip this email, "code" not found')
                 continue
             code = match.group(1)
-        return code
+            if code:
+                return code
     return False
 
 

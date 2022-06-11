@@ -1,12 +1,10 @@
-import hashlib
-import hmac
+import datetime
+import enum
 import json
 import random
 import string
 import time
 import urllib
-
-from . import config
 
 
 class InstagramIdCodec:
@@ -41,22 +39,17 @@ class InstagramIdCodec:
         return num
 
 
-def generate_signature_old(data):
-    """Generate signature of POST data for Private API
-
-    Returns
-    -------
-    str
-        e.g. "signed_body=57310ea0133ba7683871e87f86f45756ac4d40c5b454e470d71eff728579a7ac.asdasd&ig_sig_key_version=4"
-    """
-    body = hmac.new(
-        config.IG_SIG_KEY.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
-    return "signed_body={body}.{data}&ig_sig_key_version={sig_key}".format(
-        body=body,
-        data=urllib.parse.quote(data),
-        sig_key=config.SIG_KEY_VERSION,
-    )
+class InstagrapiJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, enum.Enum):
+            return obj.value
+        elif isinstance(obj, datetime.time):
+            return obj.strftime("%H:%M")
+        elif isinstance(obj, (datetime.datetime, datetime.date)):
+            return int(obj.strftime("%s"))
+        elif isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def generate_signature(data):
@@ -103,7 +96,7 @@ def gen_password(size=10):
 def dumps(data):
     """Json dumps format as required Instagram
     """
-    return json.dumps(data, separators=(",", ":"))
+    return InstagrapiJSONEncoder(separators=(",", ":")).encode(data)
 
 
 def generate_jazoest(symbols: str) -> str:
@@ -112,4 +105,5 @@ def generate_jazoest(symbols: str) -> str:
 
 
 def date_time_original(localtime):
-    return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)
+    # return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)
+    return time.strftime("%Y%m%dT%H%M%S.000Z", localtime)
