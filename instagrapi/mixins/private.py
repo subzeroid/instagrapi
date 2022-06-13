@@ -8,6 +8,7 @@ import requests
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    UserNotFound,
     BadPassword,
     ChallengeRequired,
     ClientBadRequestError,
@@ -340,6 +341,8 @@ class PrivateRequestMixin:
                     raise SentryBlock(**last_json)
                 elif error_type == "rate_limit_error":
                     raise RateLimitError(**last_json)
+                elif error_type == "invalid_user":
+                    raise UserNotFound(e, response=e.response, **last_json)
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
                 elif error_type == "two_factor_required":
