@@ -33,7 +33,7 @@ from instagrapi.exceptions import (
     PrivateProfileUser,
     InvalidTargetUser,
     DeleteRequestError,
-    CheckpointRequired,
+    CheckpointRequired
 )
 from instagrapi.utils import dumps, generate_signature
 
@@ -394,6 +394,10 @@ class PrivateRequestMixin:
                     raise InvalidTargetUser(e, response=e.response, **last_json)
                 elif "You requested to delete" in message:
                     raise DeleteRequestError(e, response=e.response, **last_json)
+                elif "You can't use Instagram" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
+                elif "The username you entered doesn't appear" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
