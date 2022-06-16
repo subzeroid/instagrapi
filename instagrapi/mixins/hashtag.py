@@ -210,6 +210,36 @@ class HashtagMixin:
         """
         yield from self.hashtag_medias_a1_chunk(name, amount, tab_key)
 
+    def hashtag_medias_v1_logged_out(
+                self, name: str, max_amount: int = 27
+        ) -> List[Media]:
+            """
+            Get chunk of medias for a hashtag and max_id (cursor) by Private Web API
+
+            Parameters
+            ----------
+            name: str
+                Name of the hashtag
+            max_amount: int, optional
+                Maximum number of media to return, default is 27
+
+            Returns
+            -------
+            generator<Media>
+                generator of objects of Media
+            """
+
+            nb_media = 0
+            result = self.private_request(
+                f"tags/logged_out_web_info/?tag_name={name}",
+            )
+            for node in result["data"]["hashtag"]["edge_hashtag_to_media"]["edges"]:
+                media = extract_media_gql(node["node"])
+                yield media
+                nb_media += 1
+                if max_amount and nb_media >= max_amount:
+                    break
+
     def hashtag_medias_v1_chunk(
         self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None
     ) -> List[Media]:
