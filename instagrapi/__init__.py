@@ -38,6 +38,9 @@ from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+# Used as fallback logger if another is not provided.
+DEFAULT_LOGGER = logging.getLogger("instagrapi")
+
 
 class Client(
     PublicRequestMixin,
@@ -76,12 +79,20 @@ class Client(
     TOTPMixin,
 ):
     proxy = None
-    logger = logging.getLogger("instagrapi")
 
-    def __init__(self, settings: dict = {}, proxy: str = None, **kwargs):
+    def __init__(self,
+                 settings: dict = {},
+                 proxy: str = None,
+                 logger=DEFAULT_LOGGER,
+                 **kwargs):
+
         super().__init__(**kwargs)
+
         self.settings = settings
+        self.logger = logger
+
         self.set_proxy(proxy)
+
         self.init()
 
     def set_proxy(self, dsn: str):
