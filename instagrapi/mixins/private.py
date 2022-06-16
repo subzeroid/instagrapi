@@ -398,6 +398,8 @@ class PrivateRequestMixin:
                     raise InactiveUserError(e, response=e.response, **last_json)
                 elif "The username you entered doesn't appear" in message:
                     raise InactiveUserError(e, response=e.response, **last_json)
+                elif "Your account has been disabled for violating our terms" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
