@@ -105,4 +105,5 @@ def generate_jazoest(symbols: str) -> str:
 
 
 def date_time_original(localtime):
-    return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)
+    # return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)
+    return time.strftime("%Y%m%dT%H%M%S.000Z", localtime)

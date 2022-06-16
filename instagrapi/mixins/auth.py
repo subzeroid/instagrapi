@@ -357,16 +357,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
-        self.settings.update({"cookies": {"sessionid": sessionid}})
+        self.settings["cookies"] = {"sessionid": sessionid}
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
-
         self.authorization_data = {
             "ds_user_id": user_id,
             "sessionid": sessionid,
             "should_use_header_over_cookies": True,
         }
-
         try:
             user = self.user_info_v1(int(user_id))
         except (PrivateError, ValidationError):
@@ -423,8 +421,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"%d","source":["default"]}]'
-            % int(self.country_code),
+            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -455,12 +452,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "username": username,
                 "trust_this_device": "0",
                 "guid": self.uuid,
-                "device_id": self.uuid,
+                "device_id": self.android_device_id,
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3",
             }
-            logged = self.private_request(
-                "accounts/two_factor_login/", data, login=True
+            logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get('ig-set-authorization')
             )
         if logged:
             self.login_flow()
@@ -652,8 +650,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "dpi": "480dpi",
             "resolution": "1080x1920",
             "manufacturer": "Xiaomi",
-            "device": "MI 5s",
-            "model": "capricorn",
+            "device": "capricorn",
+            "model": "MI 5s",
             "cpu": "qcom",
             "version_code": "314665256",
         }
@@ -744,7 +742,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A random android device id
         """
-        return "android-%s" % hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
+        return "android-%s" % hashlib.sha256(str(time.time()).encode()).hexdigest()[:16]
 
     def expose(self) -> Dict:
         """
@@ -758,6 +756,22 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
+    def with_extra_data(self, data: Dict) -> Dict:
+        """
+        Helper to get extra data
+
+        Returns
+        -------
+        Dict
+            A dictionary of default data
+        """
+        return self.with_default_data({
+            "phone_id": self.phone_id,
+            "_uid": str(self.user_id),
+            "guid": self.uuid,
+            **data
+        })
+
     def with_default_data(self, data: Dict) -> Dict:
         """
         Helper to get default data
@@ -767,15 +781,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return dict(
-            {
-                "_uuid": self.uuid,
-                # "_uid": str(self.user_id),
-                # "_csrftoken": self.token,
-                "device_id": self.android_device_id,
-            },
+        return {
+            "_uuid": self.uuid,
+            # "_uid": str(self.user_id),
+            # "_csrftoken": self.token,
+            "device_id": self.android_device_id,
             **data,
-        )
+        }
 
     def with_action_data(self, data: Dict) -> Dict:
         """

@@ -80,6 +80,37 @@ class DownloadAlbumMixin:
                 raise AlbumUnknownFormat()
         return paths
 
+    def album_download_origin(self, media_pk: int) -> List[bytes]:
+        """
+        Download your album
+
+        Parameters
+        ----------
+        media_pk: int
+            PK for the album you want to download
+        Returns
+        -------
+        List[Path]
+            List of path for all the files downloaded
+        """
+        media = self.media_info(media_pk)
+        assert media.media_type == 8, "Must been album"
+        files = []
+        for resource in media.resources:
+            if resource.media_type == 1:
+                files.append(
+                    self.photo_download_by_url_origin(resource.thumbnail_url)
+                )
+            elif resource.media_type == 2:
+                files.append(
+                    self.video_download_by_url_origin(resource.video_url)
+                )
+            else:
+                raise AlbumNotDownload(
+                    'Media type "{resource.media_type}" unknown for album (resource={resource.pk})'
+                )
+        return files
+
 
 class UploadAlbumMixin:
     def album_upload(

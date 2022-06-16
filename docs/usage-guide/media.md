@@ -28,7 +28,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk_from_code(code: str)                                   | int                | Return media_pk
 | media_pk_from_url(url: str)                                     | int                | Return media_pk
 | user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
-| user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id 
+| user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
 | usertag_medias(user_id: int, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
 | media_info(media_pk: int)                                       | Media              | Return media info
 | media_delete(media_pk: int)                                     | bool               | Delete media
@@ -38,7 +38,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_like(media_id: str)                                       | bool               | Like media
 | media_unlike(media_id: str)                                     | bool               | Unlike media
 | media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a media as seen
-| media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post
+| media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post (due to Instagram limitations, this may not return a complete list)
 | media_archive(media_id: str)                                    | bool               | Archive a media
 | media_unarchive(media_id: str)                                  | bool               | Unarchive a media
 
@@ -263,6 +263,7 @@ In `extra_data`, you can pass additional media settings, for example:
 | custom_accessibility_caption  | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `{"custom_accessibility_caption": "ALT TEXT HERE"}`
 | like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
+| invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
 
 ### Example:
 

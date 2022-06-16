@@ -100,7 +100,7 @@ class PrivateError(ClientError):
 
 
 class NotFoundError(PrivateError):
-    reason = "Not found"
+    reason = 'Not found'
 
 
 class FeedbackRequired(PrivateError):
@@ -268,10 +268,6 @@ class AlbumUnknownFormat(PrivateError):
 
 
 class AlbumConfigureError(PrivateError):
-    pass
-
-
-class StoryNotFound(MediaNotFound):
     pass
 
 

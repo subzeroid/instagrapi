@@ -25,7 +25,7 @@ class UserMixin:
     _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
 
-    def user_id_from_username(self, username: str) -> int:
+    def user_id_from_username(self, username: str) -> str:
         """
         Get full media id
 
@@ -36,7 +36,7 @@ class UserMixin:
 
         Returns
         -------
-        int
+        str
             User PK
 
         Example
@@ -44,15 +44,15 @@ class UserMixin:
         'adw0rd' -> 1903424587
         """
         username = str(username).lower()
-        return int(self.user_info_by_username(username).pk)
+        return str(self.user_info_by_username(username).pk)
 
-    def user_short_gql(self, user_id: int, use_cache: bool = True) -> UserShort:
+    def user_short_gql(self, user_id: str, use_cache: bool = True) -> UserShort:
         """
         Get full media id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User ID
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
@@ -67,7 +67,7 @@ class UserMixin:
             if cache:
                 return cache
         variables = {
-            "user_id": int(user_id),
+            "user_id": str(user_id),
             "include_reel": True,
         }
         data = self.public_graphql_request(
@@ -79,13 +79,13 @@ class UserMixin:
         self._userhorts_cache[user_id] = user
         return user
 
-    def username_from_user_id_gql(self, user_id: int) -> str:
+    def username_from_user_id_gql(self, user_id: str) -> str:
         """
         Get username from user id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User ID
 
         Returns
@@ -99,13 +99,13 @@ class UserMixin:
         """
         return self.user_short_gql(user_id).username
 
-    def username_from_user_id(self, user_id: int) -> str:
+    def username_from_user_id(self, user_id: str) -> str:
         """
         Get username from user id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User ID
 
         Returns
@@ -117,7 +117,7 @@ class UserMixin:
         -------
         1903424587 -> 'adw0rd'
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         try:
             username = self.username_from_user_id_gql(user_id)
         except ClientError:
@@ -199,13 +199,13 @@ class UserMixin:
             self._usernames_cache[user.username] = user.pk
         return self.user_info(self._usernames_cache[username])
 
-    def user_info_gql(self, user_id: int) -> User:
+    def user_info_gql(self, user_id: str) -> User:
         """
         Get user object from user id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
 
         Returns
@@ -213,7 +213,7 @@ class UserMixin:
         User
             An object of User type
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         try:
             # GraphQL haven't method to receive user by id
             return self.user_info_by_username_gql(
@@ -222,13 +222,13 @@ class UserMixin:
         except JSONDecodeError as e:
             raise ClientJSONDecodeError(e, user_id=user_id)
 
-    def user_info_v1(self, user_id: int) -> User:
+    def user_info_v1(self, user_id: str) -> User:
         """
         Get user object from user id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
 
         Returns
@@ -236,7 +236,7 @@ class UserMixin:
         User
             An object of User type
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         try:
             result = self.private_request(f"users/{user_id}/info/")
         except ClientNotFoundError as e:
@@ -247,13 +247,13 @@ class UserMixin:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info(self, user_id: int, use_cache: bool = True) -> User:
+    def user_info(self, user_id: str, use_cache: bool = True) -> User:
         """
         Get user object from user id
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
@@ -263,7 +263,7 @@ class UserMixin:
         User
             An object of User type
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         if not use_cache or user_id not in self._users_cache:
             try:
                 try:
@@ -294,13 +294,32 @@ class UserMixin:
         results = self.private_request("feed/new_feed_posts_exist/")
         return results.get("new_feed_posts_exist", False)
 
-    def user_friendship_v1(self, user_id: int) -> Relationship:
+    def user_friendships_v1(self, user_ids: List[str]) -> dict:
         """
         Get user friendship status
 
         Parameters
         ----------
-        user_id: int
+        user_ids: List[str]
+            List of user id of an instagram account
+
+        Returns
+        -------
+        dict
+        """
+        result = self.private_request(
+            "friendships/show_many/",
+            data={"user_ids": user_ids}
+        )
+        return result["friendship_statuses"]
+
+    def user_friendship_v1(self, user_id: str) -> Relationship:
+        """
+        Get user friendship status
+
+        Parameters
+        ----------
+        user_id: str
             User id of an instagram account
 
         Returns
@@ -315,14 +334,55 @@ class UserMixin:
         except ClientError as e:
             self.logger.exception(e)
             return None
+             
+    def search_users_v1(self, query: str, count: int) -> List[UserShort]:
+        """
+        Search users by a query (Private Mobile API)
+        Parameters
+        ----------
+        query: str
+            Query to search
+        count: int
+            The count of search results
+        Returns
+        -------
+        List[UserShort]
+            List of users
+        """
+        results = self.private_request(
+            "users/search/",
+            params={
+                "query": query,
+                "count": count
+            }
+        )
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
+    
+    def search_users(self, query: str, count: int = 50) -> List[UserShort]:
+        """
+        Search users by a query
+        Parameters
+        ----------
+        query: str
+            Query string to search
+        count: int
+            The count of search results
+        Returns
+        -------
+        List[UserShort]
+            List of User short object
+        """
+        return self.search_users_v1(query, count)
 
-    def search_followers_v1(self, user_id: int, query: str) -> List[UserShort]:
+    def search_followers_v1(self, user_id: str, query: str) -> List[UserShort]:
+
         """
         Search users by followers (Private Mobile API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         query: str
             Query to search
@@ -343,13 +403,13 @@ class UserMixin:
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
 
-    def search_followers(self, user_id: int, query: str) -> List[UserShort]:
+    def search_followers(self, user_id: str, query: str) -> List[UserShort]:
         """
         Search by followers
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         query: str
             Query string
@@ -361,13 +421,13 @@ class UserMixin:
         """
         return self.search_followers_v1(user_id, query)
 
-    def search_following_v1(self, user_id: int, query: str) -> List[UserShort]:
+    def search_following_v1(self, user_id: str, query: str) -> List[UserShort]:
         """
         Search following users (Private Mobile API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         query: str
             Query to search
@@ -389,13 +449,13 @@ class UserMixin:
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
 
-    def search_following(self, user_id: int, query: str) -> List[UserShort]:
+    def search_following(self, user_id: str, query: str) -> List[UserShort]:
         """
         Search by following
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         query: str
             Query string
@@ -407,13 +467,13 @@ class UserMixin:
         """
         return self.search_following_v1(user_id, query)
 
-    def user_following_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
+    def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
         Get user's following information by Public Graphql API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0
@@ -423,7 +483,7 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         end_cursor = None
         users = []
         variables = {
@@ -455,13 +515,13 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_following_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+    def user_following_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
         Get user's following users information by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0
@@ -471,7 +531,7 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         max_id = ""
         users = []
         while True:
@@ -483,6 +543,7 @@ class UserMixin:
                 "includes_hashtags": "true",
                 "enable_groups": "true",
                 "query": "",
+                "count": 10000
             }
             if max_id:
                 params["max_id"] = max_id
@@ -497,14 +558,14 @@ class UserMixin:
         return users
 
     def user_following(
-        self, user_id: int, use_cache: bool = True, amount: int = 0
-    ) -> Dict[int, UserShort]:
+            self, user_id: str, use_cache: bool = True, amount: int = 0
+    ) -> Dict[str, UserShort]:
         """
         Get user's followers information
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
@@ -513,10 +574,10 @@ class UserMixin:
 
         Returns
         -------
-        Dict[int, UserShort]
+        Dict[str, UserShort]
             Dict of user_id and User object
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         users = self._users_following.get(user_id, {})
         if not use_cache or not users or (amount and len(users) < amount):
             # Temporary: Instagram Required Login for GQL request
@@ -534,15 +595,14 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
-    def user_followers_gql_chunk(
-        self, user_id: int, max_amount: int = 0, end_cursor: str = None
-    ) -> Tuple[List[UserShort], str]:
+    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> Tuple[
+        List[UserShort], str]:
         """
         Get user's followers information by Public Graphql API and end_cursor
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         max_amount: int, optional
             Maximum number of media to return, default is 0 - Inf
@@ -554,7 +614,7 @@ class UserMixin:
         Tuple[List[UserShort], str]
             List of objects of User type with cursor
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         users = []
         variables = {
             "id": user_id,
@@ -584,13 +644,13 @@ class UserMixin:
                 break
         return users, end_cursor
 
-    def user_followers_gql(self, user_id: int, amount: int = 0) -> List[UserShort]:
+    def user_followers_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information by Public Graphql API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0 - Inf
@@ -600,20 +660,19 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        users, _ = self.user_followers_gql_chunk(int(user_id), amount)
+        users, _ = self.user_followers_gql_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
         return users
 
-    def user_followers_v1_chunk(
-        self, user_id: int, max_amount: int = 0, max_id: str = ""
-    ) -> Tuple[List[UserShort], str]:
+    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> Tuple[
+        List[UserShort], str]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         max_amount: int, optional
             Maximum number of media to return, default is 0 - Inf
@@ -628,16 +687,14 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
-            result = self.private_request(
-                f"friendships/{user_id}/followers/",
-                params={
-                    "max_id": max_id,
-                    "rank_token": self.rank_token,
-                    "search_surface": "follow_list_page",
-                    "query": "",
-                    "enable_groups": "true",
-                },
-            )
+            result = self.private_request(f"friendships/{user_id}/followers/", params={
+                "max_id": max_id,
+                "count": 10000,
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "query": "",
+                "enable_groups": "true"
+            })
             for user in result["users"]:
                 user = extract_user_short(user)
                 if user.pk in unique_set:
@@ -649,13 +706,13 @@ class UserMixin:
                 break
         return users, max_id
 
-    def user_followers_v1(self, user_id: int, amount: int = 0) -> List[UserShort]:
+    def user_followers_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
         Get user's followers information by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0 - Inf
@@ -665,20 +722,20 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        users, _ = self.user_followers_v1_chunk(int(user_id), amount)
+        users, _ = self.user_followers_v1_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
         return users
 
     def user_followers(
-        self, user_id: int, use_cache: bool = True, amount: int = 0
-    ) -> Dict[int, UserShort]:
+            self, user_id: str, use_cache: bool = True, amount: int = 0
+    ) -> Dict[str, UserShort]:
         """
         Get user's followers
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User id of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
@@ -687,10 +744,10 @@ class UserMixin:
 
         Returns
         -------
-        Dict[int, UserShort]
+        Dict[str, UserShort]
             Dict of user_id and User object
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         users = self._users_followers.get(user_id, {})
         if not use_cache or not users or (amount and len(users) < amount):
             try:
@@ -705,13 +762,13 @@ class UserMixin:
             followers = dict(list(followers.items())[:amount])
         return followers
 
-    def user_follow(self, user_id: int) -> bool:
+    def user_follow(self, user_id: str) -> bool:
         """
         Follow a user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
 
         Returns
         -------
@@ -719,7 +776,7 @@ class UserMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        user_id = int(user_id)
+        user_id = str(user_id)
         if user_id in self._users_following.get(self.user_id, []):
             self.logger.debug("User %s already followed", user_id)
             return False
@@ -729,13 +786,13 @@ class UserMixin:
             self._users_following.pop(self.user_id)  # reset
         return result["friendship_status"]["following"] is True
 
-    def user_unfollow(self, user_id: int) -> bool:
+    def user_unfollow(self, user_id: str) -> bool:
         """
         Unfollow a user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
 
         Returns
         -------
@@ -743,20 +800,20 @@ class UserMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        user_id = int(user_id)
+        user_id = str(user_id)
         data = self.with_action_data({"user_id": user_id})
         result = self.private_request(f"friendships/destroy/{user_id}/", data)
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
-    def user_remove_follower(self, user_id: int) -> bool:
+    def user_remove_follower(self, user_id: str) -> bool:
         """
         Remove a follower
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
 
         Returns
         -------
@@ -764,20 +821,20 @@ class UserMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        user_id = int(user_id)
+        user_id = str(user_id)
         data = self.with_action_data({"user_id": str(user_id)})
         result = self.private_request(f"friendships/remove_follower/{user_id}/", data)
         if self.user_id in self._users_followers:
             self._users_followers[self.user_id].pop(user_id, None)
         return result["friendship_status"]["followed_by"] is False
 
-    def mute_posts_from_follow(self, user_id: int, revert: bool = False) -> bool:
+    def mute_posts_from_follow(self, user_id: str, revert: bool = False) -> bool:
         """
         Mute posts from following user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             Unique identifier of a User
         revert: bool, optional
             Unmute when True
@@ -787,7 +844,7 @@ class UserMixin:
         bool
             A boolean value
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         name = "unmute" if revert else "mute"
         result = self.private_request(
             f"friendships/{name}_posts_or_story_from_follow/",
@@ -799,13 +856,13 @@ class UserMixin:
         )
         return result["status"] == "ok"
 
-    def unmute_posts_from_follow(self, user_id: int) -> bool:
+    def unmute_posts_from_follow(self, user_id: str) -> bool:
         """
         Unmute posts from following user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             Unique identifier of a User
 
         Returns
@@ -815,13 +872,13 @@ class UserMixin:
         """
         return self.mute_posts_from_follow(user_id, True)
 
-    def mute_stories_from_follow(self, user_id: int, revert: bool = False) -> bool:
+    def mute_stories_from_follow(self, user_id: str, revert: bool = False) -> bool:
         """
         Mute stories from following user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             Unique identifier of a User
         revert: bool, optional
             Unmute when True
@@ -831,7 +888,7 @@ class UserMixin:
         bool
             A boolean value
         """
-        user_id = int(user_id)
+        user_id = str(user_id)
         name = "unmute" if revert else "mute"
         result = self.private_request(
             f"friendships/{name}_posts_or_story_from_follow/",
@@ -843,13 +900,13 @@ class UserMixin:
         )
         return result["status"] == "ok"
 
-    def unmute_stories_from_follow(self, user_id: int) -> bool:
+    def unmute_stories_from_follow(self, user_id: str) -> bool:
         """
         Unmute stories from following user
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             Unique identifier of a User
 
         Returns
@@ -858,3 +915,155 @@ class UserMixin:
             A boolean value
         """
         return self.mute_stories_from_follow(user_id, True)
+
+    def enable_posts_notifications(self, user_id: str, disable: bool = False) -> bool:
+        """
+        Enable post notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        disable: bool, optional
+            Unfavorite when True
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
+        name = "unfavorite" if disable else "favorite"
+        result = self.private_request(f"friendships/{name}/{user_id}/", data)
+        return result["status"] == "ok"
+
+    def disable_posts_notifications(self, user_id: str) -> bool:
+        """
+        Disable post notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.enable_posts_notifications(user_id, True)
+
+    def enable_videos_notifications(self, user_id: str, revert: bool = False) -> bool:
+        """
+        Enable videos notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        revert: bool, optional
+            Unfavorite when True
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
+        name = "unfavorite" if revert else "favorite"
+        result = self.private_request(f"friendships/{name}_for_igtv/{user_id}/", data)
+        return result["status"] == "ok"
+
+    def disable_videos_notifications(self, user_id: str) -> bool:
+        """
+        Disable videos notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.enable_videos_notifications(user_id, True)
+
+    def enable_reels_notifications(self, user_id: str, revert: bool = False) -> bool:
+        """
+        Enable reels notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        revert: bool, optional
+            Unfavorite when True
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
+        name = "unfavorite" if revert else "favorite"
+        result = self.private_request(f"friendships/{name}_for_clips/{user_id}/", data)
+        return result["status"] == "ok"
+
+    def disable_reels_notifications(self, user_id: str) -> bool:
+        """
+        Disable reels notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.enable_reels_notifications(user_id, True)
+
+    def enable_stories_notifications(self, user_id: str, revert: bool = False) -> bool:
+        """
+        Enable stories notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        revert: bool, optional
+            Unfavorite when True
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
+        name = "unfavorite" if revert else "favorite"
+        result = self.private_request(f"friendships/{name}_for_stories/{user_id}/", data)
+        return result["status"] == "ok"
+
+    def disable_stories_notifications(self, user_id: str) -> bool:
+        """
+        Disable stories notifications of a user
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.enable_stories_notifications(user_id, True)

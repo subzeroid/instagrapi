@@ -168,16 +168,14 @@ class PrivateRequestMixin:
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
-            headers.update(
-                {
-                    "IG-U-DS-USER-ID": str(self.user_id),
-                    # Direct:
-                    "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
-                    "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
-                    "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
-                    "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
-                }
-            )
+            headers.update({
+                "IG-U-DS-USER-ID": str(self.user_id),
+                # Direct:
+                "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
+                "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
+                "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
+                "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
+            })
         if self.ig_u_rur:
             headers.update({"IG-U-RUR": self.ig_u_rur})
         if self.ig_www_claim:
@@ -198,7 +196,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings["country"] = self.country = str(country)
+        self.settings['country'] = self.country = str(country)
         return True
 
     def set_country_code(self, country_code: int = 1):
@@ -213,7 +211,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings["country_code"] = self.country_code = int(country_code)
+        self.settings['country_code'] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -230,10 +228,8 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        user_agent = (self.settings.get("user_agent") or "").replace(
-            self.locale, locale
-        )
-        self.settings["locale"] = self.locale = str(locale)
+        user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
+        self.settings['locale'] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if "_" in locale:
             self.set_country(locale.rsplit("_", 1)[1])
@@ -252,15 +248,15 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings["timezone_offset"] = self.timezone_offset = int(seconds)
+        self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
         return True
 
     def set_ig_u_rur(self, value):
-        self.settings["ig_u_rur"] = self.ig_u_rur = value
+        self.settings['ig_u_rur'] = self.ig_u_rur = value
         return True
 
     def set_ig_www_claim(self, value):
-        self.settings["ig_www_claim"] = self.ig_www_claim = value
+        self.settings['ig_www_claim'] = self.ig_www_claim = value
         return True
 
     @staticmethod

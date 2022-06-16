@@ -2,11 +2,13 @@
 
 Viewing and managing your profile
 
-| Method                             | Return    | Description
-| ---------------------------------- | --------- | ----------------------------------------------------------
-| account_info()                     | Account | Get private info for your account (e.g. email, phone_number)
+| Method                                       | Return    | Description
+| -------------------------------------------- | --------- | ----------------------------------------------------------
+| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)
 | account_edit(email: str, phone_number: str, username: str, full_name: str, biography: str, external_url: str) | Account | Change profile data
-| account_change_picture(path: Path) | UserShort | Change Profile picture
+| account_change_picture(path: Path)           | UserShort | Change Profile picture
+| send_confirm_email(email: str)               | dict      | Send confirmation code to new email address
+| send_confirm_phone_number(phone_number: str) | dict      | Send confirmation code to new phone number
 
 Example:
 
@@ -40,6 +42,25 @@ PosixPath('/tmp/adw0rd_1560364774164147051.jpg')
 
 >>> cl.account_change_picture(profile_pic_path)
 UserShort(pk=1903424587, username='adw0rd', ...)
+
+>>> cl.send_confirm_email("addr@example.com")
+{
+    'is_email_legit': False,
+    'title': 'Email Already in Use',
+    'body': 'The email address you entered is already used on your account. Enter a different one to update your contact info.',
+    'error_type': 'email_unchanged',
+    'status': 'ok'
+}
+
+>>> cl.send_confirm_phone_number("+5599999999")
+{
+    'action': 'sms_sent',
+    'phone_verification_settings': {'max_sms_count': 2,
+    'resend_sms_delay_sec': 60,
+    'robocall_count_down_time_sec': 30,
+    'robocall_after_max_sms': True},
+    'status': 'ok'
+}
 ```
 
 Low level methods:

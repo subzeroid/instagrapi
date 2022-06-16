@@ -9,7 +9,7 @@
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
-## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Instagrapi SaaS](https://instagrapi.com)
+## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com) and [Datalama SaaS](https://datalama.io/)
 
 Features:
 
@@ -18,7 +18,7 @@ Features:
 * Anonymous getting of post, story, album, Reels, IGTV data and the ability to download content
 * Anonymous getting of hashtag and location data, as well as a list of posts for them
 * Anonymous getting of all comments on a post and a list of users who liked it
-* Management of proxy servers, mobile devices, solving captcha and challenge resolver
+* Management of [proxy servers](https://soax.com/?r=sEysufQI), mobile devices, solving captcha and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
 * Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
@@ -30,11 +30,11 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **17 October 2021** (last reverse-engineering check)*
+*Instagram API valid for **3 January 2022** (last reverse-engineering check)*
 
 Support **Python >= 3.6**, recommend 3.8+
 
-For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Instagrapi SaaS](https://instagrapi.com)
+For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Lamadava SaaS](https://lamadava.com)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -49,12 +49,12 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 5. Support work with [User](https://adw0rd.github.io/instagrapi/usage-guide/user.html), [Media](https://adw0rd.github.io/instagrapi/usage-guide/media.html), [Comment](https://adw0rd.github.io/instagrapi/usage-guide/comment.html), [Insights](https://adw0rd.github.io/instagrapi/usage-guide/insight.html), [Collections](https://adw0rd.github.io/instagrapi/usage-guide/collection.html), [Location](https://adw0rd.github.io/instagrapi/usage-guide/location.html) (Place), [Hashtag](https://adw0rd.github.io/instagrapi/usage-guide/hashtag.html) and [Direct Message](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) objects
 6. [Like](https://adw0rd.github.io/instagrapi/usage-guide/media.html), [Follow](https://adw0rd.github.io/instagrapi/usage-guide/user.html), [Edit account](https://adw0rd.github.io/instagrapi/usage-guide/account.html) (Bio) and much more else
 7. [Insights](https://adw0rd.github.io/instagrapi/usage-guide/insight.html) by account, posts and stories
-8. [Build stories](https://adw0rd.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, swipe up link and mention users
+8. [Build stories](https://adw0rd.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, link sticker and mention users
 9. In the next release, account registration and captcha passing will appear
 
 ## Examples of apps that use instagrapi
 
-* [Instagrapi SaaS](https://instagrapi.com) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
+* [Lamadava SaaS](https://instagrapi.com) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
 * [Web-service for Download Posts, Stories and Highlights](https://igdl.club/)
 * [Instagram Bot for Download Posts, Stories and Highlights](https://www.instagram.com/fetch_story/)
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
@@ -117,7 +117,7 @@ cl.video_upload_to_story(
   * [`Comment`](https://adw0rd.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
   * [`Highlight`](https://adw0rd.github.io/instagrapi/usage-guide/highlight.html) - Highlights
   * [`Story`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Story
-  * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link (Swipe up)
+  * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link Sticker
   * [`StoryLocation`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
   * [`StoryMention`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Mention users in Story (user, coordinates and dimensions)
   * [`StoryHashtag`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Hashtag for story (as sticker)

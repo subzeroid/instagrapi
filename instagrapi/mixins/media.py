@@ -205,10 +205,10 @@ class MediaMixin:
         )
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
-        # if data["shortcode_media"]["location"]:
-        #     data["shortcode_media"]["location"] = self.location_complete(
-        #         extract_location(data["shortcode_media"]["location"])
-        #     ).dict()
+        if data["shortcode_media"]["location"] and self.authorization:
+            data["shortcode_media"]["location"] = self.location_complete(
+                extract_location(data["shortcode_media"]["location"])
+            ).dict()
         return extract_media_gql(data["shortcode_media"])
 
     def media_info_v1(self, media_pk: int) -> Media:
@@ -555,6 +555,7 @@ class MediaMixin:
                 f"feed/user/{user_id}/",
                 params={
                     "max_id": next_max_id,
+                    "count": 1000,
                     "min_timestamp": min_timestamp,
                     "rank_token": self.rank_token,
                     "ranked_content": "true",
@@ -565,7 +566,8 @@ class MediaMixin:
             return [], None
         medias.extend(items)
         next_max_id = self.last_json.get("next_max_id", "")
-        medias = medias[:amount]
+        if amount:
+            medias = medias[:amount]
         return (
             [extract_media_v1(media) for media in medias],
             next_max_id

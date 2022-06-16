@@ -20,6 +20,7 @@ from .types import (
     StoryLink,
     StoryMedia,
     StoryMention,
+    Track,
     User,
     UserShort,
     Usertag,
@@ -245,12 +246,17 @@ def extract_media_oembed(data):
 
 
 def extract_direct_thread(data):
-    data["messages"] = [extract_direct_message(item) for item in data["items"]]
+    data["pk"] = data.get("thread_v2_id")
+    data["id"] = data.get("thread_id")
+    data["messages"] = []
+    for item in data["items"]:
+        item["thread_id"] = data["id"]
+        data["messages"].append(
+            extract_direct_message(item)
+        )
     data["users"] = [extract_user_short(u) for u in data["users"]]
     if "inviter" in data:
         data["inviter"] = extract_user_short(data["inviter"])
-    data["pk"] = data.get("thread_v2_id")
-    data["id"] = data.get("thread_id")
     data["left_users"] = data.get("left_users", [])
     return DirectThread(**data)
 
@@ -307,11 +313,13 @@ def extract_account(data):
 
 def extract_hashtag_gql(data):
     data["media_count"] = data.get("edge_hashtag_to_media", {}).get("count")
+    data["profile_pic_url"] = data["profile_pic_url"] or None
     return Hashtag(**data)
 
 
 def extract_hashtag_v1(data):
     data["allow_following"] = data.get("allow_following") == 1
+    data["profile_pic_url"] = data["profile_pic_url"] or None
     return Hashtag(**data)
 
 
@@ -401,6 +409,10 @@ def extract_highlight_v1(data):
     highlight['pk'] = highlight['id'].split(':')[1]
     highlight['items'] = [
         extract_story_v1(item)
-        for item in highlight['items']
+        for item in highlight.get('items', [])
     ]
     return Highlight(**highlight)
+
+
+def extract_track(data):
+    return Track(**data)

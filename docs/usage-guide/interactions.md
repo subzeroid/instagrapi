@@ -39,10 +39,14 @@ cl.login("instagrapi", "42")
 cl.set_proxy("socks5://127.0.0.1:30235")
 # cl.set_proxy("http://username:password@127.0.0.1:8080")
 # cl.set_proxy("socks5://username:password@127.0.0.1:30235")
+# when addressing the proxy via hostname:
+# cl.set_proxy("socks5h://username:password@exampleproxy.tld:30235")
 
 print(cl.get_settings())
 print(cl.user_info(cl.user_id))
 ```
+
+We recommend using [these proxies](https://soax.com/?r=sEysufQI)
 
 ### Request
 
@@ -126,7 +130,7 @@ cl.get_timeline_feed()  # check session
 
 | Method                                   | Return | Description
 |------------------------------------------|------|----------------------------------------------------------------------------
-| set_proxy(dsn: str)                      | dict | Support socks and http/https proxy "scheme://username:password@host:port"
+| set_proxy(dsn: str)                      | dict | Support socks and http/https proxy "scheme://username:password@host:port". We recommend using [these proxies](https://soax.com/?r=sEysufQI)
 | private.proxies                          | dict | Stores used proxy servers for private (mobile, v1) requests
 | public.proxies                           | dict | Stores used proxy servers for public (web, graphql) requests
 | set_device(device: dict)                 | bool | Change device settings ([Android Device Information Generator Online](https://www.myfakeinfo.com/mobile/get-android-device-information.php))

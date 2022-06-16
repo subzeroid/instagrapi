@@ -129,7 +129,7 @@ class PublicRequestMixin:
                     url, params=params, timeout=self.timeout, verify=False
                 )
 
-            expected_length = int(response.headers.get("Content-Length", 0))
+            expected_length = int(response.headers.get("Content-Length") or 0)
             actual_length = response.raw.tell()
             if actual_length < expected_length:
                 raise ClientIncompleteReadError(

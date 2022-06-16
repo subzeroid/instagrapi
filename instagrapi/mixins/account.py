@@ -80,7 +80,9 @@ class AccountMixin:
             "can_add_additional_totp_seed": false
             }
         """
-        return self.private_request("accounts/account_security_info/", self.with_default_data({}))
+        return self.private_request(
+            "accounts/account_security_info/", self.with_default_data({})
+        )
 
     def account_edit(self, **data: Dict) -> Account:
         """
@@ -98,22 +100,32 @@ class AccountMixin:
         """
         fields = (
             "external_url",
-            "phone_number",
             "username",
             "full_name",
             "biography",
+            "phone_number",
             "email",
         )
+        # if "email" in data:
+        #     # email is handled separately
+        #     self.send_confirm_email(data.pop("email"))
+        # if "phone_number" in data:
+        #     # phone_number is handled separately
+        #     self.send_confirm_phone_number(data.pop("phone_number"))
         data = {key: val for key, val in data.items() if key in fields}
-        if "email" not in data and "phone_number" not in data:
+        if "email" not in data or "phone_number" not in data:
             # Instagram Error: You need an email or confirmed phone number.
             user_data = self.account_info().dict()
             user_data = {field: user_data[field] for field in fields}
             data = dict(user_data, **data)
-        # Instagram original field-name for full user name is "first_name"
-        data["first_name"] = data.pop("full_name")
+        full_name = data.pop("full_name", None)
+        if full_name:
+            # Instagram original field-name for full user name is "first_name"
+            data["first_name"] = full_name
         # Biography with entities (markup)
-        result = self.private_request("accounts/edit_profile/", self.with_default_data(data))
+        result = self.private_request(
+            "accounts/edit_profile/", self.with_default_data(data)
+        )
         biography = data.get("biography")
         if biography:
             self.account_set_biography(biography)
@@ -133,11 +145,10 @@ class AccountMixin:
         bool
             A boolean value
         """
-        data = {
-            "logged_in_uids": dumps([str(self.user_id)]),
-            "raw_text": biography
-        }
-        result = self.private_request("accounts/set_biography/", self.with_default_data(data))
+        data = {"logged_in_uids": dumps([str(self.user_id)]), "raw_text": biography}
+        result = self.private_request(
+            "accounts/set_biography/", self.with_default_data(data)
+        )
         return result["status"] == "ok"
 
     def account_change_picture(self, path: Path) -> UserShort:
@@ -175,6 +186,49 @@ class AccountMixin:
         dict
         """
         return self.private_request(
-            "news/inbox/",
-            params={'mark_as_seen': mark_as_seen}
+            "news/inbox/", params={"mark_as_seen": mark_as_seen}
+        )
+
+    def send_confirm_email(self, email: str) -> dict:
+        """
+        Send confirmation code to new email address
+
+        Parameters
+        ----------
+        email: str
+            Email address
+
+        Returns
+        -------
+        dict
+        """
+        return self.private_request(
+            "accounts/send_confirm_email/",
+            self.with_extra_data(
+                {"send_source": "personal_information", "email": email}
+            ),
+        )
+
+    def send_confirm_phone_number(self, phone_number: str) -> dict:
+        """
+        Send confirmation code to new phone number
+
+        Parameters
+        ----------
+        phone_number: str
+            Phone number
+
+        Returns
+        -------
+        dict
+        """
+        return self.private_request(
+            "accounts/initiate_phone_number_confirmation/",
+            self.with_extra_data(
+                {
+                    "android_build_type": "release",
+                    "send_source": "edit_profile",
+                    "phone_number": phone_number,
+                }
+            ),
         )
