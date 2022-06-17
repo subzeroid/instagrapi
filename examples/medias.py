@@ -64,7 +64,7 @@ def get_medias(keywords,
                         amount=amount
                     )
             else:
-                print("STREAM")
+                print("FIRST PAGE")
                 yield from cl.hashtag_medias_v1_logged_out(
                     name=keyword,
                     max_amount=amount
@@ -92,10 +92,10 @@ if __name__ == '__main__':
     else:
         log.info("Run without credential")
 
-    m = get_medias(HASHTAGS, amount=500, ht_type="stream", crawl_type="hashtag")
+#    m = get_medias(HASHTAGS, amount=500, ht_type="first page", crawl_type="hashtag")
 
 #    m = get_medias(HASHTAGS, amount=500, ht_type="recent", crawl_type="hashtag")
 #    m = get_medias(HASHTAGS, amount=999999, ht_type="top", crawl_type="hashtag")
-#    m = get_medias(USERNAMES, amount=999999, crawl_type="username")
+    m = get_medias(USERNAMES, amount=999999, crawl_type="username")
     m = filter_medias(m, days_ago_max=365*15)
     log.info(len(list(m)))

@@ -467,6 +467,7 @@ class MediaMixin:
         data = self.public_graphql_request(
             variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
         )
+
         page_info = json_value(
             data, "user", "edge_owner_to_timeline_media", "page_info", default={}
         )

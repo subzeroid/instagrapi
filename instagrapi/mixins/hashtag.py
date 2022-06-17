@@ -16,29 +16,6 @@ class HashtagMixin:
     Helpers for managing Hashtag
     """
 
-    def hashtag_info_a1(self, name: str, max_id: str = None) -> Hashtag:
-        """
-        Get information about a hashtag by Public Web API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-
-        max_id: str
-            Max ID, default value is None
-
-        Returns
-        -------
-        Hashtag
-            An object of Hashtag
-        """
-        params = {"max_id": max_id} if max_id else None
-        data = self.public_a1_request(f"/explore/tags/{name}/", params=params)
-        if not data.get("hashtag"):
-            raise HashtagNotFound(name=name, **data)
-        return extract_hashtag_gql(data["hashtag"])
-
     def hashtag_info_gql(
         self, name: str, amount: int = 12, end_cursor: str = None
     ) -> Hashtag:
@@ -103,7 +80,8 @@ class HashtagMixin:
             An object of Hashtag
         """
         try:
-            hashtag = self.hashtag_info_a1(name)
+            self.hashtag_medias_v1_logged_out(name)
+            hashtag = extract_hashtag_gql(self.last_json["data"]["hashtag"])
         except Exception:
             # Users do not understand the output of such information and create bug reports
             # such this - https://github.com/adw0rd/instagrapi/issues/364
@@ -112,106 +90,8 @@ class HashtagMixin:
             hashtag = self.hashtag_info_v1(name)
         return hashtag
 
-    def hashtag_related_hashtags(self, name: str) -> List[Hashtag]:
-        """
-        Get related hashtags from a hashtag
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-
-        Returns
-        -------
-        List[Hashtag]
-            List of objects of Hashtag
-        """
-        data = self.public_a1_request(f"/explore/tags/{name}/")
-        if not data.get("hashtag"):
-            raise HashtagNotFound(name=name, **data)
-        return [
-            extract_hashtag_gql(item["node"])
-            for item in data["hashtag"]["edge_hashtag_to_related_tags"]["edges"]
-        ]
-
-    def hashtag_medias_a1_chunk(
-        self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
-    ) -> List[Media]:
-        """
-        Get chunk of medias and end_cursor by Public Web API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        max_amount: int, optional
-            Maximum number of media to return, default is 27
-        tab_key: str, optional
-            Tab Key, default value is ""
-        end_cursor: str, optional
-            End Cursor, default value is None
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
-            'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
-        unique_set = set()
-        nb_media = 0
-        while True:
-            self.last_cursor = end_cursor
-            data = self.public_a1_request(
-                f"/explore/tags/{name}/",
-                params={"max_id": end_cursor} if end_cursor else {},
-            )["hashtag"]
-            page_info = data["edge_hashtag_to_media"]["page_info"]
-            edges = data[tab_key]["edges"]
-            for edge in edges:
-                media_pk = edge["node"]["id"]
-                if media_pk in unique_set:
-                    continue
-                unique_set.add(media_pk)
-                # check contains hashtag in caption
-                media = extract_media_gql(edge["node"])
-#                if f"#{name}" not in media.caption_text:
-#                    continue
-                yield media
-                # Enrich media: Full user, usertags and video_url
-                #                yield self.media_info_gql(media_pk), end_cursor, page_info["end_cursor"]
-                nb_media += 1
-                if max_amount and nb_media >= max_amount:
-                    break
-
-            if not page_info.get("has_next_page") or not page_info.get("end_cursor") or (max_amount and nb_media >= max_amount):
-                break
-            end_cursor = page_info["end_cursor"]
-
-    def hashtag_medias_a1(
-        self, name: str, amount: int = 27, tab_key: str = ""
-    ) -> List[Media]:
-        """
-        Get medias for a hashtag by Public Web API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 27
-        tab_key: str, optional
-            Tab Key, default value is ""
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_a1_chunk(name, amount, tab_key)
-
     def hashtag_medias_v1_logged_out(
-                self, name: str, max_amount: int = 27
+                self, name: str, max_amount: int = 27, tab_key: str = ""
         ) -> List[Media]:
             """
             Get chunk of medias for a hashtag and max_id (cursor) by Private Web API
@@ -228,19 +108,80 @@ class HashtagMixin:
             generator<Media>
                 generator of objects of Media
             """
+            assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
+                'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
 
             nb_media = 0
             result = self.private_request(
                 f"tags/logged_out_web_info/?tag_name={name}",
             )
-            for node in result["data"]["hashtag"]["edge_hashtag_to_media"]["edges"]:
+            for node in result["data"]["hashtag"][tab_key]["edges"]:
                 media = extract_media_gql(node["node"])
                 yield media
                 nb_media += 1
                 if max_amount and nb_media >= max_amount:
                     break
 
-    def hashtag_medias_v1_chunk(
+    def hashtag_medias_gql(
+        self, name: str, amount: int = 12, tab_key: str = "", end_cursor: str = None
+    ) -> Hashtag:
+        """
+        Get chunk of medias for a hashtag and max_id (cursor) by Public Graphql API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+
+        amount: int, optional
+            Maximum number of media to return, default is 12
+
+        tab_key: str, optional
+            Tab Key, default value is ""
+
+        end_cursor: str, optional
+            End Cursor, default value is None
+
+        Returns
+        -------
+        Hashtag
+            An object of Hashtag
+        """
+        assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
+                       'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
+
+        unique_set = set()
+        nb_media = 0
+        variables = {"tag_name": name, "show_ranked": False, "first": 100}
+        while True:
+            if end_cursor:
+                variables["after"] = end_cursor
+                self.last_cursor = end_cursor
+
+            data = self.public_graphql_request(
+                variables, query_hash="f92f56d47dc7a55b606908374b43a314"
+            )["hashtag"]
+            page_info = data[tab_key]["page_info"]
+            edges = data[tab_key]["edges"]
+            for edge in edges:
+                media_pk = edge["node"]["id"]
+                if media_pk in unique_set:
+                    continue
+                unique_set.add(media_pk)
+                media = extract_media_gql(edge["node"])
+                yield media
+                nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+
+            if not page_info.get("has_next_page") or not page_info.get("end_cursor") or (
+                    amount and nb_media >= amount):
+                print(page_info)
+                break
+            end_cursor = page_info["end_cursor"]
+
+
+    def hashtag_medias_v1(
         self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None
     ) -> List[Media]:
         """
@@ -285,9 +226,6 @@ class HashtagMixin:
                 nodes = layout_content.get("medias") or []
                 for node in nodes:
                     media = extract_media_v1(node["media"])
-                    # check contains hashtag in caption
-#                    if f"#{name}" not in media.caption_text:
-#                        continue
                     yield media
                     nb_media += 1
                     if max_amount and nb_media >= max_amount:
@@ -296,65 +234,8 @@ class HashtagMixin:
                 break
             max_id = result["next_max_id"]
 
-    def hashtag_medias_v1(
-        self, name: str, amount: int = 27, tab_key: str = ""
-    ) -> List[Media]:
-        """
-        Get medias for a hashtag by Private Mobile API
 
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 27
-        tab_key: str, optional
-            Tab Key, default value is ""
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_v1_chunk(name, amount, tab_key)
-
-    def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
-        """
-        Get top medias for a hashtag by Public Web API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 9
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts")
-
-    def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
-        """
-        Get top medias for a hashtag by Private Mobile API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 9
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_v1(name, amount, tab_key="top")
-
-    def hashtag_medias_top(self, name: str, amount: int = 9) -> List[Media]:
+    def hashtag_medias_top(self, name: str, amount: int = 9, end_cursor: str = None) -> List[Media]:
         """
         Get top medias for a hashtag
 
@@ -364,6 +245,8 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 9
+        end_cursor: str, optional
+            End Cursor, default value is None
 
         Returns
         -------
@@ -372,49 +255,14 @@ class HashtagMixin:
         """
 
         try:
-            self.logger.info("Use A1 method")
-            yield from self.hashtag_medias_top_a1(name, amount)
+            self.logger.info("Use GQL method")
+            yield from self.hashtag_medias_gql(name, amount, tab_key="edge_hashtag_to_top_posts", end_cursor=end_cursor)
         except ClientError:
             self.logger.info("Use V1 method")
-            yield from self.hashtag_medias_top_v1(name, amount)
+            yield from self.hashtag_medias_v1(name, amount, tab_key="top", max_id=end_cursor)
 
-    def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
-        """
-        Get recent medias for a hashtag by Public Web API
 
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 71
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media")
-
-    def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
-        """
-        Get recent medias for a hashtag by Private Mobile API
-
-        Parameters
-        ----------
-        name: str
-            Name of the hashtag
-        amount: int, optional
-            Maximum number of media to return, default is 71
-
-        Returns
-        -------
-        generator<Media>
-            generator of objects of Media
-        """
-        yield from self.hashtag_medias_v1(name, amount, tab_key="recent")
-
-    def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
+    def hashtag_medias_recent(self, name: str, amount: int = 27, end_cursor: str = None) -> List[Media]:
         """
         Get recent medias for a hashtag
 
@@ -424,6 +272,8 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 71
+        end_cursor: str, optional
+            End Cursor, default value is None
 
         Returns
         -------
@@ -431,8 +281,8 @@ class HashtagMixin:
             generator of objects of Media
         """
         try:
-            self.logger.info("Use A1 method")
-            yield from self.hashtag_medias_recent_a1(name, amount)
+            self.logger.info("Use GQL method")
+            yield from self.hashtag_medias_gql(name, amount, tab_key="edge_hashtag_to_media", end_cursor=end_cursor)
         except ClientError:
             self.logger.info("Use V1 method")
-            yield from self.hashtag_medias_recent_v1(name, amount)
+            yield from self.hashtag_medias_v1(name, amount, tab_key="recent", max_id=end_cursor)
