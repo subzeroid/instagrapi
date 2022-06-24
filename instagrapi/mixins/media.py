@@ -866,6 +866,7 @@ class MediaMixin:
         user_id = int(user_id)
         nb_media = 0
         while True:
+            self.last_cursor = next_max_id
             try:
                 items = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": next_max_id})["items"]
             except Exception as e:
