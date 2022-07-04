@@ -606,7 +606,6 @@ class MediaMixin:
                 self.logger.exception(e)
                 break
             for media in medias_page:
-                self.logger.info(f"media: {nb_media} {media.pk}")
                 yield media
                 nb_media += 1
                 if amount and nb_media >= amount:
@@ -821,9 +820,9 @@ class MediaMixin:
                     variables, query_hash="be13233562af2d229b008d2976b998b5"
                 )
             except Exception as e:
-                if "Please wait a few minutes before you try again" in str(e):
-                    logging.info(f"{e}: sleeping 10 min")
-                    time.sleep(60*10)
+                if "Please wait a few minutes before you try again" in str(e) or 'Too Many Requests' in str(e):
+                    logging.info(f"{e}: sleeping 60 min")
+                    time.sleep(60*60)
                     continue
                 else:
                     logging.info(f"{e}: sleeping 1 min")
