@@ -552,8 +552,7 @@ class MediaMixin:
         medias = []
         next_max_id = end_cursor
         min_timestamp = None
-        try:
-            items = self.private_request(
+        items = self.private_request(
                 f"feed/user/{user_id}/",
                 params={
                     "max_id": next_max_id,
@@ -562,10 +561,7 @@ class MediaMixin:
                     "rank_token": self.rank_token,
                     "ranked_content": "true",
                 },
-            )["items"]
-        except Exception as e:
-            self.logger.exception(e)
-            return [], None
+        )["items"]
         medias.extend(items)
         next_max_id = self.last_json.get("next_max_id", "")
         if amount:
@@ -596,15 +592,11 @@ class MediaMixin:
         nb_media = 0
         while True:
             self.last_cursor = next_max_id
-            try:
-                medias_page, next_max_id = self.user_medias_paginated_v1(
+            medias_page, next_max_id = self.user_medias_paginated_v1(
                     user_id,
                     amount,
                     end_cursor=next_max_id
-                )
-            except Exception as e:
-                self.logger.exception(e)
-                break
+            )
             for media in medias_page:
                 yield media
                 nb_media += 1
