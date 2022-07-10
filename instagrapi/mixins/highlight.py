@@ -37,7 +37,7 @@ class HighlightMixin:
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return str(parts[0])
 
-    def user_highlights_v1(self, user_id: int, amount: int = 0) -> List[Highlight]:
+    def user_highlights_v1(self, user_id: int) -> List[Highlight]:
         """
         Get a user's highlight
 
@@ -52,7 +52,6 @@ class HighlightMixin:
         List[Highlight]
             A list of objects of Highlight
         """
-        amount = int(amount)
         user_id = int(user_id)
         params = {
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES),
@@ -84,7 +83,7 @@ class HighlightMixin:
         List[Highlight]
             A list of objects of Highlight
         """
-        return self.user_highlights_v1(user_id, amount)
+        return self.user_highlights_v1(user_id)
 
     def highlight_info_v1(self, highlight_pk: str) -> Highlight:
         """
