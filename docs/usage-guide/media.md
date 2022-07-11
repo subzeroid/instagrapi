@@ -41,6 +41,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post (due to Instagram limitations, this may not return a complete list)
 | media_archive(media_id: str)                                    | bool               | Archive a media
 | media_unarchive(media_id: str)                                  | bool               | Unarchive a media
+| media_pin(media_id: str)                                        | bool               | Pin a media to user profile
+| media_unpin(media_id: str)                                      | bool               | Unpin a media to user profile
 
 Low level methods:
 
