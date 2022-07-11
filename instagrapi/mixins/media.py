@@ -889,7 +889,7 @@ class MediaMixin:
             medias = self.usertag_medias_v1(user_id, amount)
         return medias
 
-    def pin_post(self, media_pk: str, revert: bool = False):
+    def media_pin(self, media_pk: str, revert: bool = False):
         """
         Pin post to user profile
 
@@ -911,7 +911,7 @@ class MediaMixin:
         result = self.private_request(f"users/{name}_timeline_media/", data)
         return result["status"] == "ok"
 
-    def unpin_post(self, media_pk):
+    def media_unpin(self, media_pk):
         """
         Pin post to user profile
 
@@ -924,4 +924,4 @@ class MediaMixin:
         bool
         A boolean value
         """
-        return self.pin_post(media_pk, True)
+        return self.media_pin(media_pk, True)
