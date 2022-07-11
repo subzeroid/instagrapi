@@ -291,9 +291,9 @@ class HashtagMixin:
                     yield media
                     media_ids.add(media.pk)
                     nb_media += 1
-                if nb_media >= max_amount:
+                if max_amount and nb_media >= max_amount:
                     break
-            if nb_media >= max_amount:
+            if max_amount and nb_media >= max_amount:
                 break
 
             if method_api == "V1":
