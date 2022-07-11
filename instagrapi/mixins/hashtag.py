@@ -256,12 +256,14 @@ class HashtagMixin:
         ----------
         name: str
             Name of the hashtag
-        tab_key: str, optional
+        tab_key: str
             Tab Key, default value is ""
         max_amount: int, optional
             Maximum number of media to return, default is 27
         end_cursor: str, optional
             End Cursor, default value is None
+        method_api: str
+            Method api, default value is ""
         Returns
         -------
         generator<Media>

@@ -11,9 +11,17 @@ from instagrapi.exceptions import (
     ClientNotFoundError,
     UserNotFound,
 )
-from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import Relationship, User, UserShort
+from instagrapi.types import Relationship, User, UserShort, Media
 from instagrapi.utils import json_value
+
+from instagrapi.extractors import (
+    extract_user_v1,
+    extract_user_gql,
+    extract_media_gql,
+    extract_media_v1,
+    extract_user_short,
+)
+
 
 
 class UserMixin:
@@ -900,3 +908,164 @@ class UserMixin:
 
 #    def private_request(self, param, params):
 #        pass
+
+
+    def user_medias_gql_chunk(
+            self, user_id: int,
+            end_cursor=None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a chunk of a user's media by Public Graphql API
+
+        Parameters
+        ----------
+        user_id: int
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        user_id = int(user_id)
+        variables = {
+            "id": user_id,
+            "first": 50,
+        }
+        if end_cursor:
+            variables["after"] = end_cursor
+        data = self.public_graphql_request(
+            variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
+        )
+        self.last_public_json = self.last_public_json.get("data", self.last_public_json)
+
+
+        edges = json_value(
+            data, "user", "edge_owner_to_timeline_media", "edges", default=[]
+        )
+        for edge in edges:
+            yield extract_media_gql(edge["node"])
+
+    def user_medias_a1_chunk(
+            self, user_name: str,
+            end_cursor=None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a chunk of a user's media by Public Graphql API
+
+        Parameters
+        ----------
+        user_name: str
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        if end_cursor:
+            logging.warning("user_medias_a1_chunk not working with max_id, try GQL or V1 method")
+        data = self.public_a1_request(
+            f"/{user_name}/",
+            params={"max_id": end_cursor} if end_cursor else {},
+        )["user"]
+        self.last_public_json = self.last_public_json.get("graphql", self.last_public_json)
+        edges = data["edge_owner_to_timeline_media"]["edges"]
+        for edge in edges:
+            media = extract_media_gql(edge["node"])
+            yield media
+
+    def user_medias_v1_chunk(self, user_id: int, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Get a page of user's media by Private Mobile API
+
+        Parameters
+        ----------
+        user_id: int
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        user_id = int(user_id)
+        next_max_id = end_cursor
+        min_timestamp = None
+        items = self.private_request(
+                f"feed/user/{user_id}/",
+                params={
+                    "max_id": next_max_id,
+                    "count": 1000,
+                    "min_timestamp": min_timestamp,
+                    "rank_token": self.rank_token,
+                    "ranked_content": "true",
+                },
+        )["items"]
+        for item in items:
+            yield extract_media_v1(item)
+
+    def user_medias(
+        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None, method_api="",
+    ) -> List[Media]:
+        """
+        Get a user's media by Public Graphql API
+
+        Parameters
+        ----------
+        user_id: int
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        sleep: int, optional
+            Timeout between pages iterations, default is 2
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+        method_api: str
+            Method api, default value is ""
+        Returns
+        -------
+        generator<Media>
+            A generator of objects of Media
+        """
+        assert method_api in ("A1", "GQL", "V1"), \
+            'You must specify one of the option for "method_api" ("A1", "GQL", "V1")'
+
+
+        amount = int(amount)
+        medias_ids = set()
+        nb_media = 0
+        user_name = None
+        while True:
+            self.last_cursor = end_cursor
+            if method_api == "A1":
+                if not user_name:
+                    user_name = self.username_from_user_id(user_id)
+                medias = self.user_medias_a1_chunk(user_name, end_cursor=end_cursor)
+                if end_cursor:
+                    logging.warning("user_medias_a1_chunk not working with max_id, try GQL or V1 method")
+                    break
+            if method_api == "GQL":
+                medias = self.user_medias_gql_chunk(user_id, end_cursor=end_cursor)
+            if method_api == "V1":
+                medias = self.user_medias_v1_chunk(user_id, end_cursor=end_cursor)
+            for media in medias:
+                if media.pk not in medias_ids:
+                    medias_ids.add(media.pk)
+                    print(media.pk)
+                    yield media
+                    nb_media += 1
+                if amount and nb_media >= amount:
+                    break
+
+            if method_api == "V1":
+                page_info = self.last_json
+                if not page_info.get("more_available"):
+                    break
+                end_cursor = page_info.get("next_max_id", "")
+            else:
+                page_info = self.last_public_json["user"]["edge_owner_to_timeline_media"]["page_info"]
+                end_cursor = page_info.get("end_cursor")
+            if not end_cursor or (amount and nb_media >= amount):
+                break
+            time.sleep(sleep)
