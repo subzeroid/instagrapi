@@ -1,3 +1,4 @@
+import simplejson
 import json
 import logging
 import random
@@ -289,7 +290,7 @@ class PrivateRequestMixin:
                 self.private.headers.pop('Content-Type', None)
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
-                "private_request %s: %s (%s)", response.status_code, response.url, response.text
+                "private_request %s: %s", response.status_code, response.url
             )
             mid = response.headers.get("ig-set-x-mid")
             if mid:
@@ -300,7 +301,10 @@ class PrivateRequestMixin:
             # last_json - for Sentry context in traceback
             self.last_json = last_json = response.json()
             self.logger.debug("last_json %s", last_json)
-        except JSONDecodeError as e:
+        except (JSONDecodeError, simplejson.errors.JSONDecodeError) as e:
+            if 'href="https://www.instagram.com/accounts/login/?next=/api/v1/' in response.text:
+                raise LoginRequired(response=response)
+
             self.logger.error(
                 "Status %s: JSONDecodeError in private_request (user_id=%s, endpoint=%s) >>> %s",
                 response.status_code,
