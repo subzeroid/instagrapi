@@ -310,7 +310,7 @@ class UserMixin:
         user_ids_str = ','.join(user_ids)
         result = self.private_request(
             "friendships/show_many/",
-            data={"user_ids": user_ids_str},
+            data={"user_ids": user_ids_str, '_uuid': self.uuid},
             with_signature=False
         )
         return result["friendship_statuses"]
