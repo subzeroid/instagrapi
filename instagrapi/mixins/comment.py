@@ -27,11 +27,13 @@ class CommentMixin:
         List[Comment]
             A list of objects of Comment
         """
+
         # TODO: to public or private
         def get_comments():
             if result.get("comments"):
                 for comment in result.get("comments"):
                     comments.append(extract_comment(comment))
+
         media_id = self.media_id(media_id)
         params = None
         comments = []
@@ -143,6 +145,47 @@ class CommentMixin:
             A boolean value
         """
         return self.comment_like(comment_pk, revert=True)
+
+    def comment_pin(self, media_id: str, comment_pk: str, revert: bool = False):
+        """
+        Pin a comment on a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        comment_pk: int
+           Unique identifier of a Comment
+
+        Returns
+        -------
+        bool
+           A boolean value
+        """
+        data = self.with_action_data({"_uid": self.user_id,
+                                      "_uuid": self.uuid})
+        name = "unpin" if revert else "pin"
+
+        result = self.private_request(f"media/{media_id}/{name}_comment/{comment_pk}", data)
+        return result["status"] == "ok"
+
+    def comment_unpin(self, media_id: str, comment_pk: str):
+        """
+        Unpin a comment on a media
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        comment_pk: int
+           Unique identifier of a Comment
+
+        Returns
+        -------
+        bool
+           A boolean value
+        """
+        return self.comment_pin(media_id, comment_pk, True)
 
     def comment_bulk_delete(self, media_id: str, comment_pks: List[int]) -> bool:
         """
