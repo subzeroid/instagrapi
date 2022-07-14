@@ -135,7 +135,7 @@ class HashtagMixin:
         ]
 
     def hashtag_medias_a1_chunk(
-        self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
+        self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None, delay_range: list = None
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias and end_cursor by Public Web API
@@ -150,6 +150,8 @@ class HashtagMixin:
             Tab Key, default value is ""
         end_cursor: str, optional
             End Cursor, default value is None
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
@@ -164,6 +166,7 @@ class HashtagMixin:
             data = self.public_a1_request(
                 f"/explore/tags/{name}/",
                 params={"max_id": end_cursor} if end_cursor else {},
+                delay_range= delay_range
             )["hashtag"]
             page_info = data["edge_hashtag_to_media"]["page_info"]
             end_cursor = page_info["end_cursor"]
@@ -198,7 +201,7 @@ class HashtagMixin:
         return medias, end_cursor
 
     def hashtag_medias_a1(
-        self, name: str, amount: int = 27, tab_key: str = ""
+        self, name: str, amount: int = 27, tab_key: str = "", delay_range: list = None
     ) -> List[Media]:
         """
         Get medias for a hashtag by Public Web API
@@ -211,19 +214,21 @@ class HashtagMixin:
             Maximum number of media to return, default is 27
         tab_key: str, optional
             Tab Key, default value is ""
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        medias, _ = self.hashtag_medias_a1_chunk(name, amount, tab_key)
+        medias, _ = self.hashtag_medias_a1_chunk(name, amount, tab_key, delay_range=delay_range)
         if amount:
             medias = medias[:amount]
         return medias
 
     def hashtag_medias_v1_chunk(
-        self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None
+        self, name: str, max_amount: int = 27, tab_key: str = "", max_id: str = None, delay_range: list = None
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
@@ -238,6 +243,8 @@ class HashtagMixin:
             Tab Key, default value is ""
         max_id: str
             Max ID, default value is None
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
@@ -260,6 +267,7 @@ class HashtagMixin:
                 f"tags/{name}/sections/",
                 params={"max_id": max_id} if max_id else {},
                 data=self.with_default_data(data),
+                delay_range=delay_range,
             )
             for section in result["sections"]:
                 layout_content = section.get("layout_content") or {}
@@ -280,7 +288,7 @@ class HashtagMixin:
         return medias, max_id
 
     def hashtag_medias_v1(
-        self, name: str, amount: int = 27, tab_key: str = ""
+        self, name: str, amount: int = 27, tab_key: str = "", delay_range: list = None
     ) -> List[Media]:
         """
         Get medias for a hashtag by Private Mobile API
@@ -293,18 +301,20 @@ class HashtagMixin:
             Maximum number of media to return, default is 27
         tab_key: str, optional
             Tab Key, default value is ""
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        medias, _ = self.hashtag_medias_v1_chunk(name, amount, tab_key)
+        medias, _ = self.hashtag_medias_v1_chunk(name, amount, tab_key, delay_range=delay_range)
         if amount:
             medias = medias[:amount]
         return medias
 
-    def hashtag_medias_top_a1(self, name: str, amount: int = 9) -> List[Media]:
+    def hashtag_medias_top_a1(self, name: str, amount: int = 9, delay_range: list = None) -> List[Media]:
         """
         Get top medias for a hashtag by Public Web API
 
@@ -314,15 +324,17 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 9
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts")
+        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts", delay_range=delay_range)
 
-    def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
+    def hashtag_medias_top_v1(self, name: str, amount: int = 9, delay_range: list = None) -> List[Media]:
         """
         Get top medias for a hashtag by Private Mobile API
 
@@ -332,15 +344,17 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 9
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_v1(name, amount, tab_key="top")
+        return self.hashtag_medias_v1(name, amount, tab_key="top", delay_range=delay_range)
 
-    def hashtag_medias_top(self, name: str, amount: int = 9) -> List[Media]:
+    def hashtag_medias_top(self, name: str, amount: int = 9, delay_range: list = None) -> List[Media]:
         """
         Get top medias for a hashtag
 
@@ -350,6 +364,8 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 9
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
@@ -357,12 +373,12 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            medias = self.hashtag_medias_top_a1(name, amount)
+            medias = self.hashtag_medias_top_a1(name, amount, delay_range=delay_range)
         except ClientError:
-            medias = self.hashtag_medias_top_v1(name, amount)
+            medias = self.hashtag_medias_top_v1(name, amount, delay_range=delay_range)
         return medias
 
-    def hashtag_medias_recent_a1(self, name: str, amount: int = 71) -> List[Media]:
+    def hashtag_medias_recent_a1(self, name: str, amount: int = 71, delay_range: list = None) -> List[Media]:
         """
         Get recent medias for a hashtag by Public Web API
 
@@ -372,15 +388,17 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 71
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media")
+        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media", delay_range=delay_range)
 
-    def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
+    def hashtag_medias_recent_v1(self, name: str, amount: int = 27, delay_range: list = None) -> List[Media]:
         """
         Get recent medias for a hashtag by Private Mobile API
 
@@ -390,15 +408,17 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 71
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_v1(name, amount, tab_key="recent")
+        return self.hashtag_medias_v1(name, amount, tab_key="recent", delay_range=delay_range)
 
-    def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
+    def hashtag_medias_recent(self, name: str, amount: int = 27, delay_range: list = None) -> List[Media]:
         """
         Get recent medias for a hashtag
 
@@ -408,6 +428,8 @@ class HashtagMixin:
             Name of the hashtag
         amount: int, optional
             Maximum number of media to return, default is 71
+        delay_range: list
+            Range in seconds for a random delay after each request, ie. [1,3] a rand float delay from 1 to 3 seconds
 
         Returns
         -------
@@ -415,7 +437,7 @@ class HashtagMixin:
             List of objects of Media
         """
         try:
-            medias = self.hashtag_medias_recent_a1(name, amount)
+            medias = self.hashtag_medias_recent_a1(name, amount, delay_range=delay_range)
         except ClientError:
-            medias = self.hashtag_medias_recent_v1(name, amount)
+            medias = self.hashtag_medias_recent_v1(name, amount, delay_range=delay_range)
         return medias

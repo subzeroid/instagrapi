@@ -335,7 +335,7 @@ class UserMixin:
         except ClientError as e:
             self.logger.exception(e)
             return None
-             
+
     def search_users_v1(self, query: str, count: int) -> List[UserShort]:
         """
         Search users by a query (Private Mobile API)
@@ -359,7 +359,7 @@ class UserMixin:
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
-    
+
     def search_users(self, query: str, count: int = 50) -> List[UserShort]:
         """
         Search users by a query

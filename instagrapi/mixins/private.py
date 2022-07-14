@@ -27,7 +27,7 @@ from instagrapi.exceptions import (
     UnknownError,
     VideoTooLongException,
 )
-from instagrapi.utils import dumps, generate_signature
+from instagrapi.utils import dumps, generate_signature, random_delay
 
 
 def manual_input_code(self, username: str, choice=None):
@@ -413,6 +413,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        delay_range=None,
     ):
         if self.authorization:
             if not headers:
@@ -428,6 +429,8 @@ class PrivateRequestMixin:
             extra_sig=extra_sig,
         )
         try:
+            if delay_range:
+                random_delay(delay_range=delay_range)
             self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:

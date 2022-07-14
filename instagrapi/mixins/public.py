@@ -22,7 +22,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     GenericRequestError,
 )
-from instagrapi.utils import json_value
+from instagrapi.utils import json_value, random_delay
 
 
 class PublicRequestMixin:
@@ -58,6 +58,7 @@ class PublicRequestMixin:
         return_json=False,
         retries_count=3,
         retries_timeout=2,
+        delay_range=None,
     ):
         kwargs = dict(
             data=data,
@@ -69,6 +70,8 @@ class PublicRequestMixin:
         assert retries_timeout <= 600, "Retries timeout is too high"
         for iteration in range(retries_count):
             try:
+                if delay_range:
+                    random_delay(delay_range=delay_range)
                 return self._send_public_request(url, **kwargs)
             except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
                 raise e  # Stop retries
@@ -163,7 +166,7 @@ class PublicRequestMixin:
         except requests.ConnectionError as e:
             raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
 
-    def public_a1_request(self, endpoint, data=None, params=None, headers=None):
+    def public_a1_request(self, endpoint, data=None, params=None, headers=None, delay_range=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
         if params:
             params.update({"__a": 1,'__d':'dis'})
@@ -171,7 +174,7 @@ class PublicRequestMixin:
             params = {"__a": 1,'__d':'dis'}
 
         response = self.public_request(
-            url, data=data, params=params, headers=headers, return_json=True
+            url, data=data, params=params, headers=headers, return_json=True, delay_range=delay_range
         )
         try:
             return response["graphql"]
