@@ -168,10 +168,8 @@ class PublicRequestMixin:
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None, delay_range=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
-        if params:
-            params.update({"__a": 1,'__d':'dis'})
-        else:
-            params = {"__a": 1,'__d':'dis'}
+        params = params or {}
+        params.update({"__a": 1, '__d': 'dis'})
 
         response = self.public_request(
             url, data=data, params=params, headers=headers, return_json=True, delay_range=delay_range
