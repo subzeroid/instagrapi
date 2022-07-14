@@ -146,7 +146,7 @@ class CommentMixin:
         """
         return self.comment_like(comment_pk, revert=True)
 
-    def comment_pin(self, media_id: str, comment_pk: str, revert: bool = False):
+    def comment_pin(self, media_id: str, comment_pk: int, revert: bool = False):
         """
         Pin a comment on a media
 
@@ -156,7 +156,8 @@ class CommentMixin:
             Unique identifier of a Media
         comment_pk: int
            Unique identifier of a Comment
-
+        revert: bool, optional
+            Unpin when True
         Returns
         -------
         bool
@@ -169,7 +170,7 @@ class CommentMixin:
         result = self.private_request(f"media/{media_id}/{name}_comment/{comment_pk}", data)
         return result["status"] == "ok"
 
-    def comment_unpin(self, media_id: str, comment_pk: str):
+    def comment_unpin(self, media_id: str, comment_pk: int):
         """
         Unpin a comment on a media
 
