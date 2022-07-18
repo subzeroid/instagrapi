@@ -324,3 +324,51 @@ class StoryMixin:
         if amount:
             users = users[:int(amount)]
         return users
+
+    def story_like(self, story_id: str, revert: bool = False) -> bool:
+        """
+        Like a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+        revert: bool, optional
+            If liked, whether or not to unlike. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(story_id)
+        data = {
+            "media_id": media_id,
+            "_uid": str(self.user_id),
+            "source_of_like": "button",
+            "tray_session_id": self.tray_session_id,
+            "viewer_session_id": self.client_session_id,
+            "container_module": "reel_feed_timeline"
+        }
+        name = "unsend" if revert else "send"
+        result = self.private_request(
+            f"story_interactions/{name}_story_like", self.with_action_data(data)
+        )
+        return result["status"] == "ok"
+
+    def story_unlike(self, story_id: str) -> bool:
+        """
+        Unlike a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.story_like(story_id, revert=True)
