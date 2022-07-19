@@ -197,9 +197,10 @@ def extract_location(data):
     address_json = data.get("address_json", "{}")
     if isinstance(address_json, str):
         address = json.loads(address_json)
-        data["address"] = address.get("street_address")
-        data["city"] = address.get("city_name")
-        data["zip"] = address.get("zip_code")
+        if isinstance(address, dict) and address:
+            data["address"] = address.get("street_address")
+            data["city"] = address.get("city_name")
+            data["zip"] = address.get("zip_code")
     return Location(**data)
 
 
