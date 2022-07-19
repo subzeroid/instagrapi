@@ -10,6 +10,8 @@
 | story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path            | Download story media by media_type
 | story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path            | Download story media using URL to file (mp4 or jpg)
 | story_viewers(story_pk: int, amount: int = 20)                         | List[UserShort] | List of story viewers (via Private API)
+| story_like(story_id: str, revert: bool = False)                        | bool            | Like a story
+| story_unlike(story_id: str)                                            | bool            | Unlike a story
 
 Example:
 
@@ -126,5 +128,17 @@ buildout = StoryBuilder('/app/image.jpg').photo()
 cl.video_upload_to_story(buildout.path)
 ```
 
+Like & unlike story:
+
+```python
+pk = cl.story_pk_from_url("https://instagram.com/stories/purely.anand/2884886531427631361/")
+info = cl.story_info(pk).dict()
+
+cl.story_like(info['id']) # To like story
+cl.story_unlike(info['id']) # To unlike story
+
+# another way to unlike story
+cl.story_like(info['id'], revert=True)
+```
 
 More stories here [https://www.instagram.com/wrclive/](https://www.instagram.com/wrclive/)
