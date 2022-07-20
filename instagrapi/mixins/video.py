@@ -517,6 +517,13 @@ class UploadVideoMixin:
             A dictionary of response from the call
         """
         timestamp = int(time.time())
+        mentions = mentions.copy()
+        locations = locations.copy()
+        links = links.copy()
+        hashtags = hashtags.copy()
+        stickers = stickers.copy()
+        medias = medias.copy()
+        thread_ids = thread_ids.copy()
         story_sticker_ids = []
         data = {
             # USE extra_data TO EXTEND THE SETTINGS OF THE LOADED STORY, USE FOR EXAMPLE THE PROPERTIES SPECIFIED IN THE COMMENT:

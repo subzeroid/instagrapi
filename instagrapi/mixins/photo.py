@@ -434,6 +434,12 @@ class UploadPhotoMixin:
             A dictionary of response from the call
         """
         timestamp = int(time.time())
+        mentions = mentions.copy()
+        locations = locations.copy()
+        links = links.copy()
+        hashtags = hashtags.copy()
+        stickers = stickers.copy()
+        medias = medias.copy()
         story_sticker_ids = []
         data = {
             "text_metadata": '[{"font_size":40.0,"scale":1.0,"width":611.0,"height":169.0,"x":0.51414347,"y":0.8487708,"rotation":0.0}]',  # REMOVEIT
