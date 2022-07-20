@@ -36,6 +36,7 @@ from instagrapi.mixins.totp import TOTPMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 from instagrapi.mixins.multiple_accounts import MultipleAccountsMixin
+from instagrapi.mixins.fundraiser import FundraiserMixin
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -75,7 +76,8 @@ class Client(
     ReelsMixin,
     BloksMixin,
     TOTPMixin,
-    MultipleAccountsMixin
+    MultipleAccountsMixin,
+    FundraiserMixin
 ):
     proxy = None
     logger = logging.getLogger("instagrapi")
