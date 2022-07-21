@@ -6,11 +6,11 @@ from typing import List, Optional
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
+    extract_direct_media,
     extract_direct_message,
     extract_direct_response,
     extract_direct_short_thread,
     extract_direct_thread,
-    extract_direct_media,
 )
 from instagrapi.types import (
     DirectMessage,
