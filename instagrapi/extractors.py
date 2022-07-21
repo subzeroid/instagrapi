@@ -1,5 +1,6 @@
 import json
 from copy import deepcopy
+import xml.etree.ElementTree as ET
 
 from .types import (
     Account,
@@ -393,4 +394,8 @@ def extract_highlight_v1(data):
 
 
 def extract_track(data):
+    data['cover_artwork_uri'] = data.get('cover_artwork_uri') or None
+    data['cover_artwork_thumbnail_uri'] = data.get('cover_artwork_thumbnail_uri') or None
+    tree = ET.fromstring(data['dash_manifest'])
+    data['uri'] = tree.findall('.//{urn:mpeg:dash:schema:mpd:2011}BaseURL')[0].text
     return Track(**data)

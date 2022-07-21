@@ -25,6 +25,7 @@
 * [`DirectThread`](direct.md) - Thread (topic) with messages in Direct
 * [`DirectMessage`](direct.md) - Message in Direct
 * [`Insight`](insight.md) - Insights for a post
+* [`Track`](track.md) - Music track (for Reels/Clips)
 
 ## Interacting with Instagram Account
 

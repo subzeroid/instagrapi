@@ -64,6 +64,7 @@ class FbSearchMixin:
         }
         result = self.private_request("tags/search/", params=params)
         return [extract_hashtag_v1(ht) for ht in result["results"]]
+
     def fbsearch_suggested_profiles(self, user_id: str) -> List[UserShort]:
         params = {
             "target_user_id": user_id,

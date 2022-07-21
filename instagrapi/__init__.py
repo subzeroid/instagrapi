@@ -35,6 +35,7 @@ from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
+from instagrapi.mixins.track import TrackMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
@@ -49,6 +50,7 @@ class Client(
     ProfilePublicMixin,
     LoginMixin,
     ShareMixin,
+    TrackMixin,
     FbSearchMixin,
     HighlightMixin,
     DownloadPhotoMixin,

@@ -126,6 +126,7 @@ cl.video_upload_to_story(
   * [`DirectThread`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Thread (topic) with messages in Direct Message
   * [`DirectMessage`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Message in Direct Message
   * [`Insight`](https://adw0rd.github.io/instagrapi/usage-guide/insight.html) - Insights for a post
+  * [`Track`](https://adw0rd.github.io/instagrapi/usage-guide/track.html) - Music track (for Reels/Clips)
 * [Development Guide](https://adw0rd.github.io/instagrapi/development-guide.html)
 * [Handle Exceptions](https://adw0rd.github.io/instagrapi/usage-guide/handle_exception.html)
 * [Challenge Resolver](https://adw0rd.github.io/instagrapi/usage-guide/challenge_resolver.html)

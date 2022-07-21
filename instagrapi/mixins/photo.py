@@ -50,7 +50,7 @@ class DownloadPhotoMixin:
         media_pk: int
             Unique Media ID
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
+            Directory in which you want to download the photo, default is "" and will download the files to working
                 directory
 
         Returns
@@ -78,7 +78,7 @@ class DownloadPhotoMixin:
         filename: str, optional
             Filename for the media
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
+            Directory in which you want to download the photo, default is "" and will download the files to working
                 directory
 
         Returns
