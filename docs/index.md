@@ -8,7 +8,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 *Instagram API valid for **3 January 2022** (last reverse-engineering check)*
 
-Support **Python >= 3.7**, recommend 3.8+
+Support **Python >= 3.8**
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
 
