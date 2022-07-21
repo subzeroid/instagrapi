@@ -126,6 +126,7 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
+        assert isinstance(user_ids, list), "user_ids should be a list of user_id"
         self.inject_sessionid_to_public()
 
         def _userid_chunks():
@@ -225,17 +226,18 @@ class StoryMixin:
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
         """
-        Mark a story as seen
+        Mark stories as seen
 
         Parameters
         ----------
-        story_pk: int
+        story_pks: List[int]
 
         Returns
         -------
         bool
             A boolean value
         """
+        assert isinstance(story_pks, list), "story_pks should be a list of story.pk"
         return self.media_seen(
             [self.media_id(mid) for mid in story_pks],
             [self.media_id(mid) for mid in skipped_story_pks]
