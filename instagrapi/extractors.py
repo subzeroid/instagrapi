@@ -1,6 +1,7 @@
+import html
 import json
+import re
 from copy import deepcopy
-import xml.etree.ElementTree as ET
 
 from .types import (
     Account,
@@ -329,7 +330,7 @@ def extract_story_v1(data):
     ]
     story["locations"] = []
     story["hashtags"] = []
-    story["stickers"] = []
+    story["stickers"] = data.get('story_link_stickers') or []
     feed_medias = []
     story_feed_medias = data.get('story_feed_media') or []
     for feed_media in story_feed_medias:
@@ -396,6 +397,6 @@ def extract_highlight_v1(data):
 def extract_track(data):
     data['cover_artwork_uri'] = data.get('cover_artwork_uri') or None
     data['cover_artwork_thumbnail_uri'] = data.get('cover_artwork_thumbnail_uri') or None
-    tree = ET.fromstring(data['dash_manifest'])
-    data['uri'] = tree.findall('.//{urn:mpeg:dash:schema:mpd:2011}BaseURL')[0].text
+    items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data['dash_manifest'])
+    data['uri'] = html.unescape(items[0]) if items else None
     return Track(**data)
