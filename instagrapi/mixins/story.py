@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, UserNotFound
+from instagrapi.exceptions import ClientNotFoundError, UserNotFound, StoryNotFound
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
@@ -67,6 +67,8 @@ class StoryMixin:
         stories = self.user_stories_v1(user_id)
         for story in stories:
             self._stories_cache[story.pk] = story
+        if story_pk not in self._stories_cache:
+            raise StoryNotFound(story_pk=story_pk, **self.last_json)
         story = self._stories_cache[story_pk]
         return deepcopy(story)
 
