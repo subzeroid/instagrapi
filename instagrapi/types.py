@@ -406,7 +406,7 @@ class Track(BaseModel):
     highlight_start_times_in_ms: List[int]
     is_explicit: bool
     dash_manifest: str
-    uri: HttpUrl
+    uri: Optional[HttpUrl]
     has_lyrics: bool
     audio_asset_id: int
     duration_in_ms: int

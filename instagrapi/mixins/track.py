@@ -1,11 +1,12 @@
 import shutil
-import requests
 from pathlib import Path
 from urllib.parse import urlparse
 
+import requests
+
+from instagrapi.extractors import extract_track
 from instagrapi.types import Track
 from instagrapi.utils import json_value
-from instagrapi.extractors import extract_track
 
 
 class TrackMixin:
