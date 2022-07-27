@@ -874,13 +874,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     def login_by_settings(self, settings: str) -> bool:
         self.settings = json.loads(settings)
+
+        sessionid = self.settings['cookies']['sessionid'] if self.settings.get('cookies') else self.settings['authorization_data']['sessionid']
+
+        self.settings["cookies"].update({"sessionid": sessionid})
         self.init()
         self.inject_sessionid_to_public()
         self.last_login = time.time()
+        user_id = re.search(r"^\d+", sessionid).group()
         self.authorization_data = {
-            "ds_user_id": int(self.settings['authorization_data']['ds_user_id']),
-            "sessionid": self.settings['authorization_data']['sessionid'],
+            "ds_user_id": user_id,
+            "sessionid": sessionid,
             "should_use_header_over_cookies": True,
         }
-        self.cookie_dict["ds_user_id"] = int(self.settings['authorization_data']['ds_user_id'])
+        self.cookie_dict["ds_user_id"] = int(user_id)
         return True
