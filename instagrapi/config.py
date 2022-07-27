@@ -31,12 +31,10 @@ LOGIN_EXPERIMENTS = "ig_android_reg_nux_headers_cleanup_universe,ig_android_devi
 
 SUPPORTED_CAPABILITIES = [
     {
-        "name": "SUPPORTED_SDK_VERSIONS",
-        "value": "108.0,109.0,110.0,111.0,112.0,113.0,114.0,115.0,116.0,117.0,118.0,119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0"
+        "value": "119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0",
+        "name": "SUPPORTED_SDK_VERSIONS"
     },
-    {"name": "FACE_TRACKER_VERSION","value": "14"},
-    {"name": "segmentation","value": "segmentation_enabled"},
-    {"name": "COMPRESSION","value": "ETC2_COMPRESSION"},
-    {"name": "world_tracker","value": "world_tracker_enabled"},
-    {"name": "gyroscope","value": "gyroscope_enabled"}
+    {"value": "14", "name": "FACE_TRACKER_VERSION"},
+    {"value": "ETC2_COMPRESSION", "name": "COMPRESSION"},
+    {"value": "gyroscope_enabled", "name": "gyroscope"}
 ]
