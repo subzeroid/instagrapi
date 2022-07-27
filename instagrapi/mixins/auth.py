@@ -877,4 +877,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.init()
         self.inject_sessionid_to_public()
         self.last_login = time.time()
+        self.authorization_data = {
+            "ds_user_id": int(self.settings['authorization_data']['ds_user_id']),
+            "sessionid": self.settings['authorization_data']['sessionid'],
+            "should_use_header_over_cookies": True,
+        }
+        self.cookie_dict["ds_user_id"] = int(self.settings['authorization_data']['ds_user_id'])
         return True
