@@ -22,7 +22,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     GenericRequestError,
 )
-from instagrapi.utils import json_value
+from instagrapi.utils import json_value, random_delay
 
 
 class PublicRequestMixin:
@@ -69,6 +69,8 @@ class PublicRequestMixin:
         assert retries_timeout <= 600, "Retries timeout is too high"
         for iteration in range(retries_count):
             try:
+                if self.delay_range:
+                    random_delay(delay_range=self.delay_range)
                 return self._send_public_request(url, **kwargs)
             except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
                 raise e  # Stop retries
@@ -165,10 +167,8 @@ class PublicRequestMixin:
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
-        if params:
-            params.update({"__a": 1})
-        else:
-            params = {"__a": 1}
+        params = params or {}
+        params.update({"__a": 1, '__d': 'dis'})
 
         response = self.public_request(
             url, data=data, params=params, headers=headers, return_json=True

@@ -155,6 +155,10 @@ class MediaNotFound(NotFoundError, MediaError):
     pass
 
 
+class StoryNotFound(NotFoundError, MediaError):
+    pass
+
+
 class UserError(PrivateError):
     pass
 

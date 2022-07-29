@@ -58,7 +58,9 @@ class HighlightMixin:
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES),
             "phone_id": self.phone_id,
             "battery_level": random.randint(25, 100),
+            "panavision_mode": "",
             "is_charging": random.randint(0, 1),
+            "is_dark_mode": random.randint(0, 1),
             "will_sound_on": random.randint(0, 1),
         }
         result = self.private_request(f"highlights/{user_id}/highlights_tray/", params=params)

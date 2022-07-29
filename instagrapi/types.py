@@ -398,14 +398,15 @@ class Track(BaseModel):
     display_artist: str
     audio_cluster_id: int
     artist_id: Optional[int]
-    cover_artwork_uri: HttpUrl
-    cover_artwork_thumbnail_uri: HttpUrl
-    progressive_download_url: HttpUrl
-    fast_start_progressive_download_url: HttpUrl
+    cover_artwork_uri: Optional[HttpUrl]
+    cover_artwork_thumbnail_uri: Optional[HttpUrl]
+    progressive_download_url: Optional[HttpUrl]
+    fast_start_progressive_download_url: Optional[HttpUrl]
     reactive_audio_download_url: Optional[HttpUrl]
     highlight_start_times_in_ms: List[int]
     is_explicit: bool
     dash_manifest: str
+    uri: Optional[HttpUrl]
     has_lyrics: bool
     audio_asset_id: int
     duration_in_ms: int

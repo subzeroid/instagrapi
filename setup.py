@@ -21,7 +21,7 @@ requirements = [
     'requests<3.0,>=2.25.1',
     'PySocks==1.7.1',
     'pydantic==1.9.1',
-    'pycryptodomex==3.14.1'
+    'pycryptodomex==3.15.0'
 ]
 # requirements = [
 #     line.strip()
@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.16.20',
+    version='1.16.28',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
@@ -46,15 +46,13 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=find_packages(),
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ]

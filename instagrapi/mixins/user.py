@@ -307,9 +307,11 @@ class UserMixin:
         -------
         dict
         """
+        user_ids_str = ','.join(user_ids)
         result = self.private_request(
             "friendships/show_many/",
-            data={"user_ids": user_ids}
+            data={"user_ids": user_ids_str, '_uuid': self.uuid},
+            with_signature=False
         )
         return result["friendship_statuses"]
 
@@ -1065,3 +1067,57 @@ class UserMixin:
             A boolean value
         """
         return self.enable_stories_notifications(user_id, True)
+
+    def close_friend_add(self, user_id: str):
+        """
+        Add to Close Friends List
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = {
+            "block_on_empty_thread_creation": "false",
+            "module": "CLOSE_FRIENDS_V2_SEARCH",
+            "source": "audience_manager",
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+            "remove": [],
+            "add": [user_id]
+        }
+        result = self.private_request("friendships/set_besties/", data)
+        return json_value(result, "friendship_statuses", user_id, "is_bestie")
+
+    def close_friend_remove(self, user_id: str):
+        """
+        Remove from Close Friends List
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = {
+            "block_on_empty_thread_creation": "false",
+            "module": "CLOSE_FRIENDS_V2_SEARCH",
+            "source": "audience_manager",
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+            "remove": [user_id],
+            "add": []
+        }
+        result = self.private_request("friendships/set_besties/", data)
+        return json_value(result, "friendship_statuses", user_id, "is_bestie") == False

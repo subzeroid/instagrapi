@@ -28,6 +28,8 @@ View a list of a user's medias, following and followers
 | disable_reels_notifications(user_id: int)     | bool                  | Disable reels notifications of user                          |
 | enable_stories_notifications(user_id: int)    | bool                  | Enable stories notifications of user                         |
 | disable_stories_notifications(user_id: int)   | bool                  | Disable stories notifications of user                        |
+| close_friend_add(user_id: int)                | bool                  | Add to Close Friends List                                    |
+| close_friend_remove(user_id: int)             | bool                  | Remove from Close Friends List                               |
 
 Low level methods:
 

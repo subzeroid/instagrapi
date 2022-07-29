@@ -45,7 +45,7 @@ class DownloadVideoMixin:
         media_pk: int
             Unique Media ID
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working dir.
+            Directory in which you want to download the video, default is "" and will download the files to working dir.
 
         Returns
         -------
@@ -72,7 +72,7 @@ class DownloadVideoMixin:
         filename: str, optional
             Filename for the media
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
+            Directory in which you want to download the video, default is "" and will download the files to working
                 directory
 
         Returns
@@ -85,7 +85,15 @@ class DownloadVideoMixin:
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        content_length = int(response.headers.get("Content-Length"))
+        try:
+            content_length = int(response.headers.get("Content-Length"))
+        except TypeError:
+            print("The program detected an mis-formatted link, and hence can't download it.")
+            print("The problem is located wherever the url is passed into the 'video_download_by_url()' or the 'clip_download_by_url()' function.")
+            print("Convert the url input into a formattable link.")
+            print("Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here').video_url)")
+            print("You can remove the 'self' from the code above if needed.")
+            raise Exception("The program detected an mis-formatted link.")
         file_length = len(response.content)
         if content_length != file_length:
             raise VideoNotDownload(
@@ -517,6 +525,13 @@ class UploadVideoMixin:
             A dictionary of response from the call
         """
         timestamp = int(time.time())
+        mentions = mentions.copy()
+        locations = locations.copy()
+        links = links.copy()
+        hashtags = hashtags.copy()
+        stickers = stickers.copy()
+        medias = medias.copy()
+        thread_ids = thread_ids.copy()
         story_sticker_ids = []
         data = {
             # USE extra_data TO EXTEND THE SETTINGS OF THE LOADED STORY, USE FOR EXAMPLE THE PROPERTIES SPECIFIED IN THE COMMENT:
@@ -864,7 +879,7 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     except ImportError:
         raise Exception("Please install moviepy>=1.0.3 and retry")
 
-    print(f'Analizing video file "{path}"')
+    print(f'Analyzing video file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size
     if not thumbnail:

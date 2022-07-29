@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, UserNotFound
+from instagrapi.exceptions import ClientNotFoundError, UserNotFound, StoryNotFound
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
@@ -62,9 +62,14 @@ class StoryMixin:
         """
         story_id = self.media_id(story_pk)
         story_pk, user_id = story_id.split("_")
-        result = self.private_request(f"media/{story_pk}/info/")
-        story = extract_story_v1(result["items"][0])
-        self._stories_cache[story.pk] = story
+        # result = self.private_request(f"media/{story_pk}/info/")
+        # story = extract_story_v1(result["items"][0])
+        stories = self.user_stories_v1(user_id)
+        for story in stories:
+            self._stories_cache[story.pk] = story
+        if story_pk not in self._stories_cache:
+            raise StoryNotFound(story_pk=story_pk, **self.last_json)
+        story = self._stories_cache[story_pk]
         return deepcopy(story)
 
     def story_info(self, story_pk: str, use_cache: bool = True) -> Story:
@@ -123,6 +128,7 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
+        assert isinstance(user_ids, list), "user_ids should be a list of user_id"
         self.inject_sessionid_to_public()
 
         def _userid_chunks():
@@ -222,17 +228,18 @@ class StoryMixin:
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
         """
-        Mark a story as seen
+        Mark stories as seen
 
         Parameters
         ----------
-        story_pk: int
+        story_pks: List[int]
 
         Returns
         -------
         bool
             A boolean value
         """
+        assert isinstance(story_pks, list), "story_pks should be a list of story.pk"
         return self.media_seen(
             [self.media_id(mid) for mid in story_pks],
             [self.media_id(mid) for mid in skipped_story_pks]
@@ -324,3 +331,51 @@ class StoryMixin:
         if amount:
             users = users[:int(amount)]
         return users
+
+    def story_like(self, story_id: str, revert: bool = False) -> bool:
+        """
+        Like a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+        revert: bool, optional
+            If liked, whether or not to unlike. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(story_id)
+        data = {
+            "media_id": media_id,
+            "_uid": str(self.user_id),
+            "source_of_like": "button",
+            "tray_session_id": self.tray_session_id,
+            "viewer_session_id": self.client_session_id,
+            "container_module": "reel_feed_timeline"
+        }
+        name = "unsend" if revert else "send"
+        result = self.private_request(
+            f"story_interactions/{name}_story_like", self.with_action_data(data)
+        )
+        return result["status"] == "ok"
+
+    def story_unlike(self, story_id: str) -> bool:
+        """
+        Unlike a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.story_like(story_id, revert=True)
