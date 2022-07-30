@@ -879,8 +879,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         self.settings["cookies"].update({"sessionid": sessionid})
         self.init()
-        self.inject_sessionid_to_public()
-        self.last_login = time.time()
+        # self.inject_sessionid_to_public()
+        # self.last_login = time.time()
         user_id = re.search(r"^\d+", sessionid).group()
         self.authorization_data = {
             "ds_user_id": user_id,
