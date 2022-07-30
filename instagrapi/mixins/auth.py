@@ -872,7 +872,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return f"Bearer IGT:2:{b64part}"
         return ""
 
-    def login_by_settings(self, settings: str) -> bool:
+    def login_by_settings(self, settings: str, login: str="", passw: str="") -> bool:
+        self.username = login
+        self.password = passw
+
         self.settings = json.loads(settings)
 
         sessionid = self.settings['cookies']['sessionid'] if self.settings.get('cookies') else self.settings['authorization_data']['sessionid']
