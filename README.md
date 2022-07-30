@@ -32,7 +32,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 *Instagram API valid for **3 January 2022** (last reverse-engineering check)*
 
-Support **Python >= 3.6**, recommend 3.8+
+Support **Python >= 3.8**
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Lamadava SaaS](https://lamadava.com)
 
@@ -126,6 +126,7 @@ cl.video_upload_to_story(
   * [`DirectThread`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Thread (topic) with messages in Direct Message
   * [`DirectMessage`](https://adw0rd.github.io/instagrapi/usage-guide/direct.html) - Message in Direct Message
   * [`Insight`](https://adw0rd.github.io/instagrapi/usage-guide/insight.html) - Insights for a post
+  * [`Track`](https://adw0rd.github.io/instagrapi/usage-guide/track.html) - Music track (for Reels/Clips)
 * [Development Guide](https://adw0rd.github.io/instagrapi/development-guide.html)
 * [Handle Exceptions](https://adw0rd.github.io/instagrapi/usage-guide/handle_exception.html)
 * [Challenge Resolver](https://adw0rd.github.io/instagrapi/usage-guide/challenge_resolver.html)

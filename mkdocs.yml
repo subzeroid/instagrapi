@@ -19,6 +19,7 @@ nav:
     - Location: usage-guide/location.md
     - Media: usage-guide/media.md
     - Story: usage-guide/story.md
+    - Track: usage-guide/track.md
     - User: usage-guide/user.md
     - Account: usage-guide/account.md
   - Development Guide: development-guide.md
