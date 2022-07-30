@@ -104,11 +104,11 @@ DirectMessage(id=300775273512312312312321568, user_id=None, thread_id=3402823612
 >>> video_path = cl.video_download(cl.media_pk_from_url('https://www.instagram.com/p/B3rFQPblq40/'))
 >>> cl.direct_send_video(video_path, user_ids=[cl.user_id])  # or
 >>> cl.direct_send_video(video_path, thread_ids=[thread.id])
-Analizing video file "/.../adw0rd_2155839952940084788.mp4"
+Analyzing video file "/.../adw0rd_2155839952940084788.mp4"
 DirectMessage(id=300775489123123123123664, user_id=None, thread_id=34012312312312312398762, timestamp=datetime.datetime(2021, 9, 1, 14, 39, 56, 959454, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
 
 >>> cl.video_upload_to_direct(video_path, thread_ids=[thread.id])
-Analizing video file "/.../adw0rd_2155839952940084788.mp4"
+Analyzing video file "/.../adw0rd_2155839952940084788.mp4"
 Generating thumbnail "/.../adw0rd_2155839952940084788.mp4.jpg"...
 DirectMessage(id=3007123123123123664, user_id=None, thread_id=3401212312312312398762, timestamp=datetime.datetime(2021, 9, 1, 14, 39, 56, 959454, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
 
