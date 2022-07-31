@@ -880,7 +880,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         sessionid = self.settings['cookies']['sessionid'] if self.settings.get('cookies') else self.settings['authorization_data']['sessionid']
 
-        self.settings["cookies"].update({"sessionid": sessionid})
+        self.settings["cookies"] = {"sessionid": sessionid}
         self.init()
         # self.inject_sessionid_to_public()
         # self.last_login = time.time()
