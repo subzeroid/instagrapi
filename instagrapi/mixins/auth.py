@@ -890,5 +890,5 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "sessionid": sessionid,
             "should_use_header_over_cookies": True,
         }
-        self.cookie_dict["ds_user_id"] = int(user_id)
+        self.cookie_dict["ds_user_id"] = user_id
         return True
