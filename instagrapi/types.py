@@ -219,6 +219,13 @@ class StoryLocation(BaseModel):
     height: Optional[float]
 
 
+class StoryStickerLink(BaseModel):
+    url: HttpUrl
+    link_title: Optional[str]
+    link_type: Optional[str]
+    display_url: Optional[str]
+
+
 class StorySticker(BaseModel):
     id: Optional[str]
     type: Optional[str] = 'gif'
@@ -228,6 +235,7 @@ class StorySticker(BaseModel):
     width: float
     height: float
     rotation: Optional[float] = 0.0
+    story_link: Optional[StoryStickerLink]
     extra: Optional[dict] = {}
 
 
