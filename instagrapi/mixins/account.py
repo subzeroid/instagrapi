@@ -77,7 +77,7 @@ class AccountMixin:
 
     def account_set_public(self) -> bool:
         """
-        Sets your account private
+        Sets your account public
 
         Returns
         -------
