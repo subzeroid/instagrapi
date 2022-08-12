@@ -124,6 +124,7 @@ class Media(BaseModel):
     caption_text: str
     accessibility_caption: Optional[str]
     usertags: List[Usertag]
+    sponsor_tags: List[UserShort]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
