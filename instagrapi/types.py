@@ -119,6 +119,7 @@ class Media(BaseModel):
     location: Optional[Location] = None
     user: UserShort
     comment_count: Optional[int] = 0
+    comments_disabled: Optional[bool] = False
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
