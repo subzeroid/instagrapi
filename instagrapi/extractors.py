@@ -300,13 +300,13 @@ def extract_account(data):
 
 def extract_hashtag_gql(data):
     data["media_count"] = data.get("edge_hashtag_to_media", {}).get("count")
-    data["profile_pic_url"] = data["profile_pic_url"] or None
+    data["profile_pic_url"] = data.get("profile_pic_url") or None
     return Hashtag(**data)
 
 
 def extract_hashtag_v1(data):
     data["allow_following"] = data.get("allow_following") == 1
-    data["profile_pic_url"] = data["profile_pic_url"] or None
+    data["profile_pic_url"] = data.get("profile_pic_url") or None
     return Hashtag(**data)
 
 
