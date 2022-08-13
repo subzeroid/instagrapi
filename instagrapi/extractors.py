@@ -132,7 +132,7 @@ def extract_media_gql(data):
             for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
         ],
         sponsor_tags=[
-            edge['node']['sponsor']
+            extract_user_short(edge['node']['sponsor'])
             for edge in media.get("edge_media_to_sponsor_user", {}).get("edges", [])
         ],
         **media,
@@ -349,6 +349,9 @@ def extract_story_v1(data):
         for link in cta.get("links", []):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
+    story["sponsor_tags"] = [
+        tag["sponsor"] for tag in story.get("sponsor_tags", [])
+    ]
     return Story(**story)
 
 
@@ -388,6 +391,10 @@ def extract_story_gql(data):
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
+    story["sponsor_tags"] = [
+        extract_user_short(edge['node']['sponsor'])
+        for edge in story.get("edge_media_to_sponsor_user", {}).get("edges", [])
+    ]
     return Story(**story)
 
 

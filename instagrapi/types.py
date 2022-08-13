@@ -269,6 +269,7 @@ class Story(BaseModel):
     user: UserShort
     video_url: Optional[HttpUrl]  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
+    sponsor_tags: List[UserShort]
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
