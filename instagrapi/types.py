@@ -119,11 +119,13 @@ class Media(BaseModel):
     location: Optional[Location] = None
     user: UserShort
     comment_count: Optional[int] = 0
+    comments_disabled: Optional[bool] = False
     like_count: int
     has_liked: Optional[bool]
     caption_text: str
     accessibility_caption: Optional[str]
     usertags: List[Usertag]
+    sponsor_tags: List[UserShort]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
@@ -219,6 +221,13 @@ class StoryLocation(BaseModel):
     height: Optional[float]
 
 
+class StoryStickerLink(BaseModel):
+    url: HttpUrl
+    link_title: Optional[str]
+    link_type: Optional[str]
+    display_url: Optional[str]
+
+
 class StorySticker(BaseModel):
     id: Optional[str]
     type: Optional[str] = 'gif'
@@ -228,6 +237,7 @@ class StorySticker(BaseModel):
     width: float
     height: float
     rotation: Optional[float] = 0.0
+    story_link: Optional[StoryStickerLink]
     extra: Optional[dict] = {}
 
 
@@ -259,6 +269,7 @@ class Story(BaseModel):
     user: UserShort
     video_url: Optional[HttpUrl]  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
+    sponsor_tags: List[UserShort]
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
