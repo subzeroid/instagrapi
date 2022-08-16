@@ -360,9 +360,10 @@ class ChallengeResolveMixin:
         """
         step_name = self.last_json.get("step_name", "")
         if step_name == "delta_login_review":
-            # IT WAS ME (by GEO)
-            self._send_private_request(challenge_url, {"choice": "0"})
-            return True
+            endpoint = "bloks/apps/com.instagram.challenge.navigation.take_challenge/"
+            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
+            accepted = self._send_private_request(endpoint, data=data, with_signature=False)
+            return True if accepted.get("status") == "ok" else False
         elif step_name in ("verify_email", "select_verify_method"):
             if step_name == "select_verify_method":
                 """
