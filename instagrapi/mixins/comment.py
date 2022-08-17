@@ -1,5 +1,5 @@
 import random
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from instagrapi.exceptions import ClientError, ClientNotFoundError, MediaNotFound
 from instagrapi.extractors import extract_comment
@@ -20,7 +20,7 @@ class CommentMixin:
         media_id: str
             Unique identifier of a Media
         amount: int, optional
-            Maximum number of media to return, default is 0 - Inf
+            Maximum number of comments to return, default is 0 - Inf
 
         Returns
         -------
@@ -37,23 +37,23 @@ class CommentMixin:
         media_id = self.media_id(media_id)
         params = None
         comments = []
-        result = self.private_request(
-            f"media/{media_id}/comments/", params
-        )
+        result = self.private_request(f"media/{media_id}/comments/", params)
         get_comments()
-        while ((result.get("has_more_comments") and result.get("next_max_id"))
-               or (result.get("has_more_headload_comments") and result.get("next_min_id"))):
+        while (result.get("has_more_comments") and result.get("next_max_id")) or (
+            result.get("has_more_headload_comments") and result.get("next_min_id")
+        ):
             try:
                 if result.get("has_more_comments"):
                     params = {"max_id": result.get("next_max_id")}
                 else:
                     params = {"min_id": result.get("next_min_id")}
-                if not (result.get("next_max_id") or result.get("next_min_id")
-                        or result.get("comments")):
+                if not (
+                    result.get("next_max_id")
+                    or result.get("next_min_id")
+                    or result.get("comments")
+                ):
                     break
-                result = self.private_request(
-                    f"media/{media_id}/comments/", params
-                )
+                result = self.private_request(f"media/{media_id}/comments/", params)
                 get_comments()
             except ClientNotFoundError as e:
                 raise MediaNotFound(e, media_id=media_id, **self.last_json)
@@ -67,7 +67,58 @@ class CommentMixin:
             comments = comments[:amount]
         return comments
 
-    def media_comment(self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None) -> Comment:
+    def media_comments_chunk(
+        self, media_id: str, max_amount: int, min_id: str = None
+    ) -> Tuple[List[Comment], str]:
+        """
+        Get chunk of comments on a media and end_cursor
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media
+        max_amount: int
+            Limit number of comments to fetch, default is 100
+        min_id: str, optional
+            End Cursor of previous chunk that had more comments, default value is None
+
+        Returns
+        -------
+        Tuple[List[Comment], str]
+            A list of objects of Comment and an end_cursor
+        """
+
+        # TODO: to public or private
+        def get_comments():
+            if result.get("comments"):
+                for comment in result.get("comments"):
+                    comments.append(extract_comment(comment))
+
+        media_id = self.media_id(media_id)
+        params = {"min_id": min_id} if min_id else None
+        comments = []
+        result = self.private_request(f"media/{media_id}/comments/", params)
+        get_comments()
+        while result.get("has_more_headload_comments") and result.get("next_min_id"):
+            try:
+                params = {"min_id": result.get("next_min_id")}
+                if not (result.get("next_min_id") or result.get("comments")):
+                    break
+                result = self.private_request(f"media/{media_id}/comments/", params)
+                get_comments()
+            except ClientNotFoundError as e:
+                raise MediaNotFound(e, media_id=media_id, **self.last_json)
+            except ClientError as e:
+                if "Media not found" in str(e):
+                    raise MediaNotFound(e, media_id=media_id, **self.last_json)
+                raise e
+            if len(comments) >= max_amount:
+                break
+        return (comments, result.get("next_min_id"))
+
+    def media_comment(
+        self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None
+    ) -> Comment:
         """
         Post a comment on a media
 
@@ -163,11 +214,12 @@ class CommentMixin:
         bool
            A boolean value
         """
-        data = self.with_action_data({"_uid": self.user_id,
-                                      "_uuid": self.uuid})
+        data = self.with_action_data({"_uid": self.user_id, "_uuid": self.uuid})
         name = "unpin" if revert else "pin"
 
-        result = self.private_request(f"media/{media_id}/{name}_comment/{comment_pk}", data)
+        result = self.private_request(
+            f"media/{media_id}/{name}_comment/{comment_pk}", data
+        )
         return result["status"] == "ok"
 
     def comment_unpin(self, media_id: str, comment_pk: int):
@@ -206,11 +258,10 @@ class CommentMixin:
         """
         media_id = self.media_id(media_id)
         data = {
-            "comment_ids_to_delete": ','.join([str(pk) for pk in comment_pks]),
-            "container_module": "self_comments_v2_newsfeed_you"
+            "comment_ids_to_delete": ",".join([str(pk) for pk in comment_pks]),
+            "container_module": "self_comments_v2_newsfeed_you",
         }
         result = self.private_request(
-            f"media/{media_id}/comment/bulk_delete/",
-            self.with_action_data(data)
+            f"media/{media_id}/comment/bulk_delete/", self.with_action_data(data)
         )
         return result["status"] == "ok"
