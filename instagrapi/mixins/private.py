@@ -320,7 +320,7 @@ class PrivateRequestMixin:
         except requests.HTTPError as e:
             try:
                 self.last_json = last_json = response.json()
-            except JSONDecodeError:
+            except (JSONDecodeError, simplejson.errors.JSONDecodeError):
                 pass
             message = last_json.get("message", "")
             if e.response.status_code == 403:

@@ -1052,7 +1052,7 @@ class UserMixin:
             for media in medias:
                 if media.pk not in medias_ids:
                     medias_ids.add(media.pk)
-                    print(media.pk)
+#                    print(media.pk)
                     yield media
                     nb_media += 1
                 if amount and nb_media >= amount:
