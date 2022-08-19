@@ -45,11 +45,11 @@ def extract_media_v1(data):
             media["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         )[-1]["url"]
-#    if media["media_type"] == 8:
+    if media["media_type"] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
-#        media.pop("thumbnail_url", "")
-#        media.pop("video_url", "")
+        media.pop("thumbnail_url", "")
+        media.pop("video_url", "")
     location = media.get("location")
     media["location"] = location and extract_location(location)
     media["user"] = extract_user_short(media.get("user"))
@@ -198,6 +198,8 @@ def extract_location(data):
         data["address"] = address.get("street_address")
         data["city"] = address.get("city_name")
         data["zip"] = address.get("zip_code")
+    data["lng"] = data.get("lng")
+    data["lat"] = data.get("lat")
     return Location(**data)
 
 
