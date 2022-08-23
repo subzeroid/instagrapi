@@ -177,6 +177,9 @@ class PublicRequestMixin:
         try:
             return response["graphql"]
         except KeyError as e:
+            title = response.get("title")
+            if title == "Restricted profile":
+                raise ClientForbiddenError(f"{title}: {response.get('description')}")
             error_type = response.get("error_type")
             if error_type == "generic_request_error":
                 raise GenericRequestError(

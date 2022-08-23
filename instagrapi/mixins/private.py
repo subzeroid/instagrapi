@@ -413,7 +413,7 @@ class PrivateRequestMixin:
     @retry(
         retry_on_exception=lambda exc: isinstance(exc, Exception),
         wait_exponential_multiplier=1000,
-        wait_exponential_max=60000,
+        wait_exponential_max=6000,
         stop_max_attempt_number=10,
     )
     def private_request(
