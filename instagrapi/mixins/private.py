@@ -4,6 +4,7 @@ import logging
 import random
 import time
 from json.decoder import JSONDecodeError
+from retrying import retry
 
 import requests
 
@@ -409,6 +410,12 @@ class PrivateRequestMixin:
             ),
         )
 
+    @retry(
+        retry_on_exception=lambda exc: isinstance(exc, Exception),
+        wait_exponential_multiplier=1000,
+        wait_exponential_max=60000,
+        stop_max_attempt_number=10,
+    )
     def private_request(
         self,
         endpoint,
