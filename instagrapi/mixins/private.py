@@ -307,7 +307,7 @@ class PrivateRequestMixin:
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
                 response = self.private.get(
-                    api_url, params=params, timeout=self.timeout
+                    api_url, params=params, timeout=self.timeout, verify=False,
                 )
             self.logger.debug(
                 "private_request %s: %s (%s)",
