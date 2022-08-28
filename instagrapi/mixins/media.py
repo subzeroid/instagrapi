@@ -722,21 +722,20 @@ class MediaMixin:
         )
         return result["status"] == "ok"
 
-    def media_likers(self, media_id: str) -> List[UserShort]:
+    def media_likers(self, media_pk: str) -> List[UserShort]:
         """
         Get user's likers
 
         Parameters
         ----------
-        media_id: str
+        media_pk: str
 
         Returns
         -------
         List[UserShort]
             List of objects of User type
         """
-        media_id = self.media_id(media_id)
-        result = self.private_request(f"media/{media_id}/likers/")
+        result = self.private_request(f"media/{media_pk}/likers/")
         return [extract_user_short(u) for u in result['users']]
 
     def media_archive(self, media_id: str, revert: bool = False) -> bool:
