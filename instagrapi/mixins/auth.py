@@ -892,6 +892,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         # self.cookie_dict["ds_user_id"] = user_id
         self.settings = json.loads(settings)
         self.init()
-        self.inject_sessionid_to_public()
-        self.last_login = time.time()
+        # self.inject_sessionid_to_public()
+        # self.last_login = time.time()
         return True
