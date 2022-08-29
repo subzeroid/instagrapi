@@ -64,6 +64,9 @@ def extract_media_v1(data):
     )
     media["like_count"] = media.get("like_count", 0)
     media["has_liked"] = media.get("has_liked", False)
+    media["sponsor_tags"] = [
+        tag["sponsor"] for tag in media.get("sponsor_tags", [])
+    ]
 
     if media["media_type"] == 8:
         width = media["carousel_media"][0]["original_width"]
@@ -142,6 +145,10 @@ def extract_media_gql(data):
         resources=[
             extract_resource_gql(edge["node"])
             for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
+        ],
+        sponsor_tags=[
+            extract_user_short(edge['node']['sponsor'])
+            for edge in media.get("edge_media_to_sponsor_user", {}).get("edges", [])
         ],
         width=media["dimensions"]["width"],
         height=media["dimensions"]["height"],
@@ -318,13 +325,13 @@ def extract_account(data):
 
 def extract_hashtag_gql(data):
     data["media_count"] = data.get("edge_hashtag_to_media", {}).get("count")
-    data["profile_pic_url"] = data["profile_pic_url"] or None
+    data["profile_pic_url"] = data.get("profile_pic_url") or None
     return Hashtag(**data)
 
 
 def extract_hashtag_v1(data):
     data["allow_following"] = data.get("allow_following") == 1
-    data["profile_pic_url"] = data["profile_pic_url"] or None
+    data["profile_pic_url"] = data.get("profile_pic_url") or None
     return Hashtag(**data)
 
 
@@ -363,6 +370,9 @@ def extract_story_v1(data):
         for link in cta.get("links", []):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
+    story["sponsor_tags"] = [
+        tag["sponsor"] for tag in story.get("sponsor_tags", [])
+    ]
     return Story(**story)
 
 
@@ -403,6 +413,10 @@ def extract_story_gql(data):
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
+    story["sponsor_tags"] = [
+        extract_user_short(edge['node']['sponsor'])
+        for edge in story.get("edge_media_to_sponsor_user", {}).get("edges", [])
+    ]
     story["preview_url"] = story["display_resources"][0]["src"]
     story["width"] = story["dimensions"]["width"]
     story["height"] = story["dimensions"]["height"]

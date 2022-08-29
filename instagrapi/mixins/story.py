@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, UserNotFound, StoryNotFound
+from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,

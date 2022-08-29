@@ -57,6 +57,42 @@ class AccountMixin:
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
 
+    def account_set_private(self) -> bool:
+        """
+        Sets your account private
+
+        Returns
+        -------
+        Account
+            An object of Account class
+        """
+        assert self.user_id, "Login required"
+        user_id = str(self.user_id)
+        data = self.with_action_data({
+            "_uid": user_id,
+            "_uuid": self.uuid
+        })
+        result = self.private_request("accounts/set_private/", data)
+        return result["status"] == "ok"
+
+    def account_set_public(self) -> bool:
+        """
+        Sets your account public
+
+        Returns
+        -------
+        Account
+            An object of Account class
+        """
+        assert self.user_id, "Login required"
+        user_id = str(self.user_id)
+        data = self.with_action_data({
+            "_uid": user_id,
+            "_uuid": self.uuid
+        })
+        result = self.private_request("accounts/set_public/", data)
+        return result["status"] == "ok"
+
     def account_security_info(self) -> dict:
         """
         Fetch your account security info

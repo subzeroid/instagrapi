@@ -11,10 +11,10 @@ assignees: ''
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
-* Bitcoin: 3KHgnvNNWio6wyQ71cgNeBQojXStxzkzfd
-* Ethereum: 0x6e644c6b975B47801072b07a9a57DDfEC10DE74F
-* https://paypal.me/adw0rd
-* For Russia: СБП, Qiwi и тп: **+79118107609**
+* Tron TRX/USDT: `TLprxuzHjXPkHYa7ZfTTt165p7Fphwy1Ee`
+* Bitcoin: `bc1qmp7538hktvg2gx994hrpkmsmyjc03q29awe9ra`
+* Ethereum: `0x0E674815d513d4a00F6a7Cd4A990807aB97cC70D`
+* Dogecoin: `DSEXzMBYhBTwhNqzPGxVWFsTqVsTCeDejo`
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
