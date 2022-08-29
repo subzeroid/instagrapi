@@ -20,7 +20,7 @@ Features:
 requirements = [
     'requests<3.0,>=2.25.1',
     'PySocks==1.7.1',
-    'pydantic==1.9.1',
+    'pydantic==1.9.2',
     'pycryptodomex==3.15.0'
 ]
 # requirements = [
@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.16.28',
+    version='1.16.29',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
