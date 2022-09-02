@@ -129,10 +129,10 @@ class LocationMixin:
             An object of Location
         """
         try:
-            data = self.public_a1_request(f"/explore/locations/{location_pk}/") or {}
-            if not data.get("location"):
+            data = self.public_a1_request(f"/explore/locations/{location_pk}/").get("native_location_data")
+            if not data.get("location_info"):
                 raise LocationNotFound(location_pk=location_pk, **data)
-            return extract_location(data["location"])
+            return extract_location(data["location_info"])
         except ClientNotFoundError:
             raise LocationNotFound(location_pk=location_pk)
 

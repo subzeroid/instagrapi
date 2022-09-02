@@ -176,7 +176,7 @@ class MediaMixin:
             raise MediaNotFound(media_pk=media_pk, **data)
         return extract_media_gql(data["shortcode_media"])
 
-    def media_info_gql(self, media_pk: int) -> Media:
+    def media_info_gql(self, media_pk: int, want_location_with_detail: bool=True) -> Media:
         """
         Get Media from PK by Public Graphql API
 
@@ -184,6 +184,8 @@ class MediaMixin:
         ----------
         media_pk: int
             Unique identifier of the media
+        want_location_with_detail: Boolean
+            If true, call location road for more detail (need login)
 
         Returns
         -------
@@ -207,9 +209,12 @@ class MediaMixin:
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"]:
-            data["shortcode_media"]["location"] = self.location_complete(
-                extract_location(data["shortcode_media"]["location"])
-            ).dict()
+            location = extract_location(data["shortcode_media"]["location"])
+            if want_location_with_detail:
+                location = self.location_info_a1(location.pk)
+#                 location = self.location_complete(location)
+            data["shortcode_media"]["location"] = location.dict()
+
         return extract_media_gql(data["shortcode_media"])
 
     def media_info_v1(self, media_pk: int) -> Media:
@@ -256,11 +261,11 @@ class MediaMixin:
         if not use_cache or media_pk not in self._medias_cache:
             try:
                 try:
-                    media = self.media_info_gql(media_pk)
+                    media = self.media_info_gql(media_pk, want_location_with_detail)
                 except ClientLoginRequired as e:
                     if not self.inject_sessionid_to_public():
                         raise e
-                    media = self.media_info_gql(media_pk)  # retry
+                    media = self.media_info_gql(media_pk, want_location_with_detail)  # retry
             except Exception as e:
                 if not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error

@@ -192,14 +192,12 @@ def extract_location(data):
     data["address"] = data.get("address", data.get("location_address"))
     data["city"] = data.get("city", data.get("location_city"))
     data["zip"] = data.get("zip", data.get("location_zip"))
-    address_json = data.get("address_json", "{}")
+    address_json = data.get("address_json")
     if isinstance(address_json, str):
         address = json.loads(address_json)
         data["address"] = address.get("street_address")
         data["city"] = address.get("city_name")
         data["zip"] = address.get("zip_code")
-    data["lng"] = data.get("lng")
-    data["lat"] = data.get("lat")
     return Location(**data)
 
 

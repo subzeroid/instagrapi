@@ -175,7 +175,7 @@ class PublicRequestMixin:
             url, data=data, params=params, headers=headers, return_json=True
         )
         try:
-            return response["graphql"]
+            return response.get("graphql", response)
         except KeyError as e:
             title = response.get("title")
             if title == "Restricted profile":
