@@ -138,3 +138,6 @@ dmypy.json
 # PyCharm
 .idea
 *.iml
+
+# VSCode
+.vscode

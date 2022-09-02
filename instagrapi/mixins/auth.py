@@ -357,7 +357,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         self.username = username
         self.password = password
-        self.init()
         if relogin:
             self.private.cookies.clear()
             if self.relogin_attempt > 1:

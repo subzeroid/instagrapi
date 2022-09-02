@@ -6,6 +6,7 @@ Post comment, viewing, like and unlike comments
 | --------------------------------------------------------------------------------------- | ------------------ | --------------------------
 | media_comment(media_id: str, message: str, replied_to_comment_id: Optional[int] = None) | Comment            | Add new comment to media
 | media_comments(media_id: str, amount: int = 0)                                          | List\[Comment]     | Get a list comments for media (amount=0 - all comments)
+| media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List[Comment], str] | Get chunk of comments on a media and end_cursor
 | comment_like(comment_pk: int)                                                           | bool               | Like a comment
 | comment_unlike(comment_pk: int)                                                         | bool               | Unlike a comment
 | comment_pin(media_id: str,comment_pk: int)                                              | bool               | Pin a comment
@@ -67,6 +68,13 @@ Example:
  'status': 'Active',
  'has_liked': False,
  'like_count': 0}
+
+>>> (comments_part1, next_min_id) = cl.media_comments_chunk(media_id, 100)
+>>> next_min_id
+QVFBQmZCa1dxaFB5eFpBY2luVFMwLWdmN2ZCcUV6OF9hQWlIQk12ZWZqUlctZ2pOa1J5YjJ6bFY5Q1doSGNuUmpxSS1DdXRvZ0NLemJrR1hXd2p0dS1JMg==
+>>> (comments_part2, next_min_id) = cl.media_comments_chunk(media_id, 100, next_min_id)
+>>> next_min_id
+QVFEbHpIWmpFc3BNUkgzUFVuOGZOQlhDQ1hHeWlVWHlJSnBhb2FHbFB3YlJtNThnOUlrd01JUWdKRmRwZTRpWWU0bnZmX3VMNHlwcDBkWTJpZjQ2NE9SeQ==
 
 >>> cl.comment_like(17926777897585108)
 True
