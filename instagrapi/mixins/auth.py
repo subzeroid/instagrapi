@@ -895,3 +895,160 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         # self.inject_sessionid_to_public()
         # self.last_login = time.time()
         return True
+
+
+    def login_by_web(self, username: str, password: str) -> bool:
+        """Login via the website, get a cookie and login via sessionid
+
+        Args:
+            username (str): login username
+            password (str): password
+
+        Returns:
+            dict: cookies
+        """
+
+        def encrypt_password(app_id, key_id, public_key, password):
+            import base64
+            import datetime
+            from nacl.public import PublicKey, SealedBox
+            from Crypto import Random
+            from Crypto.Cipher import AES
+
+            timestamp = str(int(datetime.datetime.now().timestamp()))
+
+            # create a random key of length 32 bytes (for AES 256)
+            key = Random.get_random_bytes(32)
+            # create a buffer of length 12 bytes filled with 0
+            iv = bytearray(12)
+
+            aes = AES.new(key, AES.MODE_GCM, nonce=iv)
+            aes.update(bytearray(timestamp, "utf-8"))
+            ciphertext, tag = aes.encrypt_and_digest(bytearray(password, "utf-8"))
+
+            # get a byte array of the given public key
+            public_key_seal = PublicKey(bytes.fromhex(public_key))
+            sealed_box = SealedBox(public_key_seal)
+            sealed = sealed_box.encrypt(key)
+
+            enc_password = bytearray()
+            enc_password += (
+                bytearray([1, int(key_id), len(sealed) & 255, (len(sealed) >> 8) & 255])
+                + sealed
+                + tag
+                + ciphertext
+            )
+
+            return f"#PWD_INSTAGRAM_BROWSER:{app_id}:{timestamp}:{str(base64.b64encode(enc_password), 'utf-8')}"
+
+        # https://github.com/instaloader/instaloader/issues/615
+
+        BASE_URL = "https://www.instagram.com/"
+
+        session = requests.Session()
+        session.headers = {"user-agent": self.web_user_agent}
+        session.cookies["ig_pr"] = "1"
+        session.headers["Referer"] = BASE_URL
+        session.proxies.update({"http": self.proxy, "https": self.proxy})
+
+        try:
+            req = session.get(BASE_URL + "accounts/login/")
+            session.headers["X-CSRFToken"] = req.cookies["csrftoken"]
+            session.headers["mid"] = mid = req.cookies["mid"]
+
+            enc_password = encrypt_password(
+                req.headers.get("ig-set-password-encryption-web-key-version"),
+                req.headers.get("ig-set-password-encryption-web-key-id"),
+                req.headers.get("ig-set-password-encryption-web-pub-key"),
+                password,
+            )
+
+            time.sleep(random.uniform(1.175, 2.875))
+
+            response = session.post(
+                BASE_URL + "accounts/login/ajax/",
+                data={
+                    "username": username,
+                    "enc_password": enc_password,
+                },
+                allow_redirects=True,
+            )
+
+            last_json = response.json()
+        except JSONDecodeError:
+            pass
+        message = last_json.get("message", "")
+        if response.status_code == 403:
+            if message == "login_required":
+                raise LoginRequired(response=response, **last_json)
+            if (
+                "Looks like you requested to delete this account" in message
+                or "Your account has been disabled for violating our terms" in message
+            ):
+                raise InvalidUserError(response=response, **last_json)
+            raise ClientForbiddenError(response=response, **last_json)
+        elif response.status_code == 400:
+            error_type = last_json.get("error_type")
+            if message == "challenge_required" or message == "checkpoint_required":
+                raise ChallengeRequired(**last_json)
+            elif message == "feedback_required":
+                raise FeedbackRequired(
+                    **dict(
+                        last_json,
+                        message="%s: %s" % (message, last_json.get("feedback_message")),
+                    )
+                )
+            elif error_type == "sentry_block":
+                raise SentryBlock(**last_json)
+            elif error_type == "rate_limit_error":
+                raise RateLimitError(**last_json)
+            elif error_type == "bad_password":
+                raise BadPassword(**last_json)
+            elif error_type == "inactive user":
+                raise InactiveUserError(**last_json)
+            elif error_type == "two_factor_required":
+                raise TwoFactorRequiredError(**last_json)
+            elif error_type == "invalid_user":
+                raise InvalidUserError(**last_json)
+            elif error_type == "ip_block":
+                raise IPBlockError(**last_json)
+            elif "Please wait a few minutes before you try again" in message:
+                raise PleaseWaitFewMinutes(response=response, **last_json)
+            elif "VideoTooLongException" in message:
+                raise VideoTooLongException(response=response, **last_json)
+            elif error_type or message:
+                raise UnknownError(**last_json)
+            raise ClientBadRequestError(response=response, **last_json)
+        elif response.status_code == 429:
+            if "Please wait a few minutes before you try again" in message:
+                raise PleaseWaitFewMinutes(response=response, **last_json)
+            raise ClientThrottledError(response=response, **last_json)
+        elif response.status_code == 404:
+            raise ClientNotFoundError(response=response, **last_json)
+        elif response.status_code == 408:
+            raise ClientRequestTimeout(response=response, **last_json)
+
+        if last_json.get("status") == "fail":
+            raise ClientError(response=response, **last_json)
+        elif "error_title" in last_json:
+            """Example: {
+            'error_title': 'bad image input extra:{}', <-------------
+            'media': {
+                'device_timestamp': '1588184737203',
+                'upload_id': '1588184737203'
+            },
+            'message': 'media_needs_reupload', <-------------
+            'status': 'ok' <-------------
+            }"""
+            raise ClientError(response=response, **last_json)
+        elif not response.json().get("authenticated"):
+            raise BadPassword(**last_json)
+
+        cookies = response.cookies.get_dict()
+        cookies["mid"] = mid
+
+        self.login_by_sessionid(cookies["sessionid"])
+
+        self.last_login = time.time()
+
+        return True
