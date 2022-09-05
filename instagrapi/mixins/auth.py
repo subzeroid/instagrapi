@@ -874,8 +874,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     def login_by_settings(self, settings: str, login: str="", passw: str="") -> bool:
         self.settings = json.loads(settings)
         self.init()
-        self.inject_sessionid_to_public()
-        self.last_login = time.time()
+        # self.inject_sessionid_to_public()
+        # self.last_login = time.time()
         return True
 
 
