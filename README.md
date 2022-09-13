@@ -54,7 +54,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 
 ## Examples of apps that use instagrapi
 
-* [Lamadava SaaS](https://instagrapi.com) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
+* [Lamadava SaaS](https://lamadava.com/) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
 * [Datalama SaaS](https://datalama.io/) - Social Networks Cache
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
