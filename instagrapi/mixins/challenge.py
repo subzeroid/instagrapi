@@ -399,6 +399,26 @@ class ChallengeResolveMixin:
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
             return True
+        elif step_name == "select_contact_point_recovery":
+            steps = self.last_json["step_data"].keys()
+            challenge_url = challenge_url[1:]
+            if "email" in steps:
+                self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
+            else:
+                raise ChallengeError(f'ChallengeResolve: Choice "email" or not available to this account {self.last_json}')
+            wait_seconds = 5
+            for attempt in range(24):
+                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+                if code:
+                    break
+                time.sleep(wait_seconds)
+            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            after_code = self._send_private_request(challenge_url, {"security_code": code})
+
+            print("after_code", after_code)
+            after_choice = self._send_private_request(challenge_url, {"choice": 0})
+            print("after_choice", after_choice)
+            return True
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
@@ -419,7 +439,18 @@ class ChallengeResolveMixin:
                     break
                 time.sleep(wait_seconds)
             print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-            return self.bloks_change_password(pwd, self.last_json['challenge_context'])
+
+            pwd = self.password_encrypt(pwd)
+            after_choice = self._send_private_request(
+                challenge_url[1:], 
+                {
+                    "enc_new_password1": pwd,
+                    "enc_new_password2": pwd,
+                },
+            )
+            print(after_choice)
+            return True
+            # return self.bloks_change_password(pwd, self.last_json['challenge_context'])
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
         else:
