@@ -140,4 +140,6 @@ dmypy.json
 *.iml
 
 .vscode
-_temp.py
+_temp*.py
+
+instadevice/
