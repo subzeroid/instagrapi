@@ -413,11 +413,19 @@ class ChallengeResolveMixin:
                     break
                 time.sleep(wait_seconds)
             print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-            after_code = self._send_private_request(challenge_url, {"security_code": code})
-
-            print("after_code", after_code)
-            after_choice = self._send_private_request(challenge_url, {"choice": 0})
-            print("after_choice", after_choice)
+            self._send_private_request(challenge_url, {"security_code": code})
+            
+            time.sleep(3)
+            self._send_private_request(
+                challenge_url, 
+                {
+                    "choice": 0,
+                    "challenge_context": self.last_json['challenge_context'],
+                    "should_promote_account_status": 0,
+                    "nest_data_manifest": True,
+                },
+            )
+            print(f'Confirmed profile information.')
             return True
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
@@ -441,14 +449,13 @@ class ChallengeResolveMixin:
             print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
 
             pwd = self.password_encrypt(pwd)
-            after_choice = self._send_private_request(
+            self._send_private_request(
                 challenge_url[1:], 
                 {
                     "enc_new_password1": pwd,
                     "enc_new_password2": pwd,
                 },
             )
-            print(after_choice)
             return True
             # return self.bloks_change_password(pwd, self.last_json['challenge_context'])
         elif step_name == "selfie_captcha":

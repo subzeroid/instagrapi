@@ -7,8 +7,8 @@ c = Client()
 # code = c.totp_generate_code(seed)
 # print(code)
 
-proxy = "http://lum-customer-c_4c113dad-zone-workers-mobile-gip-18330c3b6210000b:zi78xfjkc4df@zproxy.lum-superproxy.io:22225"
+proxy = "http://lum-customer-c_4c113dad-zone-workers_residential-gip-18331618a3c00000:kkbysh4q7nyx@zproxy.lum-superproxy.io:22225"
 c.set_proxy(proxy)
 
-c.login(username="donnameulaay", password='SHeWA74FV')
+c.login(username="marypireaper", password='HQYtbh9F8')
 c.challenge_code_handler = input
