@@ -3,7 +3,6 @@ import json
 import time
 from enum import Enum
 from typing import Dict
-import sys
 import requests
 
 from instagrapi.exceptions import (
