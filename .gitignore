@@ -141,3 +141,5 @@ dmypy.json
 
 # VSCode
 .vscode
+
+test.py
