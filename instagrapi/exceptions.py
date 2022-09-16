@@ -94,6 +94,8 @@ class ChallengeRequired(ChallengeError):
 class ChallengeSelfieCaptcha(ChallengeError):
     pass
 
+class ChallengeHackedLock(ChallengeError):
+    pass
 
 class ChallengeUnknownStep(ChallengeError):
     pass
