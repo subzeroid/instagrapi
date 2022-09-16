@@ -10,6 +10,7 @@ from instagrapi.exceptions import (
     ChallengeRedirection,
     ChallengeRequired,
     ChallengeSelfieCaptcha,
+    ChallengeHackedLock,
     ChallengeUnknownStep,
     LegacyForceSetNewPasswordForm,
     RecaptchaChallengeForm,
@@ -237,6 +238,49 @@ class ChallengeResolveMixin:
         ])
         raise LegacyForceSetNewPasswordForm(msg)
 
+    def challenge_resolve_delta_acknowledge_approved(self):
+        challenge_url = self.last_json["challenge"]["api_path"][1:]
+        # Take challenge
+        self._send_private_request(challenge_url)
+        # Confirm your account was temporary blocked (continue)
+        self._send_private_request(challenge_url, {"challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+        # Select email for receiving code
+        self._send_private_request(challenge_url, {"choice": 1, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+
+        wait_seconds = 5
+        for attempt in range(24):
+            code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+            if code:
+                break
+            time.sleep(wait_seconds)
+        print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+
+        # Input code
+        self._send_private_request(challenge_url, {"security_code": code, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+        
+        for attempt in range(24):
+            pwd = self.change_password_handler(self.username)
+            if pwd:
+                break
+            time.sleep(wait_seconds)
+        print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+
+        enc_pwd = self.password_encrypt(pwd)
+        res = self._send_private_request(
+            challenge_url, 
+            {
+                "enc_new_password1": enc_pwd,
+                "enc_new_password2": enc_pwd,
+                "challenge_context": self.last_json['challenge_context'],
+                "should_promote_account_status": 0,
+            },
+        )
+
+        self.authorization_data = {
+            "ds_user_id": res["logged_in_user"]["pk"],
+            "should_use_header_over_cookies": True
+        }
+
     def handle_challenge_result(self, challenge: Dict):
         """
         Handle challenge result
@@ -396,47 +440,7 @@ class ChallengeResolveMixin:
             try: 
                 self._send_private_request(challenge_url, {"security_code": code})
             except BaseException as e:
-                challenge_url = self.last_json["challenge"]["api_path"][1:]
-                # Take challenge
-                self._send_private_request(challenge_url)
-                # Confirm your account was temporary blocked (continue)
-                self._send_private_request(challenge_url, {"challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
-                # Select email for receiving code
-                self._send_private_request(challenge_url, {"choice": 1, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
-
-                wait_seconds = 5
-                for attempt in range(24):
-                    code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
-                    if code:
-                        break
-                    time.sleep(wait_seconds)
-                print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-
-                # Input code
-                self._send_private_request(challenge_url, {"security_code": code, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
-                
-                for attempt in range(24):
-                    pwd = self.change_password_handler(self.username)
-                    if pwd:
-                        break
-                    time.sleep(wait_seconds)
-                print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-
-                enc_pwd = self.password_encrypt(pwd)
-                res = self._send_private_request(
-                    challenge_url, 
-                    {
-                        "enc_new_password1": enc_pwd,
-                        "enc_new_password2": enc_pwd,
-                        "challenge_context": self.last_json['challenge_context'],
-                        "should_promote_account_status": 0,
-                    },
-                )
-
-                self.authorization_data = {
-                    "ds_user_id": res["logged_in_user"]["pk"],
-                    "should_use_header_over_cookies": True
-                }
+                self.challenge_resolve_delta_acknowledge_approved()
 
             # assert 'logged_in_user' in client.last_json
             assert self.last_json.get("action", "") == "close"
@@ -448,7 +452,7 @@ class ChallengeResolveMixin:
             if "email" in steps:
                 self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
             else:
-                raise ChallengeError(f'ChallengeResolve: Choice "email" or not available to this account {self.last_json}')
+                raise ChallengeHackedLock(self.last_json)
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
@@ -503,6 +507,12 @@ class ChallengeResolveMixin:
             # return self.bloks_change_password(pwd, self.last_json['challenge_context'])
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
+        elif step_name == "delta_acknowledge_approved":
+            self.challenge_resolve_delta_acknowledge_approved()
+
+            assert self.last_json.get("action", "") == "close"
+            assert self.last_json.get("status", "") == "ok"
+            return True
         else:
             raise ChallengeUnknownStep(f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
         return True
