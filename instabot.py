@@ -158,11 +158,11 @@ while 1:
 	# print(" Getting my feed");
 
 	r1=random.randint(0,10)
-	if r1<6:
-		print(" ++ Getting my feed");
-		gefFromFeed(conf)
-		s=random.uniform(.5,5)
-		time.sleep(s);
+	# if r1<6:
+	# 	print(" ++ Getting my feed");
+	# 	gefFromFeed(conf)
+	# 	s=random.uniform(.5,5)
+	# 	time.sleep(s);
 
 
 	#########
