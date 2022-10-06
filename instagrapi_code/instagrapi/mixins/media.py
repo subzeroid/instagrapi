@@ -484,7 +484,7 @@ class MediaMixin:
         )
 
     def user_medias_gql(
-            self, user_id: int, amount: int = 0, sleep: int = 2
+            self, user_id: int, amount: int = 0, sleep: int = 0
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -495,7 +495,7 @@ class MediaMixin:
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
-            Timeout between pages iterations, default is 2
+            Timeout between pages iterations, default is a random number between 1 and 3.
 
         Returns
         -------
@@ -504,6 +504,7 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
+        sleep = int(sleep)
         medias = []
         end_cursor = None
         variables = {
@@ -515,6 +516,10 @@ class MediaMixin:
             self.logger.info(f"user_medias_gql: {amount}, {end_cursor}")
             if end_cursor:
                 variables["after"] = end_cursor
+
+            if not sleep:
+                sleep = random.randint(1, 3)
+
             medias_page, end_cursor = self.user_medias_paginated_gql(
                 user_id, amount, sleep, end_cursor=end_cursor
             )
@@ -651,7 +656,7 @@ class MediaMixin:
             medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
         return medias, end_cursor
 
-    def user_medias(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_medias(self, user_id: int, amount: int = 0, sleep: int = 0) -> List[Media]:
         """
         Get a user's media
 
@@ -660,6 +665,8 @@ class MediaMixin:
         user_id: int
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
+        sleep: int, optional
+            Timeout between page iterations
 
         Returns
         -------
@@ -668,13 +675,14 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
+        sleep = int(sleep)
         try:
             try:
-                medias = self.user_medias_gql(user_id, amount)
+                medias = self.user_medias_gql(user_id, amount, sleep)
             except ClientLoginRequired as e:
                 if not self.inject_sessionid_to_public():
                     raise e
-                medias = self.user_medias_gql(user_id, amount)  # retry
+                medias = self.user_medias_gql(user_id, amount, sleep)  # retry
         except Exception as e:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
