@@ -80,3 +80,8 @@ class botConf():
 		self.conf["cooldown_day"]["follows"] += 1;
 		self.conf["cooldown_hour"]["follows"] += 1;
 		self.writeConf();
+
+	def confAddUnfollow(self):
+		self.conf["cooldown_day"]["unfollows"] += 1;
+		self.conf["cooldown_hour"]["unfollows"] += 1;
+		self.writeConf();

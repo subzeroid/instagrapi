@@ -30,6 +30,7 @@ from classes.cooldown import coolDownCheck;
 from classes.cooldown import coolDownCheckDay;
 from classes.cooldown import coolDownCheckHour;
 from classes.createdevice import newUser;
+from classes.unfollowusers import unfollowUsers;
 
 import argparse
 
@@ -126,6 +127,7 @@ print(" >>>>>> Begin <<<<<< ");
 
 execution_counter=1;
 
+
 while 1:
 	# Today in UTC
 	cooldown_day_ts=conf["cooldown_day"]["curr"];
@@ -164,6 +166,8 @@ while 1:
 	# 	s=random.uniform(.5,5)
 	# 	time.sleep(s);
 
+	if r1<3:
+		unfollowUsers(conf);
 
 	#########
 	# HASTAGS

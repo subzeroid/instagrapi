@@ -32,6 +32,7 @@ The bot doesn't like or follow, if cooldown values are over, **for the day or fo
 cooldown periods are account defined. So, if you finish likes and follows for one account, you can jump to the next one.
 
 Bots act in this way:  
+- Randomly unfollow random number of users
 - It downloads the thumbnails of the media  
 - randomly download some image/video/album full resolution  
 - rendomly likes it  
