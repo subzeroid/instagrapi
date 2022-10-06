@@ -1,3 +1,5 @@
 conf/
 downloads/
 classes/__pycache__/
+instagrapi_code/*/__init__.py
+instagrapi_code/.gitignore

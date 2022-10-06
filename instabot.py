@@ -157,10 +157,13 @@ while 1:
 	# FEED
 	# print(" Getting my feed");
 
-	# print(" ++ Getting my feed");
-	# gefFromFeed(conf)
-	# s=random.uniform(.5,5)
-	# time.sleep(s);
+	r1=random.randint(0,10)
+	if r1<6
+		print(" ++ Getting my feed");
+		gefFromFeed(conf)
+		s=random.uniform(.5,5)
+		time.sleep(s);
+
 
 	#########
 	# HASTAGS
