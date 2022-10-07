@@ -3,7 +3,12 @@ This bot is intended to legally increase the number of your instagram followers,
 trying to act as a human, to avoid instagram suspensions.
 
 ##### Just clone it on your PC and begin to use
+### Requirements: instagrapi
+```
+python -m pip install instagrapi
+```
 
+After that,
 ```
 python instabot.py new
 ```
@@ -31,8 +36,9 @@ in the file "./cool_down_conf.json"
 The bot doesn't like or follow, if cooldown values are over, **for the day or for the current hour** (till 00 of the next hour)
 cooldown periods are account defined. So, if you finish likes and follows for one account, you can jump to the next one.
 
-Bots act in this way:  
+Bots act in this order:  
 - Randomly unfollow random number of users
+- It unfollow just the users followed by the script, at least after 30 days
 - It downloads the thumbnails of the media  
 - randomly download some image/video/album full resolution  
 - rendomly likes it  

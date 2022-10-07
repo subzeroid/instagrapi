@@ -26,9 +26,9 @@ def initDirs():
 		print("....Done")
 
 def cleanFiles(conf):
-	linesToKeep=100;
+	linesToKeep=10000;
 	confdir = conf["confdir"]
-	csv = ["medias.csv", "medias_downloaded.csv", "medias_liked.csv", "medias_seen.csv", "thumbs_downloaded.csv", "followed.csv"];
+	csv = ["medias.csv", "medias_downloaded.csv", "medias_liked.csv", "medias_seen.csv", "thumbs_downloaded.csv", "followed.csv", "followers.csv"];
 
 	for f in csv:
 		with open(confdir+f, 'r+') as fp:

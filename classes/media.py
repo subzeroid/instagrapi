@@ -6,6 +6,7 @@ import urllib.request
 from classes.botconf import botConf;
 from classes.botconf import loadCoolDownValues;
 
+
 def downloadThumb(conf, pk, thumbnail_url):
 	confdir = conf["confdir"]
 	
@@ -89,24 +90,5 @@ def likeMedia(conf, pk, product_type):
 		print("[likeMedia] Some error liking the media");
 	
 
-def followMediaLikers(conf, pk):
-	cl = conf["cl"]
-	confdir = conf["confdir"]
-
-	print("[followMediaLikers] "+pk+" Get media likes ");
-	e_media_likes = cl.media_likers(pk);
-	i=0;
-	r2=random.randint(0,8)
-	for xx in e_media_likes:
-		if i>=r2:
-			print("[followMediaLikers] "+pk+" End media likes ")
-			break;
-		if random.randint(0,100) < 30:
-			continue;
-		
-		print("[followMediaLikers] Following user "+xx.username+" (in media likes)");
-		# Append to file at last
-		followUser(conf, xx.username, xx.pk);
-		i+=1;
 
 	

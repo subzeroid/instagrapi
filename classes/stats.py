@@ -20,6 +20,9 @@ def printStats(conf):
 	print(" >>>>> Hour Likes: "+str(conf["cooldown_hour"]["likes"]));
 	print(" >>>> Hour Follow: "+str(conf["cooldown_hour"]["follows"]));
 	print(" >> Hour Unfollow: "+str(conf["cooldown_hour"]["unfollows"]));
+	print(" >>>>>> ");
+	print(" >>>>>> ");
+	print(" >>>> Script Flws: "+str(conf["scripts_followers"]));
 	print("******************************************")
 	print("******************************************")
 	print("")

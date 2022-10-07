@@ -5,15 +5,17 @@ from instagrapi.exceptions import (
     FeedbackRequired, PleaseWaitFewMinutes, LoginRequired
 )
 from datetime import datetime, tzinfo, date, timezone
+import time
+#import calendar
 import pytz
 
 import random
-import time
 import os
 import pathlib
 import urllib
 import urllib.request
-import calendar
+
+import json
 
 ### my classes
 import classes.errors
@@ -31,6 +33,7 @@ from classes.cooldown import coolDownCheckDay;
 from classes.cooldown import coolDownCheckHour;
 from classes.createdevice import newUser;
 from classes.unfollowusers import unfollowUsers;
+from classes.newfollowers import getNewFollowers;
 
 import argparse
 
@@ -155,6 +158,9 @@ while 1:
 		time.sleep(600)
 		continue
 
+
+	getNewFollowers(conf);
+
 	#########
 	# FEED
 	# print(" Getting my feed");
@@ -175,7 +181,7 @@ while 1:
 
 	
 	r1=random.randint(0,10)
-	if r1<6:
+	if r1<8:
 		printStats(conf);
 	
 	#########
@@ -190,6 +196,7 @@ while 1:
 	else:
 		r=random.randint(10,60)
 
+	print("#### End Execution # "+str(execution_counter));
 	execution_counter += 1
 	print("Sleeping "+str(r)+" seconds");
 	print("****************************************** ")

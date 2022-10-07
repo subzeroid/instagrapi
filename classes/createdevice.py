@@ -30,7 +30,7 @@ def newUser(u, p, t):
 
 	#### bot user config
 	file = pathlib.Path(confdir+"conf.json");
-	conf = {"username": u, "password": p, "tags": t, "cooldown_day": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "cooldown_hour": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}}
+	conf = {"username": u, "password": p, "tags": t, "cooldown_day": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "cooldown_hour": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "messages": {"active": 1, "texts":{"en": "Hi Thanks for the follow! How are you?", "es": "Gracias por el follow! Como estas?"} } }
 	with open(confdir+"conf.json", 'w') as fp:
 			json.dump(conf, fp)
 
