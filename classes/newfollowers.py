@@ -38,9 +38,12 @@ def getNewFollowers(conf, cursor=None):
 						t = line.split(":")[0]
 						diffInDays = int((time.mktime(time.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S")) - float(t))/14400);
 
+				localBotConf.confAddScriptFollower()
+
 				print("[GetNewFollowers] User "+x.username+" is a NEW follower, followed "+str(diffInDays)+" days ago");
-				sendMessage(conf, x.pk)
-				time.sleep(10)
+				if diffInDays <= 3:
+					sendMessage(conf, x.pk)
+					time.sleep(10)
 
 	return
 
@@ -59,7 +62,10 @@ def sendMessage(conf, pk):
 	
 	user_info = cl.user_info(pk);
 	bio = user_info.biography;
-	lan = detect(bio);
+	try:
+		lan = detect(bio);
+	except:
+		lan = 'en'
 	if lan not in conf["messages"].keys():
 		lan = "en"
 	m = conf["messages"]["texts"][lan];

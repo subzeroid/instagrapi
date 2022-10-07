@@ -14,7 +14,7 @@ python instabot.py new
 ```
 
 it creates new user, asking for username, password and tags.  
-Conf is saved in ./conf/$(USERNAME)/
+Conf is saved in ./conf/$USERNAME/
 
 ```
 python instabot.py 
@@ -33,12 +33,31 @@ This bot is "tag based", and search for the last posts for the tags you specify
 #### This bot has a **cooldown function**, you can configure cooldown values
 in the file "./cool_down_conf.json"
 
+#### This bot send messages to the new followers!
+So, change the messages texts in conf/$USERNAME/conf.json  
+You can add all the languages you want
+
+```
+"messages": 
+{
+	"active": 1, 
+	"texts":
+	{
+		"en": "Hi Thanks for the follow! How are you?", 
+		"es": "Gracias por el follow! \nComo estás?", 
+		"it": "Piacere, \ngrazie per il follow!"
+	} 
+}
+```
+
 The bot doesn't like or follow, if cooldown values are over, **for the day or for the current hour** (till 00 of the next hour)
 cooldown periods are account defined. So, if you finish likes and follows for one account, you can jump to the next one.
 
 Bots act in this order:  
 - Randomly unfollow random number of users
 - It unfollow just the users followed by the script, at least after 30 days
+- Detect new followers obtained by the script
+- Detect their language from their bio, optionally send them a custom message
 - It downloads the thumbnails of the media  
 - randomly download some image/video/album full resolution  
 - rendomly likes it  

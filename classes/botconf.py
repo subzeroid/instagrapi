@@ -86,7 +86,6 @@ class botConf():
 		self.conf["cooldown_hour"]["unfollows"] += 1;
 		self.writeConf();
 
-	def confAddScriptFolloer(self):
+	def confAddScriptFollower(self):
 		self.conf["scripts_followers"] += 1;
 		self.writeConf();
-		

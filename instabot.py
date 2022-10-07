@@ -37,6 +37,7 @@ from classes.newfollowers import getNewFollowers;
 
 import argparse
 
+# Arguments and help
 parser = argparse.ArgumentParser(description="Human Being simulator using Instagram, to get follows back")
 subparser = parser.add_subparsers(dest='command')
 createUser = subparser.add_parser('new', help="Create new user dir and config files");
@@ -55,7 +56,7 @@ if args.command == "new":
 	print ("++ dog;puppy;puppies;dogs;dogslover;puppylover;puppy35")
 	print ("++ Just alfanumeric chars are accepted ")
 	t = str(input(">> Tags: "))
-	newUser(u, p, t);
+	newUser(u, p, t); #create new user, in classes/createdevice
 	quit();
 
 # Intro
@@ -69,22 +70,23 @@ print("########################         2022/10          #######################
 print("########################                          ########################");
 print("##########################################################################")
 
-#### Select user
+# launch the client for instagrapi 
+cl=Client() 
+
+# Select user
 try:
-	users=next(os.walk("conf"))[1];
+	users=next(os.walk("conf"))[1]; # check conf dirs
 except: 
 	print()
 	print(">>> Conf dir does not exists, read the help")
 	print(">>> exec: python instabot --help")
 	quit();
 
-cl=Client()
 
 i=1;
 for user in users:
 	print (str(i)+" > "+user);
 	i+=1
-
 
 position = -1;
 while position<=0 or position>len(users):
@@ -180,9 +182,8 @@ while 1:
 	getFromHashtag(conf);
 
 	
-	r1=random.randint(0,10)
-	if r1<8:
-		printStats(conf);
+	
+	printStats(conf);
 	
 	#########
 	# SLEEP

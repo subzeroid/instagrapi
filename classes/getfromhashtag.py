@@ -68,7 +68,7 @@ def getFromHashtag(conf, cursor=None):
 				
 
 				r2=random.randint(0,100)
-				if r2<40:
+				if r2<20:
 					followMediaLikers(conf, x.pk);
 					s=random.uniform(.2,2)
 					time.sleep(s);

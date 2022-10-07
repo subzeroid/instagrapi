@@ -17,8 +17,7 @@ def followUser(conf, pk):
 	d=bool(conf["cooldown_hour"]["follows"] >= coolDownMaxValues["hour_max_follows"]);
 	if a or d:
 		print("[followUser] Max cooldown reached, can't follow ")
-		print("[followUser] Day: "+str(a))
-		print("[followUser] Hour: "+str(d))
+		print("[followUser] Day: "+str(a)+", Hour: "+str(d))
 		return;
 
 	if pk in open(confdir+'followed.csv').read():
@@ -26,6 +25,8 @@ def followUser(conf, pk):
 	
 	r2=random.randint(0,100)
 	follower_count=0;
+	# Get User Infos. 
+	# And download profile picture thumb
 	if r2<45:
 		e_user_info = cl.user_info(pk);
 		follower_count=e_user_info.follower_count;
@@ -34,7 +35,7 @@ def followUser(conf, pk):
 		try:
 			downloadThumb(conf, e_user_info.pk, e_user_info.profile_pic_url)
 		except:
-			print("[followUser][ERROR] Error downlading Thumb");
+			print("[followUser][ERROR] Error downloading Thumb");
 			print(e_user_info);
 		print()
 	
@@ -61,10 +62,8 @@ def followMediaLikers(conf, pk):
 		if i>=r2:
 			print("[followMediaLikers] "+pk+" End media likes ")
 			break;
-		if random.randint(0,100) < 30:
-			continue;
-		
-		print("[followMediaLikers] Following user "+xx.username+" (in media likes)");
-		# Append to file at last
-		followUser(conf, xx.pk);
-		i+=1;
+		if random.randint(0,100) < 20:
+			print("[followMediaLikers] Following user "+xx.username+" (in media likes)");
+			# Append to file at last
+			followUser(conf, xx.pk);
+			i+=1;
