@@ -34,7 +34,7 @@ def newUser(u, p, t):
 	with open(confdir+"conf.json", 'w') as fp:
 			json.dump(conf, fp)
 
-	csv = ["medias.csv", "medias_downloaded.csv", "medias_liked.csv", "medias_seen.csv", "thumbs_downloaded.csv", "followed.csv"];
+	csv = ["medias.csv", "medias_downloaded.csv", "medias_liked.csv", "medias_seen.csv", "thumbs_downloaded.csv", "followed.csv", "followers.csv", "messages.csv"];
 	for f in csv:
 		file = pathlib.Path(confdir+f);
 		if not file.exists():
