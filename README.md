@@ -2,7 +2,7 @@
 This bot is intended to legally increase the number of your instagram followers,   
 trying to act as a human, to avoid instagram suspensions.
 
-Just clone it on your PC and begin to use
+Just clone it on your PC and begin to use  
 
 #### Requirements: instagrapi
 ```
@@ -14,7 +14,7 @@ python -m pip install instagrapi
 gh repo clone danruggi/instagrapi-human-simulation
 ```
 
-#### Use it
+#### Create new profile for your accounts
 ```
 python instabot.py new
 ```
@@ -22,6 +22,7 @@ python instabot.py new
 it creates new user, asking for username, password and tags.  
 Conf is saved in ./conf/$USERNAME/
 
+#### Use it
 ```
 python instabot.py 
 ```
