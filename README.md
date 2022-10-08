@@ -14,13 +14,14 @@ python -m pip install instagrapi
 gh repo clone danruggi/instagrapi-human-simulation
 ```
 
-#### Create new profile for your accounts
-```
+#### Create new profile for your account
+s```
 python instabot.py new
 ```
 
 it creates new user, asking for username, password and tags.  
 Conf is saved in ./conf/$USERNAME/
+It creates one directory each account
 
 #### Use it
 ```
@@ -97,3 +98,6 @@ cleanFiles(conf);
 
 lines in instabot.py, around line ~100  
 (Do it just after first execution, because it creates automatically the download directory. If you coment it, you'll need to create the dir manually)
+
+#### Remove account
+To remove an account, just delete the directory under ./conf/
