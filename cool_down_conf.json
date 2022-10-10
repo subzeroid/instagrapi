@@ -1,8 +1,0 @@
-{
-	"day_max_follows": 30,
-	"day_max_likes": 80,
-	"day_max_unfollows": 50,
-	"hour_max_follows": 6,
-	"hour_max_likes": 15,
-	"hour_max_unfollows": 10
-}

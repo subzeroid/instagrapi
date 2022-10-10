@@ -53,6 +53,12 @@ def getFromHashtag(conf, cursor=None):
 			# print(x.dict())
 			r1=random.uniform(0, 15);
 			print("Random: "+str(r1));
+
+			for forced_word in conf["forced_words"].split(";"):
+				if forced_word in x.user.username:
+					print("[getHashtag] User "+x.user.username+" contains forced word: "+forced_word+" so force Random=0.1");
+					r1=0.1;
+
 			if r1<4:
 				downloadMedia(conf, x.pk, x.media_type, x.product_type);
 				s=random.randrange(1,10)

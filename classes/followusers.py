@@ -10,7 +10,7 @@ import time
 def followUser(conf, pk):
 	confdir = conf["confdir"];
 	localBotConf = botConf(conf);
-	coolDownMaxValues = loadCoolDownValues();
+	coolDownMaxValues = loadCoolDownValues(conf);
 	cl=conf["cl"]
 
 	a=bool(conf["cooldown_day"]["follows"] >= coolDownMaxValues["day_max_follows"]);

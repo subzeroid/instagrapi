@@ -97,9 +97,9 @@ while position<=0 or position>len(users):
 ### GLOBAL VARS
 user = users[position-1];
 
-coolDownMaxValues = loadCoolDownValues();
 conf = loadConf(user, cl);
 botConf = botConf(conf);
+coolDownMaxValues = loadCoolDownValues(conf);
 
 username = conf["username"];
 password = conf["password"];

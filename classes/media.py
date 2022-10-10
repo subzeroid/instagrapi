@@ -56,7 +56,7 @@ def likeMedia(conf, pk, product_type):
 	cl = conf["cl"]
 	confdir = conf["confdir"]
 	localBotConf = botConf(conf);
-	coolDownMaxValues = loadCoolDownValues();
+	coolDownMaxValues = loadCoolDownValues(conf);
 
 
 	a=bool(conf["cooldown_day"]["likes"] >= coolDownMaxValues["day_max_likes"]);

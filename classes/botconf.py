@@ -2,14 +2,11 @@ import pathlib
 import json
 import os
 
-def loadCoolDownValues():
-	f = pathlib.Path("cool_down_conf.json");
-	if not f.exists():
-		print("[loadConf] 1. File cool_down_conf not found. Fetch the git again");
-		quit()
-	conf = "";
+def loadCoolDownValues(conf):
+	confdir=conf["confdir"];
+	
 	try:
-		f = open("cool_down_conf.json");
+		f = open(confdir+"cool_down_conf.json");
 
 	except Exception as e:
 		print("[loadConf] 2. File cool_down_conf not found ")
@@ -22,20 +19,17 @@ def loadCoolDownValues():
 def loadConf(user, cl):
 	confdir = "conf/"+user+"/"
 	f = pathlib.Path(confdir+"conf.json");
-	if not f.exists():
-		print("[loadConf] 1. File conf not found in "+confdir)
-		quit()
+
 	conf = "";
 	try:
 		f = open(confdir+"conf.json");
-
 	except Exception as e:
 		print("[loadConf] 2. File conf not found in "+confdir)
 		print(e);
 		quit();
-
 	conf = json.load(f)
 	f.close()
+
 	conf["confdir"]=confdir;
 	conf["cl"]=cl;
 	return conf;
@@ -48,8 +42,8 @@ class botConf():
 		tconf=self.conf.copy();
 		confdir=tconf["confdir"];
 		tconf.pop("cl", None);
-		with open(confdir+"conf.json", 'w') as fp:
-			json.dump(tconf, fp)
+		with open(confdir+"bot_f.json", 'w') as fp:
+			json.dump(tconf, fp, indent=4)
 
 	def resetTodayConf(self, d):
 		print("****************************************** ")

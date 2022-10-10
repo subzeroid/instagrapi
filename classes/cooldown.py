@@ -17,7 +17,7 @@ def coolDownCheckHour(conf, coolDownMaxValues):
 	e=bool(conf["cooldown_hour"]["likes"] >= coolDownMaxValues["hour_max_likes"]);
 	f=bool(conf["cooldown_hour"]["unfollows"] >= coolDownMaxValues["hour_max_unfollows"]);
 
-	if d and e and f:
+	if d and e:
 		return False;
 
 	return True;
@@ -27,7 +27,7 @@ def coolDownCheckDay(conf, coolDownMaxValues):
 	b=bool(conf["cooldown_day"]["likes"] >= coolDownMaxValues["day_max_likes"]);
 	c=bool(conf["cooldown_day"]["unfollows"] >= coolDownMaxValues["day_max_unfollows"]);
 
-	if a and b and c:
+	if a and b:
 		return False;
 
 	return True;

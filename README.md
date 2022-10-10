@@ -15,7 +15,7 @@ gh repo clone danruggi/instagrapi-human-simulation
 ```
 
 #### Create new profile for your account
-s```
+```
 python instabot.py new
 ```
 
@@ -39,7 +39,7 @@ This bot is "tag based", and search for the last posts for the tags you specify
 (The logic is that users that a user that just posted something, if he receive a like or a follow, it's active and propense to exchange the follow)
 
 #### This bot has a **cooldown function**, you can configure cooldown values
-in the file "./cool_down_conf.json"
+in the file "./conf/$USERNAME/cool_down_conf.json"
 
 #### This bot send messages to the new followers!
 So, change the messages texts in conf/$USERNAME/conf.json  

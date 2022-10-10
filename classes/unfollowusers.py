@@ -10,7 +10,7 @@ def unfollowUsers(conf):
 	confdir = conf["confdir"];
 	username = conf["username"]
 	localBotConf = botConf(conf);
-	coolDownMaxValues = loadCoolDownValues();
+	coolDownMaxValues = loadCoolDownValues(conf);
 	cl=conf["cl"]
 
 	### get my followers

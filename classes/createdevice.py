@@ -30,9 +30,14 @@ def newUser(u, p, t):
 
 	#### bot user config
 	file = pathlib.Path(confdir+"conf.json");
-	conf = {"username": u, "password": p, "tags": t, "cooldown_day": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "cooldown_hour": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "scripts_followers":0, "messages": {"active": 1, "texts":{"en": "Hi Thanks for the follow! How are you?", "es": "Gracias por el follow! \nComo estás?", "it": "Piacere, \ngrazie per il follow!"} } }
+	conf = {"username": u, "password": p, "tags": t, "cooldown_day": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "cooldown_hour": {"curr": 0, "follows": 0, "likes": 0, "unfollows": 0}, "scripts_followers":0, "forced_words":"", "messages": {"active": 1, "texts":{"en": "Hi Thanks for the follow! How are you?", "es": "Gracias por el follow! \nComo estás?", "it": "Piacere, \ngrazie per il follow!"} } }
 	with open(confdir+"conf.json", 'w') as fp:
-			json.dump(conf, fp)
+			json.dump(conf, fp, indent=4)
+
+	file = pathlib.Path(confdir+"cool_down_conf.json");
+	conf = {"day_max_follows": 30, "day_max_likes": 80, "day_max_unfollows": 50, "hour_max_follows": 6, "hour_max_likes": 15, "hour_max_unfollows": 10 }
+	with open(confdir+"cool_down_conf.json", 'w') as fp:
+			json.dump(conf, fp, indent=4)
 
 	csv = ["medias.csv", "medias_downloaded.csv", "medias_liked.csv", "medias_seen.csv", "thumbs_downloaded.csv", "followed.csv", "followers.csv", "messages.csv"];
 	for f in csv:
