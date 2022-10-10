@@ -121,7 +121,7 @@ cl.load_settings(confdir+"login.json")
 
 print (" >>>>>> Login <<<<<< ");
 
-print (conf)
+print (botConf.getConf())
 
 cl.login(username, password)
 cl.dump_settings(confdir+"login.json")
@@ -139,6 +139,7 @@ while 1:
 	today_ts=time.mktime(time.strptime(str(datetime.now(timezone.utc)).split(" ")[0], '%Y-%m-%d'));
 	if (today_ts > cooldown_day_ts):
 		## Reset daily counters
+		print("Resetting Daily counters ")
 		botConf.resetTodayConf(today_ts);
 
 	### This hour in UTC

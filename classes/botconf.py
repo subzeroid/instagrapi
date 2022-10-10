@@ -6,7 +6,7 @@ def loadCoolDownValues(conf):
 	confdir=conf["confdir"];
 	
 	try:
-		f = open(confdir+"cool_down_conf.json");
+		f = open(confdir+"cool_down_conf.json", 'r');
 
 	except Exception as e:
 		print("[loadConf] 2. File cool_down_conf not found ")
@@ -22,7 +22,7 @@ def loadConf(user, cl):
 
 	conf = "";
 	try:
-		f = open(confdir+"conf.json");
+		f = open(confdir+"conf.json", 'r');
 	except Exception as e:
 		print("[loadConf] 2. File conf not found in "+confdir)
 		print(e);
@@ -38,16 +38,19 @@ class botConf():
 	def __init__(self, conf):
 		self.conf=conf;
 
+	def getConf(self):
+		return self.conf;
+
 	def writeConf(self):
 		tconf=self.conf.copy();
 		confdir=tconf["confdir"];
 		tconf.pop("cl", None);
-		with open(confdir+"bot_f.json", 'w') as fp:
+		with open(confdir+"conf.json", 'w') as fp:
 			json.dump(tconf, fp, indent=4)
 
 	def resetTodayConf(self, d):
 		print("****************************************** ")
-		print(" ******************** Reset DAILY counters");
+		print("********** Reset DAILY counters ********** ");
 		print("****************************************** ")
 		self.conf["cooldown_day"]["likes"] = 0;
 		self.conf["cooldown_day"]["follows"] = 0;
@@ -57,7 +60,7 @@ class botConf():
 
 	def resetHourConf(self, d):
 		print("****************************************** ")
-		print(" ******************** Reset HOUR counters");
+		print("********** Reset HOUR counters *********** ");
 		print("****************************************** ")
 		self.conf["cooldown_hour"]["likes"] = 0;
 		self.conf["cooldown_hour"]["follows"] = 0;

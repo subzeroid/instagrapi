@@ -12,7 +12,8 @@ def getFromHashtag(conf, cursor=None):
 	tags = conf["tags"].split(";");
 	confdir = conf["confdir"]
 	cl = conf["cl"];
-
+	refreshed=False;
+	
 	r1=random.randint(24, 32)
 	r2=random.randint(0, len(tags)-1)
 	# r1=2;
@@ -23,6 +24,7 @@ def getFromHashtag(conf, cursor=None):
 	if cursor is None:
 		medias, cursor = cl.hashtag_medias_v1_chunk(tag, max_amount=r1, tab_key='recent')
 	else:
+		refreshed=True;
 		medias, cursor = cl.hashtag_medias_v1_chunk(tag, max_amount=r1, tab_key='recent', max_id=cursor)
 
 	try:
@@ -54,10 +56,14 @@ def getFromHashtag(conf, cursor=None):
 			r1=random.uniform(0, 15);
 			print("Random: "+str(r1));
 
-			for forced_word in conf["forced_words"].split(";"):
-				if forced_word in x.user.username:
-					print("[getHashtag] User "+x.user.username+" contains forced word: "+forced_word+" so force Random=0.1");
-					r1=0.1;
+			if (len(conf["forced_words"]) > 0):
+				for forced_word in conf["forced_words"].split(";"):
+					if forced_word in x.user.username:
+						print("[getHashtag] User "+x.user.username+" contains forced word: "+forced_word+" so force Random=0.1");
+						r1=0.1;
+						break;
+					else:
+						r1=15;
 
 			if r1<4:
 				downloadMedia(conf, x.pk, x.media_type, x.product_type);
@@ -120,7 +126,10 @@ def getFromHashtag(conf, cursor=None):
 		print("Some error occurred in execution")
 		print(e)
 
-	s=random.randrange(0,9)
-	if (s>6):
+	s=random.randrange(0,10)
+	if (s>5 and refreshed==False):
 		print("[getHashtag] REFREEEEEEEEEEEEEEEEEEEEEESH ")
+		s=random.randrange(5,15)
+		time.sleep(s);
 		getFromHashtag(conf, cursor)
+		
