@@ -271,6 +271,10 @@ class PrivateRequestMixin:
         try:
             if not endpoint.startswith('/'):
                 endpoint = f"/v1/{endpoint}"
+
+            if endpoint == '/challenge/': # wow so hard, is it safe tho?
+                endpoint = '/v1/challenge/'
+
             api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
             if data:  # POST
                 # Client.direct_answer raw dict
