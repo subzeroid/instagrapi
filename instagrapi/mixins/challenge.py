@@ -1,5 +1,6 @@
 import hashlib
 import json
+import random
 import time
 from enum import Enum
 from typing import Dict
@@ -505,6 +506,13 @@ class ChallengeResolveMixin:
             )
             return True
             # return self.bloks_change_password(pwd, self.last_json['challenge_context'])
+        elif step_name == "add_birthday":
+            day = random.randint(1, 27)
+            month = random.randint(1, 12)
+            year = random.randint(1970, 2004)
+            self._send_private_request(challenge_url[1:], {"birthday_day": day, "birthday_month": month, "birthday_year": year})
+            print(f"Set birthday for {self.username}: {day}/{month}/{year}")
+            return True
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
         elif step_name == "delta_acknowledge_approved":
