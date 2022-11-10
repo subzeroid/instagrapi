@@ -15,7 +15,6 @@ from instagrapi.types import Location, Media, Usertag, Track
 from instagrapi.utils import date_time_original
 
 #new import for music discovery and video creation
-from instagrapi.mixins.fbsearch import FbSearchMixin
 from instagrapi.mixins.track import TrackMixin
 
 try:
