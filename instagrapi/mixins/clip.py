@@ -245,7 +245,12 @@ class UploadClipMixin:
         TrackMixin.track_download_by_url(self, uri, "track", "./tmp/")        
 
         # select the first highlight start time 
-        highlight_start_time = music_info['highlight_start_times_in_ms'][0]
+        highlight_start_time = 0
+
+        try:
+            highlight_start_time = music_info['highlight_start_times_in_ms'][0]
+        except:
+            pass        
 
         try:
             import moviepy.editor as mp
@@ -290,7 +295,7 @@ class UploadClipMixin:
         data["music_params"] = {
             "audio_asset_id": music_info["id"],
             "audio_cluster_id": music_info["audio_cluster_id"],
-            "audio_asset_start_time_in_ms": music_info["highlight_start_times_in_ms"][0],
+            "audio_asset_start_time_in_ms": highlight_start_time,
             "derived_content_start_time_in_ms": 0,
             "overlap_duration_in_ms": 15000,        
             "product": "story_camera_clips_v2",
