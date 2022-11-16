@@ -125,7 +125,7 @@ class PrivateRequestMixin:
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
             "X-IG-Mapped-Locale": locale,
-            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-1"),
+            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-3"),
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
             "X-IG-Bandwidth-Speed-KBPS": str(
@@ -134,7 +134,7 @@ class PrivateRequestMixin:
             "X-IG-Bandwidth-TotalBytes-B": str(
                 random.randint(5000000, 90000000)
             ),  # "0"
-            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
+            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(50, 150)),  # "0"
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
             "X-IG-App-Startup-Country": self.country.upper(),
@@ -148,7 +148,7 @@ class PrivateRequestMixin:
             "X-IG-Android-ID": self.android_device_id,
             "X-IG-Timezone-Offset": str(self.timezone_offset),
             "X-IG-Connection-Type": "WIFI",
-            "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
+            "X-IG-Capabilities": "3brTv10=",  # "3brTvwE=" in instabot
             "X-IG-App-ID": self.app_id,
             "Priority": "u=3",
             "User-Agent": self.user_agent,
@@ -163,7 +163,7 @@ class PrivateRequestMixin:
             "X-FB-Client-IP": "True",
             "X-FB-Server-Cluster": "True",
             "IG-INTENDED-USER-ID": str(self.user_id or 0),
-            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
+            "X-IG-Nav-Chain": "9cb:self_profile:4,8jo:bottom_sheet_profile:6,AQ1:settings_category_options:7,A37:add_account_bottom_sheet:8,9vd:login_landing:9",
             "X-IG-SALT-IDS": str(random.randint(1061162222, 1061262222)),
         }
         if self.user_id:
