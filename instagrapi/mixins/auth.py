@@ -289,7 +289,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
-        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
+        self.bloks_versioning_id = "c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3" # fixes x-blok-* when logging in # hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
