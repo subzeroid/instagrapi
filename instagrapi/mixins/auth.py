@@ -320,10 +320,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.settings.get("timezone_offset", self.timezone_offset)
         )
         self.set_device(self.settings.get("device_settings"))
-        # self.bloks_versioning_id = hashlib.sha256(
-        #     json.dumps(self.device_settings).encode()
-        # ).hexdigest()
-        self.bloks_versioning_id = "54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
+        self.bloks_versioning_id = hashlib.sha256(
+            json.dumps(self.device_settings).encode()
+        ).hexdigest()
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
