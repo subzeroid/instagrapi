@@ -105,14 +105,15 @@ def extract_media_gql(data):
         media["media_type"] = 0
     if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
-    if "thumbnail_src" in media:
+    sorted_resources = sorted(
+        # display_resources - user feed, thumbnail_resources - hashtag feed
+        media.get("display_resources", media.get("thumbnail_resources", [])),
+        key=lambda o: o["config_width"] * o["config_height"],
+    )
+    if sorted_resources:
+        media["thumbnail_url"] = sorted_resources[-1]["src"]
+    elif "thumbnail_src" in media:
         media["thumbnail_url"] = media["thumbnail_src"]
-    else:
-        media["thumbnail_url"] = sorted(
-            # display_resources - user feed, thumbnail_resources - hashtag feed
-            media.get("display_resources", media.get("thumbnail_resources")),
-            key=lambda o: o["config_width"] * o["config_height"],
-        )[-1]["src"]
     if media.get("media_type") == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
@@ -205,7 +206,8 @@ def extract_user_v1(data):
     """For Private API"""
     data["external_url"] = data.get("external_url") or None
     pic_hd = data.get("hd_profile_pic_url_info") or data.get("hd_profile_pic_versions")
-    data["profile_pic_url_hd"] = pic_hd.get("url")
+    if pic_hd:
+        data["profile_pic_url_hd"] = pic_hd.get("url")
     return User(**data)
 
 

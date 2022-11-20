@@ -154,7 +154,7 @@ class StoryMixin:
             users.append(user)
         return users
 
-    def user_stories_gql(self, user_id: int, amount: int = None) -> List[UserShort]:
+    def user_stories_gql(self, user_id: int, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Public API)
 
