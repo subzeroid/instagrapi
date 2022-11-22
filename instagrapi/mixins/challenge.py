@@ -1,3 +1,4 @@
+import logging
 import hashlib
 import json
 import random
@@ -240,6 +241,7 @@ class ChallengeResolveMixin:
         raise LegacyForceSetNewPasswordForm(msg)
 
     def challenge_resolve_delta_acknowledge_approved(self):
+        logging.info("BOT {self.username}: challenge_resolve_delta_acknowledge_approved", extra={"last_json": self.last_json})
         challenge_url = self.last_json["challenge"]["api_path"][1:]
         # Take challenge
         self._send_private_request(challenge_url)
