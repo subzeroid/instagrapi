@@ -1,9 +1,10 @@
+import logging
 import hashlib
 import json
+import random
 import time
 from enum import Enum
 from typing import Dict
-
 import requests
 
 from instagrapi.exceptions import (
@@ -11,6 +12,7 @@ from instagrapi.exceptions import (
     ChallengeRedirection,
     ChallengeRequired,
     ChallengeSelfieCaptcha,
+    ChallengeHackedLock,
     ChallengeUnknownStep,
     LegacyForceSetNewPasswordForm,
     RecaptchaChallengeForm,
@@ -238,6 +240,50 @@ class ChallengeResolveMixin:
         ])
         raise LegacyForceSetNewPasswordForm(msg)
 
+    def challenge_resolve_delta_acknowledge_approved(self):
+        logging.info("BOT {self.username}: challenge_resolve_delta_acknowledge_approved", extra={"last_json": self.last_json})
+        challenge_url = self.last_json["challenge"]["api_path"][1:]
+        # Take challenge
+        self._send_private_request(challenge_url)
+        # Confirm your account was temporary blocked (continue)
+        self._send_private_request(challenge_url, {"challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+        # Select email for receiving code
+        self._send_private_request(challenge_url, {"choice": 1, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+
+        wait_seconds = 5
+        for attempt in range(24):
+            code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+            if code:
+                break
+            time.sleep(wait_seconds)
+        print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+
+        # Input code
+        self._send_private_request(challenge_url, {"security_code": code, "challenge_context": self.last_json['challenge_context'], "should_promote_account_status": 0})
+        
+        for attempt in range(24):
+            pwd = self.change_password_handler(self.username)
+            if pwd:
+                break
+            time.sleep(wait_seconds)
+        print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+
+        enc_pwd = self.password_encrypt(pwd)
+        res = self._send_private_request(
+            challenge_url, 
+            {
+                "enc_new_password1": enc_pwd,
+                "enc_new_password2": enc_pwd,
+                "challenge_context": self.last_json['challenge_context'],
+                "should_promote_account_status": 0,
+            },
+        )
+
+        self.authorization_data = {
+            "ds_user_id": res["logged_in_user"]["pk"],
+            "should_use_header_over_cookies": True
+        }
+
     def handle_challenge_result(self, challenge: Dict):
         """
         Handle challenge result
@@ -360,57 +406,77 @@ class ChallengeResolveMixin:
         """
         step_name = self.last_json.get("step_name", "")
         if step_name == "delta_login_review":
-            # New endpoint
-            endpoint = "bloks/apps/com.instagram.challenge.navigation.take_challenge/" 
+            endpoint = "bloks/apps/com.instagram.challenge.navigation.take_challenge/"
+            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
+            accepted = self._send_private_request(endpoint, data=data, with_signature=False)
+            return True if accepted.get("status") == "ok" else False
+        elif step_name in ("verify_email", "select_verify_method"):
+            if step_name == "select_verify_method":
+                """
+                {'step_name': 'select_verify_method',
+                'step_data': {'choice': '0',
+                'fb_access_token': 'None',
+                'big_blue_token': 'None',
+                'google_oauth_token': 'true',
+                'vetted_device': 'None',
+                'phone_number': '+7 *** ***-**-09',
+                'email': 'x****g@y*****.com'},     <------------- choice
+                'nonce_code': 'DrW8V4m5Ec',
+                'user_id': 12060121299,
+                'status': 'ok'}
+                """
+                steps = self.last_json["step_data"].keys()
+                challenge_url = challenge_url[1:]
+                if "email" in steps:
+                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
+                elif "phone_number" in steps:
+                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
+                else:
+                    raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
+            wait_seconds = 5
+            for attempt in range(24):
+                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+                if code:
+                    break
+                time.sleep(wait_seconds)
+            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            try: 
+                self._send_private_request(challenge_url, {"security_code": code})
+            except BaseException as e:
+                self.challenge_resolve_delta_acknowledge_approved()
 
-            # New encoded data
-            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972" 
-            
-            accepted =self._send_private_request(endpoint, data=data,with_signature=False) 
-
-            # ==> Json Response/ Test if it was successful
-            if accepted.get("status")=="ok":
-                print("Accepted delta_login challenge")  
-                return True
+            # assert 'logged_in_user' in client.last_json
+            assert self.last_json.get("action", "") == "close"
+            assert self.last_json.get("status", "") == "ok"
+            return True
+        elif step_name == "select_contact_point_recovery":
+            steps = self.last_json["step_data"].keys()
+            challenge_url = challenge_url[1:]
+            if "email" in steps:
+                self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
             else:
-                print("Failed to accept delta_login challenge")
-                return False
-                
-        # elif step_name in ("verify_email", "select_verify_method"):
-        #     if step_name == "select_verify_method":
-        #         """
-        #         {'step_name': 'select_verify_method',
-        #         'step_data': {'choice': '0',
-        #         'fb_access_token': 'None',
-        #         'big_blue_token': 'None',
-        #         'google_oauth_token': 'true',
-        #         'vetted_device': 'None',
-        #         'phone_number': '+7 *** ***-**-09',
-        #         'email': 'x****g@y*****.com'},     <------------- choice
-        #         'nonce_code': 'DrW8V4m5Ec',
-        #         'user_id': 12060121299,
-        #         'status': 'ok'}
-        #         """
-        #         steps = self.last_json["step_data"].keys()
-        #         challenge_url = challenge_url[1:]
-        #         if "email" in steps:
-        #             self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
-        #         elif "phone_number" in steps:
-        #             self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
-        #         else:
-        #             raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
-        #     wait_seconds = 5
-        #     for attempt in range(24):
-        #         code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
-        #         if code:
-        #             break
-        #         time.sleep(wait_seconds)
-        #     print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-        #     self._send_private_request(challenge_url, {"security_code": code})
-        #     # assert 'logged_in_user' in client.last_json
-        #     assert self.last_json.get("action", "") == "close"
-        #     assert self.last_json.get("status", "") == "ok"
-        #     return True
+                raise ChallengeHackedLock(self.last_json)
+            wait_seconds = 5
+            for attempt in range(24):
+                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+                if code:
+                    break
+                time.sleep(wait_seconds)
+            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            self._send_private_request(challenge_url, {"security_code": code})
+
+            time.sleep(3)
+            self._send_private_request(
+                    challenge_url, 
+                {
+                    "choice": 0,
+                    "challenge_context": self.last_json['challenge_context'],
+                    "should_promote_account_status": 0,
+                    "nest_data_manifest": True,
+                },
+            )
+            print(f'Confirmed profile information.')
+            return True
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
@@ -431,9 +497,32 @@ class ChallengeResolveMixin:
                     break
                 time.sleep(wait_seconds)
             print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-            return self.bloks_change_password(pwd, self.last_json['challenge_context'])
+
+            pwd = self.password_encrypt(pwd)
+            self._send_private_request(
+                challenge_url[1:], 
+                {
+                    "enc_new_password1": pwd,
+                    "enc_new_password2": pwd,
+                },
+            )
+            return True
+            # return self.bloks_change_password(pwd, self.last_json['challenge_context'])
+        elif step_name == "add_birthday":
+            day = random.randint(1, 27)
+            month = random.randint(1, 12)
+            year = random.randint(1970, 2004)
+            self._send_private_request(challenge_url[1:], {"birthday_day": day, "birthday_month": month, "birthday_year": year})
+            print(f"Set birthday for {self.username}: {day}/{month}/{year}")
+            return True
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
+        elif step_name == "delta_acknowledge_approved":
+            self.challenge_resolve_delta_acknowledge_approved()
+
+            assert self.last_json.get("action", "") == "close"
+            assert self.last_json.get("status", "") == "ok"
+            return True
         else:
             raise ChallengeUnknownStep(f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
         return True
