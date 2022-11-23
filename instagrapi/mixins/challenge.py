@@ -517,12 +517,12 @@ class ChallengeResolveMixin:
             return True
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
-        elif step_name == "delta_acknowledge_approved":
-            self.challenge_resolve_delta_acknowledge_approved()
+        # elif step_name == "delta_acknowledge_approved":
+        #     self.challenge_resolve_delta_acknowledge_approved()
 
-            assert self.last_json.get("action", "") == "close"
-            assert self.last_json.get("status", "") == "ok"
-            return True
+        #     assert self.last_json.get("action", "") == "close"
+        #     assert self.last_json.get("status", "") == "ok"
+        #     return True
         else:
             raise ChallengeUnknownStep(f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
         return True
