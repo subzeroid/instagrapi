@@ -286,15 +286,37 @@ class DirectMedia(BaseModel):
     video_url: Optional[HttpUrl]
 
 
+class ReplyMessage(BaseModel):
+    id: str
+    user_id: Optional[int]
+    timestamp: datetime
+    item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
+    is_shh_mode: Optional[bool]
+    text: Optional[str]
+    link: Optional[dict]
+    animated_media: Optional[dict]
+    media: Optional[DirectMedia]
+    visual_media: Optional[dict]
+    media_share: Optional[Media]
+    reel_share: Optional[dict]
+    story_share: Optional[dict]
+    felix_share: Optional[dict]
+    clip: Optional[Media]
+    placeholder: Optional[dict]
+
+
 class DirectMessage(BaseModel):
     id: str  # e.g. 28597946203914980615241927545176064
     user_id: Optional[int]
     thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    reply: Optional[ReplyMessage]
     link: Optional[dict]
     animated_media: Optional[dict]
     media: Optional[DirectMedia]
