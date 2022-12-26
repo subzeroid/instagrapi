@@ -410,45 +410,47 @@ class ChallengeResolveMixin:
             data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
             accepted = self._send_private_request(endpoint, data=data, with_signature=False)
             return True if accepted.get("status") == "ok" else False
-        elif step_name in ("verify_email", "select_verify_method"):
-            if step_name == "select_verify_method":
-                """
-                {'step_name': 'select_verify_method',
-                'step_data': {'choice': '0',
-                'fb_access_token': 'None',
-                'big_blue_token': 'None',
-                'google_oauth_token': 'true',
-                'vetted_device': 'None',
-                'phone_number': '+7 *** ***-**-09',
-                'email': 'x****g@y*****.com'},     <------------- choice
-                'nonce_code': 'DrW8V4m5Ec',
-                'user_id': 12060121299,
-                'status': 'ok'}
-                """
-                steps = self.last_json["step_data"].keys()
-                challenge_url = challenge_url[1:]
-                if "email" in steps:
-                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
-                elif "phone_number" in steps:
-                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
-                else:
-                    raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
-            wait_seconds = 5
-            for attempt in range(24):
-                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
-                if code:
-                    break
-                time.sleep(wait_seconds)
-            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-            try: 
-                self._send_private_request(challenge_url, {"security_code": code})
-            except BaseException as e:
-                self.challenge_resolve_delta_acknowledge_approved()
 
-            # assert 'logged_in_user' in client.last_json
-            assert self.last_json.get("action", "") == "close"
-            assert self.last_json.get("status", "") == "ok"
-            return True
+        # elif step_name in ("verify_email", "select_verify_method"):
+        #     if step_name == "select_verify_method":
+        #         """
+        #         {'step_name': 'select_verify_method',
+        #         'step_data': {'choice': '0',
+        #         'fb_access_token': 'None',
+        #         'big_blue_token': 'None',
+        #         'google_oauth_token': 'true',
+        #         'vetted_device': 'None',
+        #         'phone_number': '+7 *** ***-**-09',
+        #         'email': 'x****g@y*****.com'},     <------------- choice
+        #         'nonce_code': 'DrW8V4m5Ec',
+        #         'user_id': 12060121299,
+        #         'status': 'ok'}
+        #         """
+        #         steps = self.last_json["step_data"].keys()
+        #         challenge_url = challenge_url[1:]
+        #         if "email" in steps:
+        #             self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
+        #         elif "phone_number" in steps:
+        #             self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
+        #         else:
+        #             raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
+        #     wait_seconds = 5
+        #     for attempt in range(24):
+        #         code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
+        #         if code:
+        #             break
+        #         time.sleep(wait_seconds)
+        #     print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+        #     try: 
+        #         self._send_private_request(challenge_url, {"security_code": code})
+        #     except BaseException as e:
+        #         self.challenge_resolve_delta_acknowledge_approved()
+
+        #     # assert 'logged_in_user' in client.last_json
+        #     assert self.last_json.get("action", "") == "close"
+        #     assert self.last_json.get("status", "") == "ok"
+        #     return True
+
         elif step_name == "select_contact_point_recovery":
             steps = self.last_json["step_data"].keys()
             challenge_url = challenge_url[1:]
