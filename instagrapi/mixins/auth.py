@@ -8,6 +8,7 @@ import random
 import re
 import time
 import uuid
+import string
 from pathlib import Path
 from typing import Dict, List
 from uuid import uuid4
@@ -676,7 +677,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         data = dict(self.device_settings, locale=self.locale)
-        self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
+        # self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
+
+        a2 = ''.join(random.choices(string.digits,k=3))
+        self.user_agent = f'Instagram 262.0.0.24.327 Android (28/9; 240dpi; 720x1280; google; G{a2}A; G{a2}A; intel; en_US; 426482113)'
+
         # self.private.headers.update({"User-Agent": self.user_agent})  # changed in base_headers
         self.settings["user_agent"] = self.user_agent
         if reset:
