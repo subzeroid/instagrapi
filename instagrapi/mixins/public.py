@@ -31,7 +31,7 @@ class PublicRequestMixin:
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     last_public_response = None
     last_public_json = {}
-    request_logger = logging.getLogger("public_request")
+    public_request_logger = logging.getLogger("public_request")
     request_timeout = 1
 
     def __init__(self, *args, **kwargs):
@@ -115,11 +115,11 @@ class PublicRequestMixin:
                     response=response,
                 )
 
-            self.request_logger.debug(
+            self.public_request_logger.debug(
                 "public_request %s: %s", response.status_code, response.url
             )
 
-            self.request_logger.info(
+            self.public_request_logger.info(
                 "[%s] [%s] %s %s",
                 self.public.proxies.get("https"),
                 response.status_code,
@@ -137,7 +137,7 @@ class PublicRequestMixin:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
-            self.request_logger.error(
+            self.public_request_logger.error(
                 "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
                 response.status_code,
                 response.url,
