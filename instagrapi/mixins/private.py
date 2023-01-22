@@ -69,7 +69,7 @@ class PrivateRequestMixin:
     handle_exception = None
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
-    request_logger = logging.getLogger("private_request")
+    private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
     last_response = None
     last_json = {}
@@ -395,7 +395,7 @@ class PrivateRequestMixin:
         return last_json
 
     def request_log(self, response):
-        self.request_logger.info(
+        self.private_request_logger.info(
             "%s [%s] %s %s (%s)",
             self.username,
             response.status_code,
