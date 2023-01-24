@@ -496,8 +496,8 @@ class PrivateRequestMixin:
         except Exception as e:
             if self.handle_exception:
                 self.handle_exception(self, e)
-            elif isinstance(e, ChallengeRequired):
-                self.challenge_resolve(self.last_json)
+            # elif isinstance(e, ChallengeRequired):
+                # self.challenge_resolve(self.last_json)
             else:
                 raise e
             if login and self.user_id:
