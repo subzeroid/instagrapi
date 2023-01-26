@@ -188,9 +188,9 @@ def extract_user_gql(data):
 def extract_user_v1(data):
     """For Private API"""
     data["external_url"] = data.get("external_url") or None
-    pic_hd = data.get("hd_profile_pic_url_info") or data.get("hd_profile_pic_versions")
+    pic_hd = data.get("hd_profile_pic_versions") or data.get("hd_profile_pic_url_info")
     if pic_hd:
-        data["profile_pic_url_hd"] = pic_hd.get("url")
+        data["profile_pic_url_hd"] = pic_hd[1].get("url") or pic_hd.get("url") 
     return User(**data)
 
 
