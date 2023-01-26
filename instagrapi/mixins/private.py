@@ -370,7 +370,7 @@ class PrivateRequestMixin:
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
                 self.logger.warning(
-                    "Status 404: Endpoint %s does not exists", endpoint)
+                    "Status 404: Endpoint %s does not exist", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
