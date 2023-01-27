@@ -130,3 +130,10 @@ cl.video_upload_to_story(
 * [Handle Exceptions](https://adw0rd.github.io/instagrapi/usage-guide/handle_exception.html)
 * [Challenge Resolver](https://adw0rd.github.io/instagrapi/usage-guide/challenge_resolver.html)
 * [Exceptions](https://adw0rd.github.io/instagrapi/exceptions.html)
+
+## PyPI
+
+To release, you need to call the following commands:
+
+    python setup.py sdist
+    twine upload dist/*
