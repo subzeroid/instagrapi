@@ -69,7 +69,7 @@ class PrivateRequestMixin:
     handle_exception = None
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
-    request_logger = logging.getLogger("private_request")
+    private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
     last_response = None
     last_json = {}
@@ -370,7 +370,7 @@ class PrivateRequestMixin:
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
                 self.logger.warning(
-                    "Status 404: Endpoint %s does not exists", endpoint)
+                    "Status 404: Endpoint %s does not exist", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
@@ -395,7 +395,7 @@ class PrivateRequestMixin:
         return last_json
 
     def request_log(self, response):
-        self.request_logger.info(
+        self.private_request_logger.info(
             "%s [%s] %s %s (%s)",
             self.username,
             response.status_code,

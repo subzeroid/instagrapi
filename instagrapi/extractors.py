@@ -7,6 +7,7 @@ from .types import (
     Account,
     Collection,
     Comment,
+    ReplyMessage,
     DirectMedia,
     DirectMessage,
     DirectResponse,
@@ -187,9 +188,9 @@ def extract_user_gql(data):
 def extract_user_v1(data):
     """For Private API"""
     data["external_url"] = data.get("external_url") or None
-    pic_hd = data.get("hd_profile_pic_url_info") or data.get("hd_profile_pic_versions")
-    if pic_hd:
-        data["profile_pic_url_hd"] = pic_hd.get("url")
+    versions = data.get("hd_profile_pic_versions")
+    pic_hd = versions[-1] if versions else data.get("hd_profile_pic_url_info", {})
+    data["profile_pic_url_hd"] = pic_hd.get("url")
     return User(**data)
 
 
@@ -267,8 +268,28 @@ def extract_direct_response(data):
     return DirectResponse(**data)
 
 
+def extract_reply_message(data):
+    data["id"] = data.get("item_id")
+    if "media_share" in data:
+        ms = data["media_share"]
+        if not ms.get("code"):
+            ms["code"] = InstagramIdCodec.encode(ms["id"])
+        data["media_share"] = extract_media_v1(ms)
+    if "media" in data:
+        data["media"] = extract_direct_media(data["media"])
+    clip = data.get("clip", {})
+    if clip:
+        if "clip" in clip:
+            # Instagram ¯\_(ツ)_/¯
+            clip = clip.get("clip")
+        data["clip"] = extract_media_v1(clip)
+    return ReplyMessage(**data)
+
+
 def extract_direct_message(data):
     data["id"] = data.get("item_id")
+    if "replied_to_message" in data:
+        data["reply"] = extract_reply_message(data["replied_to_message"])
     if "media_share" in data:
         ms = data["media_share"]
         if not ms.get("code"):
