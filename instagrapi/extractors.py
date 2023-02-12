@@ -27,6 +27,8 @@ from .types import (
     User,
     UserShort,
     Usertag,
+    NoteRequest,
+    NoteResponse,
 )
 from .utils import InstagramIdCodec, json_value
 
@@ -437,3 +439,8 @@ def extract_track(data):
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data['dash_manifest'])
     data['uri'] = html.unescape(items[0]) if items else None
     return Track(**data)
+
+def extract_note(data):
+    data['text'] = data.get('text') or None
+    data['uuid'] = data.get('uuid') or None
+    return NoteRequest(**data)
