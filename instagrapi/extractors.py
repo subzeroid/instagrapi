@@ -68,6 +68,7 @@ def extract_media_v1(data):
     media["sponsor_tags"] = [
         tag["sponsor"] for tag in media.get("sponsor_tags", [])
     ]
+    media["play_count"] = media.get("play_count", 0)
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
