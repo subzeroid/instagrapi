@@ -121,7 +121,7 @@ class Media(BaseModel):
     comment_count: Optional[int] = 0
     comments_disabled: Optional[bool] = False
     like_count: int
-    play_count: int
+    play_count: Optional[int]
     has_liked: Optional[bool]
     caption_text: str
     accessibility_caption: Optional[str]
