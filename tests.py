@@ -29,13 +29,15 @@ from instagrapi.types import (
     StorySticker,
     User,
     UserShort,
+    NoteRequest,
+    NoteResponse,
     Usertag,
 )
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import UTC
 
-ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "instagrapi2")
-ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "yoa5af6deeRujeec")
+ACCOUNT_USERNAME = os.environ.get("IG_USERNAME", "username")
+ACCOUNT_PASSWORD = os.environ.get("IG_PASSWORD", "password*")
 ACCOUNT_SESSIONID = os.environ.get("IG_SESSIONID", "")
 
 REQUIRED_MEDIA_FIELDS = [
@@ -191,14 +193,14 @@ class ClientTestCase(unittest.TestCase):
                 "model": "h1",
                 "device": "RS988",
                 "resolution": "1440x2392",
-                "app_version": "117.0.0.28.123",
+                "app_version": "269.0.0.19.301",
                 "manufacturer": "LGE/lge",
                 "version_code": "168361634",
                 "android_release": "6.0.1",
                 "android_version": 23
             },
             # "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; US; 168361634)"
-            "user_agent": "Instagram 117.1.0.29.119 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)",
+            "user_agent": "Instagram 269.0.0.19.301 Android (27/8.1.0; 480dpi; 1080x1776; motorola; Moto G (5S); montana; qcom; ru_RU; 253447809)",
             "country": "RU",
             "locale": "ru_RU",
             "timezone_offset": 10800,  # Moscow, GMT+3
@@ -226,7 +228,7 @@ class ClientTestCase(unittest.TestCase):
             },
             "mid": "YA1YMAACAAGtxxnZ1p4AYc8ufNMn",
             "device_settings": {
-                "app_version": "194.0.0.36.172",
+                "app_version": "269.0.0.19.301",
                 "android_version": 26,
                 "android_release": "8.0.0",
                 "dpi": "480dpi",
@@ -237,7 +239,7 @@ class ClientTestCase(unittest.TestCase):
                 "cpu": "qcom",
                 "version_code": "301484483"
             },
-            "user_agent": "Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)",
+            "user_agent": "Instagram 269.0.0.19.301 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)",
             "country": "UK",
             "locale": "en_US",
             "timezone_offset": 3600,  # London, GMT+1
@@ -363,8 +365,10 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertEqual(followers[user_id].username, "asphalt_kings_lb")
 
     def test_user_followers_amount(self):
-        user_id = self.cl.user_id_from_username("adw0rd")
+        user_id = self.cl.user_id_from_username("certified.nil")
+        print(user_id)
         followers = self.cl.user_followers(user_id, amount=10)
+        print(followers)
         self.assertTrue(len(followers) == 10)
         self.assertIsInstance(list(followers.values())[0], UserShort)
 
@@ -381,7 +385,7 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertIsInstance(list(following.values())[0], UserShort)
 
     def test_user_follow_unfollow(self):
-        user_id = self.cl.user_id_from_username("bmxtravel")
+        user_id = self.cl.user_id_from_username("certified.nil")
         self.cl.user_follow(user_id)
         following = self.cl.user_following(self.cl.user_id)
         self.assertIn(user_id, following)
@@ -422,6 +426,8 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertEqual(user.full_name, "Philippe Jury")
         self.assertFalse(user.is_private)
 
+    def test_send_new_note(self):
+        self._cl.send_note("Hello from Instagrapi !",0);
 
 class ClientMediaTestCase(ClientPrivateTestCase):
     def test_media_id(self):

@@ -269,3 +269,7 @@ class TwoFactorRequired(PrivateError):
 
 class HighlightNotFound(NotFoundError, PrivateError):
     pass
+
+class NoteNotFound(NotFoundError):
+    reason = "Not found"
+
