@@ -1,11 +1,7 @@
-import uuid
-from instagrapi.extractors import (
-   extract_note,
-)
-from instagrapi.types import (
-    NoteRequest,
-)
-from instagrapi.utils import dumps
+
+from uuid import uuid
+
+from instagrapi.types import NoteRequest
 
 
 class NoteMixin:

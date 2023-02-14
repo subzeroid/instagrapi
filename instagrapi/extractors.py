@@ -7,7 +7,6 @@ from .types import (
     Account,
     Collection,
     Comment,
-    ReplyMessage,
     DirectMedia,
     DirectMessage,
     DirectResponse,
@@ -18,6 +17,8 @@ from .types import (
     Location,
     Media,
     MediaOembed,
+    NoteRequest,
+    ReplyMessage,
     Resource,
     Story,
     StoryLink,
@@ -27,8 +28,6 @@ from .types import (
     User,
     UserShort,
     Usertag,
-    NoteRequest,
-    NoteResponse,
 )
 from .utils import InstagramIdCodec, json_value
 
