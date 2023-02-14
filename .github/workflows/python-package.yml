@@ -9,7 +9,7 @@ on:
   pull_request: {}
 
 env:
-  PYTHON_VERSION: "3.9.1"
+  PYTHON_VERSION: "3.9.14"
 
 jobs:
   bandit:

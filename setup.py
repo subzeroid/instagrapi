@@ -30,7 +30,7 @@ requirements = [
 
 setup(
     name='instagrapi',
-    version='1.16.33',
+    version='1.16.40',
     author='Mikhail Andreev',
     author_email='x11org@gmail.com',
     license='MIT',
@@ -40,7 +40,7 @@ setup(
         'instagram private api', 'instagram-private-api', 'instagram api', 'instagram-api', 'instagram',
         'instagram-scraper', 'instagram-client', 'instagram-stories', 'instagram-feed', 'instagram-reels', 'instagram-insights',
         'downloader', 'uploader', 'videos', 'photos', 'albums', 'igtv', 'reels', 'stories', 'pictures',
-        'instagram-user-photos', 'instagram-photos', 'instagram-metadata', 'instagram-downloader', 'instagram-uploader'
+        'instagram-user-photos', 'instagram-photos', 'instagram-metadata', 'instagram-downloader', 'instagram-uploader', 'instagram-note'
     ],
     description='Fast and effective Instagram Private API wrapper',
     long_description=long_description,
