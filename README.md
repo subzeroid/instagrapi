@@ -131,7 +131,9 @@ cl.video_upload_to_story(
 * [Challenge Resolver](https://adw0rd.github.io/instagrapi/usage-guide/challenge_resolver.html)
 * [Exceptions](https://adw0rd.github.io/instagrapi/exceptions.html)
 
-## PyPI
+## Contributing
+
+[![List of contributors](https://opencollective.com/instagrapi/contributors.svg?width=890&button=0)](https://github.com/adw0rd/instagrapi/graphs/contributors)
 
 To release, you need to call the following commands:
 
