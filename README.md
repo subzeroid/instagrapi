@@ -30,7 +30,7 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **21 December 2022** (last reverse-engineering check)*
+*Instagram API valid for **13 February 2023** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 
@@ -115,6 +115,7 @@ cl.video_upload_to_story(
   * [`Collection`](https://adw0rd.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)
   * [`Comment`](https://adw0rd.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
   * [`Highlight`](https://adw0rd.github.io/instagrapi/usage-guide/highlight.html) - Highlights
+  * [`Notes`](https://adw0rd.github.io/instagrapi/usage-guide/notes.html)
   * [`Story`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Story
   * [`StoryLink`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Link Sticker
   * [`StoryLocation`](https://adw0rd.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
