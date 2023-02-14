@@ -1,5 +1,5 @@
 
-from uuid import uuid
+import uuid
 
 from instagrapi.types import NoteRequest
 
