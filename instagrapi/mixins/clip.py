@@ -1,9 +1,7 @@
 import json
 import random
+import tempfile
 import time
-
-import os
-
 from pathlib import Path
 from typing import Dict, List
 from uuid import uuid4
@@ -14,8 +12,6 @@ from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag, Track
 from instagrapi.utils import date_time_original
 
-#new import for music discovery and video creation
-from instagrapi.mixins.track import TrackMixin
 
 try:
     from PIL import Image
@@ -37,8 +33,9 @@ class DownloadClipMixin:
         media_pk: int
             PK for the album you want to download
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album,
+            default is "" and will download the files to working
+            directory.
 
         Returns
         -------
@@ -57,8 +54,9 @@ class DownloadClipMixin:
         url: str
             URL to download media from
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album,
+            default is "" and will download the files to working
+            directory.
 
         Returns
         -------
@@ -93,7 +91,8 @@ class UploadClipMixin:
         caption: str
             Media caption
         thumbnail: Path, optional
-            Path to thumbnail for CLIP. Default value is None, and it generates a thumbnail
+            Path to thumbnail for CLIP.
+            Default value is None, and it generates a thumbnail
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
@@ -101,7 +100,8 @@ class UploadClipMixin:
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
         extra_data: Dict[str, str], optional
-            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+            Dict of extra data, if you need to add your params,
+            like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -118,10 +118,6 @@ class UploadClipMixin:
         upload_name = "{upload_id}_0_{rand}".format(
             upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
         )
-        # by segments bb2c1d0c127384453a2122e79e4c9a85-0-6498763
-        # upload_name = "{hash}-0-{rand}".format(
-        #     hash="bb2c1d0c127384453a2122e79e4c9a85", rand=random.randint(1111111, 9999999)
-        # )
         rupload_params = {
             "is_clips_video": "1",
             "retry_context": '{"num_reupload":0,"num_step_auto_retry":0,"num_step_manual_retry":0}',
@@ -206,14 +202,17 @@ class UploadClipMixin:
         self,
         path: Path,
         caption: str,
-        music_info: Track,
+        track: Track,
         extra_data: Dict[str, str] = {},
-    ) -> Media:        
+    ) -> Media:
 
         """
-        Upload CLIP to Instagram as reel with music metadata. It also add the music under the video, therefore a mute video is required.
+        Upload CLIP as reel with music metadata.
+        It also add the music under the video, therefore a mute video is required.
 
-        If you just want to add music metadata to your reel, just copy the extra data you find here and add it to the extra_data parameter of the clip_upload function.
+        If you just want to add music metadata to your reel,
+        just copy the extra data you find here and add it
+        to the extra_data parameter of the clip_upload function.
 
         Parameters
         ----------
@@ -221,7 +220,7 @@ class UploadClipMixin:
             Path to CLIP file
         caption: str
             Media caption
-        music_info: Track
+        track: Track
             The music track to be added to the video reel
             use cl.search_music(title)[0].dict()
 
@@ -232,87 +231,62 @@ class UploadClipMixin:
         -------
         Media
             A Media response from the call
-        """         
-        
-        # downlaoad the music
-        uri = music_info["uri"]        
-        
-        # if the folder tmp is not present create it
-        if not os.path.exists("tmp"):
-            os.makedirs("tmp")            
-
-        TrackMixin.track_download_by_url(self, uri, "track", "./tmp/")        
-
-        # select the first highlight start time 
-        highlight_start_time = 0
-
+        """
+        tmpaudio = Path(tempfile.mktemp(".m4a"))
+        tmpaudio = self.track_download_by_url(track.uri, "track", tmpaudio.parent)
         try:
-            highlight_start_time = music_info['highlight_start_times_in_ms'][0]
-        except:
-            pass        
-
+            highlight_start_time = track.highlight_start_times_in_ms[0]
+        except IndexError:
+            highlight_start_time = 0
         try:
             import moviepy.editor as mp
         except ImportError:
             raise Exception("Please install moviepy>=1.0.3 and retry")
-
         # get all media to create the reel
-        video = mp.VideoFileClip(path)
-        audio_clip = mp.AudioFileClip("./tmp/track.m4a")
-
+        video = mp.VideoFileClip(str(path))
+        audio_clip = mp.AudioFileClip(str(tmpaudio))
         # set the start time of the audio and create the actual media
         start = highlight_start_time / 1000
         end = highlight_start_time / 1000 + video.duration
         audio_clip = audio_clip.subclip(start, end)
         video = video.set_audio(audio_clip)
-
         # save the media in tmp folder
-        video.write_videofile("./tmp/reel.mp4")
-
-        #close the media
+        tmpvideo = Path(tempfile.mktemp(".mp4"))
+        video.write_videofile(str(tmpvideo))
+        # close the media
         video.close()
         audio_clip.close()
-
         # create the extra data to upload with it
         data = extra_data or {}
-
-        data["clips_audio_metadata"] = {
-            "original": {
-                "volume_level": 0.0
+        data["clips_audio_metadata"] = (
+            {
+                "original": {"volume_level": 0.0},
+                "song": {
+                    "volume_level": 1.0,
+                    "is_saved": "0",
+                    "artist_name": track.display_artist,
+                    "audio_asset_id": track.id,
+                    "audio_cluster_id": track.audio_cluster_id,
+                    "track_name": track.title,
+                    "is_picked_precapture": "1",
+                },
             },
-            "song": {
-                "volume_level": 1.0,
-                "is_saved": "0",
-                "artist_name": music_info["display_artist"],
-                "audio_asset_id": music_info["id"],
-                "audio_cluster_id": music_info["audio_cluster_id"],
-                "track_name": music_info["title"],
-                "is_picked_precapture": "1"
-            }
-        },
-
+        )
         data["music_params"] = {
-            "audio_asset_id": music_info["id"],
-            "audio_cluster_id": music_info["audio_cluster_id"],
+            "audio_asset_id": track.id,
+            "audio_cluster_id": track.audio_cluster_id,
             "audio_asset_start_time_in_ms": highlight_start_time,
             "derived_content_start_time_in_ms": 0,
-            "overlap_duration_in_ms": 15000,        
+            "overlap_duration_in_ms": 15000,
             "product": "story_camera_clips_v2",
-            "song_name": music_info["title"],
-            "artist_name": music_info["display_artist"],
-            "alacorn_session_id": "null"
+            "song_name": track.title,
+            "artist_name": track.display_artist,
+            "alacorn_session_id": "null",
         }
-
-        clip_upload = self.clip_upload(
-            "./tmp/reel.mp4",
-            caption,
-            extra_data=data
-        )
-
+        clip_upload = self.clip_upload(tmpvideo, caption, extra_data=data)
         # remove the tmp files
-        os.remove("./tmp/reel.mp4")
-        os.remove("./tmp/track.m4a")
-
+        tmpvideo.unlink()
+        tmpaudio.unlink()
         return clip_upload
 
     def clip_configure(

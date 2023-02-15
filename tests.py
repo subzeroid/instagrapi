@@ -996,21 +996,14 @@ class ClienUploadTestCase(ClientPrivateTestCase):
 
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/CEjXskWJ1on/")
         path = self.cl.clip_download(media_pk)
-        self.assertIsInstance(path, Path)        
-        
+        self.assertIsInstance(path, Path)
         try:
-            # location = self.get_location()
             title = "Kill My Vibe (feat. Tom G)"
             caption = "Test caption for reel"
-
-            music_info = self.cl.search_music(title)[0].dict()
-                        
-            #upload reel
-            media = self.cl.clip_upload_as_reel_with_music(path, caption, music_info)
-
+            track = self.cl.search_music(title)[0]
+            media = self.cl.clip_upload_as_reel_with_music(path, caption, track)
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, caption)
-
         finally:
             cleanup(path)
             self.assertTrue(self.cl.media_delete(media.id))
