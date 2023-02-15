@@ -1,7 +1,4 @@
 [flake8]
-max-complexity = 10
-max-line-length = 127
-ignore = W503,E501
-builtins = unicode
-tee = True
-exclude = venv,env,.venv,scratch
+ignore = W503
+max-line-length = 88
+exclude = */tests/*,*test*.py,*/migrations/*
