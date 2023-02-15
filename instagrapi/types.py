@@ -121,6 +121,7 @@ class Media(BaseModel):
     comment_count: Optional[int] = 0
     comments_disabled: Optional[bool] = False
     like_count: int
+    play_count: Optional[int]
     has_liked: Optional[bool]
     caption_text: str
     accessibility_caption: Optional[str]
@@ -446,3 +447,21 @@ class Track(BaseModel):
     dark_message: Optional[str]
     allows_saving: bool
     territory_validity_periods: dict
+
+class NoteResponse(BaseModel):
+    id: str
+    text: str
+    user_id: int
+    user: UserShort
+    audience: int
+    created_at: datetime
+    expires_at: datetime
+    is_emoji_only: bool
+    has_translation: bool
+    note_style: int
+    status: str
+
+class NoteRequest(BaseModel):
+    text: str
+    uuid: str
+

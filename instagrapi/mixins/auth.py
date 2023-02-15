@@ -289,7 +289,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
-        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48" # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
@@ -595,14 +595,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "203.0.0.29.118",
+            "app_version": "269.0.0.18.75",
             "android_version": 26,
             "android_release": "8.0.0",
             "dpi": "480dpi",
             "resolution": "1080x1920",
-            "manufacturer": "Xiaomi",
-            "device": "capricorn",
-            "model": "MI 5s",
+            "manufacturer": "OnePlus",
+            "device": "devitron",
+            "model": "6T Dev",
             "cpu": "qcom",
             "version_code": "314665256",
         }

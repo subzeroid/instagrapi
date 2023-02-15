@@ -7,7 +7,6 @@ from .types import (
     Account,
     Collection,
     Comment,
-    ReplyMessage,
     DirectMedia,
     DirectMessage,
     DirectResponse,
@@ -18,6 +17,8 @@ from .types import (
     Location,
     Media,
     MediaOembed,
+    NoteRequest,
+    ReplyMessage,
     Resource,
     Story,
     StoryLink,
@@ -68,6 +69,7 @@ def extract_media_v1(data):
     media["sponsor_tags"] = [
         tag["sponsor"] for tag in media.get("sponsor_tags", [])
     ]
+    media["play_count"] = media.get("play_count", 0)
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
@@ -437,3 +439,8 @@ def extract_track(data):
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data['dash_manifest'])
     data['uri'] = html.unescape(items[0]) if items else None
     return Track(**data)
+
+def extract_note(data):
+    data['text'] = data.get('text') or None
+    data['uuid'] = data.get('uuid') or None
+    return NoteRequest(**data)
