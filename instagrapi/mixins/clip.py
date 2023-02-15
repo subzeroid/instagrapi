@@ -74,7 +74,7 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
-        feed_show : str  = '1',
+        feed_show: str = "1",
         extra_data: Dict[str, str] = {},
     ) -> Media:
         """
@@ -178,7 +178,7 @@ class UploadClipMixin:
                     usertags,
                     location,
                     feed_show,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -206,7 +206,7 @@ class UploadClipMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        feed_show : str = '1',
+        feed_show: str = "1",
         extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
@@ -262,7 +262,7 @@ class UploadClipMixin:
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 70,
-            **extra_data
+            **extra_data,
         }
         return self.private_request(
             "media/configure_to_clips/?video=1",

@@ -84,23 +84,25 @@ class Client(
     TOTPMixin,
     MultipleAccountsMixin,
     NoteMixin,
-    FundraiserMixin
+    FundraiserMixin,
 ):
     proxy = None
 
-    def __init__(self,
-                 settings: dict = {},
-                 proxy: str = None,
-                 delay_range: list = None,
-                 logger=DEFAULT_LOGGER,
-                 **kwargs):
+    def __init__(
+        self,
+        settings: dict = {},
+        proxy: str = None,
+        delay_range: list = None,
+        logger=DEFAULT_LOGGER,
+        **kwargs,
+    ):
 
         super().__init__(**kwargs)
 
         self.settings = settings
         self.logger = logger
         self.delay_range = delay_range
-        
+
         self.set_proxy(proxy)
 
         self.init()

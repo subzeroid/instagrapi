@@ -146,7 +146,9 @@ class CollectionMixin:
             next_max_id = result.get("next_max_id", "")
         return total_items[:amount] if amount else total_items
 
-    def media_save(self, media_id: str, collection_pk: int = None, revert: bool = False) -> bool:
+    def media_save(
+        self, media_id: str, collection_pk: int = None, revert: bool = False
+    ) -> bool:
         """
         Save a media to collection
 

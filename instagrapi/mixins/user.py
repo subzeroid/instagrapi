@@ -307,11 +307,11 @@ class UserMixin:
         -------
         dict
         """
-        user_ids_str = ','.join(user_ids)
+        user_ids_str = ",".join(user_ids)
         result = self.private_request(
             "friendships/show_many/",
-            data={"user_ids": user_ids_str, '_uuid': self.uuid},
-            with_signature=False
+            data={"user_ids": user_ids_str, "_uuid": self.uuid},
+            with_signature=False,
         )
         return result["friendship_statuses"]
 
@@ -336,7 +336,7 @@ class UserMixin:
         except ClientError as e:
             self.logger.exception(e)
             return None
-             
+
     def search_users_v1(self, query: str, count: int) -> List[UserShort]:
         """
         Search users by a query (Private Mobile API)
@@ -352,15 +352,11 @@ class UserMixin:
             List of users
         """
         results = self.private_request(
-            "users/search/",
-            params={
-                "query": query,
-                "count": count
-            }
+            "users/search/", params={"query": query, "count": count}
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
-    
+
     def search_users(self, query: str, count: int = 50) -> List[UserShort]:
         """
         Search users by a query
@@ -399,8 +395,8 @@ class UserMixin:
             params={
                 "search_surface": "follow_list_page",
                 "query": query,
-                "enable_groups": "true"
-            }
+                "enable_groups": "true",
+            },
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
@@ -445,8 +441,8 @@ class UserMixin:
                 "includes_hashtags": "false",
                 "search_surface": "follow_list_page",
                 "query": query,
-                "enable_groups": "true"
-            }
+                "enable_groups": "true",
+            },
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
@@ -545,11 +541,13 @@ class UserMixin:
                 "includes_hashtags": "true",
                 "enable_groups": "true",
                 "query": "",
-                "count": 10000
+                "count": 10000,
             }
             if max_id:
                 params["max_id"] = max_id
-            result = self.private_request(f"friendships/{user_id}/following/", params=params)
+            result = self.private_request(
+                f"friendships/{user_id}/following/", params=params
+            )
             for user in result["users"]:
                 users.append(extract_user_short(user))
             max_id = result.get("next_max_id")
@@ -560,7 +558,7 @@ class UserMixin:
         return users
 
     def user_following(
-            self, user_id: str, use_cache: bool = True, amount: int = 0
+        self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's followers information
@@ -597,8 +595,9 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
-    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> Tuple[
-        List[UserShort], str]:
+    def user_followers_gql_chunk(
+        self, user_id: str, max_amount: int = 0, end_cursor: str = None
+    ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Public Graphql API and end_cursor
 
@@ -622,7 +621,7 @@ class UserMixin:
             "id": user_id,
             "include_reel": True,
             "fetch_mutual": False,
-            "first": 12
+            "first": 12,
         }
         self.inject_sessionid_to_public()
         while True:
@@ -633,7 +632,9 @@ class UserMixin:
             )
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
-            page_info = json_value(data, "user", "edge_followed_by", "page_info", default={})
+            page_info = json_value(
+                data, "user", "edge_followed_by", "page_info", default={}
+            )
             edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
             for edge in edges:
                 users.append(extract_user_short(edge["node"]))
@@ -665,8 +666,9 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> Tuple[
-        List[UserShort], str]:
+    def user_followers_v1_chunk(
+        self, user_id: str, max_amount: int = 0, max_id: str = ""
+    ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
 
@@ -687,14 +689,17 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
-            result = self.private_request(f"friendships/{user_id}/followers/", params={
-                "max_id": max_id,
-                "count": 10000,
-                "rank_token": self.rank_token,
-                "search_surface": "follow_list_page",
-                "query": "",
-                "enable_groups": "true"
-            })
+            result = self.private_request(
+                f"friendships/{user_id}/followers/",
+                params={
+                    "max_id": max_id,
+                    "count": 10000,
+                    "rank_token": self.rank_token,
+                    "search_surface": "follow_list_page",
+                    "query": "",
+                    "enable_groups": "true",
+                },
+            )
             for user in result["users"]:
                 user = extract_user_short(user)
                 if user.pk in unique_set:
@@ -728,7 +733,7 @@ class UserMixin:
         return users
 
     def user_followers(
-            self, user_id: str, use_cache: bool = True, amount: int = 0
+        self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's followers
@@ -851,8 +856,8 @@ class UserMixin:
             {
                 # "media_id": media_pk,  # when feed_timeline
                 "target_posts_author_id": str(user_id),
-                "container_module": "media_mute_sheet"  # or "feed_timeline"
-            }
+                "container_module": "media_mute_sheet",  # or "feed_timeline"
+            },
         )
         return result["status"] == "ok"
 
@@ -895,8 +900,8 @@ class UserMixin:
             {
                 # "media_id": media_pk,  # when feed_timeline
                 "target_reel_author_id": str(user_id),
-                "container_module": "media_mute_sheet"  # or "feed_timeline"
-            }
+                "container_module": "media_mute_sheet",  # or "feed_timeline"
+            },
         )
         return result["status"] == "ok"
 
@@ -1050,7 +1055,9 @@ class UserMixin:
         user_id = str(user_id)
         data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
         name = "unfavorite" if revert else "favorite"
-        result = self.private_request(f"friendships/{name}_for_stories/{user_id}/", data)
+        result = self.private_request(
+            f"friendships/{name}_for_stories/{user_id}/", data
+        )
         return result["status"] == "ok"
 
     def disable_stories_notifications(self, user_id: str) -> bool:
@@ -1090,7 +1097,7 @@ class UserMixin:
             "_uid": self.user_id,
             "_uuid": self.uuid,
             "remove": [],
-            "add": [user_id]
+            "add": [user_id],
         }
         result = self.private_request("friendships/set_besties/", data)
         return json_value(result, "friendship_statuses", user_id, "is_bestie")
@@ -1117,7 +1124,7 @@ class UserMixin:
             "_uid": self.user_id,
             "_uuid": self.uuid,
             "remove": [user_id],
-            "add": []
+            "add": [],
         }
         result = self.private_request("friendships/set_besties/", data)
         return json_value(result, "friendship_statuses", user_id, "is_bestie") == False

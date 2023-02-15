@@ -65,7 +65,8 @@ class PreLoginFlowMixin:
         """
         data = {
             "android_device_id": self.android_device_id,
-            "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
+            "client_contact_points": '[{"type":"omnistring","value":"%s","source":"last_login_attempt"}]'
+            % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
             "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
@@ -73,7 +74,9 @@ class PreLoginFlowMixin:
         }
         # if login is False:
         data["_csrftoken"] = self.token
-        return self.private_request("accounts/get_prefill_candidates/", data, login=login)
+        return self.private_request(
+            "accounts/get_prefill_candidates/", data, login=login
+        )
 
     def sync_device_features(self, login: bool = False) -> Dict:
         """
@@ -185,7 +188,7 @@ class PostLoginFlowMixin:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
-            "X-CM-Bandwidth-KBPS": '-1.000',  # str(random.randint(2000, 5000)),
+            "X-CM-Bandwidth-KBPS": "-1.000",  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
@@ -285,11 +288,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
-        self.authorization_data = self.settings.get('authorization_data', {})
+        self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
-        self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
+        self.set_timezone_offset(
+            self.settings.get("timezone_offset", self.timezone_offset)
+        )
         self.set_device(self.settings.get("device_settings"))
-        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48" # this param is constant and will change by Instagram app version
+        # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
@@ -300,7 +306,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_ig_www_claim(self.settings.get("ig_www_claim"))
         # init headers
         headers = self.base_headers
-        headers.update({'Authorization': self.authorization})
+        headers.update({"Authorization": self.authorization})
         self.private.headers.update(headers)
         return True
 
@@ -325,7 +331,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.authorization_data = {
             "ds_user_id": user_id,
             "sessionid": sessionid,
-            "should_use_header_over_cookies": True
+            "should_use_header_over_cookies": True,
         }
         try:
             user = self.user_info_v1(int(user_id))
@@ -335,7 +341,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.cookie_dict["ds_user_id"] = user.pk
         return True
 
-    def login(self, username: str, password: str, relogin: bool = False, verification_code: str = '') -> bool:
+    def login(
+        self,
+        username: str,
+        password: str,
+        relogin: bool = False,
+        verification_code: str = "",
+    ) -> bool:
         """
         Login
 
@@ -370,13 +382,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         try:
             self.pre_login_flow()
         except (PleaseWaitFewMinutes, ClientThrottledError):
-            self.logger.warning('Ignore 429: Continue login')
+            self.logger.warning("Ignore 429: Continue login")
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -384,19 +397,21 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "guid": self.uuid,
             "device_id": self.android_device_id,
             "google_tokens": "[]",
-            "login_attempt_count": "0"
+            "login_attempt_count": "0",
         }
         try:
             logged = self.private_request("accounts/login/", data, login=True)
             self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get('ig-set-authorization')
+                self.last_response.headers.get("ig-set-authorization")
             )
         except TwoFactorRequired as e:
             if not verification_code.strip():
-                raise TwoFactorRequired(f'{e} (you did not provide verification_code for login method)')
-            two_factor_identifier = self.last_json.get(
-                'two_factor_info', {}
-            ).get('two_factor_identifier')
+                raise TwoFactorRequired(
+                    f"{e} (you did not provide verification_code for login method)"
+                )
+            two_factor_identifier = self.last_json.get("two_factor_info", {}).get(
+                "two_factor_identifier"
+            )
             data = {
                 "verification_code": verification_code,
                 "phone_id": self.phone_id,
@@ -407,11 +422,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
                 "waterfall_id": str(uuid4()),
-                "verification_method": "3"
+                "verification_method": "3",
             }
-            logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            logged = self.private_request(
+                "accounts/two_factor_login/", data, login=True
+            )
             self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get('ig-set-authorization')
+                self.last_response.headers.get("ig-set-authorization")
             )
         if logged:
             self.login_flow()
@@ -442,7 +459,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "guid": self.uuid,
             "device_id": self.uuid,
             "login_nonce": nonce,
-            "_csrftoken": self.token
+            "_csrftoken": self.token,
         }
         return self.private_request("accounts/one_tap_app_login/", data)
 
@@ -465,7 +482,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     def sessionid(self) -> str:
         sessionid = self.cookie_dict.get("sessionid")
         if not sessionid and self.authorization_data:
-            sessionid = self.authorization_data.get('sessionid')
+            sessionid = self.authorization_data.get("sessionid")
         return sessionid
 
     @property
@@ -473,7 +490,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """CSRF token
         e.g. vUJGjpst6szjI38mZ6Pb1dROsWVerZelGSYGe0W1tuugpSUefVjRLj2Pom2SWNoA
         """
-        if not getattr(self, '_token', None):
+        if not getattr(self, "_token", None):
             self._token = self.cookie_dict.get("csrftoken", gen_token(64))
         return self._token
 
@@ -485,7 +502,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     def user_id(self) -> int:
         user_id = self.cookie_dict.get("ds_user_id")
         if not user_id and self.authorization_data:
-            user_id = self.authorization_data.get('ds_user_id')
+            user_id = self.authorization_data.get("ds_user_id")
         if user_id:
             return int(user_id)
         return None
@@ -558,7 +575,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             Current session settings as a Dict
         """
-        with open(path, 'r') as fp:
+        with open(path, "r") as fp:
             self.set_settings(json.load(fp))
             return self.settings
         return None
@@ -576,7 +593,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         -------
         Bool
         """
-        with open(path, 'w') as fp:
+        with open(path, "w") as fp:
             json.dump(self.get_settings(), fp)
         return True
 
@@ -653,14 +670,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
-        self.android_device_id = uuids.get("android_device_id", self.generate_android_device_id())
+        self.android_device_id = uuids.get(
+            "android_device_id", self.generate_android_device_id()
+        )
         self.request_id = uuids.get("request_id", self.generate_uuid())
         self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
         # self.device_id = uuids.get("device_id", self.generate_uuid())
         self.settings["uuids"] = uuids
         return True
 
-    def generate_uuid(self, prefix: str = '', suffix: str = '') -> str:
+    def generate_uuid(self, prefix: str = "", suffix: str = "") -> str:
         """
         Helper to generate uuids
 
@@ -669,7 +688,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A stringified UUID
         """
-        return f'{prefix}{uuid.uuid4()}{suffix}'
+        return f"{prefix}{uuid.uuid4()}{suffix}"
 
     def generate_mutation_token(self) -> str:
         """
@@ -714,12 +733,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return self.with_default_data({
-            "phone_id": self.phone_id,
-            "_uid": str(self.user_id),
-            "guid": self.uuid,
-            **data
-        })
+        return self.with_default_data(
+            {
+                "phone_id": self.phone_id,
+                "_uid": str(self.user_id),
+                "guid": self.uuid,
+                **data,
+            }
+        )
 
     def with_default_data(self, data: Dict) -> Dict:
         """
@@ -799,17 +820,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return False
 
     def logout(self) -> bool:
-        result = self.private_request(
-            "accounts/logout/",
-            {'one_tap_app_login': True}
-        )
+        result = self.private_request("accounts/logout/", {"one_tap_app_login": True})
         return result["status"] == "ok"
 
     def parse_authorization(self, authorization) -> dict:
-        """Parse authorization header
-        """
+        """Parse authorization header"""
         try:
-            b64part = authorization.rsplit(':', 1)[-1]
+            b64part = authorization.rsplit(":", 1)[-1]
             return json.loads(base64.b64decode(b64part))
         except Exception as e:
             self.logger.exception(e)
@@ -821,8 +838,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
         """
         if self.authorization_data:
-            b64part = base64.b64encode(
-                dumps(self.authorization_data).encode()
-            ).decode()
-            return f'Bearer IGT:2:{b64part}'
-        return ''
+            b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
+            return f"Bearer IGT:2:{b64part}"
+        return ""

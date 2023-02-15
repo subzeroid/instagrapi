@@ -54,14 +54,16 @@ class ChallengeResolveMixin:
         challenge_url = last_json["challenge"]["api_path"]
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
-            challenge_context = last_json.get('challenge', {}).get('challenge_context')
+            challenge_context = last_json.get("challenge", {}).get("challenge_context")
             if not challenge_context:
-                challenge_context = json.dumps({
-                    "step_name": "",
-                    "nonce_code": nonce_code,
-                    "user_id": int(user_id),
-                    "is_stateless": False
-                })
+                challenge_context = json.dumps(
+                    {
+                        "step_name": "",
+                        "nonce_code": nonce_code,
+                        "user_id": int(user_id),
+                        "is_stateless": False,
+                    }
+                )
             params = {
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
@@ -232,10 +234,12 @@ class ChallengeResolveMixin:
         return True
 
     def challenge_resolve_new_password_form(self, result):
-        msg = ' '.join([
-            'Log into your Instagram account from smartphone and change password!',
-            *extract_messages(result)
-        ])
+        msg = " ".join(
+            [
+                "Log into your Instagram account from smartphone and change password!",
+                *extract_messages(result),
+            ]
+        )
         raise LegacyForceSetNewPasswordForm(msg)
 
     def handle_challenge_result(self, challenge: Dict):
@@ -381,18 +385,26 @@ class ChallengeResolveMixin:
                 steps = self.last_json["step_data"].keys()
                 challenge_url = challenge_url[1:]
                 if "email" in steps:
-                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.EMAIL})
+                    self._send_private_request(
+                        challenge_url, {"choice": ChallengeChoice.EMAIL}
+                    )
                 elif "phone_number" in steps:
-                    self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
+                    self._send_private_request(
+                        challenge_url, {"choice": ChallengeChoice.SMS}
+                    )
                 else:
-                    raise ChallengeError(f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
+                    raise ChallengeError(
+                        f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}'
+                    )
             wait_seconds = 5
             for attempt in range(24):
                 code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
                 if code:
                     break
                 time.sleep(wait_seconds)
-            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            print(
+                f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            )
             self._send_private_request(challenge_url, {"security_code": code})
             # assert 'logged_in_user' in client.last_json
             assert self.last_json.get("action", "") == "close"
@@ -417,10 +429,14 @@ class ChallengeResolveMixin:
                 if pwd:
                     break
                 time.sleep(wait_seconds)
-            print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
-            return self.bloks_change_password(pwd, self.last_json['challenge_context'])
+            print(
+                f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            )
+            return self.bloks_change_password(pwd, self.last_json["challenge_context"])
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
         else:
-            raise ChallengeUnknownStep(f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
+            raise ChallengeUnknownStep(
+                f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}'
+            )
         return True
