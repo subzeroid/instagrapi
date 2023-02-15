@@ -65,11 +65,12 @@ class PrivateRequestMixin:
     """
     Helpers for private request
     """
+
     private_requests_count = 0
     handle_exception = None
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
-    request_logger = logging.getLogger("private_request")
+    private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
     last_response = None
     last_json = {}
@@ -79,8 +80,7 @@ class PrivateRequestMixin:
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
-        self.request_timeout = kwargs.pop(
-            "request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -106,7 +106,7 @@ class PrivateRequestMixin:
     @property
     def base_headers(self):
         locale = self.locale.replace("-", "_")
-        accept_language = ['en-US']
+        accept_language = ["en-US"]
         if locale:
             lang = locale.replace("_", "-")
             if lang not in accept_language:
@@ -115,11 +115,15 @@ class PrivateRequestMixin:
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
             "X-IG-Mapped-Locale": locale,
-            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-1'),
+            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-1"),
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
-            "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
-            "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),  # "0"
+            "X-IG-Bandwidth-Speed-KBPS": str(
+                random.randint(2500000, 3000000) / 1000
+            ),  # "-1.000"
+            "X-IG-Bandwidth-TotalBytes-B": str(
+                random.randint(5000000, 90000000)
+            ),  # "0"
             "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
@@ -138,7 +142,7 @@ class PrivateRequestMixin:
             "X-IG-App-ID": self.app_id,
             "Priority": "u=3",
             "User-Agent": self.user_agent,
-            "Accept-Language": ', '.join(accept_language),
+            "Accept-Language": ", ".join(accept_language),
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
             "Host": config.API_DOMAIN,
@@ -154,14 +158,16 @@ class PrivateRequestMixin:
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
-            headers.update({
-                "IG-U-DS-USER-ID": str(self.user_id),
-                # Direct:
-                "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
-                "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
-                "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
-                "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c", 
-            })
+            headers.update(
+                {
+                    "IG-U-DS-USER-ID": str(self.user_id),
+                    # Direct:
+                    "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
+                    "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
+                    "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
+                    "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
+                }
+            )
         if self.ig_u_rur:
             headers.update({"IG-U-RUR": self.ig_u_rur})
         if self.ig_www_claim:
@@ -182,7 +188,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['country'] = self.country = str(country)
+        self.settings["country"] = self.country = str(country)
         return True
 
     def set_country_code(self, country_code: int = 1):
@@ -197,7 +203,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['country_code'] = self.country_code = int(country_code)
+        self.settings["country_code"] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -214,11 +220,13 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
-        self.settings['locale'] = self.locale = str(locale)
+        user_agent = (self.settings.get("user_agent") or "").replace(
+            self.locale, locale
+        )
+        self.settings["locale"] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
-        if '_' in locale:
-            self.set_country(locale.rsplit('_', 1)[1])
+        if "_" in locale:
+            self.set_country(locale.rsplit("_", 1)[1])
         return True
 
     def set_timezone_offset(self, seconds: int = 0):
@@ -234,15 +242,15 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
+        self.settings["timezone_offset"] = self.timezone_offset = int(seconds)
         return True
 
     def set_ig_u_rur(self, value):
-        self.settings['ig_u_rur'] = self.ig_u_rur = value
+        self.settings["ig_u_rur"] = self.ig_u_rur = value
         return True
 
     def set_ig_www_claim(self, value):
-        self.settings['ig_www_claim'] = self.ig_www_claim = value
+        self.settings["ig_www_claim"] = self.ig_www_claim = value
         return True
 
     @staticmethod
@@ -269,30 +277,33 @@ class PrivateRequestMixin:
         # if self.user_id and login:
         #     raise Exception(f"User already logged ({self.user_id})")
         try:
-            if not endpoint.startswith('/'):
+            if not endpoint.startswith("/"):
                 endpoint = f"/v1/{endpoint}"
 
-            if endpoint == '/challenge/': # wow so hard, is it safe tho?
-                endpoint = '/v1/challenge/'
+            if endpoint == "/challenge/":  # wow so hard, is it safe tho?
+                endpoint = "/v1/challenge/"
 
             api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
-                self.private.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+                self.private.headers[
+                    "Content-Type"
+                ] = "application/x-www-form-urlencoded; charset=UTF-8"
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
-                response = self.private.post(
-                    api_url, data=data, params=params
-                )
+                response = self.private.post(api_url, data=data, params=params)
             else:  # GET
-                self.private.headers.pop('Content-Type', None)
+                self.private.headers.pop("Content-Type", None)
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
-                "private_request %s: %s (%s)", response.status_code, response.url, response.text
+                "private_request %s: %s (%s)",
+                response.status_code,
+                response.url,
+                response.text,
             )
             mid = response.headers.get("ig-set-x-mid")
             if mid:
@@ -312,8 +323,7 @@ class PrivateRequestMixin:
                 response.text,
             )
             raise ClientJSONDecodeError(
-                "JSONDecodeError {0!s} while opening {1!s}".format(
-                    e, response.url),
+                "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
                 response=response,
             )
         except requests.HTTPError as e:
@@ -326,7 +336,7 @@ class PrivateRequestMixin:
                 if message == "login_required":
                     raise LoginRequired(response=e.response, **last_json)
                 if len(e.response.text) < 512:
-                    last_json['message'] = e.response.text
+                    last_json["message"] = e.response.text
                 raise ClientForbiddenError(e, response=e.response, **last_json)
             elif e.response.status_code == 400:
                 error_type = last_json.get("error_type")
@@ -347,8 +357,8 @@ class PrivateRequestMixin:
                 elif error_type == "bad_password":
                     raise BadPassword(**last_json)
                 elif error_type == "two_factor_required":
-                    if not last_json['message']:
-                        last_json['message'] = "Two-factor authentication required"
+                    if not last_json["message"]:
+                        last_json["message"] = "Two-factor authentication required"
                     raise TwoFactorRequired(**last_json)
                 elif "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
@@ -359,26 +369,24 @@ class PrivateRequestMixin:
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
                 self.logger.exception(e)
                 self.logger.warning(
-                    "Status 400: %s", message or "Empty response message. Maybe enabled Two-factor auth?"
+                    "Status 400: %s",
+                    message or "Empty response message. Maybe enabled Two-factor auth?",
                 )
-                raise ClientBadRequestError(
-                    e, response=e.response, **last_json)
+                raise ClientBadRequestError(e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
                 if "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
-                self.logger.warning(
-                    "Status 404: Endpoint %s does not exists", endpoint)
+                self.logger.warning("Status 404: Endpoint %s does not exist", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
                 raise ClientRequestTimeout(e, response=e.response, **last_json)
             raise ClientError(e, response=e.response, **last_json)
         except requests.ConnectionError as e:
-            raise ClientConnectionError(
-                "{e.__class__.__name__} {e}".format(e=e))
+            raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
         if last_json.get("status") == "fail":
             raise ClientError(response=response, **last_json)
         elif "error_title" in last_json:
@@ -395,7 +403,7 @@ class PrivateRequestMixin:
         return last_json
 
     def request_log(self, response):
-        self.request_logger.info(
+        self.private_request_logger.info(
             "%s [%s] %s %s (%s)",
             self.username,
             response.status_code,
@@ -421,8 +429,8 @@ class PrivateRequestMixin:
         if self.authorization:
             if not headers:
                 headers = {}
-            if 'authorization' not in headers:
-                headers.update({'Authorization': self.authorization})
+            if "authorization" not in headers:
+                headers.update({"Authorization": self.authorization})
         kwargs = dict(
             data=data,
             params=params,
@@ -437,7 +445,9 @@ class PrivateRequestMixin:
             self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
-            self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
+            self.logger.info(
+                "Wait 60 seconds and try one more time (ClientRequestTimeout)"
+            )
             time.sleep(60)
             return self._send_private_request(endpoint, **kwargs)
         # except BadPassword as e:

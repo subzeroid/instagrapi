@@ -66,7 +66,7 @@ class ReelsMixin:
 
         if collection_pk == "reels":
             private_request_endpoint = "clips/connected/"
-        elif collection_pk == 'explore_reels':
+        elif collection_pk == "explore_reels":
             private_request_endpoint = "clips/discover/"
 
         last_media_pk = last_media_pk and int(last_media_pk)
@@ -78,7 +78,7 @@ class ReelsMixin:
             try:
                 result = self.private_request(
                     private_request_endpoint,
-                    data = ' ',
+                    data=" ",
                     params={"max_id": next_max_id},
                 )
             except Exception as e:
@@ -90,7 +90,7 @@ class ReelsMixin:
                     return total_items
                 total_items.append(extract_media_v1(item.get("media")))
 
-            if not result.get('paging_info',{}).get("more_available"):
+            if not result.get("paging_info", {}).get("more_available"):
                 return total_items
 
-            next_max_id = result.get('paging_info',{}).get("more_available")
+            next_max_id = result.get("paging_info", {}).get("more_available")

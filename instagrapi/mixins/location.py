@@ -6,8 +6,8 @@ from instagrapi.exceptions import ClientNotFoundError, LocationNotFound
 from instagrapi.extractors import extract_location, extract_media_v1
 from instagrapi.types import Location, Media
 
-tab_keys_a1 = ('edge_location_to_top_posts', 'edge_location_to_media')
-tab_keys_v1 = ('ranked', 'recent')
+tab_keys_a1 = ("edge_location_to_top_posts", "edge_location_to_media")
+tab_keys_v1 = ("ranked", "recent")
 
 
 class LocationMixin:
@@ -178,7 +178,12 @@ class LocationMixin:
         return location
 
     def location_medias_a1_chunk(
-        self, location_pk: int, max_amount: int = 24, sleep: float = 0.5, tab_key: str = "", max_id: str = None
+        self,
+        location_pk: int,
+        max_amount: int = 24,
+        sleep: float = 0.5,
+        tab_key: str = "",
+        max_id: str = None,
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias and end_cursor by Public Web API
@@ -201,7 +206,9 @@ class LocationMixin:
         Tuple[List[Media], str]
             List of objects of Media and end_cursor
         """
-        assert tab_key in tab_keys_a1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert (
+            tab_key in tab_keys_a1
+        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         unique_set = set()
         medias = []
         end_cursor = None
@@ -253,14 +260,20 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        assert tab_key in tab_keys_a1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert (
+            tab_key in tab_keys_a1
+        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         medias, _ = self.location_medias_a1_chunk(location_pk, amount, sleep, tab_key)
         if amount:
             medias = medias[:amount]
         return medias
 
     def location_medias_v1_chunk(
-        self, location_pk: int, max_amount: int = 63, tab_key: str = "", max_id: str = None
+        self,
+        location_pk: int,
+        max_amount: int = 63,
+        tab_key: str = "",
+        max_id: str = None,
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a location and max_id (cursor) by Private Mobile API
@@ -281,11 +294,13 @@ class LocationMixin:
         Tuple[List[Media], str]
             List of objects of Media and max_id
         """
-        assert tab_key in tab_keys_v1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert (
+            tab_key in tab_keys_v1
+        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         data = {
             "_uuid": self.uuid,
             "session_id": self.client_session_id,
-            "tab": tab_key
+            "tab": tab_key,
         }
         medias = []
         while True:
@@ -329,7 +344,9 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        assert tab_key in tab_keys_v1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert (
+            tab_key in tab_keys_v1
+        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         medias, _ = self.location_medias_v1_chunk(location_pk, amount, tab_key)
         if amount:
             medias = medias[:amount]
@@ -359,9 +376,7 @@ class LocationMixin:
             location_pk, amount, sleep=sleep, tab_key="edge_location_to_top_posts"
         )
 
-    def location_medias_top_v1(
-        self, location_pk: int, amount: int = 21
-    ) -> List[Media]:
+    def location_medias_top_v1(self, location_pk: int, amount: int = 21) -> List[Media]:
         """
         Get top medias for a location
 

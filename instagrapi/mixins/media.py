@@ -51,7 +51,7 @@ class MediaMixin:
         media_id = str(media_pk)
         if "_" not in media_id:
             assert media_id.isdigit(), (
-                    "media_id must been contain digits, now %s" % media_id
+                "media_id must been contain digits, now %s" % media_id
             )
             user = self.media_user(media_id)
             media_id = "%s_%s" % (media_id, user.pk)
@@ -294,12 +294,12 @@ class MediaMixin:
         return result.get("did_delete")
 
     def media_edit(
-            self,
-            media_id: str,
-            caption: str,
-            title: str = "",
-            usertags: List[Usertag] = [],
-            location: Location = None,
+        self,
+        media_id: str,
+        caption: str,
+        title: str = "",
+        usertags: List[Usertag] = [],
+        location: Location = None,
     ) -> Dict:
         """
         Edit caption for media
@@ -435,8 +435,7 @@ class MediaMixin:
         return self.media_like(media_id, revert=True)
 
     def user_medias_paginated_gql(
-            self, user_id: int, amount: int = 0, sleep: int = 2,
-            end_cursor=None
+        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor=None
     ) -> Tuple[List[Media], str]:
         """
         Get a page of a user's media by Public Graphql API
@@ -478,13 +477,10 @@ class MediaMixin:
         end_cursor = page_info.get("end_cursor")
         if amount:
             medias = medias[:amount]
-        return (
-            [extract_media_gql(media) for media in medias],
-            end_cursor
-        )
+        return ([extract_media_gql(media) for media in medias], end_cursor)
 
     def user_medias_gql(
-            self, user_id: int, amount: int = 0, sleep: int = 0
+        self, user_id: int, amount: int = 0, sleep: int = 0
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -533,7 +529,9 @@ class MediaMixin:
             medias = medias[:amount]
         return medias
 
-    def user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+    def user_medias_paginated_v1(
+        self, user_id: int, amount: int = 0, end_cursor: str = ""
+    ) -> Tuple[List[Media], str]:
         """
         Get a page of user's media by Private Mobile API
 
@@ -573,10 +571,7 @@ class MediaMixin:
         next_max_id = self.last_json.get("next_max_id", "")
         if amount:
             medias = medias[:amount]
-        return (
-            [extract_media_v1(media) for media in medias],
-            next_max_id
-        )
+        return ([extract_media_v1(media) for media in medias], next_max_id)
 
     def user_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
         """
@@ -600,9 +595,7 @@ class MediaMixin:
         while True:
             try:
                 medias_page, next_max_id = self.user_medias_paginated_v1(
-                    user_id,
-                    amount,
-                    end_cursor=next_max_id
+                    user_id, amount, end_cursor=next_max_id
                 )
             except Exception as e:
                 self.logger.exception(e)
@@ -617,7 +610,9 @@ class MediaMixin:
             medias = medias[:amount]
         return medias
 
-    def user_medias_paginated(self, user_id: int, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+    def user_medias_paginated(
+        self, user_id: int, amount: int = 0, end_cursor: str = ""
+    ) -> Tuple[List[Media], str]:
         """
         Get a page of user's media
 
@@ -643,17 +638,23 @@ class MediaMixin:
                 # end_cursor is a v1 next_max_id, so we need to use v1 API
                 raise EndCursorIsV1
             try:
-                medias, end_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+                medias, end_cursor = self.user_medias_paginated_gql(
+                    user_id, amount, end_cursor=end_cursor
+                )
             except ClientLoginRequired as e:
                 if not self.inject_sessionid_to_public():
                     raise e
-                medias, end_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+                medias, end_cursor = self.user_medias_paginated_gql(
+                    user_id, amount, end_cursor=end_cursor
+                )
         except Exception as e:
             if isinstance(e, EndCursorIsV1):
                 pass
             elif not isinstance(e, ClientError):
                 self.logger.exception(e)
-            medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+            medias, end_cursor = self.user_medias_paginated_v1(
+                user_id, amount, end_cursor=end_cursor
+            )
         return medias, end_cursor
 
     def user_medias(self, user_id: int, amount: int = 0, sleep: int = 0) -> List[Media]:
@@ -709,7 +710,7 @@ class MediaMixin:
         def gen(media_ids):
             result = {}
             for media_id in media_ids:
-                media_pk, user_id = self.media_id(media_id).split('_')
+                media_pk, user_id = self.media_id(media_id).split("_")
                 end = int(datetime.now().timestamp())
                 begin = end - random.randint(100, 3000)
                 result[f"{media_pk}_{user_id}_{user_id}"] = [f"{begin}_{end}"]
@@ -722,11 +723,10 @@ class MediaMixin:
             "nuxes": {},
             "reels": gen(media_ids),
             "live_vods": {},
-            "reel_media_skipped": gen(skipped_media_ids)
+            "reel_media_skipped": gen(skipped_media_ids),
         }
         result = self.private_request(
-            "/v2/media/seen/?reel=1&live_vod=0",
-            self.with_default_data(data)
+            "/v2/media/seen/?reel=1&live_vod=0", self.with_default_data(data)
         )
         return result["status"] == "ok"
 
@@ -744,7 +744,7 @@ class MediaMixin:
             List of objects of User type
         """
         result = self.private_request(f"media/{media_pk}/likers/")
-        return [extract_user_short(u) for u in result['users']]
+        return [extract_user_short(u) for u in result["users"]]
 
     def media_archive(self, media_id: str, revert: bool = False) -> bool:
         """
@@ -765,8 +765,7 @@ class MediaMixin:
         media_id = self.media_id(media_id)
         name = "undo_only_me" if revert else "only_me"
         result = self.private_request(
-            f"media/{media_id}/{name}/",
-            self.with_action_data({"media_id": media_id})
+            f"media/{media_id}/{name}/", self.with_action_data({"media_id": media_id})
         )
         return result["status"] == "ok"
 
@@ -787,7 +786,7 @@ class MediaMixin:
         return self.media_archive(media_id, revert=True)
 
     def usertag_medias_gql(
-            self, user_id: int, amount: int = 0, sleep: int = 2
+        self, user_id: int, amount: int = 0, sleep: int = 2
     ) -> List[Media]:
         """
         Get medias where a user is tagged (by Public GraphQL API)
@@ -859,7 +858,9 @@ class MediaMixin:
         next_max_id = ""
         while True:
             try:
-                items = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": next_max_id})["items"]
+                items = self.private_request(
+                    f"usertags/{user_id}/feed/", params={"max_id": next_max_id}
+                )["items"]
             except Exception as e:
                 self.logger.exception(e)
                 break
@@ -911,8 +912,7 @@ class MediaMixin:
         bool
         A boolean value
         """
-        data = self.with_action_data({"post_id": media_pk,
-                                      "_uuid": self.uuid})
+        data = self.with_action_data({"post_id": media_pk, "_uuid": self.uuid})
         name = "unpin" if revert else "pin"
 
         result = self.private_request(f"users/{name}_timeline_media/", data)

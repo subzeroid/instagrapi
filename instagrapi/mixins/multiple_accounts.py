@@ -7,9 +7,7 @@ class MultipleAccountsMixin:
         target_user_id = str(target_user_id)
         return self.private_request(
             "multiple_accounts/get_featured_accounts/",
-            params={
-                "target_user_id": target_user_id
-            }
+            params={"target_user_id": target_user_id},
         )
 
     def get_account_family_v1(self) -> dict:

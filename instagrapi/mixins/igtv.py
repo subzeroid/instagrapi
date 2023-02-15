@@ -180,7 +180,7 @@ class UploadIGTVMixin:
                     caption,
                     usertags,
                     location,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -266,7 +266,7 @@ class UploadIGTVMixin:
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 70,
-            **extra_data
+            **extra_data,
         }
         return self.private_request(
             "media/configure_to_igtv/?video=1",

@@ -10,8 +10,9 @@ from instagrapi.utils import json_value
 
 
 class TrackMixin:
-
-    def track_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
+    def track_download_by_url(
+        self, url: str, filename: str = "", folder: Path = ""
+    ) -> Path:
         """
         Download track by URL
 

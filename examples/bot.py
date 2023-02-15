@@ -5,10 +5,11 @@ from typing import Dict, List
 from instagrapi import Client
 from instagrapi.types import UserShort
 
-IG_USERNAME = ''
-IG_PASSWORD = ''
-IG_CREDENTIAL_PATH = './ig_settings.json'
-SLEEP_TIME = '600' # in seconds
+IG_USERNAME = ""
+IG_PASSWORD = ""
+IG_CREDENTIAL_PATH = "./ig_settings.json"
+SLEEP_TIME = "600"  # in seconds
+
 
 class Bot:
     _cl = None
@@ -21,7 +22,7 @@ class Bot:
         else:
             self._cl.login(IG_USERNAME, IG_PASSWORD)
             self._cl.dump_settings(IG_CREDENTIAL_PATH)
-    
+
     def follow_by_username(self, username) -> bool:
         """
         Follow a user
@@ -55,7 +56,7 @@ class Bot:
         """
         userid = self._cl.user_id_from_username(username)
         return self._cl.user_unfollow(userid)
-    
+
     def get_followers(self, amount: int = 0) -> Dict[int, UserShort]:
         """
         Get bot's followers
@@ -71,7 +72,7 @@ class Bot:
             Dict of user_id and User object
         """
         return self._cl.user_followers(self._cl.user_id, amount=amount)
-    
+
     def get_followers_usernames(self, amount: int = 0) -> List[str]:
         """
         Get bot's followers usernames
@@ -104,7 +105,7 @@ class Bot:
             Dict of user_id and User object
         """
         return self._cl.user_following(self._cl.user_id, amount=amount)
-    
+
     def get_following_usernames(self, amount: int = 0) -> List[str]:
         """
         Get bot's followed usernames
@@ -121,17 +122,18 @@ class Bot:
         """
         following = self._cl.user_following(self._cl.user_id, amount=amount)
         return [user.username for user in following.values()]
-    
+
     def update(self):
         """
         Do something
         """
         pass
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     bot = Bot()
 
-    bot.follow_by_username('futbot__')
+    bot.follow_by_username("futbot__")
 
     while True:
         """

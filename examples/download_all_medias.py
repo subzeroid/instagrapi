@@ -24,13 +24,13 @@ def main(username: str, amount: int = 5) -> dict:
         if m.media_type == 1:
             # Photo
             paths.append(cl.photo_download(m.pk))
-        elif m.media_type == 2 and m.product_type == 'feed':
+        elif m.media_type == 2 and m.product_type == "feed":
             # Video
             paths.append(cl.video_download(m.pk))
-        elif m.media_type == 2 and m.product_type == 'igtv':
+        elif m.media_type == 2 and m.product_type == "igtv":
             # IGTV
             paths.append(cl.video_download(m.pk))
-        elif m.media_type == 2 and m.product_type == 'clips':
+        elif m.media_type == 2 and m.product_type == "clips":
             # Reels
             paths.append(cl.video_download(m.pk))
         elif m.media_type == 8:
@@ -38,17 +38,17 @@ def main(username: str, amount: int = 5) -> dict:
             for path in cl.album_download(m.pk):
                 paths.append(path)
         result[m.pk] = paths
-        print(f'http://instagram.com/p/{m.code}/', paths)
+        print(f"http://instagram.com/p/{m.code}/", paths)
         i += 1
     return result
 
 
-if __name__ == '__main__':
-    username = input('Enter username: ')
+if __name__ == "__main__":
+    username = input("Enter username: ")
     while True:
-        amount = input('How many posts to process (default: 5)? ').strip()
-        if amount == '':
-            amount = '5'
+        amount = input("How many posts to process (default: 5)? ").strip()
+        if amount == "":
+            amount = "5"
         if amount.isdigit():
             break
     main(username, amount)
