@@ -467,7 +467,7 @@ class UserMixin:
 
     def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
-        Get user's following information by Public Graphql API
+        Get user's following users information by Public Graphql API
 
         Parameters
         ----------
@@ -513,46 +513,68 @@ class UserMixin:
             users = users[:amount]
         return users
 
+    def user_following_v1_chunk(
+        self, user_id: str, max_amount: int = 0, max_id: str = ""
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's following users information by Private Mobile API and max_id (cursor)
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        max_id: str, optional
+            Max ID, default value is empty String
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            Tuple of List of users and max_id
+        """
+        unique_set = set()
+        users = []
+        while True:
+            result = self.private_request(
+                f"friendships/{user_id}/following/",
+                params={
+                    "max_id": max_id,
+                    "count": 10000,
+                    "rank_token": self.rank_token,
+                    "search_surface": "follow_list_page",
+                    "query": "",
+                    "enable_groups": "true",
+                },
+            )
+            for user in result["users"]:
+                user = extract_user_short(user)
+                if user.pk in unique_set:
+                    continue
+                unique_set.add(user.pk)
+                users.append(user)
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(users) >= max_amount):
+                break
+        return users, max_id
+
     def user_following_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
-        Get user's following users information by Private Mobile API
+        Get user's following users formation by Private Mobile API
 
         Parameters
         ----------
         user_id: str
             User id of an instagram account
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
         List[UserShort]
             List of objects of User type
         """
-        user_id = str(user_id)
-        max_id = ""
-        users = []
-        while True:
-            if amount and len(users) >= amount:
-                break
-            params = {
-                "rank_token": self.rank_token,
-                "search_surface": "follow_list_page",
-                "includes_hashtags": "true",
-                "enable_groups": "true",
-                "query": "",
-                "count": 10000,
-            }
-            if max_id:
-                params["max_id"] = max_id
-            result = self.private_request(
-                f"friendships/{user_id}/following/", params=params
-            )
-            for user in result["users"]:
-                users.append(extract_user_short(user))
-            max_id = result.get("next_max_id")
-            if not max_id:
-                break
+        users, _ = self.user_following_v1_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
         return users
