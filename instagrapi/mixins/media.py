@@ -30,7 +30,7 @@ class MediaMixin:
 
     _medias_cache = {}  # pk -> object
 
-    def media_id(self, media_pk: int, with_user_pk: bool = True) -> str:
+    def media_id(self, media_pk: int) -> str:
         """
         Get full media id
 
@@ -53,9 +53,8 @@ class MediaMixin:
             assert media_id.isdigit(), (
                 "media_id must been contain digits, now %s" % media_id
             )
-            if with_user_pk:
-                user = self.media_user(media_id)
-                media_id = "%s_%s" % (media_id, user.pk)
+            user = self.media_user(media_id)
+            media_id = "%s_%s" % (media_id, user.pk)
         return media_id
 
     @staticmethod
@@ -404,7 +403,7 @@ class MediaMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        media_id = self.media_id(media_id, with_user_pk=False)
+        media_id = self.media_pk(media_id)
         data = {
             "inventory_source": "media_or_ad",
             "media_id": media_id,
