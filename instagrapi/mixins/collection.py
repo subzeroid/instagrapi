@@ -167,7 +167,7 @@ class CollectionMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
+        media_id = self.media_pk(media_id)
         data = {
             "module_name": "feed_timeline",
             "radio_type": "wifi-none",
