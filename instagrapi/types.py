@@ -285,6 +285,7 @@ class DirectMedia(BaseModel):
     user: Optional[UserShort]
     thumbnail_url: Optional[HttpUrl]
     video_url: Optional[HttpUrl]
+    audio_url: Optional[HttpUrl]
 
 
 class ReplyMessage(BaseModel):
