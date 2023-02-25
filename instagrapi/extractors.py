@@ -295,6 +295,9 @@ def extract_direct_message(data):
         data["media_share"] = extract_media_v1(ms)
     if "media" in data:
         data["media"] = extract_direct_media(data["media"])
+    if "voice_media" in data:
+        if "media" in data["voice_media"]:
+            data["media"] = extract_direct_media(data["voice_media"]["media"])
     clip = data.get("clip", {})
     if clip:
         if "clip" in clip:
@@ -318,6 +321,8 @@ def extract_direct_media(data):
         )[-1]["url"]
     if "user" in media:
         media["user"] = extract_user_short(media.get("user"))
+    if "audio" in media:
+        media["audio_url"] = media["audio"].get("audio_src")
     return DirectMedia(**media)
 
 
