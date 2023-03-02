@@ -403,7 +403,7 @@ class MediaMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
+        media_id = self.media_pk(media_id)
         data = {
             "inventory_source": "media_or_ad",
             "media_id": media_id,
