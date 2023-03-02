@@ -22,7 +22,7 @@ from instagrapi.extractors import (
 )
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
-
+import logging
 
 class MediaMixin:
     """
@@ -207,6 +207,7 @@ class MediaMixin:
             variables, query_hash="477b65a610463740ccdb83135b2014db"
         )
         if not data.get("shortcode_media"):
+            logging.info("SHORT MEDIA EMPTY !")
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"]:
             location = extract_location(data["shortcode_media"]["location"])

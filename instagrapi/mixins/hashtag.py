@@ -248,7 +248,7 @@ class HashtagMixin:
 
 
     def hashtag_medias(
-            self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None, method_api: str= ""
+            self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None, method_api: str= "", first_page=False
     ) -> List[Media]:
         """
         Get medias by Public Web API (A1) or Public Graphql API
@@ -275,6 +275,7 @@ class HashtagMixin:
         assert method_api in ("A1", "GQL", "V1"), \
             'You must specify one of the option for "method_api" ("A1", "GQL", "V1")'
 
+        import logging
         media_ids = set()
         nb_media = 0
         while True:
@@ -293,7 +294,8 @@ class HashtagMixin:
                     nb_media += 1
                 if max_amount and nb_media >= max_amount:
                     break
-            if max_amount and nb_media >= max_amount:
+            if max_amount and nb_media >= max_amount or first_page is True:
+                logging.info(f"END: {max_amount}")
                 break
 
             if method_api == "V1":
@@ -304,8 +306,10 @@ class HashtagMixin:
             else:
                 page_info = self.last_public_json["hashtag"][tab_key]["page_info"]
                 if not page_info.get("has_next_page") or not page_info.get("end_cursor"):
+                    logging.info(f"END2: {page_info.get('has_next_page')}, {page_info.get('end_cursor')}")
                     break
                 end_cursor = page_info["end_cursor"]
+            logging.info(f"{page_info.get('has_next_page')}, {page_info.get('end_cursor')}")
 
     def hashtag_medias_top(self, name: str, amount: int = 9, end_cursor: str = None) -> List[Media]:
         """

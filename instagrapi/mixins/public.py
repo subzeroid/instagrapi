@@ -57,7 +57,7 @@ class PublicRequestMixin:
         params=None,
         headers=None,
         return_json=False,
-        retries_count=3,
+        retries_count=5,
         retries_timeout=2,
     ):
         kwargs = dict(
@@ -72,10 +72,17 @@ class PublicRequestMixin:
             try:
                 return self._send_public_request(url, **kwargs)
             except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
+                if self.handle_exception:
+                    self.handle_exception(self, e)
+                if retries_count > iteration + 1:
+                    time.sleep(retries_timeout)
+                    continue
                 raise e  # Stop retries
             # except JSONDecodeError as e:
             #     raise ClientJSONDecodeError(e, respones=self.last_public_response)
             except ClientError as e:
+                if self.next_proxy:
+                    self.set_proxy(self.next_proxy(self.job_id))
                 msg = str(e)
                 if all((
                     isinstance(e, ClientConnectionError),
@@ -119,7 +126,7 @@ class PublicRequestMixin:
             )
 
             self.request_logger.info(
-                "[%s] [%s] %s %s",
+                "[PUBLIC][%s] [%s] %s %s",
                 self.public.proxies.get("https"),
                 response.status_code,
                 "POST" if data else "GET",
@@ -227,7 +234,7 @@ class PublicRequestMixin:
                     response=body_json,
                 )
 
-            return body_json["data"]
+            return body_json.get("data")
 
         except ClientBadRequestError as e:
             message = None

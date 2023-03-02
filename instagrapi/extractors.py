@@ -30,6 +30,7 @@ from .utils import InstagramIdCodec, json_value
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
 
 
+import logging
 def extract_media_v1(data):
     """Extract media from Private API"""
     media = deepcopy(data)
@@ -62,6 +63,7 @@ def extract_media_v1(data):
     )
     media["like_count"] = media.get("like_count", 0)
     media["has_liked"] = media.get("has_liked", False)
+
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
@@ -179,25 +181,29 @@ def extract_user_v1(data):
     data["external_url"] = data.get("external_url") or None
     return User(**data)
 
-
 def extract_location(data):
     """Extract location info"""
     if not data:
         return None
+    ig_business = data.get("ig_business", {}).get("profile", {}) # DATA NEED LOGGING
     data["pk"] = data.get("id", data.get("pk", data.get("location_id", None)))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(
         "external_id_source", data.get("external_source")
     )
-    data["address"] = data.get("address", data.get("location_address"))
-    data["city"] = data.get("city", data.get("location_city"))
-    data["zip"] = data.get("zip", data.get("location_zip"))
+    data["address"] = data.get("address", data.get("location_address", ig_business.get("address_street")))
+    data["city"] = data.get("city", data.get("location_city", ig_business.get("city_name")))
+    data["zip"] = data.get("zip", data.get("location_zip", ig_business.get("zip")))
     address_json = data.get("address_json")
     if isinstance(address_json, str):
         address = json.loads(address_json)
-        data["address"] = address.get("street_address")
-        data["city"] = address.get("city_name")
-        data["zip"] = address.get("zip_code")
+        if address:
+            data["address"] = address.get("street_address")
+            data["city"] = address.get("city_name")
+            data["zip"] = address.get("zip_code")
+    data["lng"] = data.get("lng", ig_business.get("longitude"))
+    data["lat"] = data.get("lat", ig_business.get("latitude"))
+
     return Location(**data)
 
 

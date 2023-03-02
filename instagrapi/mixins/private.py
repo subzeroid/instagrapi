@@ -4,7 +4,6 @@ import logging
 import random
 import time
 from json.decoder import JSONDecodeError
-from retrying import retry
 
 import requests
 
@@ -118,12 +117,14 @@ class PrivateRequestMixin:
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
             "X-IG-Mapped-Locale": locale,
-            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-1'),
+#            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-1'),
+            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-3'),
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
             "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
             "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),  # "0"
-            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
+#            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
+            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(50, 150)),  # "0"
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
             "X-IG-App-Startup-Country": self.country.upper(),
@@ -137,7 +138,8 @@ class PrivateRequestMixin:
             "X-IG-Android-ID": self.android_device_id,
             "X-IG-Timezone-Offset": str(self.timezone_offset),
             "X-IG-Connection-Type": "WIFI",
-            "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
+#            "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
+            "X-IG-Capabilities": "3brTv10=",  # "3brTvwE=" in instabot
             "X-IG-App-ID": self.app_id,
             "Priority": "u=3",
             "User-Agent": self.user_agent,
@@ -152,7 +154,8 @@ class PrivateRequestMixin:
             "X-FB-Client-IP": "True",
             "X-FB-Server-Cluster": "True",
             "IG-INTENDED-USER-ID": str(self.user_id or 0),
-            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
+#            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
+            "X-IG-Nav-Chain": "9cb:self_profile:4,8jo:bottom_sheet_profile:6,AQ1:settings_category_options:7,A37:add_account_bottom_sheet:8,9vd:login_landing:9",
             "X-IG-SALT-IDS": str(random.randint(1061162222, 1061262222)),
         }
         if self.user_id:
@@ -261,6 +264,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        api_path="api",
     ):
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
@@ -272,9 +276,13 @@ class PrivateRequestMixin:
         # if self.user_id and login:
         #     raise Exception(f"User already logged ({self.user_id})")
         try:
-            if not endpoint.startswith('/'):
-                endpoint = f"/v1/{endpoint}"
-            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
+            if endpoint == "challenge/":
+                api_url = f"https://{config.API_DOMAIN}/{endpoint}"
+            else:
+                if not endpoint.startswith('/'):
+                    endpoint = f"/v1/{endpoint}"
+                api_url = f"https://{config.API_DOMAIN}/{api_path}{endpoint}"
+            logging.debug(f"API_URL: {api_url}")
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -284,11 +292,31 @@ class PrivateRequestMixin:
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
+
+                logging.debug("============= PROXY ========")
+                logging.debug(self.private.proxies)
+                logging.debug("============= PARAMS ========")
+                logging.debug(params)
+                logging.debug("============= DATA ========")
+                logging.debug(data)
+                logging.debug("============= HEADERS ========")
+                logging.debug(self.private.headers)
+                logging.debug("============= URL ========")
+                logging.debug(api_url)
+
                 response = self.private.post(
                     api_url, data=data, params=params
                 )
             else:  # GET
                 self.private.headers.pop('Content-Type', None)
+                logging.debug("============= PROXY ========")
+                logging.debug(self.private.proxies)
+                logging.debug("============= PARAMS ========")
+                logging.debug(params)
+                logging.debug("============= HEADERS ========")
+                logging.debug(self.private.headers)
+                logging.debug("============= URL ========")
+                logging.debug(api_url)
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s", response.status_code, response.url
@@ -301,7 +329,7 @@ class PrivateRequestMixin:
             response.raise_for_status()
             # last_json - for Sentry context in traceback
             self.last_json = last_json = response.json()
-            self.logger.debug("last_json %s", last_json)
+            #self.logger.debug("last_json %s", last_json)
         except (JSONDecodeError, simplejson.errors.JSONDecodeError) as e:
             if 'href="https://www.instagram.com/accounts/login/?next=/api/v1/' in response.text:
                 raise LoginRequired(response=response)
@@ -332,7 +360,9 @@ class PrivateRequestMixin:
                 raise ClientForbiddenError(e, response=e.response, **last_json)
             elif e.response.status_code == 400:
                 error_type = last_json.get("error_type")
-                if message == "challenge_required":
+                logging.info(last_json)
+                if message in ["challenge_required", "checkpoint_challenge_required"]:
+                    logging.info("CHALLENGE")
                     raise ChallengeRequired(**last_json)
                 elif message == "feedback_required":
                     raise FeedbackRequired(
@@ -397,8 +427,9 @@ class PrivateRequestMixin:
         return last_json
 
     def request_log(self, response):
+        self.request_logger.debug(build_curl(response))
         self.request_logger.info(
-            "%s [%s] %s %s (%s)",
+            "[PRIVATE] %s [%s] %s %s (%s)",
             self.username,
             response.status_code,
             response.request.method,
@@ -410,12 +441,6 @@ class PrivateRequestMixin:
             ),
         )
 
-    @retry(
-        retry_on_exception=lambda exc: isinstance(exc, Exception),
-        wait_exponential_multiplier=1000,
-        wait_exponential_max=6000,
-        stop_max_attempt_number=10,
-    )
     def private_request(
         self,
         endpoint,
@@ -425,6 +450,8 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        retries_count=10,
+        retries_timeout=2,
     ):
         if self.authorization:
             if not headers:
@@ -439,24 +466,52 @@ class PrivateRequestMixin:
             headers=headers,
             extra_sig=extra_sig,
         )
-        try:
-            self.private_requests_count += 1
-            self._send_private_request(endpoint, **kwargs)
-        except ClientRequestTimeout:
-            self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
-            time.sleep(60)
-            return self._send_private_request(endpoint, **kwargs)
-        # except BadPassword as e:
-        #     raise e
-        except Exception as e:
-            if self.handle_exception:
-                self.handle_exception(self, e)
-            elif isinstance(e, ChallengeRequired):
-                self.challenge_resolve(self.last_json)
-            else:
-                raise e
-            if login and self.user_id:
-                # After challenge resolve return last_json
-                return self.last_json
-            return self._send_private_request(endpoint, **kwargs)
+        assert retries_count <= 10, "Retries count is too high"
+        assert retries_timeout <= 600, "Retries timeout is too high"
+
+        for iteration in range(retries_count):
+            try:
+                self.private_requests_count += 1
+                return self._send_private_request(endpoint, **kwargs)
+            except ClientRequestTimeout:
+                self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
+                if self.next_proxy:
+                    self.set_proxy(self.next_proxy(self.job_id))
+                time.sleep(60)
+                return self._send_private_request(endpoint, **kwargs)
+            except Exception as e:
+                logging.debug(f"Exception catch: {type(e)}")
+                if self.handle_exception:
+                    self.handle_exception(self, e)
+                else:
+                    if iteration < retries_count:
+                        if self.next_proxy:
+                            self.set_proxy(self.next_proxy(self.job_id))
+                        logging.info(self.last_response)
+                        self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
+                        time.sleep(retries_timeout)
+                        continue
+                    raise e
+
+                if login and self.user_id:
+                    # After challenge resolve return last_json
+                    return self.last_json
+                if iteration < retries_count:
+                    self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
+                    if self.next_proxy:
+                        self.set_proxy(self.next_proxy(self.job_id))
+                    time.sleep(retries_timeout)
+                    continue
+                return self._send_private_request(endpoint, **kwargs)
         return self.last_json
+
+
+def build_curl(response):
+    req = response.request
+    command = "curl -X {method} -H {headers} -d '{data}' '{uri}' --compressed"
+    method = req.method
+    uri = req.url
+    data = req.body
+    headers = ['"{0}: {1}"'.format(k, v) for k, v in req.headers.items()]
+    headers = " -H ".join(headers)
+    return command.format(method=method, headers=headers, data=data, uri=uri)

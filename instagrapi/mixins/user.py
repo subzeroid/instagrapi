@@ -10,6 +10,7 @@ from instagrapi.exceptions import (
     ClientLoginRequired,
     ClientNotFoundError,
     UserNotFound,
+    ClientBadRequestError
 )
 from instagrapi.types import Relationship, User, UserShort, Media
 from instagrapi.utils import json_value
@@ -1002,12 +1003,15 @@ class UserMixin:
                     "rank_token": self.rank_token,
                     "ranked_content": "true",
                 },
-        )["items"]
-        for item in items:
+        )
+        if "items" not in items:
+            logging.warning("Empty response message.")
+            raise ClientBadRequestError(response=self.last_response, **self.last_json)
+        for item in items["items"]:
             yield extract_media_v1(item)
 
     def user_medias(
-        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None, method_api="",
+        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None, method_api="", first_page=False
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -1066,6 +1070,6 @@ class UserMixin:
             else:
                 page_info = self.last_public_json["user"]["edge_owner_to_timeline_media"]["page_info"]
                 end_cursor = page_info.get("end_cursor")
-            if not end_cursor or (amount and nb_media >= amount):
+            if not end_cursor or (amount and nb_media >= amount) or first_page is True:
                 break
             time.sleep(sleep)

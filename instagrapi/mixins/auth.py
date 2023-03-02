@@ -123,7 +123,7 @@ class PreLoginFlowMixin:
             data["_uid"] = self.user_id
             data["_uuid"] = self.uuid
             data["_csrftoken"] = self.token
-        return self.private_request("launcher/sync/", data, login=login)
+        return self.private_request("launcher/sync/", data, login=login, retries_count=1)
 
     def set_contact_point_prefill(self, usage: str = "prefill") -> Dict:
         """
@@ -144,7 +144,7 @@ class PreLoginFlowMixin:
             "usage": usage,
             # "_csrftoken": self.token
         }
-        return self.private_request("accounts/contact_point_prefill/", data, login=True)
+        return self.private_request("accounts/contact_point_prefill/", data, login=True, retries_count=1)
 
 
 class PostLoginFlowMixin:
@@ -289,7 +289,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
-        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
+#        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
         self.set_locale(self.settings.get("locale", self.locale))
@@ -388,7 +389,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "login_attempt_count": "0"
         }
         try:
-            logged = self.private_request("accounts/login/", data, login=True)
+            import logging
+            logged = self.private_request("accounts/login/", data, login=True, retries_count=1)
+            logging.info(f"{self.last_response.status_code}: {self.last_response.content}")
             self.authorization_data = self.parse_authorization(
                 self.last_response.headers.get('ig-set-authorization')
             )
@@ -410,7 +413,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3"
             }
-            logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            logged = self.private_request("accounts/two_factor_login/", data, login=True, retries_count=1)
             self.authorization_data = self.parse_authorization(
                 self.last_response.headers.get('ig-set-authorization')
             )
@@ -630,7 +633,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         data = dict(self.device_settings, locale=self.locale)
         self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
         # self.private.headers.update({"User-Agent": self.user_agent})  # changed in base_headers
-        # self.settings["user_agent"] = self.user_agent
+        self.settings["user_agent"] = self.user_agent
         if reset:
             self.set_uuids({})
             # self.settings = self.get_settings()
