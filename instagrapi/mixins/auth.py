@@ -827,6 +827,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """Parse authorization header"""
         try:
             b64part = authorization.rsplit(":", 1)[-1]
+            if not b64part:
+                return {}
             return json.loads(base64.b64decode(b64part))
         except Exception as e:
             self.logger.exception(e)
