@@ -14,7 +14,7 @@ class ExploreMixin:
 
     def report_explore_media(self, media_pk: int):
         """
-        Report media in explore page
+        Report media in explore page. This is equivalent to the "not interested" button
 
         Parameters
         ----------
