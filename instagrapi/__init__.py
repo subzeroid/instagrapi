@@ -21,6 +21,7 @@ from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.multiple_accounts import MultipleAccountsMixin
 from instagrapi.mixins.note import NoteMixin
 from instagrapi.mixins.notification import NotificationMixin
@@ -80,6 +81,7 @@ class Client(
     DownloadClipMixin,
     UploadClipMixin,
     ReelsMixin,
+    ExploreMixin,
     BloksMixin,
     TOTPMixin,
     MultipleAccountsMixin,
