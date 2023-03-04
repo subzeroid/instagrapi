@@ -120,6 +120,7 @@ class Media(BaseModel):
     user: UserShort
     comment_count: Optional[int] = 0
     comments_disabled: Optional[bool] = False
+    commenting_disabled_for_viewer: Optional[bool] = False
     like_count: int
     play_count: Optional[int]
     has_liked: Optional[bool]
