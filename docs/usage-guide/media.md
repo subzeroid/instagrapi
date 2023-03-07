@@ -29,6 +29,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk_from_url(url: str)                                     | int                | Return media_pk
 | user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
 | user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
+| user_clips(user_id: int, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
 | usertag_medias(user_id: int, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
 | media_info(media_pk: int)                                       | Media              | Return media info
 | media_delete(media_pk: int)                                     | bool               | Delete media
@@ -54,7 +55,11 @@ Low level methods:
 | user_medias_gql(user_id: int, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
 | user_medias_paginated_gql(user_id: int, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
 | user_medias_v1(user_id: int, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
-| user_medias_paginated_v1(self, user_id: int, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
+| user_medias_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
+| user_clips_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
+| user_clips_paginated_v1(user_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
+| user_videos_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
+| user_videos_paginated_v1(ser_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's video by Private Mobile API
 | usertag_medias_gql(user_id: int, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
 | usertag_medias_v1(user_id: int, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
 
@@ -367,4 +372,34 @@ Now let's mention users (Usertag) and location:
  'video_duration': 0.0,
  'title': '',
  'resources': []}
+```
+
+Reels:
+
+```
+>>> clips = cl.user_clips_v1(25025320, amount=2)
+>>> clips[0].dict()
+
+{'pk': '3052048407587698594',
+ 'id': '3052048407587698594_25025320',
+ 'code': 'CpbDdszj7ei',
+ 'taken_at': datetime.datetime(2023, 3, 5, 21, 50, 4, tzinfo=datetime.timezone.utc),
+ 'media_type': 2,
+ 'product_type': 'clips',
+ 'thumbnail_url': HttpUrl('https://scontent-den4-1.cdninstagram.com/v/t51.2885-15/333966975_152901010970043_8971338145148712917_n.jpg?stp=dst-jpg_e15_p150x150&_nc_ht=scontent-den4-1.cdninstagram.com&_nc_cat=1&_nc_ohc=rRuJ7u4YrqEAX-UEMFq&edm=ACHbZRIBAAAA&ccb=7-5&ig_cache_key=MzA1MjA0ODQwNzU4NzY5ODU5NA%3D%3D.2-ccb7-5&oh=00_AfC_tNEWVjJLM5RQYUiQJFHQZSmvnDtAcpzs42DRSYt1pQ&oe=6409C451&_nc_sid=4a9e64', scheme='https', host='scontent-den4-1.cdninstagram.com', tld='com', host_type='domain', port='443', path='/v/t51.2885-15/333966975_152901010970043_8971338145148712917_n.jpg', query='stp=dst-jpg_e15_p150x150&_nc_ht=scontent-den4-1.cdninstagram.com&_nc_cat=1&_nc_ohc=rRuJ7u4YrqEAX-UEMFq&edm=ACHbZRIBAAAA&ccb=7-5&ig_cache_key=MzA1MjA0ODQwNzU4NzY5ODU5NA%3D%3D.2-ccb7-5&oh=00_AfC_tNEWVjJLM5RQYUiQJFHQZSmvnDtAcpzs42DRSYt1pQ&oe=6409C451&_nc_sid=4a9e64'),
+ 'location': {'pk': 213011753,
+  'name': 'Sydney, Australia',
+  'phone': '',
+  'website': '',
+  'category': '',
+  'hours': {},
+  'address': '',
+  'city': '',
+  'zip': None,
+  'lng': 151.20797,
+  'lat': -33.86751,
+  'external_id': 110884905606108,
+  'external_id_source': 'facebook_places'},
+....
+}
 ```
