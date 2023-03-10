@@ -10,7 +10,7 @@ class ExploreMixin:
         -------
         dict
         """
-        return self.private_request("discover/topical_explore")
+        return self.private_request("discover/topical_explore/")
 
     def report_explore_media(self, media_pk: int):
         """
