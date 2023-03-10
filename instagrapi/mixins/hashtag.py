@@ -249,9 +249,10 @@ class HashtagMixin:
         assert tab_key in (
             "top",
             "recent",
+            "clips"
         ), 'You must specify one of the options for "tab_key" ("top" or "recent")'
         data = {
-            "supported_tabs": dumps([tab_key]),
+            "supported_tabs": dumps(["top", "recent", "clips"]),
             # 'lat': 59.8626416,
             # 'lng': 30.5126682,
             "include_persistent": "true",
