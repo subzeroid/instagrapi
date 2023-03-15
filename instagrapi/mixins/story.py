@@ -92,28 +92,7 @@ class StoryMixin:
             story = self.story_info_v1(story_pk)
             self._stories_cache[story_pk] = story
         return deepcopy(self._stories_cache[story_pk])
-    def story_vote(self, story_id: str, poll_id: int):
-        """
-        submit a vote to a poll in story
-        ----------
-        get both of story_id & poll_id from self.user_stories
-        """
 
-        default_nav_chain = self.base_headers['X-IG-Nav-Chain']	
-        vote_nav_chain = 'ExploreFragment:explore_popular:14:main_search::,TopSearchChildFragment:blended_search:15:button::,TopSearchChildFragment:blended_search:16:button::,UserDetailFragment:profile:17:search_result::,ReelViewerFragment:reel_profile:22:button::',
-        self.base_headers['X-IG-Nav-Chain'] = vote_nav_chain
-
-        data = {'signed_body': f'"delivery_class":"organic","tray_session_id":"{self.tray_session_id}","radio_type":"wifi-none","_uid":"{self.user_id}","vote":"1","_uuid":"{self.uuid}","nav_chain":"ExploreFragment:explore_popular:14:main_search::,TopSearchChildFragment:blended_search:15:button::,TopSearchChildFragment:blended_search:16:button::,UserDetailFragment:profile:17:search_result::,ReelViewerFragment:reel_profile:22:button::","container_module":"reel_profile"'}
-
-        data['signed_body'] = 'SIGNATURE.{' + data['signed_body'] + '}'
-        try :
-            response = self.private_request(f'media/{story_id}/{poll_id}/story_poll_vote/', data = data)
-        except Exception as e :
-            response = e
-
-        self.base_headers['X-IG-Nav-Chain'] = default_nav_chain
-
-        return response
     def story_delete(self, story_pk: str) -> bool:
         """
         Delete story
@@ -209,54 +188,21 @@ class StoryMixin:
         List[Story]
             A list of objects of Story
         """
-        user_id = int(user_id)
-        headers = {
-            'Host': 'i.instagram.com',
-            'X-Ig-App-Locale': self.locale,
-            'X-Ig-Device-Locale': self.locale,
-            'X-Ig-Mapped-Locale': self.locale,
-            'X-Pigeon-Session-Id': self.base_headers['X-Pigeon-Session-Id'],
-            'X-Pigeon-Rawclienttime': str(self.base_headers['X-Pigeon-Rawclienttime']),
-            'X-Ig-Bandwidth-Speed-Kbps': str(self.base_headers['X-IG-Bandwidth-Speed-KBPS']),
-            'X-Ig-Bandwidth-Totalbytes-B': str(self.base_headers['X-IG-Bandwidth-TotalBytes-B']),
-            'X-Ig-Bandwidth-Totaltime-Ms': str(self.base_headers['X-IG-Bandwidth-TotalTime-MS']),
-            'X-Ig-App-Startup-Country': self.country,
-            'X-Bloks-Version-Id': self.bloks_versioning_id,
-            'X-Ig-Www-Claim': self.base_headers['X-IG-WWW-Claim'],
-            'X-Bloks-Is-Layout-Rtl': 'false',
-            'X-Ig-Device-Id': self.base_headers['X-IG-Device-ID'],
-            'X-Ig-Family-Device-Id': self.base_headers['X-IG-Family-Device-ID'],
-            'X-Ig-Android-Id': self.base_headers['X-IG-Android-ID'],
-            'X-Ig-Timezone-Offset': str(self.timezone_offset),
-            'X-Ig-Nav-Chain': 'ExploreFragment:explore_popular:14:main_search::,TopSearchChildFragment:blended_search:15:button::,TopSearchChildFragment:blended_search:16:button::,UserDetailFragment:profile:17:search_result::',
-            'X-Fb-Connection-Type': 'WIFI',
-            'X-Ig-Connection-Type': 'WIFI',
-            'X-Ig-Capabilities': '3brTv10=',
-            'X-Ig-App-Id': '567067343352427',
-            'Priority': 'u=3',
-            'User-Agent': self.user_agent,
-            'Accept-Language': 'en-US',
-            'Authorization': self.authorization,
-            'X-Mid': self.mid,
-            'Ig-U-Shbid': self.base_headers['IG-U-SHBID'],
-            'Ig-U-Shbts': self.base_headers['IG-U-SHBTS'],
-            'Ig-U-Ds-User-Id': str(self.base_headers['IG-U-DS-USER-ID']),
-            'Ig-U-Rur': self.base_headers['IG-U-RUR'],
-            'Ig-Intended-User-Id': str(self.base_headers['IG-INTENDED-USER-ID']),
-            # 'Accept-Encoding': 'gzip, deflate',
-            'X-Fb-Http-Engine': 'Liger',
-            'X-Fb-Client-Ip': 'True',
-            'X-Fb-Server-Cluster': 'True',
-        }
-
         params = {
-            'supported_capabilities_new': '[{"name":"SUPPORTED_SDK_VERSIONS","value":"119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0,143.0,144.0,145.0,146.0,147.0,148.0,149.0"},{"name":"FACE_TRACKER_VERSION","value":"14"},{"name":"COMPRESSION","value":"ETC2_COMPRESSION"},{"name":"gyroscope","value":"gyroscope_enabled"}]',
+            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
         }
-
-        response = self.private_request(f'feed/user/{user_id}/story/', params=params, headers=headers)
-        stories = response['reel']['items']
+        user_id = int(user_id)
+        reel = (
+            self.private_request(f"feed/user/{user_id}/story/", params=params).get(
+                "reel"
+            )
+            or {}
+        )
+        stories = []
+        for item in reel.get("items", []):
+            stories.append(extract_story_v1(item))
         if amount:
-            stories = response['reel']['items'][: int(amount)]
+            stories = stories[: int(amount)]
         return stories
 
     def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
