@@ -253,7 +253,7 @@ class StoryMixin:
             'supported_capabilities_new': '[{"name":"SUPPORTED_SDK_VERSIONS","value":"119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0,143.0,144.0,145.0,146.0,147.0,148.0,149.0"},{"name":"FACE_TRACKER_VERSION","value":"14"},{"name":"COMPRESSION","value":"ETC2_COMPRESSION"},{"name":"gyroscope","value":"gyroscope_enabled"}]',
         }
 
-        response = self.private_request(f'https://i.instagram.com/api/v1/feed/user/{user_id}/story/', params=params, headers=headers)
+        response = self.private_request(f'feed/user/{user_id}/story/', params=params, headers=headers)
         stories = response['reel']['items']
         if amount:
             stories = response['reel']['items'][: int(amount)]
