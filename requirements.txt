@@ -1,5 +1,5 @@
 requests==2.28.2
 PySocks==1.7.1
-pydantic==1.10.5
+pydantic==1.10.7
 moviepy==1.0.3
 pycryptodomex==3.17
