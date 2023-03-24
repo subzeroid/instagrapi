@@ -146,7 +146,9 @@ class CollectionMixin:
             next_max_id = result.get("next_max_id", "")
         return total_items[:amount] if amount else total_items
 
-    def media_save(self, media_id: str, collection_pk: int = None, revert: bool = False) -> bool:
+    def media_save(
+        self, media_id: str, collection_pk: int = None, revert: bool = False
+    ) -> bool:
         """
         Save a media to collection
 
@@ -165,7 +167,7 @@ class CollectionMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
+        media_id = self.media_pk(media_id)
         data = {
             "module_name": "feed_timeline",
             "radio_type": "wifi-none",

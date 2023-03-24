@@ -21,7 +21,9 @@ from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.multiple_accounts import MultipleAccountsMixin
+from instagrapi.mixins.note import NoteMixin
 from instagrapi.mixins.notification import NotificationMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
@@ -79,26 +81,30 @@ class Client(
     DownloadClipMixin,
     UploadClipMixin,
     ReelsMixin,
+    ExploreMixin,
     BloksMixin,
     TOTPMixin,
     MultipleAccountsMixin,
-    FundraiserMixin
+    NoteMixin,
+    FundraiserMixin,
 ):
     proxy = None
 
-    def __init__(self,
-                 settings: dict = {},
-                 proxy: str = None,
-                 delay_range: list = None,
-                 logger=DEFAULT_LOGGER,
-                 **kwargs):
+    def __init__(
+        self,
+        settings: dict = {},
+        proxy: str = None,
+        delay_range: list = None,
+        logger=DEFAULT_LOGGER,
+        **kwargs,
+    ):
 
         super().__init__(**kwargs)
 
         self.settings = settings
         self.logger = logger
         self.delay_range = delay_range
-        
+
         self.set_proxy(proxy)
 
         self.init()

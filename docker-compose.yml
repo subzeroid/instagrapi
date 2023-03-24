@@ -21,6 +21,10 @@ services:
     <<: *devbox
     command: "docker/run_tests.sh --format-code"
 
+  tests:
+    <<: *devbox
+    command: "python -m unittest tests"
+
   lock-requirements:
     <<: *devbox
     entrypoint: "/bin/bash"

@@ -34,7 +34,7 @@ class InstagramIdCodec:
         idx = 0
         for char in shortcode:
             power = strlen - (idx + 1)
-            num += alphabet.index(char) * (base ** power)
+            num += alphabet.index(char) * (base**power)
             idx += 1
         return num
 
@@ -60,9 +60,7 @@ def generate_signature(data):
     str
         e.g. "signed_body=SIGNATURE.test"
     """
-    return "signed_body=SIGNATURE.{data}".format(
-        data=urllib.parse.quote_plus(data)
-    )
+    return "signed_body=SIGNATURE.{data}".format(data=urllib.parse.quote_plus(data))
 
 
 def json_value(data, *args, default=None):
@@ -79,8 +77,7 @@ def json_value(data, *args, default=None):
 
 
 def gen_token(size=10, symbols=False):
-    """Gen CSRF or something else token
-    """
+    """Gen CSRF or something else token"""
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += string.punctuation
@@ -88,20 +85,18 @@ def gen_token(size=10, symbols=False):
 
 
 def gen_password(size=10):
-    """Gen password
-    """
+    """Gen password"""
     return gen_token(size)
 
 
 def dumps(data):
-    """Json dumps format as required Instagram
-    """
+    """Json dumps format as required Instagram"""
     return InstagrapiJSONEncoder(separators=(",", ":")).encode(data)
 
 
 def generate_jazoest(symbols: str) -> str:
     amount = sum(ord(s) for s in symbols)
-    return f'2{amount}'
+    return f"2{amount}"
 
 
 def date_time_original(localtime):
@@ -110,6 +105,5 @@ def date_time_original(localtime):
 
 
 def random_delay(delay_range: list):
-    """Trigger sleep of a random floating number in range min_sleep to max_sleep
-    """
+    """Trigger sleep of a random floating number in range min_sleep to max_sleep"""
     return time.sleep(random.uniform(delay_range[0], delay_range[1]))

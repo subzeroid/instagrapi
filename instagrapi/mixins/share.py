@@ -5,7 +5,6 @@ from instagrapi.types import Share
 
 
 class ShareMixin:
-
     def share_info(self, code: str) -> Share:
         """
         Get Share object by code
@@ -23,10 +22,12 @@ class ShareMixin:
         if isinstance(code, str):
             code = code.encode()
         # ignore example from instagram: b'highli\xb1\xdb\x1dght:17988089629383770'
-        data = base64.b64decode(code)\
-            .decode(errors="ignore")\
-            .replace("\x1d", "")\
+        data = (
+            base64.b64decode(code)
+            .decode(errors="ignore")
+            .replace("\x1d", "")
             .split(":")
+        )
         return Share(type=data[0], pk=data[1])
 
     def share_info_by_url(self, url: str) -> Share:
@@ -62,4 +63,3 @@ class ShareMixin:
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p]
         return parts.pop()
-

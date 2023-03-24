@@ -88,10 +88,16 @@ class DownloadVideoMixin:
         try:
             content_length = int(response.headers.get("Content-Length"))
         except TypeError:
-            print("The program detected an mis-formatted link, and hence can't download it.")
-            print("The problem is located wherever the url is passed into the 'video_download_by_url()' or the 'clip_download_by_url()' function.")
+            print(
+                "The program detected an mis-formatted link, and hence can't download it."
+            )
+            print(
+                "The problem is located wherever the url is passed into the 'video_download_by_url()' or the 'clip_download_by_url()' function."
+            )
             print("Convert the url input into a formattable link.")
-            print("Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here').video_url)")
+            print(
+                "Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here').video_url)"
+            )
             print("You can remove the 'self' from the code above if needed.")
             raise Exception("The program detected an mis-formatted link.")
         file_length = len(response.content)
@@ -103,10 +109,8 @@ class DownloadVideoMixin:
             f.write(response.content)
             f.close()
         return path.resolve()
-    
-    def video_download_by_url_origin(
-        self, url: str
-    ) -> bytes:
+
+    def video_download_by_url_origin(self, url: str) -> bytes:
         """
         Download video using URL
 
@@ -285,7 +289,7 @@ class UploadVideoMixin:
                     caption,
                     usertags,
                     location,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -301,10 +305,7 @@ class UploadVideoMixin:
                     media = configured.get("media")
                     self.expose()
                     return extract_media_v1(media)
-        raise VideoConfigureError(
-            response=self.last_response,
-            **self.last_json
-        )
+        raise VideoConfigureError(response=self.last_response, **self.last_json)
 
     def video_configure(
         self,
@@ -368,7 +369,7 @@ class UploadVideoMixin:
             "extra": {"source_width": width, "source_height": height},
             "device": self.device,
             "caption": caption,
-            **extra_data
+            **extra_data,
         }
         return self.private_request(
             "media/configure/?video=1", self.with_default_data(data)
@@ -441,7 +442,7 @@ class UploadVideoMixin:
                     hashtags,
                     stickers,
                     medias,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -462,11 +463,9 @@ class UploadVideoMixin:
                     locations=locations,
                     stickers=stickers,
                     medias=medias,
-                    **extract_media_v1(media).dict()
+                    **extract_media_v1(media).dict(),
                 )
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
     def video_configure_to_story(
         self,
@@ -600,7 +599,9 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "clips": [{"length": duration, "source_type": "3", "camera_position": "back"}],
+            "clips": [
+                {"length": duration, "source_type": "3", "camera_position": "back"}
+            ],
             # "edits": {
             #     "filter_type": 0,
             #     "filter_strength": 1.0,
@@ -608,15 +609,17 @@ class UploadVideoMixin:
             #     # "crop_center": [0, 0],
             #     # "crop_zoom": 1
             # },
-            "media_transformation_info": dumps({
-                "width": str(width),
-                "height": str(height),
-                "x_transform": "0",
-                "y_transform": "0",
-                "zoom": "1.0",
-                "rotation": "0.0",
-                "background_coverage": "0.0"
-            }),
+            "media_transformation_info": dumps(
+                {
+                    "width": str(width),
+                    "height": str(height),
+                    "x_transform": "0",
+                    "y_transform": "0",
+                    "zoom": "1.0",
+                    "rotation": "0.0",
+                    "background_coverage": "0.0",
+                }
+            ),
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 0,
@@ -673,7 +676,7 @@ class UploadVideoMixin:
                     "tag_name": mention.hashtag.name,
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "hashtag_sticker_gradient"
+                    "tap_state_str_id": "hashtag_sticker_gradient",
                 }
                 tap_models.append(item)
         if locations:
@@ -691,17 +694,20 @@ class UploadVideoMixin:
                     "location_id": str(mention.location.pk),
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "location_sticker_vibrant"
+                    "tap_state_str_id": "location_sticker_vibrant",
                 }
                 tap_models.append(item)
         if links:
             # instagram allow one link now
             link = links[0]
-            self.private_request("media/validate_reel_url/", {
-                "url": str(link.webUri),
-                "_uid": str(self.user_id),
-                "_uuid": str(self.uuid),
-            })
+            self.private_request(
+                "media/validate_reel_url/",
+                {
+                    "url": str(link.webUri),
+                    "_uid": str(self.user_id),
+                    "_uuid": str(self.uuid),
+                },
+            )
             stickers.append(
                 StorySticker(
                     type="story_link",
@@ -714,8 +720,8 @@ class UploadVideoMixin:
                     extra=dict(
                         link_type="web",
                         url=str(link.webUri),
-                        tap_state_str_id="link_sticker_default"
-                    )
+                        tap_state_str_id="link_sticker_default",
+                    ),
                 )
             )
             story_sticker_ids.append("link_sticker_default")
@@ -725,19 +731,21 @@ class UploadVideoMixin:
                 if sticker.id:
                     sticker_extra["str_id"] = sticker.id
                     story_sticker_ids.append(sticker.id)
-                tap_models.append({
-                    "x": round(sticker.x, 7),
-                    "y": round(sticker.y, 7),
-                    "z": sticker.z,
-                    "width": round(sticker.width, 7),
-                    "height": round(sticker.height, 7),
-                    "rotation": sticker.rotation,
-                    "type": sticker.type,
-                    "is_sticker": True,
-                    "selected_index": 0,
-                    "tap_state": 0,
-                    **sticker_extra
-                })
+                tap_models.append(
+                    {
+                        "x": round(sticker.x, 7),
+                        "y": round(sticker.y, 7),
+                        "z": sticker.z,
+                        "width": round(sticker.width, 7),
+                        "height": round(sticker.height, 7),
+                        "rotation": sticker.rotation,
+                        "type": sticker.type,
+                        "is_sticker": True,
+                        "selected_index": 0,
+                        "tap_state": 0,
+                        **sticker_extra,
+                    }
+                )
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
         if medias:
@@ -759,32 +767,36 @@ class UploadVideoMixin:
                     "product_type": "feed",
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "feed_post_sticker_square"
+                    "tap_state_str_id": "feed_post_sticker_square",
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
         if thread_ids:
             # Send to direct thread
             token = self.generate_mutation_token()
-            data.update({
-                "configure_mode": "2",
-                "allow_multi_configures": "1",
-                "client_context": token,
-                "is_shh_mode": "0",
-                "mutation_token": token,
-                "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
-                "recipient_users": "[]",
-                "send_attribution": "direct_story_audience_picker",
-                "thread_ids": dumps([str(tid) for tid in thread_ids]),
-                "view_mode": "replayable"
-            })
+            data.update(
+                {
+                    "configure_mode": "2",
+                    "allow_multi_configures": "1",
+                    "client_context": token,
+                    "is_shh_mode": "0",
+                    "mutation_token": token,
+                    "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
+                    "recipient_users": "[]",
+                    "send_attribution": "direct_story_audience_picker",
+                    "thread_ids": dumps([str(tid) for tid in thread_ids]),
+                    "view_mode": "replayable",
+                }
+            )
         if tap_models:
             data["tap_models"] = dumps(tap_models)
         if static_models:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = story_sticker_ids[0]
-        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/?video=1", self.with_default_data(data)
+        )
 
     def video_upload_to_direct(
         self,
@@ -839,7 +851,7 @@ class UploadVideoMixin:
                     mentions=mentions,
                     medias=medias,
                     thread_ids=thread_ids,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -852,9 +864,7 @@ class UploadVideoMixin:
                 raise e
             if configured and thread_ids:
                 return extract_direct_message(configured.get("message_metadata", [])[0])
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:

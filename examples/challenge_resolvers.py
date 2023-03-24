@@ -9,11 +9,11 @@ import random
 from instagrapi import Client
 from instagrapi.mixins.challenge import ChallengeChoice
 
-CHALLENGE_EMAIL = ''
-CHALLENGE_PASSWORD = ''
+CHALLENGE_EMAIL = ""
+CHALLENGE_PASSWORD = ""
 
-IG_USERNAME = ''
-IG_PASSWORD = ''
+IG_USERNAME = ""
+IG_PASSWORD = ""
 
 
 def get_code_from_email(username):
@@ -73,7 +73,7 @@ def change_password_handler(username):
     return password
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cl = Client()
     cl.challenge_code_handler = challenge_code_handler
     cl.change_password_handler = change_password_handler

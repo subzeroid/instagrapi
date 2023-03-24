@@ -68,10 +68,7 @@ class AccountMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(self.user_id)
-        data = self.with_action_data({
-            "_uid": user_id,
-            "_uuid": self.uuid
-        })
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
         result = self.private_request("accounts/set_private/", data)
         return result["status"] == "ok"
 
@@ -86,10 +83,7 @@ class AccountMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(self.user_id)
-        data = self.with_action_data({
-            "_uid": user_id,
-            "_uuid": self.uuid
-        })
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
         result = self.private_request("accounts/set_public/", data)
         return result["status"] == "ok"
 

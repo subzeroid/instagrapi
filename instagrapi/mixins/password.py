@@ -7,7 +7,6 @@ from Cryptodome.Random import get_random_bytes
 
 
 class PasswordMixin:
-
     def password_encrypt(self, password):
         publickeyid, publickey = self.password_publickeys()
         session_key = get_random_bytes(32)
@@ -20,20 +19,24 @@ class PasswordMixin:
         cipher_aes = AES.new(session_key, AES.MODE_GCM, iv)
         cipher_aes.update(timestamp.encode())
         aes_encrypted, tag = cipher_aes.encrypt_and_digest(password.encode("utf8"))
-        size_buffer = len(rsa_encrypted).to_bytes(2, byteorder='little')
-        payload = base64.b64encode(b''.join([
-            b"\x01",
-            publickeyid.to_bytes(1, byteorder='big'),
-            iv,
-            size_buffer,
-            rsa_encrypted,
-            tag,
-            aes_encrypted
-        ]))
+        size_buffer = len(rsa_encrypted).to_bytes(2, byteorder="little")
+        payload = base64.b64encode(
+            b"".join(
+                [
+                    b"\x01",
+                    publickeyid.to_bytes(1, byteorder="big"),
+                    iv,
+                    size_buffer,
+                    rsa_encrypted,
+                    tag,
+                    aes_encrypted,
+                ]
+            )
+        )
         return f"#PWD_INSTAGRAM:4:{timestamp}:{payload.decode()}"
 
     def password_publickeys(self):
-        resp = self.public.get('https://i.instagram.com/api/v1/qe/sync/')
-        publickeyid = int(resp.headers.get('ig-set-password-encryption-key-id'))
-        publickey = resp.headers.get('ig-set-password-encryption-pub-key')
+        resp = self.public.get("https://i.instagram.com/api/v1/qe/sync/")
+        publickeyid = int(resp.headers.get("ig-set-password-encryption-key-id"))
+        publickey = resp.headers.get("ig-set-password-encryption-pub-key")
         return publickeyid, publickey

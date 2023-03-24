@@ -42,9 +42,13 @@ class Account:
                     try:
                         client.challenge_resolve(client.last_json)
                     except ChallengeRequired as e:
-                        self.freeze('Manual Challenge Required', days=2)
+                        self.freeze("Manual Challenge Required", days=2)
                         raise e
-                    except (ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm) as e:
+                    except (
+                        ChallengeRequired,
+                        SelectContactPointRecoveryForm,
+                        RecaptchaChallengeForm,
+                    ) as e:
                         self.freeze(str(e), days=4)
                         raise e
                     self.update_client_settings(client.get_settings())

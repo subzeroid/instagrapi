@@ -156,8 +156,10 @@ class HashtagMixin:
         Tuple[List[Media], str]
             List of objects of Media and end_cursor
         """
-        assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
-            'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
+        assert tab_key in (
+            "edge_hashtag_to_top_posts",
+            "edge_hashtag_to_media",
+        ), 'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
         unique_set = set()
         medias = []
         while True:
@@ -244,10 +246,13 @@ class HashtagMixin:
         Tuple[List[Media], str]
             List of objects of Media and max_id
         """
-        assert tab_key in ("top", "recent"), \
-            'You must specify one of the options for "tab_key" ("top" or "recent")'
+        assert tab_key in (
+            "top",
+            "recent",
+            "clips"
+        ), 'You must specify one of the options for "tab_key" ("top" or "recent")'
         data = {
-            "supported_tabs": dumps([tab_key]),
+            "supported_tabs": dumps(["top", "recent", "clips"]),
             # 'lat': 59.8626416,
             # 'lng': 30.5126682,
             "include_persistent": "true",
