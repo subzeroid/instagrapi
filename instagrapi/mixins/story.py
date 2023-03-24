@@ -180,11 +180,13 @@ class StoryMixin:
     def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
+
         Parameters
         ----------
         user_id: int
         amount: int, optional
             Maximum number of story to return, default is all
+
         Returns
         -------
         List[Story]
