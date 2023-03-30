@@ -2,6 +2,7 @@ class ExploreMixin:
     """
     Helpers for the explore page
     """
+
     def explore_page(self):
         """
         Get explore page
@@ -26,10 +27,10 @@ class ExploreMixin:
             True if success
         """
         params = {
-            'm_pk': media_pk,
+            "m_pk": media_pk,
         }
         result = self.private_request("discover/explore_report/", params=params)
-        return result['explore_report_status'] == "OK"
+        return result["explore_report_status"] == "OK"
 
     def explore_page_media_info(self, media_pk: int):
         """
@@ -40,5 +41,5 @@ class ExploreMixin:
         like comments, likes, etc.
         """
         return self.private_request(
-            f"/v1/discover/media_metadata/" f"?media_id={media_pk}",
+            "/v1/discover/media_metadata/", params={"media_id": media_pk}
         )["media_or_ad"]
