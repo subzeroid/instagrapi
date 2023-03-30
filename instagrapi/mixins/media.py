@@ -809,6 +809,7 @@ class MediaMixin:
                 "clips/user/",
                 data={
                     "target_user_id": user_id,
+                    "max_id": next_max_id,
                     "page_size": amount,  # default from app: 12
                     "include_feed_video": "true",
                 },
