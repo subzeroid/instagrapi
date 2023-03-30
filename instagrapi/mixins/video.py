@@ -83,7 +83,7 @@ class DownloadVideoMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         try:
             content_length = int(response.headers.get("Content-Length"))
@@ -124,7 +124,7 @@ class DownloadVideoMixin:
         bytes
             Bytes for the file downloaded
         """
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         content_length = int(response.headers.get("Content-Length"))
         file_length = len(response.content)
