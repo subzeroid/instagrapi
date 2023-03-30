@@ -31,3 +31,14 @@ class ExploreMixin:
         result = self.private_request("discover/explore_report/", params=params)
         return result['explore_report_status'] == "OK"
 
+    def explore_page_media_info(self, media_pk: int):
+        """
+        Returns media information for a media item on the explore page
+
+        This is the API call that happens when you're on the explore page
+        and you click into a media item. It returns information about that media item
+        like comments, likes, etc.
+        """
+        return self.private_request(
+            f"/v1/discover/media_metadata/" f"?media_id={media_pk}",
+        )["media_or_ad"]
