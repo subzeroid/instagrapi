@@ -108,7 +108,7 @@ class FakeClientTestCase(BaseClientMixin, unittest.TestCase):
             self.cl.login(ACCOUNT_USERNAME, "fakepassword")
         except Exception as e:
             self.assertEqual(
-                str(e), "The password you entered is incorrect. Please try again."
+                str(e), "The username you entered doesn't appear to belong to an account. Please check your username and try again."
             )
 
 
