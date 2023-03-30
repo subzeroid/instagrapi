@@ -13,6 +13,7 @@ from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.fbsearch import FbSearchMixin
 from instagrapi.mixins.fundraiser import FundraiserMixin
 from instagrapi.mixins.hashtag import HashtagMixin
@@ -21,7 +22,6 @@ from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
-from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.multiple_accounts import MultipleAccountsMixin
 from instagrapi.mixins.note import NoteMixin
 from instagrapi.mixins.notification import NotificationMixin
