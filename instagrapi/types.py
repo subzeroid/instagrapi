@@ -114,6 +114,7 @@ class Media(BaseModel):
     code: str
     taken_at: datetime
     media_type: int
+    image_versions2: Optional[dict] = {}
     product_type: Optional[str] = ""  # igtv or feed
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
