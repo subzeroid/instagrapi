@@ -107,9 +107,9 @@ class PublicRequestMixin:
             time.sleep(self.request_timeout)
         try:
             if data is not None:  # POST
-                response = self.public.data(url, data=data, params=params)
+                response = self.public.data(url, data=data, params=params, proxies=self.public.proxies)
             else:  # GET
-                response = self.public.get(url, params=params)
+                response = self.public.get(url, params=params, proxies=self.public.proxies)
 
             expected_length = int(response.headers.get("Content-Length") or 0)
             actual_length = response.raw.tell()

@@ -295,10 +295,10 @@ class PrivateRequestMixin:
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
-                response = self.private.post(api_url, data=data, params=params)
+                response = self.private.post(api_url, data=data, params=params, proxies=self.private.proxies)
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
-                response = self.private.get(api_url, params=params)
+                response = self.private.get(api_url, params=params, proxies=self.private.proxies)
             self.logger.debug(
                 "private_request %s: %s (%s)",
                 response.status_code,
