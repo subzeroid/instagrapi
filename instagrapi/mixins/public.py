@@ -43,7 +43,10 @@ class PublicRequestMixin:
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
                 "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 "
+                    "(KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
+                ),
             }
         )
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
@@ -107,9 +110,13 @@ class PublicRequestMixin:
             time.sleep(self.request_timeout)
         try:
             if data is not None:  # POST
-                response = self.public.data(url, data=data, params=params, proxies=self.public.proxies)
+                response = self.public.data(
+                    url, data=data, params=params, proxies=self.public.proxies
+                )
             else:  # GET
-                response = self.public.get(url, params=params, proxies=self.public.proxies)
+                response = self.public.get(
+                    url, params=params, proxies=self.public.proxies
+                )
 
             expected_length = int(response.headers.get("Content-Length") or 0)
             actual_length = response.raw.tell()

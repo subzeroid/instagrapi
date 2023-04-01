@@ -530,7 +530,9 @@ class MediaMixin:
             medias = medias[:amount]
         return medias
 
-    def user_videos_paginated_v1(self, user_id: int, amount: int = 50, end_cursor: str = "") -> Tuple[List[Media], str]:
+    def user_videos_paginated_v1(
+        self, user_id: int, amount: int = 50, end_cursor: str = ""
+    ) -> Tuple[List[Media], str]:
         """
         Get a page of user's video by Private Mobile API
 
@@ -554,8 +556,7 @@ class MediaMixin:
         next_max_id = end_cursor
         try:
             resp = self.private_request(
-                "igtv/channel/",
-                params={"id": f"uservideo_{user_id}", "count": 50}
+                "igtv/channel/", params={"id": f"uservideo_{user_id}", "count": 50}
             )
             items = resp["items"]
         except PrivateError as e:
@@ -567,10 +568,7 @@ class MediaMixin:
         next_max_id = self.last_json.get("next_max_id", "")
         if amount:
             medias = medias[:amount]
-        return (
-            [extract_media_v1(media) for media in medias],
-            next_max_id
-        )
+        return ([extract_media_v1(media) for media in medias], next_max_id)
 
     def user_videos_v1(self, user_id: int, amount: int = 0) -> List[Media]:
         """
@@ -594,9 +592,7 @@ class MediaMixin:
         while True:
             try:
                 medias_page, next_max_id = self.user_videos_paginated_v1(
-                    user_id,
-                    amount,
-                    end_cursor=next_max_id
+                    user_id, amount, end_cursor=next_max_id
                 )
             except PrivateError as e:
                 raise e
@@ -783,7 +779,9 @@ class MediaMixin:
             medias = self.user_medias_v1(user_id, amount)
         return medias
 
-    def user_clips_paginated_v1(self, user_id: int, amount: int = 50, end_cursor: str = "") -> Tuple[List[Media], str]:
+    def user_clips_paginated_v1(
+        self, user_id: int, amount: int = 50, end_cursor: str = ""
+    ) -> Tuple[List[Media], str]:
         """
         Get a page of user's clip (reels) by Private Mobile API
 
@@ -823,10 +821,7 @@ class MediaMixin:
         next_max_id = json_value(self.last_json, "paging_info", "max_id", default="")
         if amount:
             medias = medias[:amount]
-        return (
-            [extract_media_v1(media["media"]) for media in medias],
-            next_max_id
-        )
+        return ([extract_media_v1(media["media"]) for media in medias], next_max_id)
 
     def user_clips_v1(self, user_id: int, amount: int = 0) -> List[Media]:
         """
@@ -850,8 +845,7 @@ class MediaMixin:
         while True:
             try:
                 medias_page, next_max_id = self.user_clips_paginated_v1(
-                    user_id,
-                    end_cursor=next_max_id
+                    user_id, end_cursor=next_max_id
                 )
             except PrivateError as e:
                 raise e

@@ -152,9 +152,7 @@ class CommentMixin:
         )
         return extract_comment(result["comment"])
 
-    def media_check_offensive_comment(
-        self, media_id: str, text: str
-    ) -> bool:
+    def media_check_offensive_comment(self, media_id: str, text: str) -> bool:
         """
         Checks if a comment text is offensive
 
@@ -178,11 +176,10 @@ class CommentMixin:
             "comment_text": text,
         }
         result = self.private_request(
-            f"media/comment/check_offensive_comment/",
+            "media/comment/check_offensive_comment/",
             self.with_action_data(data),
         )
         return result["is_offensive"]
-
 
     def comment_like(self, comment_pk: int, revert: bool = False) -> bool:
         """
