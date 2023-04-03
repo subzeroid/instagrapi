@@ -13,11 +13,11 @@
 
 Features:
 
-* Anonymous getting of user, posts, stories, highlights, followers and following users
-* Anonymous getting an email and phone number, if the user specified them in his business profile
-* Anonymous getting of post, story, album, Reels, IGTV data and the ability to download content
-* Anonymous getting of hashtag and location data, as well as a list of posts for them
-* Anonymous getting of all comments on a post and a list of users who liked it
+* Getting public data of user, posts, stories, highlights, followers and following users
+* Getting public email and phone number, if the user specified them in his business profile
+* Getting public data of post, story, album, Reels, IGTV data and the ability to download content
+* Getting public data of hashtag and location data, as well as a list of posts for them
+* Getting public data of all comments on a post and a list of users who liked it
 * Management of [proxy servers](https://soax.com/?r=sEysufQI), mobile devices, solving captcha and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
@@ -42,7 +42,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 
 ## Features
 
-1. Performs [Public API](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html) (web, anonymous) or [Private API](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html) (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
+1. Performs [Web API](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html) or [Mobile API](https://adw0rd.github.io/instagrapi/usage-guide/fundamentals.html) requests depending on the situation (to avoid Instagram limits)
 2. [Login](https://adw0rd.github.io/instagrapi/usage-guide/interactions.html) by username and password, including 2FA and by sessionid (and uses Authorization header instead Cookies)
 3. [Challenge Resolver](https://adw0rd.github.io/instagrapi/usage-guide/challenge_resolver.html) have Email and SMS handlers
 4. Support [upload](https://adw0rd.github.io/instagrapi/usage-guide/media.html) a Photo, Video, IGTV, Reels, Albums and Stories
@@ -54,7 +54,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 
 ## Examples of apps that use instagrapi
 
-* [Lamadava SaaS](https://lamadava.com/) - trouble-free SaaS for providing data from IG (anonymously) and automate publications, stories, direct and much more else
+* [Lamadava SaaS](https://lamadava.com/) - trouble-free SaaS for providing data from IG and automate publications, stories, direct and much more else
 * [Datalama SaaS](https://datalama.io/) - Social Networks Cache
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
