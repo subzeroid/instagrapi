@@ -8,6 +8,8 @@ except ImportError:
     from json.decoder import JSONDecodeError
 
 import requests
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from instagrapi.exceptions import (
     ClientBadRequestError,
@@ -35,7 +37,19 @@ class PublicRequestMixin:
     request_timeout = 1
 
     def __init__(self, *args, **kwargs):
-        self.public = requests.Session()
+        # setup request session with retries
+        session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["GET", "POST"],
+            backoff_factor=2,
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        self.public = session
+
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
             {
