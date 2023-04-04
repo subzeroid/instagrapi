@@ -5,6 +5,8 @@ import time
 from json.decoder import JSONDecodeError
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -76,7 +78,20 @@ class PrivateRequestMixin:
     last_json = {}
 
     def __init__(self, *args, **kwargs):
-        self.private = requests.Session()
+        # setup request session with retries
+        session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504],
+            method_whitelist=["GET", "POST"],
+            backoff_factor=2,
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        self.private = session
+
+
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
