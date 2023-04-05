@@ -114,6 +114,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`DirectMessage`](usage-guide/direct.md) - Message in Direct Message
   * [`Insight`](usage-guide/insight.md) - Insights for a post
   * [`Track`](usage-guide/track.md) - Music track (for Reels/Clips)
+* [Best Practices](best-practices.md)
 * [Development Guide](development-guide.md)
 * [Handle Exceptions](usage-guide/handle_exception.md)
 * [Challenge Resolver](usage-guide/challenge_resolver.md)
