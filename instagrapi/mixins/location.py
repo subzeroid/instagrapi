@@ -296,7 +296,7 @@ class LocationMixin:
         """
         assert (
             tab_key in tab_keys_v1
-        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        ), f'You must specify one of the options for "tab_key" {tab_keys_v1}'
         data = {
             "_uuid": self.uuid,
             "session_id": self.client_session_id,
