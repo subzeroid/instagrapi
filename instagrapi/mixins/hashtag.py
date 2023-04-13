@@ -251,14 +251,15 @@ class HashtagMixin:
             "recent",
             "clips",
         ), 'You must specify one of the options for "tab_key" ("top" or "recent")'
+        
         data = {
-            "supported_tabs": dumps(["top", "recent", "clips"]),
-            # 'lat': 59.8626416,
-            # 'lng': 30.5126682,
-            "include_persistent": "true",
-            "rank_token": self.rank_token,
-            "count": 10000,
+           'media_recency_filter' : 'default',
+           'tab' : 'recent',
+           '_uuid' : self.uuid,
+           'include_persistent' : 'false',
+           'rank_token' : self.rank_token
         }
+        
         medias = []
         while True:
             result = self.private_request(
