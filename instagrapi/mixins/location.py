@@ -274,6 +274,8 @@ class LocationMixin:
         max_amount: int = 63,
         tab_key: str = "",
         max_id: str = None,
+        page: int = None,
+        next_media_ids: List = []
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a location and max_id (cursor) by Private Mobile API
@@ -297,16 +299,19 @@ class LocationMixin:
         assert (
             tab_key in tab_keys_v1
         ), f'You must specify one of the options for "tab_key" {tab_keys_v1}'
-        data = {
-            "_uuid": self.uuid,
-            "session_id": self.client_session_id,
-            "tab": tab_key,
-        }
         medias = []
         while True:
+            data = {
+                "_uuid": self.uuid,
+                "session_id": self.client_session_id,
+                "tab": tab_key,
+                "max_id": max_id,
+                "page": page,
+                "next_media_ids": next_media_ids
+            }
             result = self.private_request(
                 f"locations/{location_pk}/sections/",
-                params={"max_id": max_id} if max_id else {},
+                params={"max_id": max_id, "page": page, "next_media_ids": next_media_ids} if max_id else {},
                 data=data,
             )
             for section in result["sections"]:
@@ -322,7 +327,9 @@ class LocationMixin:
             if max_amount and len(medias) >= max_amount:
                 break
             max_id = result["next_max_id"]
-        return medias, max_id
+            page = result["next_page"]
+            next_media_ids = result["next_media_ids"]
+        return medias, max_id, page, next_media_ids
 
     def location_medias_v1(
         self, location_pk: int, amount: int = 63, tab_key: str = ""
