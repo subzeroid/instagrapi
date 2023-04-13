@@ -741,6 +741,19 @@ class MediaMixin:
             )
         return medias, end_cursor
 
+    
+    def user_pinned_medias(self, user_id) :
+        pinned_medias = []
+        default_nav = self.base_headers['X-IG-Nav-Chain']
+        self.base_headers['X-IG-Nav-Chain'] = 'MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::'
+        medias = self.private_request(f'feed/user/{user_id}/?exclude_comment=true&only_fetch_first_carousel_media=false')
+        for media in medias['items'] :
+            if media.get('timeline_pinned_user_ids') != None :
+                pinned_medias.append(media)
+        self.base_headers['X-IG-Nav-Chain'] = default_nav
+        return pinned_medias
+    
+    
     def user_medias(self, user_id: int, amount: int = 0, sleep: int = 0) -> List[Media]:
         """
         Get a user's media
