@@ -91,7 +91,7 @@ class DownloadVideoMixin:
             print("""
                 The program detected an mis-formatted link, and hence can't download it.
                 This problem occurs when the URL is passed into 'video_download_by_url()' or the 'clip_download_by_url()'.
-                The raw URL needs to be re-formatted into one that is recognizable by the methods
+                The raw URL needs to be re-formatted into one that is recognizable by the methods.
                 Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url here')).video_url
                 You can remove the 'self' from the code above if needed.
                 """)
