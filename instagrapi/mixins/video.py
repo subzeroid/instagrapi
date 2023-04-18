@@ -96,7 +96,7 @@ class DownloadVideoMixin:
             )
             print("Convert the url input into a formattable link.")
             print(
-                "Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here').video_url)"
+                "Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here')).video_url"
             )
             print("You can remove the 'self' from the code above if needed.")
             raise Exception("The program detected an mis-formatted link.")
