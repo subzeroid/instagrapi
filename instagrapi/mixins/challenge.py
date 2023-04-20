@@ -481,7 +481,7 @@ class ChallengeResolveMixin:
             assert self.last_json["step_name"] == "review_contact_point_change", \
                   f"Unexpected step_name {self.last_json['step_name']}"
 
-            details = self.last_json["step_data"]
+            # details = self.last_json["step_data"]
 
             # TODO: add validation of account details
             # assert self.username == details['username'], \

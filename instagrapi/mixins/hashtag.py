@@ -8,7 +8,6 @@ from instagrapi.extractors import (
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
-from instagrapi.utils import dumps
 
 
 class HashtagMixin:
