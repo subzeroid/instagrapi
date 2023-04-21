@@ -540,7 +540,6 @@ class UserMixin:
                 f"friendships/{user_id}/following/",
                 params={
                     "max_id": max_id,
-                    "count": 10000,
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
@@ -715,7 +714,6 @@ class UserMixin:
                 f"friendships/{user_id}/followers/",
                 params={
                     "max_id": max_id,
-                    "count": 10000,
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
