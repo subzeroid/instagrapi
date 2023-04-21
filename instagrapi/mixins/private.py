@@ -74,6 +74,7 @@ class PrivateRequestMixin:
     change_password_handler = manual_change_password
     private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
+    domain = config.API_DOMAIN
     last_response = None
     last_json = {}
 
@@ -160,7 +161,7 @@ class PrivateRequestMixin:
             "Accept-Language": ", ".join(accept_language),
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
-            "Host": config.API_DOMAIN,
+            "Host": self.domain,
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",
             # "Pragma": "no-cache",
@@ -281,6 +282,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        domain: str = None,
     ):
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
@@ -298,7 +300,8 @@ class PrivateRequestMixin:
             if endpoint == "/challenge/":  # wow so hard, is it safe tho?
                 endpoint = "/v1/challenge/"
 
-            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
+            api_url = f"https://{self.domain or config.API_DOMAIN}/api{endpoint}"
+            self.logger.info(api_url)
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -444,6 +447,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        domain: str = None,
     ):
         if self.authorization:
             if not headers:
@@ -457,6 +461,7 @@ class PrivateRequestMixin:
             with_signature=with_signature,
             headers=headers,
             extra_sig=extra_sig,
+            domain=domain,
         )
         try:
             if self.delay_range:
