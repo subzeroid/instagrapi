@@ -14,6 +14,9 @@ from instagrapi.types import Relationship, User, UserShort
 from instagrapi.utils import json_value
 
 
+MAX_USER_COUNT = 200
+
+
 class UserMixin:
     """
     Helpers to manage user
@@ -540,7 +543,7 @@ class UserMixin:
                 f"friendships/{user_id}/following/",
                 params={
                     "max_id": max_id,
-                    "count": 10000,
+                    "count": max_amount or MAX_USER_COUNT,
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
@@ -715,7 +718,7 @@ class UserMixin:
                 f"friendships/{user_id}/followers/",
                 params={
                     "max_id": max_id,
-                    "count": 10000,
+                    "count": max_amount or MAX_USER_COUNT,
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
