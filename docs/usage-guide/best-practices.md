@@ -86,6 +86,7 @@ Putting this all together, we could write a login function like this
 
 ``` python
 from instagrapi import Client
+from instagrapi.exceptions import LoginRequired
 import logging
 
 logger = logging.getLogger()
