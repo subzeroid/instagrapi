@@ -424,3 +424,37 @@ class HashtagMixin:
         except ClientError:
             medias = self.hashtag_medias_recent_v1(name, amount)
         return medias
+
+    def hashtag_follow(self, hashtag: str, unfollow: bool = False) -> bool:
+        """
+        Follow to hashtag
+        Parameters
+        ----------
+        hashtag: str
+            Unique identifier of a Hashtag
+        unfollow: bool, optional
+            Unfollow when True
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        name = "unfollow" if unfollow else "follow"
+        data = self.with_action_data({"user_id": self.user_id})
+        result = self.private_request(f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data)
+        return result["status"] == "ok"
+
+    def hashtag_unfollow(self, hashtag: str) -> bool:
+        """
+        Unfollow to hashtag
+        Parameters
+        ----------
+        hashtag: str
+            Unique identifier of a Hashtag
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.hashtag_follow(hashtag, unfollow=True)

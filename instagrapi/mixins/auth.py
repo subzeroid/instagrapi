@@ -44,7 +44,7 @@ class PreLoginFlowMixin:
         """
         # self.set_contact_point_prefill("prefill")
         # self.get_prefill_candidates(True)
-        self.set_contact_point_prefill("prefill")
+        # self.set_contact_point_prefill("prefill")
         self.sync_launcher(True)
         # self.sync_device_features(True)
         return True
