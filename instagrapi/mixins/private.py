@@ -91,7 +91,6 @@ class PrivateRequestMixin:
         session.mount("http://", adapter)
         self.private = session
 
-
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)

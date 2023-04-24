@@ -88,13 +88,15 @@ class DownloadVideoMixin:
         try:
             content_length = int(response.headers.get("Content-Length"))
         except TypeError:
-            print("""
+            print(
+                """
                 The program detected an mis-formatted link, and hence can't download it.
                 This problem occurs when the URL is passed into 'video_download_by_url()' or the 'clip_download_by_url()'.
                 The raw URL needs to be re-formatted into one that is recognizable by the methods.
                 Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url here')).video_url
                 You can remove the 'self' from the code above if needed.
-                """)
+                """
+            )
             raise Exception("The program detected an mis-formatted link.")
         file_length = len(response.content)
         if content_length != file_length:

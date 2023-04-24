@@ -275,7 +275,7 @@ class LocationMixin:
         tab_key: str = "",
         max_id: str = None,
         page: int = None,
-        next_media_ids: List = []
+        next_media_ids: List = [],
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a location and max_id (cursor) by Private Mobile API
@@ -307,11 +307,17 @@ class LocationMixin:
                 "tab": tab_key,
                 "max_id": max_id,
                 "page": page,
-                "next_media_ids": next_media_ids
+                "next_media_ids": next_media_ids,
             }
             result = self.private_request(
                 f"locations/{location_pk}/sections/",
-                params={"max_id": max_id, "page": page, "next_media_ids": next_media_ids} if max_id else {},
+                params={
+                    "max_id": max_id,
+                    "page": page,
+                    "next_media_ids": next_media_ids,
+                }
+                if max_id
+                else {},
                 data=data,
             )
             for section in result["sections"]:
