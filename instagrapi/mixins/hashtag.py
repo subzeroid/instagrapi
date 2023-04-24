@@ -442,7 +442,9 @@ class HashtagMixin:
         assert self.user_id, "Login required"
         name = "unfollow" if unfollow else "follow"
         data = self.with_action_data({"user_id": self.user_id})
-        result = self.private_request(f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data)
+        result = self.private_request(
+            f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data
+        )
         return result["status"] == "ok"
 
     def hashtag_unfollow(self, hashtag: str) -> bool:

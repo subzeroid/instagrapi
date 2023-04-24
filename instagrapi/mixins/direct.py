@@ -242,17 +242,16 @@ class DirectMixin:
         ), "Specify user_ids or thread_ids, but not both"
         method = "text"
         token = self.generate_mutation_token()
-        
-        kwargs = {
 
+        kwargs = {
             "action": "send_item",
-            "is_x_transport_forward": 'false',
-            "send_silently": 'false',
+            "is_x_transport_forward": "false",
+            "send_silently": "false",
             "is_shh_mode": "0",
             "send_attribution": "message_button",
             "client_context": token,
             "mutation_token": token,
-            '_uuid': self.uuid,
+            "_uuid": self.uuid,
             "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
             "offline_threading_id": token,
         }
