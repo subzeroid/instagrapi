@@ -425,6 +425,24 @@ class HashtagMixin:
             medias = self.hashtag_medias_recent_v1(name, amount)
         return medias
 
+    def hashtag_medias_reels_v1(self, name: str, amount: int = 27) -> List[Media]:
+        """
+        Get reels medias for a hashtag by Private Mobile API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to return, default is 71
+
+        Returns
+        -------
+        List[Media]
+            List of objects of Media
+        """
+        return self.hashtag_medias_v1(name, amount, tab_key="clips")
+
     def hashtag_follow(self, hashtag: str, unfollow: bool = False) -> bool:
         """
         Follow to hashtag
