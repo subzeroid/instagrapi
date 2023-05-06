@@ -610,9 +610,6 @@ class DirectMixin:
         data = self.with_default_data({})
         data.pop("_uid", None)
         data.pop("device_id", None)
-        data["is_shh_mode"] = 0
-        data["send_attribution"] = "direct_thread"
-        data["original_message_client_context"] = self.generate_mutation_token()
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/items/{message_id}/delete/", data=data
         )
