@@ -57,6 +57,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 * [Lamadava SaaS](https://lamadava.com/) - trouble-free SaaS for providing data from IG and automate publications, stories, direct and much more else
 * [Datalama SaaS](https://datalama.io/) - Social Networks Cache
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
+* [Instagram Assistant on Telegram with download, upload and Lottery and Insights](https://github.com/rzashakeri/Instagram-Assistant)
 
 ### Basic Usage
 
