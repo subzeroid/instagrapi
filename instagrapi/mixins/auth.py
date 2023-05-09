@@ -594,7 +594,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Bool
         """
         with open(path, "w") as fp:
-            json.dump(self.get_settings(), fp)
+            json.dump(self.get_settings(), fp, indent=4)
         return True
 
     def set_device(self, device: Dict = None, reset: bool = False) -> bool:
