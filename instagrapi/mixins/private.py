@@ -81,12 +81,20 @@ class PrivateRequestMixin:
     def __init__(self, *args, **kwargs):
         # setup request session with retries
         session = requests.Session()
-        retry_strategy = Retry(
-            total=3,
-            status_forcelist=[429, 500, 502, 503, 504],
-            method_whitelist=["GET", "POST"],
-            backoff_factor=2,
-        )
+        try:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                method_whitelist=["GET", "POST"],
+                backoff_factor=2,
+            )
+        except TypeError:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["GET", "POST"],
+                backoff_factor=2,
+            )
         adapter = HTTPAdapter(max_retries=retry_strategy)
         session.mount("https://", adapter)
         session.mount("http://", adapter)
