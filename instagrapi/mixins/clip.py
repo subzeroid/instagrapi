@@ -237,10 +237,11 @@ class UploadClipMixin:
             highlight_start_time = track.highlight_start_times_in_ms[0]
         except IndexError:
             highlight_start_time = 0
-        try:
-            import moviepy.editor as mp
-        except ImportError:
-            raise Exception("Please install moviepy>=1.0.3 and retry")
+        import moviepy.editor as mp
+        # try:
+        #     import moviepy.editor as mp
+        # except ImportError:
+        #     raise Exception("Please install moviepy>=1.0.3 and retry")
         # get all media to create the reel
         video = mp.VideoFileClip(str(path))
         audio_clip = mp.AudioFileClip(str(tmpaudio))
