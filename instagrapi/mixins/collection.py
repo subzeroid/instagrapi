@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from instagrapi.exceptions import CollectionNotFound
 from instagrapi.extractors import extract_collection, extract_media_v1
@@ -93,6 +93,78 @@ class CollectionMixin:
         """
         return self.collection_medias("liked", amount, last_media_pk)
 
+    def collection_medias_v1_chunk(
+        self, collection_pk: str, max_id: str = ""
+    ) -> Tuple[List[Media], str]:
+        """
+        Get media in a collection by collection_pk
+
+        Parameters
+        ----------
+        collection_pk: str
+            Unique identifier of a Collection
+        max_id: str, optional
+            Cursor
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A list of objects of Media and cursor
+        """
+        if isinstance(collection_pk, int) or collection_pk.isdigit():
+            private_request_endpoint = f"feed/collection/{collection_pk}/"
+        elif collection_pk.lower() == "liked":
+            private_request_endpoint = "feed/liked/"
+        else:
+            private_request_endpoint = "feed/saved/posts/"
+
+        params = {"include_igtv_preview": "false"}
+        if max_id:
+            params["max_id"] = max_id
+        result = self.private_request(private_request_endpoint, params=params)
+        items = [extract_media_v1(m.get("media", m)) for m in result["items"]]
+        return items, result.get("next_max_id", "")
+
+    def collection_medias_v1(
+        self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
+    ) -> List[Media]:
+        """
+        Get media in a collection by collection_pk
+
+        Parameters
+        ----------
+        collection_pk: str
+            Unique identifier of a Collection
+        amount: int, optional
+            Maximum number of media to return, default is 21
+        last_media_pk: int, optional
+            Last PK user has seen, function will return medias after this pk. Default is 0
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        last_media_pk = last_media_pk and int(last_media_pk)
+        total_items = []
+        next_max_id = ""
+        amount = int(amount)
+        found_last_media_pk = False
+        while True:
+            items, next_max_id = self.collection_medias_v1_chunk(
+                collection_pk, max_id=next_max_id
+            )
+            for item in items:
+                if last_media_pk and last_media_pk == item["media"]["pk"]:
+                    found_last_media_pk = True
+                    break
+                total_items.append(item)
+            if (amount and len(total_items) >= amount) or found_last_media_pk:
+                break
+            if not items or not next_max_id:
+                break
+        return total_items[:amount] if amount else total_items
+
     def collection_medias(
         self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
     ) -> List[Media]:
@@ -113,38 +185,9 @@ class CollectionMixin:
         List[Media]
             A list of objects of Media
         """
-        if isinstance(collection_pk, int) or collection_pk.isdigit():
-            private_request_endpoint = f"feed/collection/{collection_pk}/"
-        elif collection_pk.lower() == "liked":
-            private_request_endpoint = "feed/liked/"
-        else:
-            private_request_endpoint = "feed/saved/posts/"
-
-        last_media_pk = last_media_pk and int(last_media_pk)
-        total_items = []
-        next_max_id = ""
-        amount = int(amount)
-        found_last_media_pk = False
-        while True:
-            try:
-                result = self.private_request(
-                    private_request_endpoint,
-                    params={"include_igtv_preview": "false", "max_id": next_max_id},
-                )
-            except Exception as e:
-                self.logger.exception(e)
-                break
-            for item in result["items"]:
-                if last_media_pk and last_media_pk == item["media"]["pk"]:
-                    found_last_media_pk = True
-                    break
-                total_items.append(extract_media_v1(item.get("media", item)))
-            if (amount and len(total_items) >= amount) or found_last_media_pk:
-                break
-            if not result.get("more_available"):
-                break
-            next_max_id = result.get("next_max_id", "")
-        return total_items[:amount] if amount else total_items
+        return self.collection_medias_v1(
+            collection_pk, amount=amount, last_media_pk=last_media_pk
+        )
 
     def media_save(
         self, media_id: str, collection_pk: int = None, revert: bool = False
