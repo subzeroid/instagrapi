@@ -135,6 +135,10 @@ class RateLimitError(PrivateError):
     pass
 
 
+class ProxyAddressIsBlocked(PrivateError):
+    """Instagram has blocked your IP address, use a quality proxy provider (not free, not shared)"""
+
+
 class BadPassword(PrivateError):
     pass
 
@@ -273,3 +277,19 @@ class HighlightNotFound(NotFoundError, PrivateError):
 
 class NoteNotFound(NotFoundError):
     reason = "Not found"
+
+
+class PrivateAccount(PrivateError):
+    """This Account is Private"""
+
+
+class InvalidTargetUser(PrivateError):
+    """Invalid target user"""
+
+
+class InvalidMediaId(PrivateError):
+    """Invalid media_id"""
+
+
+class MediaUnavailable(PrivateError):
+    """Media is unavailable"""
