@@ -51,8 +51,9 @@ cl.delay_range = [1, 3]
 
 ## Use Sessions
 
-When using `.login()` you will login and create a new session with Instagram every time. This
-it suspicious to Instagram. For example, when you use your mobile device, you login to Instagram once
+When using `.login()` you will login and create a new session with Instagram every time.
+This is suspicious for Instagram.
+For example, when you use your mobile device, you login to Instagram once
 and then you can use it for a long time without logging in again. This is because Instagram stores
 your session on your device and you can use it to login to Instagram without entering your username
 and password again.
