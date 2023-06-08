@@ -453,7 +453,7 @@ class Track(BaseModel):
 
 
 class NoteResponse(BaseModel):
-    id: str
+    uuid: str
     text: str
     user_id: int
     user: UserShort
@@ -463,7 +463,7 @@ class NoteResponse(BaseModel):
     is_emoji_only: bool
     has_translation: bool
     note_style: int
-    status: str
+    #status: str
 
 
 class NoteRequest(BaseModel):
