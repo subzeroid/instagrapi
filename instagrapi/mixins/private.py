@@ -5,6 +5,8 @@ import time
 from json.decoder import JSONDecodeError
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -14,6 +16,12 @@ from instagrapi.exceptions import (
     ClientConnectionError,
     ClientError,
     ClientForbiddenError,
+    PrivateAccount,
+    UserNotFound,
+    ProxyAddressIsBlocked,
+    InvalidTargetUser,
+    InvalidMediaId,
+    MediaUnavailable,
     ClientJSONDecodeError,
     ClientNotFoundError,
     ClientRequestTimeout,
@@ -78,19 +86,38 @@ class PrivateRequestMixin:
     handle_exception = None
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
-    request_logger = logging.getLogger("private_request")
+    private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
-    timeout = 3
+    domain = config.API_DOMAIN
     last_response = None
     last_json = {}
 
     def __init__(self, *args, **kwargs):
-        self.private = requests.Session()
+        # setup request session with retries
+        session = requests.Session()
+        try:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                method_whitelist=["GET", "POST"],
+                backoff_factor=2,
+            )
+        except TypeError:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["GET", "POST"],
+                backoff_factor=2,
+            )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        self.private = session
+
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
-        self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -122,11 +149,11 @@ class PrivateRequestMixin:
             if lang not in accept_language:
                 accept_language.insert(0, lang)
         headers = {
-            "X-IG-App-Locale": 'en_US',
-            "X-IG-Device-Locale": 'en_US',
-            "X-IG-Mapped-Locale": 'en_US',
-            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-0"),
-            "X-Pigeon-Rawclienttime": str(time.time()),
+            "X-IG-App-Locale": locale,
+            "X-IG-Device-Locale": locale,
+            "X-IG-Mapped-Locale": locale,
+            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-1"),
+            "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
             "X-IG-Bandwidth-Speed-KBPS": str(
                 random.randint(2500000, 3000000) / 1000
@@ -153,10 +180,10 @@ class PrivateRequestMixin:
             "X-IG-App-ID": '567067343352427',
             "Priority": "u=3",
             "User-Agent": self.user_agent,
-            "Accept-Language": 'en-US',
+            "Accept-Language": ", ".join(accept_language),
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
-            "Host": config.API_DOMAIN,
+            "Host": self.domain,
             "X-FB-HTTP-Engine": "Liger",
             "Connection": "keep-alive",
             # "Pragma": "no-cache",
@@ -169,14 +196,28 @@ class PrivateRequestMixin:
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
-            headers.update({
-                "IG-U-DS-USER-ID": str(self.user_id),
-                # Direct:
-                "IG-U-IG-DIRECT-REGION-HINT": f'RVA,{self.user_id},{31536000 + round(time.time())}:{self.ig_u_rur}',
-                "IG-U-SHBID": f'{random.randint(100, 9999)},{self.user_id},{31536000 + round(time.time())}:{self.ig_u_rur}',
-                "IG-U-SHBTS": f'{round(time.time())},{self.user_id},{31536000 + round(time.time())}:{self.ig_u_rur}',
-                "IG-U-RUR": f'EAG,{self.user_id},{31536000 + round(time.time())}:{self.ig_u_rur}',
-            })
+            headers.update(
+                {
+                    "IG-U-DS-USER-ID": str(self.user_id),
+                    # Direct:
+                    "IG-U-IG-DIRECT-REGION-HINT": (
+                        f"LLA,{self.user_id},{next_year}:"
+                        "01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7"
+                    ),
+                    "IG-U-SHBID": (
+                        f"12695,{self.user_id},{next_year}:"
+                        "01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f"
+                    ),
+                    "IG-U-SHBTS": (
+                        f"{int(time.time())},{self.user_id},{next_year}:"
+                        "01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28"
+                    ),
+                    "IG-U-RUR": (
+                        f"RVA,{self.user_id},{next_year}:"
+                        "01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c"
+                    ),
+                }
+            )
         if self.ig_u_rur:
             headers.update({"IG-U-RUR": self.ig_u_rur})
         if self.ig_www_claim:
@@ -197,7 +238,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['country'] = self.country = str(country)
+        self.settings["country"] = self.country = str(country)
         return True
 
     def set_country_code(self, country_code: int = 1):
@@ -212,7 +253,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['country_code'] = self.country_code = int(country_code)
+        self.settings["country_code"] = self.country_code = int(country_code)
         return True
 
     def set_locale(self, locale: str = "en_US"):
@@ -229,8 +270,10 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
-        self.settings['locale'] = self.locale = str(locale)
+        user_agent = (self.settings.get("user_agent") or "").replace(
+            self.locale, locale
+        )
+        self.settings["locale"] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if "_" in locale:
             self.set_country(locale.rsplit("_", 1)[1])
@@ -249,15 +292,15 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        self.settings['timezone_offset'] = self.timezone_offset = int(seconds)
+        self.settings["timezone_offset"] = self.timezone_offset = int(seconds)
         return True
 
     def set_ig_u_rur(self, value):
-        self.settings['ig_u_rur'] = self.ig_u_rur = value
+        self.settings["ig_u_rur"] = self.ig_u_rur = value
         return True
 
     def set_ig_www_claim(self, value):
-        self.settings['ig_www_claim'] = self.ig_www_claim = value
+        self.settings["ig_www_claim"] = self.ig_www_claim = value
         return True
 
     @staticmethod
@@ -273,6 +316,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        domain: str = None,
     ):
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
@@ -287,10 +331,11 @@ class PrivateRequestMixin:
             if not endpoint.startswith("/"):
                 endpoint = f"/v1/{endpoint}"
 
-            if endpoint == '/challenge/': # wow so hard, is it safe tho?
-                endpoint = '/v1/challenge/'
+            if endpoint == "/challenge/":  # wow so hard, is it safe tho?
+                endpoint = "/v1/challenge/"
 
-            api_url = f"https://{config.API_DOMAIN}/api{endpoint}"
+            api_url = f"https://{self.domain or config.API_DOMAIN}/api{endpoint}"
+            self.logger.info(api_url)
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -303,16 +348,12 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    api_url,
-                    data=data,
-                    params=params,
-                    timeout=self.timeout,
-                    # verify=False,
+                    api_url, data=data, params=params, proxies=self.private.proxies
                 )
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
                 response = self.private.get(
-                    api_url, params=params, timeout=self.timeout, #verify=False,
+                    api_url, params=params, proxies=self.private.proxies
                 )
             self.logger.debug(
                 "private_request %s: %s (%s)",
@@ -387,24 +428,31 @@ class PrivateRequestMixin:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
-                elif (
-                    "has been deleted" in message
-                    or "Media is unavailable" in message
-                    or "Invalid media_id" in message
-                ):
-                    raise MediaNotFound(e, response=e.response, **last_json)
                 elif "Not authorized to view user" in message:
-                    raise PrivateProfileUser(e, response=e.response, **last_json)
+                    raise PrivateAccount(e, response=e.response, **last_json)
                 elif "Invalid target user" in message:
                     raise InvalidTargetUser(e, response=e.response, **last_json)
-                elif "You requested to delete" in message:
-                    raise DeleteRequestError(e, response=e.response, **last_json)
-                elif "You can't use Instagram" in message:
-                    raise InactiveUserError(e, response=e.response, **last_json)
-                elif "The username you entered doesn't appear" in message:
-                    raise InactiveUserError(e, response=e.response, **last_json)
-                elif "Your account has been disabled for violating our terms" in message:
-                    raise InactiveUserError(e, response=e.response, **last_json)
+                elif "Invalid media_id" in message:
+                    raise InvalidMediaId(e, response=e.response, **last_json)
+                elif (
+                    "Media is unavailable" in message
+                    or "Media not found or unavailable" in message
+                ):
+                    raise MediaUnavailable(e, response=e.response, **last_json)
+                elif "has been deleted" in message:
+                    # Sorry, this photo has been deleted.
+                    raise MediaUnavailable(e, response=e.response, **last_json)
+                elif "unable to fetch followers" in message:
+                    # returned when user not found
+                    raise UserNotFound(e, response=e.response, **last_json)
+                elif "The username you entered" in message:
+                    # The username you entered doesn't appear to belong to an account.
+                    # Please check your username and try again.
+                    last_json["message"] = (
+                        "Instagram has blocked your IP address, "
+                        "use a quality proxy provider (not free, not shared)"
+                    )
+                    raise ProxyAddressIsBlocked(**last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
@@ -420,7 +468,7 @@ class PrivateRequestMixin:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
-                self.logger.warning("Status 404: Endpoint %s does not exists", endpoint)
+                self.logger.warning("Status 404: Endpoint %s does not exist", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
@@ -444,7 +492,7 @@ class PrivateRequestMixin:
         return last_json
 
     def request_log(self, response):
-        self.request_logger.info(
+        self.private_request_logger.info(
             "%s [%s] %s %s (%s)",
             self.username,
             response.status_code,
@@ -466,6 +514,7 @@ class PrivateRequestMixin:
         with_signature=True,
         headers=None,
         extra_sig=None,
+        domain: str = None,
     ):
         if self.authorization:
             if not headers:
@@ -479,6 +528,7 @@ class PrivateRequestMixin:
             with_signature=with_signature,
             headers=headers,
             extra_sig=extra_sig,
+            domain=domain,
         )
         try:
             if self.delay_range:

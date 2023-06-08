@@ -51,6 +51,13 @@ Common arguments:
 | photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
 | video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
 
+In `extra_data`, you can pass additional story settings, for example:
+
+| Method            | Type   | Description
+| ----------------- | ------ | ------------------
+| audience          | String | [Publish story for close friends](https://github.com/adw0rd/instagrapi/issues/1210) `{"audience": "besties"}`
+
+
 Examples:
 
 ``` python

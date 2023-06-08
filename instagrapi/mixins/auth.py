@@ -71,7 +71,7 @@ class PreLoginFlowMixin:
         """
         # self.set_contact_point_prefill("prefill")
         # self.get_prefill_candidates(True)
-        self.set_contact_point_prefill("prefill")
+        # self.set_contact_point_prefill("prefill")
         self.sync_launcher(True)
         # self.sync_device_features(True)
         return True
@@ -321,12 +321,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.settings.get("timezone_offset", self.timezone_offset)
         )
         self.set_device(self.settings.get("device_settings"))
-        self.bloks_versioning_id = hashlib.sha256(
-            json.dumps(self.device_settings).encode()
-        ).hexdigest()
-        # self.bloks_versioning_id = "c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3" # fixes x-blok-* when logging in # hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest() -- https://github.com/adw0rd/instagrapi/pull/984/files
+        # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
-        self.set_uuids(self.settings.get("uuids", {}))
+        self.set_uuids(self.settings.get("uuids") or {})
         self.set_locale(self.settings.get("locale", self.locale))
         self.set_country(self.settings.get("country", self.country))
         self.set_country_code(self.settings.get("country_code", self.country_code))
@@ -422,7 +420,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -457,9 +456,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3",
             }
-            logged = self.private_request("accounts/two_factor_login/", data, login=True)
+            logged = self.private_request(
+                "accounts/two_factor_login/", data, login=True
+            )
             self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get('ig-set-authorization')
+                self.last_response.headers.get("ig-set-authorization")
             )
         if logged:
             self.login_flow()
@@ -627,7 +628,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Bool
         """
         with open(path, "w") as fp:
-            json.dump(self.get_settings(), fp)
+            json.dump(self.get_settings(), fp, indent=4)
         return True
 
     def set_device(self, device: Dict = None, reset: bool = False) -> bool:
@@ -645,14 +646,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "203.0.0.29.118",
+            "app_version": "269.0.0.18.75",
             "android_version": 26,
             "android_release": "8.0.0",
             "dpi": "480dpi",
             "resolution": "1080x1920",
-            "manufacturer": "Xiaomi",
-            "device": "capricorn",
-            "model": "MI 5s",
+            "manufacturer": "OnePlus",
+            "device": "devitron",
+            "model": "6T Dev",
             "cpu": "qcom",
             "version_code": "314665256",
         }
@@ -770,12 +771,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return self.with_default_data({
-            "phone_id": self.phone_id,
-            "_uid": str(self.user_id),
-            "guid": self.uuid,
-            **data
-        })
+        return self.with_default_data(
+            {
+                "phone_id": self.phone_id,
+                "_uid": str(self.user_id),
+                "guid": self.uuid,
+                **data,
+            }
+        )
 
     def with_default_data(self, data: Dict) -> Dict:
         """
@@ -862,6 +865,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """Parse authorization header"""
         try:
             b64part = authorization.rsplit(":", 1)[-1]
+            if not b64part:
+                return {}
             return json.loads(base64.b64decode(b64part))
         except Exception as e:
             self.logger.exception(e)
@@ -876,167 +881,3 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
             return f"Bearer IGT:2:{b64part}"
         return ""
-
-    def login_by_settings(self, settings: str, login: str="", passw: str="") -> bool:
-        self.settings = json.loads(settings)
-        self.init()
-        # self.inject_sessionid_to_public()
-        # self.last_login = time.time()
-        return True
-
-
-    def login_by_web(self, username: str, password: str) -> bool:
-        """Login via the website, get a cookie and login via sessionid
-
-        Args:
-            username (str): login username
-            password (str): password
-
-        Returns:
-            dict: cookies
-        """
-
-        def encrypt_password(app_id, key_id, public_key, password):
-            import base64
-            import datetime
-            from nacl.public import PublicKey, SealedBox
-            from Crypto import Random
-            from Crypto.Cipher import AES
-
-            timestamp = str(int(datetime.datetime.now().timestamp()))
-
-            # create a random key of length 32 bytes (for AES 256)
-            key = Random.get_random_bytes(32)
-            # create a buffer of length 12 bytes filled with 0
-            iv = bytearray(12)
-
-            aes = AES.new(key, AES.MODE_GCM, nonce=iv)
-            aes.update(bytearray(timestamp, "utf-8"))
-            ciphertext, tag = aes.encrypt_and_digest(bytearray(password, "utf-8"))
-
-            # get a byte array of the given public key
-            public_key_seal = PublicKey(bytes.fromhex(public_key))
-            sealed_box = SealedBox(public_key_seal)
-            sealed = sealed_box.encrypt(key)
-
-            enc_password = bytearray()
-            enc_password += (
-                bytearray([1, int(key_id), len(sealed) & 255, (len(sealed) >> 8) & 255])
-                + sealed
-                + tag
-                + ciphertext
-            )
-
-            return f"#PWD_INSTAGRAM_BROWSER:{app_id}:{timestamp}:{str(base64.b64encode(enc_password), 'utf-8')}"
-
-        # https://github.com/instaloader/instaloader/issues/615
-
-        BASE_URL = "https://www.instagram.com/"
-
-        session = requests.Session()
-        session.headers = {"user-agent": self.web_user_agent}
-        session.cookies["ig_pr"] = "1"
-        session.headers["Referer"] = BASE_URL
-        session.proxies.update({"http": self.proxy, "https": self.proxy})
-
-        try:
-            req = session.get(BASE_URL + "accounts/login/")
-            session.headers["X-CSRFToken"] = req.cookies["csrftoken"]
-            session.headers["mid"] = mid = req.cookies["mid"]
-
-            enc_password = encrypt_password(
-                req.headers.get("ig-set-password-encryption-web-key-version"),
-                req.headers.get("ig-set-password-encryption-web-key-id"),
-                req.headers.get("ig-set-password-encryption-web-pub-key"),
-                password,
-            )
-
-            time.sleep(random.uniform(1.175, 2.875))
-
-            response = session.post(
-                BASE_URL + "accounts/login/ajax/",
-                data={
-                    "username": username,
-                    "enc_password": enc_password,
-                },
-                allow_redirects=True,
-            )
-
-            last_json = response.json()
-        except JSONDecodeError:
-            pass
-        message = last_json.get("message", "")
-        if response.status_code == 403:
-            if message == "login_required":
-                raise LoginRequired(response=response, **last_json)
-            if (
-                "Looks like you requested to delete this account" in message
-                or "Your account has been disabled for violating our terms" in message
-            ):
-                raise InvalidUserError(response=response, **last_json)
-            raise ClientForbiddenError(response=response, **last_json)
-        elif response.status_code == 400:
-            error_type = last_json.get("error_type")
-            if message == "challenge_required" or message == "checkpoint_required":
-                raise ChallengeRequired(**last_json)
-            elif message == "feedback_required":
-                raise FeedbackRequired(
-                    **dict(
-                        last_json,
-                        message="%s: %s" % (message, last_json.get("feedback_message")),
-                    )
-                )
-            elif error_type == "sentry_block":
-                raise SentryBlock(**last_json)
-            elif error_type == "rate_limit_error":
-                raise RateLimitError(**last_json)
-            elif error_type == "bad_password":
-                raise BadPassword(**last_json)
-            elif error_type == "inactive user":
-                raise InactiveUserError(**last_json)
-            elif error_type == "two_factor_required":
-                raise TwoFactorRequiredError(**last_json)
-            elif error_type == "invalid_user":
-                raise InvalidUserError(**last_json)
-            elif error_type == "ip_block":
-                raise IPBlockError(**last_json)
-            elif "Please wait a few minutes before you try again" in message:
-                raise PleaseWaitFewMinutes(response=response, **last_json)
-            elif "VideoTooLongException" in message:
-                raise VideoTooLongException(response=response, **last_json)
-            elif error_type or message:
-                raise UnknownError(**last_json)
-            raise ClientBadRequestError(response=response, **last_json)
-        elif response.status_code == 429:
-            if "Please wait a few minutes before you try again" in message:
-                raise PleaseWaitFewMinutes(response=response, **last_json)
-            raise ClientThrottledError(response=response, **last_json)
-        elif response.status_code == 404:
-            raise ClientNotFoundError(response=response, **last_json)
-        elif response.status_code == 408:
-            raise ClientRequestTimeout(response=response, **last_json)
-
-        if last_json.get("status") == "fail":
-            raise ClientError(response=response, **last_json)
-        elif "error_title" in last_json:
-            """Example: {
-            'error_title': 'bad image input extra:{}', <-------------
-            'media': {
-                'device_timestamp': '1588184737203',
-                'upload_id': '1588184737203'
-            },
-            'message': 'media_needs_reupload', <-------------
-            'status': 'ok' <-------------
-            }"""
-            raise ClientError(response=response, **last_json)
-        elif not response.json().get("authenticated"):
-            raise BadPassword(**last_json)
-
-        cookies = response.cookies.get_dict()
-        cookies["mid"] = mid
-
-        self.login_by_sessionid(cookies["sessionid"])
-
-        self.last_login = time.time()
-
-        return True

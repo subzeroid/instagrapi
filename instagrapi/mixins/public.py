@@ -8,6 +8,8 @@ except ImportError:
     from json.decoder import JSONDecodeError
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -34,12 +36,32 @@ class PublicRequestMixin:
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
     last_public_response = None
     last_public_json = {}
-    request_logger = logging.getLogger("public_request")
+    public_request_logger = logging.getLogger("public_request")
     request_timeout = 1
     timeout = 3
 
     def __init__(self, *args, **kwargs):
-        self.public = requests.Session()
+        # setup request session with retries
+        session = requests.Session()
+        try:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                method_whitelist=["GET", "POST"],
+                backoff_factor=2,
+            )
+        except TypeError:
+            retry_strategy = Retry(
+                total=3,
+                status_forcelist=[429, 500, 502, 503, 504],
+                allowed_methods=["GET", "POST"],
+                backoff_factor=2,
+            )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        session.mount("https://", adapter)
+        session.mount("http://", adapter)
+        self.public = session
+
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
             {
@@ -47,7 +69,10 @@ class PublicRequestMixin:
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
                 "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 "
+                    "(KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
+                ),
             }
         )
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
@@ -124,11 +149,11 @@ class PublicRequestMixin:
         try:
             if data is not None:  # POST
                 response = self.public.data(
-                    url, data=data, params=params, timeout=self.timeout
+                    url, data=data, params=params, proxies=self.public.proxies
                 )
             else:  # GET
                 response = self.public.get(
-                    url, params=params, timeout=self.timeout, verify=False
+                    url, params=params, proxies=self.public.proxies
                 )
 
             expected_length = int(response.headers.get("Content-Length") or 0)
@@ -141,11 +166,11 @@ class PublicRequestMixin:
                     response=response,
                 )
 
-            self.request_logger.debug(
+            self.public_request_logger.debug(
                 "public_request %s: %s", response.status_code, response.url
             )
 
-            self.request_logger.info(
+            self.public_request_logger.info(
                 "[%s] [%s] %s %s",
                 self.public.proxies.get("https"),
                 response.status_code,
@@ -163,15 +188,12 @@ class PublicRequestMixin:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
-            if "challenge" in response.url:
-                raise ChallengeRequired(e, response=response)
-
-            # self.request_logger.error(
-            #     "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
-            #     response.status_code,
-            #     response.url,
-            #     response.text,
-            # )
+            self.public_request_logger.error(
+                "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
+                response.status_code,
+                response.url,
+                response.text,
+            )
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, url),
                 response=response,
@@ -197,7 +219,7 @@ class PublicRequestMixin:
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")
         params = params or {}
-        params.update({"__a": 1, '__d': 'dis'})
+        params.update({"__a": 1, "__d": "dis"})
 
         response = self.public_request(
             url, data=data, params=params, headers=headers, return_json=True

@@ -37,6 +37,7 @@ class AccountMixin:
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             },
             proxies=self.public.proxies,
+            timeout=self.request_timeout,
         )
         try:
             return response.json()
@@ -68,10 +69,7 @@ class AccountMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(self.user_id)
-        data = self.with_action_data({
-            "_uid": user_id,
-            "_uuid": self.uuid
-        })
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
         result = self.private_request("accounts/set_private/", data)
         return result["status"] == "ok"
 
@@ -86,10 +84,7 @@ class AccountMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(self.user_id)
-        data = self.with_action_data({
-            "_uid": user_id,
-            "_uuid": self.uuid
-        })
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
         result = self.private_request("accounts/set_public/", data)
         return result["status"] == "ok"
 

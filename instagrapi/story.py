@@ -54,7 +54,15 @@ class StoryBuilder:
         self.mentions = mentions
         self.bgpath = Path(bgpath) if bgpath else None
 
-    def build_main(self, clip, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = "") -> StoryBuild:
+    def build_main(
+        self,
+        clip,
+        max_duration: int = 0,
+        font: str = "Arial",
+        fontsize: int = 100,
+        color: str = "white",
+        link: str = "",
+    ) -> StoryBuild:
         """
         Build clip
 
@@ -95,7 +103,7 @@ class StoryBuilder:
         caption = self.caption
         if self.mentions:
             mention = self.mentions[0]
-            if getattr(mention, 'user', None):
+            if getattr(mention, "user", None):
                 caption = f"@{mention.user.username}"
         if caption:
             text_clip = TextClip(
@@ -149,7 +157,7 @@ class StoryBuilder:
                     link_type="web",
                     url=str(link),  # e.g. "https//github.com/"
                     tap_state_str_id="link_sticker_default",
-                )
+                ),
             )
             stickers.append(link_sticker)
             clips.append(link_clip)
@@ -162,13 +170,15 @@ class StoryBuilder:
             mention.height = text_clip.size[1] / self.height
             mentions = [mention]
         duration = max_duration
-        if getattr(clip, 'duration', None):
+        if getattr(clip, "duration", None):
             if duration > int(clip.duration) or not duration:
                 duration = int(clip.duration)
         destination = tempfile.mktemp(".mp4")
-        cvc = CompositeVideoClip(clips, size=(self.width, self.height))\
-            .set_fps(24)\
+        cvc = (
+            CompositeVideoClip(clips, size=(self.width, self.height))
+            .set_fps(24)
             .set_duration(duration)
+        )
         cvc.write_videofile(destination, codec="libx264", audio=True, audio_codec="aac")
         paths = []
         if duration > 15:
@@ -178,11 +188,22 @@ class StoryBuilder:
                 rest = duration - start
                 end = start + (rest if rest < 15 else 15)
                 sub = cvc.subclip(start, end)
-                sub.write_videofile(path, codec="libx264", audio=True, audio_codec="aac")
+                sub.write_videofile(
+                    path, codec="libx264", audio=True, audio_codec="aac"
+                )
                 paths.append(path)
-        return StoryBuild(mentions=mentions, path=destination, paths=paths, stickers=stickers)
+        return StoryBuild(
+            mentions=mentions, path=destination, paths=paths, stickers=stickers
+        )
 
-    def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
+    def video(
+        self,
+        max_duration: int = 0,
+        font: str = "Arial",
+        fontsize: int = 100,
+        color: str = "white",
+        link: str = "",
+    ):
         """
         Build CompositeVideoClip from source video
 
@@ -207,7 +228,14 @@ class StoryBuilder:
         clip.close()
         return build
 
-    def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
+    def photo(
+        self,
+        max_duration: int = 0,
+        font: str = "Arial",
+        fontsize: int = 100,
+        color: str = "white",
+        link: str = "",
+    ):
         """
         Build CompositeVideoClip from source video
 
@@ -231,8 +259,10 @@ class StoryBuilder:
         with Image.open(self.path) as im:
             image_width, image_height = im.size
 
-        width_reduction_percent = (self.width / float(image_width))
+        width_reduction_percent = self.width / float(image_width)
         height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
 
-        clip = ImageClip(str(self.path)).resize(width=self.width, height=height_in_ratio)
+        clip = ImageClip(str(self.path)).resize(
+            width=self.width, height=height_in_ratio
+        )
         return self.build_main(clip, max_duration or 15, font, fontsize, color, link)

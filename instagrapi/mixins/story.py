@@ -112,7 +112,9 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
-    def users_stories_gql(self, user_ids: List[int], amount: int = 0) -> List[UserShort]:
+    def users_stories_gql(
+        self, user_ids: List[int], amount: int = 0
+    ) -> List[UserShort]:
         """
         Get a user's stories (Public API)
 
@@ -145,9 +147,9 @@ class StoryMixin:
             )
             stories_un.update(res)
         users = []
-        for media in stories_un['reels_media']:
-            user = extract_user_short(media['owner'])
-            items = media['items']
+        for media in stories_un["reels_media"]:
+            user = extract_user_short(media["owner"])
+            items = media["items"]
             if amount:
                 items = items[:amount]
             user.stories = [extract_story_gql(m) for m in items]
@@ -292,11 +294,13 @@ class StoryMixin:
             Path for the file downloaded
         """
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
-        assert fname, """The URL must contain the path to the file (mp4 or jpg).\n"""\
+        assert fname, (
+            """The URL must contain the path to the file (mp4 or jpg).\n"""
             """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
+        )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         with open(path, "wb") as f:
             response.raw.decode_content = True
@@ -321,24 +325,28 @@ class StoryMixin:
         users = []
         next_max_id = None
         story_pk = self.media_pk(story_pk)
-        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
+        params = {
+            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
+        }
         while True:
             try:
                 if next_max_id:
                     params["max_id"] = next_max_id
-                result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
-                for item in result['users']:
+                result = self.private_request(
+                    f"media/{story_pk}/list_reel_media_viewer/", params=params
+                )
+                for item in result["users"]:
                     users.append(extract_user_short(item))
                 if amount and len(users) >= amount:
                     break
-                next_max_id = result.get('next_max_id')
+                next_max_id = result.get("next_max_id")
                 if not next_max_id:
                     break
             except Exception as e:
                 self.logger.exception(e)
                 break
         if amount:
-            users = users[:int(amount)]
+            users = users[: int(amount)]
         return users
 
     def story_like(self, story_id: str, revert: bool = False) -> bool:
@@ -365,7 +373,7 @@ class StoryMixin:
             "source_of_like": "button",
             "tray_session_id": self.tray_session_id,
             "viewer_session_id": self.client_session_id,
-            "container_module": "reel_feed_timeline"
+            "container_module": "reel_feed_timeline",
         }
         name = "unsend" if revert else "send"
         result = self.private_request(

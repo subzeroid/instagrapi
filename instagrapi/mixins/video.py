@@ -83,16 +83,20 @@ class DownloadVideoMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         try:
             content_length = int(response.headers.get("Content-Length"))
         except TypeError:
-            print("The program detected an mis-formatted link, and hence can't download it.")
-            print("The problem is located wherever the url is passed into the 'video_download_by_url()' or the 'clip_download_by_url()' function.")
-            print("Convert the url input into a formattable link.")
-            print("Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url (or a variable with the url) here').video_url)")
-            print("You can remove the 'self' from the code above if needed.")
+            print(
+                """
+                The program detected an mis-formatted link, and hence can't download it.
+                This problem occurs when the URL is passed into 'video_download_by_url()' or the 'clip_download_by_url()'.
+                The raw URL needs to be re-formatted into one that is recognizable by the methods.
+                Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url here')).video_url
+                You can remove the 'self' from the code above if needed.
+                """
+            )
             raise Exception("The program detected an mis-formatted link.")
         file_length = len(response.content)
         if content_length != file_length:
@@ -103,10 +107,8 @@ class DownloadVideoMixin:
             f.write(response.content)
             f.close()
         return path.resolve()
-    
-    def video_download_by_url_origin(
-        self, url: str
-    ) -> bytes:
+
+    def video_download_by_url_origin(self, url: str) -> bytes:
         """
         Download video using URL
 
@@ -120,7 +122,7 @@ class DownloadVideoMixin:
         bytes
             Bytes for the file downloaded
         """
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         content_length = int(response.headers.get("Content-Length"))
         file_length = len(response.content)
@@ -438,7 +440,7 @@ class UploadVideoMixin:
                     hashtags,
                     stickers,
                     medias,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
@@ -459,7 +461,7 @@ class UploadVideoMixin:
                     locations=locations,
                     stickers=stickers,
                     medias=medias,
-                    **extract_media_v1(media).dict()
+                    **extract_media_v1(media).dict(),
                 )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
@@ -595,7 +597,9 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "clips": [{"length": duration, "source_type": "3", "camera_position": "back"}],
+            "clips": [
+                {"length": duration, "source_type": "3", "camera_position": "back"}
+            ],
             # "edits": {
             #     "filter_type": 0,
             #     "filter_strength": 1.0,
@@ -603,15 +607,17 @@ class UploadVideoMixin:
             #     # "crop_center": [0, 0],
             #     # "crop_zoom": 1
             # },
-            "media_transformation_info": dumps({
-                "width": str(width),
-                "height": str(height),
-                "x_transform": "0",
-                "y_transform": "0",
-                "zoom": "1.0",
-                "rotation": "0.0",
-                "background_coverage": "0.0"
-            }),
+            "media_transformation_info": dumps(
+                {
+                    "width": str(width),
+                    "height": str(height),
+                    "x_transform": "0",
+                    "y_transform": "0",
+                    "zoom": "1.0",
+                    "rotation": "0.0",
+                    "background_coverage": "0.0",
+                }
+            ),
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 0,
@@ -692,11 +698,14 @@ class UploadVideoMixin:
         if links:
             # instagram allow one link now
             link = links[0]
-            self.private_request("media/validate_reel_url/", {
-                "url": str(link.webUri),
-                "_uid": str(self.user_id),
-                "_uuid": str(self.uuid),
-            })
+            self.private_request(
+                "media/validate_reel_url/",
+                {
+                    "url": str(link.webUri),
+                    "_uid": str(self.user_id),
+                    "_uuid": str(self.uuid),
+                },
+            )
             stickers.append(
                 StorySticker(
                     type="story_link",
@@ -709,8 +718,8 @@ class UploadVideoMixin:
                     extra=dict(
                         link_type="web",
                         url=str(link.webUri),
-                        tap_state_str_id="link_sticker_default"
-                    )
+                        tap_state_str_id="link_sticker_default",
+                    ),
                 )
             )
             story_sticker_ids.append("link_sticker_default")
@@ -720,19 +729,21 @@ class UploadVideoMixin:
                 if sticker.id:
                     sticker_extra["str_id"] = sticker.id
                     story_sticker_ids.append(sticker.id)
-                tap_models.append({
-                    "x": round(sticker.x, 7),
-                    "y": round(sticker.y, 7),
-                    "z": sticker.z,
-                    "width": round(sticker.width, 7),
-                    "height": round(sticker.height, 7),
-                    "rotation": sticker.rotation,
-                    "type": sticker.type,
-                    "is_sticker": True,
-                    "selected_index": 0,
-                    "tap_state": 0,
-                    **sticker_extra
-                })
+                tap_models.append(
+                    {
+                        "x": round(sticker.x, 7),
+                        "y": round(sticker.y, 7),
+                        "z": sticker.z,
+                        "width": round(sticker.width, 7),
+                        "height": round(sticker.height, 7),
+                        "rotation": sticker.rotation,
+                        "type": sticker.type,
+                        "is_sticker": True,
+                        "selected_index": 0,
+                        "tap_state": 0,
+                        **sticker_extra,
+                    }
+                )
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
         if medias:
@@ -754,7 +765,7 @@ class UploadVideoMixin:
                     "product_type": "feed",
                     "is_sticker": True,
                     "tap_state": 0,
-                    "tap_state_str_id": "feed_post_sticker_square"
+                    "tap_state_str_id": "feed_post_sticker_square",
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
@@ -781,7 +792,9 @@ class UploadVideoMixin:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = story_sticker_ids[0]
-        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/?video=1", self.with_default_data(data)
+        )
 
     def video_upload_to_direct(
         self,
@@ -849,9 +862,7 @@ class UploadVideoMixin:
                 raise e
             if configured and thread_ids:
                 return extract_direct_message(configured.get("message_metadata", [])[0])
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
