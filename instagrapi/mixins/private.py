@@ -34,14 +34,7 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
     UnknownError,
     VideoTooLongException,
-    InactiveUserError,
-    InvalidUserError,
-    IPBlockError,
-    MediaNotFound,
-    PrivateProfileUser,
     InvalidTargetUser,
-    DeleteRequestError,
-    CheckpointRequired
 )
 from instagrapi.utils import dumps, generate_signature, random_delay
 
