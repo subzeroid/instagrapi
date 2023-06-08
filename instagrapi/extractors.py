@@ -18,6 +18,7 @@ from .types import (
     Media,
     MediaOembed,
     NoteRequest,
+    NoteResponse,
     ReplyMessage,
     Resource,
     Story,
@@ -441,7 +442,23 @@ def extract_track(data):
     return Track(**data)
 
 
-def extract_note(data):
+def extract_note_content (data):
     data["text"] = data.get("text") or None
     data["uuid"] = data.get("uuid") or None
     return NoteRequest(**data)
+
+
+def extract_note(data):
+    data["uuid"] = data.get("id") or None
+    data["text"] = data.get("text") or None
+    data["user_id"] = data.get("user_id") or None
+    data["user"] = data.get("user") or None
+    data["audience"] = data.get("audience") or 0
+    data["created_at"] = data.get("created_at") or 0
+    data["expires_at"] = data.get("expires_at") or 0
+    data["is_emoji_only"] = data.get("is_emoji_only") or False
+    data["has_translation"] = data.get("has_translation") or False
+    data["note_style"] = data.get("note_style") or 0
+    data["is_unseen"] = data.get("is_unseen") or False
+    data["can_reply"] = data.get("can_reply") or False
+    return NoteResponse(**data)
