@@ -98,13 +98,9 @@ class DownloadAlbumMixin:
         files = []
         for resource in media.resources:
             if resource.media_type == 1:
-                files.append(
-                    self.photo_download_by_url_origin(resource.thumbnail_url)
-                )
+                files.append(self.photo_download_by_url_origin(resource.thumbnail_url))
             elif resource.media_type == 2:
-                files.append(
-                    self.video_download_by_url_origin(resource.video_url)
-                )
+                files.append(self.video_download_by_url_origin(resource.video_url))
             else:
                 raise AlbumNotDownload(
                     'Media type "{resource.media_type}" unknown for album (resource={resource.pk})'
@@ -280,7 +276,7 @@ class UploadAlbumMixin:
                 }
                 for child in childs
             ],
-            **extra_data
+            **extra_data,
         }
         return self.private_request(
             "media/configure_sidecar/", self.with_default_data(data)

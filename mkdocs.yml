@@ -22,6 +22,7 @@ nav:
     - Track: usage-guide/track.md
     - User: usage-guide/user.md
     - Account: usage-guide/account.md
+  - Best Practices: best-practices.md
   - Development Guide: development-guide.md
   - Exceptions: exceptions.md
 theme: material

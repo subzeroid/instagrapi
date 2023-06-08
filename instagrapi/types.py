@@ -117,13 +117,16 @@ class Media(BaseModel):
     preview_url: str
     taken_at: datetime
     media_type: int
+    image_versions2: Optional[dict] = {}
     product_type: Optional[str] = ""  # igtv or feed
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
     comment_count: Optional[int] = 0
     comments_disabled: Optional[bool] = False
+    commenting_disabled_for_viewer: Optional[bool] = False
     like_count: int
+    play_count: Optional[int]
     has_liked: Optional[bool]
     caption_text: str
     accessibility_caption: Optional[str]
@@ -233,7 +236,7 @@ class StoryStickerLink(BaseModel):
 
 class StorySticker(BaseModel):
     id: Optional[str]
-    type: Optional[str] = 'gif'
+    type: Optional[str] = "gif"
     x: float
     y: float
     z: Optional[int] = 1000005
@@ -290,6 +293,27 @@ class DirectMedia(BaseModel):
     user: Optional[UserShort]
     thumbnail_url: Optional[HttpUrl]
     video_url: Optional[HttpUrl]
+    audio_url: Optional[HttpUrl]
+
+
+class ReplyMessage(BaseModel):
+    id: str
+    user_id: Optional[int]
+    timestamp: datetime
+    item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
+    is_shh_mode: Optional[bool]
+    text: Optional[str]
+    link: Optional[dict]
+    animated_media: Optional[dict]
+    media: Optional[DirectMedia]
+    visual_media: Optional[dict]
+    media_share: Optional[Media]
+    reel_share: Optional[dict]
+    story_share: Optional[dict]
+    felix_share: Optional[dict]
+    clip: Optional[Media]
+    placeholder: Optional[dict]
 
 
 class DirectMessage(BaseModel):
@@ -298,9 +322,11 @@ class DirectMessage(BaseModel):
     thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
     is_shh_mode: Optional[bool]
     reactions: Optional[dict]
     text: Optional[str]
+    reply: Optional[ReplyMessage]
     link: Optional[dict]
     animated_media: Optional[dict]
     media: Optional[DirectMedia]
@@ -430,3 +456,22 @@ class Track(BaseModel):
     dark_message: Optional[str]
     allows_saving: bool
     territory_validity_periods: dict
+
+
+class NoteResponse(BaseModel):
+    id: str
+    text: str
+    user_id: int
+    user: UserShort
+    audience: int
+    created_at: datetime
+    expires_at: datetime
+    is_emoji_only: bool
+    has_translation: bool
+    note_style: int
+    status: str
+
+
+class NoteRequest(BaseModel):
+    text: str
+    uuid: str

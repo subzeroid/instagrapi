@@ -6,7 +6,7 @@
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **17 October 2021** (last reverse-engineering check)*
+*Instagram API valid for **13 February 2023** (last reverse-engineering check)*
 
 Support **Python >= 3.8**
 
@@ -114,6 +114,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`DirectMessage`](usage-guide/direct.md) - Message in Direct Message
   * [`Insight`](usage-guide/insight.md) - Insights for a post
   * [`Track`](usage-guide/track.md) - Music track (for Reels/Clips)
+* [Best Practices](usage-guide/best-practices.md)
 * [Development Guide](development-guide.md)
 * [Handle Exceptions](usage-guide/handle_exception.md)
 * [Challenge Resolver](usage-guide/challenge_resolver.md)
