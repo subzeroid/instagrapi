@@ -68,7 +68,7 @@ def extract_media_v1(data):
     media["has_liked"] = media.get("has_liked", False)
     media["sponsor_tags"] = [
         tag["sponsor"] for tag in media.get("sponsor_tags", [])
-    ]
+    ] if media.get("sponsor_tags") else []
 
     if media["media_type"] == 8:
         width = media["carousel_media"][0]["original_width"]
@@ -81,7 +81,6 @@ def extract_media_v1(data):
         height = media["original_height"]
         preview_url = media["image_versions2"]["candidates"][-1]["url"]
 
-    media["sponsor_tags"] = [tag["sponsor"] for tag in media.get("sponsor_tags", [])]
     media["play_count"] = media.get("play_count", 0)
     media["coauthor_producers"] = media.get("coauthor_producers", [])
     return Media(
