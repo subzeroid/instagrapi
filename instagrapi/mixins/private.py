@@ -98,7 +98,7 @@ class PrivateRequestMixin:
             retry_strategy = Retry(
                 total=3,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["GET", "POST"],
+                method_whitelist=["GET", "POST"],
                 backoff_factor=2,
             )
         adapter = HTTPAdapter(max_retries=retry_strategy)
