@@ -482,6 +482,10 @@ class ChallengeResolveMixin:
             )
             self._send_private_request(challenge_url, {"security_code": code})
 
+            if self.last_json.get("action", "") == "close":
+                assert self.last_json.get("status", "") == "ok"
+                return True
+
             # last form to verify account details
             assert (
                 self.last_json["step_name"] == "review_contact_point_change"
