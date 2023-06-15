@@ -22,7 +22,7 @@ from instagrapi.exceptions import (
 
 
 def next_proxy():
-    return random.choices(
+    return random.choice(
         [
             "http://username:password@147.123123.123:412345",
             "http://username:password@147.123123.123:412346",
