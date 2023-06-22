@@ -91,7 +91,8 @@ class DownloadVideoMixin:
             print(
                 """
                 The program detected an mis-formatted link, and hence can't download it.
-                This problem occurs when the URL is passed into 'video_download_by_url()' or the 'clip_download_by_url()'.
+                This problem occurs when the URL is passed into
+                    'video_download_by_url()' or the 'clip_download_by_url()'.
                 The raw URL needs to be re-formatted into one that is recognizable by the methods.
                 Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url here')).video_url
                 You can remove the 'self' from the code above if needed.
@@ -531,11 +532,13 @@ class UploadVideoMixin:
         thread_ids = thread_ids.copy()
         story_sticker_ids = []
         data = {
-            # USE extra_data TO EXTEND THE SETTINGS OF THE LOADED STORY, USE FOR EXAMPLE THE PROPERTIES SPECIFIED IN THE COMMENT:
+            # USE extra_data TO EXTEND THE SETTINGS OF THE LOADED STORY,
+            #   USE FOR EXAMPLE THE PROPERTIES SPECIFIED IN THE COMMENT:
             # ---------------------------------
             # When send to DIRECT:
             # "allow_multi_configures": "1",
-            # "client_context":"6823316152962778207",  <-- token = random.randint(6800011111111111111, 6800099999999999999) from direct.py
+            # "client_context":"6823316152962778207",
+            #      ^----- token = random.randint(6800011111111111111, 6800099999999999999) from direct.py
             # "is_shh_mode":"0",
             # "mutation_token":"6824688191453546273",
             # "nav_chain":"1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
@@ -779,7 +782,12 @@ class UploadVideoMixin:
                     "client_context": token,
                     "is_shh_mode": "0",
                     "mutation_token": token,
-                    "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
+                    "nav_chain": (
+                        "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,"
+                        "5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,"
+                        "8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,"
+                        "ReelViewerFragment:reel_feed_timeline:26"
+                    ),
                     "recipient_users": "[]",
                     "send_attribution": "direct_story_audience_picker",
                     "thread_ids": dumps([str(tid) for tid in thread_ids]),
@@ -895,5 +903,8 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
         print(f'Generating thumbnail "{thumbnail}"...')
         video.save_frame(thumbnail, t=(video.duration / 2))
     # duration = round(video.duration + 0.001, 3)
-    video.close()
+    try:
+        video.close()
+    except AttributeError:
+        pass
     return width, height, video.duration, thumbnail
