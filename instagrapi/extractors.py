@@ -16,6 +16,7 @@ from .types import (
     Highlight,
     Location,
     Media,
+    MediaXma,
     MediaOembed,
     NoteRequest,
     ReplyMessage,
@@ -74,6 +75,26 @@ def extract_media_v1(data):
         resources=[
             extract_resource_v1(edge) for edge in media.get("carousel_media", [])
         ],
+        **media,
+    )
+
+
+def extract_media_v1_xma(data):
+    """Extract media from Private API"""
+    media = deepcopy(data)
+  
+    #media["media_type"] = 10
+    media["video_url"] = media.get("target_url", "")
+    media["title"] = media.get("title_text", "")
+    media["preview_url"] = media.get("preview_url", "")
+    media["preview_url_mime_type"] = media.get("preview_url_mime_type", "")
+    media["header_icon_url"] = media.get("header_icon_url", "")
+    media["header_icon_width"] = media.get("header_icon_width", 0)
+    media["header_icon_height"] = media.get("header_icon_height", 0)
+    media["header_title_text"] = media.get("header_title_text", "")
+    media["preview_media_fbid"] = media.get("preview_media_fbid", "")
+    
+    return MediaXma(
         **media,
     )
 
@@ -305,6 +326,10 @@ def extract_direct_message(data):
             # Instagram ¯\_(ツ)_/¯
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
+    xma_media_share = data.get("xma_media_share", {})
+    if xma_media_share:
+        data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
+    
     return DirectMessage(**data)
 
 
