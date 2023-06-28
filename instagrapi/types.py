@@ -137,6 +137,19 @@ class Media(BaseModel):
     clips_metadata: dict = {}
 
 
+class MediaXma(BaseModel):
+    #media_type: int
+    video_url: HttpUrl  # for Video and IGTV
+    title: Optional[str] = ""
+    preview_url: Optional[HttpUrl]
+    preview_url_mime_type: Optional[str]
+    header_icon_url: Optional[HttpUrl]
+    header_icon_width: Optional[int]
+    header_icon_height: Optional[int]
+    header_title_text: Optional[str]
+    preview_media_fbid: Optional[str]
+
+
 class MediaOembed(BaseModel):
     title: str
     author_name: str
@@ -306,6 +319,7 @@ class ReplyMessage(BaseModel):
     reel_share: Optional[dict]
     story_share: Optional[dict]
     felix_share: Optional[dict]
+    xma_share: Optional[MediaXma]
     clip: Optional[Media]
     placeholder: Optional[dict]
 
@@ -329,6 +343,7 @@ class DirectMessage(BaseModel):
     reel_share: Optional[dict]
     story_share: Optional[dict]
     felix_share: Optional[dict]
+    xma_share: Optional[MediaXma]
     clip: Optional[Media]
     placeholder: Optional[dict]
 
