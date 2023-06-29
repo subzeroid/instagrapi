@@ -253,7 +253,7 @@ class HashtagMixin:
 
         data = {
             "media_recency_filter": "default",
-            "tab": "recent",
+            "tab": tab_key,
             "_uuid": self.uuid,
             "include_persistent": "false",
             "rank_token": self.rank_token,
