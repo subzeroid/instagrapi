@@ -35,6 +35,7 @@ class PublicRequestMixin:
     last_public_json = {}
     public_request_logger = logging.getLogger("public_request")
     request_timeout = 1
+    last_response_ts = 0
 
     def __init__(self, *args, **kwargs):
         # setup request session with retries
@@ -128,6 +129,8 @@ class PublicRequestMixin:
         self.public_requests_count += 1
         if headers:
             self.public.headers.update(headers)
+        if self.last_response_ts and (time.time() - self.last_response_ts) < 1.0:
+            time.sleep(1.0)
         if self.request_timeout:
             time.sleep(self.request_timeout)
         try:
@@ -199,6 +202,8 @@ class PublicRequestMixin:
 
         except requests.ConnectionError as e:
             raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
+        finally:
+            self.last_response_ts = time.time()
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")

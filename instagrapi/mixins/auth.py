@@ -843,3 +843,23 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
             return f"Bearer IGT:2:{b64part}"
         return ""
+
+    def dump_instaman(self):
+        # helen9151hernandez:AgcXb0GJhAP|Instagram 200.0.0.24.121 Android (24/7.0; 640dpi; 1440x2392; Samsung; SGH-T849; SGH-T849; hi3660; pt_BR; 304101669)|097e7efb59ba976b;03c1746f-77cd-4ac6-8f7e-175b0ba0dc17;c4155719-9d80-466c-b3f7-f98f0a14a372;7fa9e7c7-75e1-498f-8d0f-8f56fe7a4f45|X-MID=YaHXxQABAAFcCc6aAC_OQ53CVDbd;IG-U-DS-USER-ID=50511821576;IG-U-RUR=FRC,50511821576,1669532533:01f705b9f6a7411dc1e985485b1fe39dd317e97b2cf166f380148836d9c2e5233cac5476;Authorization=Bearer IGT:2:eyJkc191c2VyX2lkIjoiNTA1MTE4MjE1NzYiLCJzZXNzaW9uaWQiOiI1MDUxMTgyMTU3NiUzQWtyaEVSbHF2VW8wbnRXJTNBMjQiLCJzaG91bGRfdXNlX2hlYWRlcl9vdmVyX2Nvb2tpZXMiOnRydWV9;X-IG-WWW-Claim=hmac.AR300vJeNkurM8IGnekSoFtSKJmXazjxOawhWNC3d1Gw1OiX;||
+        uuids = ";".join(
+            [
+                self.android_device_id.replace("android-", ""),
+                self.uuid,
+                self.phone_id,
+                self.client_session_id,
+            ]
+        )
+        headers = {
+            "X-MID": self.mid,
+            "IG-U-DS-USER-ID": self.user_id,
+            "IG-U-RUR": self.ig_u_rur,
+            "Authorization": self.authorization,
+            "X-IG-WWW-Claim": self.ig_www_claim or "0",
+        }
+        headers = ";".join([f"{key}={value}" for key, value in headers.items()])
+        return f"{self.username}:{self.password}|{self.user_agent}|{uuids}|{headers};||"
