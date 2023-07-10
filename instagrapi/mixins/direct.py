@@ -2,7 +2,7 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
@@ -50,11 +50,53 @@ class DirectMixin:
         ----------
         amount: int, optional
             Maximum number of media to return, default is 20
+        selected_filter: str, optional
+            Filter to apply to threads (flagged or unread)
+        thread_message_limit: int, optional
+            Thread message limit, deafult is 10
 
         Returns
         -------
         List[DirectThread]
             A list of objects of DirectThread
+        """
+    
+        cursor = None
+        threads = []
+        # self.private_request("direct_v2/get_presence/")
+        while True:
+            threads_chunk, cursor = self.direct_threads_chunk(selected_filter, thread_message_limit, cursor)
+            for thread in threads_chunk:
+                threads.append(thread)
+                
+            if not cursor or (amount and len(threads) >= amount):
+                break
+        if amount:
+            threads = threads[:amount]
+        return threads
+    
+    def direct_threads_chunk(
+        self,
+        selected_filter: SELECTED_FILTER = "",
+        thread_message_limit: Optional[int] = None,
+        cursor: str = None
+    ) -> Tuple[List[DirectThread], str]:
+        """
+        Get direct a chunk of threads by cursor value
+
+        Parameters
+        ----------
+        selected_filter: str, optional
+            Filter to apply to threads (flagged or unread)
+        thread_message_limit: int, optional
+            Thread message limit, deafult is 10
+        cursor: str, optional
+            Cursor from the previous chunk request
+        
+        Returns
+        -------
+        Tuple[List[DirectThread], str]
+            A tuple of list of objects of DirectThread and str (cursor)
         """
         assert self.user_id, "Login required"
         params = {
@@ -62,6 +104,8 @@ class DirectMixin:
             "thread_message_limit": "10",
             "persistentBadging": "true",
             "limit": "20",
+            "is_prefetching" : "false",
+            "fetch_reason": "manual_refresh"
         }
         if selected_filter:
             assert (
@@ -69,28 +113,24 @@ class DirectMixin:
             ), f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
             params.update(
                 {
-                    "selected_filter": selected_filter,
-                    "fetch_reason": "manual_refresh",
+                    "selected_filter": selected_filter
                 }
             )
         if thread_message_limit:
             params.update({"thread_message_limit": thread_message_limit})
-        cursor = None
+        if cursor:
+            params.update({
+                "cursor" : cursor, 
+                "direction" : "older", 
+                "fetch_reason" : "page_scroll"})
+
         threads = []
-        # self.private_request("direct_v2/get_presence/")
-        while True:
-            if cursor:
-                params["cursor"] = cursor
-            result = self.private_request("direct_v2/inbox/", params=params)
-            inbox = result.get("inbox", {})
-            for thread in inbox.get("threads", []):
-                threads.append(extract_direct_thread(thread))
-            cursor = inbox.get("oldest_cursor")
-            if not cursor or (amount and len(threads) >= amount):
-                break
-        if amount:
-            threads = threads[:amount]
-        return threads
+        result = self.private_request("direct_v2/inbox/", params=params)
+        inbox = result.get("inbox", {})
+        for thread in inbox.get("threads", []):
+            threads.append(extract_direct_thread(thread))
+        cursor = inbox.get("oldest_cursor")
+        return threads, cursor
 
     def direct_pending_inbox(self, amount: int = 20) -> List[DirectThread]:
         """
