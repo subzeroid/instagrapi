@@ -146,27 +146,52 @@ class DirectMixin:
         List[DirectThread]
             A list of objects of DirectThread
         """
-        assert self.user_id, "Login required"
-        params = {
-            "visual_message_return_type": "unseen",
-            "persistentBadging": "true",
-        }
+        
         cursor = None
         threads = []
         # self.private_request("direct_v2/get_presence/")
         while True:
-            if cursor:
-                params["cursor"] = cursor
-            result = self.private_request("direct_v2/pending_inbox/", params=params)
-            inbox = result.get("inbox", {})
-            for thread in inbox.get("threads", []):
-                threads.append(extract_direct_thread(thread))
-            cursor = inbox.get("oldest_cursor")
+            new_threads, cursor = self.direct_pending_chunk(cursor)
+            for thread in new_threads:
+                threads.append(thread)
+            
             if not cursor or (amount and len(threads) >= amount):
                 break
         if amount:
             threads = threads[:amount]
         return threads
+    
+    def direct_pending_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
+        """
+        Get direct message pending threads
+
+        Parameters
+        ----------
+        cursor: str, optional
+            Cursor from the previous chunk request
+
+        Returns
+        -------
+        Tuple[List[DirectThread], str]
+            A tuple of list of objects of DirectThread and str (cursor)
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "visual_message_return_type": "unseen",
+            "persistentBadging": "true",
+            "is_prefetching" : "false",
+            "request_session_id" : self.request_id
+        }
+        if cursor:
+            params.update({"cursor" : cursor})
+        
+        threads = []
+        result = self.private_request("direct_v2/pending_inbox/", params=params)
+        inbox = result.get("inbox", {})
+        for thread in inbox.get("threads", []):
+            threads.append(extract_direct_thread(thread))
+        cursor = inbox.get("oldest_cursor")
+        return threads, cursor
 
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """
