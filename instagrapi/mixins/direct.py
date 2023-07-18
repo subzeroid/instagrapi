@@ -57,6 +57,8 @@ class DirectMixin:
             Maximum number of media to return, default is 20
         selected_filter: str, optional
             Filter to apply to threads (flagged or unread)
+        box: str, optional
+            Box to gather threads from (primary or general) (business accounts only)
         thread_message_limit: int, optional
             Thread message limit, deafult is 10
 
@@ -70,7 +72,7 @@ class DirectMixin:
         threads = []
         # self.private_request("direct_v2/get_presence/")
         while True:
-            threads_chunk, cursor = self.direct_threads_chunk(selected_filter, thread_message_limit, cursor)
+            threads_chunk, cursor = self.direct_threads_chunk(selected_filter, box, thread_message_limit, cursor)
             for thread in threads_chunk:
                 threads.append(thread)
                 
@@ -96,6 +98,8 @@ class DirectMixin:
             Filter to apply to threads (flagged or unread)
         thread_message_limit: int, optional
             Thread message limit, deafult is 10
+        box: str, optional
+            Box to gather threads from (primary or general) (business accounts only)
         cursor: str, optional
             Cursor from the previous chunk request
         
