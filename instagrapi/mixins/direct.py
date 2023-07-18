@@ -1,6 +1,5 @@
 import random
 import re
-from sre_constants import LITERAL
 import time
 from pathlib import Path
 from typing import List, Optional, Tuple
