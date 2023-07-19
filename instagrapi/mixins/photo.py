@@ -139,7 +139,7 @@ class UploadPhotoMixin:
         tuple
             (Upload ID for the media, width, height)
         """
-        assert isinstance(path, Path), f"Path must be Path, not {type(path)}"
+        assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         valid_extensions = ['.jpg', '.jpeg']
         if path.suffix.lower() not in valid_extensions:
             raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
