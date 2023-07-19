@@ -121,8 +121,8 @@ class UploadPhotoMixin:
     """
 
     def photo_rupload(
-        self, path: Path, upload_id: str = "", to_album: bool = False
-    ) -> tuple:
+            self, path: Path, upload_id: str = "", to_album: bool = False
+        ) -> tuple:
         """
         Upload photo to Instagram
 
@@ -140,6 +140,10 @@ class UploadPhotoMixin:
             (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
+        valid_extensions = ['.jpg', '.jpeg']
+        if path.suffix.lower() not in valid_extensions:
+            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
+            
         # upload_id = 516057248854759
         upload_id = upload_id or str(int(time.time() * 1000))
         assert path, "Not specified path to photo"
@@ -225,6 +229,10 @@ class UploadPhotoMixin:
             An object of Media class
         """
         path = Path(path)
+        valid_extensions = ['.jpg', '.jpeg']
+        if path.suffix.lower() not in valid_extensions:
+            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
+
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
