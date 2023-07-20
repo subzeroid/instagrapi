@@ -3,6 +3,7 @@ import json
 import time
 from enum import Enum
 from typing import Dict
+import random
 
 import requests
 
@@ -380,7 +381,7 @@ class ChallengeResolveMixin:
                 },
             )
             return True
-        elif step_name in ("verify_email", "select_verify_method"):
+        elif step_name in ("verify_email", "verify_email_code", "select_verify_method"):
             if step_name == "select_verify_method":
                 """
                 {'step_name': 'select_verify_method',
