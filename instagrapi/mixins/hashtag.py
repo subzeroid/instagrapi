@@ -178,7 +178,7 @@ class HashtagMixin:
                     continue
                 unique_set.add(media_pk)
                 # check contains hashtag in caption
-                media = extract_media_gql(edge["node"])
+                # media = extract_media_gql(edge["node"])
                 # if f"#{name}" not in media.caption_text:
                 #     continue
                 # Enrich media: Full user, usertags and video_url

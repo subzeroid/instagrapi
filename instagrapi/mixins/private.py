@@ -379,6 +379,8 @@ class PrivateRequestMixin:
             except JSONDecodeError:
                 pass
             message = last_json.get("message", "")
+            if "Please wait a few minutes" in message:
+                raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
             if e.response.status_code == 403:
                 if message == "login_required":
                     raise LoginRequired(response=e.response, **last_json)
@@ -407,8 +409,6 @@ class PrivateRequestMixin:
                     if not last_json["message"]:
                         last_json["message"] = "Two-factor authentication required"
                     raise TwoFactorRequired(**last_json)
-                elif "Please wait a few minutes before you try again" in message:
-                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
                 elif "Not authorized to view user" in message:
@@ -447,8 +447,6 @@ class PrivateRequestMixin:
                 raise ClientBadRequestError(e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
-                if "Please wait a few minutes before you try again" in message:
-                    raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
                 self.logger.warning("Status 404: Endpoint %s does not exist", endpoint)
