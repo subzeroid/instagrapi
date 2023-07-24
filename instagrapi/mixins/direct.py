@@ -2,15 +2,16 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Dict, Optional, Tuple
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_media,
     extract_direct_message,
     extract_direct_response,
+    extract_user_short,
     extract_direct_short_thread,
-    extract_direct_thread,
+    extract_direct_thread
 )
 from instagrapi.types import (
     DirectMessage,
@@ -18,20 +19,27 @@ from instagrapi.types import (
     DirectShortThread,
     DirectThread,
     Media,
+    UserShort
 )
 from instagrapi.utils import dumps
 
 SELECTED_FILTERS = ("flagged", "unread")
+SEARCH_MODES = ("raven", "universal")
+SEND_ATTRIBUTES = ("message_button", "inbox_search")
 BOXES = ("general", "primary")
 
 try:
     from typing import Literal
 
     SELECTED_FILTER = Literal[SELECTED_FILTERS]
+    SEARCH_MODE = Literal[SEARCH_MODES]
+    SEND_ATTRIBUTE = Literal[SEND_ATTRIBUTES]
     BOX = Literal[BOXES]
 except ImportError:
     # python <= 3.8
     SELECTED_FILTER = str
+    SEARCH_MODE = str
+    SEND_ATTRIBUTE = str
     BOX = str
 
 
@@ -298,7 +306,10 @@ class DirectMixin:
         return self.direct_send(text, [], [int(thread_id)])
 
     def direct_send(
-        self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
+        self, text: str, 
+        user_ids: List[int] = [], 
+        thread_ids: List[int] = [], 
+        send_attribute: SEND_ATTRIBUTE = "message_button"
     ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
@@ -314,6 +325,9 @@ class DirectMixin:
         thread_ids: List[int]
             List of unique identifier of Direct Message thread id
 
+        send_attribute: str, optional
+            Sending option. Default is "message_button"
+
         Returns
         -------
         DirectMessage
@@ -323,6 +337,7 @@ class DirectMixin:
         assert (user_ids or thread_ids) and not (
             user_ids and thread_ids
         ), "Specify user_ids or thread_ids, but not both"
+        assert send_attribute in SEND_ATTRIBUTES, f'Unsupported send_attribute="{send_attribute}" {SEND_ATTRIBUTES}'
         method = "text"
         token = self.generate_mutation_token()
 
@@ -331,11 +346,14 @@ class DirectMixin:
             "is_x_transport_forward": "false",
             "send_silently": "false",
             "is_shh_mode": "0",
-            "send_attribution": "message_button",
+            "send_attribution": send_attribute,
             "client_context": token,
+            "device_id" : self.android_device_id,
             "mutation_token": token,
             "_uuid": self.uuid,
+            "btt_dual_send" : "false",
             "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
+            "is_ae_dual_send" : "false",
             "offline_threading_id": token,
         }
         if "http" in text:
@@ -467,6 +485,29 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
+    def direct_users_presence(self, user_ids: List[int]) -> Dict:
+        '''
+        Get a presence of User
+
+        Parameters
+        ----------
+        user_ids: List[int]
+            List of unique identifier of Users id
+        '''
+        assert self.user_id, "Login Required"
+        data = {
+            "_uuid" : self.uuid,
+            "subscriptions_off" : "false",
+            "request_data": dumps([int(uid) for uid in user_ids])
+        }
+        result = self.private_request(
+            f"direct_v2/fetch_and_subscribe_presence/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        assert result.get("status") == "ok", f"Failed to retrieve presence of user_id={user_ids}"
+        return result
+
     def direct_send_seen(self, thread_id: int) -> DirectResponse:
         """
         Send seen to thread
@@ -490,31 +531,45 @@ class DirectMixin:
         )
         return extract_direct_response(result)
 
-    def direct_search(self, query: str) -> List[DirectShortThread]:
+    def direct_search(self, query: str, mode: SEARCH_MODE = "universal") -> List[UserShort]:
         """
         Search threads by query
 
         Parameters
         ----------
-        query: String
+        query: str
             Text query, e.g. username
+        mode: str, optional
+            Mode for searching, by deafult "universal"
 
         Returns
         -------
-        List[DirectShortThread]
-            List of short version of DirectThread
+        List[UserShort]
+            List of short version of Users
         """
+        assert (
+                mode in SEARCH_MODES
+            ), f'Unsupported mode="{mode}" {SEARCH_MODES}'
+
+        params = {
+            "max_ig_bus_results" : "10",
+            "mode" : mode,
+            "show_threads" : "true",
+            "query" : str(query),
+            "max_ig_results" : "10",
+            "max_fb_results" : "0"
+        }
         result = self.private_request(
             "direct_v2/ranked_recipients/",
-            params={"mode": "raven", "show_threads": "true", "query": str(query)},
+            params=params,
         )
         return [
-            extract_direct_short_thread(item.get("thread", {}))
-            for item in result.get("ranked_recipients", [])
-            if "thread" in item
+            extract_user_short(item.get("user", {}))
+            for item in result.get("ranked_recipients", []) 
+            if "user" in item and item.get("user", {}).get("username", "") != "" # Check to exclude suggestions from FB
         ]
 
-    def direct_thread_by_participants(self, user_ids: List[int]) -> DirectThread:
+    def direct_thread_by_participants(self, user_ids: List[int]) -> Dict:
         """
         Get direct thread by participants
 
@@ -525,21 +580,25 @@ class DirectMixin:
 
         Returns
         -------
-        DirectThread
-            An object of DirectThread
+        Dict
+            Some information about thread. 
+            List of UserShort under "users" key
         """
         recipient_users = dumps([int(uid) for uid in user_ids])
         result = self.private_request(
             "direct_v2/threads/get_by_participants/",
             params={"recipient_users": recipient_users, "seq_id": 2580572, "limit": 20},
         )
-        if "thread" not in result:
-            raise DirectThreadNotFound(
-                f"Thread not found by recipient_users={recipient_users}",
-                user_ids=user_ids,
-                **self.last_json,
-            )
-        return extract_direct_thread(result["thread"])
+        users = []
+        for user in result.get("users", []): 
+            users.append(UserShort( # User dict object also contains fields like follower_count, following_count, mutual_followers_count, media_count
+                pk=user["pk"], 
+                username=user["username"],
+                full_name=user["full_name"],
+                profile_pic_url=user["profile_pic_url"],
+                is_private=user["is_private"]))
+        result["users"] = users
+        return result
 
     def direct_thread_hide(self, thread_id: int) -> bool:
         """
