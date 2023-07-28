@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import shutil
 from pathlib import Path
 from urllib.parse import urlparse
@@ -7,6 +8,7 @@ import requests
 from instagrapi.extractors import extract_track
 from instagrapi.types import Track
 from instagrapi.utils import json_value
+from instagrapi.exceptions import ClientError, TrackNotFound
 
 
 class TrackMixin:
@@ -41,6 +43,20 @@ class TrackMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
+    def _track_request(self, data: Dict[str, Any]) -> Dict:
+        try:
+            result = self.private_request("clips/music/", data)
+        except ClientError as e:
+            if not self.last_json:
+                kw = {
+                    k: v
+                    for k, v in data.items()
+                    if k in {"music_canonical_id", "original_sound_audio_asset_id"}
+                }
+                raise TrackNotFound(**kw)
+            raise e
+        return result
+
     def track_info_by_canonical_id(self, music_canonical_id: str) -> Track:
         """
         Get Track by music_canonical_id
@@ -64,3 +80,25 @@ class TrackMixin:
         result = self.private_request("clips/music/", data)
         track = json_value(result, "metadata", "music_info", "music_asset_info")
         return extract_track(track)
+
+    def track_info_by_id(self, track_id: str, max_id: str = "") -> Dict:
+        """
+        Get Track by id
+
+        Parameters
+        ----------
+        track_id: str
+            Unique identifier of the track
+
+        Returns
+        -------
+        Dict
+            Raw insta response json
+        """
+        data = {
+            "audio_cluster_id": track_id,
+            "original_sound_audio_asset_id": track_id,
+        }
+        if max_id:
+            data["max_id"] = max_id
+        return self._track_request(data)

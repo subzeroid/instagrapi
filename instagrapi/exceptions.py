@@ -151,6 +151,10 @@ class UnknownError(PrivateError):
     pass
 
 
+class TrackNotFound(NotFoundError):
+    pass
+
+
 class MediaError(PrivateError):
     pass
 

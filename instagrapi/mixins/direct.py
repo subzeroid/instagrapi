@@ -10,16 +10,14 @@ from instagrapi.extractors import (
     extract_direct_message,
     extract_direct_response,
     extract_user_short,
-    extract_direct_short_thread,
-    extract_direct_thread
+    extract_direct_thread,
 )
 from instagrapi.types import (
     DirectMessage,
     DirectResponse,
-    DirectShortThread,
     DirectThread,
     Media,
-    UserShort
+    UserShort,
 )
 from instagrapi.utils import dumps
 
@@ -74,27 +72,29 @@ class DirectMixin:
         List[DirectThread]
             A list of objects of DirectThread
         """
-    
+
         cursor = None
         threads = []
         # self.private_request("direct_v2/get_presence/")
         while True:
-            threads_chunk, cursor = self.direct_threads_chunk(selected_filter, box, thread_message_limit, cursor)
+            threads_chunk, cursor = self.direct_threads_chunk(
+                selected_filter, box, thread_message_limit, cursor
+            )
             for thread in threads_chunk:
                 threads.append(thread)
-                
+
             if not cursor or (amount and len(threads) >= amount):
                 break
         if amount:
             threads = threads[:amount]
         return threads
-    
+
     def direct_threads_chunk(
         self,
         selected_filter: SELECTED_FILTER = "",
         box: BOX = "",
         thread_message_limit: Optional[int] = None,
-        cursor: str = None
+        cursor: str = None,
     ) -> Tuple[List[DirectThread], str]:
         """
         Get direct a chunk of threads by cursor value
@@ -109,7 +109,7 @@ class DirectMixin:
             Box to gather threads from (primary or general) (business accounts only)
         cursor: str, optional
             Cursor from the previous chunk request
-        
+
         Returns
         -------
         Tuple[List[DirectThread], str]
@@ -121,34 +121,23 @@ class DirectMixin:
             "thread_message_limit": "10",
             "persistentBadging": "true",
             "limit": "20",
-            "is_prefetching" : "false",
-            "fetch_reason": "manual_refresh"
+            "is_prefetching": "false",
+            "fetch_reason": "manual_refresh",
         }
         if selected_filter:
             assert (
                 selected_filter in SELECTED_FILTERS
             ), f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
-            params.update(
-                {
-                    "selected_filter": selected_filter
-                }
-            )
+            params.update({"selected_filter": selected_filter})
         if box:
-            assert (
-                box in BOXES
-            ), f'Unsupported box="{box}" {BOXES}'
-            params.update(
-                {
-                    "folder" : '1' if box == "general" else '0'
-                }
-            )
+            assert box in BOXES, f'Unsupported box="{box}" {BOXES}'
+            params.update({"folder": "1" if box == "general" else "0"})
         if thread_message_limit:
             params.update({"thread_message_limit": thread_message_limit})
         if cursor:
-            params.update({
-                "cursor" : cursor, 
-                "direction" : "older", 
-                "fetch_reason" : "page_scroll"})
+            params.update(
+                {"cursor": cursor, "direction": "older", "fetch_reason": "page_scroll"}
+            )
 
         threads = []
         result = self.private_request("direct_v2/inbox/", params=params)
@@ -172,7 +161,7 @@ class DirectMixin:
         List[DirectThread]
             A list of objects of DirectThread
         """
-        
+
         cursor = None
         threads = []
         # self.private_request("direct_v2/get_presence/")
@@ -180,14 +169,16 @@ class DirectMixin:
             new_threads, cursor = self.direct_pending_chunk(cursor)
             for thread in new_threads:
                 threads.append(thread)
-            
+
             if not cursor or (amount and len(threads) >= amount):
                 break
         if amount:
             threads = threads[:amount]
         return threads
-    
-    def direct_pending_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
+
+    def direct_pending_chunk(
+        self, cursor: str = None
+    ) -> Tuple[List[DirectThread], str]:
         """
         Get direct message pending threads
 
@@ -205,12 +196,12 @@ class DirectMixin:
         params = {
             "visual_message_return_type": "unseen",
             "persistentBadging": "true",
-            "is_prefetching" : "false",
-            "request_session_id" : self.request_id
+            "is_prefetching": "false",
+            "request_session_id": self.request_id,
         }
         if cursor:
-            params.update({"cursor" : cursor})
-        
+            params.update({"cursor": cursor})
+
         threads = []
         result = self.private_request("direct_v2/pending_inbox/", params=params)
         inbox = result.get("inbox", {})
@@ -306,10 +297,11 @@ class DirectMixin:
         return self.direct_send(text, [], [int(thread_id)])
 
     def direct_send(
-        self, text: str, 
-        user_ids: List[int] = [], 
-        thread_ids: List[int] = [], 
-        send_attribute: SEND_ATTRIBUTE = "message_button"
+        self,
+        text: str,
+        user_ids: List[int] = [],
+        thread_ids: List[int] = [],
+        send_attribute: SEND_ATTRIBUTE = "message_button",
     ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
@@ -337,7 +329,9 @@ class DirectMixin:
         assert (user_ids or thread_ids) and not (
             user_ids and thread_ids
         ), "Specify user_ids or thread_ids, but not both"
-        assert send_attribute in SEND_ATTRIBUTES, f'Unsupported send_attribute="{send_attribute}" {SEND_ATTRIBUTES}'
+        assert (
+            send_attribute in SEND_ATTRIBUTES
+        ), f'Unsupported send_attribute="{send_attribute}" {SEND_ATTRIBUTES}'
         method = "text"
         token = self.generate_mutation_token()
 
@@ -348,12 +342,12 @@ class DirectMixin:
             "is_shh_mode": "0",
             "send_attribution": send_attribute,
             "client_context": token,
-            "device_id" : self.android_device_id,
+            "device_id": self.android_device_id,
             "mutation_token": token,
             "_uuid": self.uuid,
-            "btt_dual_send" : "false",
+            "btt_dual_send": "false",
             "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
-            "is_ae_dual_send" : "false",
+            "is_ae_dual_send": "false",
             "offline_threading_id": token,
         }
         if "http" in text:
@@ -486,26 +480,28 @@ class DirectMixin:
         return extract_direct_message(result["payload"])
 
     def direct_users_presence(self, user_ids: List[int]) -> Dict:
-        '''
+        """
         Get a presence of User
 
         Parameters
         ----------
         user_ids: List[int]
             List of unique identifier of Users id
-        '''
+        """
         assert self.user_id, "Login Required"
         data = {
-            "_uuid" : self.uuid,
-            "subscriptions_off" : "false",
-            "request_data": dumps([int(uid) for uid in user_ids])
+            "_uuid": self.uuid,
+            "subscriptions_off": "false",
+            "request_data": dumps([int(uid) for uid in user_ids]),
         }
         result = self.private_request(
-            f"direct_v2/fetch_and_subscribe_presence/",
+            "direct_v2/fetch_and_subscribe_presence/",
             data=self.with_default_data(data),
             with_signature=False,
         )
-        assert result.get("status") == "ok", f"Failed to retrieve presence of user_id={user_ids}"
+        assert (
+            result.get("status") == "ok"
+        ), f"Failed to retrieve presence of user_id={user_ids}"
         return result
 
     def direct_send_seen(self, thread_id: int) -> DirectResponse:
@@ -531,7 +527,9 @@ class DirectMixin:
         )
         return extract_direct_response(result)
 
-    def direct_search(self, query: str, mode: SEARCH_MODE = "universal") -> List[UserShort]:
+    def direct_search(
+        self, query: str, mode: SEARCH_MODE = "universal"
+    ) -> List[UserShort]:
         """
         Search threads by query
 
@@ -547,17 +545,15 @@ class DirectMixin:
         List[UserShort]
             List of short version of Users
         """
-        assert (
-                mode in SEARCH_MODES
-            ), f'Unsupported mode="{mode}" {SEARCH_MODES}'
+        assert mode in SEARCH_MODES, f'Unsupported mode="{mode}" {SEARCH_MODES}'
 
         params = {
-            "max_ig_bus_results" : "10",
-            "mode" : mode,
-            "show_threads" : "true",
-            "query" : str(query),
-            "max_ig_results" : "10",
-            "max_fb_results" : "0"
+            "max_ig_bus_results": "10",
+            "mode": mode,
+            "show_threads": "true",
+            "query": str(query),
+            "max_ig_results": "10",
+            "max_fb_results": "0",
         }
         result = self.private_request(
             "direct_v2/ranked_recipients/",
@@ -565,8 +561,10 @@ class DirectMixin:
         )
         return [
             extract_user_short(item.get("user", {}))
-            for item in result.get("ranked_recipients", []) 
-            if "user" in item and item.get("user", {}).get("username", "") != "" # Check to exclude suggestions from FB
+            for item in result.get("ranked_recipients", [])
+            if "user" in item
+            and item.get("user", {}).get("username", "")
+            != ""  # Check to exclude suggestions from FB
         ]
 
     def direct_thread_by_participants(self, user_ids: List[int]) -> Dict:
@@ -581,7 +579,7 @@ class DirectMixin:
         Returns
         -------
         Dict
-            Some information about thread. 
+            Some information about thread.
             List of UserShort under "users" key
         """
         recipient_users = dumps([int(uid) for uid in user_ids])
@@ -590,13 +588,16 @@ class DirectMixin:
             params={"recipient_users": recipient_users, "seq_id": 2580572, "limit": 20},
         )
         users = []
-        for user in result.get("users", []): 
-            users.append(UserShort( # User dict object also contains fields like follower_count, following_count, mutual_followers_count, media_count
-                pk=user["pk"], 
-                username=user["username"],
-                full_name=user["full_name"],
-                profile_pic_url=user["profile_pic_url"],
-                is_private=user["is_private"]))
+        for user in result.get("users", []):
+            users.append(
+                UserShort(  # User dict object also contains fields like follower_count, following_count, mutual_followers_count, media_count
+                    pk=user["pk"],
+                    username=user["username"],
+                    full_name=user["full_name"],
+                    profile_pic_url=user["profile_pic_url"],
+                    is_private=user["is_private"],
+                )
+            )
         result["users"] = users
         return result
 

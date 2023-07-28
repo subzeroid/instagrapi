@@ -1,6 +1,4 @@
 import base64
-
-# import datetime
 import hashlib
 import hmac
 import json
@@ -9,7 +7,7 @@ import re
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 from uuid import uuid4
 
 import requests
@@ -26,7 +24,13 @@ from instagrapi.exceptions import (
 from instagrapi.utils import dumps, gen_token, generate_jazoest
 
 # from instagrapi.zones import CET
-TIMELINE_FEED_REASONS = ("cold_start_fetch", "warm_start_fetch", "pagination", "pull_to_refresh", "auto_refresh")
+TIMELINE_FEED_REASONS = (
+    "cold_start_fetch",
+    "warm_start_fetch",
+    "pagination",
+    "pull_to_refresh",
+    "auto_refresh",
+)
 REELS_TRAY_REASONS = ("cold_start", "pull_to_refresh")
 try:
     from typing import Literal
@@ -182,7 +186,9 @@ class PostLoginFlowMixin:
         check_flow.append(self.get_timeline_feed(["cold_start_fetch"]))
         return all(check_flow)
 
-    def get_timeline_feed(self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None) -> Dict:
+    def get_timeline_feed(
+        self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
+    ) -> Dict:
         """
         Get your timeline feed
 
@@ -205,18 +211,18 @@ class PostLoginFlowMixin:
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
-            "has_camera_permission" : "1",
+            "has_camera_permission": "1",
             "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,"media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
             "phone_id": self.phone_id,
-            "reason" : reason,
-            "battery_level": 100, # Random battery level is not simulating real bahaviour
+            "reason": reason,
+            "battery_level": 100,  # Random battery level is not simulating real bahaviour
             "timezone_offset": str(self.timezone_offset),
             "_csrftoken": self.token,
             "device_id": self.uuid,
             "request_id": self.request_id,
             "_uuid": self.uuid,
             "is_charging": random.randint(0, 1),
-            "is_dark_mode" : 1, # Random dark mode is not simulating real bahaviour
+            "is_dark_mode": 1,  # Random dark mode is not simulating real bahaviour
             "will_sound_on": random.randint(0, 1),
             "session_id": self.client_session_id,
             "bloks_versioning_id": self.bloks_versioning_id,
@@ -226,7 +232,7 @@ class PostLoginFlowMixin:
         else:
             data["is_pull_to_refresh"] = "0"
 
-        if max_id: 
+        if max_id:
             data["max_id"] = max_id
         # if "push_disabled" in options:
         #     data["push_disabled"] = "true"
@@ -236,7 +242,9 @@ class PostLoginFlowMixin:
             "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
         )
 
-    def get_reels_tray_feed(self, reason: REELS_TRAY_REASON = "pull_to_refresh") -> Dict:
+    def get_reels_tray_feed(
+        self, reason: REELS_TRAY_REASON = "pull_to_refresh"
+    ) -> Dict:
         """
         Get your reels tray feed
 
@@ -256,7 +264,7 @@ class PostLoginFlowMixin:
             "timezone_offset": str(self.timezone_offset),
             "tray_session_id": self.tray_session_id,
             "request_id": self.request_id,
-            #"latest_preloaded_reel_ids": "[]", # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
+            # "latest_preloaded_reel_ids": "[]", # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
             "page_size": 50,
             # "_csrftoken": self.token,
             "_uuid": self.uuid,
@@ -264,7 +272,7 @@ class PostLoginFlowMixin:
         if reason == "cold_start":
             data["reel_tray_impressions"] = {}
         else:
-            data["reel_tray_impressions"] = {self.user_id : int(time.time())}
+            data["reel_tray_impressions"] = {self.user_id: int(time.time())}
         return self.private_request("feed/reels_tray/", data)
 
 
