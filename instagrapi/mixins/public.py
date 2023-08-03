@@ -76,7 +76,6 @@ class PublicRequestMixin:
             }
         )
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
-        self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)
 
     @property
