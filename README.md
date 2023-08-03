@@ -1,5 +1,5 @@
 [![Package](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml)
-![PyPI](https://img.shields.io/pypi/v/instagrapi)
+[![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
@@ -9,7 +9,7 @@
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
-## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com) and [Datalama SaaS](https://datalama.io/)
+## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com/p/3msyAKDX) and [Datalama SaaS](https://datalama.io/)
 
 Features:
 
@@ -30,11 +30,11 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://adw0rd.com/2020/03/26/sniffing-instagram-charles-proxy/en/) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **13 February 2023** (last reverse-engineering check)*
+*Instagram API valid for **28 June 2023** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 
-For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Lamadava SaaS](https://lamadava.com)
+For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Lamadava SaaS](https://lamadava.com/p/3msyAKDX)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -58,6 +58,12 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 * [Datalama SaaS](https://datalama.io/) - Social Networks Cache
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
+### Installation
+
+```
+pip install instagrapi
+```
+
 ### Basic Usage
 
 ``` python
@@ -66,7 +72,7 @@ from instagrapi import Client
 cl = Client()
 cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
 
-user_id = cl.user_id_from_username("adw0rd")
+user_id = cl.user_id_from_username(ACCOUNT_USERNAME)
 medias = cl.user_medias(user_id, 20)
 ```
 

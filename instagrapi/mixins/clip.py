@@ -253,8 +253,14 @@ class UploadClipMixin:
         tmpvideo = Path(tempfile.mktemp(".mp4"))
         video.write_videofile(str(tmpvideo))
         # close the media
-        video.close()
-        audio_clip.close()
+        try:
+            video.close()
+        except AttributeError:
+            pass
+        try:
+            audio_clip.close()
+        except AttributeError:
+            pass
         # create the extra data to upload with it
         data = extra_data or {}
         data["clips_audio_metadata"] = (

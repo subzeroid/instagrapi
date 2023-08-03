@@ -38,7 +38,7 @@ class PublicRequestMixin:
     last_public_json = {}
     public_request_logger = logging.getLogger("public_request")
     request_timeout = 1
-    timeout = 3
+    last_response_ts = 0
 
     def __init__(self, *args, **kwargs):
         # setup request session with retries
@@ -47,14 +47,14 @@ class PublicRequestMixin:
             retry_strategy = Retry(
                 total=3,
                 status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["GET", "POST"],
+                allowed_methods=["GET", "POST"],
                 backoff_factor=2,
             )
         except TypeError:
             retry_strategy = Retry(
                 total=3,
                 status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["GET", "POST"],
+                method_whitelist=["GET", "POST"],
                 backoff_factor=2,
             )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -144,6 +144,8 @@ class PublicRequestMixin:
         self.public.headers.update(self.public_base_headers)
         if headers:
             self.public.headers.update(headers)
+        if self.last_response_ts and (time.time() - self.last_response_ts) < 1.0:
+            time.sleep(1.0)
         if self.request_timeout:
             time.sleep(self.request_timeout)
         try:
@@ -215,6 +217,8 @@ class PublicRequestMixin:
 
         except requests.ConnectionError as e:
             raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
+        finally:
+            self.last_response_ts = time.time()
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
         url = self.PUBLIC_API_URL + endpoint.lstrip("/")

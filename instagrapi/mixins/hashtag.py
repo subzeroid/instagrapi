@@ -4,7 +4,6 @@ from instagrapi.exceptions import ClientError, HashtagNotFound
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
-    extract_media_gql,
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
@@ -178,9 +177,9 @@ class HashtagMixin:
                     continue
                 unique_set.add(media_pk)
                 # check contains hashtag in caption
-                media = extract_media_gql(edge["node"])
-                if f"#{name}" not in media.caption_text:
-                    continue
+                # media = extract_media_gql(edge["node"])
+                # if f"#{name}" not in media.caption_text:
+                #     continue
                 # Enrich media: Full user, usertags and video_url
                 medias.append(self.media_info_gql(media_pk))
             ######################################################
@@ -249,11 +248,10 @@ class HashtagMixin:
             "top",
             "recent",
             "clips",
-        ), 'You must specify one of the options for "tab_key" ("top" or "recent")'
-
+        ), 'You must specify one of the options for "tab_key" ("top", "recent", "clips")'
         data = {
             "media_recency_filter": "default",
-            "tab": "recent",
+            "tab": tab_key,
             "_uuid": self.uuid,
             "include_persistent": "false",
             "rank_token": self.rank_token,
@@ -274,8 +272,8 @@ class HashtagMixin:
                         break
                     media = extract_media_v1(node["media"])
                     # check contains hashtag in caption
-                    if f"#{name}" not in media.caption_text:
-                        continue
+                    # if f"#{name}" not in media.caption_text:
+                    #     continue
                     medias.append(media)
             if not result["more_available"]:
                 break

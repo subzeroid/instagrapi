@@ -396,3 +396,25 @@ class StoryMixin:
             A boolean value
         """
         return self.story_like(story_id, revert=True)
+    
+    def sticker_tray(self) -> dict:
+        '''
+        Getting a sticker tray from Instagram
+
+        Returns
+        -------
+        dict
+            Sticker Tray
+        '''
+        data = {
+            "_uid" : self.user_id,
+            "type" : "static_stickers",
+            "_uuid" : self.uuid
+        }
+        result = self.private_request(
+            "creatives/sticker_tray/", 
+            data=data,
+            with_signature=True,
+        )
+        assert result["status"] == "ok"
+        return result
