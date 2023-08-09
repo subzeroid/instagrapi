@@ -11,6 +11,7 @@ from instagrapi.extractors import (
     extract_direct_response,
     extract_user_short,
     extract_direct_thread,
+    extract_direct_short_thread,
 )
 from instagrapi.types import (
     DirectMessage,
@@ -566,6 +567,39 @@ class DirectMixin:
             and item.get("user", {}).get("username", "")
             != ""  # Check to exclude suggestions from FB
         ]
+
+    def direct_message_search(self, query: str) -> List[Tuple[DirectMessage, DirectThread]]:
+        '''
+        Search query mentions in direct messages
+
+        Parameters
+        ----------
+        query: str
+            Text query
+
+        Returns
+        -------
+        List[Tuple[DirectMessage, DirectThread]]
+            List of Tuples with DirectMessage (matched query) and its DirectThread
+        ''' 
+        params = {
+            "offsets" : '{"message_content":"0","reshared_content":""}',
+            "query" : query,
+            "result_types" : '["message_content","reshared_content"]'
+        }
+        result = self.private_request(
+            "direct_v2/search_secondary/",
+            params=params,
+        )
+        assert result.get("status", "") == "ok"
+        search_results = result.get("message_search_results", {})
+        
+        data = []
+        for item in search_results.get("message_search_result_items", []):
+            message = item.get("matched_message_info", {})
+            thread = item.get("thread", {})
+            data.append((extract_direct_message(message.get("item_info", {})), extract_direct_short_thread(thread)))
+        return data
 
     def direct_thread_by_participants(self, user_ids: List[int]) -> Dict:
         """
