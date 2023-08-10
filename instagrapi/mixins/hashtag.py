@@ -348,7 +348,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_top_posts")
+        return self.hashtag_medias_a1(name, amount, tab_key="top")
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
         """
@@ -406,7 +406,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
-        return self.hashtag_medias_a1(name, amount, tab_key="edge_hashtag_to_media")
+        return self.hashtag_medias_a1(name, amount, tab_key="recent")
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
         """
