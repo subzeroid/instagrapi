@@ -399,6 +399,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.username = username
         self.password = password
         if relogin:
+            self.authorization_data = {}
+            self.private.headers.pop("Authorization", None)
             self.private.cookies.clear()
             if self.relogin_attempt > 1:
                 raise ReloginAttemptExceeded()
