@@ -126,6 +126,7 @@ Low level methods:
 | hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
 | hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Get recent medias for a hashtag by Public Web API
 | hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
+| hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Get recent clips (reels) for a hashtag by Private Mobile API
 
 Example for [Request for loading every next time new posts from hashtag](https://github.com/adw0rd/instagrapi/issues/79):
 
