@@ -18,7 +18,6 @@ from .types import (
     Media,
     MediaXma,
     MediaOembed,
-    NoteRequest,
     ReplyMessage,
     Resource,
     Story,
@@ -465,8 +464,3 @@ def extract_track(data):
     data["uri"] = html.unescape(items[0]) if items else None
     return Track(**data)
 
-
-def extract_note(data):
-    data["text"] = data.get("text") or None
-    data["uuid"] = data.get("uuid") or None
-    return NoteRequest(**data)

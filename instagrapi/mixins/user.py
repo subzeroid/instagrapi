@@ -1153,3 +1153,34 @@ class UserMixin:
         }
         result = self.private_request("friendships/set_besties/", data)
         return json_value(result, "friendship_statuses", user_id, "is_bestie") == False
+
+    def creator_info(self, user_id: str, entry_point: str = "direct_thread") -> Tuple[UserShort, Dict]:
+        """
+        Retrieves Creator's information
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        entry_point: str, optional
+            Entry point for retrieving, default - direct_thread
+            When passing self_profile, own user_id must be provided
+
+        Returns
+        -------
+        Tuple[UserShort, Dict]
+            Retrieved User and his Creator's Info
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "entry_point" : entry_point,
+            "surface_type" : "android",
+            "user_id" : user_id
+        }
+
+        result = self.private_request("creator/creator_info/", params=params)
+        assert result.get("status", "") == "ok"
+
+        creator_info = result.get("user", {}).pop("creator_info", {})
+        user = extract_user_short(result.get("user", {}))
+        return (user, creator_info)

@@ -467,7 +467,7 @@ class Track(BaseModel):
     territory_validity_periods: dict
 
 
-class NoteResponse(BaseModel):
+class Note(BaseModel):
     id: str
     text: str
     user_id: int
@@ -478,9 +478,3 @@ class NoteResponse(BaseModel):
     is_emoji_only: bool
     has_translation: bool
     note_style: int
-    status: str
-
-
-class NoteRequest(BaseModel):
-    text: str
-    uuid: str
