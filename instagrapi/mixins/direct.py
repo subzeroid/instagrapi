@@ -16,6 +16,7 @@ from instagrapi.extractors import (
 from instagrapi.types import (
     DirectMessage,
     DirectResponse,
+    DirectShortThread,
     DirectThread,
     Media,
     UserShort,
@@ -487,7 +488,12 @@ class DirectMixin:
         Parameters
         ----------
         user_ids: List[int]
-            List of unique identifier of Users id
+            List of unique identifier of Users ID
+
+        Returns
+        -------
+        Dict
+            Dict with User's presences
         """
         assert self.user_id, "Login Required"
         data = {
@@ -504,6 +510,29 @@ class DirectMixin:
             result.get("status") == "ok"
         ), f"Failed to retrieve presence of user_id={user_ids}"
         return result
+
+    def direct_active_presence(self) -> Dict:
+        '''
+        Getting active presences in Direct
+
+        Returns
+        -------
+        Dict
+            Dict with active presences
+        '''
+        params = {
+            "recent_thread_limit" : 0,
+            "suggested_followers_limit" : 100
+        }
+        result = self.private_request(
+            "direct_v2/get_presence_active_now/",
+            params=params
+        )
+        assert (
+            result.get("status") == "ok"
+        ), f"Failed to retrieve active presences"
+
+        return result.get("user_presence", {})
 
     def direct_send_seen(self, thread_id: int) -> DirectResponse:
         """
@@ -568,7 +597,7 @@ class DirectMixin:
             != ""  # Check to exclude suggestions from FB
         ]
 
-    def direct_message_search(self, query: str) -> List[Tuple[DirectMessage, DirectThread]]:
+    def direct_message_search(self, query: str) -> List[Tuple[DirectMessage, DirectShortThread]]:
         '''
         Search query mentions in direct messages
 
