@@ -1,37 +1,89 @@
-import uuid
-
-from instagrapi.types import NoteRequest
-
+from instagrapi.types import Note
 
 class NoteMixin:
-    def get_my_notes(self):
-        """
-        Get your personal notes
-        """
-        headers = self.base_headers
-        headers["X-IG-Client-Endpoint"] = "DirectInboxFragment:direct_inbox"
-        return self.private_request("notes/get_notes/", headers=headers)
+    def get_notes(self) -> list[Note]:
+        '''
+        Retrieves Notes in Direct
 
-    def delete_note(self, note_id: int):
+        Returns
+        -------
+        List[Notes]
+            List of all the Notes in Direct
+        '''
+        result = self.private_request("notes/get_notes/")
+        assert result.get("status", "") == "ok", "Failed to retrieve Notes in Direct"
+
+        notes = []
+        for item in result.get("items", []):
+            notes.append(Note(**item))
+        return notes
+
+    def last_seen_update_note(self) -> bool:
+        '''
+        Updating your Notes last seen
+
+        Returns
+        -------
+        bool
+            A boolean value
+        '''
+        result = self.private_request(
+            "notes/update_notes_last_seen_timestamp/",
+            data={"_uuid" : self.uuid}
+        )
+        return result.get("status", "") == "ok"
+
+    def delete_note(self, note_id: int) -> bool:
         """
         Delete one of your personal notes
-        It uses note_id to delete a note
-        Use get_my_notes() to get note_id
+
+        Parameters
+        ----------
+        note_id: int
+            ID of the Note to delete
+
+        Returns
+        -------
+        bool
+            A boolean value
         """
-        headers = dict(self.base_headers)
-        headers["X-IG-Client-Endpoint"] = "DirectInboxFragment:direct_inbox"
-        return self.private_request(
+        result = self.private_request(
             "notes/delete_note/",
-            headers=headers,
-            data={"id": note_id, "_uuid": self.uuid},
-            with_signature=False,
+            data={"id": note_id, "_uuid": self.uuid}
+        )
+        return result.get("status", "") == "ok"
+
+    def create_note(self, text: str, audience: int = 0) -> Note:
+        '''
+        Create personal Note
+
+        Parameters
+        ----------
+        text: str
+            Content of the Note
+        audience: optional
+            Audience to see Note, deafult 0 (Followers you follow back).
+            Best Friends - 1
+
+        Returns
+        -------
+        Note
+            Created Note
+        
+        '''
+        assert self.user_id, "Login required"
+        assert audience in (0, 1), f"Invalid audience parameter={audience} (must be 0 or 1)"
+
+        data = {
+            "note_style" : 0,
+            "text": text, 
+            "_uuid": self.uuid, 
+            "audience": audience
+        }
+        result = self.private_request(
+            "notes/create_note",
+            data=data
         )
 
-    def send_note(self, note_content: str, audience: int) -> NoteRequest:
-        assert self.user_id, "Login required"
-        data = {"text": note_content, "uuid": uuid.uuid4(), "audience": audience}
-        return self.private_request(
-            "notes/create_note",
-            data=self.with_default_data(data),
-            with_signature=False,
-        )
+        assert result.pop("status", "") == "ok", "Failed to create new Note"
+        return Note(**result)
