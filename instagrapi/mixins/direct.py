@@ -348,7 +348,10 @@ class DirectMixin:
             "mutation_token": token,
             "_uuid": self.uuid,
             "btt_dual_send": "false",
-            "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
+            "nav_chain": (
+                "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,"
+                "7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7"
+            ),
             "is_ae_dual_send": "false",
             "offline_threading_id": token,
         }
@@ -444,8 +447,18 @@ class DirectMixin:
         method = f"configure_{content_type}"
         token = self.generate_mutation_token()
         nav_chains = [
-            "6xQ:direct_media_picker_photos_fragment:1,5rG:direct_thread:2,5ME:direct_quick_camera_fragment:3,5ME:direct_quick_camera_fragment:4,4ju:reel_composer_preview:5,5rG:direct_thread:6,5rG:direct_thread:7,6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9",
-            "1qT:feed_timeline:1,7Az:direct_inbox:2,7Az:direct_inbox:3,5rG:direct_thread:4,6xQ:direct_media_picker_photos_fragment:5,5rG:direct_thread:6,5rG:direct_thread:7,6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9",
+            (
+                "6xQ:direct_media_picker_photos_fragment:1,5rG:direct_thread:2,"
+                "5ME:direct_quick_camera_fragment:3,5ME:direct_quick_camera_fragment:4,"
+                "4ju:reel_composer_preview:5,5rG:direct_thread:6,5rG:direct_thread:7,"
+                "6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9"
+            ),
+            (
+                "1qT:feed_timeline:1,7Az:direct_inbox:2,7Az:direct_inbox:3,"
+                "5rG:direct_thread:4,6xQ:direct_media_picker_photos_fragment:5,"
+                "5rG:direct_thread:6,5rG:direct_thread:7,"
+                "6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9"
+            ),
         ]
         kwargs = {}
         data = {
@@ -512,25 +525,19 @@ class DirectMixin:
         return result
 
     def direct_active_presence(self) -> Dict:
-        '''
+        """
         Getting active presences in Direct
 
         Returns
         -------
         Dict
             Dict with active presences
-        '''
-        params = {
-            "recent_thread_limit" : 0,
-            "suggested_followers_limit" : 100
-        }
+        """
+        params = {"recent_thread_limit": 0, "suggested_followers_limit": 100}
         result = self.private_request(
-            "direct_v2/get_presence_active_now/",
-            params=params
+            "direct_v2/get_presence_active_now/", params=params
         )
-        assert (
-            result.get("status") == "ok"
-        ), f"Failed to retrieve active presences"
+        assert result.get("status") == "ok", "Failed to retrieve active presences"
 
         return result.get("user_presence", {})
 
@@ -597,8 +604,10 @@ class DirectMixin:
             != ""  # Check to exclude suggestions from FB
         ]
 
-    def direct_message_search(self, query: str) -> List[Tuple[DirectMessage, DirectShortThread]]:
-        '''
+    def direct_message_search(
+        self, query: str
+    ) -> List[Tuple[DirectMessage, DirectShortThread]]:
+        """
         Search query mentions in direct messages
 
         Parameters
@@ -610,11 +619,11 @@ class DirectMixin:
         -------
         List[Tuple[DirectMessage, DirectThread]]
             List of Tuples with DirectMessage (matched query) and its DirectThread
-        ''' 
+        """
         params = {
-            "offsets" : '{"message_content":"0","reshared_content":""}',
-            "query" : query,
-            "result_types" : '["message_content","reshared_content"]'
+            "offsets": '{"message_content":"0","reshared_content":""}',
+            "query": query,
+            "result_types": '["message_content","reshared_content"]',
         }
         result = self.private_request(
             "direct_v2/search_secondary/",
@@ -622,12 +631,17 @@ class DirectMixin:
         )
         assert result.get("status", "") == "ok"
         search_results = result.get("message_search_results", {})
-        
+
         data = []
         for item in search_results.get("message_search_result_items", []):
             message = item.get("matched_message_info", {})
             thread = item.get("thread", {})
-            data.append((extract_direct_message(message.get("item_info", {})), extract_direct_short_thread(thread)))
+            data.append(
+                (
+                    extract_direct_message(message.get("item_info", {})),
+                    extract_direct_short_thread(thread),
+                )
+            )
         return data
 
     def direct_thread_by_participants(self, user_ids: List[int]) -> Dict:
@@ -652,8 +666,10 @@ class DirectMixin:
         )
         users = []
         for user in result.get("users", []):
+            # User dict object also contains fields like follower_count,
+            #     following_count, mutual_followers_count, media_count
             users.append(
-                UserShort(  # User dict object also contains fields like follower_count, following_count, mutual_followers_count, media_count
+                UserShort(
                     pk=user["pk"],
                     username=user["username"],
                     full_name=user["full_name"],
@@ -713,7 +729,10 @@ class DirectMixin:
             "client_context": token,
             "media_id": media_id,
             "mutation_token": token,
-            "nav_chain": "1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6",
+            "nav_chain": (
+                "1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,"
+                "DirectShareSheetFragment:direct_reshare_sheet:6"
+            ),
             "offline_threading_id": token,
         }
         result = self.private_request(
@@ -757,7 +776,10 @@ class DirectMixin:
             "send_attribution": "reel_feed_timeline",
             "client_context": token,
             "mutation_token": token,
-            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "nav_chain": (
+                "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,"
+                "DirectShareSheetFragment:direct_reshare_sheet:5"
+            ),
             "reel_id": story_pk,
             "containermodule": "reel_feed_timeline",
             "story_media_id": story_id,
@@ -930,7 +952,10 @@ class DirectMixin:
             "send_attribution": "profile",
             "client_context": token,
             "mutation_token": token,
-            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "nav_chain": (
+                "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,"
+                "DirectShareSheetFragment:direct_reshare_sheet:5"
+            ),
             "profile_user_id": user_id,
             "offline_threading_id": token,
         }

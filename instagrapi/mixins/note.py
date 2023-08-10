@@ -1,15 +1,16 @@
 from instagrapi.types import Note
 
+
 class NoteMixin:
     def get_notes(self) -> list[Note]:
-        '''
+        """
         Retrieves Notes in Direct
 
         Returns
         -------
         List[Notes]
             List of all the Notes in Direct
-        '''
+        """
         result = self.private_request("notes/get_notes/")
         assert result.get("status", "") == "ok", "Failed to retrieve Notes in Direct"
 
@@ -19,17 +20,16 @@ class NoteMixin:
         return notes
 
     def last_seen_update_note(self) -> bool:
-        '''
+        """
         Updating your Notes last seen
 
         Returns
         -------
         bool
             A boolean value
-        '''
+        """
         result = self.private_request(
-            "notes/update_notes_last_seen_timestamp/",
-            data={"_uuid" : self.uuid}
+            "notes/update_notes_last_seen_timestamp/", data={"_uuid": self.uuid}
         )
         return result.get("status", "") == "ok"
 
@@ -48,13 +48,12 @@ class NoteMixin:
             A boolean value
         """
         result = self.private_request(
-            "notes/delete_note/",
-            data={"id": note_id, "_uuid": self.uuid}
+            "notes/delete_note/", data={"id": note_id, "_uuid": self.uuid}
         )
         return result.get("status", "") == "ok"
 
     def create_note(self, text: str, audience: int = 0) -> Note:
-        '''
+        """
         Create personal Note
 
         Parameters
@@ -69,21 +68,16 @@ class NoteMixin:
         -------
         Note
             Created Note
-        
-        '''
-        assert self.user_id, "Login required"
-        assert audience in (0, 1), f"Invalid audience parameter={audience} (must be 0 or 1)"
 
-        data = {
-            "note_style" : 0,
-            "text": text, 
-            "_uuid": self.uuid, 
-            "audience": audience
-        }
-        result = self.private_request(
-            "notes/create_note",
-            data=data
-        )
+        """
+        assert self.user_id, "Login required"
+        assert audience in (
+            0,
+            1,
+        ), f"Invalid audience parameter={audience} (must be 0 or 1)"
+
+        data = {"note_style": 0, "text": text, "_uuid": self.uuid, "audience": audience}
+        result = self.private_request("notes/create_note", data=data)
 
         assert result.pop("status", "") == "ok", "Failed to create new Note"
         return Note(**result)

@@ -1152,9 +1152,11 @@ class UserMixin:
             "add": [],
         }
         result = self.private_request("friendships/set_besties/", data)
-        return json_value(result, "friendship_statuses", user_id, "is_bestie") == False
+        return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
 
-    def creator_info(self, user_id: str, entry_point: str = "direct_thread") -> Tuple[UserShort, Dict]:
+    def creator_info(
+        self, user_id: str, entry_point: str = "direct_thread"
+    ) -> Tuple[UserShort, Dict]:
         """
         Retrieves Creator's information
 
@@ -1173,9 +1175,9 @@ class UserMixin:
         """
         assert self.user_id, "Login required"
         params = {
-            "entry_point" : entry_point,
-            "surface_type" : "android",
-            "user_id" : user_id
+            "entry_point": entry_point,
+            "surface_type": "android",
+            "user_id": user_id,
         }
 
         result = self.private_request("creator/creator_info/", params=params)

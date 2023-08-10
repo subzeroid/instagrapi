@@ -138,7 +138,7 @@ class Media(BaseModel):
 
 
 class MediaXma(BaseModel):
-    #media_type: int
+    # media_type: int
     video_url: HttpUrl  # for Video and IGTV
     title: Optional[str] = ""
     preview_url: Optional[HttpUrl]
