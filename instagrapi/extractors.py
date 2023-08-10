@@ -455,6 +455,12 @@ def extract_highlight_v1(data):
     return Highlight(**highlight)
 
 
+def extract_guide_v1(data):
+    item = deepcopy(data.get("summary") or {})
+    item["cover_media"] = extract_media_v1(item["cover_media"])
+    return Guide(**item)
+
+
 def extract_track(data):
     data["cover_artwork_uri"] = data.get("cover_artwork_uri") or None
     data["cover_artwork_thumbnail_uri"] = (

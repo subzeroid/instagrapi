@@ -8,7 +8,6 @@ from instagrapi.exceptions import ClientError, HashtagNotFound, WrongCursorError
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
-    extract_media_gql,
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
@@ -168,7 +167,6 @@ class HashtagMixin:
             "top",
         ), 'You must specify one of the options for "tab_key" ("recent" or "top")'
         url = f"/explore/tags/{name}/"
-        unique_set = set()
         medias = []
         while True:
             params = {"max_id": end_cursor} if end_cursor else {}

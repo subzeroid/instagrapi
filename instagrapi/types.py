@@ -294,6 +294,14 @@ class Story(BaseModel):
     medias: List[StoryMedia] = []
 
 
+class Guide(BaseModel):
+    id: Optional[str]
+    title: Optional[str]
+    description: str
+    cover_media: Media
+    feedback_item: Optional[dict]
+
+
 class DirectMedia(BaseModel):
     id: str
     media_type: int

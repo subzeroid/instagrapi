@@ -1,10 +1,14 @@
+import base64
 import json
-import time
 from typing import List, Tuple
 
-from instagrapi.exceptions import ClientNotFoundError, LocationNotFound
-from instagrapi.extractors import extract_location, extract_media_v1
-from instagrapi.types import Location, Media
+from instagrapi.exceptions import (
+    ClientNotFoundError,
+    LocationNotFound,
+    WrongCursorError,
+)
+from instagrapi.extractors import extract_location, extract_media_v1, extract_guide_v1
+from instagrapi.types import Guide, Location, Media
 
 tab_keys_a1 = ("edge_location_to_top_posts", "edge_location_to_media")
 tab_keys_v1 = ("ranked", "recent")
@@ -151,6 +155,9 @@ class LocationMixin:
             An object of Location
         """
         result = self.private_request(f"locations/{location_pk}/location_info/")
+        if not result.get("name"):
+            # Sorry, this page isn't available.
+            raise LocationNotFound(location_pk=location_pk, **result)
         return extract_location(result)
 
     def location_info(self, location_pk: int) -> Location:
@@ -212,30 +219,23 @@ class LocationMixin:
         unique_set = set()
         medias = []
         end_cursor = None
-        while True:
-            data = self.public_a1_request(
-                f"/explore/locations/{location_pk}/",
-                params={"max_id": end_cursor} if end_cursor else {},
-            )["location"]
-            page_info = data["edge_location_to_media"]["page_info"]
-            end_cursor = page_info["end_cursor"]
-            edges = data[tab_key]["edges"]
-            for edge in edges:
-                if max_amount and len(medias) >= max_amount:
-                    break
-                node = edge["node"]
-                # check uniq
-                media_pk = node["id"]
-                if media_pk in unique_set:
-                    continue
-                unique_set.add(media_pk)
-                # Enrich media: Full user, usertags and video_url
-                medias.append(self.media_info_gql(media_pk))
-            if not page_info["has_next_page"] or not end_cursor:
-                break
-            if max_amount and len(medias) >= max_amount:
-                break
-            time.sleep(sleep)
+        result = self.public_a1_request(
+            f"/explore/locations/{location_pk}/",
+            params={"max_id": end_cursor} if end_cursor else {},
+        )
+        data = result["location"]
+        page_info = data["edge_location_to_media"]["page_info"]
+        end_cursor = page_info["end_cursor"]
+        edges = data[tab_key]["edges"]
+        for edge in edges:
+            node = edge["node"]
+            # check uniq
+            media_pk = node["id"]
+            if media_pk in unique_set:
+                continue
+            unique_set.add(media_pk)
+            # Enrich media: Full user, usertags and video_url
+            medias.append(self.media_info_gql(media_pk))
         return medias, end_cursor
 
     def location_medias_a1(
@@ -274,8 +274,6 @@ class LocationMixin:
         max_amount: int = 63,
         tab_key: str = "",
         max_id: str = None,
-        page: int = None,
-        next_media_ids: List = [],
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a location and max_id (cursor) by Private Mobile API
@@ -299,43 +297,35 @@ class LocationMixin:
         assert (
             tab_key in tab_keys_v1
         ), f'You must specify one of the options for "tab_key" {tab_keys_v1}'
+        data = {
+            "_uuid": self.uuid,
+            "session_id": self.client_session_id,
+            "tab": tab_key,
+        }
+        if max_id:
+            try:
+                [page_id, nm_ids] = json.loads(base64.b64decode(max_id))
+            except Exception:
+                raise WrongCursorError()
+            data["page"] = page_id
+            data["next_media_ids"] = nm_ids
         medias = []
-        while True:
-            data = {
-                "_uuid": self.uuid,
-                "session_id": self.client_session_id,
-                "tab": tab_key,
-                "max_id": max_id,
-                "page": page,
-                "next_media_ids": next_media_ids,
-            }
-            result = self.private_request(
-                f"locations/{location_pk}/sections/",
-                params={
-                    "max_id": max_id,
-                    "page": page,
-                    "next_media_ids": next_media_ids,
-                }
-                if max_id
-                else {},
-                data=data,
-            )
-            for section in result["sections"]:
-                layout_content = section.get("layout_content") or {}
-                nodes = layout_content.get("medias") or []
-                for node in nodes:
-                    if max_amount and len(medias) >= max_amount:
-                        break
-                    media = extract_media_v1(node["media"])
-                    medias.append(media)
-            if not result["more_available"]:
-                break
-            if max_amount and len(medias) >= max_amount:
-                break
-            max_id = result["next_max_id"]
-            page = result["next_page"]
-            next_media_ids = result["next_media_ids"]
-        return medias, max_id, page, next_media_ids
+        result = self.private_request(
+            f"locations/{location_pk}/sections/",
+            data=data,
+        )
+        next_max_id = None
+        if result.get("next_page"):
+            np = result.get("next_page")
+            ids = result.get("next_media_ids")
+            next_max_id = base64.b64encode(json.dumps([np, ids]).encode()).decode()
+        for section in result.get("sections") or []:
+            layout_content = section.get("layout_content") or {}
+            nodes = layout_content.get("medias") or []
+            for node in nodes:
+                media = extract_media_v1(node["media"])
+                medias.append(media)
+        return medias, next_max_id
 
     def location_medias_v1(
         self, location_pk: int, amount: int = 63, tab_key: str = ""
@@ -508,3 +498,20 @@ class LocationMixin:
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             return self.location_medias_recent_v1(location_pk, amount)
+
+    def location_guides_v1(self, location_pk: int) -> List[Guide]:
+        """
+        Get guides by location_pk
+
+        Parameters
+        ----------
+        location_pk: int
+
+        Returns
+        -------
+        List[Guide]
+            List of objects of Guide
+        """
+        location_pk = int(location_pk)
+        result = self.private_request(f"guides/location/{location_pk}/")
+        return [extract_guide_v1(item) for item in (result.get("guides") or [])]

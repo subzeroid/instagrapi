@@ -23,9 +23,8 @@ from instagrapi.exceptions import (
     ClientLoginRequired,
     ClientNotFoundError,
     ClientThrottledError,
-    GenericRequestError,
 )
-from instagrapi.utils import json_value, random_delay
+from instagrapi.utils import random_delay
 
 
 class PublicRequestMixin:
