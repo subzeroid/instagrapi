@@ -1,8 +1,10 @@
+from typing import List
+
 from instagrapi.types import Note
 
 
 class NoteMixin:
-    def get_notes(self) -> list[Note]:
+    def get_notes(self) -> List[Note]:
         """
         Retrieves Notes in Direct
 
