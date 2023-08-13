@@ -3,7 +3,7 @@ class FundraiserMixin:
     Helpers for the fundraisers.
     """
 
-    def standalone_fundraiser_info_v1(self, user_id: int):
+    def standalone_fundraiser_info_v1(self, user_id: str):
         """
         Get fundraiser info.
 

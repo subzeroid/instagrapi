@@ -27,10 +27,10 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk(media_id: str)                                         | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772)
 | media_pk_from_code(code: str)                                   | int                | Return media_pk
 | media_pk_from_url(url: str)                                     | int                | Return media_pk
-| user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
-| user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
-| user_clips(user_id: int, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
-| usertag_medias(user_id: int, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
+| user_medias(user_id: str, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
+| user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
+| user_clips(user_id: str, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
+| usertag_medias(user_id: str, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
 | media_info(media_pk: int)                                       | Media              | Return media info
 | media_delete(media_pk: int)                                     | bool               | Delete media
 | media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media
@@ -52,16 +52,16 @@ Low level methods:
 | media_info_a1(media_pk: int, max_id: str = None)                | Media        | Get Media from PK by Public Web API
 | media_info_gql(media_pk: int)                                   | Media        | Get Media from PK by Public Graphql API
 | media_info_v1(media_pk: int)                                    | Media        | Get Media from PK by Private Mobile API
-| user_medias_gql(user_id: int, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
-| user_medias_paginated_gql(user_id: int, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
-| user_medias_v1(user_id: int, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
-| user_medias_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
-| user_clips_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
-| user_clips_paginated_v1(user_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
-| user_videos_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
+| user_medias_gql(user_id: str, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
+| user_medias_paginated_gql(user_id: str, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
+| user_medias_v1(user_id: str, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
+| user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
+| user_clips_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
+| user_clips_paginated_v1(user_id: str, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
+| user_videos_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
 | user_videos_paginated_v1(ser_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's video by Private Mobile API
-| usertag_medias_gql(user_id: int, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
-| usertag_medias_v1(user_id: int, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
+| usertag_medias_gql(user_id: str, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
+| usertag_medias_v1(user_id: str, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
 
 ### Example:
 

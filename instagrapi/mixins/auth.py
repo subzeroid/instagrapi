@@ -273,7 +273,7 @@ class PostLoginFlowMixin:
         if reason == "cold_start":
             data["reel_tray_impressions"] = {}
         else:
-            data["reel_tray_impressions"] = {self.user_id: int(time.time())}
+            data["reel_tray_impressions"] = {self.user_id: str(time.time())}
         return self.private_request("feed/reels_tray/", data)
 
 
@@ -474,12 +474,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return True
         return False
 
-    def one_tap_app_login(self, user_id: int, nonce: str) -> bool:
+    def one_tap_app_login(self, user_id: str, nonce: str) -> bool:
         """One tap login emulation
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User ID
         nonce: str
             Login nonce (from Instagram, e.g. in /logout/)

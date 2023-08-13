@@ -2,7 +2,7 @@
 
 | Method                                                                 | Return          | Description
 | ---------------------------------------------------------------------- | --------------- | ----------------------------------
-| user_stories(user_id: int, amount: int = None)                         | List[Story]     | Get list of stories by user_id
+| user_stories(user_id: str, amount: int = None)                         | List[Story]     | Get list of stories by user_id
 | story_info(story_pk: int, use_cache: bool = True)                      | Story           | Return story info
 | story_delete(story_pk: int)                                            | bool            | Delete story
 | story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool            | Mark a story as seen

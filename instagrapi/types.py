@@ -313,7 +313,7 @@ class DirectMedia(BaseModel):
 
 class ReplyMessage(BaseModel):
     id: str
-    user_id: Optional[int]
+    user_id: Optional[str]
     timestamp: datetime
     item_type: Optional[str]
     is_sent_by_viewer: Optional[bool]
@@ -334,7 +334,7 @@ class ReplyMessage(BaseModel):
 
 class DirectMessage(BaseModel):
     id: str  # e.g. 28597946203914980615241927545176064
-    user_id: Optional[int]
+    user_id: Optional[str]
     thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
@@ -478,7 +478,7 @@ class Track(BaseModel):
 class Note(BaseModel):
     id: str
     text: str
-    user_id: int
+    user_id: str
     user: UserShort
     audience: int
     created_at: datetime

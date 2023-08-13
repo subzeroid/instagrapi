@@ -4,7 +4,7 @@
 | ------------------------------------------------------------------------------ | ---------------- | ----------------------------------
 | highlight_pk_from_url(url: str)                                                | int              | Get Highlight PK from URL
 | highlight_info(highlight_pk: int)                                              | Highlight        | Get Highlight by pk or id
-| user_highlights(user_id: int, amount: int = 0)                                 | List[Highlight]  | Get a user's highlights
+| user_highlights(user_id: str, amount: int = 0)                                 | List[Highlight]  | Get a user's highlights
 | highlight_create(title: str, story_ids: List[str], cover_story_id: str = "", crop_rect: List[float] = [0.0, 0.21830457, 1.0, 0.78094524]) | Highlight | Create highlight
 | highlight_change_title(highlight_pk: str, title: str)                          | Highlight        | Change title for highlight
 | highlight_change_cover(highlight_pk: str, cover_path: Path)                    | Highlight        | Change cover for highlight
