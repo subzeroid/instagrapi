@@ -458,7 +458,7 @@ class ClientUserTestCase(ClientPrivateTestCase):
         self.assertFalse(user.is_private)
 
     def test_send_new_note(self):
-        self._cl.send_note("Hello from Instagrapi !", 0)
+        self._cl.create_note("Hello from Instagrapi !", 0)
 
 
 class ClientMediaTestCase(ClientPrivateTestCase):
