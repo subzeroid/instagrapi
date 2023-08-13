@@ -18,7 +18,6 @@ from .types import (
     Media,
     MediaXma,
     MediaOembed,
-    NoteRequest,
     ReplyMessage,
     Resource,
     Story,
@@ -82,8 +81,8 @@ def extract_media_v1(data):
 def extract_media_v1_xma(data):
     """Extract media from Private API"""
     media = deepcopy(data)
-  
-    #media["media_type"] = 10
+
+    # media["media_type"] = 10
     media["video_url"] = media.get("target_url", "")
     media["title"] = media.get("title_text", "")
     media["preview_url"] = media.get("preview_url", "")
@@ -93,7 +92,7 @@ def extract_media_v1_xma(data):
     media["header_icon_height"] = media.get("header_icon_height", 0)
     media["header_title_text"] = media.get("header_title_text", "")
     media["preview_media_fbid"] = media.get("preview_media_fbid", "")
-    
+
     return MediaXma(
         **media,
     )
@@ -329,7 +328,7 @@ def extract_direct_message(data):
     xma_media_share = data.get("xma_media_share", {})
     if xma_media_share:
         data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
-    
+
     return DirectMessage(**data)
 
 
@@ -456,6 +455,12 @@ def extract_highlight_v1(data):
     return Highlight(**highlight)
 
 
+def extract_guide_v1(data):
+    item = deepcopy(data.get("summary") or {})
+    item["cover_media"] = extract_media_v1(item["cover_media"])
+    return Guide(**item)
+
+
 def extract_track(data):
     data["cover_artwork_uri"] = data.get("cover_artwork_uri") or None
     data["cover_artwork_thumbnail_uri"] = (
@@ -464,9 +469,3 @@ def extract_track(data):
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data["dash_manifest"])
     data["uri"] = html.unescape(items[0]) if items else None
     return Track(**data)
-
-
-def extract_note(data):
-    data["text"] = data.get("text") or None
-    data["uuid"] = data.get("uuid") or None
-    return NoteRequest(**data)

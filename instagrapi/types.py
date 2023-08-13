@@ -138,7 +138,7 @@ class Media(BaseModel):
 
 
 class MediaXma(BaseModel):
-    #media_type: int
+    # media_type: int
     video_url: HttpUrl  # for Video and IGTV
     title: Optional[str] = ""
     preview_url: Optional[HttpUrl]
@@ -292,6 +292,14 @@ class Story(BaseModel):
     locations: List[StoryLocation]
     stickers: List[StorySticker]
     medias: List[StoryMedia] = []
+
+
+class Guide(BaseModel):
+    id: Optional[str]
+    title: Optional[str]
+    description: str
+    cover_media: Media
+    feedback_item: Optional[dict]
 
 
 class DirectMedia(BaseModel):
@@ -467,7 +475,7 @@ class Track(BaseModel):
     territory_validity_periods: dict
 
 
-class NoteResponse(BaseModel):
+class Note(BaseModel):
     id: str
     text: str
     user_id: int
@@ -478,9 +486,3 @@ class NoteResponse(BaseModel):
     is_emoji_only: bool
     has_translation: bool
     note_style: int
-    status: str
-
-
-class NoteRequest(BaseModel):
-    text: str
-    uuid: str

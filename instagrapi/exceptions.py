@@ -19,6 +19,26 @@ class ClientError(Exception):
             self.code = self.response.status_code
 
 
+class ClientUnknownError(ClientError):
+    pass
+
+
+class WrongCursorError(ClientError):
+    message = "You specified a non-existent cursor"
+
+
+class ClientStatusFail(ClientError):
+    pass
+
+
+class ClientErrorWithTitle(ClientError):
+    pass
+
+
+class ResetPasswordError(ClientError):
+    pass
+
+
 class GenericRequestError(ClientError):
     """Sorry, there was a problem with your request"""
 
@@ -37,6 +57,10 @@ class ClientConnectionError(ClientError):
 
 class ClientBadRequestError(ClientError):
     """Raised due to a HTTP 400 response"""
+
+
+class ClientUnauthorizedError(ClientError):
+    """Raised due to a HTTP 401 response"""
 
 
 class ClientForbiddenError(ClientError):
