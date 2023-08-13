@@ -156,13 +156,13 @@ class StoryMixin:
             users.append(user)
         return users
 
-    def user_stories_gql(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_gql(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -177,13 +177,13 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_v1(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -209,13 +209,13 @@ class StoryMixin:
             stories = stories[: int(amount)]
         return stories
 
-    def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
