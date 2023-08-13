@@ -8,7 +8,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from instagrapi import Client
-from instagrapi.exceptions import DirectThreadNotFound
+from instagrapi.exceptions import BadCredentials, DirectThreadNotFound, ProxyAddressIsBlocked, BadPassword
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -105,12 +105,21 @@ class FakeClientTestCase(BaseClientMixin, unittest.TestCase):
 
     def test_login(self):
         try:
-            self.cl.login(ACCOUNT_USERNAME, "fakepassword")
-        except Exception as e:
+            self.cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
+        except (ProxyAddressIsBlocked, BadPassword) as e:
             self.assertEqual(
-                str(e), "The username you entered doesn't appear to belong to an account. Please check your username and try again."
+                str(e), "The password you entered is incorrect. Please try again. If you are sure that the password is correct, then change your IP address, because it is added to the blacklist of the Instagram Server"
             )
 
+        try:
+            is_auth = self.cl.login()
+            self.assertEqual(is_auth, True)
+        except BadCredentials as e:
+            self.assertEqual(str(e), "Both username and password must be provided.")
+        except ProxyAddressIsBlocked as e:
+            self.assertEqual(
+                str(e), "Instagram has blocked your IP address, use a quality proxy provider (not free, not shared)"
+            )
 
 class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
     cl = None
