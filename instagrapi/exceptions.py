@@ -166,6 +166,9 @@ class ProxyAddressIsBlocked(PrivateError):
 class BadPassword(PrivateError):
     pass
 
+class BadCredentials(PrivateError):
+    pass
+
 
 class PleaseWaitFewMinutes(PrivateError):
     pass
