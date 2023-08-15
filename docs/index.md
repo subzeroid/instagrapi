@@ -103,6 +103,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Collection`](usage-guide/collection.md) - Collection of medias (name, picture and list of medias)
   * [`Comment`](usage-guide/comment.md) - Comments to Media
   * [`Highlight`](usage-guide/highlight.md) - Highlights
+  * ['Notes'](usage-guide/notes.md) - Notes
   * [`Story`](usage-guide/story.md) - Story
   * [`StoryLink`](usage-guide/story.md) - Link (Swipe up)
   * [`StoryLocation`](usage-guide/story.md) - Tag Location in Story (as sticker)
