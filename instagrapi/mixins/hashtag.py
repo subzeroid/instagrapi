@@ -3,7 +3,7 @@ import base64
 from typing import List, Tuple
 
 from instagrapi.utils import dumps
-from instagrapi.exceptions import ClientUnauthorizedError
+from instagrapi.exceptions import ClientUnauthorizedError, ClientLoginRequired
 from instagrapi.exceptions import ClientError, HashtagNotFound, WrongCursorError
 from instagrapi.extractors import (
     extract_hashtag_gql,
@@ -172,7 +172,7 @@ class HashtagMixin:
             params = {"max_id": end_cursor} if end_cursor else {}
             try:
                 data = self.public_a1_request(url, params=params)
-            except ClientUnauthorizedError:
+            except (ClientUnauthorizedError, ClientLoginRequired):
                 self.inject_sessionid_to_public()
                 data = self.public_a1_request(url, params=params)
 
