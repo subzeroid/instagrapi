@@ -151,12 +151,12 @@ class DirectMixin:
 
     def direct_pending_inbox(self, amount: int = 20) -> List[DirectThread]:
         """
-        Get direct message pending threads
+        Get direct threads of Pending inbox
 
         Parameters
         ----------
         amount: int, optional
-            Maximum number of media to return, default is 20
+            Maximum number of threads to return, default is 20
 
         Returns
         -------
@@ -166,7 +166,6 @@ class DirectMixin:
 
         cursor = None
         threads = []
-        # self.private_request("direct_v2/get_presence/")
         while True:
             new_threads, cursor = self.direct_pending_chunk(cursor)
             for thread in new_threads:
@@ -182,7 +181,7 @@ class DirectMixin:
         self, cursor: str = None
     ) -> Tuple[List[DirectThread], str]:
         """
-        Get direct message pending threads
+        Get direct threads of Pending inbox. Chunk
 
         Parameters
         ----------
@@ -234,6 +233,66 @@ class DirectMixin:
             with_signature=False,
         )
         return result.get("status", "") == "ok"
+
+    def direct_spam_inbox(self, amount: int = 20) -> List[DirectThread]:
+        """
+        Get direct threads of Spam inbox (hidden requests)
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of threads to return, default is 20
+
+        Returns
+        -------
+        List[DirectThread]
+            A list of objects of DirectThread
+        """
+        cursor = None
+        threads = []
+        while True:
+            new_threads, cursor = self.direct_spam_chunk(cursor)
+            for thread in new_threads:
+                threads.append(thread)
+
+            if not cursor or (amount and len(threads) >= amount):
+                break
+        if amount:
+            threads = threads[:amount]
+        return threads
+
+    def direct_spam_chunk(
+        self, cursor: str = None
+    ) -> Tuple[List[DirectThread], str]:
+        """
+        Get direct threads of Spam inbox (hidden requests). Chunk
+
+        Parameters
+        ----------
+        cursor: str, optional
+            Cursor from the previous chunk request
+
+        Returns
+        -------
+        Tuple[List[DirectThread], str]
+            A tuple of list of objects of DirectThread and str (cursor)
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "visual_message_return_type": "unseen",
+            "persistentBadging": "true",
+            "is_prefetching": "false",
+        }
+        if cursor:
+            params.update({"cursor": cursor})
+
+        threads = []
+        result = self.private_request("direct_v2/spam_inbox/", params=params)
+        inbox = result.get("inbox", {})
+        for thread in inbox.get("threads", []):
+            threads.append(extract_direct_thread(thread))
+        cursor = inbox.get("oldest_cursor")
+        return threads, cursor
 
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """
