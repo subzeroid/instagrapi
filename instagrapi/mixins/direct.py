@@ -212,6 +212,29 @@ class DirectMixin:
         cursor = inbox.get("oldest_cursor")
         return threads, cursor
 
+    def direct_pending_approve(self, thread_id: int) -> bool:
+        """
+        Approve pending direct thread
+
+        Parameters
+        ----------
+        thread_id: int
+            ID of thread to approve
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/approve/", 
+            data={"filter": "DEFAULT", "_uuid": self.uuid},
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
+
     def direct_thread(self, thread_id: int, amount: int = 20) -> DirectThread:
         """
         Get all the information about a Direct Message thread
@@ -541,28 +564,53 @@ class DirectMixin:
 
         return result.get("user_presence", {})
 
-    def direct_send_seen(self, thread_id: int) -> DirectResponse:
+    def direct_message_seen(self, thread_id: int, message_id: int) -> bool:
         """
-        Send seen to thread
+        Mark direct message as seen
 
         Parameters
         ----------
         thread_id: int
-            Id of thread which messages will be read
+            ID of the thread with message
+        message_id: int
+            ID of the message to mark as seen
+        
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        token = self.generate_mutation_token()
+        data = {
+            "thread_id": str(thread_id),
+            "action": "mark_seen",
+            "client_context": token,
+            "_uuid": self.uuid,
+            "offline_threading_id": token
+        }
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/items/{message_id}/seen/",
+            data=data,
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
+
+    def direct_send_seen(self, thread_id: int) -> bool:
+        """
+        Mark direct thread as seen
+
+        Parameters
+        ----------
+        thread_id: int
+            ID of thread to mark as read
 
         Returns
         -------
-            An object of DirectResponse
+        bool
+            A boolean value
         """
-        data = {}
-
         thread = self.direct_thread(thread_id=thread_id)
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/items/{thread.messages[0].id}/seen/",
-            data=self.with_default_data(data),
-            with_signature=False,
-        )
-        return extract_direct_response(result)
+        return self.direct_message_seen(thread_id, thread.messages[0].id)
 
     def direct_search(
         self, query: str, mode: SEARCH_MODE = "universal"
@@ -680,7 +728,7 @@ class DirectMixin:
         result["users"] = users
         return result
 
-    def direct_thread_hide(self, thread_id: int) -> bool:
+    def direct_thread_hide(self, thread_id: int, move_to_spam: bool = False) -> bool:
         """
         Hide (delete) a thread
         When you click delete, Instagram hides a thread
@@ -688,18 +736,23 @@ class DirectMixin:
         Parameters
         ----------
         thread_id: int
-            Id of thread which messages will be read
+            ID of thread to hide
+        move_to_spam: bool, optional
+            True - move to the hidden requests (spam) folder, False - just hide (default - False)
 
         Returns
         -------
         bool
             A boolean value
         """
-        data = self.with_default_data({})
-        data.pop("_uid", None)
-        data.pop("device_id", None)
-        result = self.private_request(f"direct_v2/threads/{thread_id}/hide/", data=data)
-        return result["status"] == "ok"
+        assert self.user_id, "Login required"
+
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/hide/", 
+            data={"should_move_future_requests_to_spam": move_to_spam, "_uuid": self.uuid},
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
 
     def direct_media_share(self, media_id: str, user_ids: List[int]) -> DirectMessage:
         """
