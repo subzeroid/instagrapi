@@ -9,7 +9,15 @@
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
-## If you are tired of being blocked when receiving data from Instagram, I recommend using our service - [Lamadava SaaS](https://lamadava.com/p/3msyAKDX) and [Datalama SaaS](https://datalama.io/)
+If you want to work with Instagrapi (business interests), we strongly advise you to prefer [Lamadava](https://lamadava.com/p/2bmwFuqv) project.
+However, you won't need to spend weeks or even months setting it up.
+The best service available today is [Lamadava](https://lamadava.com/p/2bmwFuqv), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
+In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [Lamadava](https://lamadava.com/p/2bmwFuqv) after spending much more time and money.
+It will be difficult to find good accounts, good proxies, or resolve chellanges, and IG will ban your accounts.
+
+The instagrapi more suits for testing or research than a working business!
+
+## We recommend using our services: [Lamadava SaaS](https://lamadava.com/p/3msyAKDX) and [Datalama SaaS](https://datalama.io/)
 
 Features:
 
