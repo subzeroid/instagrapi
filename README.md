@@ -13,7 +13,7 @@ If you want to work with Instagrapi (business interests), we strongly advise you
 However, you won't need to spend weeks or even months setting it up.
 The best service available today is [Lamadava](https://lamadava.com/p/2bmwFuqv), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
 In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [Lamadava](https://lamadava.com/p/2bmwFuqv) after spending much more time and money.
-It will be difficult to find good accounts, good proxies, or resolve chellanges, and IG will ban your accounts.
+It will be difficult to find good accounts, good proxies, or resolve challenges, and IG will ban your accounts.
 
 The instagrapi more suits for testing or research than a working business!
 
