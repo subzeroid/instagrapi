@@ -8,14 +8,12 @@ from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_media,
     extract_direct_message,
-    extract_direct_response,
     extract_user_short,
     extract_direct_thread,
     extract_direct_short_thread,
 )
 from instagrapi.types import (
     DirectMessage,
-    DirectResponse,
     DirectShortThread,
     DirectThread,
     Media,
@@ -27,11 +25,11 @@ SELECTED_FILTERS = ("flagged", "unread")
 SEARCH_MODES = ("raven", "universal")
 SEND_ATTRIBUTES = ("message_button", "inbox_search")
 SEND_ATTRIBUTES_MEDIA = (
-    "feed_timeline", 
-    "feed_contextual_chain", 
-    "feed_short_url", 
-    "feed_contextual_self_profile", 
-    "feed_contextual_profile"
+    "feed_timeline",
+    "feed_contextual_chain",
+    "feed_short_url",
+    "feed_contextual_self_profile",
+    "feed_contextual_profile",
 )
 BOXES = ("general", "primary")
 
@@ -236,7 +234,7 @@ class DirectMixin:
         assert self.user_id, "Login required"
 
         result = self.private_request(
-            f"direct_v2/threads/{thread_id}/approve/", 
+            f"direct_v2/threads/{thread_id}/approve/",
             data={"filter": "DEFAULT", "_uuid": self.uuid},
             with_signature=False,
         )
@@ -269,9 +267,7 @@ class DirectMixin:
             threads = threads[:amount]
         return threads
 
-    def direct_spam_chunk(
-        self, cursor: str = None
-    ) -> Tuple[List[DirectThread], str]:
+    def direct_spam_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
         """
         Get direct threads of Spam inbox (hidden requests). Chunk
 
@@ -641,7 +637,7 @@ class DirectMixin:
             ID of the thread with message
         message_id: int
             ID of the message to mark as seen
-        
+
         Returns
         -------
         bool
@@ -653,7 +649,7 @@ class DirectMixin:
             "action": "mark_seen",
             "client_context": token,
             "_uuid": self.uuid,
-            "offline_threading_id": token
+            "offline_threading_id": token,
         }
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/items/{message_id}/seen/",
@@ -815,18 +811,22 @@ class DirectMixin:
         assert self.user_id, "Login required"
 
         result = self.private_request(
-            f"direct_v2/threads/{thread_id}/hide/", 
-            data={"should_move_future_requests_to_spam": move_to_spam, "_uuid": self.uuid},
+            f"direct_v2/threads/{thread_id}/hide/",
+            data={
+                "should_move_future_requests_to_spam": move_to_spam,
+                "_uuid": self.uuid,
+            },
             with_signature=False,
         )
         return result.get("status", "") == "ok"
 
     def direct_media_share(
-        self, 
-        media_id: str, 
-        user_ids: List[int], 
+        self,
+        media_id: str,
+        user_ids: List[int],
         send_attribute: SEND_ATTRIBUTES_MEDIA = "feed_timeline",
-        media_type: str = "photo",) -> DirectMessage:
+        media_type: str = "photo",
+    ) -> DirectMessage:
         """
         Share a media to list of users
 
@@ -875,7 +875,7 @@ class DirectMixin:
 
         result = self.private_request(
             "direct_v2/threads/broadcast/media_share/",
-            params={'media_type': media_type},
+            params={"media_type": media_type},
             data=self.with_default_data(kwargs),
             with_signature=False,
         )
@@ -1091,7 +1091,7 @@ class DirectMixin:
             "action": "send_item",
             "is_shh_mode": "0",
             "send_attribution": "profile",
-            "client_context": token,    
+            "client_context": token,
             "device_id": self.android_device_id,
             "mutation_token": token,
             "_uuid": self.uuid,
@@ -1113,7 +1113,7 @@ class DirectMixin:
             with_signature=False,
         )
         assert result.get("status", "") == "ok"
-        
+
         return extract_direct_message(result["payload"])
 
     def direct_media(self, thread_id: int, amount: int = 20) -> List[Media]:

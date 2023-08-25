@@ -872,8 +872,7 @@ class UserMixin:
         if surface == "direct_thread_info":
             data["client_request_id"] = self.request_id
 
-        result = self.private_request(
-            f"friendships/block/{user_id}/", data)
+        result = self.private_request(f"friendships/block/{user_id}/", data)
         assert result.get("status", "") == "ok"
 
         return result.get("friendship_status", {}).get("blocking") is True
@@ -902,9 +901,8 @@ class UserMixin:
         }
         if surface == "direct_thread_info":
             data["client_request_id"] = self.request_id
-        
-        result = self.private_request(
-            f"friendships/unblock/{user_id}/", data)
+
+        result = self.private_request(f"friendships/unblock/{user_id}/", data)
         assert result.get("status", "") == "ok"
 
         return result.get("friendship_status", {}).get("blocking") is False

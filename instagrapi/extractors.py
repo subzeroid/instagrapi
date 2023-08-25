@@ -8,6 +8,7 @@ from .types import (
     Collection,
     Comment,
     DirectMedia,
+    Guide,
     DirectMessage,
     DirectResponse,
     DirectShortThread,

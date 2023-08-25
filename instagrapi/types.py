@@ -431,6 +431,7 @@ class Relationship(BaseModel):
     muting: bool
     outgoing_request: bool
 
+
 class RelationshipShort(BaseModel):
     user_id: str
     following: bool
@@ -440,6 +441,7 @@ class RelationshipShort(BaseModel):
     is_private: bool
     is_restricted: bool
     outgoing_request: bool
+
 
 class Highlight(BaseModel):
     pk: str  # 17895485401104052

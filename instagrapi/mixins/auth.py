@@ -397,7 +397,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        
+
         if not self.username or not self.password:
             if username is None or password is None:
                 raise BadCredentials("Both username and password must be provided.")
