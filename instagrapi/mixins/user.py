@@ -837,6 +837,69 @@ class UserMixin:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
+    def user_block(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Block a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "surface": surface,
+            "is_auto_block_enabled": "false",
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+
+        result = self.private_request(
+            f"friendships/block/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is True
+
+    def user_unblock(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Unlock a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "container_module": surface,
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+        
+        result = self.private_request(
+            f"friendships/unblock/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is False
+
     def user_remove_follower(self, user_id: str) -> bool:
         """
         Remove a follower
