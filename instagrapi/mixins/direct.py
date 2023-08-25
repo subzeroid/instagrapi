@@ -26,6 +26,13 @@ from instagrapi.utils import dumps
 SELECTED_FILTERS = ("flagged", "unread")
 SEARCH_MODES = ("raven", "universal")
 SEND_ATTRIBUTES = ("message_button", "inbox_search")
+SEND_ATTRIBUTES_MEDIA = (
+    "feed_timeline", 
+    "feed_contextual_chain", 
+    "feed_short_url", 
+    "feed_contextual_self_profile", 
+    "feed_contextual_profile"
+)
 BOXES = ("general", "primary")
 
 try:
@@ -34,6 +41,7 @@ try:
     SELECTED_FILTER = Literal[SELECTED_FILTERS]
     SEARCH_MODE = Literal[SEARCH_MODES]
     SEND_ATTRIBUTE = Literal[SEND_ATTRIBUTES]
+    SEND_ATTRIBUTE_MEDIA = Literal[SEND_ATTRIBUTES_MEDIA]
     BOX = Literal[BOXES]
 except ImportError:
     # python <= 3.8
@@ -813,7 +821,12 @@ class DirectMixin:
         )
         return result.get("status", "") == "ok"
 
-    def direct_media_share(self, media_id: str, user_ids: List[int]) -> DirectMessage:
+    def direct_media_share(
+        self, 
+        media_id: str, 
+        user_ids: List[int], 
+        send_attribute: SEND_ATTRIBUTES_MEDIA = "feed_timeline",
+        media_type: str = "photo",) -> DirectMessage:
         """
         Share a media to list of users
 
@@ -823,6 +836,10 @@ class DirectMixin:
             Unique Media ID
         user_ids: List[int]
             List of unique identifier of Users id
+        send_attribute: str, optional
+            Sending option. Default is "feed_timeline"
+        media_type: str, optional
+            Type of the shared media. Default is "photo", also can be "video"
 
         Returns
         -------
@@ -833,26 +850,37 @@ class DirectMixin:
         token = self.generate_mutation_token()
         media_id = self.media_id(media_id)
         recipient_users = dumps([[int(uid) for uid in user_ids]])
-        data = {
+        kwargs = {
             "recipient_users": recipient_users,
             "action": "send_item",
-            "is_shh_mode": 0,
-            "send_attribution": "feed_timeline",
+            "is_shh_mode": "0",
+            "send_attribution": send_attribute,
             "client_context": token,
             "media_id": media_id,
+            "device_id": self.android_device_id,
             "mutation_token": token,
+            "_uuid": self.uuid,
+            "btt_dual_send": "false",
             "nav_chain": (
-                "1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,"
-                "DirectShareSheetFragment:direct_reshare_sheet:6"
+                "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,"
+                "7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7"
             ),
+            "is_ae_dual_send": "false",
             "offline_threading_id": token,
         }
+        if send_attribute in ["feed_contextual_chain", "feed_short_url"]:
+            kwargs["inventory_source"] = "recommended_explore_grid_cover_model"
+        if send_attribute == "feed_timeline":
+            kwargs["inventory_source"] = "media_or_ad"
+
         result = self.private_request(
             "direct_v2/threads/broadcast/media_share/",
-            # params={'media_type': 'video'},
-            data=self.with_default_data(data),
+            params={'media_type': media_type},
+            data=self.with_default_data(kwargs),
             with_signature=False,
         )
+        assert result.get("status", "") == "ok"
+
         return extract_direct_message(result["payload"])
 
     def direct_story_share(
@@ -1058,28 +1086,34 @@ class DirectMixin:
             user_ids and thread_ids
         ), "Specify user_ids or thread_ids, but not both"
         token = self.generate_mutation_token()
-        data = {
+        kwargs = {
+            "profile_user_id": user_id,
             "action": "send_item",
             "is_shh_mode": "0",
             "send_attribution": "profile",
-            "client_context": token,
+            "client_context": token,    
+            "device_id": self.android_device_id,
             "mutation_token": token,
+            "_uuid": self.uuid,
+            "btt_dual_send": "false",
             "nav_chain": (
-                "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,"
-                "DirectShareSheetFragment:direct_reshare_sheet:5"
+                "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,"
+                "7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7"
             ),
-            "profile_user_id": user_id,
+            "is_ae_dual_send": "false",
             "offline_threading_id": token,
         }
         if user_ids:
-            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+            kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
         if thread_ids:
-            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+            kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         result = self.private_request(
             "direct_v2/threads/broadcast/profile/",
-            data=self.with_default_data(data),
+            data=self.with_default_data(kwargs),
             with_signature=False,
         )
+        assert result.get("status", "") == "ok"
+        
         return extract_direct_message(result["payload"])
 
     def direct_media(self, thread_id: int, amount: int = 20) -> List[Media]:

@@ -418,6 +418,7 @@ class DirectThread(BaseModel):
 
 
 class Relationship(BaseModel):
+    user_id: str
     blocking: bool
     followed_by: bool
     following: bool
@@ -429,8 +430,16 @@ class Relationship(BaseModel):
     is_restricted: bool
     muting: bool
     outgoing_request: bool
-    status: str
 
+class RelationshipShort(BaseModel):
+    user_id: str
+    following: bool
+    incoming_request: bool
+    is_bestie: bool
+    is_feed_favorite: bool
+    is_private: bool
+    is_restricted: bool
+    outgoing_request: bool
 
 class Highlight(BaseModel):
     pk: str  # 17895485401104052
