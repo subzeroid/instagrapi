@@ -9,16 +9,6 @@
 
 [![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
 
-If you want to work with Instagrapi (business interests), we strongly advise you to prefer [Lamadava](https://lamadava.com/p/2bmwFuqv) project.
-However, you won't need to spend weeks or even months setting it up.
-The best service available today is [Lamadava](https://lamadava.com/p/2bmwFuqv), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
-In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [Lamadava](https://lamadava.com/p/2bmwFuqv) after spending much more time and money.
-It will be difficult to find good accounts, good proxies, or resolve challenges, and IG will ban your accounts.
-
-The instagrapi more suits for testing or research than a working business!
-
-## We recommend using our services: [Lamadava SaaS](https://lamadava.com/p/3msyAKDX) and [Datalama SaaS](https://datalama.io/)
-
 Features:
 
 * Getting public data of user, posts, stories, highlights, followers and following users
@@ -42,7 +32,7 @@ Fast and effective Instagram Private API wrapper (public+private requests and ch
 
 Support **Python >= 3.9**
 
-For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest) or [Lamadava SaaS](https://lamadava.com/p/3msyAKDX)
+For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/adw0rd/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/adw0rd/instagrapi-rest)
 
 [Support Chat in Telegram](https://t.me/instagrapi)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/adw0rd/instagrapi/discussions)
@@ -62,8 +52,6 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/adw0rd
 
 ## Examples of apps that use instagrapi
 
-* [Lamadava SaaS](https://lamadava.com/) - trouble-free SaaS for providing data from IG and automate publications, stories, direct and much more else
-* [Datalama SaaS](https://datalama.io/) - Social Networks Cache
 * [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
 
 ### Installation
