@@ -1,3 +1,6 @@
+This code is no longer maintaned. Don't try to run anything from here - you will be easily detected and banned by Instagram.
+
+
 [![Package](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/adw0rd/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
