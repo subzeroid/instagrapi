@@ -3,12 +3,6 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
-[![Downloads](https://pepy.tech/badge/instagrapi)](https://pepy.tech/project/instagrapi)
-[![Downloads](https://pepy.tech/badge/instagrapi/month)](https://pepy.tech/project/instagrapi)
-[![Downloads](https://pepy.tech/badge/instagrapi/week)](https://pepy.tech/project/instagrapi)
-
-[![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/subzeroid)
-
 Features:
 
 * Getting public data of user, posts, stories, highlights, followers and following users
