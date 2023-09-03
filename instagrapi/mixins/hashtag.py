@@ -112,7 +112,7 @@ class HashtagMixin:
             hashtag = self.hashtag_info_a1(name)
         except Exception:
             # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # such this - https://github.com/subzeroid/instagrapi/issues/364
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             hashtag = self.hashtag_info_v1(name)

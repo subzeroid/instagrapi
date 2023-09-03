@@ -32,10 +32,10 @@ requirements = [
 setup(
     name="instagrapi",
     version="1.19.8",
-    author="Mikhail Andreev",
+    author="Example Example",
     author_email="x11org@gmail.com",
     license="MIT",
-    url="https://github.com/adw0rd/instagrapi",
+    url="https://github.com/subzeroid/instagrapi",
     install_requires=requirements,
     keywords=[
         "instagram private api",

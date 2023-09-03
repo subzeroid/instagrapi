@@ -5,7 +5,7 @@ This section provides detailed descriptions of all the ways `instagrapi` can be 
 
 ## Public vs Private Requests
 
-* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/adw0rd/?__a=1`)
+* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/example/?__a=1`)
 * `Private` (authorized request via mobile api) methods have `_v1` suffix
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
@@ -33,7 +33,7 @@ The first request to fetch media/user is `public` (anonymous), if instagram rais
   * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)
   * [`StoryHashtag`](story.md) - Hashtag for story (as sticker)
   * [`StorySticker`](story.md) - Tag sticker to story (for example from giphy)
-  * [`StoryBuild`](story.md) - [StoryBuilder](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/story.py) return path to photo/video and mention co-ordinates
+  * [`StoryBuild`](story.md) - [StoryBuilder](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/story.py) return path to photo/video and mention co-ordinates
   * [`DirectThread`](direct.md) - Thread (topic) with messages in Direct Message
   * [`DirectMessage`](direct.md) - Message in Direct Message
   * [`Insight`](insight.md) - Insights for a post

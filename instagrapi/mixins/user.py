@@ -44,7 +44,7 @@ class UserMixin:
 
         Example
         -------
-        'adw0rd' -> 1903424587
+        'example' -> 1903424587
         """
         username = str(username).lower()
         return str(self.user_info_by_username(username).pk)
@@ -98,7 +98,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         return self.user_short_gql(user_id).username
 
@@ -118,7 +118,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         user_id = str(user_id)
         try:

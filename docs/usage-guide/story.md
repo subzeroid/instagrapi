@@ -16,7 +16,7 @@
 Example:
 
 ``` python
->>> cl.story_download(cl.story_pk_from_url('https://www.instagram.com/stories/adw0rd/2581281926631793076/'))
+>>> cl.story_download(cl.story_pk_from_url('https://www.instagram.com/stories/example/2581281926631793076/'))
 PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
 
 >>> s = cl.story_info(2581281926631793076)
@@ -55,7 +55,7 @@ In `extra_data`, you can pass additional story settings, for example:
 
 | Method            | Type   | Description
 | ----------------- | ------ | ------------------
-| audience          | String | [Publish story for close friends](https://github.com/adw0rd/instagrapi/issues/1210) `{"audience": "besties"}`
+| audience          | String | [Publish story for close friends](https://github.com/subzeroid/instagrapi/issues/1210) `{"audience": "besties"}`
 
 
 Examples:
@@ -69,14 +69,14 @@ cl.login(USERNAME, PASSWORD)
 
 media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 media_path = cl.video_download(media_pk)
-adw0rd = cl.user_info_by_username('adw0rd')
+example = cl.user_info_by_username('example')
 hashtag = cl.hashtag_info('dhbastards')
 
 cl.video_upload_to_story(
     media_path,
-    "Credits @adw0rd",
-    mentions=[StoryMention(user=adw0rd, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
-    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
+    "Credits @example",
+    mentions=[StoryMention(user=example, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
+    links=[StoryLink(webUri='https://github.com/subzeroid/instagrapi')],
     hashtags=[StoryHashtag(hashtag=hashtag, x=0.23, y=0.32, width=0.5, height=0.22)],
     medias=[StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)],
 )
@@ -100,27 +100,27 @@ from instagrapi.story import StoryBuilder
 
 media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
 media_path = cl.video_download(media_pk)
-adw0rd = cl.user_info_by_username('adw0rd')
+example = cl.user_info_by_username('example')
 
 buildout = StoryBuilder(
     media_path,
-    'Credits @adw0rd',
-    [StoryMention(user=adw0rd)],
+    'Credits @example',
+    [StoryMention(user=example)],
     Path('/path/to/background_720x1280.jpg')
 ).video(15)  # seconds
 
 cl.video_upload_to_story(
     buildout.path,
-    "Credits @adw0rd",
+    "Credits @example",
     mentions=buildout.mentions,
-    links=[StoryLink(webUri='https://github.com/adw0rd/instagrapi')],
+    links=[StoryLink(webUri='https://github.com/subzeroid/instagrapi')],
     medias=[StoryMedia(media_pk=media_pk)]
 )
 ```
 
 Result:
 
-![](https://raw.githubusercontent.com/adw0rd/instagrapi/master/examples/dhb.gif)
+![](https://raw.githubusercontent.com/example/instagrapi/master/examples/dhb.gif)
 
 Photo upload:
 

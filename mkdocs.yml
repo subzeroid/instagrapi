@@ -1,7 +1,7 @@
 site_name: instagrapi Documentation
-repo_url: https://github.com/adw0rd/instagrapi/
-site_url: https://adw0rd.github.io/instagrapi/
-repo_name: adw0rd/instagrapi
+repo_url: https://github.com/subzeroid/instagrapi/
+site_url: https://subzeroid.github.io/instagrapi/
+repo_name: subzeroid/instagrapi
 edit_uri: edit/main/docs/
 docs_dir: docs
 nav:

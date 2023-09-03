@@ -77,10 +77,10 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
   ...
 }
 
->>> cl.user_info_by_username('adw0rd').dict()
+>>> cl.user_info_by_username('example').dict()
 {'pk': 1903424587,
- 'username': 'adw0rd',
- 'full_name': 'Mikhail Andreev',
+ 'username': 'example',
+ 'full_name': 'Example Example',
  'is_private': False,
  'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_803537687159702_2508263208740189974_n.jpg?...', scheme='https', host='scontent-hel3-1.cdninstagram.com', tld='com', host_type='domain', ...'),
  'is_verified': False,
@@ -88,9 +88,9 @@ dict_keys([5563084402, 43848984510, 1498977320, ...])
  'follower_count': 576,
  'following_count': 538,
  'biography': 'Engineer: Python, JavaScript, Erlang',
- 'external_url': HttpUrl('https://adw0rd.com/', scheme='https', host='adw0rd.com', tld='com', host_type='domain', path='/'),
+ 'external_url': HttpUrl('https://example.org/', scheme='https', host='example.org', tld='com', host_type='domain', path='/'),
  'is_business': False}
- 
+
 ```
 
 Example: We go around the list of our followers and unfollow from them:
