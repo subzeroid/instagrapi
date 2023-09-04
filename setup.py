@@ -31,9 +31,9 @@ requirements = [
 
 setup(
     name="instagrapi",
-    version="1.19.8",
-    author="Example Example",
-    author_email="x11org@gmail.com",
+    version="2.0.0",
+    author="Mark Subzeroid",
+    author_email="143403577+subzeroid@users.noreply.github.com",
     license="MIT",
     url="https://github.com/subzeroid/instagrapi",
     install_requires=requirements,
