@@ -8,6 +8,7 @@ import urllib
 from .exceptions import ValidationError
 
 
+# $$("meta[property^='al:ios:url']")[0].getAttribute("content").split("media?id=")[1]
 class InstagramIdCodec:
     ENCODING_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
 
@@ -27,8 +28,9 @@ class InstagramIdCodec:
         return "".join(arr)
 
     @staticmethod
-    def decode(shortcode, alphabet=ENCODING_CHARS):
-        """Covert a shortcode to a numeric value."""
+    def decode(code, alphabet=ENCODING_CHARS):
+        """Covert a code to a numeric value."""
+        shortcode = code[:11] if code[0] != "-" and code[0] != "_" else code[:10]
         base = len(alphabet)
         strlen = len(shortcode)
         num = 0
