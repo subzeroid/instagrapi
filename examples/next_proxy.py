@@ -1,7 +1,7 @@
 """
 An example when you need to change proxy
 
-https://github.com/adw0rd/instagrapi/discussions/299
+https://github.com/subzeroid/instagrapi/discussions/299
 """
 import random
 

@@ -93,6 +93,7 @@ class Client(
     def __init__(
         self,
         settings: dict = {},
+        web_user_agent: str = None,
         proxy: str = None,
         delay_range: list = None,
         logger=DEFAULT_LOGGER,

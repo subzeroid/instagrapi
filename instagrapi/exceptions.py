@@ -19,32 +19,24 @@ class ClientError(Exception):
             self.code = self.response.status_code
 
 
-class InactiveUserError(ClientError):
-    """Your account has been disabled for violating our terms. Learn how you may be able to restore your account."""
+class ClientUnknownError(ClientError):
+    pass
 
 
-class DeleteRequestError(ClientError):
-    """You requested to delete USERNAME. If you want to keep it, you have until September 03, 2021 to let us know. Otherwise, all your posts and information will be deleted. Learn More"""
+class WrongCursorError(ClientError):
+    message = "You specified a non-existent cursor"
 
 
-class InvalidUserError(ClientError):
-    """The username you entered doesn't appear to belong to an account. Please check your username and try again."""
+class ClientStatusFail(ClientError):
+    pass
 
 
-class PrivateProfileUser(ClientError):
-    """ Private profile user """
+class ClientErrorWithTitle(ClientError):
+    pass
 
 
-class InvalidTargetUser(ClientError):
-    """ Invalid target user """
-
-
-class IPBlockError(ClientError):
-    """error_type:'ip_block'"""
-
-
-class TwoFactorRequiredError(ClientError):
-    """error_type:'two_factor_required'"""
+class ResetPasswordError(ClientError):
+    pass
 
 
 class GenericRequestError(ClientError):
@@ -65,6 +57,10 @@ class ClientConnectionError(ClientError):
 
 class ClientBadRequestError(ClientError):
     """Raised due to a HTTP 400 response"""
+
+
+class ClientUnauthorizedError(ClientError):
+    """Raised due to a HTTP 401 response"""
 
 
 class ClientForbiddenError(ClientError):
@@ -170,6 +166,10 @@ class ProxyAddressIsBlocked(PrivateError):
 
 
 class BadPassword(PrivateError):
+    pass
+
+
+class BadCredentials(PrivateError):
     pass
 
 
@@ -308,6 +308,8 @@ class TwoFactorRequired(PrivateError):
 class HighlightNotFound(NotFoundError, PrivateError):
     pass
 
+class CheckpointRequired(PrivateError):
+    pass
 
 class NoteNotFound(NotFoundError):
     reason = "Not found"
@@ -327,3 +329,18 @@ class InvalidMediaId(PrivateError):
 
 class MediaUnavailable(PrivateError):
     """Media is unavailable"""
+
+class DeleteRequestError(PrivateError):
+    ...
+
+class InactiveUserError(PrivateError):
+    ...
+
+class TwoFactorRequiredError(PrivateError):
+    ...
+
+class InvalidUserError(PrivateError):
+    ...
+
+class IPBlockError(PrivateError):
+    ...

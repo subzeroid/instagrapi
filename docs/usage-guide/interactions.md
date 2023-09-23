@@ -21,7 +21,7 @@
 * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)
 * [`StoryHashtag`](story.md) - Hashtag for story (as sticker)
 * [`StorySticker`](story.md) - Tag sticker to story (for example from giphy)
-* [`StoryBuild`](story.md) - [StoryBuilder](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/story.py) return path to photo/video and mention co-ordinates
+* [`StoryBuild`](story.md) - [StoryBuilder](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/story.py) return path to photo/video and mention co-ordinates
 * [`DirectThread`](direct.md) - Thread (topic) with messages in Direct
 * [`DirectMessage`](direct.md) - Message in Direct
 * [`Insight`](insight.md) - Insights for a post
@@ -32,7 +32,7 @@
 `instagrapi` provides the following `Interactions` that can be used to control and get the information about your `Instagram` account:
 
 * Client(settings: dict = {}, proxy: str = ""): bool - Init `instagrapi` client
-  
+
 ``` python
 cl.login("instagrapi", "42")
 # cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code
@@ -110,7 +110,7 @@ Store and manage uuids, device configuration, user agent, authorization data (ak
 | load\_settings(path: Path)     | dict    | Load session settings from file
 | dump\_settings(path: Path)     | bool    | Serialize and save session settings to file
 
-In order for Instagram [to trust you more](https://github.com/adw0rd/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
+In order for Instagram [to trust you more](https://github.com/subzeroid/instagrapi/discussions/220), you must always login from one device and one IP (or from a subnet):
 
 ```python
 cl = Client()

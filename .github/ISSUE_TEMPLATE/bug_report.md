@@ -7,14 +7,7 @@ assignees: ''
 
 ---
 
-### Compensate with donations ($15 and more) for the time I spent to fix problems or send me your [Pull Request](https://github.com/adw0rd/instagrapi/pulls) with fixes
-
-[![Donate](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/adw0rd)
-
-* Tron TRX/USDT: `TLprxuzHjXPkHYa7ZfTTt165p7Fphwy1Ee`
-* Bitcoin: `bc1qmp7538hktvg2gx994hrpkmsmyjc03q29awe9ra`
-* Ethereum: `0x0E674815d513d4a00F6a7Cd4A990807aB97cC70D`
-* Dogecoin: `DSEXzMBYhBTwhNqzPGxVWFsTqVsTCeDejo`
+### Try Instagrapi SaaS with a free trial https://hikerapi.com/p/5GBWznd3
 
 **Describe the bug**
 A clear and concise description of what the bug is.

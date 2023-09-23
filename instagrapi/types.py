@@ -141,7 +141,7 @@ class Media(BaseModel):
 
 
 class MediaXma(BaseModel):
-    #media_type: int
+    # media_type: int
     video_url: HttpUrl  # for Video and IGTV
     title: Optional[str] = ""
     preview_url: Optional[HttpUrl]
@@ -300,6 +300,14 @@ class Story(BaseModel):
     medias: List[StoryMedia] = []
 
 
+class Guide(BaseModel):
+    id: Optional[str]
+    title: Optional[str]
+    description: str
+    cover_media: Media
+    feedback_item: Optional[dict]
+
+
 class DirectMedia(BaseModel):
     id: str
     media_type: int
@@ -311,7 +319,7 @@ class DirectMedia(BaseModel):
 
 class ReplyMessage(BaseModel):
     id: str
-    user_id: Optional[int]
+    user_id: Optional[str]
     timestamp: datetime
     item_type: Optional[str]
     is_sent_by_viewer: Optional[bool]
@@ -332,7 +340,7 @@ class ReplyMessage(BaseModel):
 
 class DirectMessage(BaseModel):
     id: str  # e.g. 28597946203914980615241927545176064
-    user_id: Optional[int]
+    user_id: Optional[str]
     thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
     timestamp: datetime
     item_type: Optional[str]
@@ -416,6 +424,7 @@ class DirectThread(BaseModel):
 
 
 class Relationship(BaseModel):
+    user_id: str
     blocking: bool
     followed_by: bool
     following: bool
@@ -427,7 +436,17 @@ class Relationship(BaseModel):
     is_restricted: bool
     muting: bool
     outgoing_request: bool
-    status: str
+
+
+class RelationshipShort(BaseModel):
+    user_id: str
+    following: bool
+    incoming_request: bool
+    is_bestie: bool
+    is_feed_favorite: bool
+    is_private: bool
+    is_restricted: bool
+    outgoing_request: bool
 
 
 class Highlight(BaseModel):
@@ -473,10 +492,10 @@ class Track(BaseModel):
     territory_validity_periods: dict
 
 
-class NoteResponse(BaseModel):
+class Note(BaseModel):
     id: str
     text: str
-    user_id: int
+    user_id: str
     user: UserShort
     audience: int
     created_at: datetime
@@ -484,9 +503,3 @@ class NoteResponse(BaseModel):
     is_emoji_only: bool
     has_translation: bool
     note_style: int
-    status: str
-
-
-class NoteRequest(BaseModel):
-    text: str
-    uuid: str

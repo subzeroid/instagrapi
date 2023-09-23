@@ -10,7 +10,7 @@ from instagrapi.exceptions import (
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import Relationship, User, UserShort
+from instagrapi.types import Relationship, RelationshipShort, User, UserShort
 from instagrapi.utils import json_value
 
 
@@ -44,7 +44,7 @@ class UserMixin:
 
         Example
         -------
-        'adw0rd' -> 1903424587
+        'example' -> 1903424587
         """
         username = str(username).lower()
         return str(self.user_info_by_username(username).pk)
@@ -98,7 +98,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         return self.user_short_gql(user_id).username
 
@@ -118,7 +118,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         user_id = str(user_id)
         try:
@@ -297,18 +297,19 @@ class UserMixin:
         results = self.private_request("feed/new_feed_posts_exist/")
         return results.get("new_feed_posts_exist", False)
 
-    def user_friendships_v1(self, user_ids: List[str]) -> dict:
+    def user_friendships_v1(self, user_ids: List[str]) -> List[RelationshipShort]:
         """
         Get user friendship status
 
         Parameters
         ----------
         user_ids: List[str]
-            List of user id of an instagram account
+            List of user ID of an instagram account
 
         Returns
         -------
-        dict
+        List[RelationshipShort]
+           List of RelationshipShorts with requested user_ids
         """
         user_ids_str = ",".join(user_ids)
         result = self.private_request(
@@ -316,7 +317,13 @@ class UserMixin:
             data={"user_ids": user_ids_str, "_uuid": self.uuid},
             with_signature=False,
         )
-        return result["friendship_statuses"]
+        assert result.get("status", "") == "ok"
+
+        relationships = []
+        for user_id, status in result.get("friendship_statuses", {}).items():
+            relationships.append(RelationshipShort(user_id=user_id, **status))
+
+        return relationships
 
     def user_friendship_v1(self, user_id: str) -> Relationship:
         """
@@ -334,8 +341,10 @@ class UserMixin:
         """
 
         try:
-            results = self.private_request(f"friendships/show/{user_id}/")
-            return Relationship(**results)
+            result = self.private_request(f"friendships/show/{user_id}/")
+            assert result.get("status", "") == "ok"
+
+            return Relationship(user_id=user_id, **result)
         except ClientError as e:
             self.logger.exception(e)
             return None
@@ -837,6 +846,67 @@ class UserMixin:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
+    def user_block(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Block a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "surface": surface,
+            "is_auto_block_enabled": "false",
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+
+        result = self.private_request(f"friendships/block/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is True
+
+    def user_unblock(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Unlock a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "container_module": surface,
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+
+        result = self.private_request(f"friendships/unblock/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is False
+
     def user_remove_follower(self, user_id: str) -> bool:
         """
         Remove a follower
@@ -1152,4 +1222,37 @@ class UserMixin:
             "add": [],
         }
         result = self.private_request("friendships/set_besties/", data)
-        return json_value(result, "friendship_statuses", user_id, "is_bestie") == False
+        return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
+
+    def creator_info(
+        self, user_id: str, entry_point: str = "direct_thread"
+    ) -> Tuple[UserShort, Dict]:
+        """
+        Retrieves Creator's information
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        entry_point: str, optional
+            Entry point for retrieving, default - direct_thread
+            When passing self_profile, own user_id must be provided
+
+        Returns
+        -------
+        Tuple[UserShort, Dict]
+            Retrieved User and his Creator's Info
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "entry_point": entry_point,
+            "surface_type": "android",
+            "user_id": user_id,
+        }
+
+        result = self.private_request("creator/creator_info/", params=params)
+        assert result.get("status", "") == "ok"
+
+        creator_info = result.get("user", {}).pop("creator_info", {})
+        user = extract_user_short(result.get("user", {}))
+        return (user, creator_info)

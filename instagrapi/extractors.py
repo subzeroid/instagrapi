@@ -8,6 +8,7 @@ from .types import (
     Collection,
     Comment,
     DirectMedia,
+    Guide,
     DirectMessage,
     DirectResponse,
     DirectShortThread,
@@ -18,7 +19,6 @@ from .types import (
     Media,
     MediaXma,
     MediaOembed,
-    NoteRequest,
     ReplyMessage,
     Resource,
     Story,
@@ -67,9 +67,9 @@ def extract_media_v1(data):
     )
     media["like_count"] = media.get("like_count", 0)
     media["has_liked"] = media.get("has_liked", False)
-    media["sponsor_tags"] = [
-        tag["sponsor"] for tag in media.get("sponsor_tags", [])
-    ] if media.get("sponsor_tags") else []
+    media["sponsor_tags"] = [tag["sponsor"] for tag in media.get("sponsor_tags", [])]
+    media["play_count"] = media.get("play_count", 0)
+    media["coauthor_producers"] = media.get("coauthor_producers", [])
 
     if media["media_type"] == 8:
         width = media["carousel_media"][0]["original_width"]
@@ -82,8 +82,6 @@ def extract_media_v1(data):
         height = media["original_height"]
         preview_url = media["image_versions2"]["candidates"][-1]["url"]
 
-    media["play_count"] = media.get("play_count", 0)
-    media["coauthor_producers"] = media.get("coauthor_producers", [])
     return Media(
         width=width,
         height=height,
@@ -99,8 +97,8 @@ def extract_media_v1(data):
 def extract_media_v1_xma(data):
     """Extract media from Private API"""
     media = deepcopy(data)
-  
-    #media["media_type"] = 10
+
+    # media["media_type"] = 10
     media["video_url"] = media.get("target_url", "")
     media["title"] = media.get("title_text", "")
     media["preview_url"] = media.get("preview_url", "")
@@ -110,7 +108,7 @@ def extract_media_v1_xma(data):
     media["header_icon_height"] = media.get("header_icon_height", 0)
     media["header_title_text"] = media.get("header_title_text", "")
     media["preview_media_fbid"] = media.get("preview_media_fbid", "")
-    
+
     return MediaXma(
         **media,
     )
@@ -172,13 +170,13 @@ def extract_media_gql(data):
             extract_resource_gql(edge["node"])
             for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
         ],
+        width=media["dimensions"]["width"],
+        height=media["dimensions"]["height"],
+        preview_url=media["display_resources"][0]["src"],
         sponsor_tags=[
             extract_user_short(edge["node"]["sponsor"])
             for edge in media.get("edge_media_to_sponsor_user", {}).get("edges", [])
         ],
-        width=media["dimensions"]["width"],
-        height=media["dimensions"]["height"],
-        preview_url=media["display_resources"][0]["src"],
         **media,
     )
 
@@ -349,7 +347,7 @@ def extract_direct_message(data):
     xma_media_share = data.get("xma_media_share", {})
     if xma_media_share:
         data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
-    
+
     return DirectMessage(**data)
 
 
@@ -465,13 +463,13 @@ def extract_story_gql(data):
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
     story["media_type"] = 2 if story["is_video"] else 1
+    story["preview_url"] = story["display_resources"][0]["src"]
+    story["width"] = story["dimensions"]["width"]
+    story["height"] = story["dimensions"]["height"]
     story["sponsor_tags"] = [
         extract_user_short(edge["node"]["sponsor"])
         for edge in story.get("edge_media_to_sponsor_user", {}).get("edges", [])
     ]
-    story["preview_url"] = story["display_resources"][0]["src"]
-    story["width"] = story["dimensions"]["width"]
-    story["height"] = story["dimensions"]["height"]
     return Story(**story)
 
 
@@ -482,6 +480,12 @@ def extract_highlight_v1(data):
     return Highlight(**highlight)
 
 
+def extract_guide_v1(data):
+    item = deepcopy(data.get("summary") or {})
+    item["cover_media"] = extract_media_v1(item["cover_media"])
+    return Guide(**item)
+
+
 def extract_track(data):
     data["cover_artwork_uri"] = data.get("cover_artwork_uri") or None
     data["cover_artwork_thumbnail_uri"] = (
@@ -490,9 +494,3 @@ def extract_track(data):
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data["dash_manifest"])
     data["uri"] = html.unescape(items[0]) if items else None
     return Track(**data)
-
-
-def extract_note(data):
-    data["text"] = data.get("text") or None
-    data["uuid"] = data.get("uuid") or None
-    return NoteRequest(**data)

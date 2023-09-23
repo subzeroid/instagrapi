@@ -13,6 +13,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    ClientUnauthorizedError,
     ClientBadRequestError,
     ClientConnectionError,
     ClientError,
@@ -27,7 +28,7 @@ from instagrapi.exceptions import (
     ChallengeRequired,
     UserNotFound,
 )
-from instagrapi.utils import json_value, random_delay
+from instagrapi.utils import random_delay
 
 
 class PublicRequestMixin:
@@ -37,7 +38,8 @@ class PublicRequestMixin:
     last_public_response = None
     last_public_json = {}
     public_request_logger = logging.getLogger("public_request")
-    request_timeout = 1
+    request_timeout = 10
+    timeout = 10
     last_response_ts = 0
 
     def __init__(self, *args, **kwargs):
@@ -150,11 +152,11 @@ class PublicRequestMixin:
         try:
             if data is not None:  # POST
                 response = self.public.data(
-                    url, data=data, params=params, proxies=self.public.proxies
+                    url, data=data, params=params, timeout=self.timeout, proxies=self.public.proxies
                 )
             else:  # GET
                 response = self.public.get(
-                    url, params=params, proxies=self.public.proxies
+                    url, params=params, timeout=self.timeout, verify=False, proxies=self.public.proxies
                 )
 
             expected_length = int(response.headers.get("Content-Length") or 0)
@@ -189,29 +191,25 @@ class PublicRequestMixin:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
-            self.public_request_logger.error(
-                "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
-                response.status_code,
-                response.url,
-                response.text,
-            )
+            if "challenge" in response.url:
+                raise ChallengeRequired(e, response=response)
+
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, url),
                 response=response,
             )
         except requests.HTTPError as e:
-            if e.response.status_code == 403:
+            if e.response.status_code == 401:
+                # HTTPError: 401 Client Error: Unauthorized for url: https://i.instagram.com/api/v1/users....
+                raise ClientUnauthorizedError(e, response=e.response)
+            elif e.response.status_code == 403:
                 raise ClientForbiddenError(e, response=e.response)
-
-            if e.response.status_code == 400:
+            elif e.response.status_code == 400:
                 raise ClientBadRequestError(e, response=e.response)
-
-            if e.response.status_code == 429:
+            elif e.response.status_code == 429:
                 raise ClientThrottledError(e, response=e.response)
-
-            if e.response.status_code == 404:
+            elif e.response.status_code == 404:
                 raise ClientNotFoundError(e, response=e.response)
-
             raise ClientError(e, response=e.response)
 
         except requests.ConnectionError as e:
@@ -227,17 +225,7 @@ class PublicRequestMixin:
         response = self.public_request(
             url, data=data, params=params, headers=headers, return_json=True
         )
-        try:
-            return response["graphql"]
-        except KeyError as e:
-            error_type = response.get("error_type")
-            if error_type == "generic_request_error":
-                raise GenericRequestError(
-                    json_value(response, "errors", "error", 0, default=error_type),
-                    **response
-                )
-            raise UserNotFound(e)
-            # raise e
+        return response.get("graphql") or response
 
     def public_graphql_request(
         self,

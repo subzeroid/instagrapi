@@ -36,13 +36,13 @@ class HighlightMixin:
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return str(parts[0])
 
-    def user_highlights_v1(self, user_id: int, amount: int = 0) -> List[Highlight]:
+    def user_highlights_v1(self, user_id: str, amount: int = 0) -> List[Highlight]:
         """
         Get a user's highlight
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of highlight to return, default is 0 (all highlights)
 
@@ -67,13 +67,13 @@ class HighlightMixin:
         )
         return [extract_highlight_v1(highlight) for highlight in result.get("tray", [])]
 
-    def user_highlights(self, user_id: int, amount: int = 0) -> List[Highlight]:
+    def user_highlights(self, user_id: str, amount: int = 0) -> List[Highlight]:
         """
         Get a user's highlights
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of highlight to return, default is 0 (all highlights)
 

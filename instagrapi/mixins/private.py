@@ -35,6 +35,10 @@ from instagrapi.exceptions import (
     UnknownError,
     VideoTooLongException,
     InvalidTargetUser,
+    MediaNotFound,
+    DeleteRequestError,
+    InactiveUserError,
+
 )
 from instagrapi.utils import dumps, generate_signature, random_delay
 
@@ -80,7 +84,8 @@ class PrivateRequestMixin:
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
     private_request_logger = logging.getLogger("private_request")
-    request_timeout = 1
+    request_timeout = 10
+    timeout = 10
     domain = config.API_DOMAIN
     last_response = None
     last_json = {}
@@ -111,6 +116,7 @@ class PrivateRequestMixin:
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.timeout = kwargs.pop("timeout", self.timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -341,12 +347,17 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    api_url, data=data, params=params, proxies=self.private.proxies
+                    api_url,
+                    data=data,
+                    params=params,
+                    timeout=self.timeout,
+                    verify=False,
+                    proxies=self.private.proxies
                 )
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
                 response = self.private.get(
-                    api_url, params=params, proxies=self.private.proxies
+                    api_url, params=params, timeout=self.timeout, verify=False, proxies=self.private.proxies
                 )
             self.logger.debug(
                 "private_request %s: %s (%s)",
@@ -414,6 +425,15 @@ class PrivateRequestMixin:
                 elif error_type == "rate_limit_error":
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
+                    msg = last_json.get("message", "").strip()
+                    if msg:
+                        if not msg.endswith("."):
+                            msg = "%s." % msg
+                        msg = "%s " % msg
+                    last_json["message"] = (
+                        "%sIf you are sure that the password is correct, then change your IP address, "
+                        "because it is added to the blacklist of the Instagram Server"
+                    ) % msg
                     raise BadPassword(**last_json)
                 elif error_type == "two_factor_required":
                     if not last_json["message"]:
@@ -421,6 +441,22 @@ class PrivateRequestMixin:
                     raise TwoFactorRequired(**last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
+                elif (
+                    "has been deleted" in message
+                    or "Media is unavailable" in message
+                    or "Invalid media_id" in message
+                ):
+                    raise MediaNotFound(e, response=e.response, **last_json)
+                
+                elif "You requested to delete" in message:
+                    raise DeleteRequestError(e, response=e.response, **last_json)
+                elif "You can't use Instagram" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
+                elif "The username you entered doesn't appear" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
+                elif "Your account has been disabled for violating our terms" in message:
+                    raise InactiveUserError(e, response=e.response, **last_json)
+                
                 elif "Not authorized to view user" in message:
                     raise PrivateAccount(e, response=e.response, **last_json)
                 elif "Invalid target user" in message:

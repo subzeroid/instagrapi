@@ -156,13 +156,13 @@ class StoryMixin:
             users.append(user)
         return users
 
-    def user_stories_gql(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_gql(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -177,13 +177,13 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_v1(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -209,13 +209,13 @@ class StoryMixin:
             stories = stories[: int(amount)]
         return stories
 
-    def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -296,7 +296,7 @@ class StoryMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, (
             """The URL must contain the path to the file (mp4 or jpg).\n"""
-            """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
+            """Read the documentation https://subzeroid.github.io/instagrapi/usage-guide/story.html"""
         )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
@@ -396,23 +396,19 @@ class StoryMixin:
             A boolean value
         """
         return self.story_like(story_id, revert=True)
-    
+
     def sticker_tray(self) -> dict:
-        '''
+        """
         Getting a sticker tray from Instagram
 
         Returns
         -------
         dict
             Sticker Tray
-        '''
-        data = {
-            "_uid" : self.user_id,
-            "type" : "static_stickers",
-            "_uuid" : self.uuid
-        }
+        """
+        data = {"_uid": self.user_id, "type": "static_stickers", "_uuid": self.uuid}
         result = self.private_request(
-            "creatives/sticker_tray/", 
+            "creatives/sticker_tray/",
             data=data,
             with_signature=True,
         )

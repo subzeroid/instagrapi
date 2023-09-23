@@ -143,6 +143,7 @@ dmypy.json
 _temp*.py
 
 instadevice/
+_temp.py
 # VSCode
 .vscode
 
