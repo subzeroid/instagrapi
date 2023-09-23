@@ -50,7 +50,7 @@ class DownloadPhotoMixin:
         media_pk: int
             Unique Media ID
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
+            Directory in which you want to download the photo, default is "" and will download the files to working
                 directory
 
         Returns
@@ -78,7 +78,7 @@ class DownloadPhotoMixin:
         filename: str, optional
             Filename for the media
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
+            Directory in which you want to download the photo, default is "" and will download the files to working
                 directory
 
         Returns
@@ -89,16 +89,14 @@ class DownloadPhotoMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         with open(path, "wb") as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
-    def photo_download_by_url_origin(
-        self, url: str
-    ) -> bytes:
+    def photo_download_by_url_origin(self, url: str) -> bytes:
         """
         Download photo using URL
 
@@ -111,7 +109,7 @@ class DownloadPhotoMixin:
         -------
         bytes
         """
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         response.raw.decode_content = True
         return response.content
@@ -142,6 +140,10 @@ class UploadPhotoMixin:
             (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
+        valid_extensions = [".jpg", ".jpeg"]
+        if path.suffix.lower() not in valid_extensions:
+            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
+
         # upload_id = 516057248854759
         upload_id = upload_id or str(int(time.time() * 1000))
         assert path, "Not specified path to photo"
@@ -227,6 +229,10 @@ class UploadPhotoMixin:
             An object of Media class
         """
         path = Path(path)
+        valid_extensions = [".jpg", ".jpeg"]
+        if path.suffix.lower() not in valid_extensions:
+            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
+
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
@@ -372,7 +378,7 @@ class UploadPhotoMixin:
                 hashtags,
                 stickers,
                 medias,
-                extra_data=extra_data
+                extra_data=extra_data,
             ):
                 media = self.last_json.get("media")
                 self.expose()
@@ -383,7 +389,7 @@ class UploadPhotoMixin:
                     locations=locations,
                     stickers=stickers,
                     medias=medias,
-                    **extract_media_v1(media).dict()
+                    **extract_media_v1(media).dict(),
                 )
         raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
 
@@ -435,6 +441,12 @@ class UploadPhotoMixin:
             A dictionary of response from the call
         """
         timestamp = int(time.time())
+        mentions = mentions.copy()
+        locations = locations.copy()
+        links = links.copy()
+        hashtags = hashtags.copy()
+        stickers = stickers.copy()
+        medias = medias.copy()
         story_sticker_ids = []
         data = {
             "text_metadata": '[{"font_size":40.0,"scale":1.0,"width":611.0,"height":169.0,"x":0.51414347,"y":0.8487708,"rotation":0.0}]',  # REMOVEIT
@@ -460,23 +472,25 @@ class UploadPhotoMixin:
             "device_id": self.android_device_id,
             "composition_id": self.generate_uuid(),
             "app_attribution_android_namespace": "",
-            "media_transformation_info": dumps({
-                "width": str(width),
-                "height": str(height),
-                "x_transform": "0",
-                "y_transform": "0",
-                "zoom": "1.0",
-                "rotation": "0.0",
-                "background_coverage": "0.0"
-            }),
+            "media_transformation_info": dumps(
+                {
+                    "width": str(width),
+                    "height": str(height),
+                    "x_transform": "0",
+                    "y_transform": "0",
+                    "zoom": "1.0",
+                    "rotation": "0.0",
+                    "background_coverage": "0.0",
+                }
+            ),
             "original_media_type": "photo",
             "camera_entry_point": str(random.randint(25, 164)),  # e.g. 25
             "edits": {
                 "crop_original_size": [width * 1.0, height * 1.0],
                 # "crop_center": [0.0, 0.0],
                 # "crop_zoom": 1.0,
-                'filter_type': 0,
-                'filter_strength': 1.0,
+                "filter_type": 0,
+                "filter_strength": 1.0,
             },
             "extra": {"source_width": width, "source_height": height},
         }
@@ -500,7 +514,6 @@ class UploadPhotoMixin:
                         "is_sticker": False,
                         "display_type": "mention_username",
                     }
-                    
                 ]
                 data["reel_mentions"] = json.dumps(reel_mentions)
                 tap_models.extend(reel_mentions)
@@ -542,11 +555,14 @@ class UploadPhotoMixin:
         if links:
             # instagram allow one link now
             link = links[0]
-            self.private_request("media/validate_reel_url/", {
-                "url": str(link.webUri),
-                "_uid": str(self.user_id),
-                "_uuid": str(self.uuid),
-            })
+            self.private_request(
+                "media/validate_reel_url/",
+                {
+                    "url": str(link.webUri),
+                    "_uid": str(self.user_id),
+                    "_uuid": str(self.uuid),
+                },
+            )
             stickers.append(
                 StorySticker(
                     type="story_link",
@@ -559,8 +575,8 @@ class UploadPhotoMixin:
                     extra=dict(
                         link_type="web",
                         url=str(link.webUri),
-                        tap_state_str_id="link_sticker_default"
-                    )
+                        tap_state_str_id="link_sticker_default",
+                    ),
                 )
             )
             story_sticker_ids.append("link_sticker_default")
@@ -570,41 +586,43 @@ class UploadPhotoMixin:
                 if sticker.id:
                     sticker_extra["str_id"] = sticker.id
                     story_sticker_ids.append(sticker.id)
-                tap_models.append({
-                    "x": sticker.x,
-                    "y": sticker.y,
-                    "z": sticker.z,
-                    "width": sticker.width,
-                    "height": sticker.height,
-                    "rotation": sticker.rotation,
-                    "type": sticker.type,
-                    "is_sticker": True,
-                    "selected_index": 0,
-                    "tap_state": 0,
-                    **sticker_extra
-                })
+                tap_models.append(
+                    {
+                        "x": sticker.x,
+                        "y": sticker.y,
+                        "z": sticker.z,
+                        "width": sticker.width,
+                        "height": sticker.height,
+                        "rotation": sticker.rotation,
+                        "type": sticker.type,
+                        "is_sticker": True,
+                        "selected_index": 0,
+                        "tap_state": 0,
+                        **sticker_extra,
+                    }
+                )
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
         if medias:
             for feed_media in medias:
-                assert feed_media.media_pk, 'Required StoryMedia.media_pk'
+                assert feed_media.media_pk, "Required StoryMedia.media_pk"
                 # if not feed_media.user_id:
                 #     user = self.media_user(feed_media.media_pk)
                 #     feed_media.user_id = user.pk
                 item = {
-                    'x': feed_media.x,
-                    'y': feed_media.y,
-                    'z': feed_media.z,
-                    'width': feed_media.width,
-                    'height': feed_media.height,
-                    'rotation': feed_media.rotation,
-                    'type': 'feed_media',
-                    'media_id': str(feed_media.media_pk),
-                    'media_owner_id': str(feed_media.user_id or ""),
-                    'product_type': 'feed',
-                    'is_sticker': True,
-                    'tap_state': 0,
-                    'tap_state_str_id': 'feed_post_sticker_square'
+                    "x": feed_media.x,
+                    "y": feed_media.y,
+                    "z": feed_media.z,
+                    "width": feed_media.width,
+                    "height": feed_media.height,
+                    "rotation": feed_media.rotation,
+                    "type": "feed_media",
+                    "media_id": str(feed_media.media_pk),
+                    "media_owner_id": str(feed_media.user_id or ""),
+                    "product_type": "feed",
+                    "is_sticker": True,
+                    "tap_state": 0,
+                    "tap_state_str_id": "feed_post_sticker_square",
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
@@ -614,4 +632,6 @@ class UploadPhotoMixin:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = story_sticker_ids[0]
-        return self.private_request("media/configure_to_story/", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/", self.with_default_data(data)
+        )

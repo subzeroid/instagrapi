@@ -117,22 +117,40 @@ class Media(BaseModel):
     preview_url: str
     taken_at: datetime
     media_type: int
+    image_versions2: Optional[dict] = {}
     product_type: Optional[str] = ""  # igtv or feed
     thumbnail_url: Optional[HttpUrl]
     location: Optional[Location] = None
     user: UserShort
     comment_count: Optional[int] = 0
+    comments_disabled: Optional[bool] = False
+    commenting_disabled_for_viewer: Optional[bool] = False
     like_count: int
+    play_count: Optional[int]
     has_liked: Optional[bool]
     caption_text: str
     accessibility_caption: Optional[str]
     usertags: List[Usertag]
+    sponsor_tags: List[UserShort]
     video_url: Optional[HttpUrl]  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""
     resources: List[Resource] = []
     clips_metadata: dict = {}
+
+
+class MediaXma(BaseModel):
+    # media_type: int
+    video_url: HttpUrl  # for Video and IGTV
+    title: Optional[str] = ""
+    preview_url: Optional[HttpUrl]
+    preview_url_mime_type: Optional[str]
+    header_icon_url: Optional[HttpUrl]
+    header_icon_width: Optional[int]
+    header_icon_height: Optional[int]
+    header_title_text: Optional[str]
+    preview_media_fbid: Optional[str]
 
 
 class MediaOembed(BaseModel):
@@ -222,15 +240,23 @@ class StoryLocation(BaseModel):
     height: Optional[float]
 
 
+class StoryStickerLink(BaseModel):
+    url: HttpUrl
+    link_title: Optional[str]
+    link_type: Optional[str]
+    display_url: Optional[str]
+
+
 class StorySticker(BaseModel):
     id: Optional[str]
-    type: Optional[str] = 'gif'
+    type: Optional[str] = "gif"
     x: float
     y: float
     z: Optional[int] = 1000005
     width: float
     height: float
     rotation: Optional[float] = 0.0
+    story_link: Optional[StoryStickerLink]
     extra: Optional[dict] = {}
 
 
@@ -265,6 +291,7 @@ class Story(BaseModel):
     user: UserShort
     video_url: Optional[HttpUrl]  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
+    sponsor_tags: List[UserShort]
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
@@ -273,22 +300,30 @@ class Story(BaseModel):
     medias: List[StoryMedia] = []
 
 
+class Guide(BaseModel):
+    id: Optional[str]
+    title: Optional[str]
+    description: str
+    cover_media: Media
+    feedback_item: Optional[dict]
+
+
 class DirectMedia(BaseModel):
     id: str
     media_type: int
     user: Optional[UserShort]
     thumbnail_url: Optional[HttpUrl]
     video_url: Optional[HttpUrl]
+    audio_url: Optional[HttpUrl]
 
 
-class DirectMessage(BaseModel):
-    id: str  # e.g. 28597946203914980615241927545176064
-    user_id: Optional[int]
-    thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
+class ReplyMessage(BaseModel):
+    id: str
+    user_id: Optional[str]
     timestamp: datetime
     item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
     is_shh_mode: Optional[bool]
-    reactions: Optional[dict]
     text: Optional[str]
     link: Optional[dict]
     animated_media: Optional[dict]
@@ -298,6 +333,31 @@ class DirectMessage(BaseModel):
     reel_share: Optional[dict]
     story_share: Optional[dict]
     felix_share: Optional[dict]
+    xma_share: Optional[MediaXma]
+    clip: Optional[Media]
+    placeholder: Optional[dict]
+
+
+class DirectMessage(BaseModel):
+    id: str  # e.g. 28597946203914980615241927545176064
+    user_id: Optional[str]
+    thread_id: Optional[int]  # e.g. 340282366841710300949128531777654287254
+    timestamp: datetime
+    item_type: Optional[str]
+    is_sent_by_viewer: Optional[bool]
+    is_shh_mode: Optional[bool]
+    reactions: Optional[dict]
+    text: Optional[str]
+    reply: Optional[ReplyMessage]
+    link: Optional[dict]
+    animated_media: Optional[dict]
+    media: Optional[DirectMedia]
+    visual_media: Optional[dict]
+    media_share: Optional[Media]
+    reel_share: Optional[dict]
+    story_share: Optional[dict]
+    felix_share: Optional[dict]
+    xma_share: Optional[MediaXma]
     clip: Optional[Media]
     placeholder: Optional[dict]
 
@@ -364,6 +424,7 @@ class DirectThread(BaseModel):
 
 
 class Relationship(BaseModel):
+    user_id: str
     blocking: bool
     followed_by: bool
     following: bool
@@ -375,7 +436,17 @@ class Relationship(BaseModel):
     is_restricted: bool
     muting: bool
     outgoing_request: bool
-    status: str
+
+
+class RelationshipShort(BaseModel):
+    user_id: str
+    following: bool
+    incoming_request: bool
+    is_bestie: bool
+    is_feed_favorite: bool
+    is_private: bool
+    is_restricted: bool
+    outgoing_request: bool
 
 
 class Highlight(BaseModel):
@@ -404,17 +475,31 @@ class Track(BaseModel):
     display_artist: str
     audio_cluster_id: int
     artist_id: Optional[int]
-    cover_artwork_uri: HttpUrl
-    cover_artwork_thumbnail_uri: HttpUrl
-    progressive_download_url: HttpUrl
-    fast_start_progressive_download_url: HttpUrl
+    cover_artwork_uri: Optional[HttpUrl]
+    cover_artwork_thumbnail_uri: Optional[HttpUrl]
+    progressive_download_url: Optional[HttpUrl]
+    fast_start_progressive_download_url: Optional[HttpUrl]
     reactive_audio_download_url: Optional[HttpUrl]
     highlight_start_times_in_ms: List[int]
     is_explicit: bool
     dash_manifest: str
+    uri: Optional[HttpUrl]
     has_lyrics: bool
     audio_asset_id: int
     duration_in_ms: int
     dark_message: Optional[str]
     allows_saving: bool
     territory_validity_periods: dict
+
+
+class Note(BaseModel):
+    id: str
+    text: str
+    user_id: str
+    user: UserShort
+    audience: int
+    created_at: datetime
+    expires_at: datetime
+    is_emoji_only: bool
+    has_translation: bool
+    note_style: int

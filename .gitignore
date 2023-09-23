@@ -1,5 +1,6 @@
 /*.mp4
 /*.jpg
+/*.m4a
 # emacs
 *~
 .DS_Store
@@ -140,3 +141,6 @@ dmypy.json
 
 .vscode
 _temp.py
+# VSCode
+.vscode
+ig_settings.json

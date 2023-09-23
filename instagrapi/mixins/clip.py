@@ -1,5 +1,6 @@
 import json
 import random
+import tempfile
 import time
 from pathlib import Path
 from typing import Dict, List
@@ -8,7 +9,7 @@ from uuid import uuid4
 from instagrapi import config
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import Location, Media, Usertag
+from instagrapi.types import Location, Media, Track, Usertag
 from instagrapi.utils import date_time_original
 
 try:
@@ -31,8 +32,9 @@ class DownloadClipMixin:
         media_pk: int
             PK for the album you want to download
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album,
+            default is "" and will download the files to working
+            directory.
 
         Returns
         -------
@@ -51,8 +53,9 @@ class DownloadClipMixin:
         url: str
             URL to download media from
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working
-                directory.
+            Directory in which you want to download the album,
+            default is "" and will download the files to working
+            directory.
 
         Returns
         -------
@@ -87,7 +90,8 @@ class UploadClipMixin:
         caption: str
             Media caption
         thumbnail: Path, optional
-            Path to thumbnail for CLIP. Default value is None, and it generates a thumbnail
+            Path to thumbnail for CLIP.
+            Default value is None, and it generates a thumbnail
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
@@ -95,7 +99,8 @@ class UploadClipMixin:
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
         extra_data: Dict[str, str], optional
-            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+            Dict of extra data, if you need to add your params,
+            like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -112,10 +117,6 @@ class UploadClipMixin:
         upload_name = "{upload_id}_0_{rand}".format(
             upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
         )
-        # by segments bb2c1d0c127384453a2122e79e4c9a85-0-6498763
-        # upload_name = "{hash}-0-{rand}".format(
-        #     hash="bb2c1d0c127384453a2122e79e4c9a85", rand=random.randint(1111111, 9999999)
-        # )
         rupload_params = {
             "is_clips_video": "1",
             "retry_context": '{"num_reupload":0,"num_step_auto_retry":0,"num_step_manual_retry":0}',
@@ -195,6 +196,103 @@ class UploadClipMixin:
                     self.expose()
                     return extract_media_v1(media)
         raise ClipConfigureError(response=self.last_response, **self.last_json)
+
+    def clip_upload_as_reel_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Track,
+        extra_data: Dict[str, str] = {},
+    ) -> Media:
+
+        """
+        Upload CLIP as reel with music metadata.
+        It also add the music under the video, therefore a mute video is required.
+
+        If you just want to add music metadata to your reel,
+        just copy the extra data you find here and add it
+        to the extra_data parameter of the clip_upload function.
+
+        Parameters
+        ----------
+        path: Path
+            Path to CLIP file
+        caption: str
+            Media caption
+        track: Track
+            The music track to be added to the video reel
+            use cl.search_music(title)[0].dict()
+
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+
+        Returns
+        -------
+        Media
+            A Media response from the call
+        """
+        tmpaudio = Path(tempfile.mktemp(".m4a"))
+        tmpaudio = self.track_download_by_url(track.uri, "track", tmpaudio.parent)
+        try:
+            highlight_start_time = track.highlight_start_times_in_ms[0]
+        except IndexError:
+            highlight_start_time = 0
+        try:
+            import moviepy.editor as mp
+        except ImportError:
+            raise Exception("Please install moviepy>=1.0.3 and retry")
+        # get all media to create the reel
+        video = mp.VideoFileClip(str(path))
+        audio_clip = mp.AudioFileClip(str(tmpaudio))
+        # set the start time of the audio and create the actual media
+        start = highlight_start_time / 1000
+        end = highlight_start_time / 1000 + video.duration
+        audio_clip = audio_clip.subclip(start, end)
+        video = video.set_audio(audio_clip)
+        # save the media in tmp folder
+        tmpvideo = Path(tempfile.mktemp(".mp4"))
+        video.write_videofile(str(tmpvideo))
+        # close the media
+        try:
+            video.close()
+        except AttributeError:
+            pass
+        try:
+            audio_clip.close()
+        except AttributeError:
+            pass
+        # create the extra data to upload with it
+        data = extra_data or {}
+        data["clips_audio_metadata"] = (
+            {
+                "original": {"volume_level": 0.0},
+                "song": {
+                    "volume_level": 1.0,
+                    "is_saved": "0",
+                    "artist_name": track.display_artist,
+                    "audio_asset_id": track.id,
+                    "audio_cluster_id": track.audio_cluster_id,
+                    "track_name": track.title,
+                    "is_picked_precapture": "1",
+                },
+            },
+        )
+        data["music_params"] = {
+            "audio_asset_id": track.id,
+            "audio_cluster_id": track.audio_cluster_id,
+            "audio_asset_start_time_in_ms": highlight_start_time,
+            "derived_content_start_time_in_ms": 0,
+            "overlap_duration_in_ms": 15000,
+            "product": "story_camera_clips_v2",
+            "song_name": track.title,
+            "artist_name": track.display_artist,
+            "alacorn_session_id": "null",
+        }
+        clip_upload = self.clip_upload(tmpvideo, caption, extra_data=data)
+        # remove the tmp files
+        tmpvideo.unlink()
+        tmpaudio.unlink()
+        return clip_upload
 
     def clip_configure(
         self,
@@ -292,7 +390,7 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     except ImportError:
         raise Exception("Please install moviepy>=1.0.3 and retry")
 
-    print(f'Analizing CLIP file "{path}"')
+    print(f'Analyzing CLIP file "{path}"')
     video = mp.VideoFileClip(str(path))
     width, height = video.size
     if not thumbnail:

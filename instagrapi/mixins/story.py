@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import requests
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, UserNotFound
+from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
@@ -62,9 +62,14 @@ class StoryMixin:
         """
         story_id = self.media_id(story_pk)
         story_pk, user_id = story_id.split("_")
-        result = self.private_request(f"media/{story_pk}/info/")
-        story = extract_story_v1(result["items"][0])
-        self._stories_cache[story.pk] = story
+        # result = self.private_request(f"media/{story_pk}/info/")
+        # story = extract_story_v1(result["items"][0])
+        stories = self.user_stories_v1(user_id)
+        for story in stories:
+            self._stories_cache[story.pk] = story
+        if story_pk not in self._stories_cache:
+            raise StoryNotFound(story_pk=story_pk, **self.last_json)
+        story = self._stories_cache[story_pk]
         return deepcopy(story)
 
     def story_info(self, story_pk: str, use_cache: bool = True) -> Story:
@@ -107,7 +112,9 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
-    def users_stories_gql(self, user_ids: List[int], amount: int = 0) -> List[UserShort]:
+    def users_stories_gql(
+        self, user_ids: List[int], amount: int = 0
+    ) -> List[UserShort]:
         """
         Get a user's stories (Public API)
 
@@ -123,6 +130,7 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort for each user_id
         """
+        assert isinstance(user_ids, list), "user_ids should be a list of user_id"
         self.inject_sessionid_to_public()
 
         def _userid_chunks():
@@ -139,22 +147,22 @@ class StoryMixin:
             )
             stories_un.update(res)
         users = []
-        for media in stories_un['reels_media']:
-            user = extract_user_short(media['owner'])
-            items = media['items']
+        for media in stories_un["reels_media"]:
+            user = extract_user_short(media["owner"])
+            items = media["items"]
             if amount:
                 items = items[:amount]
             user.stories = [extract_story_gql(m) for m in items]
             users.append(user)
         return users
 
-    def user_stories_gql(self, user_id: int, amount: int = None) -> List[UserShort]:
+    def user_stories_gql(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -169,13 +177,13 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_v1(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -201,13 +209,13 @@ class StoryMixin:
             stories = stories[: int(amount)]
         return stories
 
-    def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -227,17 +235,18 @@ class StoryMixin:
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
         """
-        Mark a story as seen
+        Mark stories as seen
 
         Parameters
         ----------
-        story_pk: int
+        story_pks: List[int]
 
         Returns
         -------
         bool
             A boolean value
         """
+        assert isinstance(story_pks, list), "story_pks should be a list of story.pk"
         return self.media_seen(
             [self.media_id(mid) for mid in story_pks],
             [self.media_id(mid) for mid in skipped_story_pks],
@@ -285,11 +294,13 @@ class StoryMixin:
             Path for the file downloaded
         """
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
-        assert fname, """The URL must contain the path to the file (mp4 or jpg).\n"""\
-            """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
+        assert fname, (
+            """The URL must contain the path to the file (mp4 or jpg).\n"""
+            """Read the documentation https://subzeroid.github.io/instagrapi/usage-guide/story.html"""
+        )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         with open(path, "wb") as f:
             response.raw.decode_content = True
@@ -314,22 +325,92 @@ class StoryMixin:
         users = []
         next_max_id = None
         story_pk = self.media_pk(story_pk)
-        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
+        params = {
+            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
+        }
         while True:
             try:
                 if next_max_id:
                     params["max_id"] = next_max_id
-                result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
-                for item in result['users']:
+                result = self.private_request(
+                    f"media/{story_pk}/list_reel_media_viewer/", params=params
+                )
+                for item in result["users"]:
                     users.append(extract_user_short(item))
                 if amount and len(users) >= amount:
                     break
-                next_max_id = result.get('next_max_id')
+                next_max_id = result.get("next_max_id")
                 if not next_max_id:
                     break
             except Exception as e:
                 self.logger.exception(e)
                 break
         if amount:
-            users = users[:int(amount)]
+            users = users[: int(amount)]
         return users
+
+    def story_like(self, story_id: str, revert: bool = False) -> bool:
+        """
+        Like a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+        revert: bool, optional
+            If liked, whether or not to unlike. Default is False
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(story_id)
+        data = {
+            "media_id": media_id,
+            "_uid": str(self.user_id),
+            "source_of_like": "button",
+            "tray_session_id": self.tray_session_id,
+            "viewer_session_id": self.client_session_id,
+            "container_module": "reel_feed_timeline",
+        }
+        name = "unsend" if revert else "send"
+        result = self.private_request(
+            f"story_interactions/{name}_story_like", self.with_action_data(data)
+        )
+        return result["status"] == "ok"
+
+    def story_unlike(self, story_id: str) -> bool:
+        """
+        Unlike a story
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.story_like(story_id, revert=True)
+
+    def sticker_tray(self) -> dict:
+        """
+        Getting a sticker tray from Instagram
+
+        Returns
+        -------
+        dict
+            Sticker Tray
+        """
+        data = {"_uid": self.user_id, "type": "static_stickers", "_uuid": self.uuid}
+        result = self.private_request(
+            "creatives/sticker_tray/",
+            data=data,
+            with_signature=True,
+        )
+        assert result["status"] == "ok"
+        return result

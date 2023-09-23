@@ -13,13 +13,17 @@ from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
+from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.fbsearch import FbSearchMixin
+from instagrapi.mixins.fundraiser import FundraiserMixin
 from instagrapi.mixins.hashtag import HashtagMixin
 from instagrapi.mixins.highlight import HighlightMixin
 from instagrapi.mixins.igtv import DownloadIGTVMixin, UploadIGTVMixin
 from instagrapi.mixins.insights import InsightsMixin
 from instagrapi.mixins.location import LocationMixin
 from instagrapi.mixins.media import MediaMixin
+from instagrapi.mixins.multiple_accounts import MultipleAccountsMixin
+from instagrapi.mixins.note import NoteMixin
 from instagrapi.mixins.notification import NotificationMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
@@ -33,10 +37,14 @@ from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
+from instagrapi.mixins.track import TrackMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+# Used as fallback logger if another is not provided.
+DEFAULT_LOGGER = logging.getLogger("instagrapi")
 
 
 class Client(
@@ -47,6 +55,7 @@ class Client(
     ProfilePublicMixin,
     LoginMixin,
     ShareMixin,
+    TrackMixin,
     FbSearchMixin,
     HighlightMixin,
     DownloadPhotoMixin,
@@ -72,22 +81,33 @@ class Client(
     DownloadClipMixin,
     UploadClipMixin,
     ReelsMixin,
+    ExploreMixin,
     BloksMixin,
     TOTPMixin,
+    MultipleAccountsMixin,
+    NoteMixin,
+    FundraiserMixin,
 ):
     proxy = None
-    logger = logging.getLogger("instagrapi")
 
     def __init__(
         self,
         settings: dict = {},
         web_user_agent: str = None,
         proxy: str = None,
+        delay_range: list = None,
+        logger=DEFAULT_LOGGER,
         **kwargs,
     ):
+
         super().__init__(**kwargs)
+
         self.settings = settings
+        self.logger = logger
+        self.delay_range = delay_range
+
         self.set_proxy(proxy)
+
         self.init()
 
     def set_proxy(self, dsn: str):
