@@ -37,6 +37,7 @@ class AccountMixin:
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             },
             proxies=self.public.proxies,
+            timeout=self.request_timeout,
         )
         try:
             return response.json()
@@ -56,6 +57,46 @@ class AccountMixin:
         """
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
+
+    def set_external_url(self, external_url) -> dict:
+        """
+        Set new biography
+        """
+
+        signed_body = f"signed_body=SIGNATURE.%7B%22updated_links%22%3A%22%5B%7B%5C%22url%5C%22%3A%5C%22{external_url}%5C%22%2C%5C%22title%5C%22%3A%5C%22%5C%22%2C%5C%22link_type%5C%22%3A%5C%22external%5C%22%7D%5D%22%2C%22_uid%22%3A%22{self.user_id}%22%2C%22_uuid%22%3A%22{self.uuid}%22%7D"
+        return self.private_request(
+            "accounts/update_bio_links/", data=signed_body, with_signature=False
+        )
+
+    def account_set_private(self) -> bool:
+        """
+        Sets your account private
+
+        Returns
+        -------
+        Account
+            An object of Account class
+        """
+        assert self.user_id, "Login required"
+        user_id = str(self.user_id)
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
+        result = self.private_request("accounts/set_private/", data)
+        return result["status"] == "ok"
+
+    def account_set_public(self) -> bool:
+        """
+        Sets your account public
+
+        Returns
+        -------
+        Account
+            An object of Account class
+        """
+        assert self.user_id, "Login required"
+        user_id = str(self.user_id)
+        data = self.with_action_data({"_uid": user_id, "_uuid": self.uuid})
+        result = self.private_request("accounts/set_public/", data)
+        return result["status"] == "ok"
 
     def account_security_info(self) -> dict:
         """

@@ -11,4 +11,4 @@ Only the latest versions are supported
 
 ## Reporting a Vulnerability
 
-Report vulnerabilities in the telegram channel https://t.me/instagrapi or https://github.com/adw0rd/instagrapi/issues
+Report vulnerabilities in the telegram channel https://t.me/instagrapi or https://github.com/subzeroid/instagrapi/issues

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import random
 import time
@@ -180,7 +181,7 @@ class UploadIGTVMixin:
                     caption,
                     usertags,
                     location,
-                    extra_data=extra_data
+                    extra_data=extra_data,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -266,7 +267,7 @@ class UploadIGTVMixin:
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 70,
-            **extra_data
+            **extra_data,
         }
         return self.private_request(
             "media/configure_to_igtv/?video=1",
@@ -296,14 +297,16 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     except ImportError:
         raise Exception("Please install moviepy>=1.0.3 and retry")
 
-    print(f'Analizing IGTV file "{path}"')
-    video = mp.VideoFileClip(str(path))
-    width, height = video.size
-    if not thumbnail:
-        thumbnail = f"{path}.jpg"
-        print(f'Generating thumbnail "{thumbnail}"...')
-        video.save_frame(thumbnail, t=(video.duration / 2))
-        crop_thumbnail(thumbnail)
+    print(f'Analyzing IGTV file "{path}"')
+    with contextlib.ExitStack() as stack:
+        video = mp.VideoFileClip(str(path))
+        width, height = video.size
+        if not thumbnail:
+            thumbnail = f"{path}.jpg"
+            print(f'Generating thumbnail "{thumbnail}"...')
+            video.save_frame(thumbnail, t=(video.duration / 2))
+            crop_thumbnail(thumbnail)
+        stack.enter_context(contextlib.closing(video))
     return thumbnail, width, height, video.duration
 
 

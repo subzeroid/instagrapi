@@ -13,7 +13,9 @@ USER_AGENT_BASE = (
 # Instagram 76.0.0.15.395 (iPhone9,2; iOS 10_0_2; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/420+
 # Instagram 208.0.0.32.135 (iPhone; iOS 14_7_1; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/605.1.15
 
-SOFTWARE = "{model}-user+{android_release}+OPR1.170623.032+V10.2.3.0.OAGMIXM+release-keys"
+SOFTWARE = (
+    "{model}-user+{android_release}+OPR1.170623.032+V10.2.3.0.OAGMIXM+release-keys"
+)
 
 # QUERY_HASH_PROFILE = 'c9100bf9110dd6361671f113dd02e7d6'
 # QUERY_HASH_MEDIAS = '42323d64886122307be10013ad2dcc44'
@@ -32,9 +34,9 @@ LOGIN_EXPERIMENTS = "ig_android_reg_nux_headers_cleanup_universe,ig_android_devi
 SUPPORTED_CAPABILITIES = [
     {
         "value": "119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0",
-        "name": "SUPPORTED_SDK_VERSIONS"
+        "name": "SUPPORTED_SDK_VERSIONS",
     },
     {"value": "14", "name": "FACE_TRACKER_VERSION"},
     {"value": "ETC2_COMPRESSION", "name": "COMPRESSION"},
-    {"value": "gyroscope_enabled", "name": "gyroscope"}
+    {"value": "gyroscope_enabled", "name": "gyroscope"},
 ]

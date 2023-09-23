@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Tuple, Union
 
 from instagrapi.extractors import (
     extract_hashtag_v1,
@@ -10,20 +10,21 @@ from instagrapi.types import Hashtag, Location, Track, UserShort
 
 
 class FbSearchMixin:
-
-    def fbsearch_places(self, query: str, lat: float = 40.74, lng: float = -73.94) -> List[Location]:
+    def fbsearch_places(
+        self, query: str, lat: float = 40.74, lng: float = -73.94
+    ) -> List[Location]:
         params = {
-            'search_surface': 'places_search_page',
-            'timezone_offset': self.timezone_offset,
-            'lat': lat,
-            'lng': lng,
-            'count': 30,
-            'query': query,
+            "search_surface": "places_search_page",
+            "timezone_offset": self.timezone_offset,
+            "lat": lat,
+            "lng": lng,
+            "count": 30,
+            "query": query,
         }
         result = self.private_request("fbsearch/places/", params=params)
         locations = []
-        for item in result['items']:
-            locations.append(extract_location(item['location']))
+        for item in result["items"]:
+            locations.append(extract_location(item["location"]))
         return locations
 
     def fbsearch_topsearch_flat(self, query: str) -> List[dict]:
@@ -64,6 +65,7 @@ class FbSearchMixin:
         }
         result = self.private_request("tags/search/", params=params)
         return [extract_hashtag_v1(ht) for ht in result["results"]]
+
     def fbsearch_suggested_profiles(self, user_id: str) -> List[UserShort]:
         params = {
             "target_user_id": user_id,
@@ -71,3 +73,29 @@ class FbSearchMixin:
         }
         result = self.private_request("fbsearch/accounts_recs/", params=params)
         return result["users"]
+
+    def fbsearch_recent(self) -> List[Tuple[int, Union[UserShort, Hashtag, Dict]]]:
+        """
+        Retrieves recently searched results
+
+        Returns
+        -------
+        List[Tuple[int, Union[UserShort, Hashtag, Dict]]]
+            Returns list of Tuples where first value is timestamp of searh, second is retrived result
+        """
+        result = self.private_request("fbsearch/recent_searches/")
+        assert result.get("status", "") == "ok", "Failed to retrieve recent searches"
+
+        data = []
+        for item in result.get("recent", []):
+            if "user" in item.keys():
+                data.append(
+                    (item.get("client_time", None), extract_user_short(item["user"]))
+                )
+            if "hashtag" in item.keys():
+                hashtag = item.get("hashtag")
+                hashtag["media_count"] = hashtag.pop("formatted_media_count")
+                data.append((item.get("client_time", None), Hashtag(**hashtag)))
+            if "keyword" in item.keys():
+                data.append((item.get("client_time", None), item["keyword"]))
+        return data

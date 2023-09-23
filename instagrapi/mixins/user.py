@@ -10,8 +10,11 @@ from instagrapi.exceptions import (
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import Relationship, User, UserShort
+from instagrapi.types import Relationship, RelationshipShort, User, UserShort
 from instagrapi.utils import json_value
+
+
+MAX_USER_COUNT = 200
 
 
 class UserMixin:
@@ -41,7 +44,7 @@ class UserMixin:
 
         Example
         -------
-        'adw0rd' -> 1903424587
+        'example' -> 1903424587
         """
         username = str(username).lower()
         return str(self.user_info_by_username(username).pk)
@@ -95,7 +98,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         return self.user_short_gql(user_id).username
 
@@ -115,7 +118,7 @@ class UserMixin:
 
         Example
         -------
-        1903424587 -> 'adw0rd'
+        1903424587 -> 'example'
         """
         user_id = str(user_id)
         try:
@@ -294,24 +297,33 @@ class UserMixin:
         results = self.private_request("feed/new_feed_posts_exist/")
         return results.get("new_feed_posts_exist", False)
 
-    def user_friendships_v1(self, user_ids: List[str]) -> dict:
+    def user_friendships_v1(self, user_ids: List[str]) -> List[RelationshipShort]:
         """
         Get user friendship status
 
         Parameters
         ----------
         user_ids: List[str]
-            List of user id of an instagram account
+            List of user ID of an instagram account
 
         Returns
         -------
-        dict
+        List[RelationshipShort]
+           List of RelationshipShorts with requested user_ids
         """
+        user_ids_str = ",".join(user_ids)
         result = self.private_request(
             "friendships/show_many/",
-            data={"user_ids": user_ids}
+            data={"user_ids": user_ids_str, "_uuid": self.uuid},
+            with_signature=False,
         )
-        return result["friendship_statuses"]
+        assert result.get("status", "") == "ok"
+
+        relationships = []
+        for user_id, status in result.get("friendship_statuses", {}).items():
+            relationships.append(RelationshipShort(user_id=user_id, **status))
+
+        return relationships
 
     def user_friendship_v1(self, user_id: str) -> Relationship:
         """
@@ -329,12 +341,14 @@ class UserMixin:
         """
 
         try:
-            results = self.private_request(f"friendships/show/{user_id}/")
-            return Relationship(**results)
+            result = self.private_request(f"friendships/show/{user_id}/")
+            assert result.get("status", "") == "ok"
+
+            return Relationship(user_id=user_id, **result)
         except ClientError as e:
             self.logger.exception(e)
             return None
-             
+
     def search_users_v1(self, query: str, count: int) -> List[UserShort]:
         """
         Search users by a query (Private Mobile API)
@@ -350,15 +364,11 @@ class UserMixin:
             List of users
         """
         results = self.private_request(
-            "users/search/",
-            params={
-                "query": query,
-                "count": count
-            }
+            "users/search/", params={"query": query, "count": count}
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
-    
+
     def search_users(self, query: str, count: int = 50) -> List[UserShort]:
         """
         Search users by a query
@@ -397,8 +407,8 @@ class UserMixin:
             params={
                 "search_surface": "follow_list_page",
                 "query": query,
-                "enable_groups": "true"
-            }
+                "enable_groups": "true",
+            },
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
@@ -443,8 +453,8 @@ class UserMixin:
                 "includes_hashtags": "false",
                 "search_surface": "follow_list_page",
                 "query": query,
-                "enable_groups": "true"
-            }
+                "enable_groups": "true",
+            },
         )
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
@@ -469,7 +479,7 @@ class UserMixin:
 
     def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
-        Get user's following information by Public Graphql API
+        Get user's following users information by Public Graphql API
 
         Parameters
         ----------
@@ -515,50 +525,74 @@ class UserMixin:
             users = users[:amount]
         return users
 
+    def user_following_v1_chunk(
+        self, user_id: str, max_amount: int = 0, max_id: str = ""
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's following users information by Private Mobile API and max_id (cursor)
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of media to return, default is 0 - Inf
+        max_id: str, optional
+            Max ID, default value is empty String
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            Tuple of List of users and max_id
+        """
+        unique_set = set()
+        users = []
+        while True:
+            result = self.private_request(
+                f"friendships/{user_id}/following/",
+                params={
+                    "max_id": max_id,
+                    "count": max_amount or MAX_USER_COUNT,
+                    "rank_token": self.rank_token,
+                    "search_surface": "follow_list_page",
+                    "query": "",
+                    "enable_groups": "true",
+                },
+            )
+            for user in result["users"]:
+                user = extract_user_short(user)
+                if user.pk in unique_set:
+                    continue
+                unique_set.add(user.pk)
+                users.append(user)
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(users) >= max_amount):
+                break
+        return users, max_id
+
     def user_following_v1(self, user_id: str, amount: int = 0) -> List[UserShort]:
         """
-        Get user's following users information by Private Mobile API
+        Get user's following users formation by Private Mobile API
 
         Parameters
         ----------
         user_id: str
             User id of an instagram account
         amount: int, optional
-            Maximum number of media to return, default is 0
+            Maximum number of media to return, default is 0 - Inf
 
         Returns
         -------
         List[UserShort]
             List of objects of User type
         """
-        user_id = str(user_id)
-        max_id = ""
-        users = []
-        while True:
-            if amount and len(users) >= amount:
-                break
-            params = {
-                "rank_token": self.rank_token,
-                "search_surface": "follow_list_page",
-                "includes_hashtags": "true",
-                "enable_groups": "true",
-                "query": "",
-                "count": 10000
-            }
-            if max_id:
-                params["max_id"] = max_id
-            result = self.private_request(f"friendships/{user_id}/following/", params=params)
-            for user in result["users"]:
-                users.append(extract_user_short(user))
-            max_id = result.get("next_max_id")
-            if not max_id:
-                break
+        users, _ = self.user_following_v1_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
         return users
 
     def user_following(
-            self, user_id: str, use_cache: bool = True, amount: int = 0
+        self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's followers information
@@ -595,8 +629,9 @@ class UserMixin:
             following = dict(list(following.items())[:amount])
         return following
 
-    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> Tuple[
-        List[UserShort], str]:
+    def user_followers_gql_chunk(
+        self, user_id: str, max_amount: int = 0, end_cursor: str = None
+    ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Public Graphql API and end_cursor
 
@@ -665,8 +700,9 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> Tuple[
-        List[UserShort], str]:
+    def user_followers_v1_chunk(
+        self, user_id: str, max_amount: int = 0, max_id: str = ""
+    ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
 
@@ -687,14 +723,17 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
-            result = self.private_request(f"friendships/{user_id}/followers/", params={
-                "max_id": max_id,
-                "count": 10000,
-                "rank_token": self.rank_token,
-                "search_surface": "follow_list_page",
-                "query": "",
-                "enable_groups": "true"
-            })
+            result = self.private_request(
+                f"friendships/{user_id}/followers/",
+                params={
+                    "max_id": max_id,
+                    "count": max_amount or MAX_USER_COUNT,
+                    "rank_token": self.rank_token,
+                    "search_surface": "follow_list_page",
+                    "query": "",
+                    "enable_groups": "true",
+                },
+            )
             for user in result["users"]:
                 user = extract_user_short(user)
                 if user.pk in unique_set:
@@ -728,7 +767,7 @@ class UserMixin:
         return users
 
     def user_followers(
-            self, user_id: str, use_cache: bool = True, amount: int = 0
+        self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's followers
@@ -806,6 +845,67 @@ class UserMixin:
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
+
+    def user_block(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Block a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "surface": surface,
+            "is_auto_block_enabled": "false",
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+
+        result = self.private_request(f"friendships/block/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is True
+
+    def user_unblock(self, user_id: str, surface: str = "profile") -> bool:
+        """
+        Unlock a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        surface: str, (optional)
+            Surface of block (deafult "profile", also can be "direct_thread_info")
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        data = {
+            "container_module": surface,
+            "user_id": user_id,
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+        }
+        if surface == "direct_thread_info":
+            data["client_request_id"] = self.request_id
+
+        result = self.private_request(f"friendships/unblock/{user_id}/", data)
+        assert result.get("status", "") == "ok"
+
+        return result.get("friendship_status", {}).get("blocking") is False
 
     def user_remove_follower(self, user_id: str) -> bool:
         """
@@ -1050,7 +1150,9 @@ class UserMixin:
         user_id = str(user_id)
         data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
         name = "unfavorite" if revert else "favorite"
-        result = self.private_request(f"friendships/{name}_for_stories/{user_id}/", data)
+        result = self.private_request(
+            f"friendships/{name}_for_stories/{user_id}/", data
+        )
         return result["status"] == "ok"
 
     def disable_stories_notifications(self, user_id: str) -> bool:
@@ -1067,3 +1169,90 @@ class UserMixin:
             A boolean value
         """
         return self.enable_stories_notifications(user_id, True)
+
+    def close_friend_add(self, user_id: str):
+        """
+        Add to Close Friends List
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = {
+            "block_on_empty_thread_creation": "false",
+            "module": "CLOSE_FRIENDS_V2_SEARCH",
+            "source": "audience_manager",
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+            "remove": [],
+            "add": [user_id],
+        }
+        result = self.private_request("friendships/set_besties/", data)
+        return json_value(result, "friendship_statuses", user_id, "is_bestie")
+
+    def close_friend_remove(self, user_id: str):
+        """
+        Remove from Close Friends List
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_id = str(user_id)
+        data = {
+            "block_on_empty_thread_creation": "false",
+            "module": "CLOSE_FRIENDS_V2_SEARCH",
+            "source": "audience_manager",
+            "_uid": self.user_id,
+            "_uuid": self.uuid,
+            "remove": [user_id],
+            "add": [],
+        }
+        result = self.private_request("friendships/set_besties/", data)
+        return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
+
+    def creator_info(
+        self, user_id: str, entry_point: str = "direct_thread"
+    ) -> Tuple[UserShort, Dict]:
+        """
+        Retrieves Creator's information
+
+        Parameters
+        ----------
+        user_id: str
+            Unique identifier of a User
+        entry_point: str, optional
+            Entry point for retrieving, default - direct_thread
+            When passing self_profile, own user_id must be provided
+
+        Returns
+        -------
+        Tuple[UserShort, Dict]
+            Retrieved User and his Creator's Info
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "entry_point": entry_point,
+            "surface_type": "android",
+            "user_id": user_id,
+        }
+
+        result = self.private_request("creator/creator_info/", params=params)
+        assert result.get("status", "") == "ok"
+
+        creator_info = result.get("user", {}).pop("creator_info", {})
+        user = extract_user_short(result.get("user", {}))
+        return (user, creator_info)
