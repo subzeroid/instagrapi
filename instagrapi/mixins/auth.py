@@ -346,6 +346,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 self.settings["cookies"]
             )
         self.authorization_data = self.settings.get("authorization_data", {})
+        self.authorization_header = self.settings.get("authorization_header", None) # saved authorization Bearer
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(
             self.settings.get("timezone_offset", self.timezone_offset)
@@ -915,6 +916,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """Build authorization header
         Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
         """
+        if self.authorization_header:
+            return self.authorization_header
+        
         if self.authorization_data:
             b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
             return f"Bearer IGT:2:{b64part}"
