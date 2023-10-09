@@ -4,6 +4,7 @@ import logging
 import random
 import time
 from json.decoder import JSONDecodeError
+import traceback
 
 import requests
 
@@ -27,8 +28,14 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
     UnknownError,
     VideoTooLongException,
+    PrivateAccount,
+    UserNotFound,
+    ProxyAddressIsBlocked,
+    InvalidTargetUser,
+    InvalidMediaId,
+    MediaUnavailable,
 )
-from instagrapi.utils import dumps, generate_signature
+from instagrapi.utils import dumps, generate_signature, build_curl
 
 
 def manual_input_code(self, username: str, choice=None):
@@ -75,6 +82,9 @@ class PrivateRequestMixin:
     last_response = None
     last_json = {}
     last_cursor = None
+    request_len = 0
+    request_nb = 0
+
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
@@ -293,30 +303,30 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
 
-                logging.debug("============= PROXY ========")
-                logging.debug(self.private.proxies)
-                logging.debug("============= PARAMS ========")
-                logging.debug(params)
-                logging.debug("============= DATA ========")
-                logging.debug(data)
-                logging.debug("============= HEADERS ========")
-                logging.debug(self.private.headers)
-                logging.debug("============= URL ========")
-                logging.debug(api_url)
+                print("============= PROXY ========")
+                print(self.private.proxies)
+                print("============= PARAMS ========")
+                print(params)
+                print("============= DATA ========")
+                print(data)
+                print("============= HEADERS ========")
+                print(self.private.headers)
+                print("============= URL ========")
+                print(api_url)
 
                 response = self.private.post(
                     api_url, data=data, params=params
                 )
             else:  # GET
                 self.private.headers.pop('Content-Type', None)
-                logging.debug("============= PROXY ========")
-                logging.debug(self.private.proxies)
-                logging.debug("============= PARAMS ========")
-                logging.debug(params)
-                logging.debug("============= HEADERS ========")
-                logging.debug(self.private.headers)
-                logging.debug("============= URL ========")
-                logging.debug(api_url)
+                print("============= PROXY ========")
+                print(self.private.proxies)
+                print("============= PARAMS ========")
+                print(params)
+                print("============= HEADERS ========")
+                print(self.private.headers)
+                print("============= URL ========")
+                print(api_url)
                 response = self.private.get(api_url, params=params)
             self.logger.debug(
                 "private_request %s: %s", response.status_code, response.url
@@ -324,8 +334,8 @@ class PrivateRequestMixin:
             mid = response.headers.get("ig-set-x-mid")
             if mid:
                 self.mid = mid
-            self.request_log(response)
             self.last_response = response
+            self.request_log_priv(response)
             response.raise_for_status()
             # last_json - for Sentry context in traceback
             self.last_json = last_json = response.json()
@@ -386,6 +396,31 @@ class PrivateRequestMixin:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
+                elif "Not authorized to view user" in message:
+                    raise PrivateAccount(e, response=e.response, **last_json)
+                elif "Invalid target user" in message:
+                    raise InvalidTargetUser(e, response=e.response, **last_json)
+                elif "Invalid media_id" in message:
+                    raise InvalidMediaId(e, response=e.response, **last_json)
+                elif (
+                    "Media is unavailable" in message
+                    or "Media not found or unavailable" in message
+                ):
+                    raise MediaUnavailable(e, response=e.response, **last_json)
+                elif "has been deleted" in message:
+                    # Sorry, this photo has been deleted.
+                    raise MediaUnavailable(e, response=e.response, **last_json)
+                elif "unable to fetch followers" in message:
+                    # returned when user not found
+                    raise UserNotFound(e, response=e.response, **last_json)
+                elif "The username you entered" in message:
+                    # The username you entered doesn't appear to belong to an account.
+                    # Please check your username and try again.
+                    last_json["message"] = (
+                        "Instagram has blocked your IP address, "
+                        "use a quality proxy provider (not free, not shared)"
+                    )
+                    raise ProxyAddressIsBlocked(**last_json)
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
@@ -426,10 +461,16 @@ class PrivateRequestMixin:
             raise ClientError(response=response, **last_json)
         return last_json
 
-    def request_log(self, response):
+    def request_log_priv(self, response):
+        response_len = len(response.text)
+        self.request_len += response_len
+        self.request_nb += 1
         self.request_logger.debug(build_curl(response))
         self.request_logger.info(
-            "[PRIVATE] %s [%s] %s %s (%s)",
+            "[PRIVATE][%s req][%s/%s len] %s [%s] %s %s (%s)",
+            self.request_nb,
+            response_len,
+            self.request_len,
             self.username,
             response.status_code,
             response.request.method,
@@ -480,7 +521,7 @@ class PrivateRequestMixin:
                 time.sleep(60)
                 return self._send_private_request(endpoint, **kwargs)
             except Exception as e:
-                logging.debug(f"Exception catch: {type(e)}")
+                logging.debug(f"Exception catch: {type(e)}: {traceback.format_exc()}")
                 if self.handle_exception:
                     self.handle_exception(self, e)
                 else:
@@ -506,12 +547,4 @@ class PrivateRequestMixin:
         return self.last_json
 
 
-def build_curl(response):
-    req = response.request
-    command = "curl -X {method} -H {headers} -d '{data}' '{uri}' --compressed"
-    method = req.method
-    uri = req.url
-    data = req.body
-    headers = ['"{0}: {1}"'.format(k, v) for k, v in req.headers.items()]
-    headers = " -H ".join(headers)
-    return command.format(method=method, headers=headers, data=data, uri=uri)
+

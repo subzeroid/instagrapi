@@ -117,6 +117,7 @@ class Media(BaseModel):
     title: Optional[str] = ""
     resources: List[Resource] = []
     clips_metadata: dict = {}
+    raw: dict = None
 
 
 class MediaOembed(BaseModel):

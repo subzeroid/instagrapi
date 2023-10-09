@@ -35,6 +35,7 @@ class UserMixin:
     _usernames_cache = {}  # username -> user_pk
     _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
+    want_raw = False
 
     def user_id_from_username(self, username: str) -> str:
         """
@@ -932,6 +933,7 @@ class UserMixin:
         variables = {
             "id": user_id,
             "first": 50,
+            "fields": "data.user.edge_owner_to_timeline_media.count,data.user.edge_owner_to_timeline_media.edges.node.id,data.user.edge_owner_to_timeline_media.page_info",
         }
         if end_cursor:
             variables["after"] = end_cursor
@@ -945,7 +947,10 @@ class UserMixin:
             data, "user", "edge_owner_to_timeline_media", "edges", default=[]
         )
         for edge in edges:
-            yield extract_media_gql(edge["node"])
+            media = extract_media_gql(edge["node"])
+            if self.want_raw:
+                media.raw = edge["node"]
+            yield media
 
     def user_medias_a1_chunk(
             self, user_name: str,
@@ -974,6 +979,8 @@ class UserMixin:
         edges = data["edge_owner_to_timeline_media"]["edges"]
         for edge in edges:
             media = extract_media_gql(edge["node"])
+            if self.want_raw:
+                media.raw = edge["node"]
             yield media
 
     def user_medias_v1_chunk(self, user_id: int, end_cursor: str = "") -> Tuple[List[Media], str]:
@@ -1008,7 +1015,10 @@ class UserMixin:
             logging.warning("Empty response message.")
             raise ClientBadRequestError(response=self.last_response, **self.last_json)
         for item in items["items"]:
-            yield extract_media_v1(item)
+            media = extract_media_v1(item)
+            if self.want_raw:
+                media.raw = item
+            yield media
 
     def user_medias(
         self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None, method_api="", first_page=False

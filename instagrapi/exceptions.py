@@ -11,8 +11,8 @@ class ClientError(Exception):
             setattr(self, key, kwargs.pop(key))
         if not self.message:
             self.message = "{title} ({body})".format(
-                title=getattr(self, 'reason', 'Unknown'),
-                body=getattr(self, 'error_type', vars(self))
+                title=getattr(self, "reason", "Unknown"),
+                body=getattr(self, "error_type", vars(self)),
             )
         super().__init__(self.message, *args, **kwargs)
         if self.response:
@@ -72,7 +72,7 @@ class PrivateError(ClientError):
 
 
 class NotFoundError(PrivateError):
-    reason = 'Not found'
+    reason = "Not found"
 
 
 class FeedbackRequired(PrivateError):
@@ -82,6 +82,8 @@ class FeedbackRequired(PrivateError):
 class ChallengeError(PrivateError):
     pass
 
+class ChallengeHackedLock(ChallengeError):
+    pass
 
 class ChallengeRedirection(ChallengeError):
     pass
@@ -94,8 +96,6 @@ class ChallengeRequired(ChallengeError):
 class ChallengeSelfieCaptcha(ChallengeError):
     pass
 
-class ChallengeHackedLock(ChallengeError):
-    pass
 
 class ChallengeUnknownStep(ChallengeError):
     pass
@@ -137,6 +137,10 @@ class RateLimitError(PrivateError):
     pass
 
 
+class ProxyAddressIsBlocked(PrivateError):
+    """Instagram has blocked your IP address, use a quality proxy provider (not free, not shared)"""
+
+
 class BadPassword(PrivateError):
     pass
 
@@ -154,6 +158,10 @@ class MediaError(PrivateError):
 
 
 class MediaNotFound(NotFoundError, MediaError):
+    pass
+
+
+class StoryNotFound(NotFoundError, MediaError):
     pass
 
 
@@ -267,3 +275,23 @@ class TwoFactorRequired(PrivateError):
 
 class HighlightNotFound(NotFoundError, PrivateError):
     pass
+
+
+class NoteNotFound(NotFoundError):
+    reason = "Not found"
+
+
+class PrivateAccount(PrivateError):
+    """This Account is Private"""
+
+
+class InvalidTargetUser(PrivateError):
+    """Invalid target user"""
+
+
+class InvalidMediaId(PrivateError):
+    """Invalid media_id"""
+
+
+class MediaUnavailable(PrivateError):
+    """Media is unavailable"""

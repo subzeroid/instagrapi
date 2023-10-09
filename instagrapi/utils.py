@@ -6,6 +6,15 @@ import string
 import time
 import urllib
 
+def build_curl(response):
+    req = response.request
+    command = "curl -X {method} -H {headers} -d '{data}' '{uri}' --compressed"
+    method = req.method
+    uri = req.url
+    data = req.body
+    headers = ['"{0}: {1}"'.format(k, v) for k, v in req.headers.items()]
+    headers = " -H ".join(headers)
+    return command.format(method=method, headers=headers, data=data, uri=uri)
 
 class InstagramIdCodec:
     ENCODING_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
