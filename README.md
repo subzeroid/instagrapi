@@ -6,7 +6,11 @@ It will be difficult to find good accounts, good proxies, or resolve challenges,
 
 The instagrapi more suits for testing or research than a working business!
 
-## We recommend using our services: [HikerAPI](https://hikerapi.com/p/bkXQlaVe) and [Datalikers SaaS](https://datalikers.com/)
+### We recommend using our services:
+
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
+* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
+* [DataLikers](https://datalikers.com/) for Instagram Datasets 🚀
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
