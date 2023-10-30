@@ -235,7 +235,7 @@ class UploadPhotoMixin:
             An object of Media class
         """
         path = Path(path)
-        valid_extensions = [".jpg", ".jpeg", ".png", "webp"]
+        valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
             raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
 
