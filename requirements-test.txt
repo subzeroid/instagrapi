@@ -2,7 +2,7 @@ flake8==6.1.0
 Pillow==10.0.0
 isort==5.12.0
 bandit==1.7.5
-mike==1.1.2
+mike==2.0.0
 markdown-include==0.8.1
 mkdocs-material==9.4.7
 mkdocs-minify-plugin==0.7.1
