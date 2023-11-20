@@ -29,6 +29,7 @@ from instagrapi.types import (
     Usertag,
 )
 from instagrapi.utils import date_time_original, dumps
+from instagrapi.image_util import prepare_image
 
 try:
     from PIL import Image
@@ -140,10 +141,15 @@ class UploadPhotoMixin:
             (Upload ID for the media, width, height)
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
-        valid_extensions = [".jpg", ".jpeg"]
+        valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
-
+            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
+        image_type = "image/jpeg"
+        if path.suffix.lower() == ".png":
+            image_type = "image/png"
+        elif path.suffix.lower() == ".webp":
+            image_type = "image/webp"
+            
         # upload_id = 516057248854759
         upload_id = upload_id or str(int(time.time() * 1000))
         assert path, "Not specified path to photo"
@@ -164,14 +170,13 @@ class UploadPhotoMixin:
         }
         if to_album:
             rupload_params["is_sidecar"] = "1"
-        with open(path, "rb") as fp:
-            photo_data = fp.read()
-            photo_len = str(len(photo_data))
+        photo_data, photo_size = prepare_image(str(path), max_side=1080)
+        photo_len = str(len(photo_data))
         headers = {
             "Accept-Encoding": "gzip",
             "X-Instagram-Rupload-Params": json.dumps(rupload_params),
             "X_FB_PHOTO_WATERFALL_ID": waterfall_id,
-            "X-Entity-Type": "image/jpeg",
+            "X-Entity-Type": image_type,
             "Offset": "0",
             "X-Entity-Name": upload_name,
             "X-Entity-Length": photo_len,
@@ -195,6 +200,7 @@ class UploadPhotoMixin:
         with Image.open(path) as im:
             width, height = im.size
         return upload_id, width, height
+
 
     def photo_upload(
         self,
@@ -229,9 +235,9 @@ class UploadPhotoMixin:
             An object of Media class
         """
         path = Path(path)
-        valid_extensions = [".jpg", ".jpeg"]
+        valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError("Invalid file format. Only JPG/JPEG files are supported.")
+            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
 
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
