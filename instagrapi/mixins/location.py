@@ -320,7 +320,9 @@ class LocationMixin:
             np = result.get("next_page")
             ids = result.get("next_media_ids")
             next_m_id = result.get("next_max_id")
-            next_max_id = base64.b64encode(json.dumps([next_m_id, np, ids]).encode()).decode()
+            next_max_id = base64.b64encode(
+                json.dumps([next_m_id, np, ids]).encode()
+            ).decode()
         for section in result.get("sections") or []:
             layout_content = section.get("layout_content") or {}
             nodes = layout_content.get("medias") or []

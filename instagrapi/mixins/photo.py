@@ -143,13 +143,15 @@ class UploadPhotoMixin:
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
+            raise ValueError(
+                "Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported."
+            )
         image_type = "image/jpeg"
         if path.suffix.lower() == ".png":
             image_type = "image/png"
         elif path.suffix.lower() == ".webp":
             image_type = "image/webp"
-            
+
         # upload_id = 516057248854759
         upload_id = upload_id or str(int(time.time() * 1000))
         assert path, "Not specified path to photo"
@@ -201,7 +203,6 @@ class UploadPhotoMixin:
             width, height = im.size
         return upload_id, width, height
 
-
     def photo_upload(
         self,
         path: Path,
@@ -237,7 +238,9 @@ class UploadPhotoMixin:
         path = Path(path)
         valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
+            raise ValueError(
+                "Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported."
+            )
 
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
