@@ -182,6 +182,7 @@ class Comment(BaseModel):
     created_at_utc: datetime
     content_type: str
     status: str
+    replied_to_comment_id: Optional[str] = None
     has_liked: Optional[bool] = None
     like_count: Optional[int] = None
 
