@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "instagrapi"
+version = "2.0.0"
+description = "Fast and effective Instagram Private API wrapper"
+license = "MIT"
+authors = ["Mark Subzeroid <143403577+subzeroid@users.noreply.github.com>"]
+readme = ["README.md", "README2.md"] # check docs for adding long description
+repository = "https://github.com/subzeroid/instagrapi"
+documentation = "https://subzeroid.github.io/instagrapi/"
+keywords = [
+  "instagram private api",
+  "instagram-private-api",
+  "instagram api",
+  "instagram-api",
+  "instagram",
+  "instagram-scraper",
+  "instagram-client",
+  "instagram-stories",
+  "instagram-feed",
+  "instagram-reels",
+  "instagram-insights",
+  "downloader",
+  "uploader",
+  "videos",
+  "photos",
+  "albums",
+  "igtv",
+  "reels",
+  "stories",
+  "pictures",
+  "instagram-user-photos",
+  "instagram-photos",
+  "instagram-metadata",
+  "instagram-downloader",
+  "instagram-uploader",
+  "instagram-note",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+]
+# packages = [{ include = "instagrapi" }] # use if package not detected 
+
+[tool.poetry.dependencies]
+python = ">=3.8.1"         #flake8 requires
+requests = "<3.0,>=2.25.1"
+PySocks = "^1.7.1"
+pydantic = "^2.4.2"
+pycryptodomex = "^3.18.0"
+
+[tool.poetry.group.test.dependencies]
+pytest = "*"
+flake8 = "6.1.0"
+isort = "5.12.0"
+bandit = "1.7.5"
+mike = "2.0.0"
+
+[tool.poetry.group.docs.dependencies]
+markdown-include = "0.8.1"
+mkdocs-material = "9.4.9"
+mkdocs-minify-plugin = "0.7.1"
+mkdocs-redirects_relative_redirects = { path = "./util/mkdocs-redirects" }
+mkdocstrings_patch_type_aliases = { path = "./util/mkdocstrings_patch_type_aliases" }
+mkdocstrings = "0.24.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
