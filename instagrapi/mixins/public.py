@@ -205,7 +205,7 @@ class PublicRequestMixin:
             self.last_response_ts = time.time()
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
-        url = self.PUBLIC_API_URL + endpoint.lstrip("/")
+        url = self.PUBLIC_API_URL + endpoint  # (jarrodnorwell) fixed KeyError: 'data'
         params = params or {}
         params.update({"__a": 1, "__d": "dis"})
 
