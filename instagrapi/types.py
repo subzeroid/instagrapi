@@ -1,7 +1,14 @@
 from datetime import datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, FilePath, HttpUrl, ValidationError, validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    FilePath,
+    HttpUrl,
+    ValidationError,
+    validator,
+)
 
 
 def validate_external_url(cls, v):
@@ -11,6 +18,10 @@ def validate_external_url(cls, v):
 
 
 class Resource(BaseModel):
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # (jarrodnorwell) fixed pk issue
+
     pk: str
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     thumbnail_url: HttpUrl
@@ -73,6 +84,10 @@ class Account(BaseModel):
 
 
 class UserShort(BaseModel):
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # (jarrodnorwell) fixed pk issue
+
     pk: str
     username: Optional[str] = None
     full_name: Optional[str] = ""
