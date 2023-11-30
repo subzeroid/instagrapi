@@ -386,7 +386,6 @@ class UserMixin:
         return self.search_users_v1(query, count)
 
     def search_followers_v1(self, user_id: str, query: str) -> List[UserShort]:
-
         """
         Search users by followers (Private Mobile API)
 
@@ -507,7 +506,7 @@ class UserMixin:
             if end_cursor:
                 variables["after"] = end_cursor
             data = self.public_graphql_request(
-                variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
+                variables, query_hash="58712303d941c6855d4e888c5f0cd22f"
             )
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
@@ -662,7 +661,7 @@ class UserMixin:
             if end_cursor:
                 variables["after"] = end_cursor
             data = self.public_graphql_request(
-                variables, query_hash="5aefa9893005572d237da5068082d8d5"
+                variables, query_hash="37479f2b8209594dde7facb0d904896a"
             )
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)

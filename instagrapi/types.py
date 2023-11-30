@@ -29,6 +29,10 @@ class Resource(BaseModel):
 
 
 class User(BaseModel):
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # (jarrodnorwell) fixed city_id issue
+
     pk: str
     username: str
     full_name: str
