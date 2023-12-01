@@ -39,6 +39,5 @@ services:
     command: [ "serve", "--dev-addr=0.0.0.0:8000" ]
 
   mike:
-    <<: *mkdocs
-    <<: *mount-app-and-user-git-config
+    <<: [*mkdocs, *mount-app-and-user-git-config]
     entrypoint: "mike"
