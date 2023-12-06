@@ -375,7 +375,7 @@ Now let's mention users (Usertag) and location:
 
 Reels:
 
-```
+```python
 >>> clips = cl.user_clips_v1(25025320, amount=2)
 >>> clips[0].dict()
 
