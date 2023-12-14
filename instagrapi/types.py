@@ -70,6 +70,10 @@ class User(BaseModel):
 
 
 class Account(BaseModel):
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # (jarrodnorwell) fixed pk issue
+
     pk: str
     username: str
     full_name: str
