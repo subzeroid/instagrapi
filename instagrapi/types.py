@@ -11,28 +11,26 @@ from pydantic import (
 )
 
 
+class TypesBaseModel(BaseModel):
+    model_config = ConfigDict(
+        coerce_numbers_to_str=True
+    )  # (jarrodnorwell) fixed city_id issue
+
+
 def validate_external_url(cls, v):
     if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
         return v
     raise ValidationError("external_url must been URL or string")
 
 
-class Resource(BaseModel):
-    model_config = ConfigDict(
-        coerce_numbers_to_str=True
-    )  # (jarrodnorwell) fixed pk issue
-
+class Resource(TypesBaseModel):
     pk: str
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
 
 
-class User(BaseModel):
-    model_config = ConfigDict(
-        coerce_numbers_to_str=True
-    )  # (jarrodnorwell) fixed city_id issue
-
+class User(TypesBaseModel):
     pk: str
     username: str
     full_name: str
@@ -69,11 +67,7 @@ class User(BaseModel):
     _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
 
 
-class Account(BaseModel):
-    model_config = ConfigDict(
-        coerce_numbers_to_str=True
-    )  # (jarrodnorwell) fixed pk issue
-
+class Account(TypesBaseModel):
     pk: str
     username: str
     full_name: str
@@ -91,11 +85,7 @@ class Account(BaseModel):
     _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
 
 
-class UserShort(BaseModel):
-    model_config = ConfigDict(
-        coerce_numbers_to_str=True
-    )  # (jarrodnorwell) fixed pk issue
-
+class UserShort(TypesBaseModel):
     pk: str
     username: Optional[str] = None
     full_name: Optional[str] = ""
@@ -106,13 +96,13 @@ class UserShort(BaseModel):
     stories: List = []
 
 
-class Usertag(BaseModel):
+class Usertag(TypesBaseModel):
     user: UserShort
     x: float
     y: float
 
 
-class Location(BaseModel):
+class Location(TypesBaseModel):
     pk: Optional[int] = None
     name: str
     phone: Optional[str] = ""
@@ -131,7 +121,7 @@ class Location(BaseModel):
     # directory: Optional[dict] = {}
 
 
-class Media(BaseModel):
+class Media(TypesBaseModel):
     pk: str | int
     id: str
     code: str
@@ -160,7 +150,7 @@ class Media(BaseModel):
     clips_metadata: dict = {}
 
 
-class MediaXma(BaseModel):
+class MediaXma(TypesBaseModel):
     # media_type: int
     video_url: HttpUrl  # for Video and IGTV
     title: Optional[str] = ""
@@ -173,7 +163,7 @@ class MediaXma(BaseModel):
     preview_media_fbid: Optional[str] = None
 
 
-class MediaOembed(BaseModel):
+class MediaOembed(TypesBaseModel):
     title: str
     author_name: str
     author_url: str
@@ -191,14 +181,14 @@ class MediaOembed(BaseModel):
     can_view: bool
 
 
-class Collection(BaseModel):
+class Collection(TypesBaseModel):
     id: str
     name: str
     type: str
     media_count: int
 
 
-class Comment(BaseModel):
+class Comment(TypesBaseModel):
     pk: str
     text: str
     user: UserShort
@@ -210,14 +200,14 @@ class Comment(BaseModel):
     like_count: Optional[int] = None
 
 
-class Hashtag(BaseModel):
+class Hashtag(TypesBaseModel):
     id: str
     name: str
     media_count: Optional[int] = None
     profile_pic_url: Optional[HttpUrl] = None
 
 
-class StoryMention(BaseModel):
+class StoryMention(TypesBaseModel):
     user: UserShort
     x: Optional[float] = None
     y: Optional[float] = None
@@ -225,7 +215,7 @@ class StoryMention(BaseModel):
     height: Optional[float] = None
 
 
-class StoryMedia(BaseModel):
+class StoryMedia(TypesBaseModel):
     # Instagram does not return the feed_media object when requesting story,
     # so you will have to make an additional request to get media and this is overhead:
     # media: Media
@@ -245,7 +235,7 @@ class StoryMedia(BaseModel):
     media_code: Optional[str] = None
 
 
-class StoryHashtag(BaseModel):
+class StoryHashtag(TypesBaseModel):
     hashtag: Hashtag
     x: Optional[float] = None
     y: Optional[float] = None
@@ -253,7 +243,7 @@ class StoryHashtag(BaseModel):
     height: Optional[float] = None
 
 
-class StoryLocation(BaseModel):
+class StoryLocation(TypesBaseModel):
     location: Location
     x: Optional[float] = None
     y: Optional[float] = None
@@ -261,14 +251,14 @@ class StoryLocation(BaseModel):
     height: Optional[float] = None
 
 
-class StoryStickerLink(BaseModel):
+class StoryStickerLink(TypesBaseModel):
     url: HttpUrl
     link_title: Optional[str] = None
     link_type: Optional[str] = None
     display_url: Optional[str] = None
 
 
-class StorySticker(BaseModel):
+class StorySticker(TypesBaseModel):
     id: Optional[str] = None
     type: Optional[str] = "gif"
     x: float
@@ -281,14 +271,14 @@ class StorySticker(BaseModel):
     extra: Optional[dict] = {}
 
 
-class StoryBuild(BaseModel):
+class StoryBuild(TypesBaseModel):
     mentions: List[StoryMention]
     path: FilePath
     paths: List[FilePath] = []
     stickers: List[StorySticker] = []
 
 
-class StoryLink(BaseModel):
+class StoryLink(TypesBaseModel):
     webUri: HttpUrl
     x: float = 0.5126011
     y: float = 0.5168225
@@ -298,7 +288,7 @@ class StoryLink(BaseModel):
     rotation: float = 0.0
 
 
-class Story(BaseModel):
+class Story(TypesBaseModel):
     pk: str
     id: str
     code: str
@@ -318,7 +308,7 @@ class Story(BaseModel):
     medias: List[StoryMedia] = []
 
 
-class Guide(BaseModel):
+class Guide(TypesBaseModel):
     id: Optional[str] = None
     title: Optional[str] = None
     description: str
@@ -326,7 +316,7 @@ class Guide(BaseModel):
     feedback_item: Optional[dict] = None
 
 
-class DirectMedia(BaseModel):
+class DirectMedia(TypesBaseModel):
     id: str
     media_type: int
     user: Optional[UserShort] = None
@@ -335,7 +325,7 @@ class DirectMedia(BaseModel):
     audio_url: Optional[HttpUrl] = None
 
 
-class ReplyMessage(BaseModel):
+class ReplyMessage(TypesBaseModel):
     id: str
     user_id: Optional[str] = None
     timestamp: datetime
@@ -356,7 +346,7 @@ class ReplyMessage(BaseModel):
     placeholder: Optional[dict] = None
 
 
-class DirectMessage(BaseModel):
+class DirectMessage(TypesBaseModel):
     id: str  # e.g. 28597946203914980615241927545176064
     user_id: Optional[str] = None
     thread_id: Optional[int] = None  # e.g. 340282366841710300949128531777654287254
@@ -380,13 +370,13 @@ class DirectMessage(BaseModel):
     placeholder: Optional[dict] = None
 
 
-class DirectResponse(BaseModel):
+class DirectResponse(TypesBaseModel):
     unseen_count: Optional[int] = None
     unseen_count_ts: Optional[int] = None
     status: Optional[str] = None
 
 
-class DirectShortThread(BaseModel):
+class DirectShortThread(TypesBaseModel):
     id: str
     users: List[UserShort]
     named: bool
@@ -397,7 +387,7 @@ class DirectShortThread(BaseModel):
     is_group: bool
 
 
-class DirectThread(BaseModel):
+class DirectThread(TypesBaseModel):
     pk: str  # thread_v2_id, e.g. 17898572618026348
     id: str  # thread_id, e.g. 340282366841510300949128268610842297468
     messages: List[DirectMessage]
@@ -441,7 +431,7 @@ class DirectThread(BaseModel):
         return not any(timestamps)
 
 
-class Relationship(BaseModel):
+class Relationship(TypesBaseModel):
     user_id: str
     blocking: bool
     followed_by: bool
@@ -456,7 +446,7 @@ class Relationship(BaseModel):
     outgoing_request: bool
 
 
-class RelationshipShort(BaseModel):
+class RelationshipShort(TypesBaseModel):
     user_id: str
     following: bool
     incoming_request: bool
@@ -467,7 +457,7 @@ class RelationshipShort(BaseModel):
     outgoing_request: bool
 
 
-class Highlight(BaseModel):
+class Highlight(TypesBaseModel):
     pk: str  # 17895485401104052
     id: str  # highlight:17895485401104052
     latest_reel_media: int
@@ -481,12 +471,12 @@ class Highlight(BaseModel):
     items: List[Story] = []
 
 
-class Share(BaseModel):
+class Share(TypesBaseModel):
     pk: str
     type: str
 
 
-class Track(BaseModel):
+class Track(TypesBaseModel):
     id: str
     title: str
     subtitle: str
@@ -510,7 +500,7 @@ class Track(BaseModel):
     territory_validity_periods: dict
 
 
-class Note(BaseModel):
+class Note(TypesBaseModel):
     id: str
     text: str
     user_id: str
