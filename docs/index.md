@@ -1,14 +1,20 @@
 # instagrapi
 
+### We recommend using our services:
+
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
+* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets 🚀
+
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)][pypi]
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://github.com/subzeroid/instagrapi/discussions/1182) and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **13 February 2023** (last reverse-engineering check)*
+*Instagram API valid for **16 Dec 2023** (last reverse-engineering check)*
 
-Support **Python >= 3.8**
+Support **Python >= 3.9**
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzeroid/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/subzeroid/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest)
 

@@ -10,7 +10,7 @@ The instagrapi more suits for testing or research than a working business!
 
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
-* [DataLikers](https://datalikers.com/) for Instagram Datasets 🚀
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets 🚀
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
@@ -37,7 +37,7 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using reverse-engineering with Charles Proxy and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **28 June 2023** (last reverse-engineering check)*
+*Instagram API valid for **16 Dec 2023** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 

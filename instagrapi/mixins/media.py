@@ -369,7 +369,7 @@ class MediaMixin:
         UserShort
             An object of UserShort
         """
-        return self.media_info(media_pk).user
+        return self.media_info_v1(media_pk).user
 
     def media_oembed(self, url: str) -> Dict:
         """
@@ -767,7 +767,7 @@ class MediaMixin:
         )
         pinned_medias = []
         for media in medias["items"]:
-            if media.get("timeline_pinned_user_ids") != None:
+            if media.get("timeline_pinned_user_ids") is not None:
                 pinned_medias.append(extract_media_v1(media))
         self.base_headers["X-IG-Nav-Chain"] = default_nav
         return pinned_medias

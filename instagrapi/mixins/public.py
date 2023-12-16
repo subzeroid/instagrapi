@@ -58,7 +58,6 @@ class PublicRequestMixin:
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         self.public = session
-
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
             {

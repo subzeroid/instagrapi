@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.8, 3.9 ]
+        python-version: [ 3.10 ]
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -80,9 +80,20 @@ jobs:
         with:
           requirements: "true"
           test-requirements: "true"
-
-      - name: Run test
-        run: python -m unittest tests.FakeClientTestCase
+      - name: Run user test
+        run: pytest -sv tests.py::ClientUserTestCase
+      - name: Run media test
+        run: pytest -sv tests.py::ClientMediaTestCase
+      # - name: Run comment test
+      #   run: pytest -sv tests.py::ClientCommentTestCase
+      # - name: Run location test
+      #   run: pytest -sv tests.py::ClientLocationTestCase
+      # - name: Run hashtag test
+      #   run: pytest -sv tests.py::ClientHashtagTestCase
+      - name: Run share test
+        run: pytest -sv tests.py::ClientShareTestCase
+      - name: Run highlight test
+        run: pytest -sv tests.py::ClientHighlightTestCase
 
   build-docs:
     runs-on: ubuntu-latest

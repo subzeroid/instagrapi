@@ -31,7 +31,7 @@ requirements = [
 
 setup(
     name="instagrapi",
-    version="2.0.1",
+    version="2.0.2",
     author="Mark Subzeroid",
     author_email="143403577+subzeroid@users.noreply.github.com",
     license="MIT",
@@ -69,14 +69,14 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )
