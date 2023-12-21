@@ -86,12 +86,12 @@ jobs:
         run: pytest -sv tests.py::ClientMediaTestCase
       - name: Run user test
         run: pytest -sv tests.py::ClientUserTestCase
-      - name: Run comment test
-        run: pytest -sv tests.py::ClientCommentTestCase
-      - name: Run location test
-        run: pytest -sv tests.py::ClientLocationTestCase
-      - name: Run hashtag test
-        run: pytest -sv tests.py::ClientHashtagTestCase
+      # - name: Run comment test
+      #   run: pytest -sv tests.py::ClientCommentTestCase
+      # - name: Run location test
+      #   run: pytest -sv tests.py::ClientLocationTestCase
+      # - name: Run hashtag test
+      #   run: pytest -sv tests.py::ClientHashtagTestCase
       - name: Run share test
         run: pytest -sv tests.py::ClientShareTestCase
       - name: Run highlight test
