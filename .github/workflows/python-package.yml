@@ -81,9 +81,9 @@ jobs:
           requirements: "true"
           test-requirements: "true"
       - name: Run user test
-        run: pytest -sv tests.py::ClientUserTestCase
+        run: TEST_ACCOUNTS_URL=${{ env.TEST_ACCOUNTS_URL }} pytest -sv tests.py::ClientUserTestCase
       - name: Run media test
-        run: pytest -sv tests.py::ClientMediaTestCase
+        run: TEST_ACCOUNTS_URL=${{ env.TEST_ACCOUNTS_URL }} pytest -sv tests.py::ClientMediaTestCase
       # - name: Run comment test
       #   run: pytest -sv tests.py::ClientCommentTestCase
       # - name: Run location test
@@ -91,9 +91,9 @@ jobs:
       # - name: Run hashtag test
       #   run: pytest -sv tests.py::ClientHashtagTestCase
       - name: Run share test
-        run: pytest -sv tests.py::ClientShareTestCase
+        run: TEST_ACCOUNTS_URL=${{ env.TEST_ACCOUNTS_URL }} pytest -sv tests.py::ClientShareTestCase
       - name: Run highlight test
-        run: pytest -sv tests.py::ClientHighlightTestCase
+        run: TEST_ACCOUNTS_URL=${{ env.TEST_ACCOUNTS_URL }} pytest -sv tests.py::ClientHighlightTestCase
 
   build-docs:
     runs-on: ubuntu-latest
