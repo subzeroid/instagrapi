@@ -84,8 +84,8 @@ jobs:
         env:
           TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
         run: pytest -sv tests.py::ClientMediaTestCase
-      # - name: Run media test
-      #   run: pytest -sv tests.py::ClientUserTestCase
+      - name: Run media test
+        run: TEST_ACCOUNTS_URL=${{ secrets.TEST_ACCOUNTS_URL }} pytest -sv tests.py::ClientUserTestCase
       # - name: Run comment test
       #   run: pytest -sv tests.py::ClientCommentTestCase
       # - name: Run location test
