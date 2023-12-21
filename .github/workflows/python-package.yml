@@ -69,8 +69,6 @@ jobs:
     strategy:
       matrix:
         python-version: [ "3.10" ]
-    environment:
-      TEST_ACCOUNTS_URL=${{ env.TEST_ACCOUNTS_URL }}
     steps:
       - name: Check out code
         uses: actions/checkout@v3
