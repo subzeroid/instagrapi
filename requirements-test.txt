@@ -9,5 +9,5 @@ mkdocs-minify-plugin==0.7.2
 mkdocstrings==0.24.0
 ./util/mkdocs-redirects
 ./util/mkdocstrings_patch_type_aliases
-pytest-xdist==3.3.1
+pytest-xdist==3.5.0
 pytest~=7.4.3
