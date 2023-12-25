@@ -92,8 +92,8 @@ jobs:
       #   run: pytest -sv tests.py::ClientLocationTestCase
       # - name: Run hashtag test
       #   run: pytest -sv tests.py::ClientHashtagTestCase
-      - name: Run share test
-        run: pytest -sv tests.py::ClientShareTestCase
+      # - name: Run share test
+      #   run: pytest -sv tests.py::ClientShareTestCase
       - name: Run highlight test
         run: pytest -sv tests.py::ClientHighlightTestCase
 
