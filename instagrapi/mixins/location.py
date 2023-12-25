@@ -7,7 +7,7 @@ from instagrapi.exceptions import (
     LocationNotFound,
     WrongCursorError,
 )
-from instagrapi.extractors import extract_location, extract_media_v1, extract_guide_v1
+from instagrapi.extractors import extract_guide_v1, extract_location, extract_media_v1
 from instagrapi.types import Guide, Location, Media
 
 tab_keys_a1 = ("edge_location_to_top_posts", "edge_location_to_media")

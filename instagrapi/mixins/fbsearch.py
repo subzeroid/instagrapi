@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from instagrapi.extractors import (
     extract_hashtag_v1,

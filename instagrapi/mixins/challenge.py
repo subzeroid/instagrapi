@@ -1,9 +1,9 @@
 import hashlib
 import json
+import random
 import time
 from enum import Enum
 from typing import Dict
-import random
 
 import requests
 
@@ -122,7 +122,11 @@ class ChallengeResolveMixin:
                 "Mobile Safari/537.36 %s" % self.user_agent,
                 "upgrade-insecure-requests": "1",
                 "sec-fetch-dest": "document",
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "accept": (
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                    "image/webp,image/apng,*/*;q=0.8,"
+                    "application/signed-exchange;v=b3;q=0.9"
+                ),
                 "x-requested-with": "com.instagram.android",
                 "sec-fetch-site": "none",
                 "sec-fetch-mode": "navigate",
@@ -408,7 +412,8 @@ class ChallengeResolveMixin:
                     )
                 else:
                     raise ChallengeError(
-                        f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}'
+                        f'ChallengeResolve: Choice "email" or "phone_number" '
+                        f"(sms) not available to this account {self.last_json}"
                     )
             wait_seconds = 5
             for attempt in range(24):
@@ -434,7 +439,9 @@ class ChallengeResolveMixin:
             #  'flow_render_type': 3,
             #  'bloks_action': 'com.instagram.challenge.navigation.take_challenge',
             #  'cni': 18226879502000588,
-            #  'challenge_context': '{"step_name": "change_password", "cni": 18226879502000588, "is_stateless": false, "challenge_type_enum": "PASSWORD_RESET"}',
+            #  'challenge_context': '{"step_name": "change_password",
+            #      "cni": 18226879502000588, "is_stateless": false,
+            #      "challenge_type_enum": "PASSWORD_RESET"}',
             #  'challenge_type_enum_str': 'PASSWORD_RESET',
             #  'status': 'ok'}
             wait_seconds = 5
@@ -483,7 +490,8 @@ class ChallengeResolveMixin:
                 )
             else:
                 raise ChallengeError(
-                    f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}'
+                    f'ChallengeResolve: Choice "email" or "phone_number" (sms) '
+                    f"not available to this account {self.last_json}"
                 )
             wait_seconds = 5
             for attempt in range(24):
@@ -525,6 +533,7 @@ class ChallengeResolveMixin:
             return True
         else:
             raise ChallengeUnknownStep(
-                f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}'
+                f'ChallengeResolve: Unknown step_name "{step_name}" for '
+                f'"{self.username}" in challenge resolver: {self.last_json}'
             )
         return True

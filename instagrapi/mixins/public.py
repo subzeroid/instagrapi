@@ -12,7 +12,6 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi.exceptions import (
-    ClientUnauthorizedError,
     ClientBadRequestError,
     ClientConnectionError,
     ClientError,
@@ -23,6 +22,7 @@ from instagrapi.exceptions import (
     ClientLoginRequired,
     ClientNotFoundError,
     ClientThrottledError,
+    ClientUnauthorizedError,
 )
 from instagrapi.utils import random_delay
 

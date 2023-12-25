@@ -2,15 +2,15 @@ import random
 import re
 import time
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_media,
     extract_direct_message,
-    extract_user_short,
-    extract_direct_thread,
     extract_direct_short_thread,
+    extract_direct_thread,
+    extract_user_short,
 )
 from instagrapi.types import (
     DirectMessage,

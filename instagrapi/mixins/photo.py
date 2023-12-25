@@ -16,6 +16,7 @@ from instagrapi.exceptions import (
     PhotoNotUpload,
 )
 from instagrapi.extractors import extract_media_v1
+from instagrapi.image_util import prepare_image
 from instagrapi.types import (
     Location,
     Media,
@@ -29,7 +30,6 @@ from instagrapi.types import (
     Usertag,
 )
 from instagrapi.utils import date_time_original, dumps
-from instagrapi.image_util import prepare_image
 
 try:
     from PIL import Image
@@ -303,7 +303,14 @@ class UploadPhotoMixin:
             "camera_model": self.device.get("model", ""),
             "camera_make": self.device.get("manufacturer", ""),
             "scene_type": "?",
-            "nav_chain": "8rL:self_profile:4,ProfileMediaTabFragment:self_profile:5,UniversalCreationMenuFragment:universal_creation_menu:7,ProfileMediaTabFragment:self_profile:8,MediaCaptureFragment:tabbed_gallery_camera:9,Dd3:photo_filter:10,FollowersShareFragment:metadata_followers_share:11",
+            "nav_chain": (
+                "8rL:self_profile:4,ProfileMediaTabFragment:self_profile:5,"
+                "UniversalCreationMenuFragment:universal_creation_menu:7,"
+                "ProfileMediaTabFragment:self_profile:8,"
+                "MediaCaptureFragment:tabbed_gallery_camera:9,"
+                "Dd3:photo_filter:10,"
+                "FollowersShareFragment:metadata_followers_share:11"
+            ),
             "date_time_original": date_time_original(time.localtime()),
             "date_time_digitalized": date_time_original(time.localtime()),
             "creation_logger_session_id": self.client_session_id,
@@ -458,7 +465,10 @@ class UploadPhotoMixin:
         medias = medias.copy()
         story_sticker_ids = []
         data = {
-            "text_metadata": '[{"font_size":40.0,"scale":1.0,"width":611.0,"height":169.0,"x":0.51414347,"y":0.8487708,"rotation":0.0}]',  # REMOVEIT
+            "text_metadata": (
+                '[{"font_size":40.0,"scale":1.0,"width":611.0,"height":169.0,'
+                '"x":0.51414347,"y":0.8487708,"rotation":0.0}]'
+            ),  # REMOVEIT
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES),
             "has_original_sound": "1",
             "camera_session_id": self.client_session_id,
