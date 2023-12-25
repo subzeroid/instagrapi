@@ -507,9 +507,9 @@ class Track(BaseModel):
 
 
 class Note(BaseModel):
-    id: str
+    id: int
     text: str
-    user_id: str
+    user_id: int
     user: UserShort
     audience: int
     created_at: datetime
