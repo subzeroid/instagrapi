@@ -593,7 +593,7 @@ class UserMixin:
         self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
-        Get user's followers information
+        Get user's following information
 
         Parameters
         ----------
