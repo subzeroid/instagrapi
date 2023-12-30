@@ -321,10 +321,10 @@ def extract_direct_message(data):
     if "voice_media" in data:
         if "media" in data["voice_media"]:
             data["media"] = extract_direct_media(data["voice_media"]["media"])
-    if 'timestamp' in data:
-        if type(data['timestamp']) is not datetime:
-            timestamp_int = int(data['timestamp']) / 1000000
-            data['timestamp'] = datetime.fromtimestamp(timestamp_int)
+    if "timestamp" in data:
+        if type(data["timestamp"]) is not datetime:
+            timestamp_int = int(data["timestamp"]) / 1000000
+            data["timestamp"] = datetime.fromtimestamp(timestamp_int)
     clip = data.get("clip", {})
     if clip:
         if "clip" in clip:
