@@ -33,6 +33,7 @@ class TrackMixin:
         Path
             Path for the file downloaded
         """
+        url = str(url)
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, """The URL must contain the path to the file (m4a or mp3)."""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
