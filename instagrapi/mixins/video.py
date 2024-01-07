@@ -80,6 +80,7 @@ class DownloadVideoMixin:
         Path
             Path for the file downloaded
         """
+        url = str(url)
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename

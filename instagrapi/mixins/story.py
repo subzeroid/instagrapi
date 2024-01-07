@@ -293,6 +293,7 @@ class StoryMixin:
         Path
             Path for the file downloaded
         """
+        url = str(url)
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, (
             """The URL must contain the path to the file (mp4 or jpg).\n"""
