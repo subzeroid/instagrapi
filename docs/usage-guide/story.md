@@ -95,7 +95,7 @@ If you want to format your story correctly (correct resolution, user mentions, e
 Example:
 
 ``` python
-from instagrapi.types import StoryMention, StoryMedia
+from instagrapi.types import StoryMention, StoryMedia, StoryLink
 from instagrapi.story import StoryBuilder
 
 media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
