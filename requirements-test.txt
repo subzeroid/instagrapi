@@ -10,4 +10,4 @@ mkdocstrings==0.24.0
 ./util/mkdocs-redirects
 ./util/mkdocstrings_patch_type_aliases
 pytest-xdist==3.5.0
-pytest~=7.4.3
+pytest~=7.4.4
