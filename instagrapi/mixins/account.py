@@ -57,7 +57,46 @@ class AccountMixin:
         """
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
+    
+    def change_password(
+        self,
+        old_password: str,
+        new_password: str,
+    ) -> bool:
+        """
+        Change password
 
+        Parameters
+        ----------
+        new_password: str
+            New password
+        old_password: str
+            Old password
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        try:
+            enc_old_password = self.password_encrypt(old_password)
+            enc_new_password = self.password_encrypt(new_password)
+            data = {
+                "enc_old_password": enc_old_password,
+                "enc_new_password1": enc_new_password,
+                "enc_new_password2": enc_new_password,
+            }
+            self.with_action_data(
+                {
+                    "_uid": self.user_id,
+                    "_uuid": self.uuid,
+                    "_csrftoken": self.token,
+                }
+            )
+            result = self.private_request("accounts/change_password/", data=data)
+            return result
+        except Exception as e:
+            return False
     def set_external_url(self, external_url) -> dict:
         """
         Set new biography
