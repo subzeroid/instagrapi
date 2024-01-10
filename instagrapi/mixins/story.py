@@ -42,10 +42,6 @@ class StoryMixin:
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return str(parts[0])
 
-    # def story_info_gql(self, story_pk: str):
-    #     # GQL havent video_url :-(
-    #     return self.media_info_gql(self, str(story_pk))
-
     def story_info_v1(self, story_pk: str) -> Story:
         """
         Get Story by pk or id
@@ -62,8 +58,7 @@ class StoryMixin:
         """
         story_id = self.media_id(story_pk)
         story_pk, user_id = story_id.split("_")
-        # result = self.private_request(f"media/{story_pk}/info/")
-        # story = extract_story_v1(result["items"][0])
+
         stories = self.user_stories_v1(user_id)
         for story in stories:
             self._stories_cache[story.pk] = story
@@ -253,23 +248,22 @@ class StoryMixin:
         )
 
     def story_download(
-        self, story_pk: int, filename: str = "", folder: Path = ""
+        self, story_pk: str, filename: str = "", folder: Path = ""
     ) -> Path:
         """
         Download story media by media_type
 
         Parameters
         ----------
-        story_pk: int
+        story_pk: str
 
         Returns
         -------
         Path
             Path for the file downloaded
         """
-        story_pk = int(story_pk)
         story = self.story_info(story_pk)
-        url = story.thumbnail_url if story.media_type == 1 else story.video_url
+        url = str(story.thumbnail_url if story.media_type == 1 else story.video_url)
         return self.story_download_by_url(url, filename, folder)
 
     def story_download_by_url(
@@ -301,8 +295,10 @@ class StoryMixin:
         )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+
+        response = self._send_public_request(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
+
         with open(path, "wb") as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)

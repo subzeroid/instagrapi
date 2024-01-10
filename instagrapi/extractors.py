@@ -377,6 +377,7 @@ def extract_hashtag_v1(data):
 def extract_story_v1(data):
     """Extract story from Private API"""
     story = deepcopy(data)
+    story["pk"] = str(story.get("pk"))
     if "video_versions" in story:
         # Select Best Quality by Resolutiuon
         story["video_url"] = sorted(
@@ -442,7 +443,7 @@ def extract_story_gql(data):
     if story_cta_url:
         story["links"] = [StoryLink(**{"webUri": story_cta_url})]
     story["user"] = extract_user_short(story.get("owner"))
-    story["pk"] = int(story["id"])
+    story["pk"] = str(story["id"])
     story["id"] = f"{story['id']}_{story['owner']['id']}"
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
