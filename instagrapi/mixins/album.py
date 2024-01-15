@@ -153,7 +153,7 @@ class UploadAlbumMixin:
         children = []
         for path in paths:
             path = Path(path)
-            if path.suffix.lower() in (".jpg", ".jpeg"):
+            if path.suffix.lower() in (".jpg", ".jpeg", ".webp"):
                 upload_id, width, height = self.photo_rupload(path, to_album=True)
                 children.append(
                     {
