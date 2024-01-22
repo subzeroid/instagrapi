@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -122,7 +122,7 @@ class Location(TypesBaseModel):
 
 
 class Media(TypesBaseModel):
-    pk: str | int
+    pk: Union[str, int]
     id: str
     code: str
     taken_at: datetime
