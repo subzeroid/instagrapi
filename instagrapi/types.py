@@ -249,6 +249,7 @@ class StoryLocation(TypesBaseModel):
     y: Optional[float] = None
     width: Optional[float] = None
     height: Optional[float] = None
+    rotation: Optional[float] = None
 
 
 class StoryStickerLink(TypesBaseModel):
