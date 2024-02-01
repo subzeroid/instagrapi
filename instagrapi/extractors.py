@@ -26,6 +26,8 @@ from .types import (
     StoryLink,
     StoryMedia,
     StoryMention,
+    StoryLocation,
+    StoryHashtag,
     Track,
     User,
     UserShort,
@@ -393,8 +395,12 @@ def extract_story_v1(data):
     story["mentions"] = [
         StoryMention(**mention) for mention in story.get("reel_mentions", [])
     ]
-    story["locations"] = []
-    story["hashtags"] = []
+    story["locations"] = [
+        StoryLocation(**location) for location in story.get("story_locations", [])
+    ]
+    story["hashtags"] = [
+        StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])
+    ]
     story["stickers"] = data.get("story_link_stickers") or []
     feed_medias = []
     story_feed_medias = data.get("story_feed_media") or []
