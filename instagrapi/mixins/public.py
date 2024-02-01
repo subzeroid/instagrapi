@@ -261,6 +261,27 @@ class PublicRequestMixin:
                 "Error: '{}'. Message: '{}'".format(e, message), response=e.response
             )
 
+    def public_get_user_info(self, username):
+        url = self.PUBLIC_API_URL + f"api/v1/users/web_profile_info/?username={username}"
+        headers = {
+            "X-IG-App-ID": "936619743392459",
+            "X-IG-WWW-Claim": "0",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+
+        response = self.public_request(url, headers=headers, return_json=True)
+
+        try:
+            return response["data"]["user"]
+        except KeyError as e:
+            error_type = response.get("error_type")
+            if error_type == "generic_request_error":
+                raise GenericRequestError(
+                    json_value(response, "errors", "error", 0, default=error_type),
+                    **response
+                )
+            raise e
+
 
 class TopSearchesPublicMixin:
     def top_search(self, query):

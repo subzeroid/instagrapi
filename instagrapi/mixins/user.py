@@ -151,7 +151,7 @@ class UserMixin:
             An object of User type
         """
         username = str(username).lower()
-        return extract_user_gql(self.user_info_gql(username))
+        return extract_user_gql(self.public_get_user_info(username))
 
     def user_info_by_username_v1(self, username: str) -> User:
         """
