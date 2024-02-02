@@ -307,6 +307,10 @@ def extract_reply_message(data):
             # Instagram ¯\_(ツ)_/¯
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
+
+    data['timestamp'] = datetime.datetime.fromtimestamp(data['timestamp'] // 1_000_000)
+    data['user_id'] = str(data['user_id'])
+
     return ReplyMessage(**data)
 
 
