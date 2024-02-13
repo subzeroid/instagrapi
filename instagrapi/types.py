@@ -29,6 +29,7 @@ class Resource(TypesBaseModel):
     thumbnail_url: HttpUrl
     media_type: int
 
+
 class BioLink(TypesBaseModel):
     link_id: str
     url: str
@@ -37,6 +38,7 @@ class BioLink(TypesBaseModel):
     title: Optional[str] = None
     is_pinned: Optional[bool] = None
     open_external_url_with_in_app_browser: Optional[bool] = None
+
 
 class User(TypesBaseModel):
     pk: str
@@ -253,6 +255,7 @@ class StoryHashtag(TypesBaseModel):
     height: Optional[float] = None
     rotation: Optional[float] = None
 
+
 class StoryLocation(TypesBaseModel):
     location: Location
     x: Optional[float] = None
@@ -304,6 +307,7 @@ class Story(TypesBaseModel):
     id: str
     code: str
     taken_at: datetime
+    imported_taken_at: Optional[datetime] = None
     media_type: int
     product_type: Optional[str] = ""
     thumbnail_url: Optional[HttpUrl] = None
