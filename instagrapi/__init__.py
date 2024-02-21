@@ -5,6 +5,11 @@ from urllib.parse import urlparse
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+from instagrapi.exceptions import (
+    BadPassword, ReloginAttemptExceeded, ChallengeRequired, SelectContactPointRecoveryForm,
+    RecaptchaChallengeForm, FeedbackRequired, PleaseWaitFewMinutes, LoginRequired,
+    ClientBadRequestError, ClientError
+)
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
@@ -118,5 +123,6 @@ class Client(
     def handle_exception(self, exception):
         return True
 
-    def next_proxy(self, job_id):
-        pass
+    def next_proxy(self, job_id, proxy_function):
+        if proxy_function:
+            return proxy_function(job_id)
