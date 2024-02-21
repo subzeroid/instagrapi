@@ -31,6 +31,8 @@ class Resource(TypesBaseModel):
 
 
 class User(TypesBaseModel):
+    def __hash__(self):
+        return hash(self.pk)
     pk: str
     username: str
     full_name: str
@@ -68,6 +70,8 @@ class User(TypesBaseModel):
 
 
 class Account(TypesBaseModel):
+    def __hash__(self):
+        return hash(self.pk)
     pk: str
     username: str
     full_name: str
@@ -86,6 +90,8 @@ class Account(TypesBaseModel):
 
 
 class UserShort(TypesBaseModel):
+    def __hash__(self):
+        return hash(self.pk)
     pk: str
     username: Optional[str] = None
     full_name: Optional[str] = ""
