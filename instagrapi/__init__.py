@@ -114,3 +114,9 @@ class Client(
             proxies = {}
 
         self.public.proxies = self.private.proxies = proxies
+
+    def handle_exception(self, exception):
+        return True
+
+    def next_proxy(self, job_id):
+        pass

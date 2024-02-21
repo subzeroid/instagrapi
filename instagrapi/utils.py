@@ -6,6 +6,7 @@ import string
 import time
 import urllib
 
+
 def build_curl(response):
     req = response.request
     command = "curl -X {method} -H {headers} -d '{data}' '{uri}' --compressed"
