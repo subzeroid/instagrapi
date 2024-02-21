@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -78,26 +79,38 @@ class Client(
     proxy = None
     logger = logging.getLogger("instagrapi")
 
-    def __init__(self, settings: dict = {}, proxy: str = None, **kwargs):
+    def __init__(self, settings: Optional[Dict[str, Any]] = None, proxy: Optional[Dict[str, Any]] = None, **kwargs):
         super().__init__(**kwargs)
+
+        if not settings:
+            settings = {}
+        if not proxy:
+            proxy = {}
+
         self.settings = settings
         self.set_proxy(proxy)
         self.init()
 
-    def set_proxy(self, dsn: str):
-        if dsn:
-            assert isinstance(
-                dsn, str
-            ), f'Proxy must been string (URL), but now "{dsn}" ({type(dsn)})'
-            self.proxy = dsn
-            proxy_href = "{scheme}{href}".format(
-                scheme="http://" if not urlparse(self.proxy).scheme else "",
-                href=self.proxy,
-            )
-            self.public.proxies = self.private.proxies = {
+    def set_proxy(self, proxy: Dict[str, Any]):
+        http_proxy = proxy.get("http")
+        if http_proxy:
+            proxy_scheme = "" if urlparse(http_proxy).scheme else "http://"
+            proxy_href = f"{proxy_scheme}{self.proxy}"
+            self.proxy = http_proxy
+
+            if "unblock.oxylabs" in proxy_href and "sessid-" in proxy_href:
+                session_id = proxy_href.split("sessid-")[1].split(":")[0].split("-")[0]
+                self.private.headers["X-Oxylabs-Session-Id"] = session_id
+                self.public.headers["X-Oxylabs-Session-Id"] = session_id
+                # self.private.headers["X-Oxylabs-Render"] = "html"
+                # self.public.headers["X-Oxylabs-Render"] = "html"
+                proxy_href = proxy_href.replace(f"-sessid-{session_id}", "")
+
+            proxies = {
                 "http": proxy_href,
                 "https": proxy_href,
             }
-            return True
-        self.public.proxies = self.private.proxies = {}
-        return False
+        else:
+            proxies = {}
+
+        self.public.proxies = self.private.proxies = proxies
