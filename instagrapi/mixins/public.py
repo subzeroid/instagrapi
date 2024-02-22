@@ -83,8 +83,6 @@ class PublicRequestMixin:
             # except JSONDecodeError as e:
             #     raise ClientJSONDecodeError(e, respones=self.last_public_response)
             except ClientError as e:
-                if self.next_proxy:
-                    self.set_proxy(self.next_proxy(self.job_id))
                 msg = str(e)
                 if all((
                     isinstance(e, ClientConnectionError),
