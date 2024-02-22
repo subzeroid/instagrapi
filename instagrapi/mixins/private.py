@@ -516,8 +516,6 @@ class PrivateRequestMixin:
                 return self._send_private_request(endpoint, **kwargs)
             except ClientRequestTimeout:
                 self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
-                if self.next_proxy:
-                    self.set_proxy(self.next_proxy(self.job_id))
                 time.sleep(60)
                 return self._send_private_request(endpoint, **kwargs)
             except Exception as e:
@@ -526,8 +524,6 @@ class PrivateRequestMixin:
                     self.handle_exception(self, e)
                 else:
                     if iteration < retries_count:
-                        if self.next_proxy:
-                            self.set_proxy(self.next_proxy(self.job_id))
                         logging.info(self.last_response)
                         self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
                         time.sleep(retries_timeout)
@@ -539,8 +535,6 @@ class PrivateRequestMixin:
                     return self.last_json
                 if iteration < retries_count:
                     self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
-                    if self.next_proxy:
-                        self.set_proxy(self.next_proxy(self.job_id))
                     time.sleep(retries_timeout)
                     continue
                 return self._send_private_request(endpoint, **kwargs)

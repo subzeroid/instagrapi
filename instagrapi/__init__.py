@@ -90,6 +90,7 @@ class Client(
         self,
         settings: Optional[Dict[str, Any]] = None,
         proxy: Optional[Dict[str, Any]] = None,
+        job_id: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -97,7 +98,7 @@ class Client(
         if settings:
             self.settings = settings
         if proxy:
-            self.set_proxy(proxy)
+            self.set_proxy(proxy, job_id=job_id)
 
         self.init()
 
