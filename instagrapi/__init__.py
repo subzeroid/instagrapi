@@ -96,7 +96,7 @@ class Client(
         super().__init__(**kwargs)
 
         if not settings:
-            setting = {}
+            settings = {}
         self.settings = settings
         if proxy:
             self.set_proxy(proxy, job_id=job_id)
