@@ -521,7 +521,7 @@ class PrivateRequestMixin:
             except Exception as e:
                 logging.debug(f"Exception catch: {type(e)}: {traceback.format_exc()}")
                 if self.handle_exception:
-                    self.handle_exception(self, e)
+                    self.handle_exception(e)
                 else:
                     if iteration < retries_count:
                         logging.info(self.last_response)

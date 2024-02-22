@@ -75,7 +75,7 @@ class PublicRequestMixin:
                 return self._send_public_request(url, **kwargs)
             except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
                 if self.handle_exception:
-                    self.handle_exception(self, e)
+                    self.handle_exception(e)
                 if retries_count > iteration + 1:
                     time.sleep(retries_timeout)
                     continue
