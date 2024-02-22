@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
@@ -81,48 +82,90 @@ class Client(
     BloksMixin,
     TOTPMixin,
 ):
+    settings = None
     proxy = None
     logger = logging.getLogger("instagrapi")
 
-    def __init__(self, settings: Optional[Dict[str, Any]] = None, proxy: Optional[Dict[str, Any]] = None, **kwargs):
+    def __init__(
+        self,
+        settings: Optional[Dict[str, Any]] = None,
+        proxy: Optional[Dict[str, Any]] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
 
-        if not settings:
-            settings = {}
-        if not proxy:
-            proxy = {}
+        if settings:
+            self.settings = settings
+        if proxy:
+            self.set_proxy(proxy)
 
-        self.settings = settings
-        self.set_proxy(proxy)
         self.init()
 
-    def set_proxy(self, proxy: Dict[str, Any]):
-        http_proxy = proxy.get("http")
-        if http_proxy:
-            proxy_scheme = "" if urlparse(http_proxy).scheme else "http://"
-            proxy_href = f"{proxy_scheme}{self.proxy}"
-            self.proxy = http_proxy
+    def get_session_id(self, job_id: Optional[str] = None):
+        total = random.randint(1_000, 10_000_000)
+        if job_id:
+            total += sum([ord(c) * i * i for i, c in enumerate(job_id)])
+        return total
 
-            if "unblock.oxylabs" in proxy_href and "sessid-" in proxy_href:
-                session_id = proxy_href.split("sessid-")[1].split(":")[0].split("-")[0]
-                self.private.headers["X-Oxylabs-Session-Id"] = session_id
-                self.public.headers["X-Oxylabs-Session-Id"] = session_id
-                # self.private.headers["X-Oxylabs-Render"] = "html"
-                # self.public.headers["X-Oxylabs-Render"] = "html"
-                proxy_href = proxy_href.replace(f"-sessid-{session_id}", "")
+    def set_proxy(self, proxy: Dict[str, Any], job_id: Optional[str] = None):
+        proxy_uri = random.choice(proxy["proxies"])
+        proxy_username = proxy.get("username", "")
+        proxy_password = proxy.get("password", "")
+        proxy_api = proxy.get("api", "")
+        proxy_country = proxy.get("country")
 
-            proxies = {
-                "http": proxy_href,
-                "https": proxy_href,
+        session_id = self.get_session_id(job_id)
+
+        if "lum-superproxy" in proxy_uri:
+            if "unblocker" in proxy_username:
+                session_type = "unblocker-session"
+            else:
+                session_type = "session"
+
+            proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_uri}"
+            proxy_dict = {
+                "http": proxy_uri,
+                "https": proxy_uri,
+                "type": "luminati",
+            }
+        elif "scraperapi" in proxy_uri:
+            proxy_uri = f"{proxy_api}?api_key={proxy_password}&url=%s&keep_headers=true&session_number={session_id}"
+
+            if proxy_country:
+                country = random.choice(proxy_country.split(","))
+                proxy_uri += f"&country_code={country}"
+
+            proxy_dict = {"overwrite_url": proxy_uri, "type": "scraperapi"}
+        elif "oxylabs" in proxy_uri:
+            if "unblock" in proxy_uri:
+                self.private.headers["X-Oxylabs-Session-Id"] = str(session_id)
+                self.public.headers["X-Oxylabs-Session-Id"] = str(session_id)
+            else:
+                proxy_username = f"customer-{proxy_username}-sessid-{session_id}"
+                if proxy_country:
+                    country = random.choice(proxy_country.split(","))
+                    proxy_username += "-cc-{country}"
+
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_dict = {
+                "http": proxy_uri,
+                "https": proxy_uri,
+                "proxy_type": "oxylabs",
             }
         else:
-            proxies = {}
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_dict = {
+                "http": proxy_uri,
+                "https": proxy_uri,
+                "type": "other",
+            }
 
-        self.public.proxies = self.private.proxies = proxies
+        self.public.proxies = self.private.proxies = proxy_dict
+
+        proxy_scheme = "" if urlparse(proxy_uri).scheme else "http://"
+        proxy_href = f"{proxy_scheme}{proxy_uri}"
+
+        self.proxy = proxy_href
 
     def handle_exception(self, exception):
         return True
-
-    def next_proxy(self, job_id, proxy_function):
-        if proxy_function:
-            return proxy_function(job_id)
