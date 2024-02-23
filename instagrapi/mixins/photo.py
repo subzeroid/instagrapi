@@ -124,7 +124,11 @@ class UploadPhotoMixin:
     """
 
     def photo_rupload(
-        self, path: Path, upload_id: str = "", to_album: bool = False
+        self,
+        path: Path,
+        upload_id: str = "",
+        to_album: bool = False,
+        for_story: bool = False,
     ) -> tuple:
         """
         Upload photo to Instagram
@@ -136,6 +140,8 @@ class UploadPhotoMixin:
         upload_id: str, optional
             Unique upload_id (String). When None, then generate automatically. Example from video.video_configure
         to_album: bool, optional
+        for_story: bool, optional
+            Useful for resize util only
 
         Returns
         -------
@@ -174,7 +180,15 @@ class UploadPhotoMixin:
         }
         if to_album:
             rupload_params["is_sidecar"] = "1"
-        photo_data, photo_size = prepare_image(str(path), max_side=1080)
+        if for_story:
+            photo_data, photo_size = prepare_image(
+                str(path),
+                max_side=1080,
+                aspect_ratios=(9 / 16, 90 / 47),
+                max_size=(1080, 1920),
+            )
+        else:
+            photo_data, photo_size = prepare_image(str(path), max_side=1080)
         photo_len = str(len(photo_data))
         headers = {
             "Accept-Encoding": "gzip",
@@ -381,7 +395,7 @@ class UploadPhotoMixin:
             An object of Media class
         """
         path = Path(path)
-        upload_id, width, height = self.photo_rupload(path, upload_id)
+        upload_id, width, height = self.photo_rupload(path, upload_id, for_story=True)
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
