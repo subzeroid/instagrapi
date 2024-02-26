@@ -26,6 +26,8 @@ from .types import (
     StoryLink,
     StoryMedia,
     StoryMention,
+    StoryLocation,
+    StoryHashtag,
     Track,
     User,
     UserShort,
@@ -332,8 +334,7 @@ def extract_direct_message(data):
     if xma_media_share:
         data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
 
-    data['timestamp'] = datetime.datetime.fromtimestamp(data['timestamp'] // 1_000_000)
-    data['user_id'] = str(data['user_id'])
+    data['timestamp'] = datetime.datetime.fromtimestamp(int(data['timestamp']) // 1_000_000)
 
     return DirectMessage(**data)
 
@@ -393,8 +394,12 @@ def extract_story_v1(data):
     story["mentions"] = [
         StoryMention(**mention) for mention in story.get("reel_mentions", [])
     ]
-    story["locations"] = []
-    story["hashtags"] = []
+    story["locations"] = [
+        StoryLocation(**location) for location in story.get("story_locations", [])
+    ]
+    story["hashtags"] = [
+        StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])
+    ]
     story["stickers"] = data.get("story_link_stickers") or []
     feed_medias = []
     story_feed_medias = data.get("story_feed_media") or []
