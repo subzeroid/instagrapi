@@ -86,6 +86,12 @@ class Account(TypesBaseModel):
 
 
 class UserShort(TypesBaseModel):
+    def __hash__(self):
+        return hash(self.pk)
+    def __eq__(self, other):
+        if isinstance(other, UserShort):
+            return self.pk == other.pk
+        return NotImplemented
     pk: str
     username: Optional[str] = None
     full_name: Optional[str] = ""
