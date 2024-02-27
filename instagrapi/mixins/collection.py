@@ -155,7 +155,7 @@ class CollectionMixin:
                 collection_pk, max_id=next_max_id
             )
             for item in items:
-                if last_media_pk and last_media_pk == item["media"]["pk"]:
+                if last_media_pk and last_media_pk == item.pk:
                     found_last_media_pk = True
                     break
                 total_items.append(item)
