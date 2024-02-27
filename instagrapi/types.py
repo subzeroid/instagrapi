@@ -30,6 +30,16 @@ class Resource(TypesBaseModel):
     media_type: int
 
 
+class BioLink(TypesBaseModel):
+    link_id: str
+    url: str
+    lynx_url: Optional[str] = None
+    link_type: Optional[str] = None
+    title: Optional[str] = None
+    is_pinned: Optional[bool] = None
+    open_external_url_with_in_app_browser: Optional[bool] = None
+
+
 class User(TypesBaseModel):
     pk: str
     username: str
@@ -42,6 +52,7 @@ class User(TypesBaseModel):
     follower_count: int
     following_count: int
     biography: Optional[str] = ""
+    bio_links: List[BioLink] = []
     external_url: Optional[str] = None
     account_type: Optional[int] = None
     is_business: bool
@@ -250,6 +261,7 @@ class StoryHashtag(TypesBaseModel):
     height: Optional[float] = None
     rotation: Optional[float] = None
 
+
 class StoryLocation(TypesBaseModel):
     location: Location
     x: Optional[float] = None
@@ -301,6 +313,7 @@ class Story(TypesBaseModel):
     id: str
     code: str
     taken_at: datetime
+    imported_taken_at: Optional[datetime] = None
     media_type: int
     product_type: Optional[str] = ""
     thumbnail_url: Optional[HttpUrl] = None
@@ -308,6 +321,7 @@ class Story(TypesBaseModel):
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     sponsor_tags: List[UserShort]
+    is_paid_partnership: Optional[bool]
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
