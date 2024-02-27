@@ -485,4 +485,5 @@ def extract_track(data):
     )
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data["dash_manifest"])
     data["uri"] = html.unescape(items[0]) if items else None
+    data["territory_validity_periods"] = data.get("territory_validity_periods") or {}
     return Track(**data)
