@@ -310,8 +310,8 @@ def extract_reply_message(data):
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
 
-    data['timestamp'] = datetime.datetime.fromtimestamp(data['timestamp'] // 1_000_000)
-    data['user_id'] = str(data['user_id'])
+    data["timestamp"] = datetime.datetime.fromtimestamp(data["timestamp"] // 1_000_000)
+    data["user_id"] = str(data["user_id"])
 
     return ReplyMessage(**data)
 
@@ -368,6 +368,7 @@ def extract_direct_media(data):
 
 
 def extract_account(data):
+    data["pk"] = str(data["pk"])
     data["external_url"] = data.get("external_url") or None
     return Account(**data)
 
