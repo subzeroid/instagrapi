@@ -1,3 +1,7 @@
+default:
+  tags:
+    - k8s
+
 pre-commit:
   image:
     name: docker.heuritech.com/python:3.8.14
