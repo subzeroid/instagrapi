@@ -37,10 +37,18 @@ class BloksMixin:
         assert self.bloks_versioning_id, "Client.bloks_versioning_id is empty (hash is expected)"
         enc_password = self.password_encrypt(password)
         data = {
-            "bk_client_context": dumps({"bloks_version": self.bloks_versioning_id, "styles_id": "instagram"}),
-            "challenge_context": challenge_context,
-            "bloks_versioning_id": self.bloks_versioning_id,
-            "enc_new_password1": enc_password,
-            "enc_new_password2": enc_password,
+            "bk_client_context":
+                dumps({
+                    "bloks_version": self.bloks_versioning_id,
+                    "styles_id": "instagram"
+                }),
+            "challenge_context":
+                challenge_context,
+            "bloks_versioning_id":
+                self.bloks_versioning_id,
+            "enc_new_password1":
+                enc_password,
+            "enc_new_password2":
+                enc_password,
         }
         return self.bloks_action("com.instagram.challenge.navigation.take_challenge", data)

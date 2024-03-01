@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 from instagrapi.exceptions import ClientError, HashtagNotFound
 from instagrapi.extractors import (
@@ -36,9 +36,7 @@ class HashtagMixin:
             raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
 
-    def hashtag_info_gql(
-        self, name: str, amount: int = 12, end_cursor: str = None
-    ) -> Hashtag:
+    def hashtag_info_gql(self, name: str, amount: int = 12, end_cursor: str = None) -> Hashtag:
         """
         Get information about a hashtag by Public Graphql API
 
@@ -61,9 +59,7 @@ class HashtagMixin:
         variables = {"tag_name": name, "show_ranked": False, "first": int(amount)}
         if end_cursor:
             variables["after"] = end_cursor
-        data = self.public_graphql_request(
-            variables, query_hash="f92f56d47dc7a55b606908374b43a314"
-        )
+        data = self.public_graphql_request(variables, query_hash="f92f56d47dc7a55b606908374b43a314")
         if not data.get("hashtag"):
             raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
@@ -110,9 +106,9 @@ class HashtagMixin:
         return hashtag
 
     def hashtag_medias_v1_logged_out_chunk(
-                self, name: str, max_amount: int = 27, tab_key: str = ""
-        ) -> List[Media]:
-            """
+        self, name: str, max_amount: int = 27, tab_key: str = ""
+    ) -> List[Media]:
+        """
             Get chunk of medias for a hashtag by Private Web API
 
             Parameters
@@ -127,22 +123,22 @@ class HashtagMixin:
             generator<Media>
                 generator of objects of Media
             """
-            assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
-                'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
+        assert tab_key in ("edge_hashtag_to_top_posts", "edge_hashtag_to_media"), \
+            'You must specify one of the options for "tab_key" ("edge_hashtag_to_top_posts" or "edge_hashtag_to_media")'
 
-            nb_media = 0
-            result = self.private_request(
-                f"tags/logged_out_web_info/?tag_name={name}",
-            )
-            for node in result["data"]["hashtag"][tab_key]["edges"]:
-                media = extract_media_gql(node["node"])
-                yield media
-                nb_media += 1
-                if max_amount and nb_media >= max_amount:
-                    break
+        nb_media = 0
+        result = self.private_request(f"tags/logged_out_web_info/?tag_name={name}",)
+        for node in result["data"]["hashtag"][tab_key]["edges"]:
+            media = extract_media_gql(node["node"])
+            yield media
+            nb_media += 1
+            if max_amount and nb_media >= max_amount:
+                break
 
-    def hashtag_medias_a1_chunk(self, name: str, tab_key: str = "", end_cursor: str = None
-                               ) -> List[Media]:
+    def hashtag_medias_a1_chunk(self,
+                                name: str,
+                                tab_key: str = "",
+                                end_cursor: str = None) -> List[Media]:
         """
         Get one chunk of medias and end_cursor by Public Web API
         Parameters
@@ -169,9 +165,10 @@ class HashtagMixin:
             media = extract_media_gql(edge["node"])
             yield media
 
-    def hashtag_medias_gql_chunk(
-        self, name: str, tab_key: str = "", end_cursor: str = None
-    ) -> List[Media]:
+    def hashtag_medias_gql_chunk(self,
+                                 name: str,
+                                 tab_key: str = "",
+                                 end_cursor: str = None) -> List[Media]:
         """
         Get one chunk of medias for a hashtag by Public Graphql API
 
@@ -206,9 +203,10 @@ class HashtagMixin:
             media = extract_media_gql(edge["node"])
             yield media
 
-    def hashtag_medias_v1_chunk(
-        self, name: str, tab_key: str = "", max_id: str = None
-    ) -> List[Media]:
+    def hashtag_medias_v1_chunk(self,
+                                name: str,
+                                tab_key: str = "",
+                                max_id: str = None) -> List[Media]:
         """
         Get chunk of medias for a hashtag by Private Mobile API
 
@@ -246,9 +244,14 @@ class HashtagMixin:
                 media = extract_media_v1(node["media"])
                 yield media
 
-
     def hashtag_medias(
-            self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None, method_api: str= "", first_page=False
+        self,
+        name: str,
+        max_amount: int = 27,
+        tab_key: str = "",
+        end_cursor: str = None,
+        method_api: str = "",
+        first_page=False
     ) -> List[Media]:
         """
         Get medias by Public Web API (A1) or Public Graphql API
@@ -306,7 +309,9 @@ class HashtagMixin:
             else:
                 page_info = self.last_public_json["hashtag"][tab_key]["page_info"]
                 if not page_info.get("has_next_page") or not page_info.get("end_cursor"):
-                    logging.info(f"END2: {page_info.get('has_next_page')}, {page_info.get('end_cursor')}")
+                    logging.info(
+                        f"END2: {page_info.get('has_next_page')}, {page_info.get('end_cursor')}"
+                    )
                     break
                 end_cursor = page_info["end_cursor"]
             logging.info(f"{page_info.get('has_next_page')}, {page_info.get('end_cursor')}")
@@ -332,13 +337,23 @@ class HashtagMixin:
 
         try:
             self.logger.info("Use GQL method")
-            yield from self.hashtag_medias(name, amount, tab_key="edge_hashtag_to_top_posts", end_cursor=end_cursor, method_api="GQL")
+            yield from self.hashtag_medias(
+                name,
+                amount,
+                tab_key="edge_hashtag_to_top_posts",
+                end_cursor=end_cursor,
+                method_api="GQL"
+            )
         except ClientError:
             self.logger.info("Use V1 method")
-            yield from self.hashtag_medias(name, amount, tab_key="top", end_cursor=end_cursor, method_api="V1")
+            yield from self.hashtag_medias(
+                name, amount, tab_key="top", end_cursor=end_cursor, method_api="V1"
+            )
 
-
-    def hashtag_medias_recent(self, name: str, amount: int = 27, end_cursor: str = None) -> List[Media]:
+    def hashtag_medias_recent(self,
+                              name: str,
+                              amount: int = 27,
+                              end_cursor: str = None) -> List[Media]:
         """
         Get recent medias for a hashtag
 
@@ -358,7 +373,15 @@ class HashtagMixin:
         """
         try:
             self.logger.info("Use GQL method")
-            yield from self.hashtag_medias(name, amount, tab_key="edge_hashtag_to_media", end_cursor=end_cursor, method_api="GQL")
+            yield from self.hashtag_medias(
+                name,
+                amount,
+                tab_key="edge_hashtag_to_media",
+                end_cursor=end_cursor,
+                method_api="GQL"
+            )
         except ClientError:
             self.logger.info("Use V1 method")
-            yield from self.hashtag_medias(name, amount, tab_key="recent", end_cursor=end_cursor, method_api="V1")
+            yield from self.hashtag_medias(
+                name, amount, tab_key="recent", end_cursor=end_cursor, method_api="V1"
+            )

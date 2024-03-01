@@ -5,14 +5,10 @@ from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
 
 POST_TYPES = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
-TIME_FRAMES = (
-    "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS",
-    "ONE_YEAR", "TWO_YEARS"
-)
+TIME_FRAMES = ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
 DATA_ORDERS = (
-    "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT",
-    "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT",
-    "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"
+    "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT",
+    "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"
 )
 
 try:
@@ -85,7 +81,10 @@ class InsightsMixin:
             "timeframe": time_frame,
             "search_base": "USER",
             "is_user": "true",
-            "queryParams": {"access_token": "", "id": self.user_id},
+            "queryParams": {
+                "access_token": "",
+                "id": self.user_id
+            },
         }
         while True:
             if cursor:
@@ -103,8 +102,8 @@ class InsightsMixin:
             ):
                 raise UserError("Account is not business account", **self.last_json)
             stats = json_value(
-                result, "data", "shadow_instagram_user",
-                "business_manager", "top_posts_unit", "top_posts"
+                result, "data", "shadow_instagram_user", "business_manager", "top_posts_unit",
+                "top_posts"
             )
             cursor = stats["page_info"]["end_cursor"]
             medias.extend(stats["edges"])
@@ -144,7 +143,10 @@ class InsightsMixin:
             "activityTab": True,
             "audienceTab": True,
             "contentTab": True,
-            "query_params": {"access_token": "", "id": self.user_id},
+            "query_params": {
+                "access_token": "",
+                "id": self.user_id
+            },
         }
 
         result = self.private_request(
@@ -181,7 +183,10 @@ class InsightsMixin:
             "strip_defaults": False,
         }
         query_params = {
-            "query_params": {"access_token": "", "id": media_pk},
+            "query_params": {
+                "access_token": "",
+                "id": media_pk
+            },
         }
         try:
             result = self.private_request(

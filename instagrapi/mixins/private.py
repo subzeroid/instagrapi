@@ -85,14 +85,12 @@ class PrivateRequestMixin:
     request_len = 0
     request_nb = 0
 
-
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
-        self.request_timeout = kwargs.pop(
-            "request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
         super().__init__(*args, **kwargs)
 
     def small_delay(self):
@@ -124,60 +122,100 @@ class PrivateRequestMixin:
             if lang not in accept_language:
                 accept_language.insert(0, lang)
         headers = {
-            "X-IG-App-Locale": locale,
-            "X-IG-Device-Locale": locale,
-            "X-IG-Mapped-Locale": locale,
-#            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-1'),
-            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-3'),
-            "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
+            "X-IG-App-Locale":
+                locale,
+            "X-IG-Device-Locale":
+                locale,
+            "X-IG-Mapped-Locale":
+                locale,
+            #            "X-Pigeon-Session-Id": self.generate_uuid('UFS-', '-1'),
+            "X-Pigeon-Session-Id":
+                self.generate_uuid('UFS-', '-3'),
+            "X-Pigeon-Rawclienttime":
+                str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
-            "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
-            "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),  # "0"
-#            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
-            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(50, 150)),  # "0"
+            "X-IG-Bandwidth-Speed-KBPS":
+                str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
+            "X-IG-Bandwidth-TotalBytes-B":
+                str(random.randint(5000000, 90000000)),  # "0"
+            #            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
+            "X-IG-Bandwidth-TotalTime-MS":
+                str(random.randint(50, 150)),  # "0"
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
-            "X-IG-App-Startup-Country": self.country.upper(),
-            "X-Bloks-Version-Id": self.bloks_versioning_id,
-            "X-IG-WWW-Claim": "0",
+            "X-IG-App-Startup-Country":
+                self.country.upper(),
+            "X-Bloks-Version-Id":
+                self.bloks_versioning_id,
+            "X-IG-WWW-Claim":
+                "0",
             # X-IG-WWW-Claim: hmac.AR3zruvyGTlwHvVd2ACpGCWLluOppXX4NAVDV-iYslo9CaDd
-            "X-Bloks-Is-Layout-RTL": "false",
-            "X-Bloks-Is-Panorama-Enabled": "true",
-            "X-IG-Device-ID": self.uuid,
-            "X-IG-Family-Device-ID": self.phone_id,
-            "X-IG-Android-ID": self.android_device_id,
-            "X-IG-Timezone-Offset": str(self.timezone_offset),
-            "X-IG-Connection-Type": "WIFI",
-#            "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
-            "X-IG-Capabilities": "3brTv10=",  # "3brTvwE=" in instabot
-            "X-IG-App-ID": self.app_id,
-            "Priority": "u=3",
-            "User-Agent": self.user_agent,
-            "Accept-Language": ', '.join(accept_language),
-            "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
-            "Accept-Encoding": "gzip, deflate",  # ignore zstd
-            "Host": config.API_DOMAIN,
-            "X-FB-HTTP-Engine": "Liger",
-            "Connection": "keep-alive",
+            "X-Bloks-Is-Layout-RTL":
+                "false",
+            "X-Bloks-Is-Panorama-Enabled":
+                "true",
+            "X-IG-Device-ID":
+                self.uuid,
+            "X-IG-Family-Device-ID":
+                self.phone_id,
+            "X-IG-Android-ID":
+                self.android_device_id,
+            "X-IG-Timezone-Offset":
+                str(self.timezone_offset),
+            "X-IG-Connection-Type":
+                "WIFI",
+            #            "X-IG-Capabilities": "3brTvx0=",  # "3brTvwE=" in instabot
+            "X-IG-Capabilities":
+                "3brTv10=",  # "3brTvwE=" in instabot
+            "X-IG-App-ID":
+                self.app_id,
+            "Priority":
+                "u=3",
+            "User-Agent":
+                self.user_agent,
+            "Accept-Language":
+                ', '.join(accept_language),
+            "X-MID":
+                self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
+            "Accept-Encoding":
+                "gzip, deflate",  # ignore zstd
+            "Host":
+                config.API_DOMAIN,
+            "X-FB-HTTP-Engine":
+                "Liger",
+            "Connection":
+                "keep-alive",
             # "Pragma": "no-cache",
             # "Cache-Control": "no-cache",
-            "X-FB-Client-IP": "True",
-            "X-FB-Server-Cluster": "True",
-            "IG-INTENDED-USER-ID": str(self.user_id or 0),
-#            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
-            "X-IG-Nav-Chain": "9cb:self_profile:4,8jo:bottom_sheet_profile:6,AQ1:settings_category_options:7,A37:add_account_bottom_sheet:8,9vd:login_landing:9",
-            "X-IG-SALT-IDS": str(random.randint(1061162222, 1061262222)),
+            "X-FB-Client-IP":
+                "True",
+            "X-FB-Server-Cluster":
+                "True",
+            "IG-INTENDED-USER-ID":
+                str(self.user_id or 0),
+            #            "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
+            "X-IG-Nav-Chain":
+                "9cb:self_profile:4,8jo:bottom_sheet_profile:6,AQ1:settings_category_options:7,A37:add_account_bottom_sheet:8,9vd:login_landing:9",
+            "X-IG-SALT-IDS":
+                str(random.randint(1061162222, 1061262222)),
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
-            headers.update({
-                "IG-U-DS-USER-ID": str(self.user_id),
-                # Direct:
-                "IG-U-IG-DIRECT-REGION-HINT": f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
-                "IG-U-SHBID": f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
-                "IG-U-SHBTS": f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
-                "IG-U-RUR": f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
-            })
+            headers.update(
+                {
+                    "IG-U-DS-USER-ID":
+                        str(self.user_id),
+                    # Direct:
+                    "IG-U-IG-DIRECT-REGION-HINT":
+                        f"LLA,{self.user_id},{next_year}:01f7bae7d8b131877d8e0ae1493252280d72f6d0d554447cb1dc9049b6b2c507c08605b7",
+                    "IG-U-SHBID":
+                        f"12695,{self.user_id},{next_year}:01f778d9c9f7546cf3722578fbf9b85143cd6e5132723e5c93f40f55ca0459c8ef8a0d9f",
+                    "IG-U-SHBTS":
+                        f"{int(time.time())},{self.user_id},{next_year}:01f7ace11925d0388080078d0282b75b8059844855da27e23c90a362270fddfb3fae7e28",
+                    "IG-U-RUR":
+                        f"RVA,{self.user_id},{next_year}:01f7f627f9ae4ce2874b2e04463efdb184340968b1b006fa88cb4cc69a942a04201e544c",
+                }
+            )
         if self.ig_u_rur:
             headers.update({"IG-U-RUR": self.ig_u_rur})
         if self.ig_www_claim:
@@ -296,7 +334,8 @@ class PrivateRequestMixin:
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
-                self.private.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+                self.private.headers["Content-Type"
+                                    ] = "application/x-www-form-urlencoded; charset=UTF-8"
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
@@ -314,9 +353,7 @@ class PrivateRequestMixin:
                 print("============= URL ========")
                 print(api_url)
 
-                response = self.private.post(
-                    api_url, data=data, params=params
-                )
+                response = self.private.post(api_url, data=data, params=params)
             else:  # GET
                 self.private.headers.pop('Content-Type', None)
                 print("============= PROXY ========")
@@ -328,9 +365,7 @@ class PrivateRequestMixin:
                 print("============= URL ========")
                 print(api_url)
                 response = self.private.get(api_url, params=params)
-            self.logger.debug(
-                "private_request %s: %s", response.status_code, response.url
-            )
+            self.logger.debug("private_request %s: %s", response.status_code, response.url)
             mid = response.headers.get("ig-set-x-mid")
             if mid:
                 self.mid = mid
@@ -352,8 +387,7 @@ class PrivateRequestMixin:
                 response.text,
             )
             raise ClientJSONDecodeError(
-                "JSONDecodeError {0!s} while opening {1!s}".format(
-                    e, response.url),
+                f"JSONDecodeError {e!s} while opening {response.url!s}",
                 response=response,
             )
         except requests.HTTPError as e:
@@ -378,8 +412,7 @@ class PrivateRequestMixin:
                     raise FeedbackRequired(
                         **dict(
                             last_json,
-                            message="%s: %s"
-                            % (message, last_json.get("feedback_message")),
+                            message="{}: {}".format(message, last_json.get("feedback_message")),
                         )
                     )
                 elif error_type == "sentry_block":
@@ -403,8 +436,7 @@ class PrivateRequestMixin:
                 elif "Invalid media_id" in message:
                     raise InvalidMediaId(e, response=e.response, **last_json)
                 elif (
-                    "Media is unavailable" in message
-                    or "Media not found or unavailable" in message
+                    "Media is unavailable" in message or "Media not found or unavailable" in message
                 ):
                     raise MediaUnavailable(e, response=e.response, **last_json)
                 elif "has been deleted" in message:
@@ -426,26 +458,24 @@ class PrivateRequestMixin:
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
                 self.logger.exception(e)
                 self.logger.warning(
-                    "Status 400: %s", message or "Empty response message. Maybe enabled Two-factor auth?"
+                    "Status 400: %s", message or
+                    "Empty response message. Maybe enabled Two-factor auth?"
                 )
-                raise ClientBadRequestError(
-                    e, response=e.response, **last_json)
+                raise ClientBadRequestError(e, response=e.response, **last_json)
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
                 if "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
-                self.logger.warning(
-                    "Status 404: Endpoint %s does not exists", endpoint)
+                self.logger.warning("Status 404: Endpoint %s does not exists", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
                 raise ClientRequestTimeout(e, response=e.response, **last_json)
             raise ClientError(e, response=e.response, **last_json)
         except requests.ConnectionError as e:
-            raise ClientConnectionError(
-                "{e.__class__.__name__} {e}".format(e=e))
+            raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
         if last_json.get("status") == "fail":
             raise ClientError(response=response, **last_json)
         elif "error_title" in last_json:
@@ -539,6 +569,3 @@ class PrivateRequestMixin:
                     continue
                 return self._send_private_request(endpoint, **kwargs)
         return self.last_json
-
-
-

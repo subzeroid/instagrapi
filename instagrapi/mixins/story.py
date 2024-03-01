@@ -135,7 +135,10 @@ class StoryMixin:
         for userid_chunk in _userid_chunks():
             res = self.public_graphql_request(
                 query_hash="303a4ae99711322310f25250d988f3b7",
-                variables={"reel_ids": userid_chunk, "precomposed_overlay": False}
+                variables={
+                    "reel_ids": userid_chunk,
+                    "precomposed_overlay": False
+                }
             )
             stories_un.update(res)
         users = []
@@ -184,9 +187,7 @@ class StoryMixin:
         List[Story]
             A list of objects of Story
         """
-        params = {
-            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
-        }
+        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
         user_id = int(user_id)
         reel = self.private_request(f"feed/user/{user_id}/story/", params=params).get("reel") or {}
         stories = []
@@ -278,7 +279,7 @@ class StoryMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, """The URL must contain the path to the file (mp4 or jpg).\n"""\
             """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
-        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
+        filename = "{}.{}".format(filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -310,7 +311,9 @@ class StoryMixin:
             try:
                 if next_max_id:
                     params["max_id"] = next_max_id
-                result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
+                result = self.private_request(
+                    f"media/{story_pk}/list_reel_media_viewer/", params=params
+                )
                 for item in result['users']:
                     users.append(extract_user_short(item))
                 if amount and len(users) >= amount:

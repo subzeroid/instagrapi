@@ -8,6 +8,7 @@ class ReelsMixin:
     """
     Helpers for Reels
     """
+
     def feed(self, amount: int = None, next_max_id: str = None):
         nb_posts = 0
         data = {
@@ -24,9 +25,7 @@ class ReelsMixin:
                 break
             if next_max_id:
                 data["max_id"] = next_max_id
-            result = self.private_request(
-                "feed/timeline/", data=data, with_signature=False
-            )
+            result = self.private_request("feed/timeline/", data=data, with_signature=False)
 
             for item in result["feed_items"]:
                 media = item.get("media_or_ad")
@@ -75,9 +74,10 @@ class ReelsMixin:
         """
         return self.reels_timeline_media("explore_reels", amount, last_media_pk)
 
-    def reels_timeline_media(
-        self, collection_pk: str, amount: int = 10, last_media_pk: int = 0
-    ) -> List[Media]:
+    def reels_timeline_media(self,
+                             collection_pk: str,
+                             amount: int = 10,
+                             last_media_pk: int = 0) -> List[Media]:
         """
         Get reels timeline media in a collection
 
@@ -110,7 +110,7 @@ class ReelsMixin:
             try:
                 result = self.private_request(
                     private_request_endpoint,
-                    data = ' ',
+                    data=' ',
                     params={"max_id": next_max_id},
                 )
             except Exception as e:
@@ -122,7 +122,7 @@ class ReelsMixin:
                     return total_items
                 total_items.append(extract_media_v1(item.get("media")))
 
-            if not result.get('paging_info',{}).get("more_available"):
+            if not result.get('paging_info', {}).get("more_available"):
                 return total_items
 
-            next_max_id = result.get('paging_info',{}).get("more_available")
+            next_max_id = result.get('paging_info', {}).get("more_available")

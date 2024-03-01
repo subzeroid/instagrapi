@@ -64,12 +64,19 @@ class PreLoginFlowMixin:
             A boolean value
         """
         data = {
-            "android_device_id": self.android_device_id,
-            "client_contact_points": "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" % self.username,
-            "phone_id": self.phone_id,
-            "usages": '["account_recovery_omnibox"]',
-            "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
-            "device_id": self.uuid,
+            "android_device_id":
+                self.android_device_id,
+            "client_contact_points":
+                "[{\"type\":\"omnistring\",\"value\":\"%s\",\"source\":\"last_login_attempt\"}]" %
+                self.username,
+            "phone_id":
+                self.phone_id,
+            "usages":
+                '["account_recovery_omnibox"]',
+            "logged_in_user_ids":
+                "[]",  # "[\"123456789\",\"987654321\"]",
+            "device_id":
+                self.uuid,
         }
         # if login is False:
         data["_csrftoken"] = self.token
@@ -144,7 +151,9 @@ class PreLoginFlowMixin:
             "usage": usage,
             # "_csrftoken": self.token
         }
-        return self.private_request("accounts/contact_point_prefill/", data, login=True, retries_count=1)
+        return self.private_request(
+            "accounts/contact_point_prefill/", data, login=True, retries_count=1
+        )
 
 
 class PostLoginFlowMixin:
@@ -189,7 +198,8 @@ class PostLoginFlowMixin:
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
-            "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,"media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
+            "feed_view_info":
+                "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,"media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
             "phone_id": self.phone_id,
             "battery_level": random.randint(25, 100),
             "timezone_offset": str(self.timezone_offset),
@@ -236,7 +246,8 @@ class PostLoginFlowMixin:
             "timezone_offset": str(self.timezone_offset),
             "tray_session_id": self.tray_session_id,
             "request_id": self.request_id,
-            "latest_preloaded_reel_ids": "[]",  # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
+            "latest_preloaded_reel_ids":
+                "[]",  # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
             "page_size": 50,
             # "_csrftoken": self.token,
             "_uuid": self.uuid,
@@ -282,14 +293,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         if "cookies" in self.settings:
-            self.private.cookies = requests.utils.cookiejar_from_dict(
-                self.settings["cookies"]
-            )
+            self.private.cookies = requests.utils.cookiejar_from_dict(self.settings["cookies"])
         self.authorization_data = self.settings.get('authorization_data', {})
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(self.settings.get("timezone_offset", self.timezone_offset))
         self.set_device(self.settings.get("device_settings"))
-#        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
+        #        self.bloks_versioning_id = hashlib.sha256(json.dumps(self.device_settings).encode()).hexdigest()
         self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids", {}))
@@ -336,7 +345,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.cookie_dict["ds_user_id"] = user.pk
         return True
 
-    def login(self, username: str, password: str, relogin: bool = False, verification_code: str = '') -> bool:
+    def login(
+        self,
+        username: str,
+        password: str,
+        relogin: bool = False,
+        verification_code: str = ''
+    ) -> bool:
         """
         Login
 
@@ -377,16 +392,26 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             # and continues to log in (repeat this behavior)
         enc_password = self.password_encrypt(password)
         data = {
-            "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
-            "phone_id": self.phone_id,
-            "enc_password": enc_password,
-            "username": username,
-            "adid": self.advertising_id,
-            "guid": self.uuid,
-            "device_id": self.android_device_id,
-            "google_tokens": "[]",
-            "login_attempt_count": "0"
+            "jazoest":
+                generate_jazoest(self.phone_id),
+            "country_codes":
+                "[{\"country_code\":\"%d\",\"source\":[\"default\"]}]" % int(self.country_code),
+            "phone_id":
+                self.phone_id,
+            "enc_password":
+                enc_password,
+            "username":
+                username,
+            "adid":
+                self.advertising_id,
+            "guid":
+                self.uuid,
+            "device_id":
+                self.android_device_id,
+            "google_tokens":
+                "[]",
+            "login_attempt_count":
+                "0"
         }
         try:
             import logging
@@ -397,10 +422,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         except TwoFactorRequired as e:
             if not verification_code.strip():
-                raise TwoFactorRequired(f'{e} (you did not provide verification_code for login method)')
-            two_factor_identifier = self.last_json.get(
-                'two_factor_info', {}
-            ).get('two_factor_identifier')
+                raise TwoFactorRequired(
+                    f'{e} (you did not provide verification_code for login method)'
+                )
+            two_factor_identifier = self.last_json.get('two_factor_info',
+                                                       {}).get('two_factor_identifier')
             data = {
                 "verification_code": verification_code,
                 "phone_id": self.phone_id,
@@ -413,7 +439,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3"
             }
-            logged = self.private_request("accounts/two_factor_login/", data, login=True, retries_count=1)
+            logged = self.private_request(
+                "accounts/two_factor_login/", data, login=True, retries_count=1
+            )
             self.authorization_data = self.parse_authorization(
                 self.last_response.headers.get('ig-set-authorization')
             )
@@ -512,16 +540,17 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             Current session settings as a Dict
         """
         return {
-            "uuids": {
-                "phone_id": self.phone_id,
-                "uuid": self.uuid,
-                "client_session_id": self.client_session_id,
-                "advertising_id": self.advertising_id,
-                "android_device_id": self.android_device_id,
-                # "device_id": self.uuid,
-                "request_id": self.request_id,
-                "tray_session_id": self.tray_session_id,
-            },
+            "uuids":
+                {
+                    "phone_id": self.phone_id,
+                    "uuid": self.uuid,
+                    "client_session_id": self.client_session_id,
+                    "advertising_id": self.advertising_id,
+                    "android_device_id": self.android_device_id,
+                    # "device_id": self.uuid,
+                    "request_id": self.request_id,
+                    "tray_session_id": self.tray_session_id,
+                },
             "mid": self.mid,
             "ig_u_rur": self.ig_u_rur,
             "ig_www_claim": self.ig_www_claim,
@@ -562,7 +591,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             Current session settings as a Dict
         """
-        with open(path, 'r') as fp:
+        with open(path) as fp:
             self.set_settings(json.load(fp))
             return self.settings
         return None
@@ -718,12 +747,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return self.with_default_data({
-            "phone_id": self.phone_id,
-            "_uid": str(self.user_id),
-            "guid": self.uuid,
-            **data
-        })
+        return self.with_default_data(
+            {
+                "phone_id": self.phone_id,
+                "_uid": str(self.user_id),
+                "guid": self.uuid,
+                **data
+            }
+        )
 
     def with_default_data(self, data: Dict) -> Dict:
         """
@@ -781,9 +812,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         )
         return "{!s}\n{!s}\n".format(
             base64.b64encode(
-                hmac.new(
-                    key.encode("ascii"), data.encode("ascii"), digestmod=hashlib.sha256
-                ).digest()
+                hmac.new(key.encode("ascii"), data.encode("ascii"),
+                         digestmod=hashlib.sha256).digest()
             ),
             base64.b64encode(data.encode("ascii")),
         )
@@ -803,10 +833,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return False
 
     def logout(self) -> bool:
-        result = self.private_request(
-            "accounts/logout/",
-            {'one_tap_app_login': True}
-        )
+        result = self.private_request("accounts/logout/", {'one_tap_app_login': True})
         return result["status"] == "ok"
 
     def parse_authorization(self, authorization) -> dict:
@@ -825,8 +852,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
         """
         if self.authorization_data:
-            b64part = base64.b64encode(
-                dumps(self.authorization_data).encode()
-            ).decode()
+            b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
             return f'Bearer IGT:2:{b64part}'
         return ''

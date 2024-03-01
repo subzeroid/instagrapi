@@ -62,4 +62,3 @@ class ShareMixin:
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p]
         return parts.pop()
-

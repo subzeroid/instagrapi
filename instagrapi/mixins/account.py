@@ -26,15 +26,25 @@ class AccountMixin:
         """
         response = requests.post(
             "https://www.instagram.com/accounts/account_recovery_send_ajax/",
-            data={"email_or_username": username, "recaptcha_challenge_field": ""},
+            data={
+                "email_or_username": username,
+                "recaptcha_challenge_field": ""
+            },
             headers={
-                "x-requested-with": "XMLHttpRequest",
-                "x-csrftoken": gen_token(),
-                "Connection": "Keep-Alive",
-                "Accept": "*/*",
-                "Accept-Encoding": "gzip,deflate",
-                "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+                "x-requested-with":
+                    "XMLHttpRequest",
+                "x-csrftoken":
+                    gen_token(),
+                "Connection":
+                    "Keep-Alive",
+                "Accept":
+                    "*/*",
+                "Accept-Encoding":
+                    "gzip,deflate",
+                "Accept-Language":
+                    "en-US",
+                "User-Agent":
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
             },
             proxies=self.public.proxies,
         )
@@ -80,9 +90,7 @@ class AccountMixin:
             "can_add_additional_totp_seed": false
             }
         """
-        return self.private_request(
-            "accounts/account_security_info/", self.with_default_data({})
-        )
+        return self.private_request("accounts/account_security_info/", self.with_default_data({}))
 
     def account_edit(self, **data: Dict) -> Account:
         """
@@ -123,9 +131,7 @@ class AccountMixin:
             # Instagram original field-name for full user name is "first_name"
             data["first_name"] = full_name
         # Biography with entities (markup)
-        result = self.private_request(
-            "accounts/edit_profile/", self.with_default_data(data)
-        )
+        result = self.private_request("accounts/edit_profile/", self.with_default_data(data))
         biography = data.get("biography")
         if biography:
             self.account_set_biography(biography)
@@ -146,9 +152,7 @@ class AccountMixin:
             A boolean value
         """
         data = {"logged_in_uids": dumps([str(self.user_id)]), "raw_text": biography}
-        result = self.private_request(
-            "accounts/set_biography/", self.with_default_data(data)
-        )
+        result = self.private_request("accounts/set_biography/", self.with_default_data(data))
         return result["status"] == "ok"
 
     def account_change_picture(self, path: Path) -> UserShort:
@@ -168,7 +172,10 @@ class AccountMixin:
         upload_id, _, _ = self.photo_rupload(Path(path))
         result = self.private_request(
             "accounts/change_profile_picture/",
-            self.with_default_data({"use_fbuploader": True, "upload_id": upload_id}),
+            self.with_default_data({
+                "use_fbuploader": True,
+                "upload_id": upload_id
+            }),
         )
         return extract_user_short(result["user"])
 
@@ -185,9 +192,7 @@ class AccountMixin:
         -------
         dict
         """
-        return self.private_request(
-            "news/inbox/", params={"mark_as_seen": mark_as_seen}
-        )
+        return self.private_request("news/inbox/", params={"mark_as_seen": mark_as_seen})
 
     def send_confirm_email(self, email: str) -> dict:
         """
@@ -204,9 +209,10 @@ class AccountMixin:
         """
         return self.private_request(
             "accounts/send_confirm_email/",
-            self.with_extra_data(
-                {"send_source": "personal_information", "email": email}
-            ),
+            self.with_extra_data({
+                "send_source": "personal_information",
+                "email": email
+            }),
         )
 
     def send_confirm_phone_number(self, phone_number: str) -> dict:

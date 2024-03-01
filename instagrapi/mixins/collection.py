@@ -26,8 +26,10 @@ class CollectionMixin:
                 result = self.private_request(
                     "collections/list/",
                     params={
-                        "collection_types": '["ALL_MEDIA_AUTO_COLLECTION","PRODUCT_AUTO_COLLECTION","MEDIA"]',
-                        "max_id": next_max_id,
+                        "collection_types":
+                            '["ALL_MEDIA_AUTO_COLLECTION","PRODUCT_AUTO_COLLECTION","MEDIA"]',
+                        "max_id":
+                            next_max_id,
                     },
                 )
             except Exception as e:
@@ -93,9 +95,10 @@ class CollectionMixin:
         """
         return self.collection_medias("liked", amount, last_media_pk)
 
-    def collection_medias(
-        self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
-    ) -> List[Media]:
+    def collection_medias(self,
+                          collection_pk: str,
+                          amount: int = 21,
+                          last_media_pk: int = 0) -> List[Media]:
         """
         Get media in a collection by collection_pk
 
@@ -129,7 +132,10 @@ class CollectionMixin:
             try:
                 result = self.private_request(
                     private_request_endpoint,
-                    params={"include_igtv_preview": "false", "max_id": next_max_id},
+                    params={
+                        "include_igtv_preview": "false",
+                        "max_id": next_max_id
+                    },
                 )
             except Exception as e:
                 self.logger.exception(e)
@@ -173,9 +179,7 @@ class CollectionMixin:
         if collection_pk:
             data["added_collection_ids"] = f"[{int(collection_pk)}]"
         name = "unsave" if revert else "save"
-        result = self.private_request(
-            f"media/{media_id}/{name}/", self.with_action_data(data)
-        )
+        result = self.private_request(f"media/{media_id}/{name}/", self.with_action_data(data))
         return result["status"] == "ok"
 
     def media_unsave(self, media_id: str, collection_pk: int = None) -> bool:
