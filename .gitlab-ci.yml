@@ -1,0 +1,65 @@
+pre-commit:
+  image:
+    name: docker.heuritech.com/python:3.8.14
+  script:
+    - pip install -r ci-tools/pre-commit-requirements.txt
+    - export CONFIG_PATH="ci-tools/pre-commit.yml"
+    - export FILENAMES=$(git ls-files -- instagrapi/mixins)
+    - pre-commit install -c $CONFIG_PATH
+    - pre-commit run -c $CONFIG_PATH --files $FILENAMES
+  stage: ci-setup
+
+build-lib:
+  image:
+    name: docker.heuritech.com/python:3.8.14
+  script:
+    - ci-tools/install-poetry.sh
+    - source /venv/bin/activate
+    - poetry install --all-extras --with dev
+  stage: build
+
+test-unit:
+  image:
+    name: docker.heuritech.com/python:3.8.14
+  script:
+    - python3 -m pytest tests.py
+  stage: tests
+
+push-lib:
+  image:
+    name: docker.heuritech.com/python:3.8.14
+  script:
+    - ci-tools/install-poetry.sh
+    - source /venv/bin/activate
+    - poetry config repositories.htpipy $PYPI_REGISTRY_URI
+    - poetry build -f sdist
+    - poetry publish -r htpipy -u $PYPI_USERNAME -p $PYPI_PASSWORD
+  stage: push
+
+integration:push-lib:
+  extends:
+    - push-lib
+  variables:
+    PYPI_REGISTRY_URI: $PYPI_INTEGRATION_REGISTRY_URI
+    PYPI_USERNAME: $PYPI_INTEGRATION_USER
+    PYPI_PASSWORD: $PYPI_INTEGRATION_PASSWORD
+  only:
+    refs:
+    - merge_requests
+
+production:push-lib:
+  extends:
+    - push-lib
+  variables:
+    PYPI_REGISTRY_URI: $PYPI_PRODUCTION_REGISTRY_URI
+    PYPI_USERNAME: $PYPI_PRODUCTION_USER
+    PYPI_PASSWORD: $PYPI_PRODUCTION_PASSWORD
+  only:
+    refs:
+    - master
+
+stages:
+  - ci-setup
+  - build
+  - tests
+  - push

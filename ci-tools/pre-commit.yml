@@ -1,0 +1,65 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+    -   id: trailing-whitespace
+        args: # https://github.com/pre-commit/pre-commit-hooks/issues/392
+        - --markdown-linebreak-ext=md,markdown
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+        exclude: ".*/cloud-init-template.yml"
+    -   id: check-json
+    -   id: check-added-large-files
+        exclude_types: [png, jpeg, json, csv]
+        exclude: ".*\\.ndjson"
+    -   id: check-byte-order-marker  # Forbid UTF-8 byte-order markers
+    # Check for files with names that would conflict on a case-insensitive
+    # filesystem like MacOS HFS+ or Windows FAT.
+    -   id: check-case-conflict
+    -   id: mixed-line-ending
+    -   id: check-ast  # Is it valid Python?
+    # Check for debugger imports and py37+ breakpoint() calls
+    # in python source.
+    -   id: debug-statements
+        exclude: ".*/manual/.*"
+    -   id: detect-aws-credentials
+        args:
+        - --allow-missing-credentials # when running on CI, no credential file is present
+    -   id: detect-private-key
+
+# Remove unused imports
+# Can be deactivated by adding a `# nopycln: import` at the end of line, or `# nopycln: file` for a
+# whole file
+-   repo: https://github.com/hadialqattan/pycln
+    rev: v1.3.2
+    hooks:
+    -   id: pycln
+        exclude: (__init__.py)
+        args:
+            - --all
+
+    # upgrade syntax for newer versions of the language
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v2.7.2
+    hooks:
+    -   id: pyupgrade
+        args: [--py38-plus]
+
+
+    # You should add new libs here to split lib imports from external imports
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    -   id: isort
+        name: isort
+
+-   repo: https://github.com/pre-commit/mirrors-yapf
+    rev: v0.30.0
+    hooks:
+    -   id: yapf
+        name: yapf
+        args:
+            - -i
+            - --style=ci-tools/pre-commit/style.yapf
