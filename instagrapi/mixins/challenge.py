@@ -1,19 +1,20 @@
 import hashlib
 import json
+import logging
 import random
 import time
+import urllib
 from enum import Enum
 from typing import Dict
+
 import requests
-import urllib
-import logging
 
 from instagrapi.exceptions import (
     ChallengeError,
+    ChallengeHackedLock,
     ChallengeRedirection,
     ChallengeRequired,
     ChallengeSelfieCaptcha,
-    ChallengeHackedLock,
     ChallengeUnknownStep,
     LegacyForceSetNewPasswordForm,
     RecaptchaChallengeForm,

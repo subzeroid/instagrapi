@@ -22,7 +22,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     GenericRequestError,
 )
-from instagrapi.utils import json_value, build_curl
+from instagrapi.utils import build_curl, json_value
 
 
 class PublicRequestMixin:

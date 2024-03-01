@@ -7,9 +7,16 @@ import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from instagrapi.exceptions import (
-    BadPassword, ReloginAttemptExceeded, ChallengeRequired, SelectContactPointRecoveryForm,
-    RecaptchaChallengeForm, FeedbackRequired, PleaseWaitFewMinutes, LoginRequired,
-    ClientBadRequestError, ClientError
+    BadPassword,
+    ChallengeRequired,
+    ClientBadRequestError,
+    ClientError,
+    FeedbackRequired,
+    LoginRequired,
+    PleaseWaitFewMinutes,
+    RecaptchaChallengeForm,
+    ReloginAttemptExceeded,
+    SelectContactPointRecoveryForm,
 )
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin

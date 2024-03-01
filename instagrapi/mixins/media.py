@@ -1,7 +1,7 @@
 import json
+import logging
 import random
 import time
-import logging
 from copy import deepcopy
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -22,7 +22,7 @@ from instagrapi.extractors import (
 )
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
-import logging
+
 
 class MediaMixin:
     """
@@ -242,7 +242,7 @@ class MediaMixin:
             raise e
         return extract_media_v1(result["items"].pop())
 
-    def media_info(self, media_pk: int, use_cache: bool = True) -> Media:
+    def media_info(self, media_pk: int, use_cache: bool = True, want_location_with_detail: bool = True) -> Media:
         """
         Get Media Information from PK
 

@@ -1,12 +1,12 @@
-import simplejson
 import json
 import logging
 import random
 import time
-from json.decoder import JSONDecodeError
 import traceback
+from json.decoder import JSONDecodeError
 
 import requests
+import simplejson
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -21,21 +21,21 @@ from instagrapi.exceptions import (
     ClientRequestTimeout,
     ClientThrottledError,
     FeedbackRequired,
+    InvalidMediaId,
+    InvalidTargetUser,
     LoginRequired,
+    MediaUnavailable,
     PleaseWaitFewMinutes,
+    PrivateAccount,
+    ProxyAddressIsBlocked,
     RateLimitError,
     SentryBlock,
     TwoFactorRequired,
     UnknownError,
-    VideoTooLongException,
-    PrivateAccount,
     UserNotFound,
-    ProxyAddressIsBlocked,
-    InvalidTargetUser,
-    InvalidMediaId,
-    MediaUnavailable,
+    VideoTooLongException,
 )
-from instagrapi.utils import dumps, generate_signature, build_curl
+from instagrapi.utils import build_curl, dumps, generate_signature
 
 
 def manual_input_code(self, username: str, choice=None):

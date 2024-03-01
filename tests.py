@@ -3,6 +3,7 @@ import os
 import os.path
 import random
 import unittest
+from copy import deepcopy
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -134,22 +135,22 @@ class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
                 self.assertEqual(obj[key], value)
 
     def test_media_info_gql(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BXkcxLoBOdj")
         m = self.cl.media_info_gql(media_pk)
         self.assertIsInstance(m, Media)
         media = {
-            'pk': 1532130876531694688,
-            'id': '1532130876531694688_1903424587',
-            'code': 'BVDOOolFFxg',
-            'taken_at': datetime(2017, 6, 7, 19, 37, 35, tzinfo=UTC()),
+            'pk': '1577512294525757283',
+            'id': '1577512294525757283_3413736724',
+            'code': 'BXkcxLoBOdj',
+            'taken_at': datetime(2017, 8, 9, 10, 22, 21, tzinfo=UTC()),
             'media_type': 1,
             'product_type': '',
             'thumbnail_url': 'https://...',
             'location': None,
-            'comment_count': 6,
-            'like_count': 79,
+            'comment_count': 0,
+            'like_count': 2,
             'has_liked': None,
-            'caption_text': '#creepy #creepyclothing',
+            'caption_text': 'Freedom in his eyes \nLike a king on his high throne, \nSilver in his claws',
             'usertags': [],
             'video_url': None,
             'view_count': 0,
@@ -159,9 +160,9 @@ class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
         }
         self.assertDict(m.dict(), media)
         user = {
-            'pk': 1903424587,
-            'username': 'adw0rd',
-            'full_name': 'Mikhail Andreev',
+            'pk': '3413736724',
+            'username': 'merci_flo',
+            'full_name': 'Florent Mercier',
             'profile_pic_url': 'https://...',
         }
         self.assertDict(m.user.dict(), user)
@@ -242,6 +243,7 @@ class ClientTestCase(unittest.TestCase):
             "locale": "en_US",
             "timezone_offset": 3600,  # London, GMT+1
         }
+        source_settings = deepcopy(settings)
         device = {
             "app_version": "165.1.0.20.119",
             "android_version": 27,
@@ -274,10 +276,12 @@ class ClientTestCase(unittest.TestCase):
         self.assertEqual(cl.get_settings()["user_agent"], "TEST")
         cl.set_device(device)  # change device
         self.assertDictEqual(cl.get_settings()["device_settings"], device)
-        cl.set_settings(settings)  # load source settings
-        check("UK", "en_US", 3600)
-        self.assertEqual(cl.get_settings()["user_agent"], settings["user_agent"])
-        self.assertEqual(cl.get_settings()["device_settings"], settings["device_settings"])
+        cl.set_settings(source_settings)  # load source settings
+        # when set_settings is called, the init method is called as well, which leads to reset of several settings
+        #country settings are overridden by locale, in this case en_US leads to US
+        check("US", "en_US", 3600)
+        self.assertEqual(cl.get_settings()["user_agent"], source_settings["user_agent"])
+        self.assertEqual(cl.get_settings()["device_settings"], source_settings["device_settings"])
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):
