@@ -27,31 +27,33 @@ class CommentMixin:
         List[Comment]
             A list of objects of Comment
         """
+
         # TODO: to public or private
         def get_comments():
             if result.get("comments"):
                 for comment in result.get("comments"):
                     comments.append(extract_comment(comment))
+
         media_id = self.media_id(media_id)
         params = None
         comments = []
-        result = self.private_request(
-            f"media/{media_id}/comments/", params
-        )
+        result = self.private_request(f"media/{media_id}/comments/", params)
         get_comments()
-        while ((result.get("has_more_comments") and result.get("next_max_id"))
-               or (result.get("has_more_headload_comments") and result.get("next_min_id"))):
+        while (
+            (result.get("has_more_comments") and result.get("next_max_id")) or
+            (result.get("has_more_headload_comments") and result.get("next_min_id"))
+        ):
             try:
                 if result.get("has_more_comments"):
                     params = {"max_id": result.get("next_max_id")}
                 else:
                     params = {"min_id": result.get("next_min_id")}
-                if not (result.get("next_max_id") or result.get("next_min_id")
-                        or result.get("comments")):
+                if not (
+                    result.get("next_max_id") or result.get("next_min_id") or
+                    result.get("comments")
+                ):
                     break
-                result = self.private_request(
-                    f"media/{media_id}/comments/", params
-                )
+                result = self.private_request(f"media/{media_id}/comments/", params)
                 get_comments()
             except ClientNotFoundError as e:
                 raise MediaNotFound(e, media_id=media_id, **self.last_json)
@@ -65,7 +67,9 @@ class CommentMixin:
             comments = comments[:amount]
         return comments
 
-    def media_comment(self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None) -> Comment:
+    def media_comment(
+        self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None
+    ) -> Comment:
         """
         Post a comment on a media
 
@@ -166,7 +170,6 @@ class CommentMixin:
             "container_module": "self_comments_v2_newsfeed_you"
         }
         result = self.private_request(
-            f"media/{media_id}/comment/bulk_delete/",
-            self.with_action_data(data)
+            f"media/{media_id}/comment/bulk_delete/", self.with_action_data(data)
         )
         return result["status"] == "ok"

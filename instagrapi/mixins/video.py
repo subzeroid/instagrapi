@@ -6,27 +6,14 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
-
 from instagrapi import config
 from instagrapi.exceptions import (
-    VideoConfigureError,
-    VideoConfigureStoryError,
-    VideoNotDownload,
-    VideoNotUpload,
+    VideoConfigureError, VideoConfigureStoryError, VideoNotDownload, VideoNotUpload
 )
 from instagrapi.extractors import extract_direct_message, extract_media_v1
 from instagrapi.types import (
-    DirectMessage,
-    Location,
-    Media,
-    Story,
-    StoryHashtag,
-    StoryLink,
-    StoryLocation,
-    StoryMedia,
-    StoryMention,
-    StorySticker,
-    Usertag,
+    DirectMessage, Location, Media, Story, StoryHashtag, StoryLink, StoryLocation, StoryMedia,
+    StoryMention, StorySticker, Usertag
 )
 from instagrapi.utils import date_time_original, dumps
 
@@ -54,14 +41,10 @@ class DownloadVideoMixin:
         """
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
-        filename = "{username}_{media_pk}".format(
-            username=media.user.username, media_pk=media_pk
-        )
+        filename = f"{media.user.username}_{media_pk}"
         return self.video_download_by_url(media.video_url, filename, folder)
 
-    def video_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> Path:
+    def video_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download video using URL
 
@@ -81,7 +64,7 @@ class DownloadVideoMixin:
             Path for the file downloaded
         """
         fname = urlparse(url).path.rsplit("/", 1)[1]
-        filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
+        filename = "{}.{}".format(filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
         response = requests.get(url, stream=True)
         response.raise_for_status()
@@ -95,10 +78,8 @@ class DownloadVideoMixin:
             f.write(response.content)
             f.close()
         return path.resolve()
-    
-    def video_download_by_url_origin(
-        self, url: str
-    ) -> bytes:
+
+    def video_download_by_url_origin(self, url: str) -> bytes:
         """
         Download video using URL
 
@@ -293,10 +274,7 @@ class UploadVideoMixin:
                     media = configured.get("media")
                     self.expose()
                     return extract_media_v1(media)
-        raise VideoConfigureError(
-            response=self.last_response,
-            **self.last_json
-        )
+        raise VideoConfigureError(response=self.last_response, **self.last_json)
 
     def video_configure(
         self,
@@ -340,9 +318,7 @@ class UploadVideoMixin:
             A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             "multi_sharing": "1",
             "creation_logger_session_id": self.client_session_id,
@@ -356,15 +332,19 @@ class UploadVideoMixin:
             "filter_type": "0",
             "date_time_original": date_time_original(time.localtime()),
             "timezone_offset": str(self.timezone_offset),
-            "clips": [{"length": duration, "source_type": "4"}],
-            "extra": {"source_width": width, "source_height": height},
+            "clips": [{
+                "length": duration,
+                "source_type": "4"
+            }],
+            "extra": {
+                "source_width": width,
+                "source_height": height
+            },
             "device": self.device,
             "caption": caption,
             **extra_data
         }
-        return self.private_request(
-            "media/configure/?video=1", self.with_default_data(data)
-        )
+        return self.private_request("media/configure/?video=1", self.with_default_data(data))
 
     def video_upload_to_story(
         self,
@@ -456,9 +436,7 @@ class UploadVideoMixin:
                     medias=medias,
                     **extract_media_v1(media).dict()
                 )
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
     def video_configure_to_story(
         self,
@@ -545,37 +523,56 @@ class UploadVideoMixin:
             # "is_segmented_video": "1",  # SEGMENT MODE
             # ---------------------------------
             # COMMON properties:
-            "_uid": str(self.user_id),
-            "supported_capabilities_new": dumps(config.SUPPORTED_CAPABILITIES),
-            "has_original_sound": "1",
-            "filter_type": "0",
-            "camera_session_id": self.client_session_id,
-            "camera_entry_point": str(random.randint(35, 164)),
-            "composition_id": self.generate_uuid(),
+            "_uid":
+                str(self.user_id),
+            "supported_capabilities_new":
+                dumps(config.SUPPORTED_CAPABILITIES),
+            "has_original_sound":
+                "1",
+            "filter_type":
+                "0",
+            "camera_session_id":
+                self.client_session_id,
+            "camera_entry_point":
+                str(random.randint(35, 164)),
+            "composition_id":
+                self.generate_uuid(),
             # "camera_make": self.device_settings.get("manufacturer", "Xiaomi"),
             # "camera_model": self.device_settings.get("model", "MI+5s"),
-            "timezone_offset": str(self.timezone_offset),
-            "client_timestamp": str(timestamp),
-            "client_shared_at": str(timestamp - 7),  # 7 seconds ago
+            "timezone_offset":
+                str(self.timezone_offset),
+            "client_timestamp":
+                str(timestamp),
+            "client_shared_at":
+                str(timestamp - 7),  # 7 seconds ago
             # "imported_taken_at": str(timestamp - 5 * 24 * 3600),  # 5 days ago
-            "date_time_original": date_time_original(time.localtime()),
+            "date_time_original":
+                date_time_original(time.localtime()),
             # "date_time_digitalized": date_time_original(time.localtime()),
             # "story_sticker_ids": "",
             # "media_folder": "Camera",
-            "configure_mode": "1",
+            "configure_mode":
+                "1",
             # "configure_mode": "2", <- when direct
-            "source_type": "3",  # "3"
-            "video_result": "",
-            "creation_surface": "camera",
+            "source_type":
+                "3",  # "3"
+            "video_result":
+                "",
+            "creation_surface":
+                "camera",
             # "software": config.SOFTWARE.format(**self.device_settings),
             # "caption": caption,
-            "capture_type": "normal",
+            "capture_type":
+                "normal",
             # "rich_text_format_types": '["classic_v2"]',  # default, typewriter
-            "upload_id": upload_id,
+            "upload_id":
+                upload_id,
             # "scene_capture_type": "standard",
             # "scene_type": "",
-            "original_media_type": "video",
-            "camera_position": "back",
+            "original_media_type":
+                "video",
+            "camera_position":
+                "back",
             # Facebook Sharing Part:
             # "xpost_surface": "auto_xpost",
             # "share_to_fb_destination_type": "USER",
@@ -583,9 +580,15 @@ class UploadVideoMixin:
             # "share_to_facebook":"1",
             # "fb_access_token":"EAABwzLixnjYBACVgqBfLyDuPWs6RN2sTZC........cnNkjHCH2",
             # "attempt_id": str(uuid4()),
-            "device": self.device,
-            "length": duration,
-            "clips": [{"length": duration, "source_type": "3", "camera_position": "back"}],
+            "device":
+                self.device,
+            "length":
+                duration,
+            "clips": [{
+                "length": duration,
+                "source_type": "3",
+                "camera_position": "back"
+            }],
             # "edits": {
             #     "filter_type": 0,
             #     "filter_strength": 1.0,
@@ -593,18 +596,26 @@ class UploadVideoMixin:
             #     # "crop_center": [0, 0],
             #     # "crop_zoom": 1
             # },
-            "media_transformation_info": dumps({
-                "width": str(width),
-                "height": str(height),
-                "x_transform": "0",
-                "y_transform": "0",
-                "zoom": "1.0",
-                "rotation": "0.0",
-                "background_coverage": "0.0"
-            }),
-            "extra": {"source_width": width, "source_height": height},
-            "audio_muted": False,
-            "poster_frame_index": 0,
+            "media_transformation_info":
+                dumps(
+                    {
+                        "width": str(width),
+                        "height": str(height),
+                        "x_transform": "0",
+                        "y_transform": "0",
+                        "zoom": "1.0",
+                        "rotation": "0.0",
+                        "background_coverage": "0.0"
+                    }
+                ),
+            "extra": {
+                "source_width": width,
+                "source_height": height
+            },
+            "audio_muted":
+                False,
+            "poster_frame_index":
+                0,
             # "app_attribution_android_namespace": "",
         }
         data.update(extra_data)
@@ -682,11 +693,13 @@ class UploadVideoMixin:
         if links:
             # instagram allow one link now
             link = links[0]
-            self.private_request("media/validate_reel_url/", {
-                "url": str(link.webUri),
-                "_uid": str(self.user_id),
-                "_uuid": str(self.uuid),
-            })
+            self.private_request(
+                "media/validate_reel_url/", {
+                    "url": str(link.webUri),
+                    "_uid": str(self.user_id),
+                    "_uuid": str(self.uuid),
+                }
+            )
             stickers.append(
                 StorySticker(
                     type="story_link",
@@ -710,19 +723,21 @@ class UploadVideoMixin:
                 if sticker.id:
                     sticker_extra["str_id"] = sticker.id
                     story_sticker_ids.append(sticker.id)
-                tap_models.append({
-                    "x": round(sticker.x, 7),
-                    "y": round(sticker.y, 7),
-                    "z": sticker.z,
-                    "width": round(sticker.width, 7),
-                    "height": round(sticker.height, 7),
-                    "rotation": sticker.rotation,
-                    "type": sticker.type,
-                    "is_sticker": True,
-                    "selected_index": 0,
-                    "tap_state": 0,
-                    **sticker_extra
-                })
+                tap_models.append(
+                    {
+                        "x": round(sticker.x, 7),
+                        "y": round(sticker.y, 7),
+                        "z": sticker.z,
+                        "width": round(sticker.width, 7),
+                        "height": round(sticker.height, 7),
+                        "rotation": sticker.rotation,
+                        "type": sticker.type,
+                        "is_sticker": True,
+                        "selected_index": 0,
+                        "tap_state": 0,
+                        **sticker_extra
+                    }
+                )
                 if sticker.type == "gif":
                     data["has_animated_sticker"] = "1"
         if medias:
@@ -751,25 +766,39 @@ class UploadVideoMixin:
         if thread_ids:
             # Send to direct thread
             token = self.generate_mutation_token()
-            data.update({
-                "configure_mode": "2",
-                "allow_multi_configures": "1",
-                "client_context": token,
-                "is_shh_mode": "0",
-                "mutation_token": token,
-                "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
-                "recipient_users": "[]",
-                "send_attribution": "direct_story_audience_picker",
-                "thread_ids": dumps([str(tid) for tid in thread_ids]),
-                "view_mode": "replayable"
-            })
+            data.update(
+                {
+                    "configure_mode":
+                        "2",
+                    "allow_multi_configures":
+                        "1",
+                    "client_context":
+                        token,
+                    "is_shh_mode":
+                        "0",
+                    "mutation_token":
+                        token,
+                    "nav_chain":
+                        "1qT:feed_timeline:1,1qT:feed_timeline:7,ReelViewerFragment:reel_feed_timeline:21,5HT:attribution_quick_camera_fragment:22,4ji:reel_composer_preview:23,8wg:direct_story_audience_picker:24,4ij:reel_composer_camera:25,ReelViewerFragment:reel_feed_timeline:26",
+                    "recipient_users":
+                        "[]",
+                    "send_attribution":
+                        "direct_story_audience_picker",
+                    "thread_ids":
+                        dumps([str(tid) for tid in thread_ids]),
+                    "view_mode":
+                        "replayable"
+                }
+            )
         if tap_models:
             data["tap_models"] = dumps(tap_models)
         if static_models:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = story_sticker_ids[0]
-        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
+        return self.private_request(
+            "media/configure_to_story/?video=1", self.with_default_data(data)
+        )
 
     def video_upload_to_direct(
         self,
@@ -837,9 +866,7 @@ class UploadVideoMixin:
                 raise e
             if configured and thread_ids:
                 return extract_direct_message(configured.get("message_metadata", [])[0])
-        raise VideoConfigureStoryError(
-            response=self.last_response, **self.last_json
-        )
+        raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
 
 def analyze_video(path: Path, thumbnail: Path = None) -> tuple:

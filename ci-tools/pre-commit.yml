@@ -62,4 +62,4 @@ repos:
         name: yapf
         args:
             - -i
-            - --style=ci-tools/pre-commit/style.yapf
+            - --style=ci-tools/pre-commit-style.yapf

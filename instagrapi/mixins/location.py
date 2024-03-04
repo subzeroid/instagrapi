@@ -129,7 +129,8 @@ class LocationMixin:
             An object of Location
         """
         try:
-            data = self.public_a1_request(f"/explore/locations/{location_pk}/").get("native_location_data")
+            data = self.public_a1_request(f"/explore/locations/{location_pk}/"
+                                         ).get("native_location_data")
             if not data.get("location_info"):
                 raise LocationNotFound(location_pk=location_pk, **data)
             return extract_location(data["location_info"])
@@ -178,7 +179,12 @@ class LocationMixin:
         return location
 
     def location_medias_a1_chunk(
-        self, location_pk: int, max_amount: int = 24, sleep: float = 0.5, tab_key: str = "", max_id: str = None
+        self,
+        location_pk: int,
+        max_amount: int = 24,
+        sleep: float = 0.5,
+        tab_key: str = "",
+        max_id: str = None
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias and end_cursor by Public Web API
@@ -232,7 +238,11 @@ class LocationMixin:
         return medias, end_cursor
 
     def location_medias_a1(
-        self, location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = ""
+        self,
+        location_pk: int,
+        amount: int = 24,
+        sleep: float = 0.5,
+        tab_key: str = ""
     ) -> List[Media]:
         """
         Get medias for a location
@@ -260,7 +270,11 @@ class LocationMixin:
         return medias
 
     def location_medias_v1_chunk(
-        self, location_pk: int, max_amount: int = 63, tab_key: str = "", max_id: str = None
+        self,
+        location_pk: int,
+        max_amount: int = 63,
+        tab_key: str = "",
+        max_id: str = None
     ) -> Tuple[List[Media], str]:
         """
         Get chunk of medias for a location and max_id (cursor) by Private Mobile API
@@ -282,11 +296,7 @@ class LocationMixin:
             List of objects of Media and max_id
         """
         assert tab_key in tab_keys_v1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
-        data = {
-            "_uuid": self.uuid,
-            "session_id": self.client_session_id,
-            "tab": tab_key
-        }
+        data = {"_uuid": self.uuid, "session_id": self.client_session_id, "tab": tab_key}
         medias = []
         while True:
             result = self.private_request(
@@ -309,9 +319,10 @@ class LocationMixin:
             max_id = result["next_max_id"]
         return medias, max_id
 
-    def location_medias_v1(
-        self, location_pk: int, amount: int = 63, tab_key: str = ""
-    ) -> List[Media]:
+    def location_medias_v1(self,
+                           location_pk: int,
+                           amount: int = 63,
+                           tab_key: str = "") -> List[Media]:
         """
         Get medias for a location by Private Mobile API
 
@@ -335,9 +346,10 @@ class LocationMixin:
             medias = medias[:amount]
         return medias
 
-    def location_medias_top_a1(
-        self, location_pk: int, amount: int = 9, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_top_a1(self,
+                               location_pk: int,
+                               amount: int = 9,
+                               sleep: float = 0.5) -> List[Media]:
         """
         Get top medias for a location
 
@@ -359,9 +371,7 @@ class LocationMixin:
             location_pk, amount, sleep=sleep, tab_key="edge_location_to_top_posts"
         )
 
-    def location_medias_top_v1(
-        self, location_pk: int, amount: int = 21
-    ) -> List[Media]:
+    def location_medias_top_v1(self, location_pk: int, amount: int = 21) -> List[Media]:
         """
         Get top medias for a location
 
@@ -379,9 +389,10 @@ class LocationMixin:
         """
         return self.location_medias_v1(location_pk, amount, tab_key="ranked")
 
-    def location_medias_top(
-        self, location_pk: int, amount: int = 27, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_top(self,
+                            location_pk: int,
+                            amount: int = 27,
+                            sleep: float = 0.5) -> List[Media]:
         """
         Get top medias for a location
 
@@ -408,9 +419,10 @@ class LocationMixin:
             #     self.logger.exception(e)
             return self.location_medias_top_v1(location_pk, amount)
 
-    def location_medias_recent_a1(
-        self, location_pk: int, amount: int = 24, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_recent_a1(self,
+                                  location_pk: int,
+                                  amount: int = 24,
+                                  sleep: float = 0.5) -> List[Media]:
         """
         Get recent medias for a location
 
@@ -432,9 +444,7 @@ class LocationMixin:
             location_pk, amount, sleep=sleep, tab_key="edge_location_to_media"
         )
 
-    def location_medias_recent_v1(
-        self, location_pk: int, amount: int = 63
-    ) -> List[Media]:
+    def location_medias_recent_v1(self, location_pk: int, amount: int = 63) -> List[Media]:
         """
         Get recent medias for a location
 
@@ -452,9 +462,10 @@ class LocationMixin:
         """
         return self.location_medias_v1(location_pk, amount, tab_key="recent")
 
-    def location_medias_recent(
-        self, location_pk: int, amount: int = 63, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_recent(self,
+                               location_pk: int,
+                               amount: int = 63,
+                               sleep: float = 0.5) -> List[Media]:
         """
         Get recent medias for a location
 

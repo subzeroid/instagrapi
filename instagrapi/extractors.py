@@ -31,6 +31,8 @@ MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVi
 
 
 import logging
+
+
 def extract_media_v1(data):
     """Extract media from Private API"""
     media = deepcopy(data)

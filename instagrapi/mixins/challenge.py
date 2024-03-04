@@ -1,24 +1,17 @@
 import hashlib
 import json
+import logging
 import random
 import time
+import urllib
 from enum import Enum
 from typing import Dict
-import requests
-import urllib
-import logging
 
+import requests
 from instagrapi.exceptions import (
-    ChallengeError,
-    ChallengeRedirection,
-    ChallengeRequired,
-    ChallengeSelfieCaptcha,
-    ChallengeHackedLock,
-    ChallengeUnknownStep,
-    LegacyForceSetNewPasswordForm,
-    RecaptchaChallengeForm,
-    SelectContactPointRecoveryForm,
-    SubmitPhoneNumberForm,
+    ChallengeError, ChallengeHackedLock, ChallengeRedirection, ChallengeRequired,
+    ChallengeSelfieCaptcha, ChallengeUnknownStep, LegacyForceSetNewPasswordForm,
+    RecaptchaChallengeForm, SelectContactPointRecoveryForm, SubmitPhoneNumberForm
 )
 
 WAIT_SECONDS = 5
@@ -59,12 +52,14 @@ class ChallengeResolveMixin:
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
             if not challenge_context:
-                challenge_context = json.dumps({
-                    "step_name": "",
-                    "nonce_code": nonce_code,
-                    "user_id": int(user_id),
-                    "is_stateless": False
-                })
+                challenge_context = json.dumps(
+                    {
+                        "step_name": "",
+                        "nonce_code": nonce_code,
+                        "user_id": int(user_id),
+                        "is_stateless": False
+                    }
+                )
             params = {
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
@@ -121,20 +116,32 @@ class ChallengeResolveMixin:
         session.proxies = self.private.proxies
         session.headers.update(
             {
-                "User-Agent": "Mozilla/5.0 (Linux; Android 8.0.0; MI 5s Build/OPR1.170623.032; wv) "
-                              "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.149 "
-                              "Mobile Safari/537.36 %s" % self.user_agent,
-                "upgrade-insecure-requests": "1",
-                "sec-fetch-dest": "document",
-                "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                "x-requested-with": "com.instagram.android",
-                "sec-fetch-site": "none",
-                "sec-fetch-mode": "navigate",
-                "sec-fetch-user": "?1",
-                "accept-encoding": "gzip, deflate",
-                "accept-language": "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
-                "pragma": "no-cache",
-                "cache-control": "no-cache",
+                "User-Agent":
+                    "Mozilla/5.0 (Linux; Android 8.0.0; MI 5s Build/OPR1.170623.032; wv) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/80.0.3987.149 "
+                    "Mobile Safari/537.36 %s" % self.user_agent,
+                "upgrade-insecure-requests":
+                    "1",
+                "sec-fetch-dest":
+                    "document",
+                "accept":
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "x-requested-with":
+                    "com.instagram.android",
+                "sec-fetch-site":
+                    "none",
+                "sec-fetch-mode":
+                    "navigate",
+                "sec-fetch-user":
+                    "?1",
+                "accept-encoding":
+                    "gzip, deflate",
+                "accept-language":
+                    "en-US,en;q=0.9,en-US;q=0.8,en;q=0.7",
+                "pragma":
+                    "no-cache",
+                "cache-control":
+                    "no-cache",
             }
         )
         for key, value in self.private.cookies.items():
@@ -170,12 +177,16 @@ class ChallengeResolveMixin:
             data = f"params={urllib.parse.quote(json.dumps(params))}&nest_data_manifest=true"
             self._send_private_request(endpoint, data=data, with_signature=False)
             components = search_params_in_components(
-                self.last_json["layout"]["bloks_payload"]["tree"]["bk.components.screen.Wrapper"][
-                    "content"]["bk.components.Flexbox"])
-            for clean in ["bk.action.i64.Const", "bk.action.map.Make", "bk.action.array.Make", "bk.action.core.GetArg",
-                          "bk.action.bloks.AsyncActionWithDataManifest", "bk.action.bloks.ReplaceChildren",
-                          "bk.action.core.TakeLast", "bk.action.core.FuncConst", "bk.action.i32.Const",
-                          "bk.action.bloks.InflateSync", "bk.action.string.JsonEncode"]:
+                self.last_json["layout"]["bloks_payload"]["tree"]["bk.components.screen.Wrapper"]
+                ["content"]["bk.components.Flexbox"]
+            )
+            for clean in [
+                "bk.action.i64.Const", "bk.action.map.Make", "bk.action.array.Make",
+                "bk.action.core.GetArg", "bk.action.bloks.AsyncActionWithDataManifest",
+                "bk.action.bloks.ReplaceChildren", "bk.action.core.TakeLast",
+                "bk.action.core.FuncConst", "bk.action.i32.Const", "bk.action.bloks.InflateSync",
+                "bk.action.string.JsonEncode"
+            ]:
                 components = components.replace(clean + ",", "").replace(clean, "")
             components = json.loads(components.replace("(", "[").replace(")", "]"))[-1]
 
@@ -184,8 +195,9 @@ class ChallengeResolveMixin:
 
             data = f"params={urllib.parse.quote(json.dumps(params))}&nest_data_manifest=true"
             self._send_private_request(endpoint, data=data, with_signature=False)
-            logging.info(f"{self.last_response.status_code}: {challenge_url}: {self.last_response.content}")
-
+            logging.info(
+                f"{self.last_response.status_code}: {challenge_url}: {self.last_response.content}"
+            )
 
         for retry in range(8):
             logging.info(f"retry: {retry}")
@@ -231,8 +243,8 @@ class ChallengeResolveMixin:
             result = session.post(challenge_url, {"security_code": code}).json()
             result = result.get("challenge", result)
             if (
-                    "Please check the code we sent you and try again"
-                    not in (result.get("errors") or [""])[0]
+                "Please check the code we sent you and try again"
+                not in (result.get("errors") or [""])[0]
             ):
                 break
         # FORM TO APPROVE CONTACT DATA
@@ -250,8 +262,8 @@ class ChallengeResolveMixin:
         # CHECK ACCOUNT DATA
         for detail in [self.username, self.email, self.phone_number]:
             assert (
-                    not detail or detail in details
-            ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
+                not detail or detail in details
+            ), f'ChallengeResolve: Data invalid: "{detail}" not in {details}'
         time.sleep(WAIT_SECONDS)
         result = session.post(
             "https://i.instagram.com%s" % result.get("navigation").get("forward"),
@@ -268,10 +280,12 @@ class ChallengeResolveMixin:
         return True
 
     def challenge_resolve_new_password_form(self, result):
-        msg = ' '.join([
-            'Log into your Instagram account from smartphone and change password!',
-            *extract_messages(result)
-        ])
+        msg = ' '.join(
+            [
+                'Log into your Instagram account from smartphone and change password!',
+                *extract_messages(result)
+            ]
+        )
         raise LegacyForceSetNewPasswordForm(msg)
 
     def challenge_resolve_delta_acknowledge_approved(self):
@@ -279,12 +293,20 @@ class ChallengeResolveMixin:
         # Take challenge
         self._send_private_request(challenge_url)
         # Confirm your account was temporary blocked (continue)
-        self._send_private_request(challenge_url, {"challenge_context": self.last_json['challenge_context'],
-                                                   "should_promote_account_status": 0})
+        self._send_private_request(
+            challenge_url, {
+                "challenge_context": self.last_json['challenge_context'],
+                "should_promote_account_status": 0
+            }
+        )
         # Select email for receiving code
-        self._send_private_request(challenge_url,
-                                   {"choice": 1, "challenge_context": self.last_json['challenge_context'],
-                                    "should_promote_account_status": 0})
+        self._send_private_request(
+            challenge_url, {
+                "choice": 1,
+                "challenge_context": self.last_json['challenge_context'],
+                "should_promote_account_status": 0
+            }
+        )
 
         wait_seconds = 5
         for attempt in range(24):
@@ -292,19 +314,27 @@ class ChallengeResolveMixin:
             if code:
                 break
             time.sleep(wait_seconds)
-        print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+        print(
+            f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+        )
 
         # Input code
-        self._send_private_request(challenge_url,
-                                   {"security_code": code, "challenge_context": self.last_json['challenge_context'],
-                                    "should_promote_account_status": 0})
+        self._send_private_request(
+            challenge_url, {
+                "security_code": code,
+                "challenge_context": self.last_json['challenge_context'],
+                "should_promote_account_status": 0
+            }
+        )
 
         for attempt in range(24):
             pwd = self.change_password_handler(self.username)
             if pwd:
                 break
             time.sleep(wait_seconds)
-        print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+        print(
+            f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+        )
 
         enc_pwd = self.password_encrypt(pwd)
         res = self._send_private_request(
@@ -382,9 +412,7 @@ class ChallengeResolveMixin:
             if "errors" in challenge:
                 for error in challenge["errors"]:
                     messages.append(error)
-            raise SelectContactPointRecoveryForm(
-                " ".join(messages), challenge=challenge
-            )
+            raise SelectContactPointRecoveryForm(" ".join(messages), challenge=challenge)
         elif challenge_type == "RecaptchaChallengeForm":
             """
             Example:
@@ -443,15 +471,15 @@ class ChallengeResolveMixin:
             A boolean value
         """
         logging.info(f"[challenge_resolve_simple] json: {self.last_json}")
-#        if len(self.last_json) == 0:
-#            logging.info(f"[challenge_resolve_simple] text: {self.last_response.text}")
+        #        if len(self.last_json) == 0:
+        #            logging.info(f"[challenge_resolve_simple] text: {self.last_response.text}")
         step_name = self.last_json.get("step_name", "")
         status = self.last_json.get("status", "")
 
         if step_name == "delta_login_review" or step_name == "":
             endpoint = "bloks/apps/com.instagram.challenge.navigation.take_challenge/"
             data = 'is_bloks_web=True&challenge_context=%7B%22step_name%22%3A+%22%22%2C+%22is_stateless%22%3A+false%2C+%22present_as_modal%22%3A+false%7D&should_promote_account_status=0&nest_data_manifest=true'
-#            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
+            #            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
             accepted = self._send_private_request(endpoint, data=data, with_signature=False)
 
             logging.info(f"[challenge_resolve_simple] json2: {self.last_json}")
@@ -462,22 +490,24 @@ class ChallengeResolveMixin:
 
 #            return True if accepted.get("status") == "ok" else False
         elif step_name in ("submit_phone", "verify_email", "select_verify_method"):
-            params = {
-                "choice": ChallengeChoice.EMAIL,
-                "username": self.username
-            }
+            params = {"choice": ChallengeChoice.EMAIL, "username": self.username}
             if step_name == "submit_phone":
                 choice = ChallengeChoice.SMS
-                number = self.change_sms_handler() # Generate new phone number
+                number = self.change_sms_handler()  # Generate new phone number
                 params["id_number"] = number["id"]
 
-                self._send_private_request(challenge_url, {
-                    "challenge_context": {
-                        "step_name": "", "is_stateless": False, "present_as_modal": False
-                    },
-                    "phone_number": f"+33{number['number']}",
-                    "next": "https://www.instagram.com/?__coig_challenged=1"
-                })
+                self._send_private_request(
+                    challenge_url, {
+                        "challenge_context":
+                            {
+                                "step_name": "",
+                                "is_stateless": False,
+                                "present_as_modal": False
+                            },
+                        "phone_number": f"+33{number['number']}",
+                        "next": "https://www.instagram.com/?__coig_challenged=1"
+                    }
+                )
 
             elif step_name == "select_verify_method":
                 """
@@ -501,7 +531,8 @@ class ChallengeResolveMixin:
                     self._send_private_request(challenge_url, {"choice": ChallengeChoice.SMS})
                 else:
                     raise ChallengeError(
-                        f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}')
+                        f'ChallengeResolve: Choice "email" or "phone_number" (sms) not available to this account {self.last_json}'
+                    )
             wait_seconds = 5
             for attempt in range(24):
                 logging.info("Search code")
@@ -509,7 +540,9 @@ class ChallengeResolveMixin:
                 if code:
                     break
                 time.sleep(wait_seconds)
-            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            print(
+                f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            )
             try:
                 self._send_private_request(challenge_url, {"security_code": code})
             except BaseException as e:
@@ -532,7 +565,9 @@ class ChallengeResolveMixin:
                 if code:
                     break
                 time.sleep(wait_seconds)
-            print(f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            print(
+                f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            )
             self._send_private_request(challenge_url, {"security_code": code})
 
             time.sleep(3)
@@ -562,7 +597,9 @@ class ChallengeResolveMixin:
                 if pwd:
                     break
                 time.sleep(wait_seconds)
-            print(f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)')
+            print(
+                f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            )
 
             pwd = self.password_encrypt(pwd)
             old_pwd = self.password_encrypt(self.password)
@@ -585,8 +622,13 @@ class ChallengeResolveMixin:
             day = random.randint(1, 27)
             month = random.randint(1, 12)
             year = random.randint(1970, 2004)
-            self._send_private_request(challenge_url[1:],
-                                       {"birthday_day": day, "birthday_month": month, "birthday_year": year})
+            self._send_private_request(
+                challenge_url[1:], {
+                    "birthday_day": day,
+                    "birthday_month": month,
+                    "birthday_year": year
+                }
+            )
             print(f"Set birthday for {self.username}: {day}/{month}/{year}")
             return True
         elif step_name == "selfie_captcha":
@@ -599,7 +641,8 @@ class ChallengeResolveMixin:
             return True
         else:
             raise ChallengeUnknownStep(
-                f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}')
+                f'ChallengeResolve: Unknown step_name "{step_name}" for "{self.username}" in challenge resolver: {self.last_json}'
+            )
         return True
 
 

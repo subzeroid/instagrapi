@@ -6,17 +6,10 @@ from typing import List, Optional
 
 from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
-    extract_direct_message,
-    extract_direct_response,
-    extract_direct_short_thread,
-    extract_direct_thread,
+    extract_direct_message, extract_direct_response, extract_direct_short_thread,
+    extract_direct_thread
 )
-from instagrapi.types import (
-    DirectMessage,
-    DirectResponse,
-    DirectShortThread,
-    DirectThread,
-)
+from instagrapi.types import DirectMessage, DirectResponse, DirectShortThread, DirectThread
 from instagrapi.utils import dumps
 
 SELECTED_FILTERS = ("flagged", "unread")
@@ -34,8 +27,12 @@ class DirectMixin:
     Helpers for managing Direct Messaging
     """
 
-    def direct_threads(self, amount: int = 20, selected_filter: SELECTED_FILTER = "",
-                       thread_message_limit: Optional[int] = None) -> List[DirectThread]:
+    def direct_threads(
+        self,
+        amount: int = 20,
+        selected_filter: SELECTED_FILTER = "",
+        thread_message_limit: Optional[int] = None
+    ) -> List[DirectThread]:
         """
         Get direct message threads
 
@@ -64,9 +61,7 @@ class DirectMixin:
                 "fetch_reason": "manual_refresh",
             })
         if thread_message_limit:
-            params.update({
-                "thread_message_limit": thread_message_limit
-            })
+            params.update({"thread_message_limit": thread_message_limit})
         cursor = None
         threads = []
         # self.private_request("direct_v2/get_presence/")
@@ -150,9 +145,7 @@ class DirectMixin:
             if cursor:
                 params["cursor"] = cursor
             try:
-                result = self.private_request(
-                    f"direct_v2/threads/{thread_id}/", params=params
-                )
+                result = self.private_request(f"direct_v2/threads/{thread_id}/", params=params)
             except ClientNotFoundError as e:
                 raise DirectThreadNotFound(e, thread_id=thread_id, **self.last_json)
             thread = result["thread"]
@@ -206,7 +199,9 @@ class DirectMixin:
         assert self.user_id, "Login required"
         return self.direct_send(text, [], [int(thread_id)])
 
-    def direct_send(self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+    def direct_send(
+        self, text: str, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
 
@@ -227,17 +222,25 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids
+               ) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         method = "text"
         token = self.generate_mutation_token()
         kwargs = {
-            "action": "send_item",
-            "is_shh_mode": "0",
-            "send_attribution": "direct_thread",
-            "client_context": token,
-            "mutation_token": token,
-            "nav_chain": "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
-            "offline_threading_id": token,
+            "action":
+                "send_item",
+            "is_shh_mode":
+                "0",
+            "send_attribution":
+                "direct_thread",
+            "client_context":
+                token,
+            "mutation_token":
+                token,
+            "nav_chain":
+                "1qT:feed_timeline:1,1qT:feed_timeline:2,1qT:feed_timeline:3,7Az:direct_inbox:4,7Az:direct_inbox:5,5rG:direct_thread:7",
+            "offline_threading_id":
+                token,
         }
         if "http" in text:
             method = "link"
@@ -256,7 +259,9 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def direct_send_photo(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+    def direct_send_photo(
+        self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
         """
         Send a direct photo to list of users or threads
 
@@ -276,7 +281,9 @@ class DirectMixin:
         """
         return self.direct_send_file(path, user_ids, thread_ids, content_type='photo')
 
-    def direct_send_video(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+    def direct_send_video(
+        self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
         """
         Send a direct video to list of users or threads
 
@@ -296,7 +303,13 @@ class DirectMixin:
         """
         return self.direct_send_file(path, user_ids, thread_ids, content_type='video')
 
-    def direct_send_file(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = [], content_type: str = 'photo') -> DirectMessage:
+    def direct_send_file(
+        self,
+        path: Path,
+        user_ids: List[int] = [],
+        thread_ids: List[int] = [],
+        content_type: str = 'photo'
+    ) -> DirectMessage:
         """
         Send a direct file to list of users or threads
 
@@ -315,7 +328,8 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids
+               ) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         method = f"configure_{content_type}"
         token = self.generate_mutation_token()
         nav_chains = [
@@ -344,7 +358,8 @@ class DirectMixin:
             data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         path = Path(path)
         upload_id = str(int(time.time() * 1000))
-        upload_id, width, height = getattr(self, f'{content_type}_rupload')(path, upload_id, **kwargs)[:3]
+        upload_id, width, height = getattr(self,
+                                           f'{content_type}_rupload')(path, upload_id, **kwargs)[:3]
         data['upload_id'] = upload_id
         # data['content_type'] = content_type
         result = self.private_request(
@@ -393,7 +408,11 @@ class DirectMixin:
         """
         result = self.private_request(
             "direct_v2/ranked_recipients/",
-            params={"mode": "raven", "show_threads": "true", "query": str(query)}
+            params={
+                "mode": "raven",
+                "show_threads": "true",
+                "query": str(query)
+            }
         )
         return [
             extract_direct_short_thread(item.get('thread', {}))
@@ -418,7 +437,11 @@ class DirectMixin:
         recipient_users = dumps([int(uid) for uid in user_ids])
         result = self.private_request(
             "direct_v2/threads/get_by_participants/",
-            params={"recipient_users": recipient_users, "seq_id": 2580572, "limit": 20}
+            params={
+                "recipient_users": recipient_users,
+                "seq_id": 2580572,
+                "limit": 20
+            }
         )
         if 'thread' not in result:
             raise DirectThreadNotFound(
@@ -446,10 +469,7 @@ class DirectMixin:
         data = self.with_default_data({})
         data.pop('_uid', None)
         data.pop('device_id', None)
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/hide/",
-            data=data
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/hide/", data=data)
         return result["status"] == "ok"
 
     def direct_media_share(self, media_id: str, user_ids: List[int]) -> DirectMessage:
@@ -473,15 +493,24 @@ class DirectMixin:
         media_id = self.media_id(media_id)
         recipient_users = dumps([[int(uid) for uid in user_ids]])
         data = {
-            'recipient_users': recipient_users,
-            'action': 'send_item',
-            'is_shh_mode': 0,
-            'send_attribution': 'feed_timeline',
-            'client_context': token,
-            'media_id': media_id,
-            'mutation_token': token,
-            'nav_chain': '1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6',
-            'offline_threading_id': token,
+            'recipient_users':
+                recipient_users,
+            'action':
+                'send_item',
+            'is_shh_mode':
+                0,
+            'send_attribution':
+                'feed_timeline',
+            'client_context':
+                token,
+            'media_id':
+                media_id,
+            'mutation_token':
+                token,
+            'nav_chain':
+                '1VL:feed_timeline:1,1VL:feed_timeline:2,1VL:feed_timeline:5,DirectShareSheetFragment:direct_reshare_sheet:6',
+            'offline_threading_id':
+                token,
         }
         result = self.private_request(
             "direct_v2/threads/broadcast/media_share/",
@@ -491,7 +520,9 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def direct_story_share(self, story_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
+    def direct_story_share(
+        self, story_id: str, user_ids: List[int] = [], thread_ids: List[int] = []
+    ) -> DirectMessage:
         """
         Share a story to list of users
 
@@ -510,21 +541,32 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids
+               ) and not (user_ids and thread_ids), "Specify user_ids or thread_ids, but not both"
         story_id = self.media_id(story_id)
         story_pk = self.media_pk(story_id)
         token = self.generate_mutation_token()
         data = {
-            "action": "send_item",
-            "is_shh_mode": "0",
-            "send_attribution": "reel_feed_timeline",
-            "client_context": token,
-            "mutation_token": token,
-            "nav_chain": "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
-            "reel_id": story_pk,
-            "containermodule": "reel_feed_timeline",
-            "story_media_id": story_id,
-            "offline_threading_id": token,
+            "action":
+                "send_item",
+            "is_shh_mode":
+                "0",
+            "send_attribution":
+                "reel_feed_timeline",
+            "client_context":
+                token,
+            "mutation_token":
+                token,
+            "nav_chain":
+                "1qT:feed_timeline:1,ReelViewerFragment:reel_feed_timeline:4,DirectShareSheetFragment:direct_reshare_sheet:5",
+            "reel_id":
+                story_pk,
+            "containermodule":
+                "reel_feed_timeline",
+            "story_media_id":
+                story_id,
+            "offline_threading_id":
+                token,
         }
         if user_ids:
             data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
@@ -555,10 +597,7 @@ class DirectMixin:
         data = self.with_default_data({})
         data.pop('_uid', None)
         data.pop('device_id', None)
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/mark_unread/",
-            data=data
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/mark_unread/", data=data)
         return result["status"] == "ok"
 
     def direct_message_delete(self, thread_id: int, message_id: int) -> bool:
@@ -584,8 +623,7 @@ class DirectMixin:
         data['send_attribution'] = 'direct_thread'
         data['original_message_client_context'] = self.generate_mutation_token()
         result = self.private_request(
-            f"direct_v2/threads/{thread_id}/items/{message_id}/delete/",
-            data=data
+            f"direct_v2/threads/{thread_id}/items/{message_id}/delete/", data=data
         )
         return result["status"] == "ok"
 
@@ -607,8 +645,7 @@ class DirectMixin:
         """
         name = "unmute" if revert else "mute"
         result = self.private_request(
-            f"direct_v2/threads/{thread_id}/{name}/",
-            data={'_uuid': self.uuid}
+            f"direct_v2/threads/{thread_id}/{name}/", data={'_uuid': self.uuid}
         )
         return result["status"] == "ok"
 
@@ -646,8 +683,7 @@ class DirectMixin:
         """
         name = "unmute_video_call" if revert else "mute_video_call"
         result = self.private_request(
-            f"direct_v2/threads/{thread_id}/{name}/",
-            data={'_uuid': self.uuid}
+            f"direct_v2/threads/{thread_id}/{name}/", data={'_uuid': self.uuid}
         )
         return result["status"] == "ok"
 

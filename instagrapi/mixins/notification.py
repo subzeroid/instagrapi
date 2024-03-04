@@ -23,10 +23,7 @@ class NotificationMixin:
             "_uid": str(self.user_id),
             "_uuid": self.uuid,
         }
-        result = self.private_request(
-            "notifications/change_notification_settings/",
-            data=data
-        )
+        result = self.private_request("notifications/change_notification_settings/", data=data)
         return result.get("status") == "ok"
 
     def notification_disable(self) -> bool:
@@ -99,7 +96,9 @@ class NotificationMixin:
             f'Unsupported setting_value="{setting_value}" {SETTING_VALUE_ITEMS}'
         return self.notification_settings("likes", setting_value)
 
-    def notification_like_and_comment_on_photo_user_tagged(self, setting_value: SETTING_VALUE = "off") -> bool:
+    def notification_like_and_comment_on_photo_user_tagged(
+        self, setting_value: SETTING_VALUE = "off"
+    ) -> bool:
         """
         Manage Like And Comment On Photo User Tagged Settings
 

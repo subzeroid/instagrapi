@@ -21,15 +21,15 @@ class PasswordMixin:
         cipher_aes.update(timestamp.encode())
         aes_encrypted, tag = cipher_aes.encrypt_and_digest(password.encode("utf8"))
         size_buffer = len(rsa_encrypted).to_bytes(2, byteorder='little')
-        payload = base64.b64encode(b''.join([
-            b"\x01",
-            publickeyid.to_bytes(1, byteorder='big'),
-            iv,
-            size_buffer,
-            rsa_encrypted,
-            tag,
-            aes_encrypted
-        ]))
+        payload = base64.b64encode(
+            b''.join(
+                [
+                    b"\x01",
+                    publickeyid.to_bytes(1, byteorder='big'), iv, size_buffer, rsa_encrypted, tag,
+                    aes_encrypted
+                ]
+            )
+        )
         return f"#PWD_INSTAGRAM:4:{timestamp}:{payload.decode()}"
 
     def password_publickeys(self):

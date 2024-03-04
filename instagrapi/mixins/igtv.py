@@ -40,9 +40,7 @@ class DownloadIGTVMixin:
         """
         return self.video_download(media_pk, folder)
 
-    def igtv_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> str:
+    def igtv_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
         """
         Download IGTV video using URL
 
@@ -243,9 +241,7 @@ class UploadIGTVMixin:
             A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             "igtv_ads_toggled_on": "0",
             "filter_type": "0",
@@ -262,8 +258,14 @@ class UploadIGTVMixin:
             "igtv_composer_session_id": self.igtv_composer_session_id,
             "device": self.device,
             "length": duration,
-            "clips": [{"length": duration, "source_type": "4"}],
-            "extra": {"source_width": width, "source_height": height},
+            "clips": [{
+                "length": duration,
+                "source_type": "4"
+            }],
+            "extra": {
+                "source_width": width,
+                "source_height": height
+            },
             "audio_muted": False,
             "poster_frame_index": 70,
             **extra_data

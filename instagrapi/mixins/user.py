@@ -5,24 +5,14 @@ from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
 from instagrapi.exceptions import (
-    ClientError,
-    ClientJSONDecodeError,
-    ClientLoginRequired,
-    ClientNotFoundError,
-    UserNotFound,
-    ClientBadRequestError
+    ClientBadRequestError, ClientError, ClientJSONDecodeError, ClientLoginRequired,
+    ClientNotFoundError, UserNotFound
 )
-from instagrapi.types import Relationship, User, UserShort, Media
-from instagrapi.utils import json_value
-
 from instagrapi.extractors import (
-    extract_user_v1,
-    extract_user_gql,
-    extract_media_gql,
-    extract_media_v1,
-    extract_user_short,
+    extract_media_gql, extract_media_v1, extract_user_gql, extract_user_short, extract_user_v1
 )
-
+from instagrapi.types import Media, Relationship, User, UserShort
+from instagrapi.utils import json_value
 
 
 class UserMixin:
@@ -82,9 +72,7 @@ class UserMixin:
             "user_id": str(user_id),
             "include_reel": True,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
-        )
+        data = self.public_graphql_request(variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7")
         if not data["user"]:
             raise UserNotFound(user_id=user_id, **data)
         user = extract_user_short(data["user"]["reel"]["user"])
@@ -229,9 +217,7 @@ class UserMixin:
         user_id = str(user_id)
         try:
             # GraphQL haven't method to receive user by id
-            return self.user_info_by_username_gql(
-                self.username_from_user_id_gql(user_id)
-            )
+            return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
         except JSONDecodeError as e:
             raise ClientJSONDecodeError(e, user_id=user_id)
 
@@ -320,10 +306,7 @@ class UserMixin:
         -------
         dict
         """
-        result = self.private_request(
-            "friendships/show_many/",
-            data={"user_ids": user_ids}
-        )
+        result = self.private_request("friendships/show_many/", data={"user_ids": user_ids})
         return result["friendship_statuses"]
 
     def user_friendship_v1(self, user_id: str) -> Relationship:
@@ -439,7 +422,10 @@ class UserMixin:
         """
         return self.search_following_v1(user_id, query)
 
-    def user_following_gql(self, user_id: str, amount: int = 0, end_cursor: str = None) -> List[UserShort]:
+    def user_following_gql(self,
+                           user_id: str,
+                           amount: int = 0,
+                           end_cursor: str = None) -> List[UserShort]:
         """
         Get user's following information by Public Graphql API
 
@@ -486,11 +472,15 @@ class UserMixin:
                 if amount and nb_users >= amount:
                     break
 
-            if not page_info.get("has_next_page") or not end_cursor or (amount and nb_users >= amount):
+            if not page_info.get("has_next_page"
+                                ) or not end_cursor or (amount and nb_users >= amount):
                 break
             # time.sleep(sleep)
 
-    def user_following_v1(self, user_id: str, amount: int = 0, max_id: str = None) -> List[UserShort]:
+    def user_following_v1(self,
+                          user_id: str,
+                          amount: int = 0,
+                          max_id: str = None) -> List[UserShort]:
         """
         Get user's following users information by Private Mobile API
 
@@ -533,9 +523,10 @@ class UserMixin:
             if not max_id or (amount and nb_users >= amount):
                 break
 
-    def user_following(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
-    ) -> Dict[str, UserShort]:
+    def user_following(self,
+                       user_id: str,
+                       use_cache: bool = True,
+                       amount: int = 0) -> Dict[str, UserShort]:
         """
         Get user's followers information
 
@@ -573,7 +564,10 @@ class UserMixin:
             for user_pk in self._users_following[user_id]:
                 yield user_pk, self._users_following[user_id][user_pk]
 
-    def user_followers_gql_chunk(self, user_id: str, max_amount: int = 0, end_cursor: str = None) -> List[UserShort]:
+    def user_followers_gql_chunk(self,
+                                 user_id: str,
+                                 max_amount: int = 0,
+                                 end_cursor: str = None) -> List[UserShort]:
         """
         Get user's followers information by Public Graphql API and end_cursor
 
@@ -593,12 +587,7 @@ class UserMixin:
         """
         user_id = str(user_id)
         nb_users = 0
-        variables = {
-            "id": user_id,
-            "include_reel": True,
-            "fetch_mutual": False,
-            "first": 12
-        }
+        variables = {"id": user_id, "include_reel": True, "fetch_mutual": False, "first": 12}
         self.inject_sessionid_to_public()
         while True:
             if end_cursor:
@@ -619,7 +608,8 @@ class UserMixin:
                 nb_users += 1
                 if max_amount and nb_users >= max_amount:
                     break
-            if not page_info.get("has_next_page") or not end_cursor or (max_amount and nb_users >= max_amount):
+            if not page_info.get("has_next_page"
+                                ) or not end_cursor or (max_amount and nb_users >= max_amount):
                 break
 
     def user_followers_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
@@ -640,7 +630,10 @@ class UserMixin:
         """
         yield from self.user_followers_gql_chunk(str(user_id), amount)
 
-    def user_followers_v1_chunk(self, user_id: str, max_amount: int = 0, max_id: str = "") -> List[UserShort]:
+    def user_followers_v1_chunk(self,
+                                user_id: str,
+                                max_amount: int = 0,
+                                max_id: str = "") -> List[UserShort]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
 
@@ -664,18 +657,21 @@ class UserMixin:
         while True:
             self.last_cursor = max_id
             try:
-                result = self.private_request(f"friendships/{user_id}/followers/", params={
-                    "max_id": max_id,
-                    "count": int(count),
-                    "rank_token": self.rank_token,
-                    #                "search_surface": "follow_list_page",
-                    #                "query": "",
-                    #                "enable_groups": "true"
-                })
+                result = self.private_request(
+                    f"friendships/{user_id}/followers/",
+                    params={
+                        "max_id": max_id,
+                        "count": int(count),
+                        "rank_token": self.rank_token,
+                        #                "search_surface": "follow_list_page",
+                        #                "query": "",
+                        #                "enable_groups": "true"
+                    }
+                )
             except Exception as e:
                 if "Please wait a few minutes before you try again" in str(e):
                     logging.info(f"{e}: sleeping 60 min")
-                    time.sleep(60*60)
+                    time.sleep(60 * 60)
                     continue
                 count /= 2
                 if count < 1000:
@@ -716,9 +712,10 @@ class UserMixin:
         """
         yield from self.user_followers_v1_chunk(str(user_id), amount)
 
-    def user_followers(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
-    ) -> Dict[str, UserShort]:
+    def user_followers(self,
+                       user_id: str,
+                       use_cache: bool = True,
+                       amount: int = 0) -> Dict[str, UserShort]:
         """
         Get user's followers
 
@@ -908,14 +905,11 @@ class UserMixin:
         """
         return self.mute_stories_from_follow(user_id, True)
 
+
 #    def private_request(self, param, params):
 #        pass
 
-
-    def user_medias_gql_chunk(
-            self, user_id: int,
-            end_cursor=None
-    ) -> Tuple[List[Media], str]:
+    def user_medias_gql_chunk(self, user_id: int, end_cursor=None) -> Tuple[List[Media], str]:
         """
         Get a chunk of a user's media by Public Graphql API
 
@@ -931,31 +925,26 @@ class UserMixin:
         """
         user_id = int(user_id)
         variables = {
-            "id": user_id,
-            "first": 50,
-            "fields": "data.user.edge_owner_to_timeline_media.count,data.user.edge_owner_to_timeline_media.edges.node.id,data.user.edge_owner_to_timeline_media.page_info",
+            "id":
+                user_id,
+            "first":
+                50,
+            "fields":
+                "data.user.edge_owner_to_timeline_media.count,data.user.edge_owner_to_timeline_media.edges.node.id,data.user.edge_owner_to_timeline_media.page_info",
         }
         if end_cursor:
             variables["after"] = end_cursor
-        data = self.public_graphql_request(
-            variables, query_hash="e7e2f4da4b02303f74f0841279e52d76"
-        )
+        data = self.public_graphql_request(variables, query_hash="e7e2f4da4b02303f74f0841279e52d76")
         self.last_public_json = self.last_public_json.get("data", self.last_public_json)
 
-
-        edges = json_value(
-            data, "user", "edge_owner_to_timeline_media", "edges", default=[]
-        )
+        edges = json_value(data, "user", "edge_owner_to_timeline_media", "edges", default=[])
         for edge in edges:
             media = extract_media_gql(edge["node"])
             if self.want_raw:
                 media.raw = edge["node"]
             yield media
 
-    def user_medias_a1_chunk(
-            self, user_name: str,
-            end_cursor=None
-    ) -> Tuple[List[Media], str]:
+    def user_medias_a1_chunk(self, user_name: str, end_cursor=None) -> Tuple[List[Media], str]:
         """
         Get a chunk of a user's media by Public Graphql API
 
@@ -1002,14 +991,14 @@ class UserMixin:
         next_max_id = end_cursor
         min_timestamp = None
         items = self.private_request(
-                f"feed/user/{user_id}/",
-                params={
-                    "max_id": next_max_id,
-                    "count": 1000,
-                    "min_timestamp": min_timestamp,
-                    "rank_token": self.rank_token,
-                    "ranked_content": "true",
-                },
+            f"feed/user/{user_id}/",
+            params={
+                "max_id": next_max_id,
+                "count": 1000,
+                "min_timestamp": min_timestamp,
+                "rank_token": self.rank_token,
+                "ranked_content": "true",
+            },
         )
         if "items" not in items:
             logging.warning("Empty response message.")
@@ -1021,7 +1010,13 @@ class UserMixin:
             yield media
 
     def user_medias(
-        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None, method_api="", first_page=False
+        self,
+        user_id: int,
+        amount: int = 0,
+        sleep: int = 2,
+        end_cursor: str = None,
+        method_api="",
+        first_page=False
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -1045,7 +1040,6 @@ class UserMixin:
         assert method_api in ("A1", "GQL", "V1"), \
             'You must specify one of the option for "method_api" ("A1", "GQL", "V1")'
 
-
         amount = int(amount)
         medias_ids = set()
         nb_media = 0
@@ -1057,7 +1051,9 @@ class UserMixin:
                     user_name = self.username_from_user_id(user_id)
                 medias = self.user_medias_a1_chunk(user_name, end_cursor=end_cursor)
                 if end_cursor:
-                    logging.warning("user_medias_a1_chunk not working with max_id, try GQL or V1 method")
+                    logging.warning(
+                        "user_medias_a1_chunk not working with max_id, try GQL or V1 method"
+                    )
                     break
             if method_api == "GQL":
                 medias = self.user_medias_gql_chunk(user_id, end_cursor=end_cursor)
@@ -1066,7 +1062,7 @@ class UserMixin:
             for media in medias:
                 if media.pk not in medias_ids:
                     medias_ids.add(media.pk)
-#                    print(media.pk)
+                    #                    print(media.pk)
                     yield media
                     nb_media += 1
                 if amount and nb_media >= amount:
@@ -1078,7 +1074,8 @@ class UserMixin:
                     break
                 end_cursor = page_info.get("next_max_id", "")
             else:
-                page_info = self.last_public_json["user"]["edge_owner_to_timeline_media"]["page_info"]
+                page_info = self.last_public_json["user"]["edge_owner_to_timeline_media"][
+                    "page_info"]
                 end_cursor = page_info.get("end_cursor")
             if not end_cursor or (amount and nb_media >= amount) or first_page is True:
                 break

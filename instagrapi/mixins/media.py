@@ -1,28 +1,21 @@
 import json
+import logging
 import random
 import time
-import logging
 from copy import deepcopy
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from urllib.parse import urlparse
 
 from instagrapi.exceptions import (
-    ClientError,
-    ClientLoginRequired,
-    ClientNotFoundError,
-    MediaNotFound,
+    ClientError, ClientLoginRequired, ClientNotFoundError, MediaNotFound
 )
 from instagrapi.extractors import (
-    extract_location,
-    extract_media_gql,
-    extract_media_oembed,
-    extract_media_v1,
-    extract_user_short,
+    extract_location, extract_media_gql, extract_media_oembed, extract_media_v1, extract_user_short
 )
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils import InstagramIdCodec, json_value
-import logging
+
 
 class MediaMixin:
     """
@@ -51,11 +44,9 @@ class MediaMixin:
         """
         media_id = str(media_pk)
         if "_" not in media_id:
-            assert media_id.isdigit(), (
-                "media_id must been contain digits, now %s" % media_id
-            )
+            assert media_id.isdigit(), ("media_id must been contain digits, now %s" % media_id)
             user = self.media_user(media_id)
-            media_id = "%s_%s" % (media_id, user.pk)
+            media_id = f"{media_id}_{user.pk}"
         return media_id
 
     @staticmethod
@@ -176,7 +167,7 @@ class MediaMixin:
             raise MediaNotFound(media_pk=media_pk, **data)
         return extract_media_gql(data["shortcode_media"])
 
-    def media_info_gql(self, media_pk: int, want_location_with_detail: bool=True) -> Media:
+    def media_info_gql(self, media_pk: int, want_location_with_detail: bool = True) -> Media:
         """
         Get Media from PK by Public Graphql API
 
@@ -203,9 +194,7 @@ class MediaMixin:
             "parent_comment_count": 24,
             "has_threaded_comments": False,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="477b65a610463740ccdb83135b2014db"
-        )
+        data = self.public_graphql_request(variables, query_hash="477b65a610463740ccdb83135b2014db")
         if not data.get("shortcode_media"):
             logging.info("SHORT MEDIA EMPTY !")
             raise MediaNotFound(media_pk=media_pk, **data)
@@ -213,6 +202,8 @@ class MediaMixin:
             location = extract_location(data["shortcode_media"]["location"])
             if want_location_with_detail:
                 location = self.location_info_a1(location.pk)
+
+
 #                 location = self.location_complete(location)
             data["shortcode_media"]["location"] = location.dict()
 
@@ -242,7 +233,12 @@ class MediaMixin:
             raise e
         return extract_media_v1(result["items"].pop())
 
-    def media_info(self, media_pk: int, use_cache: bool = True) -> Media:
+    def media_info(
+        self,
+        media_pk: int,
+        use_cache: bool = True,
+        want_location_with_detail: bool = True
+    ) -> Media:
         """
         Get Media Information from PK
 
@@ -332,9 +328,7 @@ class MediaMixin:
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
         media = self.media_info(media_id)  # from cache
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             "caption_text": caption,
             "container_module": "edit_media_info",
@@ -420,9 +414,7 @@ class MediaMixin:
             "feed_position": str(random.randint(0, 6)),
         }
         name = "unlike" if revert else "like"
-        result = self.private_request(
-            f"media/{media_id}/{name}/", self.with_action_data(data)
-        )
+        result = self.private_request(f"media/{media_id}/{name}/", self.with_action_data(data))
         return result["status"] == "ok"
 
     def media_unlike(self, media_id: str) -> bool:
@@ -474,8 +466,7 @@ class MediaMixin:
             "reel_media_skipped": gen(skipped_media_ids)
         }
         result = self.private_request(
-            "/v2/media/seen/?reel=1&live_vod=0",
-            self.with_default_data(data)
+            "/v2/media/seen/?reel=1&live_vod=0", self.with_default_data(data)
         )
         return result["status"] == "ok"
 
@@ -515,8 +506,7 @@ class MediaMixin:
         media_id = self.media_id(media_id)
         name = "undo_only_me" if revert else "only_me"
         result = self.private_request(
-            f"media/{media_id}/{name}/",
-            self.with_action_data({"media_id": media_id})
+            f"media/{media_id}/{name}/", self.with_action_data({"media_id": media_id})
         )
         return result["status"] == "ok"
 
@@ -537,7 +527,7 @@ class MediaMixin:
         return self.media_archive(media_id, revert=True)
 
     def usertag_medias_gql(
-            self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None
+        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor: str = None
     ) -> List[Media]:
         """
         Get medias where a user is tagged (by Public GraphQL API)
@@ -561,7 +551,8 @@ class MediaMixin:
         nb_media = 0
         variables = {
             "id": user_id,
-            "first": 50 if not amount or amount > 50 else amount,  # These are Instagram restrictions, you can only specify <= 50
+            "first": 50 if not amount or amount > 50 else
+                     amount,  # These are Instagram restrictions, you can only specify <= 50
         }
         while True:
             if end_cursor:
@@ -572,9 +563,11 @@ class MediaMixin:
                     variables, query_hash="be13233562af2d229b008d2976b998b5"
                 )
             except Exception as e:
-                if "Please wait a few minutes before you try again" in str(e) or 'Too Many Requests' in str(e):
+                if "Please wait a few minutes before you try again" in str(
+                    e
+                ) or 'Too Many Requests' in str(e):
                     logging.info(f"{e}: sleeping 60 min")
-                    time.sleep(60*60)
+                    time.sleep(60 * 60)
                     continue
                 else:
                     logging.info(f"{e}: sleeping 1 min")
@@ -584,20 +577,22 @@ class MediaMixin:
             page_info = json_value(
                 data, "user", "edge_user_to_photos_of_you", "page_info", default={}
             )
-            edges = json_value(
-                data, "user", "edge_user_to_photos_of_you", "edges", default=[]
-            )
+            edges = json_value(data, "user", "edge_user_to_photos_of_you", "edges", default=[])
             end_cursor = page_info.get("end_cursor")
             for edge in edges:
                 yield edge["node"]
                 nb_media += 1
                 if amount and nb_media >= amount:
                     break
-            if not page_info.get("has_next_page") or not end_cursor or (amount and nb_media >= amount):
+            if not page_info.get("has_next_page"
+                                ) or not end_cursor or (amount and nb_media >= amount):
                 break
             time.sleep(sleep)
 
-    def usertag_medias_v1(self, user_id: int, amount: int = 0, next_max_id: str = None) -> List[Media]:
+    def usertag_medias_v1(self,
+                          user_id: int,
+                          amount: int = 0,
+                          next_max_id: str = None) -> List[Media]:
         """
         Get medias where a user is tagged (by Private Mobile API)
 
@@ -619,11 +614,13 @@ class MediaMixin:
         while True:
             self.last_cursor = next_max_id
             try:
-                items = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": next_max_id})["items"]
+                items = self.private_request(
+                    f"usertags/{user_id}/feed/", params={"max_id": next_max_id}
+                )["items"]
             except Exception as e:
                 if "Please wait a few minutes before you try again" in str(e):
                     logging.info(f"[429]: sleeping 10 min")
-                    time.sleep(60*10)
+                    time.sleep(60 * 10)
                     continue
                 else:
                     logging.info(f"{e}: sleeping 1 min")
@@ -638,7 +635,6 @@ class MediaMixin:
                     break
             if not self.last_json.get("more_available") or (amount and nb_media >= amount):
                 break
-
 
     def usertag_medias(self, user_id: int, amount: int = 0) -> List[Media]:
         """

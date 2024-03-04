@@ -40,9 +40,7 @@ class DownloadClipMixin:
         """
         return self.video_download(media_pk, folder)
 
-    def clip_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> str:
+    def clip_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
         """
         Download CLIP video using URL
 
@@ -74,7 +72,7 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
-        feed_show : str  = '1',
+        feed_show: str = '1',
         extra_data: Dict[str, str] = {},
     ) -> Media:
         """
@@ -206,7 +204,7 @@ class UploadClipMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        feed_show : str = '1',
+        feed_show: str = '1',
         extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
@@ -239,9 +237,7 @@ class UploadClipMixin:
             A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id)
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             # "igtv_ads_toggled_on": "0",
             "filter_type": "0",
@@ -258,8 +254,14 @@ class UploadClipMixin:
             # "igtv_composer_session_id": self.igtv_composer_session_id,
             "device": self.device,
             "length": duration,
-            "clips": [{"length": duration, "source_type": "4"}],
-            "extra": {"source_width": width, "source_height": height},
+            "clips": [{
+                "length": duration,
+                "source_type": "4"
+            }],
+            "extra": {
+                "source_width": width,
+                "source_height": height
+            },
             "audio_muted": False,
             "poster_frame_index": 70,
             **extra_data

@@ -3,11 +3,7 @@ from pathlib import Path
 from typing import Dict, List
 from urllib.parse import urlparse
 
-from instagrapi.exceptions import (
-    AlbumConfigureError,
-    AlbumNotDownload,
-    AlbumUnknownFormat,
-)
+from instagrapi.exceptions import AlbumConfigureError, AlbumNotDownload, AlbumUnknownFormat
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
 from instagrapi.utils import date_time_original, dumps
@@ -40,13 +36,9 @@ class DownloadAlbumMixin:
         for resource in media.resources:
             filename = f"{media.user.username}_{resource.pk}"
             if resource.media_type == 1:
-                paths.append(
-                    self.photo_download_by_url(resource.thumbnail_url, filename, folder)
-                )
+                paths.append(self.photo_download_by_url(resource.thumbnail_url, filename, folder))
             elif resource.media_type == 2:
-                paths.append(
-                    self.video_download_by_url(resource.video_url, filename, folder)
-                )
+                paths.append(self.video_download_by_url(resource.video_url, filename, folder))
             else:
                 raise AlbumNotDownload(
                     'Media type "{resource.media_type}" unknown for album (resource={resource.pk})'
@@ -98,13 +90,9 @@ class DownloadAlbumMixin:
         files = []
         for resource in media.resources:
             if resource.media_type == 1:
-                files.append(
-                    self.photo_download_by_url_origin(resource.thumbnail_url)
-                )
+                files.append(self.photo_download_by_url_origin(resource.thumbnail_url))
             elif resource.media_type == 2:
-                files.append(
-                    self.video_download_by_url_origin(resource.video_url)
-                )
+                files.append(self.video_download_by_url_origin(resource.video_url))
             else:
                 raise AlbumNotDownload(
                     'Media type "{resource.media_type}" unknown for album (resource={resource.pk})'
@@ -113,6 +101,7 @@ class DownloadAlbumMixin:
 
 
 class UploadAlbumMixin:
+
     def album_upload(
         self,
         paths: List[Path],
@@ -161,19 +150,25 @@ class UploadAlbumMixin:
                 upload_id, width, height = self.photo_rupload(path, to_album=True)
                 children.append(
                     {
-                        "upload_id": upload_id,
-                        "edits": dumps(
-                            {
-                                "crop_original_size": [width, height],
-                                "crop_center": [0.0, -0.0],
-                                "crop_zoom": 1.0,
-                            }
-                        ),
-                        "extra": dumps(
-                            {"source_width": width, "source_height": height}
-                        ),
-                        "scene_capture_type": "",
-                        "scene_type": None,
+                        "upload_id":
+                            upload_id,
+                        "edits":
+                            dumps(
+                                {
+                                    "crop_original_size": [width, height],
+                                    "crop_center": [0.0, -0.0],
+                                    "crop_zoom": 1.0,
+                                }
+                            ),
+                        "extra":
+                            dumps({
+                                "source_width": width,
+                                "source_height": height
+                            }),
+                        "scene_capture_type":
+                            "",
+                        "scene_type":
+                            None,
                     }
                 )
             elif path.suffix.lower() == ".mp4":
@@ -183,10 +178,14 @@ class UploadAlbumMixin:
                 children.append(
                     {
                         "upload_id": upload_id,
-                        "clips": dumps([{"length": duration, "source_type": "4"}]),
-                        "extra": dumps(
-                            {"source_width": width, "source_height": height}
-                        ),
+                        "clips": dumps([{
+                            "length": duration,
+                            "source_type": "4"
+                        }]),
+                        "extra": dumps({
+                            "source_width": width,
+                            "source_height": height
+                        }),
                         "length": duration,
                         "poster_frame_index": "0",
                         "filter_type": "0",
@@ -203,9 +202,8 @@ class UploadAlbumMixin:
             self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")
             time.sleep(configure_timeout)
             try:
-                configured = (configure_handler or self.album_configure)(
-                    children, caption, usertags, location, extra_data=extra_data
-                )
+                configured = (configure_handler or self.album_configure
+                             )(children, caption, usertags, location, extra_data=extra_data)
             except Exception as e:
                 if "Transcode not finished yet" in str(e):
                     """
@@ -220,9 +218,8 @@ class UploadAlbumMixin:
                     media = configured.get("media")
                     self.expose()
                     return extract_media_v1(media)
-        raise (configure_exception or AlbumConfigureError)(
-            response=self.last_response, **self.last_json
-        )
+        raise (configure_exception or
+               AlbumConfigureError)(response=self.last_response, **self.last_json)
 
     def album_configure(
         self,
@@ -255,9 +252,7 @@ class UploadAlbumMixin:
         """
         upload_id = str(int(time.time() * 1000))
         if usertags:
-            usertags = [
-                {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-            ]
+            usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
             childs[0]["usertags"] = dumps({"in": usertags})
         data = {
             "timezone_offset": str(self.timezone_offset),
@@ -271,17 +266,15 @@ class UploadAlbumMixin:
             "suggested_venue_position": -1,
             "device": self.device,
             "is_suggested_venue": False,
-            "children_metadata": [
-                {
-                    "source_type": "4",
-                    "timezone_offset": str(self.timezone_offset),
-                    "device": dumps(self.device),
-                    **child,
-                }
-                for child in childs
-            ],
+            "children_metadata":
+                [
+                    {
+                        "source_type": "4",
+                        "timezone_offset": str(self.timezone_offset),
+                        "device": dumps(self.device),
+                        **child,
+                    } for child in childs
+                ],
             **extra_data
         }
-        return self.private_request(
-            "media/configure_sidecar/", self.with_default_data(data)
-        )
+        return self.private_request("media/configure_sidecar/", self.with_default_data(data))

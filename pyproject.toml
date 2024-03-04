@@ -4,13 +4,14 @@ version = "0.0.1"
 description = ""
 authors = ["adw0rd <x11org@gmail.com>", "Heuritech team <developers@heuritech.com>"]
 readme = "README.md"
-repository = "https://gitlab.roquette.heuritech.com/heuritech/instagrapi"
+repository = "https://gitlab.roquette.heuritech.com/heuritech-v2/instagrapi"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 moviepy = "1.0.3"
+Pillow = ">=8.3,<10.0"
 PySocks = "1.7.1"
-pydantic = "1.9"
+pydantic = "^1.9"
 pycryptodomex = "3.14.1"
 requests = "^2.25.0"
 simplejson = "3.19.2"
@@ -18,10 +19,7 @@ simplejson = "3.19.2"
 [tool.poetry.group.dev.dependencies]
 pytest = ">=3"
 pytest-cov = ">=2"
-flake8 = "4.0.1"
-Pillow = "9.0.1"
-isort = "5.10.1"
-bandit = "1.7.4"
+pre-commit = "^2.20"
 
 [[tool.poetry.source]]
 name = "htpypi"
