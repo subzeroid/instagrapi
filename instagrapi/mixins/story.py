@@ -6,14 +6,9 @@ from typing import List
 from urllib.parse import urlparse
 
 import requests
-
 from instagrapi import config
 from instagrapi.exceptions import ClientNotFoundError, UserNotFound
-from instagrapi.extractors import (
-    extract_story_gql,
-    extract_story_v1,
-    extract_user_short,
-)
+from instagrapi.extractors import extract_story_gql, extract_story_v1, extract_user_short
 from instagrapi.types import Story, UserShort
 
 

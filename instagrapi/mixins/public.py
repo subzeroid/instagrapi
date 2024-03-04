@@ -8,19 +8,10 @@ except ImportError:
     from json.decoder import JSONDecodeError
 
 import requests
-
 from instagrapi.exceptions import (
-    ClientBadRequestError,
-    ClientConnectionError,
-    ClientError,
-    ClientForbiddenError,
-    ClientGraphqlError,
-    ClientIncompleteReadError,
-    ClientJSONDecodeError,
-    ClientLoginRequired,
-    ClientNotFoundError,
-    ClientThrottledError,
-    GenericRequestError,
+    ClientBadRequestError, ClientConnectionError, ClientError, ClientForbiddenError,
+    ClientGraphqlError, ClientIncompleteReadError, ClientJSONDecodeError, ClientLoginRequired,
+    ClientNotFoundError, ClientThrottledError, GenericRequestError
 )
 from instagrapi.utils import build_curl, json_value
 

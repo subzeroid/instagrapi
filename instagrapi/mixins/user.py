@@ -5,19 +5,11 @@ from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
 from instagrapi.exceptions import (
-    ClientBadRequestError,
-    ClientError,
-    ClientJSONDecodeError,
-    ClientLoginRequired,
-    ClientNotFoundError,
-    UserNotFound,
+    ClientBadRequestError, ClientError, ClientJSONDecodeError, ClientLoginRequired,
+    ClientNotFoundError, UserNotFound
 )
 from instagrapi.extractors import (
-    extract_media_gql,
-    extract_media_v1,
-    extract_user_gql,
-    extract_user_short,
-    extract_user_v1,
+    extract_media_gql, extract_media_v1, extract_user_gql, extract_user_short, extract_user_v1
 )
 from instagrapi.types import Media, Relationship, User, UserShort
 from instagrapi.utils import json_value

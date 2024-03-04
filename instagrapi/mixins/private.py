@@ -7,33 +7,13 @@ from json.decoder import JSONDecodeError
 
 import requests
 import simplejson
-
 from instagrapi import config
 from instagrapi.exceptions import (
-    BadPassword,
-    ChallengeRequired,
-    ClientBadRequestError,
-    ClientConnectionError,
-    ClientError,
-    ClientForbiddenError,
-    ClientJSONDecodeError,
-    ClientNotFoundError,
-    ClientRequestTimeout,
-    ClientThrottledError,
-    FeedbackRequired,
-    InvalidMediaId,
-    InvalidTargetUser,
-    LoginRequired,
-    MediaUnavailable,
-    PleaseWaitFewMinutes,
-    PrivateAccount,
-    ProxyAddressIsBlocked,
-    RateLimitError,
-    SentryBlock,
-    TwoFactorRequired,
-    UnknownError,
-    UserNotFound,
-    VideoTooLongException,
+    BadPassword, ChallengeRequired, ClientBadRequestError, ClientConnectionError, ClientError,
+    ClientForbiddenError, ClientJSONDecodeError, ClientNotFoundError, ClientRequestTimeout,
+    ClientThrottledError, FeedbackRequired, InvalidMediaId, InvalidTargetUser, LoginRequired,
+    MediaUnavailable, PleaseWaitFewMinutes, PrivateAccount, ProxyAddressIsBlocked, RateLimitError,
+    SentryBlock, TwoFactorRequired, UnknownError, UserNotFound, VideoTooLongException
 )
 from instagrapi.utils import build_curl, dumps, generate_signature
 

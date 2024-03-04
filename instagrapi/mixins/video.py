@@ -6,27 +6,14 @@ from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
-
 from instagrapi import config
 from instagrapi.exceptions import (
-    VideoConfigureError,
-    VideoConfigureStoryError,
-    VideoNotDownload,
-    VideoNotUpload,
+    VideoConfigureError, VideoConfigureStoryError, VideoNotDownload, VideoNotUpload
 )
 from instagrapi.extractors import extract_direct_message, extract_media_v1
 from instagrapi.types import (
-    DirectMessage,
-    Location,
-    Media,
-    Story,
-    StoryHashtag,
-    StoryLink,
-    StoryLocation,
-    StoryMedia,
-    StoryMention,
-    StorySticker,
-    Usertag,
+    DirectMessage, Location, Media, Story, StoryHashtag, StoryLink, StoryLocation, StoryMedia,
+    StoryMention, StorySticker, Usertag
 )
 from instagrapi.utils import date_time_original, dumps
 

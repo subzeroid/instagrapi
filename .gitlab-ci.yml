@@ -32,21 +32,13 @@ variables:
 
 # Stage templates
 
-.build-lib:
-  image:
-    name: docker.heuritech.com/python:3.8.14
-  before_script:
-    - python ci-tools/pypi-preflight-check.py
-  script:
-    - ci-tools/install-poetry.sh
-    - source /venv/bin/activate
-    - poetry install --all-extras --with dev
-  stage: build
-
 .test-unit:
   image:
     name: docker.heuritech.com/python:3.8.14
   script:
+    - ci-tools/install-poetry.sh
+    - source /venv/bin/activate
+    - poetry install --all-extras --with dev
     - python3 -m pytest tests.py
   stage: test
 
@@ -54,7 +46,6 @@ variables:
   image:
     name: docker.heuritech.com/python:3.8.14
   script:
-    - ci-tools/install-poetry.sh
     - source /venv/bin/activate
     - poetry config repositories.htpipy $PYPI_REGISTRY_URI
     - poetry build -f sdist
@@ -76,11 +67,6 @@ integration:pre-commit:
     - pre-commit run -c $CONFIG_PATH --files $FILENAMES
   stage: setup
 
-integration:build-lib:
-  extends:
-    - .integration
-    - .build-lib
-
 integration:test-unit:
   extends:
     - .integration
@@ -92,11 +78,6 @@ integration:push-lib:
     - .push-lib
 
 # Production stages
-
-production:build-lib:
-  extends:
-    - .production
-    - .build-lib
 
 production:test-unit:
   extends:
@@ -112,6 +93,5 @@ production:push-lib:
 
 stages:
   - setup
-  - build
   - test
   - push

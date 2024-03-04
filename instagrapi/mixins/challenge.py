@@ -8,18 +8,10 @@ from enum import Enum
 from typing import Dict
 
 import requests
-
 from instagrapi.exceptions import (
-    ChallengeError,
-    ChallengeHackedLock,
-    ChallengeRedirection,
-    ChallengeRequired,
-    ChallengeSelfieCaptcha,
-    ChallengeUnknownStep,
-    LegacyForceSetNewPasswordForm,
-    RecaptchaChallengeForm,
-    SelectContactPointRecoveryForm,
-    SubmitPhoneNumberForm,
+    ChallengeError, ChallengeHackedLock, ChallengeRedirection, ChallengeRequired,
+    ChallengeSelfieCaptcha, ChallengeUnknownStep, LegacyForceSetNewPasswordForm,
+    RecaptchaChallengeForm, SelectContactPointRecoveryForm, SubmitPhoneNumberForm
 )
 
 WAIT_SECONDS = 5

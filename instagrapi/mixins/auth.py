@@ -1,5 +1,4 @@
 import base64
-
 # import datetime
 import hashlib
 import hmac
@@ -13,17 +12,13 @@ from typing import Dict, List
 from uuid import uuid4
 
 import requests
-from pydantic import ValidationError
-
 from instagrapi import config
 from instagrapi.exceptions import (
-    ClientThrottledError,
-    PleaseWaitFewMinutes,
-    PrivateError,
-    ReloginAttemptExceeded,
-    TwoFactorRequired,
+    ClientThrottledError, PleaseWaitFewMinutes, PrivateError, ReloginAttemptExceeded,
+    TwoFactorRequired
 )
 from instagrapi.utils import dumps, gen_token, generate_jazoest
+from pydantic import ValidationError
 
 # from instagrapi.zones import CET
 
