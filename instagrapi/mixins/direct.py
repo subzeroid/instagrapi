@@ -130,7 +130,6 @@ class DirectMixin:
             "persistentBadging": "true",
             "limit": "20",
             "is_prefetching": "false",
-            "fetch_reason": "manual_refresh",
         }
         if selected_filter:
             assert (
