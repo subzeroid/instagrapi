@@ -168,7 +168,7 @@ class UserMixin:
             raise e
         return extract_user_v1(result["user"])
 
-    def user_info_by_username(self, username: str, use_cache: bool = True) -> User:
+    def user_info_by_username(self, username: str, use_cache: bool = True, try_public: bool = True) -> User:
         """
         Get user object from username
 
@@ -178,6 +178,8 @@ class UserMixin:
             User name of an instagram account
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
+        try_public: bool, optional
+            Try to use the public api
 
         Returns
         -------
@@ -186,16 +188,20 @@ class UserMixin:
         """
         username = str(username).lower()
         if not use_cache or username not in self._usernames_cache:
-            try:
+
+            if try_public:
                 try:
-                    user = self.user_info_by_username_gql(username)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_by_username_gql(username)  # retry
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
+                    try:
+                        user = self.user_info_by_username_gql(username)
+                    except ClientLoginRequired as e:
+                        if not self.inject_sessionid_to_public():
+                            raise e
+                        user = self.user_info_by_username_gql(username)  # retry
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)  # Register unknown error
+                    user = self.user_info_by_username_v1(username)
+            else:
                 user = self.user_info_by_username_v1(username)
             self._users_cache[user.pk] = user
             self._usernames_cache[user.username] = user.pk
@@ -524,7 +530,7 @@ class UserMixin:
         return users
 
     def user_following_v1_chunk(
-        self, user_id: str, max_amount: int = 0, max_id: str = ""
+            self, user_id: str, max_amount: int = 0, max_id: str = ""
     ) -> Tuple[List[UserShort], str]:
         """
         Get user's following users information by Private Mobile API and max_id (cursor)
@@ -590,7 +596,7 @@ class UserMixin:
         return users
 
     def user_following(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
+            self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's following information
@@ -628,7 +634,7 @@ class UserMixin:
         return following
 
     def user_followers_gql_chunk(
-        self, user_id: str, max_amount: int = 0, end_cursor: str = None
+            self, user_id: str, max_amount: int = 0, end_cursor: str = None
     ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Public Graphql API and end_cursor
@@ -699,7 +705,7 @@ class UserMixin:
         return users
 
     def user_followers_v1_chunk(
-        self, user_id: str, max_amount: int = 0, max_id: str = ""
+            self, user_id: str, max_amount: int = 0, max_id: str = ""
     ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
@@ -765,7 +771,7 @@ class UserMixin:
         return users
 
     def user_followers(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
+            self, user_id: str, use_cache: bool = True, amount: int = 0
     ) -> Dict[str, UserShort]:
         """
         Get user's followers
@@ -1223,7 +1229,7 @@ class UserMixin:
         return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
 
     def creator_info(
-        self, user_id: str, entry_point: str = "direct_thread"
+            self, user_id: str, entry_point: str = "direct_thread"
     ) -> Tuple[UserShort, Dict]:
         """
         Retrieves Creator's information
