@@ -144,6 +144,7 @@ class UploadVideoMixin:
         self,
         path: Path,
         thumbnail: Path = None,
+        at: int = -1,
         to_album: bool = False,
         to_story: bool = False,
         to_direct: bool = False,
@@ -168,7 +169,7 @@ class UploadVideoMixin:
         """
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         upload_id = str(int(time.time() * 1000))
-        width, height, duration, thumbnail = analyze_video(path, thumbnail)
+        width, height, duration, thumbnail = analyze_video(path, thumbnail, at)
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
         upload_name = "{upload_id}_0_{rand}".format(
@@ -243,6 +244,7 @@ class UploadVideoMixin:
         path: Path,
         caption: str,
         thumbnail: Path = None,
+        at: int = -1,
         usertags: List[Usertag] = [],
         location: Location = None,
         extra_data: Dict[str, str] = {},
@@ -258,6 +260,8 @@ class UploadVideoMixin:
             Media caption
         thumbnail: str
             Path to thumbnail for video. When None, then thumbnail is generate automatically
+        at: int
+            TODO
         usertags: List[Usertag], optional
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
@@ -274,7 +278,7 @@ class UploadVideoMixin:
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
         upload_id, width, height, duration, thumbnail = self.video_rupload(
-            path, thumbnail, to_story=False
+            path, thumbnail, at, to_story=False
         )
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
@@ -874,7 +878,7 @@ class UploadVideoMixin:
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
 
-def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
+def analyze_video(path: Path, thumbnail: Path = None, at: int: -1) -> tuple:
     """
     Story Configure for Photo
 
@@ -902,7 +906,10 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     if not thumbnail:
         thumbnail = f"{path}.jpg"
         print(f'Generating thumbnail "{thumbnail}"...')
-        video.save_frame(thumbnail, t=(video.duration / 2))
+        if at == -1:
+            video.save_frame(thumbnail, t=(video.duration / 2))
+        else:
+            video.save_frame(thumbnail, t=at)
     # duration = round(video.duration + 0.001, 3)
     try:
         video.close()
