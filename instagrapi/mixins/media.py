@@ -123,7 +123,7 @@ class MediaMixin:
         B-fKL9qpeab -> 2278584739065882267
         CCQQsCXjOaBfS3I2PpqsNkxElV9DXj61vzo5xs0 -> 2346448800803776129
         """
-        return InstagramIdCodec.decode(code[:11])
+        return InstagramIdCodec.decode(code)
 
     def media_pk_from_url(self, url: str) -> str:
         """
