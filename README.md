@@ -6,6 +6,8 @@ It will be difficult to find good accounts, good proxies, or resolve challenges,
 
 The instagrapi more suits for testing or research than a working business!
 
+✨ [Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
+
 ### We recommend using our services:
 
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
