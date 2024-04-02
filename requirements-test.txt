@@ -6,7 +6,7 @@ mike==2.0.0
 markdown-include==0.8.1
 mkdocs-material==9.5.15
 mkdocs-minify-plugin==0.8.0
-mkdocstrings==0.24.1
+mkdocstrings==0.24.2
 ./util/mkdocs-redirects
 ./util/mkdocstrings_patch_type_aliases
 pytest-xdist==3.5.0
