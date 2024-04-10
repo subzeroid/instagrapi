@@ -142,9 +142,8 @@ class UserMixin:
         """
         username = str(username).lower()
         headers = {'Host': 'www.instagram.com','X-Requested-With': 'XMLHttpRequest','Sec-Ch-Prefers-Color-Scheme': 'dark','Sec-Ch-Ua-Platform': '"Linux"','X-Ig-App-Id': '936619743392459','Sec-Ch-Ua-Model': '""','Sec-Ch-Ua-Mobile': '?0','User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.112 Safari/537.36','Accept': '*/*','X-Asbd-Id': '129477','Sec-Fetch-Site': 'same-origin','Sec-Fetch-Mode': 'cors','Sec-Fetch-Dest': 'empty','Referer': 'https://www.instagram.com/','Accept-Language': 'en-US,en;q=0.9','Priority': 'u=1, i'}
-        #return extract_user_gql(requests.get(f'https://www.instagram.com/api/v1/users/web_profile_info/?username={username}', headers=headers, verify=False, proxies = {'http' : self.proxy, 'https':self.proxy}).json()['data']['user'])        
-        return requests.get(f'https://www.instagram.com/api/v1/users/web_profile_info/?username={username}', headers=headers, verify=False, proxies = {'http' : self.proxy, 'https':self.proxy}).json()['data']['user']
-        
+        return extract_user_gql(requests.get(f'https://www.instagram.com/api/v1/users/web_profile_info/?username={username}', headers=headers, verify=False, proxies = {'http' : self.proxy, 'https':self.proxy}).json()['data']['user'])        
+       
 
     def user_info_by_username_v1(self, username: str) -> User:
         """
