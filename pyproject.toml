@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instagrapi"
-version = "0.0.2"
+version = "0.0.3"
 description = ""
 authors = ["adw0rd <x11org@gmail.com>", "Heuritech team <developers@heuritech.com>"]
 readme = "README.md"

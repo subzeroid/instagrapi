@@ -101,7 +101,7 @@ class Client(
     def get_session_id(self, job_id: Optional[str] = None):
         total = random.randint(1_000, 10_000_000)
         if job_id:
-            total += sum([ord(c) * i * i for i, c in enumerate(job_id)])
+            total += sum([ord(c) * i * i for i, c in enumerate(str(job_id))])
         return total
 
     def set_proxy(self, proxy: Dict[str, Any], job_id: Optional[str] = None):
