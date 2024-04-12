@@ -4,19 +4,10 @@ from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-
 from instagrapi.exceptions import (
-    BadPassword,
-    ChallengeRequired,
-    ClientBadRequestError,
-    ClientError,
-    FeedbackRequired,
-    LoginRequired,
-    PleaseWaitFewMinutes,
-    RecaptchaChallengeForm,
-    ReloginAttemptExceeded,
-    SelectContactPointRecoveryForm,
+    BadPassword, ChallengeRequired, ClientBadRequestError, ClientError, FeedbackRequired,
+    LoginRequired, PleaseWaitFewMinutes, RecaptchaChallengeForm, ReloginAttemptExceeded,
+    SelectContactPointRecoveryForm
 )
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
@@ -38,17 +29,14 @@ from instagrapi.mixins.notification import NotificationMixin
 from instagrapi.mixins.password import PasswordMixin
 from instagrapi.mixins.photo import DownloadPhotoMixin, UploadPhotoMixin
 from instagrapi.mixins.private import PrivateRequestMixin
-from instagrapi.mixins.public import (
-    ProfilePublicMixin,
-    PublicRequestMixin,
-    TopSearchesPublicMixin,
-)
+from instagrapi.mixins.public import ProfilePublicMixin, PublicRequestMixin, TopSearchesPublicMixin
 from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
 from instagrapi.mixins.user import UserMixin
 from instagrapi.mixins.video import DownloadVideoMixin, UploadVideoMixin
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -117,7 +105,7 @@ class Client(
         return total
 
     def set_proxy(self, proxy: Dict[str, Any], job_id: Optional[str] = None):
-        proxy_uri = random.choice(proxy["proxies"])
+        proxy_choice = random.choice(proxy.get("proxies", []))
         proxy_username = proxy.get("username", "")
         proxy_password = proxy.get("password", "")
         proxy_api = proxy.get("api", "")
@@ -125,19 +113,19 @@ class Client(
 
         session_id = self.get_session_id(job_id)
 
-        if "lum-superproxy" in proxy_uri:
+        if "lum-superproxy" in proxy_choice:
             if "unblocker" in proxy_username:
                 session_type = "unblocker-session"
             else:
                 session_type = "session"
 
-            proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_uri}"
+            proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_choice}"
             proxy_dict = {
                 "http": proxy_uri,
                 "https": proxy_uri,
                 "type": "luminati",
             }
-        elif "scraperapi" in proxy_uri:
+        elif "scraperapi" in proxy_choice:
             proxy_uri = f"{proxy_api}?api_key={proxy_password}&url=%s&keep_headers=true&session_number={session_id}"
 
             if proxy_country:
@@ -145,8 +133,8 @@ class Client(
                 proxy_uri += f"&country_code={country}"
 
             proxy_dict = {"overwrite_url": proxy_uri, "type": "scraperapi"}
-        elif "oxylabs" in proxy_uri:
-            if "unblock" in proxy_uri:
+        elif "oxylabs" in proxy_choice:
+            if "unblock" in proxy_choice:
                 self.private.headers["X-Oxylabs-Session-Id"] = str(session_id)
                 self.public.headers["X-Oxylabs-Session-Id"] = str(session_id)
             else:
@@ -155,14 +143,14 @@ class Client(
                     country = random.choice(proxy_country.split(","))
                     proxy_username += "-cc-{country}"
 
-            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_choice}"
             proxy_dict = {
                 "http": proxy_uri,
                 "https": proxy_uri,
                 "proxy_type": "oxylabs",
             }
         else:
-            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_choice}"
             proxy_dict = {
                 "http": proxy_uri,
                 "https": proxy_uri,
