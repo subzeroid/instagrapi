@@ -1,7 +1,7 @@
+import datetime
 import html
 import json
 import re
-import datetime
 from copy import deepcopy
 
 from .types import (
@@ -23,9 +23,9 @@ from .types import (
     ReplyMessage,
     Resource,
     Story,
+    StoryHashtag,
     StoryLink,
     StoryLocation,
-    StoryHashtag,
     StoryMedia,
     StoryMention,
     Track,

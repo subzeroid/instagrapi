@@ -123,7 +123,14 @@ class PublicRequestMixin:
                 continue
 
     def _send_public_request(
-        self, url, data=None, params=None, headers=None, return_json=False, stream=None, timeout=None
+        self,
+        url,
+        data=None,
+        params=None,
+        headers=None,
+        return_json=False,
+        stream=None,
+        timeout=None,
     ):
         self.public_requests_count += 1
         if headers:
@@ -135,11 +142,19 @@ class PublicRequestMixin:
         try:
             if data is not None:  # POST
                 response = self.public.data(
-                    url, data=data, params=params, proxies=self.public.proxies, timeout=timeout
+                    url,
+                    data=data,
+                    params=params,
+                    proxies=self.public.proxies,
+                    timeout=timeout,
                 )
             else:  # GET
                 response = self.public.get(
-                    url, params=params, proxies=self.public.proxies, stream=stream, timeout=timeout
+                    url,
+                    params=params,
+                    proxies=self.public.proxies,
+                    stream=stream,
+                    timeout=timeout,
                 )
 
             if stream:

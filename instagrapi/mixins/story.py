@@ -5,8 +5,6 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
-import requests
-
 from instagrapi import config
 from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
 from instagrapi.extractors import (
@@ -132,7 +130,8 @@ class StoryMixin:
             assert user_ids is not None
             user_ids_per_query = 50
             for i in range(0, len(user_ids), user_ids_per_query):
-                yield user_ids[i : i + user_ids_per_query]
+                end = i + user_ids_per_query
+                yield user_ids[i:end]
 
         stories_un = {}
         for userid_chunk in _userid_chunks():
@@ -296,7 +295,9 @@ class StoryMixin:
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
 
-        response = self._send_public_request(url, stream=True, timeout=self.request_timeout)
+        response = self._send_public_request(
+            url, stream=True, timeout=self.request_timeout
+        )
         response.raise_for_status()
 
         with open(path, "wb") as f:
