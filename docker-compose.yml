@@ -1,4 +1,10 @@
 version: "3.4"
+
+x-mount-app-and-user-git-config: &mount-app-and-user-git-config
+  volumes:
+    - ./:/app
+    - ~/.gitconfig:/home/instagrapi/.gitconfig # allow script to commit as user
+
 services:
 
   # "devbox" to enable the developer to have a fully loaded development environment
@@ -14,3 +20,24 @@ services:
   test:
     <<: *devbox
     command: "docker/run_tests.sh --format-code"
+
+  tests:
+    <<: *devbox
+    command: "python -m unittest tests"
+
+  lock-requirements:
+    <<: *devbox
+    entrypoint: "/bin/bash"
+    command: "docker/lock_requirements.sh"
+
+  # generate and serve the project documentation locally
+  mkdocs: &mkdocs
+    <<: *devbox
+    entrypoint: "mkdocs"
+    ports:
+      - "8000:8000"
+    command: [ "serve", "--dev-addr=0.0.0.0:8000" ]
+
+  mike:
+    <<: [*mkdocs, *mount-app-and-user-git-config]
+    entrypoint: "mike"

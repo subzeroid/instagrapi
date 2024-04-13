@@ -1,5 +1,4 @@
 import base64
-import datetime
 import hashlib
 import hmac
 import json
@@ -7,13 +6,42 @@ import random
 import re
 import time
 import uuid
-from typing import Dict, List
+from pathlib import Path
+from typing import Dict, Union
+from uuid import uuid4
 
 import requests
+from pydantic import ValidationError
 
 from instagrapi import config
-from instagrapi.exceptions import ReloginAttemptExceeded
-from instagrapi.zones import CET
+from instagrapi.exceptions import (
+    BadCredentials,
+    ClientThrottledError,
+    PleaseWaitFewMinutes,
+    PrivateError,
+    ReloginAttemptExceeded,
+    TwoFactorRequired,
+)
+from instagrapi.utils import dumps, gen_token, generate_jazoest
+
+# from instagrapi.zones import CET
+TIMELINE_FEED_REASONS = (
+    "cold_start_fetch",
+    "warm_start_fetch",
+    "pagination",
+    "pull_to_refresh",
+    "auto_refresh",
+)
+REELS_TRAY_REASONS = ("cold_start", "pull_to_refresh")
+try:
+    from typing import Literal
+
+    TIMELINE_FEED_REASON = Literal[TIMELINE_FEED_REASONS]
+    REELS_TRAY_REASON = Literal[REELS_TRAY_REASONS]
+except ImportError:
+    # python <= 3.8
+    TIMELINE_FEED_REASON = str
+    REELS_TRAY_REASON = str
 
 
 class PreLoginFlowMixin:
@@ -30,14 +58,11 @@ class PreLoginFlowMixin:
         bool
             A boolean value
         """
-        # /api/v1/accounts/get_prefill_candidates
-        self.get_prefill_candidates(True)
-        # /api/v1/qe/sync (server_config_retrieval)
-        self.sync_device_features(True)
-        # /api/v1/launcher/sync/ (server_config_retrieval)
+        # self.set_contact_point_prefill("prefill")
+        # self.get_prefill_candidates(True)
+        # self.set_contact_point_prefill("prefill")
         self.sync_launcher(True)
-        # /api/v1/accounts/contact_point_prefill/
-        self.set_contact_point_prefill("prefill")
+        # self.sync_device_features(True)
         return True
 
     def get_prefill_candidates(self, login: bool = False) -> Dict:
@@ -54,19 +79,17 @@ class PreLoginFlowMixin:
         bool
             A boolean value
         """
-        # "android_device_id":"android-f14b9731e4869eb",
-        # "phone_id":"b4bd7978-ca2b-4ea0-a728-deb4180bd6ca",
-        # "usages":"[\"account_recovery_omnibox\"]",
-        # "_csrftoken":"9LZXBXXOztxNmg3h1r4gNzX5ohoOeBkI",
-        # "device_id":"70db6a72-2663-48da-96f5-123edff1d458"
         data = {
-            "android_device_id": self.device_id,
+            "android_device_id": self.android_device_id,
+            "client_contact_points": '[{"type":"omnistring","value":"%s","source":"last_login_attempt"}]'
+            % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
-            "device_id": self.device_id,
+            "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
+            "device_id": self.uuid,
         }
-        if login is False:
-            data["_csrftoken"] = self.token
+        # if login is False:
+        data["_csrftoken"] = self.token
         return self.private_request(
             "accounts/get_prefill_candidates/", data, login=login
         )
@@ -88,15 +111,14 @@ class PreLoginFlowMixin:
         data = {
             "id": self.uuid,
             "server_config_retrieval": "1",
-            "experiments": config.LOGIN_EXPERIMENTS,
+            # "experiments": config.LOGIN_EXPERIMENTS,
         }
         if login is False:
             data["_uuid"] = self.uuid
             data["_uid"] = self.user_id
             data["_csrftoken"] = self.token
-        return self.private_request(
-            "qe/sync/", data, login=login, headers={"X-DEVICE-ID": self.uuid}
-        )
+        # headers={"X-DEVICE-ID": self.uuid}
+        return self.private_request("qe/sync/", data, login=login)
 
     def sync_launcher(self, login: bool = False) -> Dict:
         """
@@ -136,7 +158,11 @@ class PreLoginFlowMixin:
         Dict
             A dictionary of response from the call
         """
-        data = {"phone_id": self.phone_id, "usage": usage}
+        data = {
+            "phone_id": self.phone_id,
+            "usage": usage,
+            # "_csrftoken": self.token
+        }
         return self.private_request("accounts/contact_point_prefill/", data, login=True)
 
 
@@ -155,23 +181,24 @@ class PostLoginFlowMixin:
             A boolean value
         """
         check_flow = []
-        chance = random.randint(1, 100) % 2 == 0
-        check_flow.append(self.get_timeline_feed([chance and "is_pull_to_refresh"]))
-        check_flow.append(
-            self.get_reels_tray_feed(
-                reason="pull_to_refresh" if chance else "cold_start"
-            )
-        )
+        # chance = random.randint(1, 100) % 2 == 0
+        # reason = "pull_to_refresh" if chance else "cold_start"
+        check_flow.append(self.get_reels_tray_feed("cold_start"))
+        check_flow.append(self.get_timeline_feed(["cold_start_fetch"]))
         return all(check_flow)
 
-    def get_timeline_feed(self, options: List[Dict] = []) -> Dict:
+    def get_timeline_feed(
+        self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
+    ) -> Dict:
         """
         Get your timeline feed
 
         Parameters
         ----------
-        options: List, optional
-            Configurable options
+        reason: str, optional
+            Reason to refresh the feed (cold_start_fetch, paginating, pull_to_refresh); Default "pull_to_refresh"
+        max_id: str, optional
+            Cursor for the next feed chunk (next cursor can be found in response["next_max_id"])
 
         Returns
         -------
@@ -181,49 +208,51 @@ class PostLoginFlowMixin:
         headers = {
             "X-Ads-Opt-Out": "0",
             "X-DEVICE-ID": self.uuid,
-            "X-CM-Bandwidth-KBPS": str(random.randint(2000, 5000)),
+            "X-CM-Bandwidth-KBPS": "-1.000",  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
         data = {
-            "feed_view_info": "",
+            "has_camera_permission": "1",
+            "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,"media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
             "phone_id": self.phone_id,
-            "battery_level": random.randint(25, 100),
-            "timezone_offset": datetime.datetime.now(CET()).strftime("%z"),
+            "reason": reason,
+            "battery_level": 100,  # Random battery level is not simulating real bahaviour
+            "timezone_offset": str(self.timezone_offset),
             "_csrftoken": self.token,
             "device_id": self.uuid,
-            "request_id": self.device_id,
+            "request_id": self.request_id,
             "_uuid": self.uuid,
             "is_charging": random.randint(0, 1),
+            "is_dark_mode": 1,  # Random dark mode is not simulating real bahaviour
             "will_sound_on": random.randint(0, 1),
             "session_id": self.client_session_id,
-            "bloks_versioning_id": "e538d4591f238824118bfcb9528c8d005f2ea3becd947a3973c030ac971bb88e",
+            "bloks_versioning_id": self.bloks_versioning_id,
         }
-
-        if "is_pull_to_refresh" in options:
-            data["reason"] = "pull_to_refresh"
+        if reason in ["pull_to_refresh", "auto_refresh"]:
             data["is_pull_to_refresh"] = "1"
-        elif "is_pull_to_refresh" not in options:
-            data["reason"] = "cold_start_fetch"
+        else:
             data["is_pull_to_refresh"] = "0"
 
-        if "push_disabled" in options:
-            data["push_disabled"] = "true"
-
-        if "recovered_from_crash" in options:
-            data["recovered_from_crash"] = "1"
-
+        if max_id:
+            data["max_id"] = max_id
+        # if "push_disabled" in options:
+        #     data["push_disabled"] = "true"
+        # if "recovered_from_crash" in options:
+        #     data["recovered_from_crash"] = "1"
         return self.private_request(
             "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
         )
 
-    def get_reels_tray_feed(self, reason: str = "pull_to_refresh") -> Dict:
+    def get_reels_tray_feed(
+        self, reason: REELS_TRAY_REASON = "pull_to_refresh"
+    ) -> Dict:
         """
         Get your reels tray feed
 
         Parameters
         ----------
         reason: str, optional
-            Default "pull_to_refresh"
+            Reason to refresh reels tray fee (cold_start, pull_to_refresh); Default "pull_to_refresh"
 
         Returns
         -------
@@ -233,23 +262,44 @@ class PostLoginFlowMixin:
         data = {
             "supported_capabilities_new": config.SUPPORTED_CAPABILITIES,
             "reason": reason,
-            "_csrftoken": self.token,
+            "timezone_offset": str(self.timezone_offset),
+            "tray_session_id": self.tray_session_id,
+            "request_id": self.request_id,
+            # "latest_preloaded_reel_ids": "[]", # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
+            "page_size": 50,
+            # "_csrftoken": self.token,
             "_uuid": self.uuid,
         }
+        if reason == "cold_start":
+            data["reel_tray_impressions"] = {}
+        else:
+            data["reel_tray_impressions"] = {self.user_id: str(time.time())}
         return self.private_request("feed/reels_tray/", data)
 
 
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
+    authorization = ""  # Bearer IGT:2:<base64:authorization_data>
+    authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
     device_settings = {}
     client_session_id = ""
+    tray_session_id = ""
     advertising_id = ""
-    device_id = ""
+    android_device_id = ""
+    request_id = ""
     phone_id = ""
+    app_id = "567067343352427"
     uuid = ""
+    mid = ""
+    country = "US"
+    country_code = 1  # Phone code, default USA
+    locale = "en_US"
+    timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    ig_u_rur = ""  # e.g. CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
         self.user_agent = None
@@ -268,10 +318,26 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
+        self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
+        self.set_timezone_offset(
+            self.settings.get("timezone_offset", self.timezone_offset)
+        )
         self.set_device(self.settings.get("device_settings"))
+        # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
-        self.set_uuids(self.settings.get("uuids", {}))
+        self.set_uuids(self.settings.get("uuids") or {})
+        self.set_locale(self.settings.get("locale", self.locale))
+        self.set_country(self.settings.get("country", self.country))
+        self.set_country_code(self.settings.get("country_code", self.country_code))
+        self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
+        self.set_ig_u_rur(self.settings.get("ig_u_rur"))
+        self.set_ig_www_claim(self.settings.get("ig_www_claim"))
+        # init headers
+        headers = self.base_headers
+        headers.update({"Authorization": self.authorization})
+        self.private.headers.update(headers)
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -289,14 +355,29 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
-        self.settings = {"cookies": {"sessionid": sessionid}}
+        self.settings["cookies"] = {"sessionid": sessionid}
         self.init()
         user_id = re.search(r"^\d+", sessionid).group()
-        user = self.user_info_v1(int(user_id))
+        self.authorization_data = {
+            "ds_user_id": user_id,
+            "sessionid": sessionid,
+            "should_use_header_over_cookies": True,
+        }
+        try:
+            user = self.user_info_v1(int(user_id))
+        except (PrivateError, ValidationError):
+            user = self.user_short_gql(int(user_id))
         self.username = user.username
+        self.cookie_dict["ds_user_id"] = user.pk
         return True
 
-    def login(self, username: str, password: str, relogin: bool = False) -> bool:
+    def login(
+        self,
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
+        relogin: bool = False,
+        verification_code: str = "",
+    ) -> bool:
         """
         Login
 
@@ -304,22 +385,29 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         ----------
         username: str
             Instagram Username
-
         password: str
             Instagram Password
-
         relogin: bool
             Whether or not to re login, default False
+        verification_code: str
+            2FA verification code
 
         Returns
         -------
         bool
             A boolean value
         """
-        self.username = username
-        self.password = password
-        self.init()
+
+        if not self.username or not self.password:
+            if username is None or password is None:
+                raise BadCredentials("Both username and password must be provided.")
+
+            self.username = username
+            self.password = password
+
         if relogin:
+            self.authorization_data = {}
+            self.private.headers.pop("Authorization", None)
             self.private.cookies.clear()
             if self.relogin_attempt > 1:
                 raise ReloginAttemptExceeded()
@@ -327,23 +415,91 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         # if self.user_id and self.last_login:
         #     if time.time() - self.last_login < 60 * 60 * 24:
         #        return True  # already login
-        if self.user_id:
+        if self.user_id and not relogin:
             return True  # already login
-        self.pre_login_flow()
+        try:
+            self.pre_login_flow()
+        except (PleaseWaitFewMinutes, ClientThrottledError):
+            self.logger.warning("Ignore 429: Continue login")
+            # The instagram application ignores this error
+            # and continues to log in (repeat this behavior)
+        enc_password = self.password_encrypt(self.password)
         data = {
+            "jazoest": generate_jazoest(self.phone_id),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
-            "_csrftoken": self.token,
+            "enc_password": enc_password,
             "username": username,
+            "adid": self.advertising_id,
             "guid": self.uuid,
-            "device_id": self.device_id,
-            "password": password,
+            "device_id": self.android_device_id,
+            "google_tokens": "[]",
             "login_attempt_count": "0",
         }
-        if self.private_request("accounts/login/", data, login=True):
+        try:
+            logged = self.private_request("accounts/login/", data, login=True)
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get("ig-set-authorization")
+            )
+        except TwoFactorRequired as e:
+            if not verification_code.strip():
+                raise TwoFactorRequired(
+                    f"{e} (you did not provide verification_code for login method)"
+                )
+            two_factor_identifier = self.last_json.get("two_factor_info", {}).get(
+                "two_factor_identifier"
+            )
+            data = {
+                "verification_code": verification_code,
+                "phone_id": self.phone_id,
+                "_csrftoken": self.token,
+                "two_factor_identifier": two_factor_identifier,
+                "username": username,
+                "trust_this_device": "0",
+                "guid": self.uuid,
+                "device_id": self.android_device_id,
+                "waterfall_id": str(uuid4()),
+                "verification_method": "3",
+            }
+            logged = self.private_request(
+                "accounts/two_factor_login/", data, login=True
+            )
+            self.authorization_data = self.parse_authorization(
+                self.last_response.headers.get("ig-set-authorization")
+            )
+        if logged:
             self.login_flow()
             self.last_login = time.time()
             return True
         return False
+
+    def one_tap_app_login(self, user_id: str, nonce: str) -> bool:
+        """One tap login emulation
+
+        Parameters
+        ----------
+        user_id: str
+            User ID
+        nonce: str
+            Login nonce (from Instagram, e.g. in /logout/)
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        user_id = int(user_id)
+        data = {
+            "phone_id": self.phone_id,
+            "user_id": user_id,
+            "adid": self.advertising_id,
+            "guid": self.uuid,
+            "device_id": self.uuid,
+            "login_nonce": nonce,
+            "_csrftoken": self.token,
+        }
+        return self.private_request("accounts/one_tap_app_login/", data)
 
     def relogin(self) -> bool:
         """
@@ -361,8 +517,20 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return self.private.cookies.get_dict()
 
     @property
+    def sessionid(self) -> str:
+        sessionid = self.cookie_dict.get("sessionid")
+        if not sessionid and self.authorization_data:
+            sessionid = self.authorization_data.get("sessionid")
+        return sessionid
+
+    @property
     def token(self) -> str:
-        return self.cookie_dict.get("csrftoken")
+        """CSRF token
+        e.g. vUJGjpst6szjI38mZ6Pb1dROsWVerZelGSYGe0W1tuugpSUefVjRLj2Pom2SWNoA
+        """
+        if not getattr(self, "_token", None):
+            self._token = self.cookie_dict.get("csrftoken", gen_token(64))
+        return self._token
 
     @property
     def rank_token(self) -> str:
@@ -371,17 +539,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     @property
     def user_id(self) -> int:
         user_id = self.cookie_dict.get("ds_user_id")
+        if not user_id and self.authorization_data:
+            user_id = self.authorization_data.get("ds_user_id")
         if user_id:
             return int(user_id)
         return None
-
-    # @property
-    # def username(self):
-    #     return self.cookie_dict.get("ds_user")
-
-    @property
-    def mid(self) -> str:
-        return self.cookie_dict.get("mid")
 
     @property
     def device(self) -> dict:
@@ -406,15 +568,74 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "uuid": self.uuid,
                 "client_session_id": self.client_session_id,
                 "advertising_id": self.advertising_id,
-                "device_id": self.device_id,
+                "android_device_id": self.android_device_id,
+                # "device_id": self.uuid,
+                "request_id": self.request_id,
+                "tray_session_id": self.tray_session_id,
             },
+            "mid": self.mid,
+            "ig_u_rur": self.ig_u_rur,
+            "ig_www_claim": self.ig_www_claim,
+            "authorization_data": self.authorization_data,
             "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
+            "country": self.country,
+            "country_code": self.country_code,
+            "locale": self.locale,
+            "timezone_offset": self.timezone_offset,
         }
 
-    def set_device(self, device: Dict = None) -> bool:
+    def set_settings(self, settings: Dict) -> bool:
+        """
+        Set session settings
+
+        Returns
+        -------
+        Bool
+        """
+        self.settings = settings
+        self.init()
+        return True
+
+    def load_settings(self, path: Path) -> Dict:
+        """
+        Load session settings
+
+        Parameters
+        ----------
+        path: Path
+            Path to storage file
+
+        Returns
+        -------
+        Dict
+            Current session settings as a Dict
+        """
+        with open(path, "r") as fp:
+            self.set_settings(json.load(fp))
+            return self.settings
+        return None
+
+    def dump_settings(self, path: Path) -> bool:
+        """
+        Serialize and save session settings
+
+        Parameters
+        ----------
+        path: Path
+            Path to storage file
+
+        Returns
+        -------
+        Bool
+        """
+        with open(path, "w") as fp:
+            json.dump(self.get_settings(), fp, indent=4)
+        return True
+
+    def set_device(self, device: Dict = None, reset: bool = False) -> bool:
         """
         Helper to set a device for login
 
@@ -429,21 +650,24 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "105.0.0.18.119",
-            "android_version": 28,
-            "android_release": "9.0",
-            "dpi": "640dpi",
-            "resolution": "1440x2560",
-            "manufacturer": "samsung",
-            "device": "SM-G965F",
-            "model": "star2qltecs",
-            "cpu": "samsungexynos9810",
-            "version_code": "168361634",
+            "app_version": "269.0.0.18.75",
+            "android_version": 26,
+            "android_release": "8.0.0",
+            "dpi": "480dpi",
+            "resolution": "1080x1920",
+            "manufacturer": "OnePlus",
+            "device": "devitron",
+            "model": "6T Dev",
+            "cpu": "qcom",
+            "version_code": "314665256",
         }
-        self.set_uuids({})
+        self.settings["device_settings"] = self.device_settings
+        if reset:
+            self.set_uuids({})
+            # self.settings = self.get_settings()
         return True
 
-    def set_user_agent(self, user_agent: str = "") -> bool:
+    def set_user_agent(self, user_agent: str = "", reset: bool = False) -> bool:
         """
         Helper to set user agent
 
@@ -457,11 +681,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        self.user_agent = user_agent or config.USER_AGENT_BASE.format(
-            **self.device_settings
-        )
-        self.private.headers.update({"User-Agent": self.user_agent})
-        self.set_uuids({})
+        data = dict(self.device_settings, locale=self.locale)
+        self.user_agent = user_agent or config.USER_AGENT_BASE.format(**data)
+        # self.private.headers.update({"User-Agent": self.user_agent})  # changed in base_headers
+        self.settings["user_agent"] = self.user_agent
+        if reset:
+            self.set_uuids({})
+            # self.settings = self.get_settings()
         return True
 
     def set_uuids(self, uuids: Dict = None) -> bool:
@@ -482,10 +708,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
-        self.device_id = uuids.get("device_id", self.generate_device_id())
+        self.android_device_id = uuids.get(
+            "android_device_id", self.generate_android_device_id()
+        )
+        self.request_id = uuids.get("request_id", self.generate_uuid())
+        self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
+        # self.device_id = uuids.get("device_id", self.generate_uuid())
+        self.settings["uuids"] = uuids
         return True
 
-    def generate_uuid(self) -> str:
+    def generate_uuid(self, prefix: str = "", suffix: str = "") -> str:
         """
         Helper to generate uuids
 
@@ -494,20 +726,29 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         str
             A stringified UUID
         """
-        return str(uuid.uuid4())
+        return f"{prefix}{uuid.uuid4()}{suffix}"
 
-    def generate_device_id(self) -> str:
+    def generate_mutation_token(self) -> str:
         """
-        Helper to generate Device ID
+        Token used when DM sending and upload media
+
+        Returns
+        -------
+        str
+            A stringified int
+        """
+        return str(random.randint(6800011111111111111, 6800099999999999999))
+
+    def generate_android_device_id(self) -> str:
+        """
+        Helper to generate Android Device ID
 
         Returns
         -------
         str
             A random android device id
         """
-        return (
-            "android-%s" % hashlib.md5(bytes(random.randint(1, 1000))).hexdigest()[:16]
-        )
+        return "android-%s" % hashlib.sha256(str(time.time()).encode()).hexdigest()[:16]
 
     def expose(self) -> Dict:
         """
@@ -521,6 +762,24 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         data = {"id": self.uuid, "experiment": "ig_android_profile_contextual_feed"}
         return self.private_request("qe/expose/", self.with_default_data(data))
 
+    def with_extra_data(self, data: Dict) -> Dict:
+        """
+        Helper to get extra data
+
+        Returns
+        -------
+        Dict
+            A dictionary of default data
+        """
+        return self.with_default_data(
+            {
+                "phone_id": self.phone_id,
+                "_uid": str(self.user_id),
+                "guid": self.uuid,
+                **data,
+            }
+        )
+
     def with_default_data(self, data: Dict) -> Dict:
         """
         Helper to get default data
@@ -530,15 +789,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             A dictionary of default data
         """
-        return dict(
-            {
-                "_uuid": self.uuid,
-                "_uid": str(self.user_id),
-                "_csrftoken": self.token,
-                "device_id": self.device_id,
-            },
+        return {
+            "_uuid": self.uuid,
+            # "_uid": str(self.user_id),
+            # "_csrftoken": self.token,
+            "device_id": self.android_device_id,
             **data,
-        )
+        }
 
     def with_action_data(self, data: Dict) -> Dict:
         """
@@ -595,8 +852,52 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        session_id = self.private.cookies.get("sessionid")
-        if session_id:
-            self.public.cookies.set("sessionid", session_id)
+        if self.sessionid:
+            self.public.cookies.set("sessionid", self.sessionid)
             return True
         return False
+
+    def logout(self) -> bool:
+        result = self.private_request("accounts/logout/", {"one_tap_app_login": True})
+        return result["status"] == "ok"
+
+    def parse_authorization(self, authorization) -> dict:
+        """Parse authorization header"""
+        try:
+            b64part = authorization.rsplit(":", 1)[-1]
+            if not b64part:
+                return {}
+            return json.loads(base64.b64decode(b64part))
+        except Exception as e:
+            self.logger.exception(e)
+        return {}
+
+    @property
+    def authorization(self) -> str:
+        """Build authorization header
+        Example: Bearer IGT:2:eaW9u.....aWQiOiI0NzM5=
+        """
+        if self.authorization_data:
+            b64part = base64.b64encode(dumps(self.authorization_data).encode()).decode()
+            return f"Bearer IGT:2:{b64part}"
+        return ""
+
+    def dump_instaman(self):
+        # helen9151hernandez:AgcXb0GJhAP|Instagram 200.0.0.24.121 Android (24/7.0; 640dpi; 1440x2392; Samsung; SGH-T849; SGH-T849; hi3660; pt_BR; 304101669)|097e7efb59ba976b;03c1746f-77cd-4ac6-8f7e-175b0ba0dc17;c4155719-9d80-466c-b3f7-f98f0a14a372;7fa9e7c7-75e1-498f-8d0f-8f56fe7a4f45|X-MID=YaHXxQABAAFcCc6aAC_OQ53CVDbd;IG-U-DS-USER-ID=50511821576;IG-U-RUR=FRC,50511821576,1669532533:01f705b9f6a7411dc1e985485b1fe39dd317e97b2cf166f380148836d9c2e5233cac5476;Authorization=Bearer IGT:2:eyJkc191c2VyX2lkIjoiNTA1MTE4MjE1NzYiLCJzZXNzaW9uaWQiOiI1MDUxMTgyMTU3NiUzQWtyaEVSbHF2VW8wbnRXJTNBMjQiLCJzaG91bGRfdXNlX2hlYWRlcl9vdmVyX2Nvb2tpZXMiOnRydWV9;X-IG-WWW-Claim=hmac.AR300vJeNkurM8IGnekSoFtSKJmXazjxOawhWNC3d1Gw1OiX;||
+        uuids = ";".join(
+            [
+                self.android_device_id.replace("android-", ""),
+                self.uuid,
+                self.phone_id,
+                self.client_session_id,
+            ]
+        )
+        headers = {
+            "X-MID": self.mid,
+            "IG-U-DS-USER-ID": self.user_id,
+            "IG-U-RUR": self.ig_u_rur,
+            "Authorization": self.authorization,
+            "X-IG-WWW-Claim": self.ig_www_claim or "0",
+        }
+        headers = ";".join([f"{key}={value}" for key, value in headers.items()])
+        return f"{self.username}:{self.password}|{self.user_agent}|{uuids}|{headers};||"

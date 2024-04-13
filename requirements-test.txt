@@ -1,4 +1,13 @@
-flake8==3.8.4
-Pillow==7.2.0
-isort==4.3.21
-bandit==1.7.0
+flake8==7.0.0
+Pillow==10.3.0
+isort==5.13.2
+bandit==1.7.8
+mike==2.0.0
+markdown-include==0.8.1
+mkdocs-material==9.5.17
+mkdocs-minify-plugin==0.8.0
+mkdocstrings==0.24.3
+./util/mkdocs-redirects
+./util/mkdocstrings_patch_type_aliases
+pytest-xdist==3.5.0
+pytest~=8.1.1

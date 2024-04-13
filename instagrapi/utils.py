@@ -1,11 +1,10 @@
-import hashlib
-import hmac
+import datetime
+import enum
 import json
 import random
 import string
+import time
 import urllib
-
-from . import config
 
 
 class InstagramIdCodec:
@@ -35,21 +34,33 @@ class InstagramIdCodec:
         idx = 0
         for char in shortcode:
             power = strlen - (idx + 1)
-            num += alphabet.index(char) * (base ** power)
+            num += alphabet.index(char) * (base**power)
             idx += 1
         return num
 
 
+class InstagrapiJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, enum.Enum):
+            return obj.value
+        elif isinstance(obj, datetime.time):
+            return obj.strftime("%H:%M")
+        elif isinstance(obj, (datetime.datetime, datetime.date)):
+            return int(obj.strftime("%s"))
+        elif isinstance(obj, set):
+            return list(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
 def generate_signature(data):
-    """Generate signature of POST data for Private API"""
-    body = hmac.new(
-        config.IG_SIG_KEY.encode("utf-8"), data.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
-    return "signed_body={body}.{data}&ig_sig_key_version={sig_key}".format(
-        body=body,
-        data=urllib.parse.quote(data),
-        sig_key=config.SIG_KEY_VERSION,
-    )
+    """Generate signature of POST data for Private API
+
+    Returns
+    -------
+    str
+        e.g. "signed_body=SIGNATURE.test"
+    """
+    return "signed_body=SIGNATURE.{data}".format(data=urllib.parse.quote_plus(data))
 
 
 def json_value(data, *args, default=None):
@@ -65,16 +76,34 @@ def json_value(data, *args, default=None):
     return cur
 
 
-def gen_password(size=10, symbols=False):
+def gen_token(size=10, symbols=False):
+    """Gen CSRF or something else token"""
     chars = string.ascii_letters + string.digits
     if symbols:
         chars += string.punctuation
     return "".join(random.choice(chars) for _ in range(size))
 
 
-def gen_csrftoken(size=32):
-    return gen_password(size, symbols=False)
+def gen_password(size=10):
+    """Gen password"""
+    return gen_token(size)
 
 
 def dumps(data):
-    return json.dumps(data, separators=(",", ":"))
+    """Json dumps format as required Instagram"""
+    return InstagrapiJSONEncoder(separators=(",", ":")).encode(data)
+
+
+def generate_jazoest(symbols: str) -> str:
+    amount = sum(ord(s) for s in symbols)
+    return f"2{amount}"
+
+
+def date_time_original(localtime):
+    # return time.strftime("%Y:%m:%d+%H:%M:%S", localtime)
+    return time.strftime("%Y%m%dT%H%M%S.000Z", localtime)
+
+
+def random_delay(delay_range: list):
+    """Trigger sleep of a random floating number in range min_sleep to max_sleep"""
+    return time.sleep(random.uniform(delay_range[0], delay_range[1]))
