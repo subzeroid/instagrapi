@@ -15,7 +15,6 @@ try:
 except ImportError:
     raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
 
-
 class StoryBuilder:
     """
     Helpers for Story building
