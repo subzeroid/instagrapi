@@ -28,7 +28,6 @@ class SignUpMixin:
         month: int = None,
         day: int = None
     ) -> UserShort:
-        email = 'jw85tnam2@relay.firefox.com'
         self.get_signup_config()
         check = self.check_email(email)
         assert check.get('valid'), f'Email not valid ({check})'
