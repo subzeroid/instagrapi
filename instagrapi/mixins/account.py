@@ -2,6 +2,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Dict
 
+import json
 import requests
 
 from instagrapi.exceptions import ClientError, ClientLoginRequired
