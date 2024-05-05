@@ -323,7 +323,7 @@ class Story(TypesBaseModel):
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     sponsor_tags: List[UserShort]
-    is_paid_partnership: Optional[bool]
+    is_paid_partnership: Optional[bool] = False
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
