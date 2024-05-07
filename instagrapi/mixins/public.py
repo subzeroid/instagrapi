@@ -80,7 +80,7 @@ class PublicRequestMixin:
         data=None,
         params=None,
         headers=None,
-        update_headers=None
+        update_headers=None,
         return_json=False,
         retries_count=3,
         retries_timeout=2,
