@@ -7,7 +7,7 @@ import requests
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import dumps, gen_token
+from instagrapi.utils import dumps, gen_token, generate_signature
 
 
 class AccountMixin:
@@ -34,7 +34,11 @@ class AccountMixin:
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
                 "Accept-Language": "en-US",
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15",
+                "User-Agent": (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) "
+                    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
+                    "Version/11.1.2 Safari/605.1.15"
+                ),
             },
             proxies=self.public.proxies,
             timeout=self.request_timeout,
@@ -57,7 +61,7 @@ class AccountMixin:
         """
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
-    
+
     def change_password(
         self,
         old_password: str,
@@ -96,15 +100,26 @@ class AccountMixin:
             result = self.private_request("accounts/change_password/", data=data)
             return result
         except Exception as e:
+            self.logger.exception(e)
             return False
+
     def set_external_url(self, external_url) -> dict:
         """
         Set new biography
         """
-
-        signed_body = f"signed_body=SIGNATURE.%7B%22updated_links%22%3A%22%5B%7B%5C%22url%5C%22%3A%5C%22{external_url}%5C%22%2C%5C%22title%5C%22%3A%5C%22%5C%22%2C%5C%22link_type%5C%22%3A%5C%22external%5C%22%7D%5D%22%2C%22_uid%22%3A%22{self.user_id}%22%2C%22_uuid%22%3A%22{self.uuid}%22%7D"
+        data = dumps(
+            {
+                "updated_links": dumps(
+                    [{"url": external_url, "title": "", "link_type": "external"}]
+                ),
+                "_uid": self.user_id,
+                "_uuid": self.uuid,
+            }
+        )
         return self.private_request(
-            "accounts/update_bio_links/", data=signed_body, with_signature=False
+            "accounts/update_bio_links/",
+            data=generate_signature(data),
+            with_signature=False,
         )
 
     def account_set_private(self) -> bool:

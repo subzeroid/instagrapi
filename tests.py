@@ -10,6 +10,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 from instagrapi import Client
+from instagrapi.utils import gen_password
 from instagrapi.exceptions import (
     BadCredentials,
     DirectThreadNotFound,
@@ -1240,6 +1241,39 @@ class ClientLocationTestCase(ClientPrivateTestCase):
         medias = self.cl.location_medias_recent(197780767581661, amount=2)
         self.assertEqual(len(medias), 2)
         self.assertIsInstance(medias[0], Media)
+
+
+class SignUpTestCase(unittest.TestCase):
+
+    def test_password_enrypt(self):
+        cl = Client()
+        enc_password = cl.password_encrypt('test')
+        parts = enc_password.split(':')
+        self.assertEqual(parts[0], '#PWD_INSTAGRAM')
+        self.assertEqual(parts[1], '4')
+        self.assertTrue(int(parts[2]) > 1607612345)
+        self.assertTrue(len(parts[3]) == 392)
+
+    def test_signup(self):
+        cl = Client()
+        username = gen_password()
+        password = gen_password(12, symbols=True)
+        email = f'{username}@gmail.com'
+        phone_number = os.environ.get("IG_PHONE_NUMBER")
+        full_name = f'John {username}'
+        user = cl.signup(
+            username, password, email, phone_number, full_name,
+            year=random.randint(1980, 1990),
+            month=random.randint(1, 12),
+            day=random.randint(1, 30)
+        )
+        self.assertIsInstance(user, UserShort)
+        for key, val in {
+            "username": username,
+            "full_name": full_name
+        }.items():
+            self.assertEqual(getattr(user, key), val)
+        self.assertTrue(user.profile_pic_url.startswith("https://"))
 
 
 class ClientHashtagTestCase(ClientPrivateTestCase):

@@ -34,6 +34,7 @@ from instagrapi.mixins.public import (
     TopSearchesPublicMixin,
 )
 from instagrapi.mixins.share import ShareMixin
+from instagrapi.mixins.signup import SignUpMixin
 from instagrapi.mixins.story import StoryMixin
 from instagrapi.mixins.timeline import ReelsMixin
 from instagrapi.mixins.totp import TOTPMixin
@@ -78,6 +79,7 @@ class Client(
     CommentMixin,
     StoryMixin,
     PasswordMixin,
+    SignUpMixin,
     DownloadClipMixin,
     UploadClipMixin,
     ReelsMixin,
