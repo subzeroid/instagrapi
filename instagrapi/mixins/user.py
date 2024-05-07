@@ -1,5 +1,6 @@
 from copy import deepcopy
 from json.decoder import JSONDecodeError
+import json
 from typing import Dict, List, Tuple
 
 from instagrapi.exceptions import (
