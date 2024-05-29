@@ -133,29 +133,23 @@ class SignUpMixin:
         data = {
             "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
-            "tos_version": "row",
             "suggestedUsername": "sn_result",
             "do_not_auto_login_if_credentials_match": "false",
             "phone_id": self.phone_id,
             "enc_password": self.password_encrypt(password),
             "username": str(username),
             "first_name": str(full_name),
-            "day": str(day),
             "adid": self.adid,
             "guid": self.uuid,
-            "year": str(year),
             "device_id": self.device_id,
             "_uuid": self.uuid,
             "email": email,
-            "month": str(month),
-            "sn_nonce": sn_nonce,
             "force_sign_up_code": signup_code,
             "waterfall_id": self.waterfall_id,
-            "password": password,
             "one_tap_opt_in": "true",
             **kwargs,
         }
-        return self.private_request("accounts/create/", data)
+        return self.private_request("accounts/create/", data, domain= "www.instagram.com")
 
     def challenge_flow(self, data):
         data = self.challenge_api(data)
