@@ -392,6 +392,7 @@ class DirectMessage(TypesBaseModel):
     xma_share: Optional[MediaXma] = None
     clip: Optional[Media] = None
     placeholder: Optional[dict] = None
+    client_context: Optional[str] = None
 
 
 class DirectResponse(TypesBaseModel):

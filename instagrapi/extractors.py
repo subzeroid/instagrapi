@@ -344,6 +344,7 @@ def extract_direct_message(data):
         int(data["timestamp"]) // 1_000_000
     )
     data["user_id"] = str(data.get("user_id", ""))
+    data["client_context"] = data.get("client_context", "")
 
     return DirectMessage(**data)
 

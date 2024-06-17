@@ -389,6 +389,7 @@ class DirectMixin:
         user_ids: List[int] = [],
         thread_ids: List[int] = [],
         send_attribute: SEND_ATTRIBUTE = "message_button",
+        reply_to_message: Optional[DirectMessage] = None,
     ) -> DirectMessage:
         """
         Send a direct message to list of users or threads
@@ -450,6 +451,10 @@ class DirectMixin:
             kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         if user_ids:
             kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if reply_to_message:
+            kwargs["replied_to_action_source"] = "swipe"
+            kwargs["replied_to_item_id"] = reply_to_message.id
+            kwargs["replied_to_client_context"] = reply_to_message.client_context
         result = self.private_request(
             f"direct_v2/threads/broadcast/{method}/",
             data=self.with_default_data(kwargs),
