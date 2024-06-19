@@ -99,10 +99,12 @@ class Account(TypesBaseModel):
 class UserShort(TypesBaseModel):
     def __hash__(self):
         return hash(self.pk)
+
     def __eq__(self, other):
         if isinstance(other, UserShort):
             return self.pk == other.pk
         return NotImplemented
+
     pk: str
     username: Optional[str] = None
     full_name: Optional[str] = ""
@@ -321,7 +323,7 @@ class Story(TypesBaseModel):
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     sponsor_tags: List[UserShort]
-    is_paid_partnership: Optional[bool]
+    is_paid_partnership: Optional[bool] = False
     mentions: List[StoryMention]
     links: List[StoryLink]
     hashtags: List[StoryHashtag]
@@ -390,6 +392,7 @@ class DirectMessage(TypesBaseModel):
     xma_share: Optional[MediaXma] = None
     clip: Optional[Media] = None
     placeholder: Optional[dict] = None
+    client_context: Optional[str] = None
 
 
 class DirectResponse(TypesBaseModel):
