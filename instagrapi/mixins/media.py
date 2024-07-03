@@ -509,6 +509,7 @@ class MediaMixin:
             "first": 50 if not amount or amount > 50 else amount,
             # These are Instagram restrictions, you can only specify <= 50
         }
+        count = 0
         while True:
             self.logger.info(f"user_medias_gql: {amount}, {end_cursor}")
             if end_cursor:
@@ -520,15 +521,21 @@ class MediaMixin:
             medias_page, end_cursor = self.user_medias_paginated_gql(
                 user_id, amount, sleep, end_cursor=end_cursor
             )
-            medias.extend(medias_page)
-            if not end_cursor or len(medias_page) == 0:
+
+            amount_fetched = len(medias_page)
+            count += amount_fetched
+            
+            if amount and count >= amount:
+                overflow = count - amount
+                yield medias_page[:amount_fetched - overflow]
                 break
-            if amount and len(medias) >= amount:
+            
+            yield medias_page
+
+            if not end_cursor:
                 break
+
             time.sleep(sleep)
-        if amount:
-            medias = medias[:amount]
-        return medias
 
     def user_videos_paginated_v1(
         self, user_id: str, amount: int = 50, end_cursor: str = ""
@@ -673,6 +680,8 @@ class MediaMixin:
         user_id = int(user_id)
         medias = []
         next_max_id = ""
+
+        count = 0 
         while True:
             try:
                 medias_page, next_max_id = self.user_medias_paginated_v1(
@@ -683,14 +692,21 @@ class MediaMixin:
             except Exception as e:
                 self.logger.exception(e)
                 break
-            medias.extend(medias_page)
+           
+            amount_fetched = len(medias_page)
+            count += amount_fetched
+
+            if amount and count >= amount:
+                overflow = count - amount
+                yield medias_page[:amount_fetched - overflow]
+                break
+
+            yield medias_page
+
             if not next_max_id:
                 break
-            if amount and len(medias) >= amount:
-                break
-        if amount:
-            medias = medias[:amount]
-        return medias
+                
+
 
     def user_medias_paginated(
         self, user_id: str, amount: int = 0, end_cursor: str = ""
@@ -873,6 +889,8 @@ class MediaMixin:
         user_id = int(user_id)
         medias = []
         next_max_id = ""
+
+        count = 0
         while True:
             try:
                 medias_page, next_max_id = self.user_clips_paginated_v1(
@@ -883,14 +901,19 @@ class MediaMixin:
             except Exception as e:
                 self.logger.exception(e)
                 break
-            medias.extend(medias_page)
+                
+            amount_fetched = len(medias_page)
+            count += amount_fetched
+
+            if amount and count >= amount:
+                overflow = count - amount
+                yield medias_page[:amount_fetched - overflow]
+                break
+            
+            yield medias_page
+
             if not next_max_id:
                 break
-            if amount and len(medias) >= amount:
-                break
-        if amount:
-            medias = medias[:amount]
-        return medias
 
     def user_clips(self, user_id: str, amount: int = 0) -> List[Media]:
         """
@@ -1025,13 +1048,14 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
-        medias = []
         end_cursor = None
         variables = {
             "id": user_id,
             "first": 50 if not amount or amount > 50 else amount,
             # These are Instagram restrictions, you can only specify <= 50
         }
+
+        count = 0
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
@@ -1044,17 +1068,25 @@ class MediaMixin:
             edges = json_value(
                 data, "user", "edge_user_to_photos_of_you", "edges", default=[]
             )
-            for edge in edges:
-                medias.append(edge["node"])
+
+            medias = [edge["node"] for edge in edges]
+            amount_fetched = len(medias)
+
+            count += amount_fetched
+
+            if amount and count >= amount:
+                overflow = count - amount
+                yield [extract_media_gql(media) for media in medias[: amount_fetched - overflow]]
+                break
+
+            yield [extract_media_gql(media) for media in medias]
+            
             end_cursor = page_info.get("end_cursor")
             if not page_info.get("has_next_page") or not end_cursor or len(edges) == 0:
                 break
-            if amount and len(medias) >= amount:
-                break
+
             time.sleep(sleep)
-        if amount:
-            medias = medias[:amount]
-        return [extract_media_gql(media) for media in medias]
+
 
     def usertag_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
@@ -1075,6 +1107,8 @@ class MediaMixin:
         user_id = int(user_id)
         medias = []
         next_max_id = ""
+
+        count = 0
         while True:
             try:
                 items = self.private_request(
@@ -1085,15 +1119,22 @@ class MediaMixin:
             except Exception as e:
                 self.logger.exception(e)
                 break
-            medias.extend(items)
+
+            amount_fetched = len(items)
+            count += amount_fetched
+
+            if amount and count >= amount:
+                overflow = count - amount
+                yield [extract_media_v1(media) for media in medias[:amount_fetched - overflow]]
+                break 
+            
+            yield [extract_media_v1(media) for media in medias]
+
             if not self.last_json.get("more_available"):
                 break
-            if amount and len(medias) >= amount:
-                break
+
             next_max_id = self.last_json.get("next_max_id", "")
-        if amount:
-            medias = medias[:amount]
-        return [extract_media_v1(media) for media in medias]
+
 
     def usertag_medias(self, user_id: str, amount: int = 0) -> List[Media]:
         """
