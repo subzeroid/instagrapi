@@ -40,6 +40,20 @@ class BioLink(TypesBaseModel):
     open_external_url_with_in_app_browser: Optional[bool] = None
 
 
+class Broadcast(TypesBaseModel):
+    title: str
+    thread_igid: str
+    subtitle: str
+    invite_link: str
+    is_member: bool
+    group_image_uri: str
+    group_image_background_uri: str
+    thread_subtype: int
+    number_of_members: int
+    creator_igid: str | None
+    creator_username: str
+
+
 class User(TypesBaseModel):
     pk: str
     username: str
@@ -56,6 +70,8 @@ class User(TypesBaseModel):
     external_url: Optional[str] = None
     account_type: Optional[int] = None
     is_business: bool
+
+    broadcast_channel: List[Broadcast] = []
 
     public_email: Optional[str] = None
     contact_phone_number: Optional[str] = None
