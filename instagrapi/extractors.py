@@ -29,6 +29,7 @@ from .types import (
     StoryMedia,
     StoryMention,
     Track,
+    Broadcast,
     User,
     UserShort,
     Usertag,
@@ -196,8 +197,15 @@ def extract_user_short(data):
     return UserShort(**data)
 
 
+def extract_broadcast_channel(data):
+    """ Extract broadcast channel infos """
+    channels = data["pinned_channels_info"]["pinned_channels_list"]
+    return [Broadcast(**channel) for channel in channels]
+
+
 def extract_user_gql(data):
     """For Public GraphQL API"""
+    data["broadcast_channel"] = extract_broadcast_channel(data)
     return User(
         pk=data["id"],
         media_count=data["edge_owner_to_timeline_media"]["count"],
@@ -212,6 +220,7 @@ def extract_user_gql(data):
 
 def extract_user_v1(data):
     """For Private API"""
+    data["broadcast_channel"] = extract_broadcast_channel(data)
     data["external_url"] = data.get("external_url") or None
     versions = data.get("hd_profile_pic_versions")
     pic_hd = versions[-1] if versions else data.get("hd_profile_pic_url_info", {})
