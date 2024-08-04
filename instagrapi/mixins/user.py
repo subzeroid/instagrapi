@@ -141,7 +141,7 @@ class UserMixin:
             An object of User type
         """
         username = str(username).lower()
-        return extract_user_gql(self.public_a1_request(f"/{username!s}/")["user"])
+        return extract_user_gql(self.private_request(f"users/web_profile_info/?username={username!s}")["data"]["user"])
 
     def user_info_by_username_v1(self, username: str) -> User:
         """
