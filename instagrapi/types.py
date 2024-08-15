@@ -50,7 +50,7 @@ class Broadcast(TypesBaseModel):
     group_image_background_uri: str
     thread_subtype: int
     number_of_members: int
-    creator_igid: str | None
+    creator_igid: Optional[str]
     creator_username: str
 
 
