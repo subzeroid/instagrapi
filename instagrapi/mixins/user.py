@@ -928,7 +928,7 @@ class UserMixin:
             "id":
                 user_id,
             "first":
-                50,
+                24,
             "fields":
                 "data.user.edge_owner_to_timeline_media.count,data.user.edge_owner_to_timeline_media.edges.node.id,data.user.edge_owner_to_timeline_media.page_info",
         }
