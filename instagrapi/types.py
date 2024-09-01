@@ -172,6 +172,7 @@ class Media(TypesBaseModel):
     commenting_disabled_for_viewer: Optional[bool] = False
     like_count: int
     play_count: Optional[int] = None
+    reshare_count: Optional[int] = 0
     has_liked: Optional[bool] = None
     caption_text: str
     accessibility_caption: Optional[str] = None
