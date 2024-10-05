@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -52,7 +52,7 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
       - name: Install dependencies
@@ -68,11 +68,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.8, 3.9 ]
+        python-version: [ "3.10" ]
+    env:
+      TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
     steps:
       - name: Check out code
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -80,9 +82,20 @@ jobs:
         with:
           requirements: "true"
           test-requirements: "true"
-
-      - name: Run test
-        run: python -m unittest tests.FakeClientTestCase
+      - name: Run media test
+        run: pytest -sv tests.py::ClientMediaTestCase
+      - name: Run user test
+        run: pytest -sv tests.py::ClientUserTestCase
+      # - name: Run comment test
+      #   run: pytest -sv tests.py::ClientCommentTestCase
+      # - name: Run location test
+      #   run: pytest -sv tests.py::ClientLocationTestCase
+      # - name: Run hashtag test
+      #   run: pytest -sv tests.py::ClientHashtagTestCase
+      # - name: Run share test
+      #   run: pytest -sv tests.py::ClientShareTestCase
+      - name: Run highlight test
+        run: pytest -sv tests.py::ClientHighlightTestCase
 
   build-docs:
     runs-on: ubuntu-latest
@@ -91,7 +104,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -107,7 +120,7 @@ jobs:
       # upload artifact for dev build
       - name: Upload coverage results artifact
         if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docs-site
           path: site/
@@ -119,7 +132,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 

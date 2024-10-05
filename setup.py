@@ -21,8 +21,8 @@ Features:
 requirements = [
     "requests<3.0,>=2.25.1",
     "PySocks==1.7.1",
-    "pydantic==1.10.9",
-    "pycryptodomex==3.18.0",
+    "pydantic==2.9.2",
+    "pycryptodomex==3.20.0",
 ]
 # requirements = [
 #     line.strip()
@@ -31,11 +31,11 @@ requirements = [
 
 setup(
     name="instagrapi",
-    version="1.19.5",
-    author="Mikhail Andreev",
-    author_email="x11org@gmail.com",
+    version="2.1.2",
+    author="Mark Subzeroid",
+    author_email="143403577+subzeroid@users.noreply.github.com",
     license="MIT",
-    url="https://github.com/adw0rd/instagrapi",
+    url="https://github.com/subzeroid/instagrapi",
     install_requires=requirements,
     keywords=[
         "instagram private api",
@@ -69,14 +69,14 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
 )

@@ -1,16 +1,21 @@
-import json
 import base64
+import json
 from typing import List, Tuple
 
-from instagrapi.utils import dumps
-from instagrapi.exceptions import ClientUnauthorizedError
-from instagrapi.exceptions import ClientError, HashtagNotFound, WrongCursorError
+from instagrapi.exceptions import (
+    ClientError,
+    ClientLoginRequired,
+    ClientUnauthorizedError,
+    HashtagNotFound,
+    WrongCursorError,
+)
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
+from instagrapi.utils import dumps
 
 
 class HashtagMixin:
@@ -112,7 +117,7 @@ class HashtagMixin:
             hashtag = self.hashtag_info_a1(name)
         except Exception:
             # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # such this - https://github.com/subzeroid/instagrapi/issues/364
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             hashtag = self.hashtag_info_v1(name)
@@ -172,7 +177,7 @@ class HashtagMixin:
             params = {"max_id": end_cursor} if end_cursor else {}
             try:
                 data = self.public_a1_request(url, params=params)
-            except ClientUnauthorizedError:
+            except (ClientUnauthorizedError, ClientLoginRequired):
                 self.inject_sessionid_to_public()
                 data = self.public_a1_request(url, params=params)
 

@@ -16,23 +16,23 @@ from instagrapi.exceptions import (
     ClientConnectionError,
     ClientError,
     ClientForbiddenError,
-    PrivateAccount,
-    UserNotFound,
-    ProxyAddressIsBlocked,
-    InvalidTargetUser,
-    InvalidMediaId,
-    MediaUnavailable,
     ClientJSONDecodeError,
     ClientNotFoundError,
     ClientRequestTimeout,
     ClientThrottledError,
     FeedbackRequired,
+    InvalidMediaId,
+    InvalidTargetUser,
     LoginRequired,
+    MediaUnavailable,
     PleaseWaitFewMinutes,
+    PrivateAccount,
+    ProxyAddressIsBlocked,
     RateLimitError,
     SentryBlock,
     TwoFactorRequired,
     UnknownError,
+    UserNotFound,
     VideoTooLongException,
 )
 from instagrapi.utils import dumps, generate_signature, random_delay
@@ -105,7 +105,6 @@ class PrivateRequestMixin:
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         self.private = session
-
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
@@ -325,7 +324,7 @@ class PrivateRequestMixin:
             if endpoint == "/challenge/":  # wow so hard, is it safe tho?
                 endpoint = "/v1/challenge/"
 
-            api_url = f"https://{self.domain or config.API_DOMAIN}/api{endpoint}"
+            api_url = f"https://{domain or config.API_DOMAIN}/api{endpoint}"
             self.logger.info(api_url)
             if data:  # POST
                 # Client.direct_answer raw dict

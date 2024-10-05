@@ -7,7 +7,7 @@ import re
 import time
 import uuid
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 from uuid import uuid4
 
 import requests
@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    BadCredentials,
     ClientThrottledError,
     PleaseWaitFewMinutes,
     PrivateError,
@@ -272,7 +273,7 @@ class PostLoginFlowMixin:
         if reason == "cold_start":
             data["reel_tray_impressions"] = {}
         else:
-            data["reel_tray_impressions"] = {self.user_id: int(time.time())}
+            data["reel_tray_impressions"] = {self.user_id: str(time.time())}
         return self.private_request("feed/reels_tray/", data)
 
 
@@ -372,8 +373,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     def login(
         self,
-        username: str,
-        password: str,
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
         relogin: bool = False,
         verification_code: str = "",
     ) -> bool:
@@ -396,8 +397,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        self.username = username
-        self.password = password
+
+        if username and password:
+            self.username = username
+            self.password = password
+        
+        if self.username is None or self.password is None:
+            raise BadCredentials("Both username and password must be provided.")
+
         if relogin:
             self.authorization_data = {}
             self.private.headers.pop("Authorization", None)
@@ -416,7 +423,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.logger.warning("Ignore 429: Continue login")
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
-        enc_password = self.password_encrypt(password)
+        enc_password = self.password_encrypt(self.password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
             "country_codes": '[{"country_code":"%d","source":["default"]}]'
@@ -467,12 +474,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return True
         return False
 
-    def one_tap_app_login(self, user_id: int, nonce: str) -> bool:
+    def one_tap_app_login(self, user_id: str, nonce: str) -> bool:
         """One tap login emulation
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             User ID
         nonce: str
             Login nonce (from Instagram, e.g. in /logout/)

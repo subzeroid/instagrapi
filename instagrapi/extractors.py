@@ -1,3 +1,4 @@
+import datetime
 import html
 import json
 import re
@@ -12,19 +13,23 @@ from .types import (
     DirectResponse,
     DirectShortThread,
     DirectThread,
+    Guide,
     Hashtag,
     Highlight,
     Location,
     Media,
-    MediaXma,
     MediaOembed,
+    MediaXma,
     ReplyMessage,
     Resource,
     Story,
+    StoryHashtag,
     StoryLink,
+    StoryLocation,
     StoryMedia,
     StoryMention,
     Track,
+    Broadcast,
     User,
     UserShort,
     Usertag,
@@ -192,8 +197,15 @@ def extract_user_short(data):
     return UserShort(**data)
 
 
+def extract_broadcast_channel(data):
+    """ Extract broadcast channel infos """
+    channels = data["pinned_channels_info"]["pinned_channels_list"]
+    return [Broadcast(**channel) for channel in channels]
+
+
 def extract_user_gql(data):
     """For Public GraphQL API"""
+    data["broadcast_channel"] = extract_broadcast_channel(data)
     return User(
         pk=data["id"],
         media_count=data["edge_owner_to_timeline_media"]["count"],
@@ -208,6 +220,7 @@ def extract_user_gql(data):
 
 def extract_user_v1(data):
     """For Private API"""
+    data["broadcast_channel"] = extract_broadcast_channel(data)
     data["external_url"] = data.get("external_url") or None
     versions = data.get("hd_profile_pic_versions")
     pic_hd = versions[-1] if versions else data.get("hd_profile_pic_url_info", {})
@@ -274,6 +287,9 @@ def extract_direct_thread(data):
     if "inviter" in data:
         data["inviter"] = extract_user_short(data["inviter"])
     data["left_users"] = data.get("left_users", [])
+    data["last_activity_at"] = datetime.datetime.fromtimestamp(
+        data["last_activity_at"] // 1_000_000
+    )
     return DirectThread(**data)
 
 
@@ -302,6 +318,10 @@ def extract_reply_message(data):
             # Instagram ¯\_(ツ)_/¯
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
+
+    data["timestamp"] = datetime.datetime.fromtimestamp(data["timestamp"] // 1_000_000)
+    data["user_id"] = str(data["user_id"])
+
     return ReplyMessage(**data)
 
 
@@ -329,6 +349,12 @@ def extract_direct_message(data):
     if xma_media_share:
         data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
 
+    data["timestamp"] = datetime.datetime.fromtimestamp(
+        int(data["timestamp"]) // 1_000_000
+    )
+    data["user_id"] = str(data.get("user_id", ""))
+    data["client_context"] = data.get("client_context", "")
+
     return DirectMessage(**data)
 
 
@@ -352,6 +378,7 @@ def extract_direct_media(data):
 
 
 def extract_account(data):
+    data["pk"] = str(data["pk"])
     data["external_url"] = data.get("external_url") or None
     return Account(**data)
 
@@ -371,6 +398,7 @@ def extract_hashtag_v1(data):
 def extract_story_v1(data):
     """Extract story from Private API"""
     story = deepcopy(data)
+    story["pk"] = str(story.get("pk"))
     if "video_versions" in story:
         # Select Best Quality by Resolutiuon
         story["video_url"] = sorted(
@@ -386,8 +414,12 @@ def extract_story_v1(data):
     story["mentions"] = [
         StoryMention(**mention) for mention in story.get("reel_mentions", [])
     ]
-    story["locations"] = []
-    story["hashtags"] = []
+    story["locations"] = [
+        StoryLocation(**location) for location in story.get("story_locations", [])
+    ]
+    story["hashtags"] = [
+        StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])
+    ]
     story["stickers"] = data.get("story_link_stickers") or []
     feed_medias = []
     story_feed_medias = data.get("story_feed_media") or []
@@ -401,6 +433,7 @@ def extract_story_v1(data):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
     story["sponsor_tags"] = [tag["sponsor"] for tag in story.get("sponsor_tags", [])]
+    story["is_paid_partnership"] = story.get("is_paid_partnership")
     return Story(**story)
 
 
@@ -436,7 +469,7 @@ def extract_story_gql(data):
     if story_cta_url:
         story["links"] = [StoryLink(**{"webUri": story_cta_url})]
     story["user"] = extract_user_short(story.get("owner"))
-    story["pk"] = int(story["id"])
+    story["pk"] = str(story["id"])
     story["id"] = f"{story['id']}_{story['owner']['id']}"
     story["code"] = InstagramIdCodec.encode(story["pk"])
     story["taken_at"] = story["taken_at_timestamp"]
@@ -468,4 +501,5 @@ def extract_track(data):
     )
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data["dash_manifest"])
     data["uri"] = html.unescape(items[0]) if items else None
+    data["territory_validity_periods"] = data.get("territory_validity_periods") or {}
     return Track(**data)

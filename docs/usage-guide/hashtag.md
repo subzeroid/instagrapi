@@ -128,7 +128,7 @@ Low level methods:
 | hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
 | hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Get recent clips (reels) for a hashtag by Private Mobile API
 
-Example for [Request for loading every next time new posts from hashtag](https://github.com/adw0rd/instagrapi/issues/79):
+Example for [Request for loading every next time new posts from hashtag](https://github.com/subzeroid/instagrapi/issues/79):
 
 ``` python
 >>> medias, cursor = cl.hashtag_medias_v1_chunk('test', max_amount=32, tab_key='recent')

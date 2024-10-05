@@ -12,7 +12,6 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi.exceptions import (
-    ClientUnauthorizedError,
     ClientBadRequestError,
     ClientConnectionError,
     ClientError,
@@ -23,6 +22,7 @@ from instagrapi.exceptions import (
     ClientLoginRequired,
     ClientNotFoundError,
     ClientThrottledError,
+    ClientUnauthorizedError,
 )
 from instagrapi.utils import random_delay
 
@@ -58,7 +58,6 @@ class PublicRequestMixin:
         session.mount("https://", adapter)
         session.mount("http://", adapter)
         self.public = session
-
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
             {
@@ -124,7 +123,14 @@ class PublicRequestMixin:
                 continue
 
     def _send_public_request(
-        self, url, data=None, params=None, headers=None, return_json=False
+        self,
+        url,
+        data=None,
+        params=None,
+        headers=None,
+        return_json=False,
+        stream=None,
+        timeout=None,
     ):
         self.public_requests_count += 1
         if headers:
@@ -136,12 +142,23 @@ class PublicRequestMixin:
         try:
             if data is not None:  # POST
                 response = self.public.data(
-                    url, data=data, params=params, proxies=self.public.proxies
+                    url,
+                    data=data,
+                    params=params,
+                    proxies=self.public.proxies,
+                    timeout=timeout,
                 )
             else:  # GET
                 response = self.public.get(
-                    url, params=params, proxies=self.public.proxies
+                    url,
+                    params=params,
+                    proxies=self.public.proxies,
+                    stream=stream,
+                    timeout=timeout,
                 )
+
+            if stream:
+                return response
 
             expected_length = int(response.headers.get("Content-Length") or 0)
             actual_length = response.raw.tell()
@@ -205,7 +222,9 @@ class PublicRequestMixin:
             self.last_response_ts = time.time()
 
     def public_a1_request(self, endpoint, data=None, params=None, headers=None):
-        url = self.PUBLIC_API_URL + endpoint.lstrip("/")
+        url = (self.PUBLIC_API_URL + str(endpoint)).replace(
+            ".com//", ".com/"
+        )  # (jarrodnorwell) fixed KeyError: 'data', fixed // error
         params = params or {}
         params.update({"__a": 1, "__d": "dis"})
 

@@ -1,14 +1,14 @@
-from typing import Any, Dict
 import shutil
 from pathlib import Path
+from typing import Any, Dict
 from urllib.parse import urlparse
 
 import requests
 
+from instagrapi.exceptions import ClientError, TrackNotFound
 from instagrapi.extractors import extract_track
 from instagrapi.types import Track
 from instagrapi.utils import json_value
-from instagrapi.exceptions import ClientError, TrackNotFound
 
 
 class TrackMixin:
@@ -25,13 +25,15 @@ class TrackMixin:
         filename: str, optional
             Filename for the track
         folder: Path, optional
-            Directory in which you want to download the track, default is "" and will download the files to working directory
+            Directory in which you want to download the track,
+            default is "" and will download the files to working directory
 
         Returns
         -------
         Path
             Path for the file downloaded
         """
+        url = str(url)
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, """The URL must contain the path to the file (m4a or mp3)."""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname

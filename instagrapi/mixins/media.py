@@ -369,7 +369,7 @@ class MediaMixin:
         UserShort
             An object of UserShort
         """
-        return self.media_info(media_pk).user
+        return self.media_info_v1(media_pk).user
 
     def media_oembed(self, url: str) -> Dict:
         """
@@ -436,14 +436,14 @@ class MediaMixin:
         return self.media_like(media_id, revert=True)
 
     def user_medias_paginated_gql(
-        self, user_id: int, amount: int = 0, sleep: int = 2, end_cursor=None
+        self, user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None
     ) -> Tuple[List[Media], str]:
         """
         Get a page of a user's media by Public Graphql API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
@@ -481,14 +481,14 @@ class MediaMixin:
         return ([extract_media_gql(media) for media in medias], end_cursor)
 
     def user_medias_gql(
-        self, user_id: int, amount: int = 0, sleep: int = 0
+        self, user_id: str, amount: int = 0, sleep: int = 0
     ) -> List[Media]:
         """
         Get a user's media by Public Graphql API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
@@ -531,14 +531,14 @@ class MediaMixin:
         return medias
 
     def user_videos_paginated_v1(
-        self, user_id: int, amount: int = 50, end_cursor: str = ""
+        self, user_id: str, amount: int = 50, end_cursor: str = ""
     ) -> Tuple[List[Media], str]:
         """
         Get a page of user's video by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         end_cursor: str, optional
@@ -570,13 +570,13 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media) for media in medias], next_max_id)
 
-    def user_videos_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_videos_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's video by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 
@@ -609,14 +609,14 @@ class MediaMixin:
         return medias
 
     def user_medias_paginated_v1(
-        self, user_id: int, amount: int = 33, end_cursor: str = ""
+        self, user_id: str, amount: int = 33, end_cursor: str = ""
     ) -> Tuple[List[Media], str]:
         """
         Get a page of user's media by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         end_cursor: str, optional
@@ -654,13 +654,13 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media) for media in medias], next_max_id)
 
-    def user_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's media by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 
@@ -693,14 +693,14 @@ class MediaMixin:
         return medias
 
     def user_medias_paginated(
-        self, user_id: int, amount: int = 0, end_cursor: str = ""
+        self, user_id: str, amount: int = 0, end_cursor: str = ""
     ) -> Tuple[List[Media], str]:
         """
         Get a page of user's media
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         end_cursor: str, optional
@@ -747,7 +747,7 @@ class MediaMixin:
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
 
         Returns
         -------
@@ -767,18 +767,18 @@ class MediaMixin:
         )
         pinned_medias = []
         for media in medias["items"]:
-            if media.get("timeline_pinned_user_ids") != None:
+            if media.get("timeline_pinned_user_ids") is not None:
                 pinned_medias.append(extract_media_v1(media))
         self.base_headers["X-IG-Nav-Chain"] = default_nav
         return pinned_medias
 
-    def user_medias(self, user_id: int, amount: int = 0, sleep: int = 0) -> List[Media]:
+    def user_medias(self, user_id: str, amount: int = 0, sleep: int = 0) -> List[Media]:
         """
         Get a user's media
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
@@ -811,14 +811,14 @@ class MediaMixin:
         return medias
 
     def user_clips_paginated_v1(
-        self, user_id: int, amount: int = 50, end_cursor: str = ""
+        self, user_id: str, amount: int = 50, end_cursor: str = ""
     ) -> Tuple[List[Media], str]:
         """
         Get a page of user's clip (reels) by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         end_cursor: str, optional
@@ -854,13 +854,13 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media["media"]) for media in medias], next_max_id)
 
-    def user_clips_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_clips_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's clip (reels) by Private Mobile API
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 
@@ -892,13 +892,13 @@ class MediaMixin:
             medias = medias[:amount]
         return medias
 
-    def user_clips(self, user_id: int, amount: int = 0) -> List[Media]:
+    def user_clips(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's clip (reels)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 
@@ -1005,14 +1005,14 @@ class MediaMixin:
         return self.media_archive(media_id, revert=True)
 
     def usertag_medias_gql(
-        self, user_id: int, amount: int = 0, sleep: int = 2
+        self, user_id: str, amount: int = 0, sleep: int = 2
     ) -> List[Media]:
         """
         Get medias where a user is tagged (by Public GraphQL API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
         sleep: int, optional
@@ -1056,13 +1056,13 @@ class MediaMixin:
             medias = medias[:amount]
         return [extract_media_gql(media) for media in medias]
 
-    def usertag_medias_v1(self, user_id: int, amount: int = 0) -> List[Media]:
+    def usertag_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get medias where a user is tagged (by Private Mobile API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 
@@ -1095,13 +1095,13 @@ class MediaMixin:
             medias = medias[:amount]
         return [extract_media_v1(media) for media in medias]
 
-    def usertag_medias(self, user_id: int, amount: int = 0) -> List[Media]:
+    def usertag_medias(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get medias where a user is tagged
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of media to return, default is 0 (all medias)
 

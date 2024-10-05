@@ -27,10 +27,10 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk(media_id: str)                                         | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772)
 | media_pk_from_code(code: str)                                   | int                | Return media_pk
 | media_pk_from_url(url: str)                                     | int                | Return media_pk
-| user_medias(user_id: int, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
-| user_medias_paginated(user_id: int, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
-| user_clips(user_id: int, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
-| usertag_medias(user_id: int, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
+| user_medias(user_id: str, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
+| user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
+| user_clips(user_id: str, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
+| usertag_medias(user_id: str, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
 | media_info(media_pk: int)                                       | Media              | Return media info
 | media_delete(media_pk: int)                                     | bool               | Delete media
 | media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media
@@ -52,16 +52,16 @@ Low level methods:
 | media_info_a1(media_pk: int, max_id: str = None)                | Media        | Get Media from PK by Public Web API
 | media_info_gql(media_pk: int)                                   | Media        | Get Media from PK by Public Graphql API
 | media_info_v1(media_pk: int)                                    | Media        | Get Media from PK by Private Mobile API
-| user_medias_gql(user_id: int, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
-| user_medias_paginated_gql(user_id: int, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
-| user_medias_v1(user_id: int, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
-| user_medias_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
-| user_clips_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
-| user_clips_paginated_v1(user_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
-| user_videos_v1(user_id: int, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
+| user_medias_gql(user_id: str, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
+| user_medias_paginated_gql(user_id: str, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
+| user_medias_v1(user_id: str, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
+| user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
+| user_clips_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
+| user_clips_paginated_v1(user_id: str, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
+| user_videos_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
 | user_videos_paginated_v1(ser_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's video by Private Mobile API
-| usertag_medias_gql(user_id: int, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
-| usertag_medias_v1(user_id: int, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
+| usertag_medias_gql(user_id: str, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
+| usertag_medias_v1(user_id: str, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
 
 ### Example:
 
@@ -95,8 +95,8 @@ Low level methods:
   'external_id': 181364832764479,
   'external_id_source': 'facebook_places'},
  'user': {'pk': 1903424587,
-  'username': 'adw0rd',
-  'full_name': 'Mikhail Andreev',
+  'username': 'example',
+  'full_name': 'Example Example',
   'profile_pic_url': HttpUrl('https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_...&oe=5FD7600E')},
  'comment_count': 0,
  'like_count': 48,
@@ -122,8 +122,8 @@ Low level methods:
 >>> cl.media_oembed("https://www.instagram.com/p/B3mr1-OlWMG/").dict()
 {'version': '1.0',
  'title': 'В гостях у ДК @delai_krasivo_kaifui',
- 'author_name': 'adw0rd',
- 'author_url': 'https://www.instagram.com/adw0rd',
+ 'author_name': 'example',
+ 'author_url': 'https://www.instagram.com/example',
  'author_id': 1903424587,
  'media_id': '2154602296692269830_1903424587',
  'provider_name': 'Instagram',
@@ -154,7 +154,7 @@ True
  'thumbnail_url': None,
  'location': None,
  'user': {'pk': 1903424587,
-  'username': 'adw0rd',
+  'username': 'example',
   'full_name': '',
   'profile_pic_url': None,
   'profile_pic_url_hd': None,
@@ -240,9 +240,9 @@ PosixPath('/tmp/45588546_367538213983456_6830188946193737023_n.mp4')
 1787135824035452364
 
 >>> cl.album_download(1787135824035452364)
-[PosixPath('/app/adw0rd_1787135361353462176.mp4'),
- PosixPath('/app/adw0rd_1787135762219834098.mp4'),
- PosixPath('/app/adw0rd_1787133803186894424.jpg')]
+[PosixPath('/app/example_1787135361353462176.mp4'),
+ PosixPath('/app/example_1787135762219834098.mp4'),
+ PosixPath('/app/example_1787133803186894424.jpg')]
 
 ```
 
@@ -252,7 +252,7 @@ Upload medias to your feed. Common arguments:
 
 * `path` - Path to source file
 * `caption`  - Text for you post
-* `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](https://github.com/adw0rd/instagrapi/blob/master/instagrapi/types.py))
+* `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
 
 | Method                                                                                                                                 | Return  | Description
@@ -269,8 +269,8 @@ In `extra_data`, you can pass additional media settings, for example:
 
 | Method                        | Type   | Description
 | ----------------------------- | ------ | ------------------
-| custom_accessibility_caption  | String | [Set alternative text](https://github.com/adw0rd/instagrapi/issues/351) `{"custom_accessibility_caption": "ALT TEXT HERE"}`
-| like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/adw0rd/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
+| custom_accessibility_caption  | String | [Set alternative text](https://github.com/subzeroid/instagrapi/issues/351) `{"custom_accessibility_caption": "ALT TEXT HERE"}`
+| like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/subzeroid/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
 | invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
 
@@ -284,7 +284,7 @@ In `extra_data`, you can pass additional media settings, for example:
 
 >>> media = cl.photo_upload(
     "/app/image.jpg",
-    "Test caption for photo with #hashtags and mention users such @adw0rd",
+    "Test caption for photo with #hashtags and mention users such @example",
     extra_data={
         "custom_accessibility_caption": "alt text example",
         "like_and_view_counts_disabled": 1,
@@ -302,14 +302,14 @@ In `extra_data`, you can pass additional media settings, for example:
  'thumbnail_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/185486538_463522984736407_6315244509641560230_n.jpg?se=8&tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=107&_nc_ohc=6tBMsh9HlmMAX9zI_jc&edm=ACqnv0EBAAAA&ccb=7-4&oh=2b46f1e9fbd2416eb7d08b398e0f639e&oe=60C30437&_nc_sid=9ec724&ig_cache_key=MjU3MzM0NzQyNzg3MzcyNjc2NA%3D%3D.2-ccb7-4', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-15/e35/185486538_463522984736407_6315244509641560230_n.jpg', query='se=8&tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_cat=107&_nc_ohc=6tBMsh9HlmMAX9zI_jc&edm=ACqnv0EBAAAA&ccb=7-4&oh=2b46f1e9fbd2416eb7d08b398e0f639e&oe=60C30437&_nc_sid=9ec724&ig_cache_key=MjU3MzM0NzQyNzg3MzcyNjc2NA%3D%3D.2-ccb7-4'),
  'location': None,
  'user': {'pk': 1903424587,
-  'username': 'adw0rd',
-  'full_name': 'Mikhail Andreev',
+  'username': 'example',
+  'full_name': 'Example Example',
   'profile_pic_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg', query='tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724'),
   'stories': []},
  'comment_count': 0,
  'like_count': 0,
  'has_liked': None,
- 'caption_text': 'Test caption for photo with #hashtags and mention users such @adw0rd',
+ 'caption_text': 'Test caption for photo with #hashtags and mention users such @example',
  'usertags': [],
  'video_url': None,
  'view_count': 0,
@@ -327,11 +327,11 @@ Now let's mention users (Usertag) and location:
 >>> cl = Client()
 >>> cl.login(USERNAME, PASSWORD)
 
->>> adw0rd = cl.user_info_by_username('adw0rd')
+>>> example = cl.user_info_by_username('example')
 >>> media = cl.photo_upload(
     "/app/image.jpg",
-    "Test caption for photo with #hashtags and mention users such @adw0rd",
-    usertags=[Usertag(user=adw0rd, x=0.5, y=0.5)],
+    "Test caption for photo with #hashtags and mention users such @example",
+    usertags=[Usertag(user=example, x=0.5, y=0.5)],
     location=Location(name='Russia, Saint-Petersburg', lat=59.96, lng=30.29)
 )
 
@@ -351,17 +351,17 @@ Now let's mention users (Usertag) and location:
   'external_id': 107617247320879,
   'external_id_source': 'facebook_places'},
  'user': {'pk': 1903424587,
-  'username': 'adw0rd',
-  'full_name': 'Mikhail Andreev',
+  'username': 'example',
+  'full_name': 'Example Example',
   'profile_pic_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg', query='tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724'),
   'stories': []},
  'comment_count': 0,
  'like_count': 0,
  'has_liked': None,
- 'caption_text': 'Test caption for photo with #hashtags and mention users such @adw0rd',
+ 'caption_text': 'Test caption for photo with #hashtags and mention users such @example',
  'usertags': [{'user': {'pk': 1903424587,
-    'username': 'adw0rd',
-    'full_name': 'Mikhail Andreev',
+    'username': 'example',
+    'full_name': 'Example Example',
     'profile_pic_url': HttpUrl('https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724', scheme='https', host='instagram.fhel5-1.fna.fbcdn.net', tld='net', host_type='domain', path='/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg', query='tp=1&_nc_ht=instagram.fhel5-1.fna.fbcdn.net&_nc_ohc=EtzrL0pAdg8AX-Xq8yS&edm=ACqnv0EBAAAA&ccb=7-4&oh=e2fd6a9d362f8587ea8123f23b248f1b&oe=60C2CB91&_nc_sid=9ec724'),
     'stories': []},
    'x': 0.5,
@@ -375,7 +375,7 @@ Now let's mention users (Usertag) and location:
 
 Reels:
 
-```
+```python
 >>> clips = cl.user_clips_v1(25025320, amount=2)
 >>> clips[0].dict()
 

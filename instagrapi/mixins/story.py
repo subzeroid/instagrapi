@@ -5,8 +5,6 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
-import requests
-
 from instagrapi import config
 from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
 from instagrapi.extractors import (
@@ -42,10 +40,6 @@ class StoryMixin:
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return str(parts[0])
 
-    # def story_info_gql(self, story_pk: str):
-    #     # GQL havent video_url :-(
-    #     return self.media_info_gql(self, str(story_pk))
-
     def story_info_v1(self, story_pk: str) -> Story:
         """
         Get Story by pk or id
@@ -62,8 +56,7 @@ class StoryMixin:
         """
         story_id = self.media_id(story_pk)
         story_pk, user_id = story_id.split("_")
-        # result = self.private_request(f"media/{story_pk}/info/")
-        # story = extract_story_v1(result["items"][0])
+
         stories = self.user_stories_v1(user_id)
         for story in stories:
             self._stories_cache[story.pk] = story
@@ -137,7 +130,8 @@ class StoryMixin:
             assert user_ids is not None
             user_ids_per_query = 50
             for i in range(0, len(user_ids), user_ids_per_query):
-                yield user_ids[i : i + user_ids_per_query]
+                end = i + user_ids_per_query
+                yield user_ids[i:end]
 
         stories_un = {}
         for userid_chunk in _userid_chunks():
@@ -156,13 +150,13 @@ class StoryMixin:
             users.append(user)
         return users
 
-    def user_stories_gql(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_gql(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Public API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -177,13 +171,13 @@ class StoryMixin:
             stories = stories[:amount]
         return stories
 
-    def user_stories_v1(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories_v1(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories (Private API)
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -209,13 +203,13 @@ class StoryMixin:
             stories = stories[: int(amount)]
         return stories
 
-    def user_stories(self, user_id: int, amount: int = None) -> List[Story]:
+    def user_stories(self, user_id: str, amount: int = None) -> List[Story]:
         """
         Get a user's stories
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
         amount: int, optional
             Maximum number of story to return, default is all
 
@@ -253,23 +247,22 @@ class StoryMixin:
         )
 
     def story_download(
-        self, story_pk: int, filename: str = "", folder: Path = ""
+        self, story_pk: str, filename: str = "", folder: Path = ""
     ) -> Path:
         """
         Download story media by media_type
 
         Parameters
         ----------
-        story_pk: int
+        story_pk: str
 
         Returns
         -------
         Path
             Path for the file downloaded
         """
-        story_pk = int(story_pk)
         story = self.story_info(story_pk)
-        url = story.thumbnail_url if story.media_type == 1 else story.video_url
+        url = str(story.thumbnail_url if story.media_type == 1 else story.video_url)
         return self.story_download_by_url(url, filename, folder)
 
     def story_download_by_url(
@@ -293,15 +286,20 @@ class StoryMixin:
         Path
             Path for the file downloaded
         """
+        url = str(url)
         fname = urlparse(url).path.rsplit("/", 1)[1].strip()
         assert fname, (
             """The URL must contain the path to the file (mp4 or jpg).\n"""
-            """Read the documentation https://adw0rd.github.io/instagrapi/usage-guide/story.html"""
+            """Read the documentation https://subzeroid.github.io/instagrapi/usage-guide/story.html"""
         )
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+
+        response = self._send_public_request(
+            url, stream=True, timeout=self.request_timeout
+        )
         response.raise_for_status()
+
         with open(path, "wb") as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
@@ -396,23 +394,19 @@ class StoryMixin:
             A boolean value
         """
         return self.story_like(story_id, revert=True)
-    
+
     def sticker_tray(self) -> dict:
-        '''
+        """
         Getting a sticker tray from Instagram
 
         Returns
         -------
         dict
             Sticker Tray
-        '''
-        data = {
-            "_uid" : self.user_id,
-            "type" : "static_stickers",
-            "_uuid" : self.uuid
-        }
+        """
+        data = {"_uid": self.user_id, "type": "static_stickers", "_uuid": self.uuid}
         result = self.private_request(
-            "creatives/sticker_tray/", 
+            "creatives/sticker_tray/",
             data=data,
             with_signature=True,
         )

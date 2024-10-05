@@ -7,7 +7,7 @@ from instagrapi.exceptions import (
     LocationNotFound,
     WrongCursorError,
 )
-from instagrapi.extractors import extract_location, extract_media_v1, extract_guide_v1
+from instagrapi.extractors import extract_guide_v1, extract_location, extract_media_v1
 from instagrapi.types import Guide, Location, Media
 
 tab_keys_a1 = ("edge_location_to_top_posts", "edge_location_to_media")
@@ -178,7 +178,7 @@ class LocationMixin:
             location = self.location_info_a1(location_pk)
         except Exception:
             # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # such this - https://github.com/subzeroid/instagrapi/issues/364
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             location = self.location_info_v1(location_pk)
@@ -304,9 +304,10 @@ class LocationMixin:
         }
         if max_id:
             try:
-                [page_id, nm_ids] = json.loads(base64.b64decode(max_id))
+                [m_id, page_id, nm_ids] = json.loads(base64.b64decode(max_id))
             except Exception:
                 raise WrongCursorError()
+            data["max_id"] = m_id
             data["page"] = page_id
             data["next_media_ids"] = nm_ids
         medias = []
@@ -318,7 +319,10 @@ class LocationMixin:
         if result.get("next_page"):
             np = result.get("next_page")
             ids = result.get("next_media_ids")
-            next_max_id = base64.b64encode(json.dumps([np, ids]).encode()).decode()
+            next_m_id = result.get("next_max_id")
+            next_max_id = base64.b64encode(
+                json.dumps([next_m_id, np, ids]).encode()
+            ).decode()
         for section in result.get("sections") or []:
             layout_content = section.get("layout_content") or {}
             nodes = layout_content.get("medias") or []
@@ -421,7 +425,7 @@ class LocationMixin:
             return self.location_medias_top_a1(location_pk, amount, sleep)
         except Exception:
             # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # such this - https://github.com/subzeroid/instagrapi/issues/364
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             return self.location_medias_top_v1(location_pk, amount)
@@ -494,7 +498,7 @@ class LocationMixin:
             return self.location_medias_recent_a1(location_pk, amount, sleep)
         except Exception:
             # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/adw0rd/instagrapi/issues/364
+            # such this - https://github.com/subzeroid/instagrapi/issues/364
             # if not isinstance(e, ClientError):
             #     self.logger.exception(e)
             return self.location_medias_recent_v1(location_pk, amount)
