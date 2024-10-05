@@ -325,3 +325,7 @@ class InvalidMediaId(PrivateError):
 
 class MediaUnavailable(PrivateError):
     """Media is unavailable"""
+
+
+class ValidationError(AssertionError):
+    pass

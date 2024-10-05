@@ -5,6 +5,7 @@ import random
 import string
 import time
 import urllib
+from exceptions import ValidationError
 
 
 class InstagramIdCodec:
@@ -107,3 +108,8 @@ def date_time_original(localtime):
 def random_delay(delay_range: list):
     """Trigger sleep of a random floating number in range min_sleep to max_sleep"""
     return time.sleep(random.uniform(delay_range[0], delay_range[1]))
+
+
+def vassert(pred, message):
+    if not pred:
+        raise ValidationError(message)
