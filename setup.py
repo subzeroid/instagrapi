@@ -21,8 +21,8 @@ Features:
 requirements = [
     "requests<3.0,>=2.25.1",
     "PySocks==1.7.1",
-    "pydantic==2.8.2",
-    "pycryptodomex==3.20.0",
+    "pydantic==2.9.2",
+    "pycryptodomex==3.21.0",
 ]
 # requirements = [
 #     line.strip()

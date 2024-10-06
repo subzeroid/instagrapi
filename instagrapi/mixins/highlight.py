@@ -9,7 +9,7 @@ from instagrapi import config
 from instagrapi.exceptions import HighlightNotFound
 from instagrapi.extractors import extract_highlight_v1
 from instagrapi.types import Highlight
-from instagrapi.utils import dumps
+from instagrapi.utils import dumps, vassert
 
 
 class HighlightMixin:
@@ -31,7 +31,7 @@ class HighlightMixin:
         --------
         https://www.instagram.com/stories/highlights/17895485201104054/ -> 17895485201104054
         """
-        assert "/highlights/" in url, 'URL must contain "/highlights/"'
+        vassert("/highlights/" in url, "URL must contain '/highlights/'")
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p and p.isdigit()]
         return str(parts[0])
