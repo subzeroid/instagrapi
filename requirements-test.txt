@@ -1,5 +1,5 @@
 flake8==7.1.1
-Pillow==10.4.0
+Pillow==11.0.0
 isort==5.13.2
 bandit==1.7.10
 mike==2.1.3
