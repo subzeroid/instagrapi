@@ -7,7 +7,7 @@ from pydantic import (
     FilePath,
     HttpUrl,
     ValidationError,
-    validator,
+    field_validator,
 )
 
 
@@ -17,10 +17,10 @@ class TypesBaseModel(BaseModel):
     )  # (jarrodnorwell) fixed city_id issue
 
 
-def validate_external_url(cls, v):
+def validate_external_url(v):
     if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
         return v
-    raise ValidationError("external_url must been URL or string")
+    raise ValidationError("external_url must be a URL or string")
 
 
 class Resource(TypesBaseModel):
@@ -40,20 +40,6 @@ class BioLink(TypesBaseModel):
     open_external_url_with_in_app_browser: Optional[bool] = None
 
 
-class Broadcast(TypesBaseModel):
-    title: str
-    thread_igid: str
-    subtitle: str
-    invite_link: str
-    is_member: bool
-    group_image_uri: str
-    group_image_background_uri: str
-    thread_subtype: int
-    number_of_members: int
-    creator_igid: str | None
-    creator_username: str
-
-
 class User(TypesBaseModel):
     pk: str
     username: str
@@ -70,8 +56,6 @@ class User(TypesBaseModel):
     external_url: Optional[str] = None
     account_type: Optional[int] = None
     is_business: bool
-
-    broadcast_channel: List[Broadcast] = []
 
     public_email: Optional[str] = None
     contact_phone_number: Optional[str] = None
@@ -91,7 +75,7 @@ class User(TypesBaseModel):
     instagram_location_id: Optional[str] = None
     interop_messaging_user_fbid: Optional[str] = None
 
-    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
+    _external_url = field_validator("external_url")(validate_external_url)
 
 
 class Account(TypesBaseModel):
@@ -109,7 +93,7 @@ class Account(TypesBaseModel):
     gender: Optional[int] = None
     email: Optional[str] = None
 
-    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
+    _external_url = field_validator("external_url")(validate_external_url)
 
 
 class UserShort(TypesBaseModel):
