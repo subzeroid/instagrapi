@@ -1153,3 +1153,21 @@ class MediaMixin:
         A boolean value
         """
         return self.media_pin(media_pk, True)
+
+    def media_schedule_livestream(self, title, auto_start=False):
+        data = {
+            "broadcast_message": title,
+            "internal_only": "false",
+            "source_type": "203",
+            "visibility": "0"
+        }
+        result = self.private_request("live/create/", data)
+        broadcast_id = result['broadcast_id']
+        if auto_start:
+            startRes = self.media_start_livestream(broadcast_id)
+            print(startRes)
+        return result
+
+    def media_start_livestream(self, broadcast_id):
+        result = self.private_request(f"live/{broadcast_id}/start/", {'empty': None})
+        return result["status"] == "ok"
