@@ -12,7 +12,7 @@ def validate_external_url(cls, v):
 
 class Resource(BaseModel):
     pk: str
-    video_url: Optional[HttpUrl]  # for Video and IGTV
+    video_url: Optional[HttpUrl] = ""  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
 
@@ -20,17 +20,17 @@ class Resource(BaseModel):
 class User(BaseModel):
     pk: str
     username: str
-    full_name: str
-    is_private: bool
+    full_name: Optional[str] = ""
+    is_private: Optional[bool] = False
     profile_pic_url: HttpUrl
     profile_pic_url_hd: Optional[HttpUrl]
-    is_verified: bool
-    media_count: int
-    follower_count: int
-    following_count: int
+    is_verified: Optional[bool] = False
+    media_count: Optional[int] = None
+    follower_count: Optional[int] = None
+    following_count: Optional[int] = None
     biography: Optional[str] = ""
     external_url: Optional[str]
-    is_business: bool
+    is_business: Optional[bool] = False
 
     public_email: Optional[str]
     contact_phone_number: Optional[str]
@@ -63,9 +63,9 @@ class UserShort(BaseModel):
     pk: str
     username: Optional[str]
     full_name: Optional[str] = ""
-    profile_pic_url: Optional[HttpUrl]
-    profile_pic_url_hd: Optional[HttpUrl]
-    is_private: Optional[bool]
+    profile_pic_url: Optional[HttpUrl] = ""
+    profile_pic_url_hd: Optional[HttpUrl] = ""
+    is_private: Optional[bool] = False
     # is_verified: bool  # not found in hashtag_medias_v1
     stories: List = []
 
@@ -107,11 +107,11 @@ class Media(BaseModel):
     user: UserShort
     comment_count: Optional[int] = 0
     like_count: int
-    has_liked: Optional[bool]
+    has_liked: Optional[bool] = False
     caption_text: str
-    accessibility_caption: Optional[str]
+    accessibility_caption: Optional[str] = ""
     usertags: List[Usertag]
-    video_url: Optional[HttpUrl]  # for Video and IGTV
+    video_url: Optional[HttpUrl] = ""  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""

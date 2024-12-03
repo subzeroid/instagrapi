@@ -925,12 +925,8 @@ class UserMixin:
         """
         user_id = int(user_id)
         variables = {
-            "id":
-                user_id,
-            "first":
-                12,
-            "fields":
-                "data.user.edge_owner_to_timeline_media.count,data.user.edge_owner_to_timeline_media.edges.node.id,data.user.edge_owner_to_timeline_media.page_info",
+            "id": user_id,
+            "first": 24,
         }
         if end_cursor:
             variables["after"] = end_cursor
