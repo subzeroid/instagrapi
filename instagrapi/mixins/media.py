@@ -1155,25 +1155,160 @@ class MediaMixin:
         return self.media_pin(media_pk, True)
 
 
-    def media_schedule_livestream(self, title, auto_start=False):
+    def media_create_livestream(self, title="Instagram Live"):
+        """
+        Create a new live broadcast.
+
+        Parameters
+        ----------
+        title : str
+            The title of the live broadcast.
+
+        Returns
+        -------
+        dict
+            Information about the streaming server and the stream key.
+        """
         data = {
+            "_uuid": self.uuid,
+            "_uid": self.user_id,
+            "preview_height": 1920,
+            "preview_width": 1080,
             "broadcast_message": title,
-            "internal_only": "false",
-            "source_type": "203",
-            "visibility": "0"
+            "broadcast_type": "RTMP",
+            "internal_only": 0,
+            "_csrftoken": self.token,
         }
-        result = self.private_request("live/create/", data)
-        broadcast_id = result['broadcast_id']
-        if auto_start:
-            startRes = self.media_start_livestream(broadcast_id)
-        return result
+        try:
+            response = self.private_request("live/create/", data=data)
+            broadcast_id = response["broadcast_id"]
+            upload_url = response["upload_url"].split(str(broadcast_id))
+            if len(upload_url) >= 2:
+                stream_server = upload_url[0]
+                stream_key = f"{broadcast_id}{upload_url[1]}"
+                return {
+                    "broadcast_id": broadcast_id,
+                    "stream_server": stream_server,
+                    "stream_key": stream_key,
+                }
+        except Exception as e:
+            self.logger.error(f"Error creating live broadcast: {e}")
+            raise
 
     def media_start_livestream(self, broadcast_id):
-        result = self.private_request(f"live/{broadcast_id}/start/", {'empty': None})
-        return result["status"] == "ok"
+        """
+        Start a live broadcast.
 
-    def media_fetch_live_chat(self, broadcast_id, last_comment_ts=None):
-        params = None
-        if last_comment_ts:
-            params = {'last_comment_ts': last_comment_ts}
-        return self.private_request(f"live/{broadcast_id}/get_comment/", params=params)
+        Parameters
+        ----------
+        broadcast_id : str
+            The ID of the live broadcast.
+
+        Returns
+        -------
+        bool
+            True if the broadcast started successfully, False otherwise.
+        """
+        data = {
+            "_uuid": self.uuid,
+            "_uid": self.user_id,
+            "should_send_notifications": 1,
+            "_csrftoken": self.token,
+        }
+        try:
+            response = self.private_request(f"live/{broadcast_id}/start/", data=data)
+            return response.get("status") == "ok"
+        except Exception as e:
+            self.logger.error(f"Error starting live broadcast: {e}")
+            return False
+
+    def media_end_livestream(self, broadcast_id):
+        """
+        End a live broadcast.
+
+        Parameters
+        ----------
+        broadcast_id : str
+            The ID of the live broadcast.
+
+        Returns
+        -------
+        bool
+            True if the broadcast ended successfully, False otherwise.
+        """
+        data = {
+            "_uuid": self.uuid,
+            "_uid": self.user_id,
+            "_csrftoken": self.token,
+        }
+        try:
+            response = self.private_request(f"live/{broadcast_id}/end_broadcast/", data=data)
+            return response.get("status") == "ok"
+        except Exception as e:
+            self.logger.error(f"Error ending live broadcast: {e}")
+            return False
+
+    def media_get_livestream_info(self, broadcast_id):
+        """
+        Retrieve information about the live broadcast.
+
+        Parameters
+        ----------
+        broadcast_id : str
+            The ID of the live broadcast.
+
+        Returns
+        -------
+        dict
+            Information about the live broadcast.
+        """
+        try:
+            response = self.private_request(f"live/{broadcast_id}/info/")
+            return response
+        except Exception as e:
+            self.logger.error(f"Error retrieving live info: {e}")
+            raise
+
+    def media_get_livestream_comments(self, broadcast_id):
+        """
+        Retrieve comments from the live broadcast.
+
+        Parameters
+        ----------
+        broadcast_id : str
+            The ID of the live broadcast.
+
+        Returns
+        -------
+        list
+            A list of comments.
+        """
+        try:
+            response = self.private_request(f"live/{broadcast_id}/get_comment/")
+            if "comments" in response:
+                return [{"username": c["user"]["username"], "text": c["text"]} for c in response["comments"]]
+            return []
+        except Exception as e:
+            self.logger.error(f"Error retrieving live comments: {e}")
+            raise
+
+    def media_get_livestream_viewers(self, broadcast_id):
+        """
+        Retrieve the list of viewers of the live broadcast.
+
+        Parameters
+        ----------
+        broadcast_id : str
+            The ID of the live broadcast.
+
+        Returns
+        -------
+        list
+            A list of viewers.
+        """
+        try:
+            response = self.private_request(f"live/{broadcast_id}/get_viewer_list/")
+            return [{"username": user["username"], "pk": user["pk"]} for user in response.get("users", [])]
+        except Exception as e:
+            self.logger.error(f"Error retrieving live viewers: {e}")
+            raise
