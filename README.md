@@ -39,7 +39,7 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using reverse-engineering with Charles Proxy and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **16 Dec 2023** (last reverse-engineering check)*
+*Instagram API valid for **25 Dec 2024** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 
