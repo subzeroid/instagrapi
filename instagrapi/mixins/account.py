@@ -341,3 +341,12 @@ class AccountMixin:
                 }
             ),
         )
+
+    def get_pending_follow_requests(self):
+        result = self.private_request("friendships/pending?")
+        return result["users"]
+
+    def approve_follow_request(self, pk_id):
+        body = {"_uid": self.user_id, "_uuid": self.uuid, "_csrftoken": self.token, "user_id": pk_id}
+        result = self.private_request(f"friendships/approve/{pk_id}/", data=json.dumps(body), with_signature=True)
+        return result
