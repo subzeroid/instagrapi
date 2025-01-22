@@ -5,7 +5,7 @@ import random
 import string
 import time
 import urllib
-from exceptions import ValidationError
+from .exceptions import ValidationError
 
 
 class InstagramIdCodec:

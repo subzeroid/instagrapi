@@ -21,7 +21,7 @@ Features:
 requirements = [
     "requests<3.0,>=2.25.1",
     "PySocks==1.7.1",
-    "pydantic==2.9.2",
+    "pydantic==2.10.5",
     "pycryptodomex==3.21.0",
 ]
 # requirements = [
@@ -31,7 +31,7 @@ requirements = [
 
 setup(
     name="instagrapi",
-    version="2.1.2",
+    version="2.1.3",
     author="Mark Subzeroid",
     author_email="143403577+subzeroid@users.noreply.github.com",
     license="MIT",

@@ -7,28 +7,24 @@ from pydantic import (
     FilePath,
     HttpUrl,
     ValidationError,
-    validator,
+    field_validator,
 )
-
 
 class TypesBaseModel(BaseModel):
     model_config = ConfigDict(
         coerce_numbers_to_str=True
     )  # (jarrodnorwell) fixed city_id issue
 
-
 def validate_external_url(cls, v):
     if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
         return v
-    raise ValidationError("external_url must been URL or string")
-
+    raise ValidationError("external_url must be a URL or string")  # Corrected 'been' to 'be'
 
 class Resource(TypesBaseModel):
     pk: str
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
-
 
 class BioLink(TypesBaseModel):
     link_id: str
@@ -38,7 +34,6 @@ class BioLink(TypesBaseModel):
     title: Optional[str] = None
     is_pinned: Optional[bool] = None
     open_external_url_with_in_app_browser: Optional[bool] = None
-
 
 class Broadcast(TypesBaseModel):
     title: str
@@ -50,9 +45,8 @@ class Broadcast(TypesBaseModel):
     group_image_background_uri: str
     thread_subtype: int
     number_of_members: int
-    creator_igid: str | None
+    creator_igid: Optional[str] = None  # Changed from str | None to Optional[str]
     creator_username: str
-
 
 class User(TypesBaseModel):
     pk: str
@@ -91,8 +85,7 @@ class User(TypesBaseModel):
     instagram_location_id: Optional[str] = None
     interop_messaging_user_fbid: Optional[str] = None
 
-    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
-
+    _external_url = field_validator("external_url")(validate_external_url)  # Updated to use field_validator
 
 class Account(TypesBaseModel):
     pk: str
@@ -109,8 +102,7 @@ class Account(TypesBaseModel):
     gender: Optional[int] = None
     email: Optional[str] = None
 
-    _external_url = validator("external_url", allow_reuse=True)(validate_external_url)
-
+    _external_url = field_validator("external_url")(validate_external_url)  # Updated to use field_validator
 
 class UserShort(TypesBaseModel):
     def __hash__(self):
