@@ -84,7 +84,7 @@ class Client(
     def __init__(
         self,
         settings: Optional[Dict[str, Any]] = None,
-        proxy: Optional[Dict[str, Any]] = None,
+        proxies: Optional[str] = None,
         job_id: Optional[str] = None,
         **kwargs,
     ):
@@ -93,8 +93,9 @@ class Client(
         if not settings:
             settings = {}
         self.settings = settings
-        if proxy:
-            self.set_proxy(proxy, job_id=job_id)
+        if proxies:
+            proxies_dict = json.dumps(proxies)
+            self.set_proxy(proxies=proxies_dict, job_id=job_id)
 
         self.init()
 
@@ -104,60 +105,42 @@ class Client(
             total += sum([ord(c) * i * i for i, c in enumerate(str(job_id))])
         return total
 
-    def set_proxy(self, proxy: Dict[str, Any], job_id: Optional[str] = None):
-        proxy_choice = random.choice(proxy.get("proxies", []))
-        proxy_username = proxy.get("username", "")
-        proxy_password = proxy.get("password", "")
-        proxy_api = proxy.get("api", "")
+    def set_proxy(self, proxies: Dict[str, Any], job_id: Optional[str] = None):
+        proxy_choice = random.choice(proxy.keys())
+        proxy = proxies.get(proxy_choice)
+        proxy_uri = proxy.get("uri")
+        proxy_username = proxy.get("username")
+        proxy_password = proxy.get("password")
         proxy_country = proxy.get("country")
-
         session_id = self.get_session_id(job_id)
 
-        if "lum-superproxy" in proxy_choice:
+        if proxy_choice == "oxylabs":
+            proxy_username = f"customer-{proxy_username}-sessid-{session_id}"
+            if proxy_country:
+                country = random.choice(proxy_country.split(","))
+                proxy_username += f"-cc-{country}"
+
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_type = "oxylabs"
+        elif proxy_choice == "brightdata":
             if "unblocker" in proxy_username:
                 session_type = "unblocker-session"
             else:
                 session_type = "session"
 
-            proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_choice}"
-            proxy_dict = {
-                "http": proxy_uri,
-                "https": proxy_uri,
-                "type": "luminati",
-            }
-        elif "scraperapi" in proxy_choice:
-            proxy_uri = f"{proxy_api}?api_key={proxy_password}&url=%s&keep_headers=true&session_number={session_id}"
-
-            if proxy_country:
-                country = random.choice(proxy_country.split(","))
-                proxy_uri += f"&country_code={country}"
-
-            proxy_dict = {"overwrite_url": proxy_uri, "type": "scraperapi"}
-        elif "oxylabs" in proxy_choice:
-            if "unblock" in proxy_choice:
-                self.private.headers["X-Oxylabs-Session-Id"] = str(session_id)
-                self.public.headers["X-Oxylabs-Session-Id"] = str(session_id)
-            else:
-                proxy_username = f"customer-{proxy_username}-sessid-{session_id}"
-                if proxy_country:
-                    country = random.choice(proxy_country.split(","))
-                    proxy_username += "-cc-{country}"
-
-            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_choice}"
-            proxy_dict = {
-                "http": proxy_uri,
-                "https": proxy_uri,
-                "proxy_type": "oxylabs",
-            }
+            proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_uri}"
+            proxy_type = "luminati"
         else:
-            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_choice}"
-            proxy_dict = {
-                "http": proxy_uri,
-                "https": proxy_uri,
-                "type": "other",
-            }
+            logging.warning(f"Proxy {proxy_choice} not in default list (oxylabs, brightdata)")
 
-        self.public.proxies = self.private.proxies = proxy_dict
+            proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
+            proxy_type = "other"
+
+        self.public.proxies = self.private.proxies = {
+            "http": proxy_uri,
+            "http": proxy_uri,
+            "type": proxy_type,
+        }
 
         proxy_scheme = "" if urlparse(proxy_uri).scheme else "http://"
         proxy_href = f"{proxy_scheme}{proxy_uri}"

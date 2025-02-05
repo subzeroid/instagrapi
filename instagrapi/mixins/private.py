@@ -322,28 +322,31 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
 
-                print("============= PROXY ========")
-                print(self.private.proxies)
-                print("============= PARAMS ========")
-                print(params)
-                print("============= DATA ========")
-                print(data)
-                print("============= HEADERS ========")
-                print(self.private.headers)
-                print("============= URL ========")
-                print(api_url)
+                self.logger.debug(
+                    {
+                        "proxy": self.private.proxies,
+                        "method": "POST",
+                        "params": params,
+                        "data": data,
+                        "headers": self.private.headers,
+                        "url": api.url,
+                    }
+                )
 
                 response = self.private.post(api_url, data=data, params=params)
             else:  # GET
                 self.private.headers.pop('Content-Type', None)
-                print("============= PROXY ========")
-                print(self.private.proxies)
-                print("============= PARAMS ========")
-                print(params)
-                print("============= HEADERS ========")
-                print(self.private.headers)
-                print("============= URL ========")
-                print(api_url)
+
+                self.logger.debug(
+                    {
+                        "proxy": self.private.proxies,
+                        "method": "GET",
+                        "params": params,
+                        "headers": self.private.headers,
+                        "url": api.url,
+                    }
+                )
+
                 response = self.private.get(api_url, params=params)
             self.logger.debug("private_request %s: %s", response.status_code, response.url)
             mid = response.headers.get("ig-set-x-mid")
