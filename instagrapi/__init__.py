@@ -95,7 +95,7 @@ class Client(
             settings = {}
         self.settings = settings
         if proxies:
-            proxies_dict = json.dumps(proxies)
+            proxies_dict = json.loads(proxies)
             self.set_proxy(proxies=proxies_dict, job_id=job_id)
 
         self.init()
@@ -107,15 +107,15 @@ class Client(
         return total
 
     def set_proxy(self, proxies: Dict[str, Any], job_id: Optional[str] = None):
-        proxy_choice = random.choice(proxy.keys())
-        proxy = proxies.get(proxy_choice)
+        proxy_name = random.choice(list(proxies.keys()))
+        proxy = proxies.get(proxy_name)
         proxy_uri = proxy.get("uri")
         proxy_username = proxy.get("username")
         proxy_password = proxy.get("password")
         proxy_country = proxy.get("country")
         session_id = self.get_session_id(job_id)
 
-        if proxy_choice == "oxylabs":
+        if proxy_name == "oxylabs":
             proxy_username = f"customer-{proxy_username}-sessid-{session_id}"
             if proxy_country:
                 country = random.choice(proxy_country.split(","))
@@ -123,7 +123,7 @@ class Client(
 
             proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
             proxy_type = "oxylabs"
-        elif proxy_choice == "brightdata":
+        elif proxy_name == "brightdata":
             if "unblocker" in proxy_username:
                 session_type = "unblocker-session"
             else:
@@ -132,7 +132,7 @@ class Client(
             proxy_uri = f"http://{proxy_username}-{session_type}-{session_id}:{proxy_password}@{proxy_uri}"
             proxy_type = "luminati"
         else:
-            logging.warning(f"Proxy {proxy_choice} not in default list (oxylabs, brightdata)")
+            logging.warning(f"Proxy {proxy_name} not in default list (oxylabs, brightdata)")
 
             proxy_uri = f"http://{proxy_username}:{proxy_password}@{proxy_uri}"
             proxy_type = "other"
