@@ -19,6 +19,7 @@ The instagrapi more suits for testing or research than a working business!
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
+> To run instagrapi you may need a [cheap and powerful server](https://powervps.net/?from=96837), I recommend using my promo you will support the author of this library!
 
 Features:
 
