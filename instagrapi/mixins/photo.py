@@ -11,7 +11,7 @@ import requests
 from instagrapi import config
 from instagrapi.exceptions import PhotoConfigureError, PhotoConfigureStoryError, PhotoNotUpload
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import (
+from instagrapi.instagrapi_types import (
     Location, Media, Story, StoryHashtag, StoryLink, StoryLocation, StoryMedia, StoryMention,
     StorySticker, Usertag
 )

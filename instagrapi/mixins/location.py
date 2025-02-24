@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from instagrapi.exceptions import ClientNotFoundError, LocationNotFound
 from instagrapi.extractors import extract_location, extract_media_v1
-from instagrapi.types import Location, Media
+from instagrapi.instagrapi_types import Location, Media
 
 tab_keys_a1 = ('edge_location_to_top_posts', 'edge_location_to_media')
 tab_keys_v1 = ('ranked', 'recent')

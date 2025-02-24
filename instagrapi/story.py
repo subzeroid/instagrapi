@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlparse
 
-from .types import StoryBuild, StoryMention, StorySticker
+from .instagrapi_types import StoryBuild, StoryMention, StorySticker
 
 try:
     from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
@@ -54,7 +54,15 @@ class StoryBuilder:
         self.mentions = mentions
         self.bgpath = Path(bgpath) if bgpath else None
 
-    def build_main(self, clip, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = "") -> StoryBuild:
+    def build_main(
+        self,
+        clip,
+        max_duration: int = 0,
+        font: str = 'Arial',
+        fontsize: int = 100,
+        color: str = 'white',
+        link: str = ""
+    ) -> StoryBuild:
         """
         Build clip
 
@@ -112,9 +120,7 @@ class StoryBuilder:
             if offset > 0:
                 text_clip_top -= offset + 90
             text_clip = (
-                text_clip.resize(width=600)
-                .set_position((text_clip_left, text_clip_top))
-                .fadein(3)
+                text_clip.resize(width=600).set_position((text_clip_left, text_clip_top)).fadein(3)
             )
             clips.append(text_clip)
         if link:
@@ -131,9 +137,7 @@ class StoryBuilder:
             link_clip_left = (self.width - 400) / 2
             link_clip_top = clip.size[1] / 2
             link_clip = (
-                link_clip.resize(width=400)
-                .set_position((link_clip_left, link_clip_top))
-                .fadein(3)
+                link_clip.resize(width=400).set_position((link_clip_left, link_clip_top)).fadein(3)
             )
             link_sticker = StorySticker(
                 # x=160.0, y=641.0, z=0, width=400.0, height=88.0,
@@ -182,7 +186,14 @@ class StoryBuilder:
                 paths.append(path)
         return StoryBuild(mentions=mentions, path=destination, paths=paths, stickers=stickers)
 
-    def video(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
+    def video(
+        self,
+        max_duration: int = 0,
+        font: str = 'Arial',
+        fontsize: int = 100,
+        color: str = 'white',
+        link: str = ''
+    ):
         """
         Build CompositeVideoClip from source video
 
@@ -207,7 +218,14 @@ class StoryBuilder:
         clip.close()
         return build
 
-    def photo(self, max_duration: int = 0, font: str = 'Arial', fontsize: int = 100, color: str = 'white', link: str = ''):
+    def photo(
+        self,
+        max_duration: int = 0,
+        font: str = 'Arial',
+        fontsize: int = 100,
+        color: str = 'white',
+        link: str = ''
+    ):
         """
         Build CompositeVideoClip from source video
 
@@ -232,7 +250,7 @@ class StoryBuilder:
             image_width, image_height = im.size
 
         width_reduction_percent = (self.width / float(image_width))
-        height_in_ratio = int((float(image_height) * float(width_reduction_percent)))
+        height_in_ratio = int(float(image_height) * float(width_reduction_percent))
 
         clip = ImageClip(str(self.path)).resize(width=self.width, height=height_in_ratio)
         return self.build_main(clip, max_duration or 15, font, fontsize, color, link)

@@ -2,7 +2,7 @@ from typing import List
 
 from instagrapi.exceptions import CollectionNotFound
 from instagrapi.extractors import extract_collection, extract_media_v1
-from instagrapi.types import Collection, Media
+from instagrapi.instagrapi_types import Collection, Media
 
 
 class CollectionMixin:

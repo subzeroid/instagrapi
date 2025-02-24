@@ -11,7 +11,7 @@ from instagrapi.exceptions import (
 from instagrapi.extractors import (
     extract_media_gql, extract_media_v1, extract_user_gql, extract_user_short, extract_user_v1
 )
-from instagrapi.types import Media, Relationship, User, UserShort
+from instagrapi.instagrapi_types import Media, Relationship, User, UserShort
 from instagrapi.utils import json_value
 
 

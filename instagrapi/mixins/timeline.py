@@ -1,7 +1,7 @@
 from typing import List
 
 from instagrapi.extractors import extract_media_v1
-from instagrapi.types import Media
+from instagrapi.instagrapi_types import Media
 
 
 class ReelsMixin:

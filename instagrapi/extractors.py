@@ -1,36 +1,14 @@
 import json
 from copy import deepcopy
 
-from .types import (
-    Account,
-    Collection,
-    Comment,
-    DirectMedia,
-    DirectMessage,
-    DirectResponse,
-    DirectShortThread,
-    DirectThread,
-    Hashtag,
-    Highlight,
-    Location,
-    Media,
-    MediaOembed,
-    Resource,
-    Story,
-    StoryLink,
-    StoryMedia,
-    StoryMention,
-    Track,
-    User,
-    UserShort,
-    Usertag,
+from .instagrapi_types import (
+    Account, Collection, Comment, DirectMedia, DirectMessage, DirectResponse, DirectShortThread,
+    DirectThread, Hashtag, Highlight, Location, Media, MediaOembed, Resource, Story, StoryLink,
+    StoryMedia, StoryMention, Track, User, UserShort, Usertag
 )
 from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
-
-
-import logging
 
 
 def extract_media_v1(data):
@@ -57,10 +35,7 @@ def extract_media_v1(data):
     media["location"] = location and extract_location(location)
     media["user"] = extract_user_short(media.get("user"))
     media["usertags"] = sorted(
-        [
-            extract_usertag(usertag)
-            for usertag in media.get("usertags", {}).get("in", [])
-        ],
+        [extract_usertag(usertag) for usertag in media.get("usertags", {}).get("in", [])],
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
@@ -68,9 +43,7 @@ def extract_media_v1(data):
 
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
-        resources=[
-            extract_resource_v1(edge) for edge in media.get("carousel_media", [])
-        ],
+        resources=[extract_resource_v1(edge) for edge in media.get("carousel_media", [])],
         **media,
     )
 
@@ -97,9 +70,11 @@ def extract_media_gql(data):
             media.get("display_resources", media.get("thumbnail_resources")),
             key=lambda o: o["config_width"] * o["config_height"],
         )[-1]["src"]
+
+
 #    if media.get("media_type") == 8:
-        # remove thumbnail_url and video_url for albums
-        # see resources
+# remove thumbnail_url and video_url for albums
+# see resources
 #        media.pop("thumbnail_url", "")
 #        media.pop("video_url", "")
     location = media.pop("location", None)
@@ -120,9 +95,7 @@ def extract_media_gql(data):
         usertags=sorted(
             [
                 extract_usertag(usertag["node"])
-                for usertag in media.get("edge_media_to_tagged_user", {}).get(
-                    "edges", []
-                )
+                for usertag in media.get("edge_media_to_tagged_user", {}).get("edges", [])
             ],
             key=lambda tag: tag.user.pk,
         ),
@@ -136,9 +109,8 @@ def extract_media_gql(data):
 
 def extract_resource_v1(data):
     if "video_versions" in data:
-        data["video_url"] = sorted(
-            data["video_versions"], key=lambda o: o["height"] * o["width"]
-        )[-1]["url"]
+        data["video_url"] = sorted(data["video_versions"],
+                                   key=lambda o: o["height"] * o["width"])[-1]["url"]
     data["thumbnail_url"] = sorted(
         data["image_versions2"]["candidates"],
         key=lambda o: o["height"] * o["width"],
@@ -183,17 +155,18 @@ def extract_user_v1(data):
     data["external_url"] = data.get("external_url") or None
     return User(**data)
 
+
 def extract_location(data):
     """Extract location info"""
     if not data:
         return None
-    ig_business = data.get("ig_business", {}).get("profile", {}) # DATA NEED LOGGING
+    ig_business = data.get("ig_business", {}).get("profile", {})  # DATA NEED LOGGING
     data["pk"] = data.get("id", data.get("pk", data.get("location_id", None)))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
-    data["external_id_source"] = data.get(
-        "external_id_source", data.get("external_source")
+    data["external_id_source"] = data.get("external_id_source", data.get("external_source"))
+    data["address"] = data.get(
+        "address", data.get("location_address", ig_business.get("address_street"))
     )
-    data["address"] = data.get("address", data.get("location_address", ig_business.get("address_street")))
     data["city"] = data.get("city", data.get("location_city", ig_business.get("city_name")))
     data["zip"] = data.get("zip", data.get("location_zip", ig_business.get("zip")))
     address_json = data.get("address_json")
@@ -241,9 +214,7 @@ def extract_direct_thread(data):
     data["messages"] = []
     for item in data["items"]:
         item["thread_id"] = data["id"]
-        data["messages"].append(
-            extract_direct_message(item)
-        )
+        data["messages"].append(extract_direct_message(item))
     data["users"] = [extract_user_short(u) for u in data["users"]]
     if "inviter" in data:
         data["inviter"] = extract_user_short(data["inviter"])
@@ -328,9 +299,7 @@ def extract_story_v1(data):
             story["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         )[-1]["url"]
-    story["mentions"] = [
-        StoryMention(**mention) for mention in story.get("reel_mentions", [])
-    ]
+    story["mentions"] = [StoryMention(**mention) for mention in story.get("reel_mentions", [])]
     story["locations"] = []
     story["hashtags"] = []
     story["stickers"] = []
@@ -390,10 +359,7 @@ def extract_story_gql(data):
 def extract_highlight_v1(data):
     highlight = deepcopy(data)
     highlight['pk'] = highlight['id'].split(':')[1]
-    highlight['items'] = [
-        extract_story_v1(item)
-        for item in highlight.get('items', [])
-    ]
+    highlight['items'] = [extract_story_v1(item) for item in highlight.get('items', [])]
     return Highlight(**highlight)
 
 

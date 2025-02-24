@@ -9,7 +9,9 @@ from instagrapi.extractors import (
     extract_direct_message, extract_direct_response, extract_direct_short_thread,
     extract_direct_thread
 )
-from instagrapi.types import DirectMessage, DirectResponse, DirectShortThread, DirectThread
+from instagrapi.instagrapi_types import (
+    DirectMessage, DirectResponse, DirectShortThread, DirectThread
+)
 from instagrapi.utils import dumps
 
 SELECTED_FILTERS = ("flagged", "unread")

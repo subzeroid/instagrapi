@@ -329,7 +329,7 @@ class PrivateRequestMixin:
                         "params": params,
                         "data": data,
                         "headers": self.private.headers,
-                        "url": api.url,
+                        "url": api_url,
                     }
                 )
 
@@ -343,7 +343,7 @@ class PrivateRequestMixin:
                         "method": "GET",
                         "params": params,
                         "headers": self.private.headers,
-                        "url": api.url,
+                        "url": api_url,
                     }
                 )
 

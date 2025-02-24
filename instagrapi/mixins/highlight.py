@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 from instagrapi import config
 from instagrapi.exceptions import HighlightNotFound
 from instagrapi.extractors import extract_highlight_v1
-from instagrapi.types import Highlight
+from instagrapi.instagrapi_types import Highlight
 from instagrapi.utils import dumps
 
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from instagrapi.exceptions import ClientError, ClientNotFoundError, MediaNotFound
 from instagrapi.extractors import extract_comment
-from instagrapi.types import Comment
+from instagrapi.instagrapi_types import Comment
 
 
 class CommentMixin:

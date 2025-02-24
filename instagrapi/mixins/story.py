@@ -9,7 +9,7 @@ import requests
 from instagrapi import config
 from instagrapi.exceptions import ClientNotFoundError, UserNotFound
 from instagrapi.extractors import extract_story_gql, extract_story_v1, extract_user_short
-from instagrapi.types import Story, UserShort
+from instagrapi.instagrapi_types import Story, UserShort
 
 
 class StoryMixin:
