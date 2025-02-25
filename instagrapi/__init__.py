@@ -85,7 +85,7 @@ class Client(
     def __init__(
         self,
         settings: Optional[Dict[str, Any]] = None,
-        proxies: Optional[str] = None,
+        proxies: Optional[Dict[str, Any]] = None,
         job_id: Optional[str] = None,
         **kwargs,
     ):
@@ -95,8 +95,7 @@ class Client(
             settings = {}
         self.settings = settings
         if proxies:
-            proxies_dict = json.loads(proxies)
-            self.set_proxy(proxies=proxies_dict, job_id=job_id)
+            self.set_proxy(proxies=proxies, job_id=job_id)
 
         self.init()
 
@@ -109,7 +108,7 @@ class Client(
     def set_proxy(self, proxies: Dict[str, Any], job_id: Optional[str] = None):
         proxy_name = random.choice(list(proxies.keys()))
         proxy = proxies.get(proxy_name)
-        proxy_uri = proxy.get("uri")
+        proxy_uri = random.choice(proxy.get("uri").split(","))
         proxy_username = proxy.get("username")
         proxy_password = proxy.get("password")
         proxy_country = proxy.get("country")

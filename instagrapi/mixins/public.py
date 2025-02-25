@@ -118,7 +118,7 @@ class PublicRequestMixin:
             time.sleep(self.request_timeout)
         try:
             if data is not None:  # POST
-                response = self.public.data(url, data=data, params=params)
+                response = self.public.post(url, data=data, params=params)
             else:  # GET
                 response = self.public.get(url, params=params)
 
@@ -203,17 +203,26 @@ class PublicRequestMixin:
         variables,
         query_hash=None,
         query_id=None,
+        doc_id=None,
         data=None,
         params=None,
         headers=None,
     ):
-        assert query_id or query_hash, "Must provide valid one of: query_id, query_hash"
-        default_params = {"variables": json.dumps(variables, separators=(",", ":"))}
-        if query_id:
-            default_params["query_id"] = query_id
+        assert query_id or query_hash or doc_id, "Must provide valid one of: query_id, query_hash, doc_id"
 
-        if query_hash:
-            default_params["query_hash"] = query_hash
+        if doc_id:
+            default_params = {}
+            if data:
+                data["doc_id"] = doc_id
+            else:
+                default_params["doc_id"] = doc_id
+        else:
+            default_params = {"variables": json.dumps(variables, separators=(",", ":"))}
+            if query_id:
+                default_params["query_id"] = query_id
+
+            if query_hash:
+                default_params["query_hash"] = query_hash
 
         if params:
             params.update(default_params)

@@ -1,9 +1,11 @@
+import json
 import logging
 import time
 from copy import deepcopy
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
+from instagrapi.config import DOC_ID_USER_POSTS_BY_NAME
 from instagrapi.exceptions import (
     ClientBadRequestError, ClientError, ClientJSONDecodeError, ClientLoginRequired,
     ClientNotFoundError, UserNotFound
@@ -1076,3 +1078,59 @@ class UserMixin:
             if not end_cursor or (amount and nb_media >= amount) or first_page is True:
                 break
             time.sleep(sleep)
+
+    def user_medias_gql_doc_id(
+        self,
+        user_name: str,
+        sleep: int = 2,
+    ) -> Iterable[Media]:
+        medias_ids = set()
+        end_cursor = None
+        while True:
+            for media in self.user_medias_gql_doc_id_chunk(user_name, end_cursor=end_cursor):
+                if media.pk not in medias_ids:
+                    medias_ids.add(media.pk)
+                    yield media
+            end_cursor = json_value(
+                self.last_public_json, "xdt_api__v1__feed__user_timeline_graphql_connection",
+                "page_info", "end_cursor"
+            )
+            if not end_cursor or end_cursor == "None":
+                break
+            time.sleep(sleep)
+
+    def user_medias_gql_doc_id_chunk(
+        self,
+        user_name: str,
+        end_cursor: Optional[str],
+    ) -> Iterable[Media]:
+        variables = {
+            "username": user_name,
+            "after": end_cursor if end_cursor else None,
+            "before": None,
+            "first": 12,
+            "last": None,
+            "__relay_internal__pv__PolarisIsLoggedInrelayprovider": True,
+            "__relay_internal__pv__PolarisShareSheetV3relayprovider": True,
+            "data":
+                {
+                    "count": 12,
+                    "include_reel_media_seen_timestamp": True,
+                    "include_relationship_info": True,
+                    "latest_besties_reel_media": True,
+                    "latest_reel_media": True,
+                },
+        }
+        data = self.public_graphql_request(
+            {},
+            data={"variables": json.dumps(variables)},
+            doc_id=DOC_ID_USER_POSTS_BY_NAME,
+            headers={"content-type": "application/x-www-form-urlencoded"},
+        )
+        self.last_public_json = self.last_public_json.get("data", self.last_public_json)
+
+        edges = json_value(
+            data, "xdt_api__v1__feed__user_timeline_graphql_connection", "edges", default=[]
+        )
+        for edge in edges:
+            yield extract_media_gql(edge["node"])

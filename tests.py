@@ -10,12 +10,12 @@ from pathlib import Path
 
 from instagrapi import Client
 from instagrapi.exceptions import DirectThreadNotFound
-from instagrapi.story import StoryBuilder
-from instagrapi.types import (
+from instagrapi.instagrapi_types import (
     Account, Collection, Comment, DirectMessage, DirectThread, Hashtag, Highlight, Location, Media,
     MediaOembed, Share, Story, StoryLink, StoryMedia, StoryMention, StorySticker, User, UserShort,
     Usertag
 )
+from instagrapi.story import StoryBuilder
 from instagrapi.utils import generate_jazoest
 from instagrapi.zones import UTC
 
