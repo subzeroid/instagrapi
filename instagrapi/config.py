@@ -31,12 +31,49 @@ LOGIN_EXPERIMENTS = "ig_android_reg_nux_headers_cleanup_universe,ig_android_devi
 
 SUPPORTED_CAPABILITIES = [
     {
-        "name": "SUPPORTED_SDK_VERSIONS",
-        "value": "108.0,109.0,110.0,111.0,112.0,113.0,114.0,115.0,116.0,117.0,118.0,119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0"
-    },
-    {"name": "FACE_TRACKER_VERSION","value": "14"},
-    {"name": "segmentation","value": "segmentation_enabled"},
-    {"name": "COMPRESSION","value": "ETC2_COMPRESSION"},
-    {"name": "world_tracker","value": "world_tracker_enabled"},
-    {"name": "gyroscope","value": "gyroscope_enabled"}
+        "name":
+            "SUPPORTED_SDK_VERSIONS",
+        "value":
+            "108.0,109.0,110.0,111.0,112.0,113.0,114.0,115.0,116.0,117.0,118.0,119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0"
+    }, {
+        "name": "FACE_TRACKER_VERSION",
+        "value": "14"
+    }, {
+        "name": "segmentation",
+        "value": "segmentation_enabled"
+    }, {
+        "name": "COMPRESSION",
+        "value": "ETC2_COMPRESSION"
+    }, {
+        "name": "world_tracker",
+        "value": "world_tracker_enabled"
+    }, {
+        "name": "gyroscope",
+        "value": "gyroscope_enabled"
+    }
 ]
+
+# List of query hashes for reference
+
+QUERY_HASH_HASHTAG_BY_NAME = "f92f56d47dc7a55b606908374b43a314"
+
+QUERY_HASH_MEDIA_BY_SHORTCODE = "477b65a610463740ccdb83135b2014db"
+QUERY_HASH_USERTAG_MEDIAS_BY_ID = "be13233562af2d229b008d2976b998b5"
+
+QUERY_HASH_USER_BY_ID = "e7e2f4da4b02303f74f0841279e52d76"
+QUERY_HASH_USER_SHORT_BY_ID = "ad99dd9d3646cc3c0dda65debcd266a7"
+QUERY_HASH_USER_FOLLOWERS_BY_ID = "5aefa9893005572d237da5068082d8d5"
+
+QUERY_HASH_PUBLIC_LOCATION_BY_ID = "1b84447a4d8b6d6d0426fefb34514485"
+QUERY_HASH_PUBLIC_USER_BY_ID = "e74d51c10ecc0fe6250a295b9bb9db74"
+
+QUERY_HASH_USER_STORIES_BY_ID = "303a4ae99711322310f25250d988f3b7"
+
+# List of doc IDs that can potentially be used
+
+DOC_ID_MEDIA_BY_SHORTCODE = "8845758582119845"
+DOC_ID_MEDIA_BY_SHORTCODE_2 = "10015901848480474"
+DOC_ID_USER_POSTS_BY_NAME = "9310670392322965"
+DOC_ID_USER_POSTS_BY_NAME_2 = "9066276850131169"
+DOC_ID_USER_POSTS_BY_NAME_3 = "7898261790222653"
+DOC_ID_USER_REELS_BY_ID = "7845543455542541"

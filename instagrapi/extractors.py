@@ -51,19 +51,26 @@ def extract_media_v1(data):
 def extract_media_gql(data):
     """Extract media from GraphQL"""
     media = deepcopy(data)
-    user = extract_user_short(media["owner"])
-    # if "full_name" in user:
-    #     user = extract_user_short(user)
-    # else:
-    #     user["pk"] = user.pop("id")
-    try:
-        media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
-    except KeyError:
-        media["media_type"] = 0
+
+    media["user"] = extract_user_short(media["owner"])
+
+    media["pk"] = media["id"]
+    media["id"] = f"{media['pk']}_{media['user'].pk}"
+
+    if "media_type" not in media:
+        try:
+            media["media_type"] = MEDIA_TYPES_GQL[media["__typename"]]
+        except KeyError:
+            media["media_type"] = 0
     if media.get("media_type") == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
+
     if "thumbnail_src" in media:
         media["thumbnail_url"] = media["thumbnail_src"]
+    elif "image_versions2" in media:
+        media["thumbnail_url"] = sorted(
+            media["image_versions2"]["candidates"], key=lambda o: o["height"] * o["width"]
+        )[-1]["url"]
     else:
         media["thumbnail_url"] = sorted(
             # display_resources - user feed, thumbnail_resources - hashtag feed
@@ -71,44 +78,25 @@ def extract_media_gql(data):
             key=lambda o: o["config_width"] * o["config_height"],
         )[-1]["src"]
 
-
-#    if media.get("media_type") == 8:
-# remove thumbnail_url and video_url for albums
-# see resources
-#        media.pop("thumbnail_url", "")
-#        media.pop("video_url", "")
     location = media.pop("location", None)
-    media_id = media.get("id")
-    media["pk"] = media_id
-    media["id"] = f"{media_id}_{user.pk}"
-    return Media(
-        code=media.get("shortcode"),
-        taken_at=media.get("taken_at_timestamp"),
-        location=extract_location(location) if location else None,
-        user=user,
-        view_count=media.get("video_view_count", 0),
-        comment_count=json_value(media, "edge_media_to_comment", "count"),
-        like_count=json_value(media, "edge_media_preview_like", "count"),
-        caption_text=json_value(
-            media, "edge_media_to_caption", "edges", 0, "node", "text", default=""
-        ),
-        usertags=sorted(
-            [
-                extract_usertag(usertag["node"])
-                for usertag in media.get("edge_media_to_tagged_user", {}).get("edges", [])
-            ],
-            key=lambda tag: tag.user.pk,
-        ),
-        resources=[
-            extract_resource_gql(edge["node"])
-            for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
-        ],
-        **media,
+    media["location"] = extract_location(location) if location else None
+
+    media["caption_text"] = json_value(media, "caption", "text", default="")
+
+    usertags = media.get("usertags") or {}
+    media["usertags"] = sorted(
+        [extract_usertag(usertag) for usertag in usertags.get("in", [])],
+        key=lambda tag: tag.user.pk,
     )
+
+    resources = media.get("carousel_media") or []
+    media["resources"] = [extract_resource_v1(resource) for resource in resources]
+
+    return Media(**media)
 
 
 def extract_resource_v1(data):
-    if "video_versions" in data:
+    if data.get("video_versions"):
         data["video_url"] = sorted(data["video_versions"],
                                    key=lambda o: o["height"] * o["width"])[-1]["url"]
     data["thumbnail_url"] = sorted(

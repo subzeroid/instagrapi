@@ -78,7 +78,7 @@ class Usertag(BaseModel):
 
 class Location(BaseModel):
     pk: Optional[int]
-    name: str
+    name: Optional[str] = ""
     phone: Optional[str] = ""
     website: Optional[str] = ""
     category: Optional[str] = ""
@@ -115,9 +115,9 @@ class Media(BaseModel):
     view_count: Optional[int] = 0  # for Video and IGTV
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""
-    resources: List[Resource] = []
-    clips_metadata: dict = {}
-    raw: dict = None
+    resources: Optional[List[Resource]] = []
+    clips_metadata: Optional[dict] = {}
+    raw: Optional[dict] = None
 
 
 class MediaOembed(BaseModel):
