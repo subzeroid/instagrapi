@@ -1223,7 +1223,7 @@ class UserMixin:
         return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
 
     def creator_info(
-        self, user_id: str, entry_point: str = "direct_thread"
+            self, user_id: str, entry_point: str = "direct_thread"
     ) -> Tuple[UserShort, Dict]:
         """
         Retrieves Creator's information
@@ -1254,3 +1254,24 @@ class UserMixin:
         creator_info = result.get("user", {}).pop("creator_info", {})
         user = extract_user_short(result.get("user", {}))
         return (user, creator_info)
+
+    def similar_accounts(self, user_id: str) -> List[UserShort]:
+        """
+        Get similar accounts (Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
+        assert self.user_id, "Login required"
+        params = {"target_id": user_id}
+
+        results = self.private_request("discover/chaining/", params=params)
+        users = results.get("users", [])
+        return [extract_user_short(user) for user in users]
