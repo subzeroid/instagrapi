@@ -28,7 +28,7 @@ Features:
 * Getting public data of post, story, album, Reels, IGTV data and the ability to download content
 * Getting public data of hashtag and location data, as well as a list of posts for them
 * Getting public data of all comments on a post and a list of users who liked it
-* Management of [proxy servers](https://bit.ly/instagrapi-oxy), mobile devices and challenge resolver
+* Management of [proxy servers](https://soax.com?afmc=sEysufQI), mobile devices and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
 * Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
