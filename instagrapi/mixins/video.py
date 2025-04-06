@@ -894,7 +894,10 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception("Please install moviepy>=1.0.3 and retry")
+        try:
+            import moviepy as mp
+        except ImportError:
+            raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analyzing video file "{path}"')
     video = mp.VideoFileClip(str(path))

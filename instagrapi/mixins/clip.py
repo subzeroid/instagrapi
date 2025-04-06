@@ -239,8 +239,13 @@ class UploadClipMixin:
             highlight_start_time = 0
         try:
             import moviepy.editor as mp
+            from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
         except ImportError:
-            raise Exception("Please install moviepy>=1.0.3 and retry")
+            try:
+                import moviepy as mp
+                from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+            except ImportError:
+                raise Exception("Please install moviepy>=1.0.3 and retry")
         # get all media to create the reel
         video = mp.VideoFileClip(str(path))
         audio_clip = mp.AudioFileClip(str(tmpaudio))
@@ -388,7 +393,10 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception("Please install moviepy>=1.0.3 and retry")
+        try:
+            import moviepy as mp
+        except ImportError:
+            raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analyzing CLIP file "{path}"')
     video = mp.VideoFileClip(str(path))
