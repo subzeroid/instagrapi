@@ -239,11 +239,9 @@ class UploadClipMixin:
             highlight_start_time = 0
         try:
             import moviepy.editor as mp
-            from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
         except ImportError:
             try:
                 import moviepy as mp
-                from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
             except ImportError:
                 raise Exception("Please install moviepy>=1.0.3 and retry")
         # get all media to create the reel
