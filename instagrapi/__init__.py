@@ -95,8 +95,8 @@ class Client(
     def __init__(
         self,
         settings: dict = {},
-        proxy: str = None,
-        delay_range: list = None,
+        proxy: str | None = None,
+        delay_range: list | None = None,
         logger=DEFAULT_LOGGER,
         **kwargs,
     ):
@@ -111,7 +111,7 @@ class Client(
 
         self.init()
 
-    def set_proxy(self, dsn: str):
+    def set_proxy(self, dsn: str | None):
         if dsn:
             assert isinstance(
                 dsn, str
