@@ -6,9 +6,12 @@ from urllib.parse import urlparse
 from .types import StoryBuild, StoryMention, StorySticker
 
 try:
-    from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+    from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
 except ImportError:
-    raise Exception("Please install moviepy==1.0.3 and retry")
+    try:
+        from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+    except ImportError:
+        raise Exception("Please install moviepy>=1.0.3 and retry")
 
 try:
     from PIL import Image
