@@ -616,7 +616,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         with open(path, "r") as fp:
             self.set_settings(json.load(fp))
             return self.settings
-        return None
 
     def dump_settings(self, path: Path) -> bool:
         """
