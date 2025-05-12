@@ -1123,7 +1123,7 @@ class UserMixin:
         }
         data = self.public_graphql_request(
             {},
-            data={"variables": json.dumps(variables)},
+            params={"variables": json.dumps(variables)},
             doc_id=DOC_ID_USER_POSTS_BY_NAME,
             headers={"content-type": "application/x-www-form-urlencoded"},
         )
