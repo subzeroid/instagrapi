@@ -138,7 +138,6 @@ class UploadIGTVMixin:
             ),
             headers=headers,
         )
-        self.request_log(response)
         if response.status_code != 200:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
         with open(path, "rb") as fp:
@@ -159,13 +158,11 @@ class UploadIGTVMixin:
             data=igtv_data,
             headers=headers,
         )
-        self.request_log(response)
         if response.status_code != 200:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
         # CONFIGURE
         self.igtv_composer_session_id = self.generate_uuid()
         for attempt in range(50):
-            self.logger.debug(f"Attempt #{attempt} to configure IGTV: {path}")
             time.sleep(configure_timeout)
             try:
                 configured = self.igtv_configure(

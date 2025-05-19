@@ -169,9 +169,7 @@ class UploadPhotoMixin:
             data=photo_data,
             headers=headers,
         )
-        self.request_log(response)
         if response.status_code != 200:
-            self.logger.error("Photo Upload failed with the following response: %s", response)
             last_json = self.last_json  # local variable for read in sentry
             raise PhotoNotUpload(response.text, response=response, **last_json)
         with Image.open(path) as im:
@@ -213,7 +211,6 @@ class UploadPhotoMixin:
         path = Path(path)
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
-            self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
             if self.photo_configure(
                 upload_id, width, height, caption, usertags, location, extra_data=extra_data
@@ -357,7 +354,6 @@ class UploadPhotoMixin:
         path = Path(path)
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
-            self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
             if self.photo_configure_to_story(
                 upload_id,

@@ -180,7 +180,6 @@ class UploadVideoMixin:
             ),
             headers=headers,
         )
-        self.request_log(response)
         if response.status_code != 200:
             raise VideoNotUpload(response.text, response=response, **self.last_json)
         with open(path, "rb") as fp:
@@ -202,7 +201,6 @@ class UploadVideoMixin:
             data=video_data,
             headers=headers,
         )
-        self.request_log(response)
         if response.status_code != 200:
             raise VideoNotUpload(response.text, response=response, **self.last_json)
         return upload_id, width, height, duration, Path(thumbnail)
@@ -246,7 +244,6 @@ class UploadVideoMixin:
             path, thumbnail, to_story=False
         )
         for attempt in range(50):
-            self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:
                 configured = self.video_configure(
@@ -397,7 +394,6 @@ class UploadVideoMixin:
             path, thumbnail, to_story=True
         )
         for attempt in range(50):
-            self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:
                 configured = self.video_configure_to_story(
@@ -840,7 +836,6 @@ class UploadVideoMixin:
             path, thumbnail, to_story=True
         )
         for attempt in range(50):
-            self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
             try:
                 configured = self.video_configure_to_story(

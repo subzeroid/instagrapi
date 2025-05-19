@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 import time
 from copy import deepcopy
@@ -196,7 +195,6 @@ class MediaMixin:
         }
         data = self.public_graphql_request(variables, query_hash="477b65a610463740ccdb83135b2014db")
         if not data.get("shortcode_media"):
-            logging.info("SHORT MEDIA EMPTY !")
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"]:
             location = extract_location(data["shortcode_media"]["location"])
@@ -264,8 +262,6 @@ class MediaMixin:
                         raise e
                     media = self.media_info_gql(media_pk, want_location_with_detail)  # retry
             except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
                 # Restricted Video: This video is not available in your country.
                 # Or private account
                 media = self.media_info_v1(media_pk)
@@ -566,11 +562,9 @@ class MediaMixin:
                 if "Please wait a few minutes before you try again" in str(
                     e
                 ) or 'Too Many Requests' in str(e):
-                    logging.info(f"{e}: sleeping 60 min")
                     time.sleep(60 * 60)
                     continue
                 else:
-                    logging.info(f"{e}: sleeping 1 min")
                     time.sleep(60)
                     continue
 
@@ -619,11 +613,9 @@ class MediaMixin:
                 )["items"]
             except Exception as e:
                 if "Please wait a few minutes before you try again" in str(e):
-                    logging.info(f"[429]: sleeping 10 min")
                     time.sleep(60 * 10)
                     continue
                 else:
-                    logging.info(f"{e}: sleeping 1 min")
                     time.sleep(60)
                     continue
                 raise e

@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
@@ -80,7 +79,6 @@ class Client(
 ):
     settings = None
     proxy = None
-    logger = logging.getLogger("instagrapi")
 
     def __init__(
         self,

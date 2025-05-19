@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 
 try:
@@ -13,7 +12,7 @@ from instagrapi.exceptions import (
     ClientGraphqlError, ClientIncompleteReadError, ClientJSONDecodeError, ClientLoginRequired,
     ClientNotFoundError, ClientThrottledError, GenericRequestError
 )
-from instagrapi.utils import build_curl, json_value
+from instagrapi.utils import json_value
 
 
 class PublicRequestMixin:
@@ -23,10 +22,7 @@ class PublicRequestMixin:
     last_public_response = None
     last_public_json = {}
     last_cursor = None
-    request_logger = logging.getLogger("public_request")
     request_timeout = 1
-    request_len = 0
-    request_nb = 0
 
     def __init__(self, *args, **kwargs):
         self.public = requests.Session()
@@ -94,22 +90,6 @@ class PublicRequestMixin:
                     raise e
                 continue
 
-    def request_log_pub(self, response, data):
-        response_len = len(response.text)
-        self.request_len += response_len
-        self.request_nb += 1
-        self.request_logger.debug(build_curl(response))
-        self.request_logger.info(
-            "[PUBLIC][%s] [%s req][%s/%s len] [%s] %s %s",
-            self.public.proxies.get("https"),
-            self.request_nb,
-            response_len,
-            self.request_len,
-            response.status_code,
-            "POST" if data else "GET",
-            response.url,
-        )
-
     def _send_public_request(self, url, data=None, params=None, headers=None, return_json=False):
         self.public_requests_count += 1
         if headers:
@@ -132,10 +112,6 @@ class PublicRequestMixin:
                     response=response,
                 )
 
-            self.request_logger.debug("public_request %s: %s", response.status_code, response.url)
-
-            self.request_log_pub(response, data)
-
             self.last_public_response = response
             response.raise_for_status()
             if return_json:
@@ -147,12 +123,6 @@ class PublicRequestMixin:
             if "/login/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
-            self.request_logger.error(
-                "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
-                response.status_code,
-                response.url,
-                response.text,
-            )
             raise ClientJSONDecodeError(
                 f"JSONDecodeError {e!s} while opening {url!s}",
                 response=response,
