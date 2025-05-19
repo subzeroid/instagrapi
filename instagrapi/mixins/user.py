@@ -186,17 +186,16 @@ class UserMixin:
         username = str(username).lower()
         if not use_cache or username not in self._usernames_cache:
             try:
-                try:
-                    user = self.user_info_by_username_gql(username)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_by_username_gql(username)  # retry
-            except Exception as e:
-                user = self.user_info_by_username_v1(username)
+                user = self.user_info_by_username_gql(username)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                user = self.user_info_by_username_gql(username)  # retry
             self._users_cache[user.pk] = user
             self._usernames_cache[user.username] = user.pk
-        return self.user_info(self._usernames_cache[username])
+        else:
+            user = self._users_cache[self._usernames_cache[username]]
+        return user
 
     def user_info_gql(self, user_id: str) -> User:
         """
@@ -263,14 +262,11 @@ class UserMixin:
         user_id = str(user_id)
         if not use_cache or user_id not in self._users_cache:
             try:
-                try:
-                    user = self.user_info_gql(user_id)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_gql(user_id)  # retry
-            except Exception as e:
-                user = self.user_info_v1(user_id)
+                user = self.user_info_gql(user_id)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                user = self.user_info_gql(user_id)  # retry
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
         return deepcopy(

@@ -164,4 +164,4 @@ class Client(
         self.proxy = proxy_href
 
     def handle_exception(self, exception):
-        return True
+        raise exception
