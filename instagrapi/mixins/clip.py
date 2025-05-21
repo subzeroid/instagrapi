@@ -285,7 +285,7 @@ class UploadClipMixin:
             "audio_cluster_id": track.audio_cluster_id,
             "audio_asset_start_time_in_ms": highlight_start_time,
             "derived_content_start_time_in_ms": 0,
-            "overlap_duration_in_ms": 15000,
+            "overlap_duration_in_ms": int(video.duration * 1000),
             "product": "story_camera_clips_v2",
             "song_name": track.title,
             "artist_name": track.display_artist,
