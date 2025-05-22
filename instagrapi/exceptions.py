@@ -329,3 +329,29 @@ class MediaUnavailable(PrivateError):
 
 class ValidationError(AssertionError):
     pass
+
+
+class EmailInvalidError(ClientError):
+    pass
+
+
+class EmailNotAvailableError(ClientError):
+    pass
+
+
+class EmailVerificationSendError(ClientError):
+    pass
+
+
+class AgeEligibilityError(ClientError):
+    pass
+
+
+class CaptchaChallengeRequired(ClientError):
+    """Captcha challenge required, and no solver is configured or available."""
+    def __init__(self, message="Captcha challenge required, but no solver configured or available.", challenge_details=None, **kwargs):
+        self.challenge_details = challenge_details if challenge_details else {}
+        # Example of extracting common details:
+        # self.site_key = self.challenge_details.get('site_key')
+        # self.challenge_url = self.challenge_details.get('challenge_url') # URL where captcha is presented
+        super().__init__(message, **kwargs)
