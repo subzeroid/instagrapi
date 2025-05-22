@@ -173,8 +173,6 @@ class LocationMixin:
         except Exception:
             # Users do not understand the output of such information and create bug reports
             # such this - https://github.com/adw0rd/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
             location = self.location_info_v1(location_pk)
         return location
 
@@ -415,8 +413,6 @@ class LocationMixin:
         except Exception:
             # Users do not understand the output of such information and create bug reports
             # such this - https://github.com/adw0rd/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
             return self.location_medias_top_v1(location_pk, amount)
 
     def location_medias_recent_a1(self,
@@ -488,6 +484,4 @@ class LocationMixin:
         except Exception:
             # Users do not understand the output of such information and create bug reports
             # such this - https://github.com/adw0rd/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
             return self.location_medias_recent_v1(location_pk, amount)

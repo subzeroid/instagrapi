@@ -33,7 +33,6 @@ class CollectionMixin:
                     },
                 )
             except Exception as e:
-                self.logger.exception(e)
                 return total_items
             for item in result["items"]:
                 total_items.append(extract_collection(item))
@@ -138,7 +137,6 @@ class CollectionMixin:
                     },
                 )
             except Exception as e:
-                self.logger.exception(e)
                 break
             for item in result["items"]:
                 if last_media_pk and last_media_pk == item["media"]["pk"]:

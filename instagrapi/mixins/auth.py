@@ -382,7 +382,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         try:
             self.pre_login_flow()
         except (PleaseWaitFewMinutes, ClientThrottledError):
-            self.logger.warning('Ignore 429: Continue login')
+            pass
             # The instagram application ignores this error
             # and continues to log in (repeat this behavior)
         enc_password = self.password_encrypt(password)
@@ -409,9 +409,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "0"
         }
         try:
-            import logging
             logged = self.private_request("accounts/login/", data, login=True, retries_count=1)
-            logging.info(f"{self.last_response.status_code}: {self.last_response.content}")
             self.authorization_data = self.parse_authorization(
                 self.last_response.headers.get('ig-set-authorization')
             )
@@ -838,7 +836,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             b64part = authorization.rsplit(':', 1)[-1]
             return json.loads(base64.b64decode(b64part))
         except Exception as e:
-            self.logger.exception(e)
+            pass
         return {}
 
     @property

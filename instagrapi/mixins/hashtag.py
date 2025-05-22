@@ -275,7 +275,6 @@ class HashtagMixin:
         assert method_api in ("A1", "GQL", "V1"), \
             'You must specify one of the option for "method_api" ("A1", "GQL", "V1")'
 
-        import logging
         media_ids = set()
         nb_media = 0
         while True:
@@ -295,7 +294,6 @@ class HashtagMixin:
                 if max_amount and nb_media >= max_amount:
                     break
             if max_amount and nb_media >= max_amount or first_page is True:
-                logging.info(f"END: {max_amount}")
                 break
 
             if method_api == "V1":
@@ -306,12 +304,8 @@ class HashtagMixin:
             else:
                 page_info = self.last_public_json["hashtag"][tab_key]["page_info"]
                 if not page_info.get("has_next_page") or not page_info.get("end_cursor"):
-                    logging.info(
-                        f"END2: {page_info.get('has_next_page')}, {page_info.get('end_cursor')}"
-                    )
                     break
                 end_cursor = page_info["end_cursor"]
-            logging.info(f"{page_info.get('has_next_page')}, {page_info.get('end_cursor')}")
 
     def hashtag_medias_top(self, name: str, amount: int = 9, end_cursor: str = None) -> List[Media]:
         """
@@ -333,7 +327,6 @@ class HashtagMixin:
         """
 
         try:
-            self.logger.info("Use GQL method")
             yield from self.hashtag_medias(
                 name,
                 amount,
@@ -342,7 +335,6 @@ class HashtagMixin:
                 method_api="GQL"
             )
         except ClientError:
-            self.logger.info("Use V1 method")
             yield from self.hashtag_medias(
                 name, amount, tab_key="top", end_cursor=end_cursor, method_api="V1"
             )
@@ -369,7 +361,6 @@ class HashtagMixin:
             generator of objects of Media
         """
         try:
-            self.logger.info("Use GQL method")
             yield from self.hashtag_medias(
                 name,
                 amount,
@@ -378,7 +369,6 @@ class HashtagMixin:
                 method_api="GQL"
             )
         except ClientError:
-            self.logger.info("Use V1 method")
             yield from self.hashtag_medias(
                 name, amount, tab_key="recent", end_cursor=end_cursor, method_api="V1"
             )

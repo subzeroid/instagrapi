@@ -1,8 +1,6 @@
 import json
-import logging
 import random
 import time
-import traceback
 from json.decoder import JSONDecodeError
 
 import requests
@@ -15,7 +13,7 @@ from instagrapi.exceptions import (
     MediaUnavailable, PleaseWaitFewMinutes, PrivateAccount, ProxyAddressIsBlocked, RateLimitError,
     SentryBlock, TwoFactorRequired, UnknownError, UserNotFound, VideoTooLongException
 )
-from instagrapi.utils import build_curl, dumps, generate_signature
+from instagrapi.utils import dumps, generate_signature
 
 
 def manual_input_code(self, username: str, choice=None):
@@ -57,13 +55,10 @@ class PrivateRequestMixin:
     handle_exception = None
     challenge_code_handler = manual_input_code
     change_password_handler = manual_change_password
-    request_logger = logging.getLogger("private_request")
     request_timeout = 1
     last_response = None
     last_json = {}
     last_cursor = None
-    request_len = 0
-    request_nb = 0
 
     def __init__(self, *args, **kwargs):
         self.private = requests.Session()
@@ -310,7 +305,6 @@ class PrivateRequestMixin:
                 if not endpoint.startswith('/'):
                     endpoint = f"/v1/{endpoint}"
                 api_url = f"https://{config.API_DOMAIN}/{api_path}{endpoint}"
-            logging.debug(f"API_URL: {api_url}")
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
@@ -322,53 +316,22 @@ class PrivateRequestMixin:
                     if extra_sig:
                         data += "&".join(extra_sig)
 
-                self.logger.debug(
-                    {
-                        "proxy": self.private.proxies,
-                        "method": "POST",
-                        "params": params,
-                        "data": data,
-                        "headers": self.private.headers,
-                        "url": api_url,
-                    }
-                )
-
                 response = self.private.post(api_url, data=data, params=params)
             else:  # GET
                 self.private.headers.pop('Content-Type', None)
 
-                self.logger.debug(
-                    {
-                        "proxy": self.private.proxies,
-                        "method": "GET",
-                        "params": params,
-                        "headers": self.private.headers,
-                        "url": api_url,
-                    }
-                )
-
                 response = self.private.get(api_url, params=params)
-            self.logger.debug("private_request %s: %s", response.status_code, response.url)
             mid = response.headers.get("ig-set-x-mid")
             if mid:
                 self.mid = mid
             self.last_response = response
-            self.request_log_priv(response)
             response.raise_for_status()
             # last_json - for Sentry context in traceback
             self.last_json = last_json = response.json()
-            #self.logger.debug("last_json %s", last_json)
         except (JSONDecodeError, simplejson.errors.JSONDecodeError) as e:
             if 'href="https://www.instagram.com/accounts/login/?next=/api/v1/' in response.text:
                 raise LoginRequired(response=response)
 
-            self.logger.error(
-                "Status %s: JSONDecodeError in private_request (user_id=%s, endpoint=%s) >>> %s",
-                response.status_code,
-                self.user_id,
-                endpoint,
-                response.text,
-            )
             raise ClientJSONDecodeError(
                 f"JSONDecodeError {e!s} while opening {response.url!s}",
                 response=response,
@@ -387,9 +350,7 @@ class PrivateRequestMixin:
                 raise ClientForbiddenError(e, response=e.response, **last_json)
             elif e.response.status_code == 400:
                 error_type = last_json.get("error_type")
-                logging.info(last_json)
                 if message in ["challenge_required", "checkpoint_challenge_required"]:
-                    logging.info("CHALLENGE")
                     raise ChallengeRequired(**last_json)
                 elif message == "feedback_required":
                     raise FeedbackRequired(
@@ -439,22 +400,14 @@ class PrivateRequestMixin:
                 elif error_type or message:
                     raise UnknownError(**last_json)
                 # TODO: Handle last_json with {'message': 'counter get error', 'status': 'fail'}
-                self.logger.exception(e)
-                self.logger.warning(
-                    "Status 400: %s", message or
-                    "Empty response message. Maybe enabled Two-factor auth?"
-                )
                 raise ClientBadRequestError(e, response=e.response, **last_json)
             elif e.response.status_code == 429:
-                self.logger.warning("Status 429: Too many requests")
                 if "Please wait a few minutes before you try again" in message:
                     raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
                 raise ClientThrottledError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
-                self.logger.warning("Status 404: Endpoint %s does not exists", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
-                self.logger.warning("Status 408: Request Timeout")
                 raise ClientRequestTimeout(e, response=e.response, **last_json)
             raise ClientError(e, response=e.response, **last_json)
         except requests.ConnectionError as e:
@@ -473,27 +426,6 @@ class PrivateRequestMixin:
             }"""
             raise ClientError(response=response, **last_json)
         return last_json
-
-    def request_log_priv(self, response):
-        response_len = len(response.text)
-        self.request_len += response_len
-        self.request_nb += 1
-        self.request_logger.debug(build_curl(response))
-        self.request_logger.info(
-            "[PRIVATE][%s req][%s/%s len] %s [%s] %s %s (%s)",
-            self.request_nb,
-            response_len,
-            self.request_len,
-            self.username,
-            response.status_code,
-            response.request.method,
-            response.url,
-            "{app_version}, {manufacturer} {model}".format(
-                app_version=self.device_settings.get("app_version"),
-                manufacturer=self.device_settings.get("manufacturer"),
-                model=self.device_settings.get("model"),
-            ),
-        )
 
     def private_request(
         self,
@@ -528,17 +460,13 @@ class PrivateRequestMixin:
                 self.private_requests_count += 1
                 return self._send_private_request(endpoint, **kwargs)
             except ClientRequestTimeout:
-                self.logger.info('Wait 60 seconds and try one more time (ClientRequestTimeout)')
                 time.sleep(60)
                 return self._send_private_request(endpoint, **kwargs)
             except Exception as e:
-                logging.debug(f"Exception catch: {type(e)}: {traceback.format_exc()}")
                 if self.handle_exception:
                     self.handle_exception(e)
                 else:
                     if iteration < retries_count:
-                        logging.info(self.last_response)
-                        self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
                         time.sleep(retries_timeout)
                         continue
                     raise e
@@ -547,7 +475,6 @@ class PrivateRequestMixin:
                     # After challenge resolve return last_json
                     return self.last_json
                 if iteration < retries_count:
-                    self.logger.info(f"Retry {iteration}/{retries_count} left ({type(e)})")
                     time.sleep(retries_timeout)
                     continue
                 return self._send_private_request(endpoint, **kwargs)

@@ -317,7 +317,6 @@ class StoryMixin:
                 if not next_max_id:
                     break
             except Exception as e:
-                self.logger.exception(e)
                 break
         if amount:
             users = users[:int(amount)]

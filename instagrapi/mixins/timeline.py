@@ -114,7 +114,6 @@ class ReelsMixin:
                     params={"max_id": next_max_id},
                 )
             except Exception as e:
-                self.logger.exception(e)
                 return total_items
 
             for item in result["items"]:

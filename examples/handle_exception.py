@@ -1,13 +1,7 @@
 from instagrapi import Client
 from instagrapi.exceptions import (
-    BadPassword,
-    ChallengeRequired,
-    FeedbackRequired,
-    LoginRequired,
-    PleaseWaitFewMinutes,
-    RecaptchaChallengeForm,
-    ReloginAttemptExceeded,
-    SelectContactPointRecoveryForm,
+    BadPassword, ChallengeRequired, FeedbackRequired, LoginRequired, PleaseWaitFewMinutes,
+    RecaptchaChallengeForm, ReloginAttemptExceeded, SelectContactPointRecoveryForm
 )
 
 
@@ -22,7 +16,6 @@ class Account:
 
         def handle_exception(client, e):
             if isinstance(e, BadPassword):
-                client.logger.exception(e)
                 client.set_proxy(self.next_proxy().href)
                 if client.relogin_attempt > 0:
                     self.freeze(str(e), days=7)
@@ -30,7 +23,6 @@ class Account:
                 client.settings = self.rebuild_client_settings()
                 return self.update_client_settings(client.get_settings())
             elif isinstance(e, LoginRequired):
-                client.logger.exception(e)
                 client.relogin()
                 return self.update_client_settings(client.get_settings())
             elif isinstance(e, ChallengeRequired):
@@ -44,7 +36,9 @@ class Account:
                     except ChallengeRequired as e:
                         self.freeze('Manual Challenge Required', days=2)
                         raise e
-                    except (ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm) as e:
+                    except (
+                        ChallengeRequired, SelectContactPointRecoveryForm, RecaptchaChallengeForm
+                    ) as e:
                         self.freeze(str(e), days=4)
                         raise e
                     self.update_client_settings(client.get_settings())

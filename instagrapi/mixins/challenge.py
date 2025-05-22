@@ -1,6 +1,5 @@
 import hashlib
 import json
-import logging
 import random
 import time
 import urllib
@@ -73,9 +72,7 @@ class ChallengeResolveMixin:
         except (Exception, ChallengeRequired):
             pass
 #            assert self.last_json["message"] == "challenge_required", self.last_json
-#            logging.info("Challenge with contact form")
 #            return self.challenge_resolve_contact_form(challenge_url)
-        logging.info("Challenge simple")
         return self.challenge_resolve_simple(challenge_url)
 
     def challenge_resolve_contact_form(self, challenge_url: str) -> bool:
@@ -107,7 +104,6 @@ class ChallengeResolveMixin:
             A boolean value
         """
         result = self.last_json
-        logging.info(result)
         challenge_url = "https://i.instagram.com%s" % challenge_url
         enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
         instagram_ajax = hashlib.sha256(enc_password.encode()).hexdigest()[:12]
@@ -149,7 +145,6 @@ class ChallengeResolveMixin:
                 session.cookies.set(key, value)
         time.sleep(WAIT_SECONDS)
         result = session.get(challenge_url)  # render html form
-        logging.info(f"{result.status_code}: {challenge_url}: {result.content}")
         session.headers.update(
             {
                 "x-ig-www-claim": "0",
@@ -168,7 +163,6 @@ class ChallengeResolveMixin:
         time.sleep(WAIT_SECONDS)
         choice = ChallengeChoice.EMAIL
         result = session.post(challenge_url, {"choice": choice})
-        logging.info(f"{result.status_code}: {challenge_url}: {result.content}")
         result = result.json()
 
         if result.get("location") == "instagram://checkpoint/dismiss" and True == False:
@@ -195,17 +189,12 @@ class ChallengeResolveMixin:
 
             data = f"params={urllib.parse.quote(json.dumps(params))}&nest_data_manifest=true"
             self._send_private_request(endpoint, data=data, with_signature=False)
-            logging.info(
-                f"{self.last_response.status_code}: {challenge_url}: {self.last_response.content}"
-            )
 
         for retry in range(8):
-            logging.info(f"retry: {retry}")
             time.sleep(WAIT_SECONDS)
             try:
                 # FORM TO ENTER CODE
                 result = self.handle_challenge_result(result)
-                logging.info(result)
                 break
             except SelectContactPointRecoveryForm as e:
                 if choice == ChallengeChoice.SMS:  # last iteration
@@ -225,7 +214,6 @@ class ChallengeResolveMixin:
                 result = result.json()
                 break
             except ChallengeRedirection:
-                logging.info("ChallengeRedirect")
                 return True  # instagram redirect
         assert result.get("challengeType") in (
             "VerifyEmailCodeForm",
@@ -470,9 +458,6 @@ class ChallengeResolveMixin:
         bool
             A boolean value
         """
-        logging.info(f"[challenge_resolve_simple] json: {self.last_json}")
-        #        if len(self.last_json) == 0:
-        #            logging.info(f"[challenge_resolve_simple] text: {self.last_response.text}")
         step_name = self.last_json.get("step_name", "")
         status = self.last_json.get("status", "")
 
@@ -482,10 +467,8 @@ class ChallengeResolveMixin:
             #            data = f"should_promote_account_status=0&choice=0&_uuid={self.uuid}&bk_client_context=%7B%22bloks_version%22%3A%2254a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972%22%2C%22styles_id%22%3A%22instagram%22%7D&bloks_versioning_id=54a609be99b71e070ffecba098354aa8615da5ac4ebc1e44bb7be28e5b244972"
             accepted = self._send_private_request(endpoint, data=data, with_signature=False)
 
-            logging.info(f"[challenge_resolve_simple] json2: {self.last_json}")
             data = "choice=1&is_bloks_web=True&challenge_context=%7B%22step_name%22%3A+%22%22%2C+%22is_stateless%22%3A+false%2C+%22present_as_modal%22%3A+false%7D&should_promote_account_status=0&nest_data_manifest=true"
             accepted = self._send_private_request(endpoint, data=data, with_signature=False)
-            logging.info(f"[challenge_resolve_simple] json3: {self.last_json}")
 
 
 #            return True if accepted.get("status") == "ok" else False
@@ -535,7 +518,6 @@ class ChallengeResolveMixin:
                     )
             wait_seconds = 5
             for attempt in range(24):
-                logging.info("Search code")
                 code = self.challenge_code_handler(**params)
                 if code:
                     break

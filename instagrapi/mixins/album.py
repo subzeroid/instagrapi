@@ -199,7 +199,6 @@ class UploadAlbumMixin:
                 raise AlbumUnknownFormat()
 
         for attempt in range(50):
-            self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")
             time.sleep(configure_timeout)
             try:
                 configured = (configure_handler or self.album_configure

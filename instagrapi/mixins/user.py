@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 from copy import deepcopy
 from json.decoder import JSONDecodeError
@@ -187,20 +186,16 @@ class UserMixin:
         username = str(username).lower()
         if not use_cache or username not in self._usernames_cache:
             try:
-                try:
-                    user = self.user_info_by_username_gql(username)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_by_username_gql(username)  # retry
-            except Exception as e:
-                self.logger.exception(e)  # Register unknown error
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
-                user = self.user_info_by_username_v1(username)
+                user = self.user_info_by_username_gql(username)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                user = self.user_info_by_username_gql(username)  # retry
             self._users_cache[user.pk] = user
             self._usernames_cache[user.username] = user.pk
-        return self.user_info(self._usernames_cache[username])
+        else:
+            user = self._users_cache[self._usernames_cache[username]]
+        return user
 
     def user_info_gql(self, user_id: str) -> User:
         """
@@ -267,16 +262,11 @@ class UserMixin:
         user_id = str(user_id)
         if not use_cache or user_id not in self._users_cache:
             try:
-                try:
-                    user = self.user_info_gql(user_id)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_gql(user_id)  # retry
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
-                user = self.user_info_v1(user_id)
+                user = self.user_info_gql(user_id)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                user = self.user_info_gql(user_id)  # retry
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
         return deepcopy(
@@ -330,7 +320,6 @@ class UserMixin:
             results = self.private_request(f"friendships/show/{user_id}/")
             return Relationship(**results)
         except ClientError as e:
-            self.logger.exception(e)
             return None
 
     def search_followers_v1(self, user_id: str, query: str) -> List[UserShort]:
@@ -554,8 +543,6 @@ class UserMixin:
             # try:
             #     users = self.user_following_gql(user_id, amount)
             # except Exception as e:
-            #     if not isinstance(e, ClientError):
-            #         self.logger.exception(e)
             #     users = self.user_following_v1(user_id, amount)
             if user_id not in self._users_following:
                 self._users_following[user_id] = {}
@@ -672,12 +659,10 @@ class UserMixin:
                 )
             except Exception as e:
                 if "Please wait a few minutes before you try again" in str(e):
-                    logging.info(f"{e}: sleeping 60 min")
                     time.sleep(60 * 60)
                     continue
                 count /= 2
                 if count < 1000:
-                    logging.info("Count to small, break")
                     break
                 continue
             if count < 10000:
@@ -741,8 +726,6 @@ class UserMixin:
             try:
                 users = self.user_followers_gql(user_id, amount)
             except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
                 users = self.user_followers_v1(user_id, amount)
             if user_id not in self._users_followers:
                 self._users_followers[user_id] = {}
@@ -769,7 +752,6 @@ class UserMixin:
         assert self.user_id, "Login required"
         user_id = str(user_id)
         if user_id in self._users_following.get(self.user_id, []):
-            self.logger.debug("User %s already followed", user_id)
             return False
         data = self.with_action_data({"user_id": user_id})
         result = self.private_request(f"friendships/create/{user_id}/", data)
@@ -956,8 +938,6 @@ class UserMixin:
         Tuple[List[Media], str]
             A tuple containing a list of medias and the next end_cursor value
         """
-        if end_cursor:
-            logging.warning("user_medias_a1_chunk not working with max_id, try GQL or V1 method")
         data = self.public_a1_request(
             f"/{user_name}/",
             params={"max_id": end_cursor} if end_cursor else {},
@@ -999,7 +979,6 @@ class UserMixin:
             },
         )
         if "items" not in items:
-            logging.warning("Empty response message.")
             raise ClientBadRequestError(response=self.last_response, **self.last_json)
         for item in items["items"]:
             media = extract_media_v1(item)
@@ -1049,9 +1028,6 @@ class UserMixin:
                     user_name = self.username_from_user_id(user_id)
                 medias = self.user_medias_a1_chunk(user_name, end_cursor=end_cursor)
                 if end_cursor:
-                    logging.warning(
-                        "user_medias_a1_chunk not working with max_id, try GQL or V1 method"
-                    )
                     break
             if method_api == "GQL":
                 medias = self.user_medias_gql_chunk(user_id, end_cursor=end_cursor)
