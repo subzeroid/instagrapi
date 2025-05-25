@@ -300,6 +300,24 @@ class StorySticker(TypesBaseModel):
     story_link: Optional[StoryStickerLink] = None
     extra: Optional[dict] = {}
 
+class StoryPoll(TypesBaseModel):
+    id: Optional[str] = None
+    type: Optional[str] = "poll"
+    x: float
+    y: float
+    z: Optional[int] = 0
+    width: float
+    height: float
+    rotation: Optional[float] = 0.0
+    is_multi_option: Optional[bool] = True
+    is_shared_result: Optional[bool] = False
+    viewer_can_vote: Optional[bool] = True
+    finished: Optional[bool] = False
+    color: Optional[str] = "black"
+    poll_type: Optional[str] = ""
+    question: str
+    options: list
+    extra: Optional[dict] = {}
 
 class StoryBuild(TypesBaseModel):
     mentions: List[StoryMention]
@@ -338,6 +356,7 @@ class Story(TypesBaseModel):
     locations: List[StoryLocation]
     stickers: List[StorySticker]
     medias: List[StoryMedia] = []
+    polls: List[StoryPoll] = []
 
 
 class Guide(TypesBaseModel):

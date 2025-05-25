@@ -45,11 +45,12 @@ Common arguments:
 * `links` - "Swipe Up" links (now use first)
 * `hashtags` - Add hashtags to story
 * `stickers` - Add stickers to story
+* `polls` - Add polls to story
 
 | Method                               | Return   | Description
 | ------------------------------------ | -------- | -------------
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
+| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], polls: List[StoryPoll], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
+| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], polls: List[StoryPoll], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
 
 In `extra_data`, you can pass additional story settings, for example:
 
@@ -79,6 +80,7 @@ cl.video_upload_to_story(
     links=[StoryLink(webUri='https://github.com/subzeroid/instagrapi')],
     hashtags=[StoryHashtag(hashtag=hashtag, x=0.23, y=0.32, width=0.5, height=0.22)],
     medias=[StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)],
+    polls=[StoryPoll(x = 0.5, y = 0.5, width = 0.7, height = 0.5, question = "Question", options = ["Option 1", "Option 2", "Option 3"])],
 )
 ```
 
