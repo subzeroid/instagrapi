@@ -65,6 +65,9 @@ class PublicRequestMixin:
         for iteration in range(retries_count):
             try:
                 return self._send_public_request(url, **kwargs)
+            except ClientNotFoundError:
+                # If the resource is not found, we don't retry
+                raise
             except (ClientLoginRequired, ClientNotFoundError, ClientBadRequestError) as e:
                 if self.handle_exception:
                     self.handle_exception(e)
