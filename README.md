@@ -121,6 +121,8 @@ posts = cl.user_medias(target_id, amount=10)
 for media in posts:
     # download photos to the current folder
     cl.photo_download(media.pk)
+
+See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
 ```
 
 <details>
