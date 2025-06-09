@@ -84,6 +84,47 @@ user_id = cl.user_id_from_username(ACCOUNT_USERNAME)
 medias = cl.user_medias(user_id, 20)
 ```
 
+### Session with persistence
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings("session.json")
+
+# reload later without entering credentials again
+cl = Client()
+cl.load_settings("session.json")
+cl.login(USERNAME, PASSWORD)
+```
+
+### Login using a sessionid
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login_by_sessionid("<your_sessionid>")
+```
+
+### List and download another user's posts
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+target_id = cl.user_id_from_username("target_user")
+posts = cl.user_medias(target_id, amount=10)
+for media in posts:
+    # download photos to the current folder
+    cl.photo_download(media.pk)
+
+See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
+```
+
 <details>
     <summary>Additional example</summary>
 
