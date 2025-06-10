@@ -1,4 +1,4 @@
-requests==2.32.3
+requests==2.32.4
 PySocks==1.7.1
 pydantic==2.11.5
 moviepy==1.0.3
