@@ -1,0 +1,24 @@
+from instagrapi import Client
+from datetime import datetime
+import time
+
+cl = Client()
+cl.login("seu_usuario", "sua_senha")
+
+usuarios = ["@user1", "@user2", "@user3"]
+mensagem = "Fala, irmão! Passando aqui com aquela dica do dia 💸🚀"
+
+def enviar_mensagens():
+    for user in usuarios:
+        user_id = cl.user_id_from_username(user.replace("@", ""))
+        cl.direct_send(mensagem, [user_id])
+        print(f"Mensagem enviada para {user}")
+
+# Espera até o horário certo (exemplo: 14:00)
+hora_alvo = "14:00"
+while True:
+    agora = datetime.now().strftime("%H:%M")
+    if agora == hora_alvo:
+        enviar_mensagens()
+        break
+    time.sleep(30)
