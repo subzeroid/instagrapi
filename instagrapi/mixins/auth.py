@@ -599,7 +599,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.init()
         return True
 
-    def load_settings(self, path: Path) -> Dict:
+    def load_settings(self, path: Union[str, Path]) -> Dict:
         """
         Load session settings
 
@@ -617,7 +617,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.set_settings(json.load(fp))
             return self.settings
 
-    def dump_settings(self, path: Path) -> bool:
+    def dump_settings(self, path: Union[str, Path]) -> bool:
         """
         Serialize and save session settings
 
