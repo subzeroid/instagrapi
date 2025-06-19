@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "instagrapi"
-version = "1.2.1"
+version = "1.2.2"
 description = ""
 authors = ["adw0rd <x11org@gmail.com>", "Heuritech team <developers@heuritech.com>"]
 readme = "README.md"
@@ -15,7 +15,7 @@ pydantic = "<1.10.20"
 pycryptodomex = "3.14.1"
 requests = "^2.25.0"
 simplejson = "3.19.2"
-urllib3 = "<2.3.0"
+urllib3 = "<1.27.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=3"
