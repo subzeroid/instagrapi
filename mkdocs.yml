@@ -40,13 +40,12 @@ plugins:
       handlers:
         python:
           selection:
-            docstring_style: "restructured-text"
+            docstring_style: "sphinx"
           rendering:
             heading_level: 3
             show_root_heading: True
             show_source: False
             show_root_full_path: False
-  - mkdocstrings_patch_type_aliases
 
 extra:
   version:

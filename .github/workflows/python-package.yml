@@ -113,6 +113,7 @@ jobs:
         with:
           requirements: "true"
           test-requirements: "true"
+          docs-requirements: "true"
 
       - name: Build Docs
         run: mkdocs build --strict
@@ -141,6 +142,7 @@ jobs:
         with:
           requirements: "true"
           test-requirements: "true"
+          docs-requirements: "true"
 
       - name: Push documentation changes
         uses: ./.github/actions/publish-docs-with-mike
