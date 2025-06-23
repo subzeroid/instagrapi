@@ -85,7 +85,12 @@ class User(TypesBaseModel):
     instagram_location_id: Optional[str] = None
     interop_messaging_user_fbid: Optional[str] = None
 
-    _external_url = field_validator("external_url")(validate_external_url)  # Updated to use field_validator
+    @field_validator("external_url")
+    @classmethod
+    def validate_external_url(cls, v):
+        if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
+            return v
+        raise ValidationError("external_url must be a URL or string")
 
 class Account(TypesBaseModel):
     pk: str
@@ -102,7 +107,12 @@ class Account(TypesBaseModel):
     gender: Optional[int] = None
     email: Optional[str] = None
 
-    _external_url = field_validator("external_url")(validate_external_url)  # Updated to use field_validator
+    @field_validator("external_url")
+    @classmethod
+    def validate_external_url(cls, v):
+        if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
+            return v
+        raise ValidationError("external_url must be a URL or string")
 
 class UserShort(TypesBaseModel):
     def __hash__(self):

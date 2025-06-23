@@ -9,7 +9,7 @@ on:
   pull_request: {}
 
 env:
-  PYTHON_VERSION: "3.9.14"
+  PYTHON_VERSION: "3.13.5"
 
 jobs:
   bandit:
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.10" ]
+        python-version: [ "3.13.5" ]
     env:
       TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
     steps:
@@ -142,7 +142,7 @@ jobs:
           requirements: "true"
           test-requirements: "true"
 
-      - name: Push documentaiton changes
+      - name: Push documentation changes
         uses: ./.github/actions/publish-docs-with-mike
         with:
           version_name: dev
