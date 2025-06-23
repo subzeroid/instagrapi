@@ -36,6 +36,8 @@ markdown_extensions:
   - pymdownx.keys
   - pymdownx.superfences
 plugins:
+  - search
+  - autorefs
   - mkdocstrings:
       handlers:
         python:
@@ -46,7 +48,6 @@ plugins:
             show_root_heading: True
             show_source: False
             show_root_full_path: False
-
 extra:
   version:
     provider: mike
