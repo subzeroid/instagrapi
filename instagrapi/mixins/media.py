@@ -1154,7 +1154,6 @@ class MediaMixin:
         """
         return self.media_pin(media_pk, True)
 
-
     def media_create_livestream(self, title="Instagram Live"):
         """
         Create a new live broadcast.

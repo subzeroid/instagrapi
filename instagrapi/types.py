@@ -10,21 +10,25 @@ from pydantic import (
     field_validator,
 )
 
+
 class TypesBaseModel(BaseModel):
     model_config = ConfigDict(
         coerce_numbers_to_str=True
     )  # (jarrodnorwell) fixed city_id issue
+
 
 def validate_external_url(cls, v):
     if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
         return v
     raise ValidationError("external_url must be a URL or string")  # Corrected 'been' to 'be'
 
+
 class Resource(TypesBaseModel):
     pk: str
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     thumbnail_url: HttpUrl
     media_type: int
+
 
 class BioLink(TypesBaseModel):
     link_id: str
@@ -34,6 +38,7 @@ class BioLink(TypesBaseModel):
     title: Optional[str] = None
     is_pinned: Optional[bool] = None
     open_external_url_with_in_app_browser: Optional[bool] = None
+
 
 class Broadcast(TypesBaseModel):
     title: str
@@ -47,6 +52,7 @@ class Broadcast(TypesBaseModel):
     number_of_members: int
     creator_igid: Optional[str] = None  # Changed from str | None to Optional[str]
     creator_username: str
+
 
 class User(TypesBaseModel):
     pk: str
@@ -92,6 +98,7 @@ class User(TypesBaseModel):
             return v
         raise ValidationError("external_url must be a URL or string")
 
+
 class Account(TypesBaseModel):
     pk: str
     username: str
@@ -113,6 +120,7 @@ class Account(TypesBaseModel):
         if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
             return v
         raise ValidationError("external_url must be a URL or string")
+
 
 class UserShort(TypesBaseModel):
     def __hash__(self):
@@ -310,6 +318,7 @@ class StorySticker(TypesBaseModel):
     story_link: Optional[StoryStickerLink] = None
     extra: Optional[dict] = {}
 
+
 class StoryPoll(TypesBaseModel):
     id: Optional[str] = None
     type: Optional[str] = "poll"
@@ -328,6 +337,7 @@ class StoryPoll(TypesBaseModel):
     question: str
     options: list
     extra: Optional[dict] = {}
+
 
 class StoryBuild(TypesBaseModel):
     mentions: List[StoryMention]

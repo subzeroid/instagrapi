@@ -9,7 +9,12 @@ try:
     from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
 except ImportError:
     try:
-        from moviepy.editor import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+        from moviepy.editor import (
+            CompositeVideoClip,
+            ImageClip,
+            TextClip,
+            VideoFileClip,
+        )
     except ImportError:
         raise Exception("Please install moviepy>=1.0.3 and retry")
 
