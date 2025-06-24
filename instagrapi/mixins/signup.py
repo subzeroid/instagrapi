@@ -1,7 +1,5 @@
-import base64
 import random
 import time
-from datetime import datetime
 from uuid import uuid4
 
 from instagrapi.extractors import extract_user_short
@@ -127,9 +125,8 @@ class SignUpMixin:
         day: int = None,
         **kwargs,
     ) -> dict:
-        timestamp = datetime.now().strftime("%s")
-        nonce = f'{username}|{timestamp}|\xb9F"\x8c\xa2I\xaaz|\xf6xz\x86\x92\x91Y\xa5\xaa#f*o%\x7f'
-        sn_nonce = base64.encodebytes(nonce.encode()).decode().strip()
+        # timestamp = datetime.now().strftime("%s")  # Unused variable
+        # nonce = f'{username}|{timestamp}|\xb9F"\x8c\xa2I\xaaz|\xf6xz\x86\x92\x91Y\xa5\xaa#f*o%\x7f'  # Unused variable
         data = {
             "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
@@ -149,7 +146,7 @@ class SignUpMixin:
             "one_tap_opt_in": "true",
             **kwargs,
         }
-        return self.private_request("accounts/create/", data, domain= "www.instagram.com")
+        return self.private_request("accounts/create/", data, domain="www.instagram.com")
 
     def challenge_flow(self, data):
         data = self.challenge_api(data)

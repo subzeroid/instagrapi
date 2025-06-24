@@ -6,6 +6,7 @@ from copy import deepcopy
 
 from .types import (
     Account,
+    Broadcast,
     Collection,
     Comment,
     DirectMedia,
@@ -29,7 +30,6 @@ from .types import (
     StoryMedia,
     StoryMention,
     Track,
-    Broadcast,
     User,
     UserShort,
     Usertag,

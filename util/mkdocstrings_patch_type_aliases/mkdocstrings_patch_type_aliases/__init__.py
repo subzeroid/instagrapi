@@ -1,1 +1,0 @@
-from mkdocstrings_patch_type_aliases._plugin import PatchTypeAliases

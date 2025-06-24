@@ -26,8 +26,8 @@ from instagrapi.types import (
     StoryLocation,
     StoryMedia,
     StoryMention,
-    StorySticker,
     StoryPoll,
+    StorySticker,
     Usertag,
 )
 from instagrapi.utils import date_time_original, dumps
@@ -699,7 +699,7 @@ class UploadPhotoMixin:
                                 "count": 0,
                                 "font_size": 39.0,
                                 "text": o
-                            } 
+                            }
                             for o in poll.options
                         ],
                         **poll_extra,
