@@ -3,7 +3,7 @@ mike==2.0.0
 # mike implicitly depends on pkg_resources from setuptools.
 # It has been addressed as part of the work towards 2.0, but that has not been released yet
 # https://github.com/jimporter/mike/issues/148
-setuptools==68.2.2
+setuptools==80.9.0
 
 markdown-include==0.8.1
 mkdocs==1.6.1
