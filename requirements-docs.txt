@@ -1,4 +1,4 @@
-mike==2.0.0
+mike==2.1.3
 
 # mike implicitly depends on pkg_resources from setuptools.
 # It has been addressed as part of the work towards 2.0, but that has not been released yet
