@@ -9,6 +9,6 @@ markdown-include==0.8.1
 mkdocs==1.5.3
 mkdocs-material==9.5.10
 mkdocs-minify-plugin==0.8.0
-mkdocs-redirects==1.2.1
+mkdocs-redirects==1.2.2
 mkdocstrings[python]==0.24.0
 mkdocs-autorefs>=1.0.0
