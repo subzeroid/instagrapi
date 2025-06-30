@@ -5,7 +5,7 @@ and how to work with the code base.
 
 Before you dive into this, it is best to read:
 
-* The [Contributing guide](development-guide.md)
+* The [Contributing guide](../CONTRIBUTING.md.md)
 
 ## Docker
 
