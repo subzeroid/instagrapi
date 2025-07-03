@@ -444,6 +444,114 @@ class LastSeenInfo(TypesBaseModel):
     disappearing_messages_seen_state: Optional[DisappearingMessagesSeenState] = None
 
 
+class FallbackUrl(TypesBaseModel):
+    """Fallback URL structure for media candidates"""
+    url: str
+
+
+class ImageCandidate(TypesBaseModel):
+    """Individual image candidate with specific resolution"""
+    width: int
+    height: int
+    url: str
+    scans_profile: Optional[str] = None
+    fallback: Optional[FallbackUrl] = None
+    url_expiration_timestamp_us: Optional[int] = None
+
+
+class ImageVersions(TypesBaseModel):
+    """Image versions container with multiple resolution candidates"""
+    candidates: List[ImageCandidate] = []
+
+
+class VideoVersion(TypesBaseModel):
+    """Individual video version with specific resolution and quality"""
+    id: Optional[str] = ""
+    type: Optional[int] = None
+    width: int
+    height: int
+    url: str
+    fallback: Optional[FallbackUrl] = None
+    url_expiration_timestamp_us: Optional[int] = None
+    bandwidth: Optional[int] = 0
+
+
+class FriendshipStatus(TypesBaseModel):
+    """Friendship status information for visual media user"""
+    blocking: bool = False
+    is_messaging_only_blocking: bool = False
+    is_messaging_pseudo_blocking: bool = False
+    is_unavailable: bool = False
+
+
+class VisualMediaUser(TypesBaseModel):
+    """User information in visual media (enhanced UserShort)"""
+    id: str
+    strong_id__: Optional[str] = None
+    pk: int
+    pk_id: str
+    full_name: str
+    username: str
+    account_type: Optional[int] = None
+    short_name: Optional[str] = None
+    profile_pic_url: str
+    is_verified: bool = False
+    interop_messaging_user_fbid: Optional[int] = None
+    fbid_v2: Optional[int] = None
+    has_ig_profile: bool = True
+    interop_user_type: Optional[int] = 0
+    is_using_unified_inbox_for_direct: bool = False
+    is_private: bool = False
+    is_creator_agent_enabled: bool = False
+    is_creator_automated_response_enabled: bool = False
+    friendship_status: Optional[FriendshipStatus] = None
+    is_shared_account: bool = False
+    is_shared_account_with_messaging_access: bool = False
+    ai_agent_banner_type: Optional[str] = None
+    is_eligible_for_ai_bot_group_chats: bool = False
+
+
+class ExpiringMediaActionSummary(TypesBaseModel):
+    """Summary of expiring media actions"""
+    type: str
+    timestamp: int
+    count: int
+
+
+class VisualMediaContent(TypesBaseModel):
+    """Content structure for visual media (can be rich or minimal)"""
+    media_type: int  # Always present: 1=image, 2=video
+    id: Optional[str] = None
+    media_id: Optional[int] = None
+    image_versions2: Optional[ImageVersions] = None
+    video_versions: Optional[List[VideoVersion]] = None
+    original_width: Optional[int] = None
+    original_height: Optional[int] = None
+    user: Optional[VisualMediaUser] = None
+    organic_tracking_token: Optional[str] = None
+    video_duration: Optional[int] = None
+    video_dash_manifest: Optional[str] = None
+    is_dash_eligible: Optional[int] = None
+    create_mode_attribution: Optional[dict] = None
+    creative_config: Optional[dict] = None
+    expiring_media_action_summary: Optional[ExpiringMediaActionSummary] = None
+
+
+class VisualMedia(TypesBaseModel):
+    """Complete visual media structure for direct messages"""
+    media: VisualMediaContent
+    seen_user_ids: List[str] = []
+    seen_count: int = 0
+    view_mode: str  # 'replayable', 'permanent', etc.
+    replay_expiring_at_us: Optional[int] = None
+    reply_type: Optional[str] = None
+    url_expire_at_secs: Optional[int] = None
+    story_app_attribution: Optional[dict] = None
+    playback_duration_secs: Optional[int] = None
+    tap_models: List[dict] = []
+    expiring_media_action_summary: Optional[ExpiringMediaActionSummary] = None
+
+
 class ReplyMessage(TypesBaseModel):
     id: str
     user_id: Optional[str] = None
@@ -455,7 +563,7 @@ class ReplyMessage(TypesBaseModel):
     link: Optional[dict] = None
     animated_media: Optional[dict] = None
     media: Optional[DirectMedia] = None
-    visual_media: Optional[dict] = None
+    visual_media: Optional[VisualMedia] = None
     media_share: Optional[Media] = None
     reel_share: Optional[dict] = None
     story_share: Optional[dict] = None
@@ -479,7 +587,7 @@ class DirectMessage(TypesBaseModel):
     link: Optional[MessageLink] = None
     animated_media: Optional[dict] = None
     media: Optional[DirectMedia] = None
-    visual_media: Optional[dict] = None
+    visual_media: Optional[VisualMedia] = None
     media_share: Optional[Media] = None
     reel_share: Optional[dict] = None
     story_share: Optional[dict] = None
