@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -428,6 +428,22 @@ class MessageLink(TypesBaseModel):
     mutation_token: Optional[str] = None
 
 
+class DisappearingMessagesSeenState(TypesBaseModel):
+    """Disappearing messages seen state information"""
+    item_id: str
+    timestamp: str
+    created_at: str
+
+
+class LastSeenInfo(TypesBaseModel):
+    """Last seen information for a user in a direct thread"""
+    item_id: str
+    timestamp: str
+    created_at: str
+    shh_seen_state: dict = {}
+    disappearing_messages_seen_state: Optional[DisappearingMessagesSeenState] = None
+
+
 class ReplyMessage(TypesBaseModel):
     id: str
     user_id: Optional[str] = None
@@ -519,16 +535,18 @@ class DirectThread(TypesBaseModel):
     is_close_friend_thread: bool
     assigned_admin_id: int
     shh_mode_enabled: bool
-    last_seen_at: dict
+    last_seen_at: Dict[str, LastSeenInfo] = {}
 
     def is_seen(self, user_id: str):
         """Have I seen this thread?
         :param user_id: You account user_id
         """
         user_id = str(user_id)
-        own_timestamp = int(self.last_seen_at[user_id]["timestamp"])
+        if user_id not in self.last_seen_at:
+            return False
+        own_timestamp = int(self.last_seen_at[user_id].timestamp)
         timestamps = [
-            (int(v["timestamp"]) - own_timestamp) > 0
+            (int(v.timestamp) - own_timestamp) > 0
             for k, v in self.last_seen_at.items()
             if k != user_id
         ]
