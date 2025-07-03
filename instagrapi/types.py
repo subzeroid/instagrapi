@@ -396,6 +396,38 @@ class DirectMedia(TypesBaseModel):
     audio_url: Optional[HttpUrl] = None
 
 
+class MessageReaction(TypesBaseModel):
+    """Individual emoji reaction on a direct message"""
+    timestamp: int
+    client_context: Optional[str] = None
+    sender_id: int
+    emoji: str
+    super_react_type: str = "none"
+
+
+class MessageReactions(TypesBaseModel):
+    """Reactions structure for direct messages"""
+    likes: List[dict] = []  # Structure unknown from current examples
+    likes_count: Optional[int] = 0
+    emojis: List[MessageReaction] = []
+
+
+class LinkContext(TypesBaseModel):
+    """Link context metadata for direct message links"""
+    link_url: str
+    link_title: Optional[str] = ""
+    link_summary: Optional[str] = ""
+    link_image_url: Optional[str] = ""
+
+
+class MessageLink(TypesBaseModel):
+    """Link structure for direct messages"""
+    text: str
+    link_context: LinkContext
+    client_context: Optional[str] = None
+    mutation_token: Optional[str] = None
+
+
 class ReplyMessage(TypesBaseModel):
     id: str
     user_id: Optional[str] = None
@@ -425,10 +457,10 @@ class DirectMessage(TypesBaseModel):
     item_type: Optional[str] = None
     is_sent_by_viewer: Optional[bool] = None
     is_shh_mode: Optional[bool] = None
-    reactions: Optional[dict] = None
+    reactions: Optional[MessageReactions] = None
     text: Optional[str] = None
     reply: Optional[ReplyMessage] = None
-    link: Optional[dict] = None
+    link: Optional[MessageLink] = None
     animated_media: Optional[dict] = None
     media: Optional[DirectMedia] = None
     visual_media: Optional[dict] = None
