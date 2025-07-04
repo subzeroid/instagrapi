@@ -667,7 +667,7 @@ class DirectMessageImageCandidate(TypesBaseModel):
     url: str
     scans_profile: Optional[str] = None
     fallback: Optional[FallbackUrl] = None
-    url_expiration_timestamp_us: Optional[int] = None
+    url_expiration_timestamp_us: Optional[datetime] = None
 
 
 class DirectMessageImageVersions(TypesBaseModel):
@@ -683,7 +683,7 @@ class VideoVersion(TypesBaseModel):
     height: int
     url: str
     fallback: Optional[FallbackUrl] = None
-    url_expiration_timestamp_us: Optional[int] = None
+    url_expiration_timestamp_us: Optional[datetime] = None
     bandwidth: Optional[int] = 0
 
 

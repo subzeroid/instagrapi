@@ -400,6 +400,23 @@ def extract_direct_message(data):
             media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
                 int(media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
             )
+        
+        # Convert image candidates URL expiration timestamps
+        if "image_versions2" in media and media["image_versions2"]:
+            candidates = media["image_versions2"].get("candidates", [])
+            for candidate in candidates:
+                if "url_expiration_timestamp_us" in candidate and candidate["url_expiration_timestamp_us"]:
+                    candidate["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(candidate["url_expiration_timestamp_us"]) // 1_000_000
+                    )
+        
+        # Convert video versions URL expiration timestamps
+        if "video_versions" in media and media["video_versions"]:
+            for video_version in media["video_versions"]:
+                if "url_expiration_timestamp_us" in video_version and video_version["url_expiration_timestamp_us"]:
+                    video_version["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(video_version["url_expiration_timestamp_us"]) // 1_000_000
+                    )
     
     # Convert top-level visual media expiring action summary timestamp
     if visual_media and "expiring_media_action_summary" in visual_media and visual_media["expiring_media_action_summary"]:
