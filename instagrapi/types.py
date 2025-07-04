@@ -166,13 +166,216 @@ class Location(TypesBaseModel):
     # directory: Optional[dict] = {}
 
 
+class SharedMediaImageCandidate(TypesBaseModel):
+    """Image candidate for shared media clips with video features"""
+    estimated_scans_sizes: List[int] = []
+    height: int
+    scans_profile: str
+    url: str
+    width: int
+
+
+class ScrubberSpritesheetInfo(TypesBaseModel):
+    """Spritesheet information for video scrubbing"""
+    file_size_kb: int
+    max_thumbnails_per_sprite: int
+    rendered_width: int
+    sprite_height: int
+    sprite_urls: List[str]
+    sprite_width: int
+    thumbnail_duration: float
+    thumbnail_height: int
+    thumbnail_width: int
+    thumbnails_per_row: int
+    total_thumbnail_num_per_sprite: int
+    video_length: float
+
+
+class ScrubberSpritesheetInfoCandidates(TypesBaseModel):
+    """Container for spritesheet information candidates"""
+    default: ScrubberSpritesheetInfo
+
+
+class AdditionalCandidates(TypesBaseModel):
+    """Additional candidates structure in image_versions2"""
+    first_frame: Optional[SharedMediaImageCandidate] = None
+    igtv_first_frame: Optional[SharedMediaImageCandidate] = None
+    smart_frame: Optional[SharedMediaImageCandidate] = None
+
+
+class SharedMediaImageVersions(TypesBaseModel):
+    """Complete image_versions2 structure for shared media clips"""
+    additional_candidates: Optional[AdditionalCandidates] = None
+    candidates: List[SharedMediaImageCandidate] = []
+    scrubber_spritesheet_info_candidates: Optional[ScrubberSpritesheetInfoCandidates] = None
+
+
+class ClipsAchievementsInfo(TypesBaseModel):
+    """Information about achievements in clips"""
+    num_earned_achievements: Optional[int] = None
+    show_achievements: bool = False
+
+
+class AudioReattributionInfo(TypesBaseModel):
+    """Audio reattribution settings"""
+    should_allow_restore: bool = False
+
+
+class ClipsAdditionalAudioInfo(TypesBaseModel):
+    """Additional audio information for clips"""
+    additional_audio_username: Optional[str] = None
+    audio_reattribution_info: AudioReattributionInfo
+
+
+class ClipsAudioRankingInfo(TypesBaseModel):
+    """Audio ranking information for clips"""
+    best_audio_cluster_id: str
+
+
+class ClipsBrandedContentTagInfo(TypesBaseModel):
+    """Branded content tag information for clips"""
+    can_add_tag: bool = False
+
+
+class ClipsContentAppreciationInfo(TypesBaseModel):
+    """Content appreciation information for clips"""
+    enabled: bool = False
+    entry_point_container: Optional[str] = None
+
+
+class ClipsMashupInfo(TypesBaseModel):
+    """Mashup information for clips"""
+    can_toggle_mashups_allowed: bool = False
+    formatted_mashups_count: Optional[str] = None
+    has_been_mashed_up: bool = False
+    has_nonmimicable_additional_audio: bool = False
+    is_creator_requesting_mashup: bool = False
+    is_light_weight_check: bool = True
+    is_light_weight_reuse_allowed_check: bool = False
+    is_pivot_page_available: bool = False
+    is_reuse_allowed: bool = True
+    mashup_type: Optional[str] = None
+    mashups_allowed: bool = True
+    non_privacy_filtered_mashups_media_count: int = 0
+    privacy_filtered_mashups_media_count: Optional[int] = None
+    original_media: Optional[dict] = None
+
+
+class ClipsConsumptionInfo(TypesBaseModel):
+    """Consumption information for clips original sound"""
+    display_media_id: Optional[str] = None
+    is_bookmarked: bool = False
+    is_trending_in_clips: bool = False
+    should_mute_audio_reason: str = ""
+    should_mute_audio_reason_type: Optional[str] = None
+    user_notes: Optional[str] = None
+
+
+class ClipsFbDownstreamUseXpostMetadata(TypesBaseModel):
+    """Facebook downstream use xpost metadata for clips"""
+    downstream_use_xpost_deny_reason: str = "NONE"
+
+
+class ClipsIgArtist(TypesBaseModel):
+    """Instagram artist information for clips original sound"""
+    pk: int
+    pk_id: str
+    id: str
+    username: str
+    full_name: str
+    is_private: bool = False
+    is_verified: bool = False
+    profile_pic_id: str
+    profile_pic_url: str
+    strong_id__: str
+
+
+class ClipsOriginalSoundInfo(TypesBaseModel):
+    """Original sound information for clips"""
+    allow_creator_to_rename: bool = True
+    audio_asset_id: int
+    attributed_custom_audio_asset_id: Optional[int] = None
+    can_remix_be_shared_to_fb: bool = True
+    can_remix_be_shared_to_fb_expansion: bool = True
+    dash_manifest: str
+    duration_in_ms: int
+    formatted_clips_media_count: Optional[str] = None
+    hide_remixing: bool = False
+    is_audio_automatically_attributed: bool = False
+    is_eligible_for_audio_effects: bool = True
+    is_eligible_for_vinyl_sticker: bool = True
+    is_explicit: bool = False
+    is_original_audio_download_eligible: bool = True
+    is_reuse_disabled: bool = False
+    is_xpost_from_fb: bool = False
+    music_canonical_id: Optional[str] = None
+    oa_owner_is_music_artist: bool = False
+    original_audio_subtype: str = "default"
+    original_audio_title: str = "Original audio"
+    original_media_id: int
+    progressive_download_url: str
+    should_mute_audio: bool = False
+    time_created: int
+    trend_rank: Optional[int] = None
+    previous_trend_rank: Optional[int] = None
+    overlap_duration_in_ms: Optional[int] = None
+    audio_asset_start_time_in_ms: Optional[int] = None
+    ig_artist: ClipsIgArtist
+    audio_filter_infos: List[dict] = []
+    audio_parts: List[dict] = []
+    audio_parts_by_filter: List[dict] = []
+    consumption_info: ClipsConsumptionInfo
+    xpost_fb_creator_info: Optional[dict] = None
+    fb_downstream_use_xpost_metadata: ClipsFbDownstreamUseXpostMetadata
+
+
+class ClipsMetadata(TypesBaseModel):
+    """Complete clips metadata structure for Media objects"""
+    clips_creation_entry_point: str = "clips"
+    featured_label: Optional[str] = None
+    is_public_chat_welcome_video: bool = False
+    professional_clips_upsell_type: int = 0
+    show_tips: Optional[str] = None
+    achievements_info: ClipsAchievementsInfo
+    additional_audio_info: ClipsAdditionalAudioInfo
+    asset_recommendation_info: Optional[dict] = None
+    audio_ranking_info: ClipsAudioRankingInfo
+    audio_type: str = "original_sounds"
+    branded_content_tag_info: ClipsBrandedContentTagInfo
+    breaking_content_info: Optional[dict] = None
+    breaking_creator_info: Optional[dict] = None
+    challenge_info: Optional[dict] = None
+    content_appreciation_info: ClipsContentAppreciationInfo
+    contextual_highlight_info: Optional[dict] = None
+    cutout_sticker_info: List[dict] = []
+    disable_use_in_clips_client_cache: bool = False
+    external_media_info: Optional[dict] = None
+    is_fan_club_promo_video: bool = False
+    is_shared_to_fb: bool = False
+    mashup_info: ClipsMashupInfo
+    merchandising_pill_info: Optional[dict] = None
+    music_canonical_id: str
+    music_info: Optional[dict] = None
+    nux_info: Optional[dict] = None
+    original_sound_info: ClipsOriginalSoundInfo
+    originality_info: Optional[dict] = None
+    reels_on_the_rise_info: Optional[dict] = None
+    reusable_text_attribute_string: Optional[str] = None
+    reusable_text_info: Optional[dict] = None
+    shopping_info: Optional[dict] = None
+    show_achievements: bool = False
+    template_info: Optional[dict] = None
+    may_have_template_info: Optional[dict] = None
+    viewer_interaction_settings: Optional[dict] = None
+
+
 class Media(TypesBaseModel):
     pk: Union[str, int]
     id: str
     code: str
     taken_at: datetime
     media_type: int
-    image_versions2: Optional[dict] = {}
+    image_versions2: Optional[SharedMediaImageVersions] = None
     product_type: Optional[str] = ""  # igtv or feed
     thumbnail_url: Optional[HttpUrl] = None
     location: Optional[Location] = None
@@ -192,20 +395,28 @@ class Media(TypesBaseModel):
     video_duration: Optional[float] = 0.0  # for Video and IGTV
     title: Optional[str] = ""
     resources: List[Resource] = []
-    clips_metadata: dict = {}
+    clips_metadata: Optional[ClipsMetadata] = None
 
 
 class MediaXma(TypesBaseModel):
     # media_type: int
     video_url: HttpUrl  # for Video and IGTV
     title: Optional[str] = ""
-    preview_url: Optional[HttpUrl] = None
+    preview_url: Optional[str] = None
     preview_url_mime_type: Optional[str] = None
-    header_icon_url: Optional[HttpUrl] = None
+    header_icon_url: Optional[str] = None
     header_icon_width: Optional[int] = None
     header_icon_height: Optional[int] = None
     header_title_text: Optional[str] = None
     preview_media_fbid: Optional[str] = None
+
+    @field_validator("preview_url", "header_icon_url")
+    @classmethod
+    def validate_url_fields(cls, v):
+        """Validate URL fields allowing None, valid URLs, or any string"""
+        if v is None or (v.startswith("http") and "://" in v) or isinstance(v, str):
+            return v
+        raise ValidationError("URL field must be a URL or string")
 
 
 class MediaOembed(TypesBaseModel):
@@ -449,8 +660,8 @@ class FallbackUrl(TypesBaseModel):
     url: str
 
 
-class ImageCandidate(TypesBaseModel):
-    """Individual image candidate with specific resolution"""
+class DirectMessageImageCandidate(TypesBaseModel):
+    """Image candidate for ephemeral visual media in direct messages"""
     width: int
     height: int
     url: str
@@ -459,9 +670,9 @@ class ImageCandidate(TypesBaseModel):
     url_expiration_timestamp_us: Optional[int] = None
 
 
-class ImageVersions(TypesBaseModel):
-    """Image versions container with multiple resolution candidates"""
-    candidates: List[ImageCandidate] = []
+class DirectMessageImageVersions(TypesBaseModel):
+    """Image versions for ephemeral visual media in direct messages"""
+    candidates: List[DirectMessageImageCandidate] = []
 
 
 class VideoVersion(TypesBaseModel):
@@ -523,7 +734,7 @@ class VisualMediaContent(TypesBaseModel):
     media_type: int  # Always present: 1=image, 2=video
     id: Optional[str] = None
     media_id: Optional[int] = None
-    image_versions2: Optional[ImageVersions] = None
+    image_versions2: Optional[DirectMessageImageVersions] = None
     video_versions: Optional[List[VideoVersion]] = None
     original_width: Optional[int] = None
     original_height: Optional[int] = None
