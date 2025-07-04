@@ -609,7 +609,7 @@ class DirectMedia(TypesBaseModel):
 
 class MessageReaction(TypesBaseModel):
     """Individual emoji reaction on a direct message"""
-    timestamp: int
+    timestamp: datetime
     client_context: Optional[str] = None
     sender_id: int
     emoji: str
@@ -642,15 +642,15 @@ class MessageLink(TypesBaseModel):
 class DisappearingMessagesSeenState(TypesBaseModel):
     """Disappearing messages seen state information"""
     item_id: str
-    timestamp: str
-    created_at: str
+    timestamp: datetime
+    created_at: datetime
 
 
 class LastSeenInfo(TypesBaseModel):
     """Last seen information for a user in a direct thread"""
     item_id: str
-    timestamp: str
-    created_at: str
+    timestamp: datetime
+    created_at: datetime
     shh_seen_state: dict = {}
     disappearing_messages_seen_state: Optional[DisappearingMessagesSeenState] = None
 
@@ -725,7 +725,7 @@ class VisualMediaUser(TypesBaseModel):
 class ExpiringMediaActionSummary(TypesBaseModel):
     """Summary of expiring media actions"""
     type: str
-    timestamp: int
+    timestamp: datetime
     count: int
 
 
@@ -863,9 +863,9 @@ class DirectThread(TypesBaseModel):
         user_id = str(user_id)
         if user_id not in self.last_seen_at:
             return False
-        own_timestamp = int(self.last_seen_at[user_id].timestamp)
+        own_timestamp = self.last_seen_at[user_id].timestamp.timestamp()
         timestamps = [
-            (int(v.timestamp) - own_timestamp) > 0
+            (v.timestamp.timestamp() - own_timestamp) > 0
             for k, v in self.last_seen_at.items()
             if k != user_id
         ]

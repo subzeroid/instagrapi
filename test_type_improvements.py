@@ -145,10 +145,9 @@ def test_new_pydantic_models(threads: List[DirectThread]) -> None:
         # Show messages in this thread
         if thread.messages:
             console.print(f"[bold cyan]Messages in this thread ({len(thread.messages)}):[/bold cyan]")
-            for msg_index, message in enumerate(thread.messages[:5]):  # Show first 5 messages
+            for msg_index, message in enumerate(thread.messages[:20]):  # Show first 5 messages
                 console.print(f"\n[cyan]Message {msg_index + 1}:[/cyan]")
                 console.print(message, end="\n")
-
 
 def run_tests() -> None:
     """Run comprehensive tests of our type improvements."""
