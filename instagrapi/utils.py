@@ -5,7 +5,7 @@ import random
 import string
 import time
 import urllib.parse
-from typing import TypeVar, Union, Any, overload
+from typing import Any, TypeVar, Union, overload
 
 from .exceptions import ValidationError
 
@@ -68,22 +68,27 @@ def generate_signature(data):
 
 T = TypeVar('T')
 
+
 # Overload for when no default is provided - could return Any or None
 @overload
-def json_value(data: dict, *args: Union[str, int]) -> Any: ...
+def json_value(data: dict, *args: Union[str, int]) -> Any:
+    ...
 
-# Overload for when default is provided - returns either found value or default type  
-@overload 
-def json_value(data: dict, *args: Union[str, int], default: T) -> Union[T, Any]: ...
+
+# Overload for when default is provided - returns either found value or default type
+@overload
+def json_value(data: dict, *args: Union[str, int], default: T) -> Union[T, Any]:
+    ...
+
 
 def json_value(data: dict, *args: Union[str, int], default: Any = None) -> Any:
     """Navigate through nested dictionaries/lists using provided keys.
-    
+
     Args:
         data: The dictionary to navigate
         *args: Keys/indices to navigate through (strings for dicts, ints for lists)
         default: Value to return if navigation fails
-        
+
     Returns:
         The value found at the specified path, or default if not found
     """
