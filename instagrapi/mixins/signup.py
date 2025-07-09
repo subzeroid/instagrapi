@@ -4,6 +4,14 @@ from uuid import uuid4
 
 from instagrapi.extractors import extract_user_short
 from instagrapi.types import UserShort
+from instagrapi.exceptions import (
+    EmailInvalidError,
+    EmailNotAvailableError,
+    EmailVerificationSendError,
+    AgeEligibilityError,
+    CaptchaChallengeRequired,
+    ClientError,  # Ensure ClientError is imported if not already
+)
 
 CHOICE_EMAIL = 1
 
@@ -26,10 +34,20 @@ class SignUpMixin:
     ) -> UserShort:
         self.get_signup_config()
         check = self.check_email(email)
-        assert check.get("valid"), f"Email not valid ({check})"
-        assert check.get("available"), f"Email not available ({check})"
+        if not check.get("valid"):
+            raise EmailInvalidError(f"Email not valid: {check.get('error_title', check)}")
+        if not check.get("available"):
+            raise EmailNotAvailableError(f"Email not available: {check.get('feedback_message', check)}")
         sent = self.send_verify_email(email)
-        assert sent.get("email_sent"), "Email not sent ({sent})"
+        if not sent.get("email_sent"):
+            raise EmailVerificationSendError(f"Failed to send verification email: {sent}")
+
+        # Date of Birth (DOB) Age Eligibility Check
+        if year and month and day:
+            age_check_result = self.check_age_eligibility(year, month, day)
+            if not age_check_result.get("eligible"): # Assuming "eligible": True is success
+                raise AgeEligibilityError(f"Account not eligible based on age criteria: {age_check_result}")
+
         # send code confirmation
         code = ""
         for attempt in range(1, 11):
@@ -172,10 +190,38 @@ class SignUpMixin:
         )
         return resp.json()
 
-    def challenge_captcha(self, data):
-        g_recaptcha_response = self.captcha_resolve()
+    def challenge_captcha(self, challenge_json_data):
+        api_path = challenge_json_data.get('api_path')
+        site_key = challenge_json_data.get('fields', {}).get('sitekey')
+        challenge_type = challenge_json_data.get('challengeType')  # For logging/context
+
+        if not site_key or not api_path:
+            self.logger.error(f"Malformed captcha challenge data from Instagram: site_key={site_key}, api_path={api_path}")
+            raise ClientError("Malformed captcha challenge data from Instagram (missing site_key or api_path).")
+
+        challenge_post_url = f"https://i.instagram.com{api_path}"
+
+        captcha_details_for_solver = {
+            'site_key': site_key,
+            'challenge_type': challenge_type,
+            'raw_challenge_json': challenge_json_data,
+            'page_url': 'https://www.instagram.com/accounts/emailsignup/', # Common page for signup captcha
+        }
+
+        try:
+            # self.captcha_resolve is assumed to be implemented on the main Client class
+            # and is expected to raise CaptchaChallengeRequired if it cannot obtain a token.
+            g_recaptcha_response = self.captcha_resolve(**captcha_details_for_solver)
+        except CaptchaChallengeRequired:
+            self.logger.warning("Captcha solution was required by Instagram but not provided/resolved by any configured handler.")
+            raise  # Re-raise for the user of instagrapi to handle or be informed.
+        except Exception as e:
+            self.logger.error(f"An unexpected error occurred during the captcha resolution process: {e}", exc_info=True)
+            raise ClientError(f"Captcha resolution process failed: {e}") # Wrap other errors
+
+        # Proceed to POST the g_recaptcha_response:
         resp = self.private.post(
-            f"https://i.instagram.com{data['api_path']}",
+            challenge_post_url,
             data={"g-recaptcha-response": g_recaptcha_response},
         )
         return resp.json()
