@@ -489,7 +489,7 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         )
         self.assertEqual(
             self.cl.media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0"),
-            2243811726252050162,
+            "2243811726252050162",
         )
 
     def test_code_from_media_pk(self):
