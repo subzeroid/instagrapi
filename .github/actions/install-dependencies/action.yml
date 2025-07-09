@@ -9,6 +9,10 @@ inputs:
     description: "Should requirements-test.txt be installed"
     default: "false"
     required: false
+  docs-requirements:
+    description: "Should requirements-docs.txt be installed"
+    default: "false"
+    required: false
 runs:
   using: "composite"
   steps:
@@ -18,3 +22,4 @@ runs:
       env:
         INSTALL_REQUIREMENTS: ${{ inputs.requirements }}
         INSTALL_TEST_REQUIREMENTS: ${{ inputs.test-requirements }}
+        INSTALL_DOCS_REQUIREMENTS: ${{ inputs.docs-requirements }}

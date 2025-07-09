@@ -240,7 +240,10 @@ class UploadClipMixin:
         try:
             import moviepy.editor as mp
         except ImportError:
-            raise Exception("Please install moviepy>=1.0.3 and retry")
+            try:
+                import moviepy as mp
+            except ImportError:
+                raise Exception("Please install moviepy>=1.0.3 and retry")
         # get all media to create the reel
         video = mp.VideoFileClip(str(path))
         audio_clip = mp.AudioFileClip(str(tmpaudio))
@@ -282,7 +285,7 @@ class UploadClipMixin:
             "audio_cluster_id": track.audio_cluster_id,
             "audio_asset_start_time_in_ms": highlight_start_time,
             "derived_content_start_time_in_ms": 0,
-            "overlap_duration_in_ms": 15000,
+            "overlap_duration_in_ms": int(video.duration * 1000),
             "product": "story_camera_clips_v2",
             "song_name": track.title,
             "artist_name": track.display_artist,
@@ -388,7 +391,10 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception("Please install moviepy>=1.0.3 and retry")
+        try:
+            import moviepy as mp
+        except ImportError:
+            raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analyzing CLIP file "{path}"')
     video = mp.VideoFileClip(str(path))

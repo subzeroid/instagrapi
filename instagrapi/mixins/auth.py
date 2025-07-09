@@ -213,12 +213,13 @@ class PostLoginFlowMixin:
         }
         data = {
             "has_camera_permission": "1",
-            "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,"media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
+            "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,
+            # "media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
             "phone_id": self.phone_id,
             "reason": reason,
             "battery_level": 100,  # Random battery level is not simulating real bahaviour
             "timezone_offset": str(self.timezone_offset),
-            "_csrftoken": self.token,
+            # "_csrftoken": self.token, No longer in data
             "device_id": self.uuid,
             "request_id": self.request_id,
             "_uuid": self.uuid,
@@ -235,6 +236,7 @@ class PostLoginFlowMixin:
 
         if max_id:
             data["max_id"] = max_id
+            data["reason"] = "pagination"
         # if "push_disabled" in options:
         #     data["push_disabled"] = "true"
         # if "recovered_from_crash" in options:
@@ -265,7 +267,8 @@ class PostLoginFlowMixin:
             "timezone_offset": str(self.timezone_offset),
             "tray_session_id": self.tray_session_id,
             "request_id": self.request_id,
-            # "latest_preloaded_reel_ids": "[]", # [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"[\"2634301737009283814\",\"2634301789371018685\",\"2634301853921370532\",\"2634301920174570551\",\"2634301973895112725\",\"2634302037581608844\",\"2634302088273817272\",\"2634302822117736694\",\"2634303181452199341\",\"2634303245482345741\",\"2634303317473473894\",\"2634303382971517344\",\"2634303441062726263\",\"2634303502039423893\",\"2634303754729475501\"]"},{"reel_id":"4357392188","media_count":"4","timestamp":1628250613,"media_ids":"[\"2634142331579781054\",\"2634142839803515356\",\"2634150786575125861\",\"2634279566740346641\"]"},{"reel_id":"5931631205","media_count":"7","timestamp":1628253023,"media_ids":"[\"2633699694927154768\",\"2634153361241413763\",\"2634196788830183839\",\"2634219197377323622\",\"2634294221109889541\",\"2634299705648894876\",\"2634299760434939842\"]"}],
+            # "latest_preloaded_reel_ids": "[]",  # Long JSON array with reel data
+            # Example: [{"reel_id":"6009504750","media_count":"15","timestamp":1628253494,"media_ids":"..."}]
             "page_size": 50,
             # "_csrftoken": self.token,
             "_uuid": self.uuid,
@@ -280,7 +283,6 @@ class PostLoginFlowMixin:
 class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     username = None
     password = None
-    authorization = ""  # Bearer IGT:2:<base64:authorization_data>
     authorization_data = {}  # decoded authorization header
     last_login = None
     relogin_attempt = 0
@@ -298,7 +300,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
-    ig_u_rur = ""  # e.g. CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    # Example: CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
+    ig_u_rur = ""
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
@@ -325,7 +328,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         )
         self.set_device(self.settings.get("device_settings"))
         # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
-        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"  # this param is constant and will change by Instagram app version
+        self.bloks_versioning_id = (
+            "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
+        )  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
         self.set_locale(self.settings.get("locale", self.locale))
@@ -397,13 +402,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-
-        if not self.username or not self.password:
-            if username is None or password is None:
-                raise BadCredentials("Both username and password must be provided.")
-
+        if username and password:
             self.username = username
             self.password = password
+        if self.username is None or self.password is None:
+            raise BadCredentials("Both username and password must be provided.")
 
         if relogin:
             self.authorization_data = {}
@@ -426,8 +429,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(self.password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"%d","source":["default"]}]'
-            % int(self.country_code),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]' % int(
+                self.country_code
+            ),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -599,7 +603,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.init()
         return True
 
-    def load_settings(self, path: Path) -> Dict:
+    def load_settings(self, path: Union[str, Path]) -> Dict:
         """
         Load session settings
 
@@ -616,9 +620,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         with open(path, "r") as fp:
             self.set_settings(json.load(fp))
             return self.settings
-        return None
 
-    def dump_settings(self, path: Path) -> bool:
+    def dump_settings(self, path: Union[str, Path]) -> bool:
         """
         Serialize and save session settings
 
@@ -883,7 +886,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return ""
 
     def dump_instaman(self):
-        # helen9151hernandez:AgcXb0GJhAP|Instagram 200.0.0.24.121 Android (24/7.0; 640dpi; 1440x2392; Samsung; SGH-T849; SGH-T849; hi3660; pt_BR; 304101669)|097e7efb59ba976b;03c1746f-77cd-4ac6-8f7e-175b0ba0dc17;c4155719-9d80-466c-b3f7-f98f0a14a372;7fa9e7c7-75e1-498f-8d0f-8f56fe7a4f45|X-MID=YaHXxQABAAFcCc6aAC_OQ53CVDbd;IG-U-DS-USER-ID=50511821576;IG-U-RUR=FRC,50511821576,1669532533:01f705b9f6a7411dc1e985485b1fe39dd317e97b2cf166f380148836d9c2e5233cac5476;Authorization=Bearer IGT:2:eyJkc191c2VyX2lkIjoiNTA1MTE4MjE1NzYiLCJzZXNzaW9uaWQiOiI1MDUxMTgyMTU3NiUzQWtyaEVSbHF2VW8wbnRXJTNBMjQiLCJzaG91bGRfdXNlX2hlYWRlcl9vdmVyX2Nvb2tpZXMiOnRydWV9;X-IG-WWW-Claim=hmac.AR300vJeNkurM8IGnekSoFtSKJmXazjxOawhWNC3d1Gw1OiX;||
+        # Example format: helen9151hernandez:AgcXb0GJhAP|Instagram 200.0.0.24.121 Android...
+        # Long string with user credentials and device info
         uuids = ";".join(
             [
                 self.android_device_id.replace("android-", ""),

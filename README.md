@@ -1,7 +1,7 @@
-If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI](https://hikerapi.com/p/bkXQlaVe) project.
+If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) project.
 However, you won't need to spend weeks or even months setting it up.
-The best service available today is [HikerAPI](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
-In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [HikerAPI](https://hikerapi.com/p/bkXQlaVe) after spending much more time and money.
+The best service available today is [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
+In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) after spending much more time and money.
 It will be difficult to find good accounts, good proxies, or resolve challenges, and IG will ban your accounts.
 
 The instagrapi more suits for testing or research than a working business!
@@ -19,6 +19,7 @@ The instagrapi more suits for testing or research than a working business!
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
+> To run instagrapi you may need a [cheap and powerful server](https://powervps.net/?from=96837), I recommend using my promo you will support the author of this library!
 
 Features:
 
@@ -27,7 +28,7 @@ Features:
 * Getting public data of post, story, album, Reels, IGTV data and the ability to download content
 * Getting public data of hashtag and location data, as well as a list of posts for them
 * Getting public data of all comments on a post and a list of users who liked it
-* Management of [proxy servers](https://soax.com/?r=sEysufQI), mobile devices and challenge resolver
+* Management of [proxy servers](https://soax.com?afmc=sEysufQI), mobile devices and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
 * Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
@@ -39,7 +40,7 @@ Features:
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using reverse-engineering with Charles Proxy and [Proxyman](https://proxyman.io/).
 
-*Instagram API valid for **16 Dec 2023** (last reverse-engineering check)*
+*Instagram API valid for **25 May 2025** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 
@@ -81,6 +82,47 @@ cl.login(ACCOUNT_USERNAME, ACCOUNT_PASSWORD)
 
 user_id = cl.user_id_from_username(ACCOUNT_USERNAME)
 medias = cl.user_medias(user_id, 20)
+```
+
+### Session with persistence
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings("session.json")
+
+# reload later without entering credentials again
+cl = Client()
+cl.load_settings("session.json")
+cl.login(USERNAME, PASSWORD)
+```
+
+### Login using a sessionid
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login_by_sessionid("<your_sessionid>")
+```
+
+### List and download another user's posts
+
+``` python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+target_id = cl.user_id_from_username("target_user")
+posts = cl.user_medias(target_id, amount=10)
+for media in posts:
+    # download photos to the current folder
+    cl.photo_download(media.pk)
+
+See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
 ```
 
 <details>

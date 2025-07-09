@@ -27,7 +27,8 @@ class DownloadAlbumMixin:
         media_pk: int
             PK for the album you want to download
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working directory.
+            Directory in which you want to download the album, default is ""
+            and will download the files to working directory.
 
         Returns
         -------
@@ -62,7 +63,8 @@ class DownloadAlbumMixin:
         urls: List[str]
             List of URLs to download media from
         folder: Path, optional
-            Directory in which you want to download the album, default is "" and will download the files to working directory.
+            Directory in which you want to download the album, default is ""
+            and will download the files to working directory.
 
         Returns
         -------
