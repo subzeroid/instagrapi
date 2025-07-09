@@ -125,8 +125,9 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             self.cl = self.fresh_account()
 
     def fresh_account(self):
+        print("TEST_ACCOUNTS_URL: ", TEST_ACCOUNTS_URL[:8])
         acc = requests.get(TEST_ACCOUNTS_URL, verify=False).json()[0]
-        print("New fresh account %(username)r (proxy: %(proxy)r)" % acc)
+        print("New fresh account %(username)r" % acc)
         settings = acc["client_settings"]
         totp_seed = settings.pop("totp_seed", None)
         cl = Client(settings=settings, proxy=acc["proxy"])
