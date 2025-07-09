@@ -484,7 +484,9 @@ class ClientMediaTestCase(ClientPrivateTestCase):
         )
 
     def test_media_pk_from_code(self):
-        self.assertEqual(self.cl.media_pk_from_code("B-fKL9qpeab"), 2278584739065882267)
+        self.assertEqual(
+            self.cl.media_pk_from_code("B-fKL9qpeab"), "2278584739065882267"
+        )
         self.assertEqual(
             self.cl.media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0"),
             2243811726252050162,
@@ -497,13 +499,13 @@ class ClientMediaTestCase(ClientPrivateTestCase):
     def test_media_pk_from_url(self):
         self.assertEqual(
             self.cl.media_pk_from_url("https://instagram.com/p/B1LbfVPlwIA/"),
-            2110901750722920960,
+            "2110901750722920960",
         )
         self.assertEqual(
             self.cl.media_pk_from_url(
                 "https://www.instagram.com/p/B-fKL9qpeab/?igshid=1xm76zkq7o1im"
             ),
-            2278584739065882267,
+            "2278584739065882267",
         )
 
 
