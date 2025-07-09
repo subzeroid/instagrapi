@@ -14,6 +14,14 @@ from instagrapi.types import Relationship, RelationshipShort, User, UserShort
 from instagrapi.utils import json_value
 
 MAX_USER_COUNT = 200
+INFO_FROM_MODULES = ("self_profile", "feed_timeline", "reel_feed_timeline")
+
+try:
+    from typing import Literal
+
+    INFO_FROM_MODULE = Literal[INFO_FROM_MODULES]
+except:
+    INFO_FROM_MODULE = str
 
 
 class UserMixin:
@@ -224,7 +232,12 @@ class UserMixin:
         except JSONDecodeError as e:
             raise ClientJSONDecodeError(e, user_id=user_id)
 
-    def user_info_v1(self, user_id: str) -> User:
+    def user_info_v1(
+        self,
+        user_id: str,
+        from_module: INFO_FROM_MODULE = "self_profile",
+        is_app_start: bool = False,
+    ) -> User:
         """
         Get user object from user id
 
@@ -232,6 +245,10 @@ class UserMixin:
         ----------
         user_id: str
             User id of an instagram account
+        from_module: str
+            Which module triggered request: self_profile, feed_timeline, reel_feed_timeline. Default: self_profile
+        is_app_start: bool
+            Boolean value specifying if profile is being retrieved on app launch
 
         Returns
         -------
@@ -240,7 +257,19 @@ class UserMixin:
         """
         user_id = str(user_id)
         try:
-            result = self.private_request(f"users/{user_id}/info/")
+            params = {
+                "is_prefetch": "false",
+                "entry_point": "self_profile",
+                "from_module": from_module,
+                "is_app_start": is_app_start,
+            }
+            assert (
+                from_module in INFO_FROM_MODULES
+            ), f'Unsupported send_attribute="{from_module}" {INFO_FROM_MODULES}'
+            if from_module != "self_profile":
+                params["entry_point"] = "profile"
+
+            result = self.private_request(f"users/{user_id}/info/", params=params)
         except ClientNotFoundError as e:
             raise UserNotFound(e, user_id=user_id, **self.last_json)
         except ClientError as e:
@@ -340,7 +369,10 @@ class UserMixin:
         """
 
         try:
-            result = self.private_request(f"friendships/show/{user_id}/")
+            params = {
+                "is_external_deeplink_profile_view": "false",
+            }
+            result = self.private_request(f"friendships/show/{user_id}/", params=params)
             assert result.get("status", "") == "ok"
 
             return Relationship(user_id=user_id, **result)

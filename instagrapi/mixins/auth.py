@@ -219,7 +219,7 @@ class PostLoginFlowMixin:
             "reason": reason,
             "battery_level": 100,  # Random battery level is not simulating real bahaviour
             "timezone_offset": str(self.timezone_offset),
-            "_csrftoken": self.token,
+            # "_csrftoken": self.token, No longer in data
             "device_id": self.uuid,
             "request_id": self.request_id,
             "_uuid": self.uuid,
@@ -236,6 +236,7 @@ class PostLoginFlowMixin:
 
         if max_id:
             data["max_id"] = max_id
+            data["reason"] = "pagination"
         # if "push_disabled" in options:
         #     data["push_disabled"] = "true"
         # if "recovered_from_crash" in options:
