@@ -29,11 +29,39 @@ SOFTWARE = (
 # QUERY_HASH_COMMENTS = '33ba35852cb50da46f5b5e889df7d159'
 # QUERY_HASH_TAGGED_MEDIAS = 'be13233562af2d229b008d2976b998b5'
 
-LOGIN_EXPERIMENTS = "ig_android_reg_nux_headers_cleanup_universe,ig_android_device_detection_info_upload,ig_android_nux_add_email_device,ig_android_gmail_oauth_in_reg,ig_android_device_info_foreground_reporting,ig_android_device_verification_fb_signup,ig_android_direct_main_tab_universe_v2,ig_android_passwordless_account_password_creation_universe,ig_android_direct_add_direct_to_android_native_photo_share_sheet,ig_growth_android_profile_pic_prefill_with_fb_pic_2,ig_account_identity_logged_out_signals_global_holdout_universe,ig_android_quickcapture_keep_screen_on,ig_android_device_based_country_verification,ig_android_login_identifier_fuzzy_match,ig_android_reg_modularization_universe,ig_android_security_intent_switchoff,ig_android_device_verification_separate_endpoint,ig_android_suma_landing_page,ig_android_sim_info_upload,ig_android_smartlock_hints_universe,ig_android_fb_account_linking_sampling_freq_universe,ig_android_retry_create_account_universe,ig_android_caption_typeahead_fix_on_o_universe"
+LOGIN_EXPERIMENTS = (
+    "ig_android_reg_nux_headers_cleanup_universe,"
+    "ig_android_device_detection_info_upload,"
+    "ig_android_nux_add_email_device,"
+    "ig_android_gmail_oauth_in_reg,"
+    "ig_android_device_info_foreground_reporting,"
+    "ig_android_device_verification_fb_signup,"
+    "ig_android_direct_main_tab_universe_v2,"
+    "ig_android_passwordless_account_password_creation_universe,"
+    "ig_android_direct_add_direct_to_android_native_photo_share_sheet,"
+    "ig_growth_android_profile_pic_prefill_with_fb_pic_2,"
+    "ig_account_identity_logged_out_signals_global_holdout_universe,"
+    "ig_android_quickcapture_keep_screen_on,"
+    "ig_android_device_based_country_verification,"
+    "ig_android_login_identifier_fuzzy_match,"
+    "ig_android_reg_modularization_universe,"
+    "ig_android_security_intent_switchoff,"
+    "ig_android_device_verification_separate_endpoint,"
+    "ig_android_suma_landing_page,"
+    "ig_android_sim_info_upload,"
+    "ig_android_smartlock_hints_universe,"
+    "ig_android_fb_account_linking_sampling_freq_universe,"
+    "ig_android_retry_create_account_universe,"
+    "ig_android_caption_typeahead_fix_on_o_universe"
+)
 
 SUPPORTED_CAPABILITIES = [
     {
-        "value": "119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,139.0,140.0,141.0,142.0",
+        "value": (
+            "119.0,120.0,121.0,122.0,123.0,124.0,125.0,126.0,127.0,128.0,"
+            "129.0,130.0,131.0,132.0,133.0,134.0,135.0,136.0,137.0,138.0,"
+            "139.0,140.0,141.0,142.0"
+        ),
         "name": "SUPPORTED_SDK_VERSIONS",
     },
     {"value": "14", "name": "FACE_TRACKER_VERSION"},

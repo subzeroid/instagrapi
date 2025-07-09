@@ -174,15 +174,7 @@ class LocationMixin:
         Location
             An object of Location
         """
-        try:
-            location = self.location_info_a1(location_pk)
-        except Exception:
-            # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/subzeroid/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
-            location = self.location_info_v1(location_pk)
-        return location
+        return self.location_info_v1(location_pk)
 
     def location_medias_a1_chunk(
         self,
@@ -402,7 +394,7 @@ class LocationMixin:
         return self.location_medias_v1(location_pk, amount, tab_key="ranked")
 
     def location_medias_top(
-        self, location_pk: int, amount: int = 27, sleep: float = 0.5
+        self, location_pk: int, amount: int = 27
     ) -> List[Media]:
         """
         Get top medias for a location
@@ -413,22 +405,13 @@ class LocationMixin:
             Unique identifier for a location
         amount: int, optional
             Maximum number of media to return, default is 27
-        sleep: float, optional
-            Timeout between requests, default is 0.5
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        try:
-            return self.location_medias_top_a1(location_pk, amount, sleep)
-        except Exception:
-            # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/subzeroid/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
-            return self.location_medias_top_v1(location_pk, amount)
+        return self.location_medias_top_v1(location_pk, amount)
 
     def location_medias_recent_a1(
         self, location_pk: int, amount: int = 24, sleep: float = 0.5
@@ -475,7 +458,7 @@ class LocationMixin:
         return self.location_medias_v1(location_pk, amount, tab_key="recent")
 
     def location_medias_recent(
-        self, location_pk: int, amount: int = 63, sleep: float = 0.5
+        self, location_pk: int, amount: int = 63
     ) -> List[Media]:
         """
         Get recent medias for a location
@@ -486,22 +469,13 @@ class LocationMixin:
             Unique identifier for a location
         amount: int, optional
             Maximum number of media to return, default is 63
-        sleep: float, optional
-            Timeout between requests, default is 0.5
 
         Returns
         -------
         List[Media]
             List of objects of Media
         """
-        try:
-            return self.location_medias_recent_a1(location_pk, amount, sleep)
-        except Exception:
-            # Users do not understand the output of such information and create bug reports
-            # such this - https://github.com/subzeroid/instagrapi/issues/364
-            # if not isinstance(e, ClientError):
-            #     self.logger.exception(e)
-            return self.location_medias_recent_v1(location_pk, amount)
+        return self.location_medias_recent_v1(location_pk, amount)
 
     def location_guides_v1(self, location_pk: int) -> List[Guide]:
         """

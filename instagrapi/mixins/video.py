@@ -25,6 +25,7 @@ from instagrapi.types import (
     StoryLocation,
     StoryMedia,
     StoryMention,
+    StoryPoll,
     StorySticker,
     Usertag,
 )
@@ -386,6 +387,7 @@ class UploadVideoMixin:
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
         medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
         extra_data: Dict[str, str] = {},
     ) -> Story:
         """
@@ -411,6 +413,8 @@ class UploadVideoMixin:
             List of stickers to be tagged on this upload, default is empty list.
         medias: List[StoryMedia], optional
             List of medias to be tagged on this upload, default is empty list.
+        polls: List[StoryPoll], optional
+            List of polls to be included on this upload, default is empty list.
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
@@ -442,6 +446,7 @@ class UploadVideoMixin:
                     hashtags,
                     stickers,
                     medias,
+                    polls,
                     extra_data=extra_data,
                 )
             except Exception as e:
@@ -463,6 +468,7 @@ class UploadVideoMixin:
                     locations=locations,
                     stickers=stickers,
                     medias=medias,
+                    polls=polls,
                     **extract_media_v1(media).dict(),
                 )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
@@ -481,6 +487,7 @@ class UploadVideoMixin:
         hashtags: List[StoryHashtag] = [],
         stickers: List[StorySticker] = [],
         medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
         thread_ids: List[int] = [],
         extra_data: Dict[str, str] = {},
     ) -> Dict:
@@ -513,6 +520,8 @@ class UploadVideoMixin:
             List of stickers to be tagged on this upload, default is empty list.
         medias: List[StoryMedia], optional
             List of medias to be tagged on this upload, default is empty list.
+        polls: List[StoryPoll], optional
+            List of polls to be included on this upload, default is empty list.
         thread_ids: List[int], optional
             List of Direct Message Thread ID (to send a story to a thread)
         extra_data: Dict[str, str], optional
@@ -530,6 +539,7 @@ class UploadVideoMixin:
         hashtags = hashtags.copy()
         stickers = stickers.copy()
         medias = medias.copy()
+        polls = polls.copy()
         thread_ids = thread_ids.copy()
         story_sticker_ids = []
         data = {
@@ -773,6 +783,40 @@ class UploadVideoMixin:
                 }
                 tap_models.append(item)
             data["reshared_media_id"] = str(feed_media.media_pk)
+        if polls:
+            story_sticker_ids.append("polling_sticker_v2")
+            for poll in polls:
+                poll_extra = poll.extra or {}
+                tap_models.append(
+                    {
+                        "x": round(poll.x, 7),
+                        "y": round(poll.y, 7),
+                        "z": poll.z,
+                        "width": round(poll.width, 7),
+                        "height": round(poll.height, 7),
+                        "rotation": poll.rotation,
+                        "type": poll.type,
+                        "poll_type": poll.poll_type,
+                        "is_sticker": True,
+                        "tap_state": 0,
+                        "tap_state_str_id": "polling_sticker_v2",
+                        "is_multi_option_poll": poll.is_multi_option,
+                        "is_shared_result": poll.is_shared_result,
+                        "viewer_can_vote": poll.viewer_can_vote,
+                        "finished": poll.finished,
+                        "color": poll.color,
+                        "question": poll.question,
+                        "tallies": [
+                            {
+                                "count": 0,
+                                "font_size": 39.0,
+                                "text": o
+                            }
+                            for o in poll.options
+                        ],
+                        **poll_extra,
+                    }
+                )
         if thread_ids:
             # Send to direct thread
             token = self.generate_mutation_token()
@@ -894,7 +938,10 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     try:
         import moviepy.editor as mp
     except ImportError:
-        raise Exception("Please install moviepy>=1.0.3 and retry")
+        try:
+            import moviepy as mp
+        except ImportError:
+            raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analyzing video file "{path}"')
     video = mp.VideoFileClip(str(path))

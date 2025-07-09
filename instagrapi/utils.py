@@ -4,7 +4,10 @@ import json
 import random
 import string
 import time
-import urllib
+import urllib.parse
+from typing import Any, TypeVar, Union, overload
+
+from .exceptions import ValidationError
 
 
 class InstagramIdCodec:
@@ -63,14 +66,41 @@ def generate_signature(data):
     return "signed_body=SIGNATURE.{data}".format(data=urllib.parse.quote_plus(data))
 
 
-def json_value(data, *args, default=None):
-    cur = data
+T = TypeVar('T')
+
+
+# Overload for when no default is provided - could return Any or None
+@overload
+def json_value(data: dict, *args: Union[str, int]) -> Any:
+    ...
+
+
+# Overload for when default is provided - returns either found value or default type
+@overload
+def json_value(data: dict, *args: Union[str, int], default: T) -> Union[T, Any]:
+    ...
+
+
+def json_value(data: dict, *args: Union[str, int], default: Any = None) -> Any:
+    """Navigate through nested dictionaries/lists using provided keys.
+
+    Args:
+        data: The dictionary to navigate
+        *args: Keys/indices to navigate through (strings for dicts, ints for lists)
+        default: Value to return if navigation fails
+
+    Returns:
+        The value found at the specified path, or default if not found
+    """
+    cur: Any = data
     for a in args:
         try:
             if isinstance(a, int):
                 cur = cur[a]
             else:
                 cur = cur.get(a)
+            if cur is None:
+                return default
         except (IndexError, KeyError, TypeError, AttributeError):
             return default
     return cur
@@ -107,3 +137,8 @@ def date_time_original(localtime):
 def random_delay(delay_range: list):
     """Trigger sleep of a random floating number in range min_sleep to max_sleep"""
     return time.sleep(random.uniform(delay_range[0], delay_range[1]))
+
+
+def vassert(pred, message):
+    if not pred:
+        raise ValidationError(message)

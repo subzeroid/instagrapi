@@ -388,7 +388,16 @@ class PrivateRequestMixin:
                 raise ClientForbiddenError(e, response=e.response, **last_json)
             elif e.response.status_code == 400:
                 error_type = last_json.get("error_type")
-                if message == "challenge_required":
+                if last_json.get("two_factor_info"):
+                    if not last_json.get("message"):
+                        last_json["message"] = "Two-factor authentication required"
+                    if last_json.get("error_type") != "two_factor_required":
+                        self.logger.info(
+                            f"Changing error_type from {last_json.get('error_type')} to two_factor_required due to presence of two_factor_info"
+                        )
+                        last_json["error_type"] = "two_factor_required"
+                    raise TwoFactorRequired(**last_json)
+                elif message == "challenge_required":
                     raise ChallengeRequired(**last_json)
                 elif message == "feedback_required":
                     raise FeedbackRequired(

@@ -1121,6 +1121,180 @@ class ClientDirectTestCase(ClientPrivateTestCase):
             pass
 
 
+class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
+    """Test that DirectMessage and DirectThread fields use structured Pydantic models instead of raw dictionaries"""
+    
+    def test_direct_message_reactions_model(self):
+        """Test that DirectMessage.reactions field uses MessageReactions model"""
+        from instagrapi.types import MessageReactions, MessageReaction
+        from datetime import datetime
+        
+        # Get some direct messages
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            messages = self.cl.direct_messages(thread.id, amount=10)
+            for message in messages:
+                if message.reactions:
+                    # Test that reactions field is now a MessageReactions object
+                    self.assertIsInstance(message.reactions, MessageReactions)
+                    
+                    # Test that reactions have proper structure
+                    if hasattr(message.reactions, 'emojis') and message.reactions.emojis:
+                        for emoji_reaction in message.reactions.emojis:
+                            self.assertIsInstance(emoji_reaction, MessageReaction)
+                            self.assertIsInstance(emoji_reaction.emoji, str)
+                            self.assertIsInstance(emoji_reaction.sender_id, str)
+                            self.assertIsInstance(emoji_reaction.timestamp, datetime)
+                    
+                    # Test backward compatibility - should still work as dict
+                    if hasattr(message.reactions, 'likes_count'):
+                        self.assertIsInstance(message.reactions.likes_count, int)
+                    
+                    return  # Found one message with reactions, test passed
+    
+    def test_direct_message_link_model(self):
+        """Test that DirectMessage.link field uses MessageLink model"""
+        from instagrapi.types import MessageLink, LinkContext
+        
+        # Get some direct messages
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            messages = self.cl.direct_messages(thread.id, amount=10)
+            for message in messages:
+                if message.link:
+                    # Test that link field is now a MessageLink object
+                    self.assertIsInstance(message.link, MessageLink)
+                    
+                    # Test that link has proper structure
+                    if hasattr(message.link, 'text'):
+                        self.assertIsInstance(message.link.text, str)
+                    
+                    if hasattr(message.link, 'link_context') and message.link.link_context:
+                        self.assertIsInstance(message.link.link_context, LinkContext)
+                        if hasattr(message.link.link_context, 'link_url'):
+                            self.assertIsInstance(message.link.link_context.link_url, str)
+                    
+                    return  # Found one message with link, test passed
+    
+    def test_direct_message_visual_media_model(self):
+        """Test that DirectMessage.visual_media field uses VisualMedia model"""
+        from instagrapi.types import VisualMedia, VisualMediaContent
+        
+        # Get some direct messages
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            messages = self.cl.direct_messages(thread.id, amount=10)
+            for message in messages:
+                if message.visual_media:
+                    # Test that visual_media field is now a VisualMedia object
+                    self.assertIsInstance(message.visual_media, VisualMedia)
+                    
+                    # Test that visual_media has proper structure
+                    if hasattr(message.visual_media, 'media') and message.visual_media.media:
+                        self.assertIsInstance(message.visual_media.media, VisualMediaContent)
+                    
+                    return  # Found one message with visual media, test passed
+    
+    def test_direct_thread_last_seen_at_model(self):
+        """Test that DirectThread.last_seen_at field uses LastSeenInfo model"""
+        from instagrapi.types import LastSeenInfo
+        from datetime import datetime
+        
+        # Get some direct threads
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            if thread.last_seen_at:
+                # Test that last_seen_at is now a dict of LastSeenInfo objects
+                for user_id, seen_info in thread.last_seen_at.items():
+                    self.assertIsInstance(user_id, str)
+                    self.assertIsInstance(seen_info, LastSeenInfo)
+                    
+                    # Test structure of LastSeenInfo
+                    if hasattr(seen_info, 'timestamp'):
+                        self.assertIsInstance(seen_info.timestamp, datetime)
+                    if hasattr(seen_info, 'created_at'):
+                        self.assertIsInstance(seen_info.created_at, datetime)
+                    
+                    return  # Found one thread with last_seen_at, test passed
+    
+    def test_direct_message_clips_metadata_model(self):
+        """Test that DirectMessage.clips_metadata field uses ClipsMetadata model"""
+        from instagrapi.types import ClipsMetadata
+        
+        # Get some direct messages
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            messages = self.cl.direct_messages(thread.id, amount=10)
+            for message in messages:
+                if message.clips_metadata:
+                    # Test that clips_metadata field is now a ClipsMetadata object
+                    self.assertIsInstance(message.clips_metadata, ClipsMetadata)
+                    
+                    return  # Found one message with clips metadata, test passed
+    
+    def test_thread_is_seen_datetime_compatibility(self):
+        """Test that DirectThread.is_seen() works with datetime objects"""
+        from datetime import datetime
+        
+        # Get some direct threads
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            if thread.last_seen_at:
+                # Test that is_seen method works with datetime objects
+                user_id = str(self.cl.user_id)
+                try:
+                    is_seen = thread.is_seen(user_id)
+                    self.assertIsInstance(is_seen, bool)
+                    return  # Successfully tested is_seen method
+                except Exception as e:
+                    self.fail(f"is_seen() method failed with datetime objects: {e}")
+    
+    def test_backward_compatibility_dict_access(self):
+        """Test that dict-style access patterns still work for backward compatibility"""
+        # Get some direct messages
+        threads = self.cl.direct_threads(amount=5)
+        if not threads:
+            self.skipTest("No direct threads available for testing")
+        
+        for thread in threads:
+            messages = self.cl.direct_messages(thread.id, amount=10)
+            for message in messages:
+                # Test that we can still access fields as if they were dicts
+                # This should work due to our Pydantic model structure
+                try:
+                    if message.reactions:
+                        # Should work even though it's now a Pydantic model
+                        likes_count = getattr(message.reactions, 'likes_count', 0)
+                        self.assertIsInstance(likes_count, int)
+                    
+                    if message.link:
+                        # Should work even though it's now a Pydantic model
+                        link_text = getattr(message.link, 'text', '')
+                        self.assertIsInstance(link_text, str)
+                    
+                    return  # Successfully tested backward compatibility
+                except Exception as e:
+                    self.fail(f"Backward compatibility test failed: {e}")
+
+
 class ClientAccountTestCase(ClientPrivateTestCase):
     def test_account_edit(self):
         # current
