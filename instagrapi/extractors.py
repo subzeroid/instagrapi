@@ -293,6 +293,30 @@ def extract_direct_thread(data):
     data["last_activity_at"] = datetime.datetime.fromtimestamp(
         data["last_activity_at"] // 1_000_000
     )
+    
+    # Convert last_seen_at timestamps
+    last_seen_at = data.get("last_seen_at", {})
+    for user_id, seen_info in last_seen_at.items():
+        if "timestamp" in seen_info:
+            seen_info["timestamp"] = datetime.datetime.fromtimestamp(
+                int(seen_info["timestamp"]) // 1_000_000
+            )
+        if "created_at" in seen_info:
+            seen_info["created_at"] = datetime.datetime.fromtimestamp(
+                int(seen_info["created_at"]) // 1_000_000
+            )
+        # Convert disappearing messages seen state timestamps
+        disappearing_state = seen_info.get("disappearing_messages_seen_state")
+        if disappearing_state:
+            if "timestamp" in disappearing_state:
+                disappearing_state["timestamp"] = datetime.datetime.fromtimestamp(
+                    int(disappearing_state["timestamp"]) // 1_000_000
+                )
+            if "created_at" in disappearing_state:
+                disappearing_state["created_at"] = datetime.datetime.fromtimestamp(
+                    int(disappearing_state["created_at"]) // 1_000_000
+                )
+    
     return DirectThread(**data)
 
 
@@ -352,11 +376,53 @@ def extract_direct_message(data):
     if xma_media_share:
         data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
 
+    # Convert main timestamp
     data["timestamp"] = datetime.datetime.fromtimestamp(
         int(data["timestamp"]) // 1_000_000
     )
     data["user_id"] = str(data.get("user_id", ""))
     data["client_context"] = data.get("client_context", "")
+
+    # Convert reaction timestamps
+    reactions = data.get("reactions", {})
+    if reactions and "emojis" in reactions:
+        for emoji_reaction in reactions["emojis"]:
+            if "timestamp" in emoji_reaction:
+                emoji_reaction["timestamp"] = datetime.datetime.fromtimestamp(
+                    int(emoji_reaction["timestamp"]) // 1_000_000
+                )
+
+    # Convert visual media timestamps
+    visual_media = data.get("visual_media", {})
+    if visual_media and "media" in visual_media:
+        media = visual_media["media"]
+        if "expiring_media_action_summary" in media and media["expiring_media_action_summary"]:
+            media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
+                int(media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
+            )
+        
+        # Convert image candidates URL expiration timestamps
+        if "image_versions2" in media and media["image_versions2"]:
+            candidates = media["image_versions2"].get("candidates", [])
+            for candidate in candidates:
+                if "url_expiration_timestamp_us" in candidate and candidate["url_expiration_timestamp_us"]:
+                    candidate["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(candidate["url_expiration_timestamp_us"]) // 1_000_000
+                    )
+        
+        # Convert video versions URL expiration timestamps
+        if "video_versions" in media and media["video_versions"]:
+            for video_version in media["video_versions"]:
+                if "url_expiration_timestamp_us" in video_version and video_version["url_expiration_timestamp_us"]:
+                    video_version["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(video_version["url_expiration_timestamp_us"]) // 1_000_000
+                    )
+    
+    # Convert top-level visual media expiring action summary timestamp
+    if visual_media and "expiring_media_action_summary" in visual_media and visual_media["expiring_media_action_summary"]:
+        visual_media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
+            int(visual_media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
+        )
 
     return DirectMessage(**data)
 
