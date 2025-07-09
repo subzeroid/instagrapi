@@ -194,5 +194,5 @@ cl.video_upload_to_story(
 
 To release, you need to call the following commands:
 
-    python setup.py sdist
+    python -m build
     twine upload dist/*
