@@ -74,6 +74,7 @@ def extract_media_v1(data):
     media["sponsor_tags"] = [tag["sponsor"] for tag in media.get("sponsor_tags") or []]
     media["play_count"] = media.get("play_count", 0)
     media["coauthor_producers"] = media.get("coauthor_producers", [])
+    media['clips_metadata']['original_sound_info']['original_audio_title'] = ''
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
         resources=[
