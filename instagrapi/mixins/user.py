@@ -168,15 +168,14 @@ class UserMixin:
             "Accept-Language": "en-US,en;q=0.9",
             "Priority": "u=1, i",
         }
-        update_headers = False
         data = extract_user_gql(
             json.loads(
                 self.public_request(
                     f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}",
                     headers=temporary_public_headers,
+                    update_headers=False,
                 )
-            )["data"]["user"],
-            update_headers=update_headers,
+            )["data"]["user"]
         )
         return data
 
