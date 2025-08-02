@@ -65,8 +65,10 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 ## Telegram Bot for Download Posts, Stories and Highlights
 
 * https://t.me/InstaSurfBot
-* https://t.me/instablastbot
+* https://t.me/InstaBlastBot
 * https://t.me/InstaSavePremiumBot
+* https://t.me/InstaCopierBot
+* https://t.me/InstaMemoBot
 
 ### Installation
 
