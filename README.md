@@ -62,9 +62,11 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 8. [Build stories](https://subzeroid.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, link sticker and mention users
 9. In the next release, account registration and captcha passing will appear
 
-## Examples of apps that use instagrapi
+## Telegram Bot for Download Posts, Stories and Highlights
 
-* [Telegram Bot for Download Posts, Stories and Highlights](https://t.me/instagram_load_bot)
+* https://t.me/InstaSurfBot
+* https://t.me/instablastbot
+* https://t.me/InstaSavePremiumBot
 
 ### Installation
 
