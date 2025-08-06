@@ -9,6 +9,7 @@ import uuid
 from pathlib import Path
 from typing import Dict, Union
 from uuid import uuid4
+from instagrapi.mixins.RanDeviceGen import DeviceGen
 
 import requests
 from pydantic import ValidationError
@@ -652,22 +653,112 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        self.device_settings = device or {
-            "app_version": "269.0.0.18.75",
-            "android_version": 26,
-            "android_release": "8.0.0",
-            "dpi": "480dpi",
-            "resolution": "1080x1920",
-            "manufacturer": "OnePlus",
-            "device": "devitron",
-            "model": "6T Dev",
-            "cpu": "qcom",
-            "version_code": "314665256",
-        }
+        self.device_settings = device or DeviceGen.random_device()
+
         self.settings["device_settings"] = self.device_settings
         if reset:
             self.set_uuids({})
             # self.settings = self.get_settings()
+        return True
+    
+    def set_country_details(self, country: str = "", reset: bool = False) -> bool:
+        """
+        Helper to set country
+
+        Parameters
+        ----------
+        country: str, optional
+            Country, default is ""
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+
+
+        with open('./instagrapi/country_details.json') as f:
+            country_details = json.load(f)
+
+        try :
+            country_code = country_details[country]['country_code']
+            locale = country_details[country]['locale']
+            timezone_offset = country_details[country]['timezone_offset']
+
+            #setting the country
+            self.country = country
+            self.settings["country"] = self.country
+
+            #setting the country code
+            self.set_country_code(country_code)
+
+            #setting the locale
+            self.set_locale(locale)
+
+
+            #setting the timezone offset
+            self.set_timezone_offset(timezone_offset)
+            
+            
+            return True
+        
+        except Exception as e:
+            print('Country not found in the list. Error: ' ,e)
+            return False
+    
+    def set_locale(self, locale: str = "en_US") -> bool:
+        """
+        Helper to set locale
+
+        Parameters
+        ----------
+        locale: str, optional
+            Locale, default is "en_US"
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.locale = locale
+        self.settings["locale"] = self.locale
+        return True
+
+    def set_country_code(self, country_code: int = 1) -> bool:
+        """
+        Helper to set country code
+
+        Parameters
+        ----------
+        country_code: int, optional
+            Country code, default is 1
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.country_code = country_code
+        self.settings["country_code"] = self.country_code
+        return True 
+    
+
+    def set_timezone_offset(self, timezone_offset: int = -14400) -> bool:
+        """
+        Helper to set timezone offset
+
+        Parameters
+        ----------
+        timezone_offset: int, optional
+            Timezone offset, default is -14400
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        self.timezone_offset = timezone_offset
+        self.settings["timezone_offset"] = self.timezone_offset
         return True
 
     def set_user_agent(self, user_agent: str = "", reset: bool = False) -> bool:

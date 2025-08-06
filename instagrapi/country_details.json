@@ -1,0 +1,452 @@
+{
+    "US": {
+        "country_code": 1,
+        "locale": "en_US",
+        "timezone_offset": -14400
+    },
+    "CA": {
+        "country_code": 1,
+        "locale": "en_CA",
+        "timezone_offset": -14400
+    },
+    "GB": {
+        "country_code": 44,
+        "locale": "en_GB",
+        "timezone_offset": 0
+    },
+    "DE": {
+        "country_code": 49,
+        "locale": "de_DE",
+        "timezone_offset": 7200
+    },
+    "FR": {
+        "country_code": 33,
+        "locale": "fr_FR",
+        "timezone_offset": 7200
+    },
+    "ES": {
+        "country_code": 34,
+        "locale": "es_ES",
+        "timezone_offset": 7200
+    },
+    "IT": {
+        "country_code": 39,
+        "locale": "it_IT",
+        "timezone_offset": 7200
+    },
+    "AU": {
+        "country_code": 61,
+        "locale": "en_AU",
+        "timezone_offset": 36000
+    },
+    "JP": {
+        "country_code": 81,
+        "locale": "ja_JP",
+        "timezone_offset": 32400
+    },
+    "BR": {
+        "country_code": 55,
+        "locale": "pt_BR",
+        "timezone_offset": -10800
+    },
+    "IN": {
+        "country_code": 91,
+        "locale": "en_IN",
+        "timezone_offset": 19800
+    },
+    "PK": {
+        "country_code": 92,
+        "locale": "en_PK",
+        "timezone_offset": 18000
+    },
+    "CN": {
+        "country_code": 86,
+        "locale": "zh_CN",
+        "timezone_offset": 28800
+    },
+    "RU": {
+        "country_code": 7,
+        "locale": "ru_RU",
+        "timezone_offset": 10800
+    },
+    "MX": {
+        "country_code": 52,
+        "locale": "es_MX",
+        "timezone_offset": -18000
+    },
+    "KR": {
+        "country_code": 82,
+        "locale": "ko_KR",
+        "timezone_offset": 32400
+    },
+    "SA": {
+        "country_code": 966,
+        "locale": "ar_SA",
+        "timezone_offset": 10800
+    },
+    "ZA": {
+        "country_code": 27,
+        "locale": "en_ZA",
+        "timezone_offset": 7200
+    },
+    "EG": {
+        "country_code": 20,
+        "locale": "ar_EG",
+        "timezone_offset": 7200
+    },
+    "TR": {
+        "country_code": 90,
+        "locale": "tr_TR",
+        "timezone_offset": 10800
+    },
+    "ID": {
+        "country_code": 62,
+        "locale": "id_ID",
+        "timezone_offset": 25200
+    },
+    "NG": {
+        "country_code": 234,
+        "locale": "en_NG",
+        "timezone_offset": 3600
+    },
+    "NL": {
+        "country_code": 31,
+        "locale": "nl_NL",
+        "timezone_offset": 7200
+    },
+    "BE": {
+        "country_code": 32,
+        "locale": "nl_BE",
+        "timezone_offset": 7200
+    },
+    "SE": {
+        "country_code": 46,
+        "locale": "sv_SE",
+        "timezone_offset": 7200
+    },
+    "NO": {
+        "country_code": 47,
+        "locale": "nb_NO",
+        "timezone_offset": 7200
+    },
+    "FI": {
+        "country_code": 358,
+        "locale": "fi_FI",
+        "timezone_offset": 10800
+    },
+    "DK": {
+        "country_code": 45,
+        "locale": "da_DK",
+        "timezone_offset": 7200
+    },
+    "CH": {
+        "country_code": 41,
+        "locale": "de_CH",
+        "timezone_offset": 7200
+    },
+    "AT": {
+        "country_code": 43,
+        "locale": "de_AT",
+        "timezone_offset": 7200
+    },
+    "GR": {
+        "country_code": 30,
+        "locale": "el_GR",
+        "timezone_offset": 10800
+    },
+    "PT": {
+        "country_code": 351,
+        "locale": "pt_PT",
+        "timezone_offset": 3600
+    },
+    "PL": {
+        "country_code": 48,
+        "locale": "pl_PL",
+        "timezone_offset": 7200
+    },
+    "CZ": {
+        "country_code": 420,
+        "locale": "cs_CZ",
+        "timezone_offset": 7200
+    },
+    "HU": {
+        "country_code": 36,
+        "locale": "hu_HU",
+        "timezone_offset": 7200
+    },
+    "RO": {
+        "country_code": 40,
+        "locale": "ro_RO",
+        "timezone_offset": 10800
+    },
+    "IE": {
+        "country_code": 353,
+        "locale": "en_IE",
+        "timezone_offset": 3600
+    },
+    "IL": {
+        "country_code": 972,
+        "locale": "he_IL",
+        "timezone_offset": 10800
+    },
+    "AE": {
+        "country_code": 971,
+        "locale": "ar_AE",
+        "timezone_offset": 14400
+    },
+    "SG": {
+        "country_code": 65,
+        "locale": "en_SG",
+        "timezone_offset": 28800
+    },
+    "MY": {
+        "country_code": 60,
+        "locale": "ms_MY",
+        "timezone_offset": 28800
+    },
+    "TH": {
+        "country_code": 66,
+        "locale": "th_TH",
+        "timezone_offset": 25200
+    },
+    "PH": {
+        "country_code": 63,
+        "locale": "en_PH",
+        "timezone_offset": 28800
+    },
+    "AR": {
+        "country_code": 54,
+        "locale": "es_AR",
+        "timezone_offset": -10800
+    },
+    "CL": {
+        "country_code": 56,
+        "locale": "es_CL",
+        "timezone_offset": -14400
+    },
+
+    "VE": {
+        "country_code": 58,
+        "locale": "es_VE",
+        "timezone_offset": -14400
+    },
+    "CO": {
+        "country_code": 57,
+        "locale": "es_CO",
+        "timezone_offset": -18000
+    },
+    "PE": {
+        "country_code": 51,
+        "locale": "es_PE",
+        "timezone_offset": -18000
+    },
+    "EC": {
+        "country_code": 593,
+        "locale": "es_EC",
+        "timezone_offset": -18000
+    },
+    "BO": {
+        "country_code": 591,
+        "locale": "es_BO",
+        "timezone_offset": -14400
+    },
+    "PY": {
+        "country_code": 595,
+        "locale": "es_PY",
+        "timezone_offset": -14400
+    },
+    "UY": {
+        "country_code": 598,
+        "locale": "es_UY",
+        "timezone_offset": -10800
+    },
+    "CR": {
+        "country_code": 506,
+        "locale": "es_CR",
+        "timezone_offset": -21600
+    },
+    "GT": {
+        "country_code": 502,
+        "locale": "es_GT",
+        "timezone_offset": -21600
+    },
+    "HN": {
+        "country_code": 504,
+        "locale": "es_HN",
+        "timezone_offset": -21600
+    },
+    "SV": {
+        "country_code": 503,
+        "locale": "es_SV",
+        "timezone_offset": -21600
+    },
+    "NI": {
+        "country_code": 505,
+        "locale": "es_NI",
+        "timezone_offset": -21600
+    },
+    "PA": {
+        "country_code": 507,
+        "locale": "es_PA",
+        "timezone_offset": -18000
+    },
+    "DO": {
+        "country_code": 1,
+        "locale": "es_DO",
+        "timezone_offset": -14400
+    },
+    "PR": {
+        "country_code": 1,
+        "locale": "es_PR",
+        "timezone_offset": -14400
+    },
+    "JM": {
+        "country_code": 1,
+        "locale": "en_JM",
+        "timezone_offset": -18000
+    },
+    "CU": {
+        "country_code": 53,
+        "locale": "es_CU",
+        "timezone_offset": -14400
+    },
+    "TT": {
+        "country_code": 1,
+        "locale": "en_TT",
+        "timezone_offset": -14400
+    },
+    "BS": {
+        "country_code": 1,
+        "locale": "en_BS",
+        "timezone_offset": -14400
+    },
+    "BB": {
+        "country_code": 1,
+        "locale": "en_BB",
+        "timezone_offset": -14400
+    },
+    "HT": {
+        "country_code": 509,
+        "locale": "fr_HT",
+        "timezone_offset": -14400
+    },
+    "LC": {
+        "country_code": 1,
+        "locale": "en_LC",
+        "timezone_offset": -14400
+    },
+    "DM": {
+        "country_code": 1,
+        "locale": "en_DM",
+        "timezone_offset": -14400
+    },
+    "VC": {
+        "country_code": 1,
+        "locale": "en_VC",
+        "timezone_offset": -14400
+    },
+    "AG": {
+        "country_code": 1,
+        "locale": "en_AG",
+        "timezone_offset": -14400
+    },
+    "GD": {
+        "country_code": 1,
+        "locale": "en_GD",
+        "timezone_offset": -14400
+    },
+    "SR": {
+        "country_code": 597,
+        "locale": "nl_SR",
+        "timezone_offset": -10800
+    },
+    "GY": {
+        "country_code": 592,
+        "locale": "en_GY",
+        "timezone_offset": -14400
+    },
+    "AW": {
+        "country_code": 297,
+        "locale": "nl_AW",
+        "timezone_offset": -14400
+    },
+    "CW": {
+        "country_code": 599,
+        "locale": "nl_CW",
+        "timezone_offset": -14400
+    },
+    "BQ": {
+        "country_code": 599,
+        "locale": "nl_BQ",
+        "timezone_offset": -14400
+    },
+    "SX": {
+        "country_code": 1,
+        "locale": "en_SX",
+        "timezone_offset": -14400
+    },
+    "MF": {
+        "country_code": 590,
+        "locale": "fr_MF",
+        "timezone_offset": -14400
+    },
+    "PM": {
+        "country_code": 508,
+        "locale": "fr_PM",
+        "timezone_offset": 7200
+    },
+    "MQ": {
+        "country_code": 596,
+        "locale": "fr_MQ",
+        "timezone_offset": -14400
+    },
+    "RE": {
+        "country_code": 262,
+        "locale": "fr_RE",
+        "timezone_offset": 14400
+    },
+    "YT": {
+        "country_code": 262,
+        "locale": "fr_YT",
+        "timezone_offset": 10800
+    },
+    "BL": {
+        "country_code": 590,
+        "locale": "fr_BL",
+        "timezone_offset": -14400
+    },
+    "GF": {
+        "country_code": 594,
+        "locale": "fr_GF",
+        "timezone_offset": -10800
+    },
+    "PF": {
+        "country_code": 689,
+        "locale": "fr_PF",
+        "timezone_offset": -36000
+    },
+    "NC": {
+        "country_code": 687,
+        "locale": "fr_NC",
+        "timezone_offset": 39600
+    },
+    "WF": {
+        "country_code": 681,
+        "locale": "fr_WF",
+        "timezone_offset": 43200
+    },
+    "TF": {
+        "country_code": 262,
+        "locale": "fr_TF",
+        "timezone_offset": 18000
+    },
+    "AF": {
+        "country_code": 93,
+        "locale": "en_AF",
+        "timezone_offset": 16200
+    }
+    
+
+
+
+}
