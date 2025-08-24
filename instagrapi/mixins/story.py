@@ -305,6 +305,34 @@ class StoryMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
+    def story_viewers_chunk(
+        self, story_pk: int, max_amount: int = 0, max_id: str = ""
+    ) -> tuple[list[UserShort], str]:
+        unique_set: set[str] = set()
+        users: list[UserShort] = []
+        story_pk = self.media_pk(story_pk)
+        params = {
+            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
+        }
+
+        while True:
+            if max_id:
+                params["max_id"] = max_id
+            result = self.private_request(
+                f"media/{story_pk}/list_reel_media_viewer/", params=params
+            )
+            for item in result["users"]:
+                user = extract_user_short(item)
+                if user.pk in unique_set:
+                    continue
+                unique_set.add(user.pk)
+                users.append(user)
+
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(users) >= max_amount):
+                break
+        return users, max_id
+
     def story_viewers(self, story_pk: int, amount: int = 0) -> List[UserShort]:
         """
         List of story viewers (Private API)
@@ -320,31 +348,9 @@ class StoryMixin:
         List[UserShort]
             A list of objects of UserShort
         """
-        users = []
-        next_max_id = None
-        story_pk = self.media_pk(story_pk)
-        params = {
-            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
-        }
-        while True:
-            try:
-                if next_max_id:
-                    params["max_id"] = next_max_id
-                result = self.private_request(
-                    f"media/{story_pk}/list_reel_media_viewer/", params=params
-                )
-                for item in result["users"]:
-                    users.append(extract_user_short(item))
-                if amount and len(users) >= amount:
-                    break
-                next_max_id = result.get("next_max_id")
-                if not next_max_id:
-                    break
-            except Exception as e:
-                self.logger.exception(e)
-                break
+        users, _ = self.story_viewers_chunk(story_pk, amount)
         if amount:
-            users = users[: int(amount)]
+            users = users[:amount]
         return users
 
     def story_like(self, story_id: str, revert: bool = False) -> bool:
