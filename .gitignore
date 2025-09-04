@@ -142,3 +142,6 @@ dmypy.json
 # VSCode
 .vscode
 ig_settings.json
+
+# Bun
+node_modules/
