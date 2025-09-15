@@ -7,7 +7,6 @@ name = "instagrapi"
 version = "1.2.2"
 description = ""
 authors = [
-    { name = "adw0rd", email = "x11org@gmail.com" },
     { name = "Heuritech team", email = "developers@heuritech.com" },
 ]
 requires-python = "~=3.8"
