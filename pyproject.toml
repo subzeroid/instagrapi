@@ -1,34 +1,31 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
 name = "instagrapi"
 version = "1.2.2"
 description = ""
-authors = ["adw0rd <x11org@gmail.com>", "Heuritech team <developers@heuritech.com>"]
+authors = [
+    { name = "adw0rd", email = "x11org@gmail.com" },
+    { name = "Heuritech team", email = "developers@heuritech.com" },
+]
+requires-python = "~=3.8"
 readme = "README.md"
-repository = "https://gitlab.roquette.heuritech.com/heuritech-v2/instagrapi"
+dependencies = [
+    "moviepy==1.0.3",
+    "Pillow>=8.3,<10.0",
+    "PySocks==1.7.1",
+    "pydantic<1.10.20",
+    "pycryptodomex==3.14.1",
+    "requests>=2.25.0,<3",
+    "simplejson==3.19.2",
+    "urllib3<1.27.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-moviepy = "1.0.3"
-Pillow = ">=8.3,<10.0"
-PySocks = "1.7.1"
-pydantic = "<1.10.20"
-pycryptodomex = "3.14.1"
-requests = "^2.25.0"
-simplejson = "3.19.2"
-urllib3 = "<1.27.0"
-
-[tool.poetry.group.dev.dependencies]
-pytest = ">=3"
-pytest-cov = ">=2"
-pre-commit = "^2.20"
-
-[[tool.poetry.source]]
-name = "htpypi"
-url = "https://pypi.heuritech.com/"
-default = true
-# this pypi repo is redirecting to the official Pypi when it doesn't find a specific package
-# thus, we can use only this one
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "pytest>=3",
+    "pytest-cov>=2",
+    "pre-commit~=2.20",
+]
