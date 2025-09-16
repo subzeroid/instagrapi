@@ -7,7 +7,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 from instagrapi.config import DOC_ID_USER_POSTS_BY_NAME
 from instagrapi.exceptions import (
     ClientBadRequestError, ClientError, ClientJSONDecodeError, ClientLoginRequired,
-    ClientNotFoundError, UserNotFound
+    ClientNotFoundError, UserNotFound, PrivateAccount
 )
 from instagrapi.extractors import (
     extract_media_gql, extract_media_v1, extract_user_gql, extract_user_short, extract_user_v1
@@ -1076,10 +1076,10 @@ class UserMixin:
             time.sleep(sleep)
 
     def user_medias_gql_doc_id_chunk(
-        self,
-        user_name: str,
-        end_cursor: Optional[str],
-    ) -> Iterable[Media]:
+            self,
+            user_name: str,
+            end_cursor: Optional[str],
+        ) -> Iterable[Media]:
         variables = {
             "username": user_name,
             "after": end_cursor if end_cursor else None,
@@ -1103,10 +1103,18 @@ class UserMixin:
             doc_id=DOC_ID_USER_POSTS_BY_NAME,
             headers={"content-type": "application/x-www-form-urlencoded"},
         )
+
+        if not data:
+            raise UserNotFound(user_name=user_name)
+
         self.last_public_json = self.last_public_json.get("data", self.last_public_json)
 
         edges = json_value(
             data, "xdt_api__v1__feed__user_timeline_graphql_connection", "edges", default=[]
         )
+
+        if not edges:
+            raise PrivateAccount(user_name=user_name)
+
         for edge in edges:
             yield extract_media_gql(edge["node"])
