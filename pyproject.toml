@@ -89,7 +89,7 @@ test = [
     "markdown-include==0.8.1",
     "mkdocs-material==9.6.20",
     "mkdocs-minify-html-plugin>=0.3.1",
-    "mkdocstrings==0.30.0",
+    "mkdocstrings==0.30.1",
     "pytest-xdist==3.8.0",
     "pytest~=8.4.0",
 ]
