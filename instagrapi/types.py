@@ -373,7 +373,7 @@ class ClipsMetadata(TypesBaseModel):
     external_media_info: Optional[dict] = None
     is_fan_club_promo_video: bool = False
     is_shared_to_fb: bool = False
-    mashup_info: ClipsMashupInfo
+    mashup_info: Optional[ClipsMashupInfo] = None
     merchandising_pill_info: Optional[dict] = None
     music_canonical_id: str
     music_info: Optional[dict] = None
