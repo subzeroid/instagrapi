@@ -1,4 +1,4 @@
-FROM python:3.13.7-bookworm
+FROM python:3.14.0-bookworm
 
 ARG _USER="instagrapi"
 ARG _UID="1001"
