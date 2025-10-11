@@ -1,5 +1,6 @@
 import random
 import time
+import secrets
 from uuid import uuid4
 
 from instagrapi.exceptions import (
@@ -101,7 +102,7 @@ class SignUpMixin:
         return self.private_request(
             "users/check_email/",
             {
-                "android_device_id": self.device_id,
+                "android_device_id": self.android_device_id,
                 "login_nonce_map": "{}",
                 "login_nonces": "[]",
                 "email": email,
@@ -116,7 +117,7 @@ class SignUpMixin:
             "accounts/send_verify_email/",
             {
                 "phone_id": self.phone_id,
-                "device_id": self.device_id,
+                "device_id": self.android_device_id,
                 "email": email,
                 "waterfall_id": self.waterfall_id,
                 "auto_confirm_only": "false",
@@ -129,16 +130,17 @@ class SignUpMixin:
             "accounts/check_confirmation_code/",
             {
                 "code": code,
-                "device_id": self.device_id,
+                "device_id": self.android_device_id,
                 "email": email,
                 "waterfall_id": self.waterfall_id,
             },
         )
 
     def check_age_eligibility(self, year, month, day):
-        return self.private.post(
+        return self.private_request(
             "consent/check_age_eligibility/",
             data={"_csrftoken": self.token, "day": day, "year": year, "month": month},
+            with_signature=False
         ).json()
 
     def accounts_create(
@@ -154,11 +156,12 @@ class SignUpMixin:
         **kwargs,
     ) -> dict:
         # timestamp = datetime.now().strftime("%s")  # Unused variable
-        # nonce = f'{username}|{timestamp}|\xb9F"\x8c\xa2I\xaaz|\xf6xz\x86\x92\x91Y\xa5\xaa#f*o%\x7f'  # Unused variable
         data = {
             "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
-            "suggestedUsername": "sn_result",
+            "tos_version":"row",
+            "suggestedUsername": "",
+            "sn_result":"",
             "do_not_auto_login_if_credentials_match": "false",
             "phone_id": self.phone_id,
             "enc_password": self.password_encrypt(password),
@@ -166,10 +169,15 @@ class SignUpMixin:
             "first_name": str(full_name),
             "adid": self.adid,
             "guid": self.uuid,
-            "device_id": self.device_id,
+            "day":day,
+            "month":month,
+            "year":year,
+            "device_id": self.android_device_id,
             "_uuid": self.uuid,
             "email": email,
             "force_sign_up_code": signup_code,
+            "qs_stamp":"",
+            "sn_nonce":bytes(f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"),
             "waterfall_id": self.waterfall_id,
             "one_tap_opt_in": "true",
             **kwargs,
@@ -196,7 +204,7 @@ class SignUpMixin:
             f"https://i.instagram.com/api/v1{data['api_path']}",
             params={
                 "guid": self.uuid,
-                "device_id": self.device_id,
+                "device_id": self.android_device_id,
                 "challenge_context": data["challenge_context"],
             },
         )
