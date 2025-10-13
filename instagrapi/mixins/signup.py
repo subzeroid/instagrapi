@@ -140,7 +140,7 @@ class SignUpMixin:
         return self.private_request(
             "consent/check_age_eligibility/",
             data={"_csrftoken": self.token, "day": day, "year": year, "month": month},
-            with_signature=False
+            with_signature=False,
         ).json()
 
     def accounts_create(
@@ -159,9 +159,9 @@ class SignUpMixin:
         data = {
             "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
-            "tos_version":"row",
+            "tos_version": "row",
             "suggestedUsername": "",
-            "sn_result":"",
+            "sn_result": "",
             "do_not_auto_login_if_credentials_match": "false",
             "phone_id": self.phone_id,
             "enc_password": self.password_encrypt(password),
@@ -169,15 +169,17 @@ class SignUpMixin:
             "first_name": str(full_name),
             "adid": self.adid,
             "guid": self.uuid,
-            "day":day,
-            "month":month,
-            "year":year,
+            "day": day,
+            "month": month,
+            "year": year,
             "device_id": self.android_device_id,
             "_uuid": self.uuid,
             "email": email,
             "force_sign_up_code": signup_code,
-            "qs_stamp":"",
-            "sn_nonce":bytes(f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"),
+            "qs_stamp": "",
+            "sn_nonce": bytes(
+                f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"
+            ),
             "waterfall_id": self.waterfall_id,
             "one_tap_opt_in": "true",
             **kwargs,
@@ -201,7 +203,7 @@ class SignUpMixin:
 
     def challenge_api(self, data):
         resp = self.private.get(
-            f"https://i.instagram.com/api/v1{data['api_path']}",
+            "https://i.instagram.com/api/v1%s" % data["api_path"],
             params={
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
@@ -223,8 +225,7 @@ class SignUpMixin:
                 "Malformed captcha challenge data from Instagram (missing site_key or api_path)."
             )
 
-        challenge_post_url = f"https://i.instagram.com{api_path}"
-
+        challenge_post_url = "https://i.instagram.com%s" % api_path
         captcha_details_for_solver = {
             "site_key": site_key,
             "challenge_type": challenge_type,
@@ -260,7 +261,7 @@ class SignUpMixin:
     def challenge_submit_phone_number(self, data, phone_number):
         api_path = data.get("navigation", {}).get("forward")
         resp = self.private.post(
-            f"https://i.instagram.com{api_path}",
+            "https://i.instagram.com%s" % api_path,
             data={
                 "phone_number": phone_number,
                 "challenge_context": data["challenge_context"],
@@ -271,7 +272,7 @@ class SignUpMixin:
     def challenge_verify_sms_captcha(self, data, security_code):
         api_path = data.get("navigation", {}).get("forward")
         resp = self.private.post(
-            f"https://i.instagram.com{api_path}",
+            "https://i.instagram.com%s" % api_path,
             data={
                 "security_code": security_code,
                 "challenge_context": data["challenge_context"],
