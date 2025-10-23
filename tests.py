@@ -1,18 +1,17 @@
-import os
 import json
+import logging
+import os
 import os.path
 import random
-import logging
-import requests
 import unittest
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
-from instagrapi import Client
-from instagrapi.utils import gen_password
-from instagrapi.exceptions import DirectThreadNotFound
+import requests
 
+from instagrapi import Client
+from instagrapi.exceptions import DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -35,7 +34,7 @@ from instagrapi.types import (
     UserShort,
     Usertag,
 )
-from instagrapi.utils import generate_jazoest
+from instagrapi.utils import gen_password, generate_jazoest
 from instagrapi.zones import UTC
 
 logger = logging.getLogger("instagrapi.tests")
@@ -1129,8 +1128,9 @@ class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
 
     def test_direct_message_reactions_model(self):
         """Test that DirectMessage.reactions field uses MessageReactions model"""
-        from instagrapi.types import MessageReactions, MessageReaction
         from datetime import datetime
+
+        from instagrapi.types import MessageReaction, MessageReactions
 
         # Get some direct messages
         threads = self.cl.direct_threads(amount=5)
@@ -1163,7 +1163,7 @@ class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
 
     def test_direct_message_link_model(self):
         """Test that DirectMessage.link field uses MessageLink model"""
-        from instagrapi.types import MessageLink, LinkContext
+        from instagrapi.types import LinkContext, MessageLink
 
         # Get some direct messages
         threads = self.cl.direct_threads(amount=5)
@@ -1222,8 +1222,9 @@ class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
 
     def test_direct_thread_last_seen_at_model(self):
         """Test that DirectThread.last_seen_at field uses LastSeenInfo model"""
-        from instagrapi.types import LastSeenInfo
         from datetime import datetime
+
+        from instagrapi.types import LastSeenInfo
 
         # Get some direct threads
         threads = self.cl.direct_threads(amount=5)
