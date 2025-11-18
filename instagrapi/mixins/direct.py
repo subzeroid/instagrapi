@@ -73,7 +73,7 @@ class DirectMixin:
         box: str, optional
             Box to gather threads from (primary or general) (business accounts only)
         thread_message_limit: int, optional
-            Thread message limit, deafult is 10
+            Thread message limit, default is 10
 
         Returns
         -------
@@ -112,7 +112,7 @@ class DirectMixin:
         selected_filter: str, optional
             Filter to apply to threads (flagged or unread)
         thread_message_limit: int, optional
-            Thread message limit, deafult is 10
+            Thread message limit, default is 10
         box: str, optional
             Box to gather threads from (primary or general) (business accounts only)
         cursor: str, optional
@@ -690,7 +690,7 @@ class DirectMixin:
         query: str
             Text query, e.g. username
         mode: str, optional
-            Mode for searching, by deafult "universal"
+            Mode for searching, by default "universal"
 
         Returns
         -------
