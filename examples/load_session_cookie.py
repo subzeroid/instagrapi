@@ -1,11 +1,40 @@
 """
 
-Script to test loading a browser cookie for instagrapi
-and verify session
+Script to load/save browser cookies for instagrapi sessions
+with persistence between runs
+
+Usage:
+  python load_session_cookie.py               # Use default LibreWolf
+  python load_session_cookie.py chrome        # Use Chrome
+  python load_session_cookie.py firefox       # Use Firefox
+
+First run loads from browser and saves session.
+Subsequent runs use saved session, fallback to browser if expired.
+
+$ python load_session_cookie.py
+Instagram Cookie Authentication for instagrapi
+=======================================================
+Target browser: librewolf
+
+
+No valid saved session found.
+Loading fresh cookies from librewolf...
+Loading cookies from librewolf...
+Found X Instagram cookies in librewolf
+Testing login with librewolf browser cookies...
+Browser cookie login successful: @username
+Saving session for future use...
+Session saved to cookie_session.json
+
+Authentication successful!
+Session saved for future use.
 
 """
+import os
 import sys
 from instagrapi import Client
+
+COOKIE_SESSION_FILE = "cookie_session.json"
 
 def get_instagram_cookies_from_browser(browser_name):
     """Get Instagram cookies from specified browser"""
@@ -87,25 +116,104 @@ def test_browser_cookie_login(browser_name):
         print("Cookies may be expired or browser session invalid.")
         return False
 
+def test_saved_cookie_session():
+    """Test if saved cookie session still works"""
+    if not os.path.exists(COOKIE_SESSION_FILE):
+        return None  # No saved session
+
+    try:
+        print("Trying saved cookie session...")
+        cl = Client()
+
+        # Load saved session
+        session = cl.load_settings(COOKIE_SESSION_FILE)
+        cl.set_settings(session)
+
+        # Test by trying to get account info
+        user_info = cl.account_info()
+        print(f"Saved session works for @{user_info.username}")
+        return cl
+
+    except Exception as e:
+        print(f"Saved session expired: {e}")
+        # Remove expired session file
+        try:
+            os.remove(COOKIE_SESSION_FILE)
+            print("Removed expired session file")
+        except:
+            pass
+        return None
+
+def authenticate_with_browser_cookies(browser_name):
+    """Authenticate using browser cookies, save session if successful"""
+
+    # Get cookies from browser
+    instagram_cookies = get_instagram_cookies_from_browser(browser_name)
+    if not instagram_cookies:
+        return None
+
+    # Create instagrapi client and load cookies
+    cl = Client()
+
+    # Load cookies into instagrapi session
+    for cookie_name, cookie_value in instagram_cookies.items():
+        cl.private.cookies.set(cookie_name, cookie_value, domain='instagram.com')
+
+    print(f"Testing login with {browser_name} browser cookies...")
+
+    # Try to access user info to test login
+    try:
+        user_info = cl.account_info()
+        print(f"Browser cookie login successful: @{user_info.username}")
+
+        # Save successful session for next time
+        print("Saving session for future use...")
+        cl.dump_settings(COOKIE_SESSION_FILE)
+        print(f"Session saved to {COOKIE_SESSION_FILE}")
+
+        return cl
+
+    except Exception as login_error:
+        print(f"Browser cookie login failed: {login_error}")
+        print("Cookies may be expired or browser session invalid.")
+        return None
+
 def main():
-    """Main test function"""
+    """Main authentication function"""
     # Default to LibreWolf if no arguments
     browser_name = sys.argv[1] if len(sys.argv) > 1 else "librewolf"
 
-    print("Browser Cookie Login Test for instagrapi")
-    print("=" * 50)
-    print(f"Testing browser: {browser_name}")
+    print("Instagram Cookie Authentication for instagrapi")
+    print("=" * 55)
+    print(f"Target browser: {browser_name}")
+    print()
 
-    success = test_browser_cookie_login(browser_name)
+    # Step 1: Try saved cookie session first
+    client = test_saved_cookie_session()
 
-    if success:
-        print(f"\n{browser_name} cookie authentication works!")
-        print("You can integrate this into your scripts.\n")
-        return 0
+    if client:
+        print("\nAuthentication successful using saved session!")
+        print("No need to load fresh cookies.\n")
+        return client
+
+    print("\nNo valid saved session found.")
+    print(f"Loading fresh cookies from {browser_name}...")
+
+    # Step 2: Try browser cookies if saved session failed
+    client = authenticate_with_browser_cookies(browser_name)
+
+    if client:
+        print("\nAuthentication successful!")
+        print("Session saved for future use.\n")
+        return client
     else:
-        print(f"\n{browser_name} cookie authentication failed.")
-        print(f"Check {browser_name} login status or try a different browser.\n")
-        return 1
+        print("\nAuthentication failed.")
+        print(f"Please ensure you're logged into Instagram in {browser_name},")
+        print("cookies are valid, and browser_cookie3 is installed.\n")
+        return None
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # Just run the authentication (don't exit on failure for integration)
+    result = main()
+    if result is None:
+        sys.exit(1)
