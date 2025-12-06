@@ -12,7 +12,7 @@ The instagrapi more suits for testing or research than a working business!
 
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets 🚀
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP, CacheAPI 🚀
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master&1)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
