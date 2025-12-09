@@ -1,3 +1,11 @@
+  > ### 🐰 Try Bunny CDN
+  > Lightning-fast global CDN with storage from **$0.01/GB**
+  >
+  > 🥕 No egress fees  🥕 14-day free trial  🥕 Crypto payments
+  >
+  > [**Start Free Trial →**](https://bunny.net?ref=73f3vd6eq3)
+
+
 If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) project.
 However, you won't need to spend weeks or even months setting it up.
 The best service available today is [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
