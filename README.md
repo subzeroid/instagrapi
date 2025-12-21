@@ -18,16 +18,14 @@ The instagrapi more suits for testing or research than a working business!
 
 ### We recommend using our services:
 
-* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP, CacheAPI 🚀
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master&1)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
-
-> To run instagrapi you may need a [cheap and powerful server](https://powervps.net/?from=96837), I recommend using my promo you will support the author of this library!
 
 Features:
 
