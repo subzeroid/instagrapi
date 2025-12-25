@@ -18,6 +18,7 @@ The instagrapi more suits for testing or research than a working business!
 
 ### We recommend using our services:
 
+* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for Rotating Proxies 🔒
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
 * [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
@@ -34,7 +35,7 @@ Features:
 * Getting public data of post, story, album, Reels, IGTV data and the ability to download content
 * Getting public data of hashtag and location data, as well as a list of posts for them
 * Getting public data of all comments on a post and a list of users who liked it
-* Management of proxy, mobile devices and challenge resolver
+* Management of [proxy](https://cloqly.com/register?ref=58dbf70f), mobile devices and challenge resolver
 * Login by username and password, sessionid and support 2FA
 * Managing messages and threads for Direct and attach files
 * Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
