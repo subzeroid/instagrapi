@@ -22,6 +22,8 @@ The instagrapi more suits for testing or research than a working business!
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
 * [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
+* [InstaSurfBot](https://t.me/InstaSurfBot) telegram bot for downloading medias from Instagram ❤️
+* [OSINTagramBot](https://t.me/OSINTagramBot) telegram bot for OSINT on Instagram 🕵️‍♂️
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master&1)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
