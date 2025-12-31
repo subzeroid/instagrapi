@@ -341,7 +341,7 @@ class ClipsOriginalSoundInfo(TypesBaseModel):
     overlap_duration_in_ms: Optional[int] = None
     audio_asset_start_time_in_ms: Optional[int] = None
     ig_artist: ClipsIgArtist
-    audio_filter_infos: List[dict] = []
+    audio_filter_infos: Optional[List[dict]] = None
     audio_parts: List[dict] = []
     audio_parts_by_filter: List[dict] = []
     consumption_info: ClipsConsumptionInfo
