@@ -584,6 +584,69 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
+    def direct_send_cutout_sticker(
+        self,
+        sticker_pk: str,
+        user_ids: List[int] = [],
+        thread_ids: List[int] = [],
+    ) -> DirectMessage:
+        """
+        Send a cutout sticker to list of users or threads
+
+        Parameters
+        ----------
+        sticker_pk: str
+            Unique ID of the Sticker (Cutout) e.g. "123456789"
+        user_ids: List[int]
+            List of unique identifier of Users id
+        thread_ids: List[int]
+            List of unique identifier of Direct Message thread id
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (
+            user_ids and thread_ids
+        ), "Specify user_ids or thread_ids, but not both"
+
+        token = self.generate_mutation_token()
+        
+        # 1. ID must be prefixed with "cutout_photo_"
+        # 2. Endpoint is generic_share
+        # 3. embedded_ent_type is 101
+        
+        sticker_id_full = f"cutout_photo_{sticker_pk}"
+        json_payload = {
+            "sticker_id": sticker_id_full,
+            "embedded_ent_type": 101
+        }
+
+        data = {
+            "action": "send_item",
+            "embedded_ent_type": "101",
+            "json_params": dumps(json_payload),
+            "client_context": token,
+            "mutation_token": token,
+            "device_id": self.android_device_id,
+            "_uuid": self.uuid,
+            "offline_threading_id": token,
+        }
+
+        if user_ids:
+            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
+
+        result = self.private_request(
+            "direct_v2/threads/broadcast/generic_share/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
+
     def direct_users_presence(self, user_ids: List[int]) -> Dict:
         """
         Get a presence of User
