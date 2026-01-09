@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🪨 Find Stone Game - بازی پیدا کردن سنگ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* Header Styles */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #f39c12, #e74c3c, #9b59b6, #3498db);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
+            margin-bottom: 10px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .subtitle {
+            color: #a8dadc;
+            font-size: 1.1rem;
+        }
+
+        /* Game Stats */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            min-width: 120px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a8dadc;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .stat-value.score { color: #f1c40f; }
+        .stat-value.guesses { color: #e74c3c; }
+        .stat-value.hints { color: #3498db; }
+
+        /* Game Board */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        #gameCanvas {
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        inset 0 0 100px rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        #gameCanvas:hover {
+            transform: scale(1.02);
+        }
+
+        /* Message Display */
+        .message-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 30px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.2rem;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .message-box.hot {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+        }
+
+        .message-box.warm {
+            background: rgba(241, 196, 15, 0.3);
+            border-color: #f1c40f;
+        }
+
+        .message-box.cold {
+            background: rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+        }
+
+        .message-box.win {
+            background: rgba(46, 204, 113, 0.3);
+            border-color: #2ecc71;
+            animation: pulse 0.5s infinite;
+        }
+
+        .message-box.lose {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #f39c12, #e74c3c);
+            color: white;
+            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(243, 156, 18, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #3498db, #9b59b6);
+            color: white;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(52, 152, 219, 0.6);
+        }
+
+        .btn-hint {
+            background: linear-gradient(45deg, #2ecc71, #1abc9c);
+            color: white;
+            box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-hint:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(46, 204, 113, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Difficulty Selection */
+        .difficulty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 40px;
+        }
+
+        .difficulty-title {
+            font-size: 1.5rem;
+            color: #a8dadc;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .difficulty-btn {
+            padding: 20px 30px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-5px);
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.2);
+        }
+
+        .difficulty-btn .emoji {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-btn .name {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .difficulty-btn .info {
+            font-size: 0.9rem;
+            color: #a8dadc;
+            margin-top: 5px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+        }
+
+        .modal-title.win {
+            color: #2ecc71;
+        }
+
+        .modal-title.lose {
+            color: #e74c3c;
+        }
+
+        .modal-text {
+            color: #a8dadc;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .modal-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .modal-stat {
+            text-align: center;
+        }
+
+        .modal-stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f1c40f;
+        }
+
+        .modal-stat-label {
+            font-size: 0.9rem;
+            color: #a8dadc;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .instructions h3 {
+            color: #f39c12;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .instructions ul {
+            list-style: none;
+            text-align: right;
+        }
+
+        .instructions li {
+            padding: 8px 0;
+            color: #a8dadc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions li span {
+            font-size: 1.5rem;
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(243, 156, 18, 0.5);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <header class="header">
+            <h1 class="title">🪨 Find Stone 🪨</h1>
+            <p class="subtitle">سنگ مخفی را پیدا کن!</p>
+        </header>
+
+        <div id="difficultyScreen" class="difficulty-container">
+            <h2 class="difficulty-title">سطح دشواری را انتخاب کنید</h2>
+            <div class="difficulty-options">
+                <button class="difficulty-btn" onclick="startGame(5, 10, 'آسان')">
+                    <span class="emoji">🌱</span>
+                    <span class="name">آسان</span>
+                    <span class="info">5×5 | 10 حدس</span>
+                </button>
+                <button class="difficulty-btn" onclick="startGame(7, 12, 'متوسط')">
+                    <span class="emoji">🌿</span>
+                    <span class="name">متوسط</span>
+                    <span class="info">7×7 | 12 حدس</span>
+                </button>
+                <button class="difficulty-btn" onclick="startGame(9, 15, 'سخت')">
+                    <span class="emoji">🌳</span>
+                    <span class="name">سخت</span>
+                    <span class="info">9×9 | 15 حدس</span>
+                </button>
+                <button class="difficulty-btn" onclick="startGame(11, 12, 'کابوس')">
+                    <span class="emoji">💀</span>
+                    <span class="name">کابوس</span>
+                    <span class="info">11×11 | 12 حدس</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="gameScreen" style="display: none;">
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">⭐ امتیاز</div>
+                    <div class="stat-value score" id="scoreDisplay">1000</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">❤️ حدس‌ها</div>
+                    <div class="stat-value guesses" id="guessesDisplay">10</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">💡 راهنمایی</div>
+                    <div class="stat-value hints" id="hintsDisplay">3</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">🎯 سطح</div>
+                    <div class="stat-value" id="levelDisplay">آسان</div>
+                </div>
+            </div>
+
+            <div class="game-container">
+                <canvas id="gameCanvas"></canvas>
+            </div>
+
+            <div class="message-box" id="messageBox">
+                روی خانه‌ها کلیک کنید تا سنگ را پیدا کنید! 🔍
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-hint" id="hintBtn" onclick="useHint()">
+                    💡 راهنمایی
+                </button>
+                <button class="btn btn-secondary" onclick="resetGame()">
+                    🔄 شروع مجدد
+                </button>
+            </div>
+
+            <div class="instructions">
+                <h3>📜 راهنما</h3>
+                <ul>
+                    <li><span>🔥</span> داغ = خیلی نزدیک (1-2 خانه)</li>
+                    <li><span>🌡️</span> گرم = نزدیک (3-4 خانه)</li>
+                    <li><span>❄️</span> سرد = دور (5+ خانه)</li>
+                    <li><span>🪨</span> سنگ پیدا شد!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Win/Lose Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-icon" id="modalIcon">🎉</div>
+            <h2 class="modal-title" id="modalTitle">تبریک!</h2>
+            <p class="modal-text" id="modalText">سنگ را پیدا کردی!</p>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="modalScore">1000</div>
+                    <div class="modal-stat-label">امتیاز</div>
+                </div>
+                <div class="modal-stat">
+                    <div class="modal-stat-value" id="modalGuesses">5</div>
+                    <div class="modal-stat-label">حدس‌ها</div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="resetGame()">🔄 بازی مجدد</button>
+        </div>
+    </div>
+
+    <script>
+        // Game variables
+        let canvas, ctx;
+        let gridSize = 5;
+        let maxGuesses = 10;
+        let cellSize = 60;
+        let padding = 5;
+        let stoneRow, stoneCol;
+        let guessesLeft, score, hintsLeft;
+        let revealed = [];
+        let gameOver = false;
+        let difficulty = '';
+
+        // Colors
+        const colors = {
+            cell: '#2c3e50',
+            cellHover: '#34495e',
+            border: '#3498db',
+            hot: '#e74c3c',
+            warm: '#f39c12',
+            cold: '#3498db',
+            stone: '#2ecc71',
+            text: '#fff'
+        };
+
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.width = (Math.random() * 10 + 5) + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.background = `hsla(${Math.random() * 60 + 20}, 80%, 60%, 0.5)`;
+                container.appendChild(particle);
+            }
+        }
+
+        // Start game with selected difficulty
+        function startGame(size, guesses, level) {
+            gridSize = size;
+            maxGuesses = guesses;
+            difficulty = level;
+
+            document.getElementById('difficultyScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+
+            initGame();
+        }
+
+        // Initialize game
+        function initGame() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+
+            // Calculate cell size based on grid
+            cellSize = Math.min(60, Math.floor(500 / gridSize));
+            canvas.width = gridSize * (cellSize + padding) + padding;
+            canvas.height = gridSize * (cellSize + padding) + padding;
+
+            // Reset game state
+            stoneRow = Math.floor(Math.random() * gridSize);
+            stoneCol = Math.floor(Math.random() * gridSize);
+            guessesLeft = maxGuesses;
+            score = 1000;
+            hintsLeft = 3;
+            gameOver = false;
+            revealed = Array(gridSize).fill().map(() => Array(gridSize).fill(null));
+
+            // Update display
+            updateStats();
+            document.getElementById('levelDisplay').textContent = difficulty;
+            setMessage('روی خانه‌ها کلیک کنید تا سنگ را پیدا کنید! 🔍', '');
+            document.getElementById('hintBtn').disabled = false;
+
+            // Draw initial grid
+            drawGrid();
+
+            // Add event listener
+            canvas.onclick = handleClick;
+        }
+
+        // Draw the game grid
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const x = col * (cellSize + padding) + padding;
+                    const y = row * (cellSize + padding) + padding;
+
+                    // Draw cell
+                    ctx.beginPath();
+                    ctx.roundRect(x, y, cellSize, cellSize, 8);
+
+                    if (revealed[row][col] === null) {
+                        // Unrevealed cell
+                        const gradient = ctx.createLinearGradient(x, y, x + cellSize, y + cellSize);
+                        gradient.addColorStop(0, '#2c3e50');
+                        gradient.addColorStop(1, '#1a252f');
+                        ctx.fillStyle = gradient;
+                    } else if (revealed[row][col] === 'stone') {
+                        // Stone found
+                        const gradient = ctx.createRadialGradient(
+                            x + cellSize/2, y + cellSize/2, 0,
+                            x + cellSize/2, y + cellSize/2, cellSize/2
+                        );
+                        gradient.addColorStop(0, '#2ecc71');
+                        gradient.addColorStop(1, '#27ae60');
+                        ctx.fillStyle = gradient;
+                    } else if (revealed[row][col] === 'hot') {
+                        ctx.fillStyle = '#c0392b';
+                    } else if (revealed[row][col] === 'warm') {
+                        ctx.fillStyle = '#d68910';
+                    } else if (revealed[row][col] === 'cold') {
+                        ctx.fillStyle = '#2980b9';
+                    }
+
+                    ctx.fill();
+
+                    // Draw border
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Draw emoji for revealed cells
+                    if (revealed[row][col]) {
+                        ctx.font = `${cellSize * 0.5}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        let emoji = '';
+                        if (revealed[row][col] === 'stone') emoji = '🪨';
+                        else if (revealed[row][col] === 'hot') emoji = '🔥';
+                        else if (revealed[row][col] === 'warm') emoji = '🌡️';
+                        else if (revealed[row][col] === 'cold') emoji = '❄️';
+
+                        ctx.fillText(emoji, x + cellSize/2, y + cellSize/2);
+                    } else {
+                        // Draw question mark for unrevealed
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.font = `bold ${cellSize * 0.4}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('?', x + cellSize/2, y + cellSize/2);
+                    }
+                }
+            }
+        }
+
+        // Handle click on canvas
+        function handleClick(event) {
+            if (gameOver) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            const col = Math.floor(x / (cellSize + padding));
+            const row = Math.floor(y / (cellSize + padding));
+
+            if (row < 0 || row >= gridSize || col < 0 || col >= gridSize) return;
+            if (revealed[row][col] !== null) {
+                setMessage('این خانه قبلاً بررسی شده! ⚠️', '');
+                return;
+            }
+
+            makeGuess(row, col);
+        }
+
+        // Make a guess
+        function makeGuess(row, col) {
+            guessesLeft--;
+            score -= 50;
+
+            if (row === stoneRow && col === stoneCol) {
+                // Found the stone!
+                revealed[row][col] = 'stone';
+                score += 500 + (guessesLeft * 50);
+                gameOver = true;
+
+                drawGrid();
+                updateStats();
+
+                setTimeout(() => showModal(true), 500);
+                return;
+            }
+
+            // Calculate distance
+            const distance = Math.abs(row - stoneRow) + Math.abs(col - stoneCol);
+
+            let temperature, message;
+            if (distance <= 2) {
+                temperature = 'hot';
+                message = '🔥 داغ داغ! خیلی نزدیکی!';
+            } else if (distance <= 4) {
+                temperature = 'warm';
+                message = '🌡️ گرم! داری نزدیک می‌شی!';
+            } else {
+                temperature = 'cold';
+                message = '❄️ سرد! هنوز خیلی دوری!';
+            }
+
+            revealed[row][col] = temperature;
+            setMessage(message + ` (فاصله: ${distance})`, temperature);
+
+            drawGrid();
+            updateStats();
+
+            // Check for game over
+            if (guessesLeft <= 0) {
+                gameOver = true;
+                revealed[stoneRow][stoneCol] = 'stone';
+                drawGrid();
+                setTimeout(() => showModal(false), 500);
+            }
+        }
+
+        // Use hint
+        function useHint() {
+            if (hintsLeft <= 0 || gameOver) return;
+
+            hintsLeft--;
+            score -= 100;
+
+            const hintType = Math.floor(Math.random() * 3);
+            let message = '';
+
+            if (hintType === 0) {
+                message = `💡 سنگ در ردیف ${stoneRow + 1} است!`;
+            } else if (hintType === 1) {
+                message = `💡 سنگ در ستون ${stoneCol + 1} است!`;
+            } else {
+                const areaRow = stoneRow < gridSize / 2 ? 'بالا' : 'پایین';
+                const areaCol = stoneCol < gridSize / 2 ? 'راست' : 'چپ';
+                message = `💡 سنگ در قسمت ${areaRow}-${areaCol} است!`;
+            }
+
+            setMessage(message, '');
+            updateStats();
+
+            if (hintsLeft <= 0) {
+                document.getElementById('hintBtn').disabled = true;
+            }
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('scoreDisplay').textContent = score;
+            document.getElementById('guessesDisplay').textContent = guessesLeft;
+            document.getElementById('hintsDisplay').textContent = hintsLeft;
+        }
+
+        // Set message
+        function setMessage(text, type) {
+            const box = document.getElementById('messageBox');
+            box.textContent = text;
+            box.className = 'message-box ' + type;
+        }
+
+        // Show win/lose modal
+        function showModal(won) {
+            const overlay = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            const title = document.getElementById('modalTitle');
+            const text = document.getElementById('modalText');
+            const modalScore = document.getElementById('modalScore');
+            const modalGuesses = document.getElementById('modalGuesses');
+
+            if (won) {
+                icon.textContent = '🎉';
+                title.textContent = 'تبریک!';
+                title.className = 'modal-title win';
+                text.textContent = 'سنگ را پیدا کردی! عالی بود! 🪨✨';
+            } else {
+                icon.textContent = '😔';
+                title.textContent = 'متأسفانه!';
+                title.className = 'modal-title lose';
+                text.textContent = `حدس‌هایت تمام شد! سنگ در ردیف ${stoneRow + 1} و ستون ${stoneCol + 1} بود.`;
+            }
+
+            modalScore.textContent = Math.max(0, score);
+            modalGuesses.textContent = maxGuesses - guessesLeft;
+
+            overlay.classList.add('active');
+        }
+
+        // Reset game
+        function resetGame() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('difficultyScreen').style.display = 'flex';
+            document.getElementById('gameScreen').style.display = 'none';
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            createParticles();
+        };
+    </script>
+</body>
+</html>
