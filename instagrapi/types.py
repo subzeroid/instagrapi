@@ -173,9 +173,10 @@ class SharedMediaImageCandidate(TypesBaseModel):
 
     estimated_scans_sizes: List[int] = []
     height: int
-    scans_profile: str
+    scans_profile: Optional[str] = None
     url: str
     width: int
+    is_spatial_image: Optional[bool] = None
 
 
 class ScrubberSpritesheetInfo(TypesBaseModel):
@@ -349,6 +350,37 @@ class ClipsOriginalSoundInfo(TypesBaseModel):
     fb_downstream_use_xpost_metadata: ClipsFbDownstreamUseXpostMetadata
 
 
+class ClipsReusableTextColor(TypesBaseModel):
+    """Color information for reusable text in clips"""
+
+    count: int
+    hex_rgba_color: str
+
+
+class ClipsReusableTextInfo(TypesBaseModel):
+    """Reusable text information for clips"""
+
+    alignment: str
+    end_time_ms: float
+    font_size: float
+    height: float
+    id: str
+    is_animated: bool
+    offset_x: float
+    offset_y: float
+    rotation_degree: float
+    scale: float
+    start_time_ms: float
+    text: str
+    text_emphasis_mode: str
+    text_format_type: str
+    width: float
+    z_index: int
+    effects: str = ""
+    animation: str = ""
+    colors: List[ClipsReusableTextColor] = []
+
+
 class ClipsMetadata(TypesBaseModel):
     """Complete clips metadata structure for Media objects"""
 
@@ -382,7 +414,7 @@ class ClipsMetadata(TypesBaseModel):
     originality_info: Optional[dict] = None
     reels_on_the_rise_info: Optional[dict] = None
     reusable_text_attribute_string: Optional[str] = None
-    reusable_text_info: Optional[dict] = None
+    reusable_text_info: Optional[List[ClipsReusableTextInfo]] = None
     shopping_info: Optional[dict] = None
     show_achievements: bool = False
     template_info: Optional[dict] = None
