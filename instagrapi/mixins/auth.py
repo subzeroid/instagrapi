@@ -82,7 +82,7 @@ class PreLoginFlowMixin:
         data = {
             "android_device_id": self.android_device_id,
             "client_contact_points": '[{"type":"omnistring","value":"%s","source":"last_login_attempt"}]'
-            % self.username,
+                                     % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
             "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
@@ -188,7 +188,7 @@ class PostLoginFlowMixin:
         return all(check_flow)
 
     def get_timeline_feed(
-        self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
+            self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
     ) -> Dict:
         """
         Get your timeline feed
@@ -246,7 +246,7 @@ class PostLoginFlowMixin:
         )
 
     def get_reels_tray_feed(
-        self, reason: REELS_TRAY_REASON = "pull_to_refresh"
+            self, reason: REELS_TRAY_REASON = "pull_to_refresh"
     ) -> Dict:
         """
         Get your reels tray feed
@@ -305,8 +305,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
         self.user_agent = None
         self.settings = None
+        self.override_app_version = False
 
     def init(self) -> bool:
         """
@@ -327,10 +329,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.settings.get("timezone_offset", self.timezone_offset)
         )
         self.set_device(self.settings.get("device_settings"))
-        # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
-        self.bloks_versioning_id = (
-            "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
-        )  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
         self.set_locale(self.settings.get("locale", self.locale))
@@ -377,11 +375,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def login(
-        self,
-        username: Union[str, None] = None,
-        password: Union[str, None] = None,
-        relogin: bool = False,
-        verification_code: str = "",
+            self,
+            username: Union[str, None] = None,
+            password: Union[str, None] = None,
+            relogin: bool = False,
+            verification_code: str = "",
     ) -> bool:
         """
         Login
@@ -603,7 +601,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.init()
         return True
 
-    def load_settings(self, path: Union[str, Path]) -> Dict:
+    def load_settings(self, path: Union[str, Path], override_app_version: bool = False) -> Dict:
         """
         Load session settings
 
@@ -611,12 +609,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         ----------
         path: Path
             Path to storage file
+        override_app_version: bool, optional
+            Mismatched app_version/version_code/bloks_versioning_id may
+            increase risk. If True, override with a known version from
+            APP_SETTINGS (in memory). Call dump_settings() to persist.
+
 
         Returns
         -------
         Dict
             Current session settings as a Dict
         """
+        self.override_app_version = override_app_version
         with open(path, "r") as fp:
             self.set_settings(json.load(fp))
             return self.settings
@@ -652,22 +656,77 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        self.device_settings = device or {
-            "app_version": "269.0.0.18.75",
-            "android_version": 26,
-            "android_release": "8.0.0",
-            "dpi": "480dpi",
-            "resolution": "1080x1920",
-            "manufacturer": "OnePlus",
-            "device": "devitron",
-            "model": "6T Dev",
-            "cpu": "qcom",
-            "version_code": "314665256",
-        }
-        self.settings["device_settings"] = self.device_settings
+        device = device or {}
+        self.device_settings = dict(config.DEVICE_SETTINGS)
+        self.device_settings.update(device)
+        seed = None
+        if self.settings:
+            uuids = self.settings.get("uuids") or {}
+            seed = uuids.get("uuid")
+        self.set_app(seed=seed)
         if reset:
             self.set_uuids({})
-            # self.settings = self.get_settings()
+        return True
+
+    def set_app(self, app: Union[str, Dict] = None, seed: str = None) -> bool:
+        """
+        Helper to set app version settings
+
+        Parameters
+        ----------
+        app: Union[str, Dict], optional
+            App version string or settings dict
+        seed: str, optional
+            Seed used for stable app selection
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        app_keys = ("app_version", "version_code", "bloks_versioning_id")
+        if not getattr(self, "device_settings", None):
+            self.device_settings = dict(config.DEVICE_SETTINGS)
+        if not config.APP_SETTINGS:
+            raise ValueError("APP_SETTINGS is empty")
+        override_app_version = bool(getattr(self, "override_app_version", False))
+
+        def apply_settings(app_settings: Dict) -> None:
+            for key in app_keys:
+                val = app_settings.get(key)
+                if val:
+                    self.device_settings[key] = val
+
+        def pick_by_seed() -> Dict:
+            app_values = list(config.APP_SETTINGS.values())
+            if seed:
+                digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
+                idx = int(digest, 16) % len(app_values)
+                return app_values[idx]
+            return random.choice(app_values)
+
+        if app:
+            if isinstance(app, str):
+                matched = config.APP_SETTINGS.get(app)
+                if not matched:
+                    raise ValueError(f"Unknown app_version: {app}")
+                apply_settings(matched)
+            else:
+                apply_settings(dict(app))
+        else:
+            app_version = self.device_settings.get("app_version")
+            matched = config.APP_SETTINGS.get(app_version) if app_version else None
+            if matched:
+                apply_settings(matched)
+            else:
+                if override_app_version or not app_version:
+                    apply_settings(pick_by_seed())
+
+        if override_app_version:
+            self.set_user_agent()
+        self.bloks_versioning_id = self.device_settings.get("bloks_versioning_id")
+        if self.settings is not None:
+            self.settings["device_settings"] = self.device_settings
         return True
 
     def set_user_agent(self, user_agent: str = "", reset: bool = False) -> bool:
