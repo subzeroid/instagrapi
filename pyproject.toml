@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi"
-version = "2.2.1"
+version = "3.0.0"
 authors = [
     {name = "Mark Subzeroid", email = "143403577+subzeroid@users.noreply.github.com"}
 ]
@@ -68,7 +68,7 @@ keywords = [
     "instagram-note",
 ]
 dependencies = [
-    "requests==2.32.5",
+    "httpcloak>=1.0.0",
     "PySocks==1.7.1",
     "pydantic==2.12.4",
     "moviepy==1.0.3",
@@ -80,6 +80,9 @@ Homepage = "https://github.com/subzeroid/instagrapi"
 Repository = "https://github.com/subzeroid/instagrapi"
 
 [project.optional-dependencies]
+legacy = [
+    "requests>=2.25.0",
+]
 test = [
     "flake8==7.3.0",
     "Pillow==11.3.0",

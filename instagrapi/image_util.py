@@ -112,7 +112,7 @@ def prepare_image(
     max_size=(1080, 1350),
     aspect_ratios=(4.0 / 5.0, 90.0 / 47.0),
     save_path=None,
-    **kwargs
+    **kwargs,
 ):
     """
     Prepares an image file for posting.
@@ -128,7 +128,11 @@ def prepare_image(
     """
     min_size = kwargs.pop("min_size", (320, 167))
     if is_remote(img):
-        res = requests.get(img, timeout=5)
+        # Use httpcloak for external downloads
+        import httpcloak
+
+        session = httpcloak.Session(preset="chrome-143", tls_only=True)
+        res = session.get(img, timeout=5)
         im = Image.open(io.BytesIO(res.content))
     else:
         im = Image.open(img)
@@ -164,7 +168,7 @@ def prepare_video(
     max_duration=60.0,
     save_path=None,
     skip_reencoding=False,
-    **kwargs
+    **kwargs,
 ):
     """
     Prepares a video file for posting.
@@ -209,8 +213,11 @@ def prepare_video(
     )
 
     if is_remote(vid):
-        # Download remote file
-        res = requests.get(vid, timeout=5)
+        # Download remote file using httpcloak
+        import httpcloak
+
+        session = httpcloak.Session(preset="chrome-143", tls_only=True)
+        res = session.get(vid, timeout=5)
         temp_video_file.write(res.content)
         video_src_filename = temp_video_file.name
     else:
