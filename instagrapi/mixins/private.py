@@ -4,9 +4,7 @@ import random
 import time
 from json.decoder import JSONDecodeError
 
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+import httpcloak
 
 from instagrapi import config
 from instagrapi.exceptions import (
@@ -69,6 +67,33 @@ def manual_change_password(self, username: str):
     return pwd
 
 
+def get_header_value(headers, key, default=None):
+    """
+    Helper to get header value from HTTPCloak response headers.
+    HTTPCloak returns header values as lists, but we need strings.
+
+    Parameters
+    ----------
+    headers: dict
+        Response headers from HTTPCloak
+    key: str
+        Header key to look up (case-insensitive)
+    default: optional
+        Default value if header not found
+
+    Returns
+    -------
+    str or None
+        The header value as a string, or default if not found
+    """
+    value = headers.get(key, headers.get(key.lower(), default))
+    if value is None:
+        return default
+    if isinstance(value, list):
+        return value[0] if value else default
+    return value
+
+
 class PrivateRequestMixin:
     """
     Helpers for private request
@@ -85,27 +110,24 @@ class PrivateRequestMixin:
     last_json = {}
 
     def __init__(self, *args, **kwargs):
-        # setup request session with retries
-        session = requests.Session()
-        try:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["GET", "POST"],
-                backoff_factor=2,
-            )
-        except TypeError:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["GET", "POST"],
-                backoff_factor=2,
-            )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("https://", adapter)
-        session.mount("http://", adapter)
-        self.private = session
-        self.private.verify = False  # fix SSLError/HTTPSConnectionPool
+        # Get preset from kwargs
+        # Use ios-chrome-143 as default - Instagram blocks android-chrome TLS fingerprints
+        # iOS presets (ios-chrome-143, ios-safari-17, safari-18) work with Instagram's API
+        preset = kwargs.pop("httpcloak_preset", "ios-chrome-143")
+        http_version = kwargs.pop("http_version", "auto")
+
+        # setup httpcloak session with browser fingerprinting
+        # tls_only=True allows us to set custom User-Agent while keeping TLS fingerprint
+        self.private = httpcloak.Session(
+            preset=preset,
+            timeout=30,
+            http_version=http_version,
+            tls_only=True,
+        )
+
+        # Store preset for later reference
+        self._httpcloak_preset_private = preset
+
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
@@ -326,35 +348,48 @@ class PrivateRequestMixin:
 
             api_url = f"https://{domain or config.API_DOMAIN}/api{endpoint}"
             self.logger.info(api_url)
+
+            # Prepare headers for request (filter out None values for HTTPCloak)
+            headers_to_send = {
+                k: v for k, v in self.base_headers.items() if v is not None
+            }
+            if headers:
+                headers_to_send.update(
+                    {k: v for k, v in headers.items() if v is not None}
+                )
+
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
-                self.private.headers[
-                    "Content-Type"
-                ] = "application/x-www-form-urlencoded; charset=UTF-8"
+                headers_to_send["Content-Type"] = (
+                    "application/x-www-form-urlencoded; charset=UTF-8"
+                )
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
                 response = self.private.post(
-                    api_url, data=data, params=params, proxies=self.private.proxies
+                    api_url, data=data, params=params, headers=headers_to_send
                 )
+                request_method = "POST"
             else:  # GET
-                self.private.headers.pop("Content-Type", None)
+                headers_to_send.pop("Content-Type", None)
                 response = self.private.get(
-                    api_url, params=params, proxies=self.private.proxies
+                    api_url, params=params, headers=headers_to_send
                 )
+                request_method = "GET"
             self.logger.debug(
                 "private_request %s: %s (%s)",
                 response.status_code,
                 response.url,
                 response.text,
             )
-            mid = response.headers.get("ig-set-x-mid")
+            mid = get_header_value(response.headers, "ig-set-x-mid")
             if mid:
                 self.mid = mid
-            self.request_log(response)
+            # httpcloak: pass request method to request_log
+            self.request_log(response, method=request_method)
             self.last_response = response
             response.raise_for_status()
             # last_json - for Sentry context in traceback
@@ -372,21 +407,24 @@ class PrivateRequestMixin:
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),
                 response=response,
             )
-        except requests.HTTPError as e:
-            try:
-                self.last_json = last_json = response.json()
-            except JSONDecodeError:
-                pass
+        except Exception as e:
+            # httpcloak: Handle HTTPCloakError which doesn't have response attribute
+            # The response is already available in the outer scope
+            if hasattr(e, "__class__") and "HTTPError" in e.__class__.__name__:
+                try:
+                    self.last_json = last_json = response.json()
+                except JSONDecodeError:
+                    pass
             message = last_json.get("message", "")
             if "Please wait a few minutes" in message:
-                raise PleaseWaitFewMinutes(e, response=e.response, **last_json)
-            if e.response.status_code == 403:
+                raise PleaseWaitFewMinutes(e, response=response, **last_json)
+            if response.status_code == 403:
                 if message == "login_required":
-                    raise LoginRequired(response=e.response, **last_json)
-                if len(e.response.text) < 512:
-                    last_json["message"] = e.response.text
-                raise ClientForbiddenError(e, response=e.response, **last_json)
-            elif e.response.status_code == 400:
+                    raise LoginRequired(response=response, **last_json)
+                if len(response.text) < 512:
+                    last_json["message"] = response.text
+                raise ClientForbiddenError(e, response=response, **last_json)
+            elif response.status_code == 400:
                 error_type = last_json.get("error_type")
                 if last_json.get("two_factor_info"):
                     if not last_json.get("message"):
@@ -427,30 +465,30 @@ class PrivateRequestMixin:
                         last_json["message"] = "Two-factor authentication required"
                     raise TwoFactorRequired(**last_json)
                 elif "VideoTooLongException" in message:
-                    raise VideoTooLongException(e, response=e.response, **last_json)
+                    raise VideoTooLongException(e, response=response, **last_json)
                 elif "Not authorized to view user" in message:
-                    raise PrivateAccount(e, response=e.response, **last_json)
+                    raise PrivateAccount(e, response=response, **last_json)
                 elif "Invalid target user" in message:
-                    raise InvalidTargetUser(e, response=e.response, **last_json)
+                    raise InvalidTargetUser(e, response=response, **last_json)
                 elif "Invalid media_id" in message:
-                    raise InvalidMediaId(e, response=e.response, **last_json)
+                    raise InvalidMediaId(e, response=response, **last_json)
                 elif (
                     "Media is unavailable" in message
                     or "Media not found or unavailable" in message
                 ):
-                    raise MediaUnavailable(e, response=e.response, **last_json)
+                    raise MediaUnavailable(e, response=response, **last_json)
                 elif "has been deleted" in message:
                     # Sorry, this photo has been deleted.
-                    raise MediaUnavailable(e, response=e.response, **last_json)
+                    raise MediaUnavailable(e, response=response, **last_json)
                 elif "unable to fetch followers" in message:
                     # returned when user not found
-                    raise UserNotFound(e, response=e.response, **last_json)
+                    raise UserNotFound(e, response=response, **last_json)
                 elif "The username you entered" in message:
                     # The username you entered doesn't appear to belong to an account.
                     # Please check your username and try again.
                     last_json["message"] = (
                         "Instagram has blocked your IP address, "
-                        "use a quality proxy provider (not free, not shared)"
+                        "use a quality provider (not free, not shared)"
                     )
                     raise ProxyAddressIsBlocked(**last_json)
                 elif error_type or message:
@@ -461,19 +499,24 @@ class PrivateRequestMixin:
                     "Status 400: %s",
                     message or "Empty response message. Maybe enabled Two-factor auth?",
                 )
-                raise ClientBadRequestError(e, response=e.response, **last_json)
-            elif e.response.status_code == 429:
+                raise ClientBadRequestError(e, response=response, **last_json)
+            elif response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
-                raise ClientThrottledError(e, response=e.response, **last_json)
-            elif e.response.status_code == 404:
+                raise ClientThrottledError(e, response=response, **last_json)
+            elif response.status_code == 404:
                 self.logger.warning("Status 404: Endpoint %s does not exist", endpoint)
-                raise ClientNotFoundError(e, response=e.response, **last_json)
-            elif e.response.status_code == 408:
+                raise ClientNotFoundError(e, response=response, **last_json)
+            elif response.status_code == 408:
                 self.logger.warning("Status 408: Request Timeout")
-                raise ClientRequestTimeout(e, response=e.response, **last_json)
-            raise ClientError(e, response=e.response, **last_json)
-        except requests.ConnectionError as e:
-            raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
+                raise ClientRequestTimeout(e, response=response, **last_json)
+                raise ClientError(e, response=response, **last_json)
+        except Exception as e:
+            # Check if it's httpcloak ConnectionError
+            if hasattr(e, "__class__") and "ConnectionError" in e.__class__.__name__:
+                raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
+            # Re-raise if not httpcloak exception
+            if not hasattr(e, "response"):
+                raise
         if last_json.get("status") == "fail":
             raise ClientError(response=response, **last_json)
         elif "error_title" in last_json:
@@ -489,12 +532,18 @@ class PrivateRequestMixin:
             raise ClientError(response=response, **last_json)
         return last_json
 
-    def request_log(self, response):
+    def request_log(self, response, method="POST"):
+        """Log request details
+
+        Args:
+            response: HTTP response object
+            method: HTTP method used (httpcloak Response doesn't have request attribute)
+        """
         self.private_request_logger.info(
             "%s [%s] %s %s (%s)",
             self.username,
             response.status_code,
-            response.request.method,
+            method,  # httpcloak: pass method as parameter
             response.url,
             "{app_version}, {manufacturer} {model}".format(
                 app_version=self.device_settings.get("app_version"),

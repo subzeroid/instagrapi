@@ -92,6 +92,34 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 8. [Build stories](https://subzeroid.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, link sticker and mention users
 9. In the next release, account registration and captcha passing will appear
 
+## HTTPCloak Integration (v3.0.0+)
+
+Starting with version 3.0.0, instagrapi uses [HTTPCloak](https://github.com/sardanioss/httpcloak) instead of the standard `requests` library. HTTPCloak provides browser-identical TLS fingerprinting to bypass Instagram's bot detection.
+
+### Why HTTPCloak?
+
+Instagram uses JA3/JA4 TLS fingerprinting to detect automated requests. Python's `requests` library has a distinct fingerprint that Instagram blocks. HTTPCloak mimics real browser fingerprints (Chrome, Safari, Firefox) to avoid detection.
+
+### Working Presets
+
+| Preset | Status | Use Case |
+|--------|--------|----------|
+| `ios-chrome-143` | Works | Private API (mobile) |
+| `ios-safari-17` | Works | Alternative mobile |
+| `safari-18` | Works | Public API (web) |
+| `android-chrome-143` | Blocked | Not recommended |
+| `chrome-143` | Blocked | Not recommended |
+
+### Usage
+
+
+```python
+from instagrapi import Client
+
+cl = Client()
+cl.login(username, password)  # Uses HTTPCloak automatically
+```
+
 ## Telegram Bot for Download Posts, Stories and Highlights
 
 * https://t.me/InstaSurfBot

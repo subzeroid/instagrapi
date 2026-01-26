@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
 
-import requests
+import httpcloak
 
 from instagrapi import Client
 from instagrapi.exceptions import DirectThreadNotFound
@@ -125,7 +125,9 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
     def fresh_account(self):
         print(f"TEST_ACCOUNTS_URL: {TEST_ACCOUNTS_URL[:8]}...{TEST_ACCOUNTS_URL[-4:]}")
-        resp = requests.get(TEST_ACCOUNTS_URL, verify=False)
+        session = httpcloak.Session(preset="safari-18", tls_only=True, verify=False)
+        resp = session.get(TEST_ACCOUNTS_URL)
+        session.close()
         print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
         acc = resp.json()[0]
         print("New fresh account %(username)r" % acc)
@@ -366,8 +368,8 @@ class ClientDeviceTestCase(ClientPrivateTestCase):
         self.assertDictEqual(device, settings["device_settings"])
         self.assertEqual(user_agent, settings["user_agent"])
         self.user_info_by_username("example")
-        request_user_agent = self.cl.last_response.request.headers.get("User-Agent")
-        self.assertEqual(user_agent, request_user_agent)
+        # HTTPCloak Response doesn't have .request attribute, verify via client's user_agent property
+        self.assertEqual(user_agent, self.cl.user_agent)
 
 
 class ClientDeviceAgentTestCase(ClientPrivateTestCase):

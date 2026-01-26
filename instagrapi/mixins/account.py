@@ -25,6 +25,10 @@ class AccountMixin:
         Dict
             Jsonified response from Instagram
         """
+        # httpcloak doesn't have .proxies, get proxy URL and convert to dict
+        proxy_url = self.public.get_proxy()
+        proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else None
+
         response = requests.post(
             "https://www.instagram.com/accounts/account_recovery_send_ajax/",
             data={"email_or_username": username, "recaptcha_challenge_field": ""},
@@ -41,7 +45,7 @@ class AccountMixin:
                     "Version/11.1.2 Safari/605.1.15"
                 ),
             },
-            proxies=self.public.proxies,
+            proxies=proxies,
             timeout=self.request_timeout,
         )
         try:
@@ -106,15 +110,14 @@ class AccountMixin:
 
     def remove_bio_links(self, link_ids: list[int]) -> dict:
         signed_body = {
-            "signed_body": "SIGNATURE." + json.dumps(
-                {
-                    "_uid": self.user_id,
-                    "_uuid": self.uuid,
-                    "link_ids": link_ids
-                }
+            "signed_body": "SIGNATURE."
+            + json.dumps(
+                {"_uid": self.user_id, "_uuid": self.uuid, "link_ids": link_ids}
             )
         }
-        return self.private_request('accounts/remove_bio_links/', data=signed_body, with_signature=False)
+        return self.private_request(
+            "accounts/remove_bio_links/", data=signed_body, with_signature=False
+        )
 
     def set_external_url(self, external_url) -> dict:
         """

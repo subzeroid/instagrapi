@@ -38,11 +38,13 @@ class TrackMixin:
         assert fname, """The URL must contain the path to the file (m4a or mp3)."""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+        # Use existing private session
+        response = self.private.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         with open(path, "wb") as f:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, f)
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
         return path.resolve()
 
     def _track_request(self, data: Dict[str, Any]) -> Dict:

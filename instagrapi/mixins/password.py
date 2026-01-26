@@ -5,6 +5,8 @@ from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Random import get_random_bytes
 
+from instagrapi.mixins.private import get_header_value
+
 
 class PasswordMixin:
     def password_encrypt(self, password):
@@ -37,6 +39,8 @@ class PasswordMixin:
 
     def password_publickeys(self):
         resp = self.public.get("https://i.instagram.com/api/v1/qe/sync/")
-        publickeyid = int(resp.headers.get("ig-set-password-encryption-key-id"))
-        publickey = resp.headers.get("ig-set-password-encryption-pub-key")
+        publickeyid = int(
+            get_header_value(resp.headers, "ig-set-password-encryption-key-id")
+        )
+        publickey = get_header_value(resp.headers, "ig-set-password-encryption-pub-key")
         return publickeyid, publickey

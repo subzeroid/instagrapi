@@ -114,7 +114,9 @@ class ChallengeResolveMixin:
         instagram_ajax = hashlib.sha256(enc_password.encode()).hexdigest()[:12]
         session = requests.Session()
         session.verify = False  # fix SSLError/HTTPSConnectionPool
-        session.proxies = self.private.proxies
+        # httpcloak doesn't have .proxies, get proxy URL and convert to dict
+        proxy_url = self.private.get_proxy()
+        session.proxies = {"http": proxy_url, "https": proxy_url} if proxy_url else {}
         session.headers.update(
             {
                 "User-Agent": "Mozilla/5.0 (Linux; Android 8.0.0; MI 5s Build/OPR1.170623.032; wv) "
@@ -220,9 +222,9 @@ class ChallengeResolveMixin:
                 details.append(val)
         # CHECK ACCOUNT DATA
         for detail in [self.username, self.email, self.phone_number]:
-            assert (
-                not detail or detail in details
-            ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
+            assert not detail or detail in details, (
+                'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
+            )
         time.sleep(WAIT_SECONDS)
         result = session.post(
             "https://i.instagram.com%s" % result.get("navigation").get("forward"),
@@ -509,9 +511,9 @@ class ChallengeResolveMixin:
                 return True
 
             # last form to verify account details
-            assert (
-                self.last_json["step_name"] == "review_contact_point_change"
-            ), f"Unexpected step_name {self.last_json['step_name']}"
+            assert self.last_json["step_name"] == "review_contact_point_change", (
+                f"Unexpected step_name {self.last_json['step_name']}"
+            )
 
             # details = self.last_json["step_data"]
 
