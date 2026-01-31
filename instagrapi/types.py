@@ -341,12 +341,18 @@ class ClipsOriginalSoundInfo(TypesBaseModel):
     overlap_duration_in_ms: Optional[int] = None
     audio_asset_start_time_in_ms: Optional[int] = None
     ig_artist: ClipsIgArtist
-    audio_filter_infos: List[dict] = []
-    audio_parts: List[dict] = []
-    audio_parts_by_filter: List[dict] = []
+    audio_filter_infos: Optional[List[dict]] = None
+    audio_parts: Optional[List[dict]] = None
+    audio_parts_by_filter: Optional[List[dict]] = None
     consumption_info: ClipsConsumptionInfo
     xpost_fb_creator_info: Optional[dict] = None
     fb_downstream_use_xpost_metadata: ClipsFbDownstreamUseXpostMetadata
+
+    @field_validator("audio_filter_infos", "audio_parts", "audio_parts_by_filter", mode="before")
+    @classmethod
+    def convert_none_to_empty_list(cls, v):
+        """Convert None to empty list for audio-related fields"""
+        return v if v is not None else []
 
 
 class ClipsMetadata(TypesBaseModel):
