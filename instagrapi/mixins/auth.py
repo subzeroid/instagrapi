@@ -10,10 +10,11 @@ from pathlib import Path
 from typing import Dict, Union
 from uuid import uuid4
 
-import requests
+import httpcloak
 from pydantic import ValidationError
 
 from instagrapi import config
+from instagrapi.mixins.private import get_header_value
 from instagrapi.exceptions import (
     BadCredentials,
     ClientThrottledError,
@@ -317,10 +318,25 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
-        if "cookies" in self.settings:
-            self.private.cookies = requests.utils.cookiejar_from_dict(
-                self.settings["cookies"]
-            )
+        # HTTPCloak handles cookies internally via session state
+        # Try to restore from httpcloak session data if available
+        if "httpcloak_session_data" in self.settings:
+            try:
+                # Restore the private session from saved state
+                preset = self.settings.get("httpcloak_preset", "android-chrome-143")
+                restored_session = httpcloak.Session.unmarshal(
+                    self.settings["httpcloak_session_data"]
+                )
+                self.private = restored_session
+            except Exception as e:
+                self.logger.warning(f"Failed to restore httpcloak session: {e}")
+                # Fall back to creating new session
+                # Use ios-chrome-143 - Instagram blocks android-chrome TLS fingerprints
+                preset = self.settings.get("httpcloak_preset", "ios-chrome-143")
+                self.private = httpcloak.Session(
+                    preset=preset, timeout=30, tls_only=True
+                )
+
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         self.set_timezone_offset(
@@ -328,9 +344,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         )
         self.set_device(self.settings.get("device_settings"))
         # c7aeefd59aab78fc0a703ea060ffb631e005e2b3948efb9d73ee6a346c446bf3
-        self.bloks_versioning_id = (
-            "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
-        )  # this param is constant and will change by Instagram app version
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"  # this param is constant and will change by Instagram app version
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
         self.set_locale(self.settings.get("locale", self.locale))
@@ -339,10 +353,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         self.set_ig_u_rur(self.settings.get("ig_u_rur"))
         self.set_ig_www_claim(self.settings.get("ig_www_claim"))
-        # init headers
-        headers = self.base_headers
-        headers.update({"Authorization": self.authorization})
-        self.private.headers.update(headers)
+        # Note: httpcloak manages headers internally, no need to update session headers
         return True
 
     def login_by_sessionid(self, sessionid: str) -> bool:
@@ -411,7 +422,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if relogin:
             self.authorization_data = {}
             self.private.headers.pop("Authorization", None)
-            self.private.cookies.clear()
+            # httpcloak: use clear_cookies() instead of cookies.clear()
+            self.private.clear_cookies()
             if self.relogin_attempt > 1:
                 raise ReloginAttemptExceeded()
             self.relogin_attempt += 1
@@ -429,9 +441,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(self.password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"%d","source":["default"]}]' % int(
-                self.country_code
-            ),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -444,7 +455,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         try:
             logged = self.private_request("accounts/login/", data, login=True)
             self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get("ig-set-authorization")
+                get_header_value(self.last_response.headers, "ig-set-authorization")
             )
         except TwoFactorRequired as e:
             if not verification_code.strip():
@@ -470,7 +481,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "accounts/two_factor_login/", data, login=True
             )
             self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get("ig-set-authorization")
+                get_header_value(self.last_response.headers, "ig-set-authorization")
             )
         if logged:
             self.login_flow()
@@ -518,7 +529,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     @property
     def cookie_dict(self) -> dict:
-        return self.private.cookies.get_dict()
+        # httpcloak.Session.cookies is already a dict, no need for get_dict()
+        return self.private.cookies
 
     @property
     def sessionid(self) -> str:
@@ -566,6 +578,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             Current session settings as a Dict
         """
+        # Save httpcloak session state instead of cookies
+        try:
+            httpcloak_session_data = self.private.marshal()
+        except Exception as e:
+            self.logger.warning(f"Failed to marshal httpcloak session: {e}")
+            httpcloak_session_data = ""
+
         return {
             "uuids": {
                 "phone_id": self.phone_id,
@@ -581,7 +600,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "ig_u_rur": self.ig_u_rur,
             "ig_www_claim": self.ig_www_claim,
             "authorization_data": self.authorization_data,
-            "cookies": requests.utils.dict_from_cookiejar(self.private.cookies),
+            "httpcloak_session_data": httpcloak_session_data,  # New: save session state
+            "httpcloak_preset": getattr(
+                self, "_httpcloak_preset", "android-chrome-143"
+            ),  # Save preset
             "last_login": self.last_login,
             "device_settings": self.device_settings,
             "user_agent": self.user_agent,
@@ -653,16 +675,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "269.0.0.18.75",
-            "android_version": 26,
-            "android_release": "8.0.0",
-            "dpi": "480dpi",
-            "resolution": "1080x1920",
-            "manufacturer": "OnePlus",
-            "device": "devitron",
-            "model": "6T Dev",
-            "cpu": "qcom",
-            "version_code": "314665256",
+            "app_version": "358.0.0.47.96",
+            "android_version": 33,
+            "android_release": "13.0.0",
+            "dpi": "420dpi",
+            "resolution": "1080x2400",
+            "manufacturer": "Google",
+            "device": "raven",
+            "model": "Pixel 6 Pro",
+            "cpu": "arm64-v8a",
+            "version_code": "582144292",
         }
         self.settings["device_settings"] = self.device_settings
         if reset:
@@ -856,7 +878,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         if self.sessionid:
-            self.public.cookies.set("sessionid", self.sessionid)
+            # httpcloak: use set_cookie() instead of cookies.set()
+            self.public.set_cookie("sessionid", self.sessionid)
             return True
         return False
 
