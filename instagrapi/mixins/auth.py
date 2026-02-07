@@ -675,16 +675,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         self.device_settings = device or {
-            "app_version": "269.0.0.18.75",
-            "android_version": 26,
-            "android_release": "8.0.0",
-            "dpi": "480dpi",
-            "resolution": "1080x1920",
-            "manufacturer": "OnePlus",
-            "device": "devitron",
-            "model": "6T Dev",
-            "cpu": "qcom",
-            "version_code": "314665256",
+            "app_version": "358.0.0.47.96",
+            "android_version": 33,
+            "android_release": "13.0.0",
+            "dpi": "420dpi",
+            "resolution": "1080x2400",
+            "manufacturer": "Google",
+            "device": "raven",
+            "model": "Pixel 6 Pro",
+            "cpu": "arm64-v8a",
+            "version_code": "582144292",
         }
         self.settings["device_settings"] = self.device_settings
         if reset:
