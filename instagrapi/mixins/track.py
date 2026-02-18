@@ -38,7 +38,10 @@ class TrackMixin:
         assert fname, """The URL must contain the path to the file (m4a or mp3)."""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = self.private.get(url, stream=True, timeout=self.request_timeout)
+        # CDN URLs should preserve Host header, but still use configured proxy if available
+        response = requests.get(
+            url, stream=True, timeout=self.request_timeout, proxies=self.private.proxies
+        )
         response.raise_for_status()
         with open(path, "wb") as f:
             response.raw.decode_content = True

@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v2.2.2 - 2026-02-18
+### What's Changed
+**CDN Download Fix**: Direct CDN requests with proxy support for media downloads
+#### 🐛 Bug Fixes
+* **Fixed 404 errors on media downloads through proxy**: CDN URLs now use direct requests but still route through proxy
+
 ## v2.2.1 - 2026-02-18
 ### What's Changed
 **Security & Proxy Improvements**: Comprehensive security hardening and proxy routing for all media operations
