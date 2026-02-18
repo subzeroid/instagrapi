@@ -35,7 +35,7 @@ class DownloadAlbumMixin:
         List[Path]
             List of path for all the files downloaded
         """
-        media = self.media_info(media_pk)
+        media = self.media_info_v1(media_pk)
         assert media.media_type == 8, "Must been album"
         paths = []
         for resource in media.resources:
@@ -95,7 +95,7 @@ class DownloadAlbumMixin:
         List[Path]
             List of path for all the files downloaded
         """
-        media = self.media_info(media_pk)
+        media = self.media_info_v1(media_pk)
         assert media.media_type == 8, "Must been album"
         files = []
         for resource in media.resources:

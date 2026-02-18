@@ -60,7 +60,7 @@ class DownloadPhotoMixin:
         Path
             Path for the file downloaded
         """
-        media = self.media_info(media_pk)
+        media = self.media_info_v1(media_pk)
         assert media.media_type == 1, "Must been photo"
         filename = "{username}_{media_pk}".format(
             username=media.user.username, media_pk=media_pk
@@ -92,7 +92,7 @@ class DownloadPhotoMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+        response = self.private.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         with open(path, "wb") as f:
             response.raw.decode_content = True
@@ -113,7 +113,7 @@ class DownloadPhotoMixin:
         bytes
         """
         url = str(url)
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+        response = self.private.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         response.raw.decode_content = True
         return response.content

@@ -254,19 +254,20 @@ class MediaMixin:
         """
         media_pk = self.media_pk(media_pk)
         if not use_cache or media_pk not in self._medias_cache:
+            # Try private API first (mobile), fall back to public GraphQL if needed
             try:
+                media = self.media_info_v1(media_pk)
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)  # Register unknown error
+                # If private API fails, try public GraphQL as fallback
+                # (e.g., for restricted videos or private accounts)
                 try:
                     media = self.media_info_gql(media_pk)
                 except ClientLoginRequired as e:
                     if not self.inject_sessionid_to_public():
                         raise e
                     media = self.media_info_gql(media_pk)  # retry
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
-                # Restricted Video: This video is not available in your country.
-                # Or private account
-                media = self.media_info_v1(media_pk)
             self._medias_cache[media_pk] = media
         return deepcopy(
             self._medias_cache[media_pk]
