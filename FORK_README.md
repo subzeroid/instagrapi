@@ -11,12 +11,7 @@ Update your `pyproject.toml`:
 ```toml
 [tool.poetry.dependencies]
 # Use the fork with fixes
-instagrapi = { git = "https://github.com/obervinov/instagrapi.git", branch = "fix/security-and-proxy" }
-```
-
-Then rebuild:
-```bash
-docker build -f Dockerfile.local -t pyinstabot-downloader:local .
+instagrapi = { git = "https://github.com/obervinov/instagrapi.git", tag = "v2.2.1" }
 ```
 
 ---
@@ -124,29 +119,12 @@ path = client.video_download(media_pk="...")
 
 ---
 
-## Related Documentation
-
-- [INSTAGRAPI_FIXES.md](./INSTAGRAPI_FIXES.md) - Detailed changes and patches
-- [INSTAGRAPI_PYDANTIC_ISSUES.md](./INSTAGRAPI_PYDANTIC_ISSUES.md) - Issue analysis
-- [INSTAGRAPI_FORK_SUMMARY.md](./INSTAGRAPI_FORK_SUMMARY.md) - Branch summary
-
----
-
 ## Original Upstream
 
 - **Repository:** https://github.com/subzeroid/instagrapi
 - **License:** MIT
 
 ---
-
-## Contributing
-
-To use improvements from upstream, rebase on master:
-
-```bash
-git fetch origin master
-git rebase origin/master fix/security-and-proxy
-```
 
 ## Support
 

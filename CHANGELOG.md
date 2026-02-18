@@ -11,19 +11,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
   - Prevents triggering Instagram detection systems
   - Fixes issue #2162 (401 "Please wait a few minutes before you try again" errors)
 * **All downloads through proxy**: Authenticated session routing for video, photo, album, and track operations
-  - `video_download()`, `video_download_by_url()`, `video_download_by_bytes()`
-  - `photo_download()`, `photo_download_by_url()`, `photo_download_by_bytes()`
-  - `album_download()`, `album_download_origin()`
-  - `track_download()`
   - Changed from `requests.get()` to `self.private.get()` for proxy consistency
-* **Consistent User-Agent handling**: All requests use mobile app User-Agent (Instagram 404.0.0.48.76 Android)
+* **Consistent User-Agent handling**: All requests use mobile app User-Agent
   - Prevents Safari web User-Agent triggering detection
 
 #### 🐛 Bug Fixes
-* **Fixed Pydantic ValidationError #2254**: Added defensive checks for `pinned_channels_info` in `extract_broadcast_channel()`
+* **Fixed Pydantic ValidationError #2254**: Added defensive checks for pinned_channels_info in extract_broadcast_channel()
   - Private accounts don't always include this field
   - Now gracefully returns empty list instead of KeyError
-* **Fixed Pydantic ValidationError #2257**: Made `scans_profile` optional in `SharedMediaImageCandidate` model
+* **Fixed Pydantic ValidationError #2257**: Made scans_profile optional in SharedMediaImageCandidate model
   - Instagram API sometimes omits this field in image_versions2 candidates
   - Changed from required to Optional[str] with default None
 
