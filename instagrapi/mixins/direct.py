@@ -587,8 +587,8 @@ class DirectMixin:
     def direct_send_cutout_sticker(
         self,
         sticker_pk: str,
-        user_ids: List[int] = [],
-        thread_ids: List[int] = [],
+        user_ids: List[int] = None,
+        thread_ids: List[int] = None,
     ) -> DirectMessage:
         """
         Send a cutout sticker to list of users or threads
@@ -613,16 +613,9 @@ class DirectMixin:
         ), "Specify user_ids or thread_ids, but not both"
 
         token = self.generate_mutation_token()
-        
-        # 1. ID must be prefixed with "cutout_photo_"
-        # 2. Endpoint is generic_share
-        # 3. embedded_ent_type is 101
-        
+
         sticker_id_full = f"cutout_photo_{sticker_pk}"
-        json_payload = {
-            "sticker_id": sticker_id_full,
-            "embedded_ent_type": 101
-        }
+        json_payload = {"sticker_id": sticker_id_full, "embedded_ent_type": 101}
 
         data = {
             "action": "send_item",

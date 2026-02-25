@@ -309,9 +309,7 @@ class UploadVideoMixin:
         raise VideoConfigureError(response=self.last_response, **self.last_json)
 
     def video_upload_to_cutout_sticker(
-        self,
-        path: Path,
-        bypass_ai: bool = True
+        self, path: Path, bypass_ai: bool = True
     ) -> Media:
         """
         Upload video and create a Cutout Sticker.
@@ -340,7 +338,7 @@ class UploadVideoMixin:
         return self.media_configure_to_cutout_sticker(
             upload_id,
             manual_box=manual_box,
-            use_ai_detection=use_ai
+            use_ai_detection=use_ai,
         )
 
     def video_configure(
@@ -842,11 +840,7 @@ class UploadVideoMixin:
                         "color": poll.color,
                         "question": poll.question,
                         "tallies": [
-                            {
-                                "count": 0,
-                                "font_size": 39.0,
-                                "text": o
-                            }
+                            {"count": 0, "font_size": 39.0, "text": o}
                             for o in poll.options
                         ],
                         **poll_extra,

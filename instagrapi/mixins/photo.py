@@ -220,40 +220,6 @@ class UploadPhotoMixin:
             width, height = im.size
         return upload_id, width, height
 
-    def photo_upload_to_cutout_sticker(
-        self,
-        path: Path,
-        bypass_ai: bool = True
-    ) -> Media:
-        """
-        Upload photo and create a Cutout Sticker.
-
-        Parameters
-        ----------
-        path: Path
-            Path to the photo file (JPG/PNG)
-        bypass_ai: bool, optional
-            If True (default), selects full image (manual box [0,0,1,1]).
-            If False, relies on Instagram AI cropping (Server-side SAM).
-
-        Returns
-        -------
-        Media
-            An object of Media type (The created sticker)
-        """
-        path = Path(path)
-        # photo_rupload returns (upload_id, width, height)
-        upload_id, width, height = self.photo_rupload(path)
-
-        manual_box = [0.0, 0.0, 1.0, 1.0] if bypass_ai else None
-        use_ai = not bypass_ai
-
-        return self.media_configure_to_cutout_sticker(
-            upload_id,
-            manual_box=manual_box,
-            use_ai_detection=use_ai
-        )
-
     def photo_upload(
         self,
         path: Path,
