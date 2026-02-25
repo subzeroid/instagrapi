@@ -372,9 +372,15 @@ def extract_direct_message(data):
             # Instagram ¯\_(ツ)_/¯
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
-    xma_media_share = data.get("xma_media_share", {})
-    if xma_media_share:
-        data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
+    # Handle xma_clip (new Instagram API format for clip/reel shares)
+    xma_clip = data.get("xma_clip", {})
+    if xma_clip:
+        data["xma_share"] = extract_media_v1_xma(xma_clip[0])
+    #  Handle xma_media_share (only if xma_share not already set above by xma_clip)
+    if "xma_share" not in data or data["xma_share"] is None:
+        xma_media_share = data.get("xma_media_share", {})
+        if xma_media_share:
+            data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
 
     # Convert main timestamp
     data["timestamp"] = datetime.datetime.fromtimestamp(
