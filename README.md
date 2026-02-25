@@ -18,6 +18,7 @@ The instagrapi more suits for testing or research than a working business!
 
 ### We recommend using our services:
 
+* [VirtualWallet](https://virtallet.com/) Free crypto calculator — track all your assets in one place
 * [Cloqly](https://cloqly.com/register?ref=58dbf70f) for Rotating Proxies 🔒
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
 * [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
