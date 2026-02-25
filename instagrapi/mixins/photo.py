@@ -431,6 +431,39 @@ class UploadPhotoMixin:
                 )
         raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
 
+    def photo_upload_to_cutout_sticker(
+        self,
+        path: Path,
+        bypass_ai: bool = True,
+    ) -> Media:
+        """
+        Upload photo and create a Cutout Sticker.
+
+        Parameters
+        ----------
+        path: Path
+            Path to the photo file (JPG/PNG)
+        bypass_ai: bool, optional
+            If True (default), selects full image (manual box [0,0,1,1]).
+            If False, relies on Instagram AI cropping (Server-side SAM).
+
+        Returns
+        -------
+        Media
+            An object of Media type (The created sticker)
+        """
+        path = Path(path)
+        upload_id, width, height = self.photo_rupload(path)
+
+        manual_box = [0.0, 0.0, 1.0, 1.0] if bypass_ai else None
+        use_ai = not bypass_ai
+
+        return self.media_configure_to_cutout_sticker(
+            upload_id,
+            manual_box=manual_box,
+            use_ai_detection=use_ai,
+        )
+
     def photo_configure_to_story(
         self,
         upload_id: str,
@@ -695,11 +728,7 @@ class UploadPhotoMixin:
                         "color": poll.color,
                         "question": poll.question,
                         "tallies": [
-                            {
-                                "count": 0,
-                                "font_size": 39.0,
-                                "text": o
-                            }
+                            {"count": 0, "font_size": 39.0, "text": o}
                             for o in poll.options
                         ],
                         **poll_extra,

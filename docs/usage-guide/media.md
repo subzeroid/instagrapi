@@ -402,3 +402,33 @@ Reels:
 ....
 }
 ```
+
+## Cutout Stickers
+
+Create cutout stickers from photos for use in Direct Messages.
+
+| Method                                                                                      | Return | Description
+| ------------------------------------------------------------------------------------------- | ------ | ------------------
+| photo_upload_to_cutout_sticker(path: Path, bypass_ai: bool = True)                          | Media  | Upload photo and create a Cutout Sticker
+| media_configure_to_cutout_sticker(upload_id: str, source_type: str, manual_box: List[float], use_ai_detection: bool, extra_data: Dict) | Media | Configure an uploaded photo as a Cutout Sticker (low-level)
+
+### Parameters
+
+* `bypass_ai` - If `True` (default), selects the full image using manual bounding box `[0, 0, 1, 1]`. Best for pre-processed images like transparent PNGs. If `False`, uses Instagram's server-side AI (SAM) to detect and extract the subject.
+
+### Example:
+
+```python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+# Upload a pre-cut PNG sticker (bypass AI detection)
+media = cl.photo_upload_to_cutout_sticker("sticker.png", bypass_ai=True)
+print(media.dict())
+
+# Upload a photo and let Instagram AI detect the subject
+media = cl.photo_upload_to_cutout_sticker("photo.jpg", bypass_ai=False)
+print(media.dict())
+```

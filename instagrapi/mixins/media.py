@@ -755,9 +755,9 @@ class MediaMixin:
             A list of objects of Media
         """
         default_nav = self.base_headers["X-IG-Nav-Chain"]
-        self.base_headers[
-            "X-IG-Nav-Chain"
-        ] = "MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::"
+        self.base_headers["X-IG-Nav-Chain"] = (
+            "MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::"
+        )
         medias = self.private_request(
             f"feed/user/{user_id}/",
             params={
@@ -1118,6 +1118,57 @@ class MediaMixin:
             medias = self.usertag_medias_v1(user_id, amount)
         return medias
 
+    def media_configure_to_cutout_sticker(
+        self,
+        upload_id: str,
+        source_type: str = "library",
+        manual_box: List[float] = None,
+        use_ai_detection: bool = False,
+        extra_data: Dict[str, str] = None,
+    ) -> Media:
+        """
+        Configure an uploaded photo as a Cutout Sticker.
+
+        Parameters
+        ----------
+        upload_id: str
+            Upload ID from `photo_rupload`
+        source_type: str, optional
+            Source type (default "library")
+        manual_box: List[float], optional
+            Bounding box [x, y, w, h] normalized (0.0 to 1.0).
+            Pass [0.0, 0.0, 1.0, 1.0] to select the full image (Bypass AI).
+        use_ai_detection: bool, optional
+            If True, asks Instagram to detect the subject (Server-side AI).
+        extra_data: Dict[str, str], optional
+            Dict of extra parameters
+
+        Returns
+        -------
+        Media
+            An object of Media type (The created sticker)
+        """
+        url = "media/configure_to_cutout_sticker/"
+        data = {
+            "upload_id": upload_id,
+            "source_type": source_type,
+            "sticker_type": "cutout_sticker",
+            "_uuid": self.uuid,
+            "_uid": self.user_id,
+        }
+        if extra_data:
+            data.update(extra_data)
+
+        if manual_box:
+            data["cutout_sticker_data"] = json.dumps(
+                {"manual_mask": {"box": manual_box}}
+            )
+        elif use_ai_detection:
+            data["detect_subject"] = "true"
+
+        result = self.private_request(url, data)
+        return extract_media_v1(result["media"])
+
     def media_pin(self, media_pk: str, revert: bool = False):
         """
         Pin post to user profile
@@ -1241,7 +1292,9 @@ class MediaMixin:
             "_csrftoken": self.token,
         }
         try:
-            response = self.private_request(f"live/{broadcast_id}/end_broadcast/", data=data)
+            response = self.private_request(
+                f"live/{broadcast_id}/end_broadcast/", data=data
+            )
             return response.get("status") == "ok"
         except Exception as e:
             self.logger.error(f"Error ending live broadcast: {e}")
@@ -1285,7 +1338,10 @@ class MediaMixin:
         try:
             response = self.private_request(f"live/{broadcast_id}/get_comment/")
             if "comments" in response:
-                return [{"username": c["user"]["username"], "text": c["text"]} for c in response["comments"]]
+                return [
+                    {"username": c["user"]["username"], "text": c["text"]}
+                    for c in response["comments"]
+                ]
             return []
         except Exception as e:
             self.logger.error(f"Error retrieving live comments: {e}")
@@ -1307,7 +1363,10 @@ class MediaMixin:
         """
         try:
             response = self.private_request(f"live/{broadcast_id}/get_viewer_list/")
-            return [{"username": user["username"], "pk": user["pk"]} for user in response.get("users", [])]
+            return [
+                {"username": user["username"], "pk": user["pk"]}
+                for user in response.get("users", [])
+            ]
         except Exception as e:
             self.logger.error(f"Error retrieving live viewers: {e}")
             raise
