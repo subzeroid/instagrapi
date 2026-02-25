@@ -1205,6 +1205,59 @@ class MediaMixin:
         """
         return self.media_pin(media_pk, True)
 
+    def media_configure_to_cutout_sticker(
+        self,
+        upload_id: str,
+        source_type: str = "library",
+        manual_box: List[float] = None,
+        use_ai_detection: bool = False,
+        extra_data: Dict[str, str] = None,
+    ) -> Media:
+        """
+        Configure an uploaded photo as a Cutout Sticker.
+
+        Parameters
+        ----------
+        upload_id: str
+            Upload ID from `photo_rupload`
+        source_type: str, optional
+            Source type (default "library")
+        manual_box: List[float], optional
+            Bounding box [x, y, w, h] normalized (0.0 to 1.0).
+            Pass [0.0, 0.0, 1.0, 1.0] to select the full image (Bypass AI).
+        use_ai_detection: bool, optional
+            If True, asks Instagram to detect the subject (Server-side AI).
+        extra_data: Dict[str, str], optional
+            Dict of extra parameters
+
+        Returns
+        -------
+        Media
+            An object of Media type (The created sticker)
+        """
+        url = "media/configure_to_cutout_sticker/"
+        data = {
+            "upload_id": upload_id,
+            "source_type": source_type,
+            "sticker_type": "cutout_sticker",
+            "_uuid": self.uuid,
+            "_uid": self.user_id,
+        }
+        if extra_data:
+            data.update(extra_data)
+
+        if manual_box:
+            data["cutout_sticker_data"] = {
+                "manual_mask": {
+                    "box": manual_box
+                }
+            }
+        elif use_ai_detection:
+            data["detect_subject"] = "true"
+
+        result = self.private_request(url, data)
+        return extract_media_v1(result["media"])
+
     def media_create_livestream(self, title="Instagram Live"):
         """
         Create a new live broadcast.
