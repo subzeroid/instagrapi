@@ -1800,6 +1800,7 @@ class ClientCutoutStickerTestCase(ClientPrivateTestCase):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
         path = self.cl.photo_download(media_pk)
         self.assertIsInstance(path, Path)
+        media = None
         try:
             # Upload as cutout sticker with bypass_ai=True (default)
             media = self.cl.photo_upload_to_cutout_sticker(path, bypass_ai=True)
@@ -1817,6 +1818,7 @@ class ClientCutoutStickerTestCase(ClientPrivateTestCase):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
         path = self.cl.photo_download(media_pk)
         self.assertIsInstance(path, Path)
+        media = None
         try:
             # Upload as cutout sticker with AI detection
             media = self.cl.photo_upload_to_cutout_sticker(path, bypass_ai=False)
