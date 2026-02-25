@@ -10,6 +10,31 @@ USER_AGENT_BASE = (
     "{dpi}; {resolution}; {manufacturer}; "
     "{model}; {device}; {cpu}; {locale}; {version_code})"
 )
+
+# Default device profile (hardware/system) and app version settings.
+DEVICE_SETTINGS = {
+    "android_version": 26,
+    "android_release": "8.0.0",
+    "dpi": "480dpi",
+    "resolution": "1080x1920",
+    "manufacturer": "OnePlus",
+    "device": "devitron",
+    "model": "6T Dev",
+    "cpu": "qcom",
+}
+APP_SETTINGS = {
+    "364.0.0.35.86": {
+        "app_version": "364.0.0.35.86",
+        "version_code": "374010953",
+        "bloks_versioning_id": "8ccf54aad76788a6ca03ddfc33afcdcf692f2f5a3ba814ea73d5facba7fa2c2d",
+    },
+    "385.0.0.47.74": {
+        "app_version": "385.0.0.47.74",
+        "version_code": "378906843",
+        "bloks_versioning_id": "a8973d49a9cc6a6f65a4997c10216ce2a06f65a517010e64885e92029bb19221",
+    },
+}
+
 # Instagram 76.0.0.15.395 (iPhone9,2; iOS 10_0_2; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/420+
 # Instagram 208.0.0.32.135 (iPhone; iOS 14_7_1; en_US; en-US; scale=2.61; 1080x1920) AppleWebKit/605.1.15
 
