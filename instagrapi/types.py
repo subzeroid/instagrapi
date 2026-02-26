@@ -173,9 +173,10 @@ class SharedMediaImageCandidate(TypesBaseModel):
 
     estimated_scans_sizes: List[int] = []
     height: int
-    scans_profile: str
+    scans_profile: Optional[str] = None
     url: str
     width: int
+    is_spatial_image: Optional[bool] = None
 
 
 class ScrubberSpritesheetInfo(TypesBaseModel):
@@ -342,8 +343,8 @@ class ClipsOriginalSoundInfo(TypesBaseModel):
     audio_asset_start_time_in_ms: Optional[int] = None
     ig_artist: ClipsIgArtist
     audio_filter_infos: Optional[List[dict]] = None
-    audio_parts: Optional[List[dict]] = None
-    audio_parts_by_filter: Optional[List[dict]] = None
+    audio_parts: List[dict] = []
+    audio_parts_by_filter: List[dict] = []
     consumption_info: ClipsConsumptionInfo
     xpost_fb_creator_info: Optional[dict] = None
     fb_downstream_use_xpost_metadata: ClipsFbDownstreamUseXpostMetadata
@@ -353,6 +354,37 @@ class ClipsOriginalSoundInfo(TypesBaseModel):
     def convert_none_to_empty_list(cls, v):
         """Convert None to empty list for audio-related fields"""
         return v if v is not None else []
+
+
+class ClipsReusableTextColor(TypesBaseModel):
+    """Color information for reusable text in clips"""
+
+    count: int
+    hex_rgba_color: str
+
+
+class ClipsReusableTextInfo(TypesBaseModel):
+    """Reusable text information for clips"""
+
+    alignment: str
+    end_time_ms: float
+    font_size: float
+    height: float
+    id: str
+    is_animated: bool
+    offset_x: float
+    offset_y: float
+    rotation_degree: float
+    scale: float
+    start_time_ms: float
+    text: str
+    text_emphasis_mode: str
+    text_format_type: str
+    width: float
+    z_index: int
+    effects: str = ""
+    animation: str = ""
+    colors: List[ClipsReusableTextColor] = []
 
 
 class ClipsMetadata(TypesBaseModel):
@@ -388,7 +420,7 @@ class ClipsMetadata(TypesBaseModel):
     originality_info: Optional[dict] = None
     reels_on_the_rise_info: Optional[dict] = None
     reusable_text_attribute_string: Optional[str] = None
-    reusable_text_info: Optional[dict] = None
+    reusable_text_info: Optional[List[ClipsReusableTextInfo]] = None
     shopping_info: Optional[dict] = None
     show_achievements: bool = False
     template_info: Optional[dict] = None

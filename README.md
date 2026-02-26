@@ -18,6 +18,7 @@ The instagrapi more suits for testing or research than a working business!
 
 ### We recommend using our services:
 
+* [VirtualWallet](https://virtallet.com/) Free crypto calculator — track all your assets in one place
 * [Cloqly](https://cloqly.com/register?ref=58dbf70f) for Rotating Proxies 🔒
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
 * [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
@@ -155,9 +156,9 @@ posts = cl.user_medias(target_id, amount=10)
 for media in posts:
     # download photos to the current folder
     cl.photo_download(media.pk)
-
-See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
 ```
+See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
+
 
 <details>
     <summary>Additional example</summary>
