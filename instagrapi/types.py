@@ -144,9 +144,9 @@ class UserShort(TypesBaseModel):
 
 
 class Viewer(UserShort):
-    has_liked: bool
-    reply_text: str
-    is_spam_viewer: bool
+    has_liked: bool = False
+    reply_text: str = ""
+    is_spam_viewer: bool = False
 
 
 class Usertag(TypesBaseModel):
