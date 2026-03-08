@@ -535,24 +535,9 @@ class UserMixin:
         """
         return self.search_following_v1(user_id, query)
 
-    def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
-        """
-        Get user's following users information by Public Graphql API
-
-        Parameters
-        ----------
-        user_id: str
-            User id of an instagram account
-        amount: int, optional
-            Maximum number of media to return, default is 0
-
-        Returns
-        -------
-        List[UserShort]
-            List of objects of User type
-        """
-        user_id = str(user_id)
-        end_cursor = None
+    def user_following_gql_chunk(
+        self, user_id: str, max_amount: int = 0, end_cursor: str = None
+    ) -> tuple[list[UserShort], str]:
         users = []
         variables = {
             "id": user_id,
@@ -576,9 +561,28 @@ class UserMixin:
             end_cursor = page_info.get("end_cursor")
             if not page_info.get("has_next_page") or not end_cursor:
                 break
-            if amount and len(users) >= amount:
+            if max_amount and len(users) >= max_amount:
                 break
             # time.sleep(sleep)
+        return users, end_cursor
+
+    def user_following_gql(self, user_id: str, amount: int = 0) -> List[UserShort]:
+        """
+        Get user's following users information by Public Graphql API
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of media to return, default is 0
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of User type
+        """
+        users, _ = self.user_following_gql_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
         return users

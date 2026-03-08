@@ -143,6 +143,12 @@ class UserShort(TypesBaseModel):
     # stories: List = [] # not found in fbsearch_suggested_profiles
 
 
+class Viewer(UserShort):
+    has_liked: bool = False
+    reply_text: str = ""
+    is_spam_viewer: bool = False
+
+
 class Usertag(TypesBaseModel):
     user: UserShort
     x: float
