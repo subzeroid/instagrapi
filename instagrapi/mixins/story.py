@@ -11,8 +11,9 @@ from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
     extract_user_short,
+    extract_viewer,
 )
-from instagrapi.types import Story, UserShort
+from instagrapi.types import Story, UserShort, Viewer
 
 
 class StoryMixin:
@@ -307,9 +308,9 @@ class StoryMixin:
 
     def story_viewers_chunk(
         self, story_pk: int, max_amount: int = 0, max_id: str = ""
-    ) -> tuple[list[UserShort], str]:
+    ) -> tuple[list[Viewer], str]:
         unique_set: set[str] = set()
-        users: list[UserShort] = []
+        viewers: list[Viewer] = []
         story_pk = self.media_pk(story_pk)
         params = {
             "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
@@ -321,19 +322,19 @@ class StoryMixin:
             result = self.private_request(
                 f"media/{story_pk}/list_reel_media_viewer/", params=params
             )
-            for item in result["users"]:
-                user = extract_user_short(item)
-                if user.pk in unique_set:
+            for item in result["viewers"]:
+                viewer = extract_viewer(item)
+                if viewer.pk in unique_set:
                     continue
-                unique_set.add(user.pk)
-                users.append(user)
+                unique_set.add(viewer.pk)
+                viewers.append(viewer)
 
             max_id = result.get("next_max_id")
-            if not max_id or (max_amount and len(users) >= max_amount):
+            if not max_id or (max_amount and len(viewers) >= max_amount):
                 break
-        return users, max_id
+        return viewers, max_id
 
-    def story_viewers(self, story_pk: int, amount: int = 0) -> List[UserShort]:
+    def story_viewers(self, story_pk: int, amount: int = 0) -> List[Viewer]:
         """
         List of story viewers (Private API)
 
@@ -345,13 +346,13 @@ class StoryMixin:
 
         Returns
         -------
-        List[UserShort]
-            A list of objects of UserShort
+        List[Viewer]
+            A list of objects of Viewer
         """
-        users, _ = self.story_viewers_chunk(story_pk, amount)
+        viewers, _ = self.story_viewers_chunk(story_pk, amount)
         if amount:
-            users = users[:amount]
-        return users
+            viewers = viewers[:amount]
+        return viewers
 
     def story_like(self, story_id: str, revert: bool = False) -> bool:
         """
