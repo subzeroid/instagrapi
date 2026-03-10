@@ -172,10 +172,11 @@ def extract_resource_v1(data):
         data["video_url"] = sorted(
             data["video_versions"], key=lambda o: o["height"] * o["width"]
         )[-1]["url"]
+    candidates = data.get("image_versions2", {}).get("candidates", [])
     data["thumbnail_url"] = sorted(
-        data["image_versions2"]["candidates"],
+        candidates,
         key=lambda o: o["height"] * o["width"],
-    )[-1]["url"]
+    )[-1]["url"] if candidates else None
     return Resource(**data)
 
 
