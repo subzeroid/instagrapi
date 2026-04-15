@@ -1,10 +1,12 @@
 import json
+import logging
 from copy import deepcopy
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
 from instagrapi.exceptions import (
     ClientError,
+    ClientGraphqlError,
     ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
@@ -12,10 +14,46 @@ from instagrapi.exceptions import (
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
 from instagrapi.types import Relationship, RelationshipShort, User, UserShort
-from instagrapi.utils import json_value
+from instagrapi.utils import dumps, generate_jazoest, json_value
 
 MAX_USER_COUNT = 200
 INFO_FROM_MODULES = ("self_profile", "feed_timeline", "reel_feed_timeline")
+GRAPHQL_WEB_API_URL = "https://www.instagram.com/api/graphql"
+GQL_STUFF = {
+    "av": "17841464591314721",
+    "__d": "www",
+    "__user": "0",
+    "__a": "1",
+    "__req": "q",
+    "__hs": "19768.HYP:instagram_web_pkg.2.1..0.1",
+    "dpr": "2",
+    "__ccg": "UNKNOWN",
+    "__rev": "1011444902",
+    "__s": "x82a1q:agr3gd:4nh4nl",
+    "__hsi": "7335888108907652597",
+    "__dyn": (
+        "7xeUjG1mxu1syUbFp40NonwgU7SbzEdF8aUco2qwJxS0k24o0B-"
+        "q1ew65xO0FE2awt81s8hwGwQwoEcE7O2l0Fwqo31w9O7U2cxe0E"
+        "UjwGzEaE7622362W2K0zK5o4q3y1Sx-0iS2Sq2-azqwt8dUaob8"
+        "2cwMwrUdUbGwmk0KU6O1FwlE6PhA6bxy4VUKUnAwHw"
+    ),
+    "__csr": (
+        "g9cj5kxfs8lifTitQDqhdhalmDEAJaKBRJFdkAGHBkPy9HgCA-A"
+        "rtucm5bCBBGpyAoz-mLJpXJufKWGQ9hHhAhnKECuFUZ3Q8Jkmmp"
+        "eWyGAzkEj_CjyoZUgK-E8bwYzaxy00ktMGx20XU3gw4KAo3MChU"
+        "jw3N80poolwiA1d7G2yu2ucxi1nwEw16OE1JsS043Etw63wkSEgg1Mu00yiU"
+    ),
+    "__comet_req": "7",
+    "lsd": "6b2800R9u4biJOYjcdXFEI",
+    "__spin_r": "1011444902",
+    "__spin_b": "trunk",
+    "__spin_t": "1708019550",
+    "fb_api_caller_class": "RelayModern",
+    "fb_api_req_friendly_name": "PolarisProfilePageContentQuery",
+    "server_timestamps": "true",
+}
+
+logger = logging.getLogger(__name__)
 
 try:
     from typing import Literal
@@ -35,6 +73,7 @@ class UserMixin:
     _usernames_cache = {}  # username -> user_pk
     _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
+    _fb_dtsg = None
 
     def user_id_from_username(self, username: str) -> str:
         """
@@ -81,14 +120,88 @@ class UserMixin:
             "user_id": str(user_id),
             "include_reel": True,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
-        )
-        if not data["user"]:
-            raise UserNotFound(user_id=user_id, **data)
-        user = extract_user_short(data["user"]["reel"]["user"])
+        try:
+            data = self.public_graphql_request(
+                variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
+            )
+            if not data["user"]:
+                raise UserNotFound(user_id=user_id, **data)
+            user = extract_user_short(data["user"]["reel"]["user"])
+        except ClientGraphqlError:
+            user = extract_user_short(self.user_web_profile_info_gql(user_id))
         self._userhorts_cache[user_id] = user
         return user
+
+    def fetch_fb_dtsg(self):
+        self.inject_sessionid_to_public()
+        response = self.public.get(
+            self.PUBLIC_API_URL,
+            proxies=self.public.proxies,
+            timeout=self.request_timeout,
+        )
+        html = response.text
+        if html:
+            start = html.find("__eqmc")
+            if start >= 0:
+                chunk = html[start:]
+                chunk = chunk[:5000]
+                chunk_start = chunk.find("{")
+                chunk_end = chunk.find("</script>")
+                if chunk_start >= 0 and chunk_end > chunk_start:
+                    return json.loads(chunk[chunk_start:chunk_end]).get("f")
+        return None
+
+    @property
+    def fb_dtsg(self):
+        if not self._fb_dtsg:
+            self._fb_dtsg = self.fetch_fb_dtsg()
+        return self._fb_dtsg
+
+    def user_web_profile_info_gql(self, user_id: str) -> dict:
+        user_id = str(user_id)
+        if not self.inject_sessionid_to_public():
+            raise ClientLoginRequired("Session is required for web profile GraphQL")
+        doc_id = "26762473490008061"
+        variables = {
+            "enable_integrity_filters": True,
+            "id": user_id,
+            "render_surface": "PROFILE",
+            "__relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider": True,
+            "__relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider": False,
+            "__relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider": False,
+        }
+        headers = {
+            "Origin": "https://www.instagram.com",
+            "Authority": "www.instagram.com",
+            "Sec-Fetch-Site": "same-origin",
+            "X-FB-Friendly-Name": "PolarisProfilePageContentQuery",
+        }
+        body = self.public_request(
+            GRAPHQL_WEB_API_URL,
+            data={
+                "variables": dumps(variables),
+                "doc_id": doc_id,
+                "fb_dtsg": self.fb_dtsg,
+                "jazoest": generate_jazoest(self.phone_id),
+                **GQL_STUFF,
+            },
+            headers=headers,
+            update_headers=False,
+            return_json=True,
+        )
+        if errs := body.get("errors"):
+            if "data" not in body:
+                summary = errs[0].get("summary")
+                description = errs[0].get("description")
+                raise ClientGraphqlError(
+                    "GraphQL user profile fallback failed. Summary: '{}'. Description: '{}'".format(
+                        summary, description
+                    )
+                )
+        data = body.get("data")
+        if not data or not data.get("user"):
+            raise UserNotFound(user_id=user_id, **body)
+        return data["user"]
 
     def username_from_user_id_gql(self, user_id: str) -> str:
         """

@@ -97,7 +97,9 @@ class PublicRequestMixin:
             try:
                 if self.delay_range:
                     random_delay(delay_range=self.delay_range)
-                return self._send_public_request(url, update_headers=update_headers, **kwargs)
+                return self._send_public_request(
+                    url, update_headers=update_headers, **kwargs
+                )
             except (
                 ClientLoginRequired,
                 ClientNotFoundError,
@@ -124,13 +126,21 @@ class PublicRequestMixin:
                 continue
 
     def _send_public_request(
-        self, url, data=None, params=None, headers=None, return_json=False, stream=None, timeout=None, update_headers=None
+        self,
+        url,
+        data=None,
+        params=None,
+        headers=None,
+        return_json=False,
+        stream=None,
+        timeout=None,
+        update_headers=None,
     ):
         self.public_requests_count += 1
         if headers:
-            if update_headers in [None, True] :
+            if update_headers in [None, True]:
                 self.public.headers.update(headers)
-            elif update_headers == False :
+            elif update_headers is False:
                 pass
         if self.last_response_ts and (time.time() - self.last_response_ts) < 1.0:
             time.sleep(1.0)
@@ -138,7 +148,7 @@ class PublicRequestMixin:
             time.sleep(self.request_timeout)
         try:
             if data is not None:  # POST
-                response = self.public.data(
+                response = self.public.post(
                     url,
                     data=data,
                     params=params,
@@ -232,8 +242,10 @@ class PublicRequestMixin:
 
     def public_a1_request_user_info_by_username(self, username, data=None, params=None):
         params = params or {}
-        url = self.PUBLIC_API_URL + f"api/v1/users/web_profile_info/?username={username}"
-        headers = {'x-ig-app-id': '936619743392459'}
+        url = (
+            self.PUBLIC_API_URL + f"api/v1/users/web_profile_info/?username={username}"
+        )
+        headers = {"x-ig-app-id": "936619743392459"}
         response = self.public_request(
             url, data=data, params=params, headers=headers, return_json=True
         )
@@ -274,8 +286,17 @@ class PublicRequestMixin:
                 raise ClientGraphqlError(
                     "Unexpected status '{}' in response. Message: '{}'".format(
                         body_json.get("status", None), body_json.get("message", None)
-                    ),
-                    response=body_json,
+                    )
+                )
+
+            if "data" not in body_json:
+                errors = body_json.get("errors") or []
+                summary = errors[0].get("summary") if errors else None
+                description = errors[0].get("description") if errors else None
+                raise ClientGraphqlError(
+                    "Missing 'data' in GraphQL response. Summary: '{}'. Description: '{}'".format(
+                        summary, description
+                    )
                 )
 
             return body_json["data"]

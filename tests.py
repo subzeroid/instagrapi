@@ -14,8 +14,12 @@ import requests
 
 from instagrapi import Client
 from instagrapi.extractors import extract_direct_message, extract_resource_v1
+from instagrapi.exceptions import (
+    ChallengeRequired,
+    ClientGraphqlError,
+    DirectThreadNotFound,
+)
 from instagrapi.mixins.user import UserMixin
-from instagrapi.exceptions import ChallengeRequired, DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -232,6 +236,51 @@ class ExtractorsRegressionTestCase(unittest.TestCase):
         )
         self.assertIsNone(resource.thumbnail_url)
         self.assertEqual(resource.pk, "1")
+
+
+class PublicRegressionTestCase(unittest.TestCase):
+    def test_public_request_uses_post_for_post_bodies(self):
+        client = Client()
+        response = Mock()
+        response.headers = {"Content-Length": "0"}
+        response.raw.tell.return_value = 0
+        response.status_code = 200
+        response.url = "https://www.instagram.com/api/graphql"
+        response.json.return_value = {"status": "ok", "data": {"user": {}}}
+        response.raise_for_status.return_value = None
+
+        with mock.patch.object(client.public, "post", return_value=response) as post:
+            body = client.public_request(
+                "https://www.instagram.com/api/graphql",
+                data={"doc_id": "1"},
+                return_json=True,
+            )
+
+        self.assertEqual(body["status"], "ok")
+        post.assert_called_once()
+
+    def test_public_graphql_request_raises_client_graphql_error_when_data_missing(self):
+        client = Client()
+        body = {
+            "errors": [
+                {
+                    "message": "execution error",
+                    "summary": "Incorrect Query",
+                    "description": "The query provided was invalid.",
+                }
+            ],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "public_request", return_value=body):
+            with self.assertRaises(ClientGraphqlError) as cm:
+                client.public_graphql_request(
+                    {"user_id": "123", "include_reel": True},
+                    query_hash="ad99dd9d3646cc3c0dda65debcd266a7",
+                )
+
+        self.assertIn("Missing 'data' in GraphQL response", str(cm.exception))
+        self.assertIn("Incorrect Query", str(cm.exception))
 
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
@@ -1504,6 +1553,29 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         }
         user.update(overrides)
         return {"data": {"user": user}}
+
+    def test_user_short_gql_falls_back_to_web_profile_graphql(self):
+        client = Client()
+        web_user = {
+            "id": "25025320",
+            "username": "instagram",
+            "full_name": "Instagram",
+            "is_private": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+        }
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=ClientGraphqlError("Incorrect Query"),
+        ):
+            with mock.patch.object(
+                client, "user_web_profile_info_gql", return_value=web_user
+            ) as fallback:
+                user = client.user_short_gql("25025320", use_cache=False)
+
+        self.assertEqual(user.username, "instagram")
+        fallback.assert_called_once_with("25025320")
 
     def test_user_info_by_username_gql_parses_web_profile_without_update_headers_kwarg(
         self,
