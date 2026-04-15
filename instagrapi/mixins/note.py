@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from instagrapi.types import Note
 
@@ -20,6 +20,51 @@ class NoteMixin:
         for item in result.get("items", []):
             notes.append(Note(**item))
         return notes
+
+    def get_note_by_user(self, notes: List[Note], username: str) -> Optional[Note]:
+        """
+        Retrieve a Note for a given username from a notes list.
+
+        Parameters
+        ----------
+        notes: List[Note]
+            Notes returned by get_notes()
+        username: str
+            Username to search for
+
+        Returns
+        -------
+        Optional[Note]
+            Matching Note or None if not found
+        """
+        username = str(username).lower()
+        for note in notes:
+            if (
+                note.user
+                and note.user.username
+                and note.user.username.lower() == username
+            ):
+                return note
+        return None
+
+    def get_note_text_by_user(self, notes: List[Note], username: str) -> Optional[str]:
+        """
+        Retrieve note text for a given username from a notes list.
+
+        Parameters
+        ----------
+        notes: List[Note]
+            Notes returned by get_notes()
+        username: str
+            Username to search for
+
+        Returns
+        -------
+        Optional[str]
+            Matching note text or None if not found
+        """
+        note = self.get_note_by_user(notes, username)
+        return note.text if note else None
 
     def last_seen_update_note(self) -> bool:
         """

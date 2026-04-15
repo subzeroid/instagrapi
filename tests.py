@@ -25,6 +25,7 @@ from instagrapi.types import (
     Location,
     Media,
     MediaOembed,
+    Note,
     Share,
     Story,
     StoryLink,
@@ -228,6 +229,32 @@ class ExtractorsRegressionTestCase(unittest.TestCase):
         )
         self.assertIsNone(resource.thumbnail_url)
         self.assertEqual(resource.pk, "1")
+
+
+class NoteMixinRegressionTestCase(unittest.TestCase):
+    def test_get_note_helpers_by_user(self):
+        client = Client()
+        notes = [
+            Note(
+                id="1",
+                text="hello",
+                user_id="10",
+                user=UserShort(pk="10", username="example"),
+                audience=0,
+                created_at=datetime(2024, 1, 1, tzinfo=UTC()),
+                expires_at=datetime(2024, 1, 2, tzinfo=UTC()),
+                is_emoji_only=False,
+                has_translation=False,
+                note_style=0,
+            )
+        ]
+
+        note = client.get_note_by_user(notes, "Example")
+        self.assertIsNotNone(note)
+        self.assertEqual(note.id, "1")
+        self.assertEqual(client.get_note_text_by_user(notes, "example"), "hello")
+        self.assertIsNone(client.get_note_by_user(notes, "missing"))
+        self.assertIsNone(client.get_note_text_by_user(notes, "missing"))
 
 
 class ClientTestCase(unittest.TestCase):
