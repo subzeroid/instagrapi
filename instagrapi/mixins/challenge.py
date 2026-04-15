@@ -53,6 +53,12 @@ class ChallengeResolveMixin:
         """
         # START GET REQUEST to challenge_url
         challenge_url = last_json["challenge"]["api_path"]
+        if challenge_url.startswith("/auth_platform/"):
+            last_json["message"] = (
+                "Manual verification required via Instagram auth platform flow. "
+                "This challenge is not yet supported automatically."
+            )
+            raise ChallengeRequired(**last_json)
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
             challenge_context = last_json.get("challenge", {}).get("challenge_context")

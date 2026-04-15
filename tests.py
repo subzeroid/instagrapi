@@ -12,7 +12,7 @@ import requests
 
 from instagrapi import Client
 from instagrapi.extractors import extract_resource_v1
-from instagrapi.exceptions import DirectThreadNotFound
+from instagrapi.exceptions import ChallengeRequired, DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     Account,
@@ -305,6 +305,21 @@ class LocationMixinRegressionTestCase(unittest.TestCase):
         location = client.location_search_pk(239130043)
         self.assertEqual(location.pk, 239130043)
         self.assertEqual(location.external_id, 108835465815492)
+
+
+class ChallengeRegressionTestCase(unittest.TestCase):
+    def test_auth_platform_challenge_raises_clear_manual_verification_error(self):
+        client = Client()
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {"api_path": "/auth_platform/?apc=test-token"},
+            "status": "fail",
+        }
+
+        with self.assertRaises(ChallengeRequired) as cm:
+            client.challenge_resolve(last_json)
+
+        self.assertIn("Manual verification required", str(cm.exception))
 
 
 class ClientTestCase(unittest.TestCase):
