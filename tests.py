@@ -257,6 +257,56 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
         self.assertIsNone(client.get_note_text_by_user(notes, "missing"))
 
 
+class LocationMixinRegressionTestCase(unittest.TestCase):
+    def test_location_search_name_handles_top_search_place_wrapper(self):
+        client = Client()
+        client.top_search = lambda query: {
+            "places": [
+                {
+                    "place": {
+                        "location": {
+                            "pk": "123",
+                            "name": "Choroni",
+                            "address": "Aragua, Venezuela",
+                            "lat": 10.5,
+                            "lng": -67.6,
+                            "facebook_places_id": 456,
+                            "external_source": "facebook_places",
+                        }
+                    }
+                }
+            ]
+        }
+
+        locations = client.location_search_name("Choroni")
+        self.assertEqual(len(locations), 1)
+        self.assertEqual(locations[0].pk, 123)
+        self.assertEqual(locations[0].external_id, 456)
+
+    def test_location_search_pk_returns_exact_match(self):
+        client = Client()
+        client.location_info = lambda pk: Location(pk=str(pk), name="Choroni")
+        client.top_search = lambda query: {
+            "places": [
+                {"place": {"location": {"pk": "111", "name": "Choroni"}}},
+                {
+                    "place": {
+                        "location": {
+                            "pk": "239130043",
+                            "name": "Choroni",
+                            "facebook_places_id": 108835465815492,
+                            "external_source": "facebook_places",
+                        }
+                    }
+                },
+            ]
+        }
+
+        location = client.location_search_pk(239130043)
+        self.assertEqual(location.pk, 239130043)
+        self.assertEqual(location.external_id, 108835465815492)
+
+
 class ClientTestCase(unittest.TestCase):
     def test_jazoest(self):
         phone_id = "57d64c41-a916-3fa5-bd7a-3796c1dab122"

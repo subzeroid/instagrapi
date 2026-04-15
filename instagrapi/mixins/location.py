@@ -50,6 +50,49 @@ class LocationMixin:
             locations.append(extract_location(venue))
         return locations
 
+    def location_search_name(self, name: str) -> List[Location]:
+        """
+        Get locations using a location name.
+
+        Parameters
+        ----------
+        name: str
+            Name you want to search for
+
+        Returns
+        -------
+        List[Location]
+            List of objects of Location
+        """
+        result = self.top_search(name)
+        locations = []
+        for place in result.get("places", []):
+            location = extract_location(place)
+            if location:
+                locations.append(location)
+        return locations
+
+    def location_search_pk(self, location_pk: int) -> Location:
+        """
+        Resolve a location using its exact pk.
+
+        Parameters
+        ----------
+        location_pk: int
+            Unique identifier for a location
+
+        Returns
+        -------
+        Location
+            An object of Location
+        """
+        location_pk = str(location_pk)
+        info = self.location_info(location_pk)
+        for location in self.location_search_name(info.name):
+            if str(location.pk) == location_pk:
+                return location
+        return info
+
     def location_complete(self, location: Location) -> Location:
         """
         Smart complete of location
@@ -72,7 +115,11 @@ class LocationMixin:
             info = self.location_info(location.pk)
             location.lat = info.lat
             location.lng = info.lng
-        if not location.external_id and location.lat:
+        if location.pk and not location.external_id:
+            resolved = self.location_search_pk(location.pk)
+            location.external_id = resolved.external_id
+            location.external_id_source = resolved.external_id_source
+        elif not location.external_id and location.lat:
             # search extrernal_id and external_id_source
             try:
                 venue = self.location_search(location.lat, location.lng)[0]
@@ -103,7 +150,9 @@ class LocationMixin:
         """
         if not location:
             return "{}"
-        if not location.external_id and location.lat:
+        if location.pk and not location.external_id:
+            location = self.location_search_pk(location.pk)
+        elif not location.external_id and location.lat:
             try:
                 location = self.location_search(location.lat, location.lng)[0]
             except IndexError:
@@ -393,9 +442,7 @@ class LocationMixin:
         """
         return self.location_medias_v1(location_pk, amount, tab_key="ranked")
 
-    def location_medias_top(
-        self, location_pk: int, amount: int = 27
-    ) -> List[Media]:
+    def location_medias_top(self, location_pk: int, amount: int = 27) -> List[Media]:
         """
         Get top medias for a location
 
@@ -457,9 +504,7 @@ class LocationMixin:
         """
         return self.location_medias_v1(location_pk, amount, tab_key="recent")
 
-    def location_medias_recent(
-        self, location_pk: int, amount: int = 63
-    ) -> List[Media]:
+    def location_medias_recent(self, location_pk: int, amount: int = 63) -> List[Media]:
         """
         Get recent medias for a location
 

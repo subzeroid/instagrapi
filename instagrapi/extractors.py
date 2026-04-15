@@ -33,7 +33,7 @@ from .types import (
     User,
     UserShort,
     Usertag,
-    Viewer
+    Viewer,
 )
 from .utils import InstagramIdCodec, json_value
 
@@ -248,6 +248,10 @@ def extract_location(data):
     """Extract location info"""
     if not data:
         return None
+    if "place" in data and isinstance(data["place"], dict):
+        place_location = data["place"].get("location")
+        if place_location:
+            data = place_location
     data["pk"] = data.get("id", data.get("pk", data.get("location_id", None)))
     data["external_id"] = data.get("external_id", data.get("facebook_places_id"))
     data["external_id_source"] = data.get(

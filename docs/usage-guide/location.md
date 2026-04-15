@@ -5,6 +5,8 @@ Viewing location info and medias by location
 | Method                                                     | Return         | Description
 | ---------------------------------------------------------- | -------------- | ----------------------------------------------------
 | location_search(lat: float, lng: float)                    | List[Location] | Search Location by GEO coordinates
+| location_search_name(name: str)                            | List[Location] | Search Location by name
+| location_search_pk(location_pk: int)                       | Location       | Resolve a Location by exact pk using search results
 | location_complete(location: Location)                      | Location       | Complete blank fields
 | location_build(location: Location)                         | String         | Serialized JSON
 | location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
