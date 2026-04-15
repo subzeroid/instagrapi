@@ -1,11 +1,3 @@
-  > ### 🐰 Try Bunny CDN
-  > Lightning-fast global CDN with storage from **$0.01/GB**
-  >
-  > 🥕 No egress fees  🥕 14-day free trial  🥕 Crypto payments
-  >
-  > [**Start Free Trial →**](https://bunny.net?ref=73f3vd6eq3)
-
-
 If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) project.
 However, you won't need to spend weeks or even months setting it up.
 The best service available today is [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
@@ -18,7 +10,6 @@ The instagrapi more suits for testing or research than a working business!
 
 ### We recommend using our services:
 
-* [VirtualWallet](https://virtallet.com/) Free crypto calculator — track all your assets in one place
 * [Cloqly](https://cloqly.com/register?ref=58dbf70f) for Rotating Proxies 🔒
 * [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
 * [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
@@ -33,7 +24,7 @@ Refer users to HikerAPI and earn a percentage of their API spending:
 
 | Plan | Commission |
 |------|------------|
-| Start ($0.02/req) | **50%** |
+| Start trial plan ($0.02/req) | **50%** |
 | Standard ($0.001/req) | **25%** |
 | Business ($0.00069/req) | **15%** |
 | Ultra ($0.0006/req) | **10%** |
@@ -41,9 +32,11 @@ Refer users to HikerAPI and earn a percentage of their API spending:
 **How it works:**
 1. Create your promo code in the [dashboard](https://hikerapi.com/affiliate)
 2. Share it with your audience (in your GitHub repositories)
-3. Earn commission on every request they make
+3. Earn commission on every request they make, with lifetime attribution
 
-**Payouts:** USDT (TRC-20 or ERC-20), minimum $500
+**Extras:** 2-level referral system, no caps, lifetime attribution
+
+**Payouts:** USDT / USDC (TRC-20 or ERC-20), minimum 20 USDT, request anytime from the dashboard
 
 ------
 
