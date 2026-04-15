@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 
 from instagrapi import Client
-from instagrapi.extractors import extract_resource_v1
+from instagrapi.extractors import extract_direct_message, extract_resource_v1
 from instagrapi.exceptions import ChallengeRequired, DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
@@ -1404,6 +1404,44 @@ class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
                     return  # Successfully tested backward compatibility
                 except Exception as e:
                     self.fail(f"Backward compatibility test failed: {e}")
+
+
+class DirectExtractorRegressionTestCase(unittest.TestCase):
+    def test_reply_visual_media_timestamp_uses_microseconds(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "text",
+                "text": "reply wrapper",
+                "replied_to_message": {
+                    "item_id": "3",
+                    "user_id": "4",
+                    "timestamp": 1761953663000000,
+                    "item_type": "visual_media",
+                    "visual_media": {
+                        "view_mode": "permanent",
+                        "seen_user_ids": [],
+                        "seen_count": 0,
+                        "media": {
+                            "media_type": 1,
+                            "expiring_media_action_summary": {
+                                "type": "replay",
+                                "timestamp": 1761953663000000,
+                                "count": 1,
+                            },
+                        },
+                    },
+                },
+            }
+        )
+
+        self.assertEqual(message.reply.id, "3")
+        self.assertEqual(
+            message.reply.visual_media.media.expiring_media_action_summary.timestamp,
+            datetime(2025, 10, 31, 23, 34, 23),
+        )
 
 
 class ClientAccountTestCase(ClientPrivateTestCase):

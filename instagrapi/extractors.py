@@ -350,6 +350,61 @@ def extract_direct_response(data):
     return DirectResponse(**data)
 
 
+def _convert_direct_visual_media_timestamps(visual_media):
+    if not visual_media:
+        return
+
+    if "media" in visual_media and visual_media["media"]:
+        media = visual_media["media"]
+        if (
+            "expiring_media_action_summary" in media
+            and media["expiring_media_action_summary"]
+        ):
+            media["expiring_media_action_summary"]["timestamp"] = (
+                datetime.datetime.fromtimestamp(
+                    int(media["expiring_media_action_summary"]["timestamp"])
+                    // 1_000_000
+                )
+            )
+
+        if "image_versions2" in media and media["image_versions2"]:
+            candidates = media["image_versions2"].get("candidates", [])
+            for candidate in candidates:
+                if (
+                    "url_expiration_timestamp_us" in candidate
+                    and candidate["url_expiration_timestamp_us"]
+                ):
+                    candidate["url_expiration_timestamp_us"] = (
+                        datetime.datetime.fromtimestamp(
+                            int(candidate["url_expiration_timestamp_us"]) // 1_000_000
+                        )
+                    )
+
+        if "video_versions" in media and media["video_versions"]:
+            for video_version in media["video_versions"]:
+                if (
+                    "url_expiration_timestamp_us" in video_version
+                    and video_version["url_expiration_timestamp_us"]
+                ):
+                    video_version["url_expiration_timestamp_us"] = (
+                        datetime.datetime.fromtimestamp(
+                            int(video_version["url_expiration_timestamp_us"])
+                            // 1_000_000
+                        )
+                    )
+
+    if (
+        "expiring_media_action_summary" in visual_media
+        and visual_media["expiring_media_action_summary"]
+    ):
+        visual_media["expiring_media_action_summary"]["timestamp"] = (
+            datetime.datetime.fromtimestamp(
+                int(visual_media["expiring_media_action_summary"]["timestamp"])
+                // 1_000_000
+            )
+        )
+
+
 def extract_reply_message(data):
     data["id"] = data.get("item_id")
     if "media_share" in data:
@@ -365,6 +420,9 @@ def extract_reply_message(data):
             # Instagram ¯\_(ツ)_/¯
             clip = clip.get("clip")
         data["clip"] = extract_media_v1(clip)
+    visual_media = data.get("visual_media", {})
+    if visual_media:
+        _convert_direct_visual_media_timestamps(visual_media)
 
     data["timestamp"] = datetime.datetime.fromtimestamp(data["timestamp"] // 1_000_000)
     data["user_id"] = str(data["user_id"])
@@ -420,59 +478,8 @@ def extract_direct_message(data):
 
     # Convert visual media timestamps
     visual_media = data.get("visual_media", {})
-    if visual_media and "media" in visual_media:
-        media = visual_media["media"]
-        if (
-            "expiring_media_action_summary" in media
-            and media["expiring_media_action_summary"]
-        ):
-            media["expiring_media_action_summary"]["timestamp"] = (
-                datetime.datetime.fromtimestamp(
-                    int(media["expiring_media_action_summary"]["timestamp"])
-                    // 1_000_000
-                )
-            )
-
-        # Convert image candidates URL expiration timestamps
-        if "image_versions2" in media and media["image_versions2"]:
-            candidates = media["image_versions2"].get("candidates", [])
-            for candidate in candidates:
-                if (
-                    "url_expiration_timestamp_us" in candidate
-                    and candidate["url_expiration_timestamp_us"]
-                ):
-                    candidate["url_expiration_timestamp_us"] = (
-                        datetime.datetime.fromtimestamp(
-                            int(candidate["url_expiration_timestamp_us"]) // 1_000_000
-                        )
-                    )
-
-        # Convert video versions URL expiration timestamps
-        if "video_versions" in media and media["video_versions"]:
-            for video_version in media["video_versions"]:
-                if (
-                    "url_expiration_timestamp_us" in video_version
-                    and video_version["url_expiration_timestamp_us"]
-                ):
-                    video_version["url_expiration_timestamp_us"] = (
-                        datetime.datetime.fromtimestamp(
-                            int(video_version["url_expiration_timestamp_us"])
-                            // 1_000_000
-                        )
-                    )
-
-    # Convert top-level visual media expiring action summary timestamp
-    if (
-        visual_media
-        and "expiring_media_action_summary" in visual_media
-        and visual_media["expiring_media_action_summary"]
-    ):
-        visual_media["expiring_media_action_summary"]["timestamp"] = (
-            datetime.datetime.fromtimestamp(
-                int(visual_media["expiring_media_action_summary"]["timestamp"])
-                // 1_000_000
-            )
-        )
+    if visual_media:
+        _convert_direct_visual_media_timestamps(visual_media)
 
     return DirectMessage(**data)
 
