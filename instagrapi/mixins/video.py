@@ -382,7 +382,7 @@ class UploadVideoMixin:
         Dict
             A dictionary of response from the call
         """
-        self.photo_rupload(Path(thumbnail), upload_id)
+        self.photo_rupload(Path(thumbnail), upload_id, for_story=True)
         usertags = [
             {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
         ]
