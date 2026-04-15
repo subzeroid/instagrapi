@@ -158,7 +158,11 @@ class UserMixin:
             "X-Ig-App-Id": "936619743392459",
             "Sec-Ch-Ua-Model": '""',
             "Sec-Ch-Ua-Mobile": "?0",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.112 Safari/537.36",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.6261.112 Safari/537.36"
+            ),
             "Accept": "*/*",
             "X-Asbd-Id": "129477",
             "Sec-Fetch-Site": "same-origin",
@@ -173,7 +177,6 @@ class UserMixin:
                 self.public_request(
                     f"https://www.instagram.com/api/v1/users/web_profile_info/?username={username}",
                     headers=temporary_public_headers,
-                    update_headers=False,
                 )
             )["data"]["user"]
         )

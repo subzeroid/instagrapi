@@ -12,6 +12,7 @@ import requests
 
 from instagrapi import Client
 from instagrapi.extractors import extract_direct_message, extract_resource_v1
+from instagrapi.mixins.user import UserMixin
 from instagrapi.exceptions import ChallengeRequired, DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
@@ -1441,6 +1442,58 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
         self.assertEqual(
             message.reply.visual_media.media.expiring_media_action_summary.timestamp,
             datetime(2025, 10, 31, 23, 34, 23),
+        )
+
+
+class UserMixinRegressionTestCase(unittest.TestCase):
+    def test_user_info_by_username_gql_parses_web_profile_without_update_headers_kwarg(
+        self,
+    ):
+        class DummyClient(UserMixin):
+            def __init__(self):
+                self.public_request_calls = []
+
+            def public_request(self, url, headers=None, **kwargs):
+                self.public_request_calls.append(
+                    {"url": url, "headers": headers, "kwargs": kwargs}
+                )
+                return json.dumps(
+                    {
+                        "data": {
+                            "user": {
+                                "id": "123",
+                                "username": "example",
+                                "full_name": "Example",
+                                "is_private": False,
+                                "is_verified": False,
+                                "profile_pic_url_hd": None,
+                                "profile_pic_url": "https://example.com/pic.jpg",
+                                "edge_owner_to_timeline_media": {"count": 0},
+                                "edge_followed_by": {"count": 0},
+                                "edge_follow": {"count": 0},
+                                "is_business_account": False,
+                                "business_email": None,
+                                "business_phone_number": None,
+                                "biography": "",
+                                "external_url": None,
+                                "business_category_name": None,
+                                "category_name": None,
+                                "fbid": "123",
+                                "pinned_channels_info": {"pinned_channels_list": []},
+                            }
+                        }
+                    }
+                )
+
+        client = DummyClient()
+        user = client.user_info_by_username_gql("Example")
+
+        self.assertEqual(user.pk, "123")
+        self.assertEqual(user.username, "example")
+        self.assertEqual(len(client.public_request_calls), 1)
+        self.assertEqual(client.public_request_calls[0]["kwargs"], {})
+        self.assertIn(
+            "web_profile_info/?username=example", client.public_request_calls[0]["url"]
         )
 
 
