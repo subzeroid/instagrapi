@@ -42,6 +42,31 @@ class ChallengeResolveMixin:
     Helpers for resolving login challenge
     """
 
+    def challenge_code_or_raised(
+        self, choice: ChallengeChoice, wait_seconds: int = 5, attempts: int = 24
+    ) -> str:
+        error_context = dict(self.last_json)
+        error_context.pop("message", None)
+        for attempt in range(attempts):
+            code = self.challenge_code_handler(self.username, choice)
+            if code:
+                print(
+                    f'Code entered "{code}" for {self.username} '
+                    f"({attempt} attempts by {wait_seconds} seconds)"
+                )
+                return code
+            if attempt == 0:
+                raise ChallengeRequired(
+                    "Challenge code required. Provide it via challenge_code_handler "
+                    "or retry login after saving client settings.",
+                    **error_context,
+                )
+            time.sleep(wait_seconds)
+        raise ChallengeRequired(
+            "Challenge code was not provided before the retry window expired.",
+            **error_context,
+        )
+
     def challenge_resolve(self, last_json: Dict) -> bool:
         """
         Start challenge resolve
@@ -421,14 +446,8 @@ class ChallengeResolveMixin:
                         f'ChallengeResolve: Choice "email" or "phone_number" '
                         f"(sms) not available to this account {self.last_json}"
                     )
-            wait_seconds = 5
-            for attempt in range(24):
-                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
-                if code:
-                    break
-                time.sleep(wait_seconds)
-            print(
-                f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            code = self.challenge_code_or_raised(
+                ChallengeChoice.EMAIL, wait_seconds=5, attempts=24
             )
             self._send_private_request(challenge_url, {"security_code": code})
             # assert 'logged_in_user' in client.last_json
@@ -500,13 +519,8 @@ class ChallengeResolveMixin:
                     f"not available to this account {self.last_json}"
                 )
             wait_seconds = 5
-            for attempt in range(24):
-                code = self.challenge_code_handler(self.username, ChallengeChoice.EMAIL)
-                if code:
-                    break
-                time.sleep(wait_seconds)
-            print(
-                f'Code entered "{code}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            code = self.challenge_code_or_raised(
+                ChallengeChoice.EMAIL, wait_seconds=wait_seconds, attempts=24
             )
             self._send_private_request(challenge_url, {"security_code": code})
 

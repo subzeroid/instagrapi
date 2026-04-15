@@ -4,6 +4,7 @@ import os
 import os.path
 import random
 import unittest
+from unittest import mock
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -321,6 +322,24 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             client.challenge_resolve(last_json)
 
         self.assertIn("Manual verification required", str(cm.exception))
+
+    def test_challenge_resolve_simple_fails_fast_when_handler_has_no_code(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "message": "challenge_required",
+            "status": "fail",
+            "step_name": "verify_email",
+            "step_data": {"email": "e***@example.com"},
+        }
+        client.challenge_code_handler = lambda *args, **kwargs: False
+
+        with mock.patch("instagrapi.mixins.challenge.time.sleep") as sleep:
+            with self.assertRaises(ChallengeRequired) as cm:
+                client.challenge_resolve_simple("challenge/test/")
+
+        self.assertIn("Challenge code required", str(cm.exception))
+        sleep.assert_not_called()
 
 
 class ClientTestCase(unittest.TestCase):
