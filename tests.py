@@ -1446,10 +1446,39 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
 
 
 class UserMixinRegressionTestCase(unittest.TestCase):
+    @staticmethod
+    def build_web_profile_user(**overrides):
+        user = {
+            "id": "123",
+            "username": "example",
+            "full_name": "Example",
+            "is_private": False,
+            "is_verified": False,
+            "profile_pic_url_hd": None,
+            "profile_pic_url": "https://example.com/pic.jpg",
+            "edge_owner_to_timeline_media": {"count": 0},
+            "edge_followed_by": {"count": 0},
+            "edge_follow": {"count": 0},
+            "is_business_account": False,
+            "business_email": None,
+            "business_phone_number": None,
+            "biography": "",
+            "bio_links": [],
+            "external_url": None,
+            "business_category_name": None,
+            "category_name": None,
+            "fbid": "123",
+            "pinned_channels_info": {"pinned_channels_list": []},
+        }
+        user.update(overrides)
+        return {"data": {"user": user}}
+
     def test_user_info_by_username_gql_parses_web_profile_without_update_headers_kwarg(
         self,
     ):
         class DummyClient(UserMixin):
+            response_body = None
+
             def __init__(self):
                 self.public_request_calls = []
 
@@ -1457,35 +1486,10 @@ class UserMixinRegressionTestCase(unittest.TestCase):
                 self.public_request_calls.append(
                     {"url": url, "headers": headers, "kwargs": kwargs}
                 )
-                return json.dumps(
-                    {
-                        "data": {
-                            "user": {
-                                "id": "123",
-                                "username": "example",
-                                "full_name": "Example",
-                                "is_private": False,
-                                "is_verified": False,
-                                "profile_pic_url_hd": None,
-                                "profile_pic_url": "https://example.com/pic.jpg",
-                                "edge_owner_to_timeline_media": {"count": 0},
-                                "edge_followed_by": {"count": 0},
-                                "edge_follow": {"count": 0},
-                                "is_business_account": False,
-                                "business_email": None,
-                                "business_phone_number": None,
-                                "biography": "",
-                                "external_url": None,
-                                "business_category_name": None,
-                                "category_name": None,
-                                "fbid": "123",
-                                "pinned_channels_info": {"pinned_channels_list": []},
-                            }
-                        }
-                    }
-                )
+                return json.dumps(self.response_body)
 
         client = DummyClient()
+        client.response_body = self.build_web_profile_user()
         user = client.user_info_by_username_gql("Example")
 
         self.assertEqual(user.pk, "123")
@@ -1495,6 +1499,39 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertIn(
             "web_profile_info/?username=example", client.public_request_calls[0]["url"]
         )
+
+    def test_user_info_by_username_gql_handles_missing_pinned_channels_info(self):
+        class DummyClient(UserMixin):
+            response_body = None
+
+            def public_request(self, url, headers=None, **kwargs):
+                return json.dumps(self.response_body)
+
+        client = DummyClient()
+        client.response_body = self.build_web_profile_user()
+        client.response_body["data"]["user"].pop("pinned_channels_info")
+
+        user = client.user_info_by_username_gql("Example")
+
+        self.assertEqual(user.broadcast_channel, [])
+
+    def test_user_info_by_username_gql_handles_bio_links_without_link_id(self):
+        class DummyClient(UserMixin):
+            response_body = None
+
+            def public_request(self, url, headers=None, **kwargs):
+                return json.dumps(self.response_body)
+
+        client = DummyClient()
+        client.response_body = self.build_web_profile_user(
+            bio_links=[{"url": "https://example.com", "title": "Example"}]
+        )
+
+        user = client.user_info_by_username_gql("Example")
+
+        self.assertEqual(len(user.bio_links), 1)
+        self.assertIsNone(user.bio_links[0].link_id)
+        self.assertEqual(user.bio_links[0].url, "https://example.com")
 
 
 class ClientAccountTestCase(ClientPrivateTestCase):
