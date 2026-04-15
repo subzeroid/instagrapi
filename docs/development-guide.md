@@ -5,7 +5,7 @@ and how to work with the code base.
 
 Before you dive into this, it is best to read:
 
-* The [Contributing guide](../CONTRIBUTING.md.md)
+* The [Contributing guide](https://github.com/subzeroid/instagrapi/blob/master/CONTRIBUTING.md)
 
 ## Docker
 
