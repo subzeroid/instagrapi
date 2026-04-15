@@ -13,7 +13,11 @@ from pathlib import Path
 import requests
 
 from instagrapi import Client
-from instagrapi.extractors import extract_direct_message, extract_resource_v1
+from instagrapi.extractors import (
+    extract_direct_message,
+    extract_direct_thread,
+    extract_resource_v1,
+)
 from instagrapi.exceptions import (
     ChallengeRequired,
     ClientGraphqlError,
@@ -1541,6 +1545,45 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
             message.reply.visual_media.media.expiring_media_action_summary.timestamp,
             datetime(2025, 10, 31, 23, 34, 23),
         )
+
+    def test_direct_thread_defaults_missing_is_close_friend_thread(self):
+        thread = extract_direct_thread(
+            {
+                "thread_v2_id": "1",
+                "thread_id": "2",
+                "items": [],
+                "users": [
+                    {
+                        "pk": "3",
+                        "username": "example",
+                        "profile_pic_url": "https://example.com/pic.jpg",
+                    }
+                ],
+                "left_users": [],
+                "admin_user_ids": [],
+                "last_activity_at": 1761953663000000,
+                "muted": False,
+                "named": False,
+                "canonical": False,
+                "pending": False,
+                "archived": False,
+                "thread_type": "private",
+                "thread_title": "",
+                "folder": 0,
+                "vc_muted": False,
+                "is_group": False,
+                "mentions_muted": False,
+                "approval_required_for_new_members": False,
+                "input_mode": 0,
+                "business_thread_folder": 0,
+                "read_state": 0,
+                "assigned_admin_id": 0,
+                "shh_mode_enabled": False,
+                "last_seen_at": {},
+            }
+        )
+
+        self.assertFalse(thread.is_close_friend_thread)
 
 
 class UserMixinRegressionTestCase(unittest.TestCase):

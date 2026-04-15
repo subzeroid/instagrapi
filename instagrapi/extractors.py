@@ -310,6 +310,7 @@ def extract_direct_thread(data):
     else:
         data["inviter"] = None
     data["left_users"] = data.get("left_users", [])
+    data.setdefault("is_close_friend_thread", False)
     data["last_activity_at"] = datetime.datetime.fromtimestamp(
         data["last_activity_at"] // 1_000_000
     )

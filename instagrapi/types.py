@@ -925,7 +925,7 @@ class DirectThread(TypesBaseModel):
     input_mode: int
     business_thread_folder: int
     read_state: int
-    is_close_friend_thread: bool
+    is_close_friend_thread: bool = False
     assigned_admin_id: int
     shh_mode_enabled: bool
     last_seen_at: Dict[str, LastSeenInfo] = {}
