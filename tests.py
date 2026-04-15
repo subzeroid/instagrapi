@@ -11,6 +11,7 @@ from pathlib import Path
 import requests
 
 from instagrapi import Client
+from instagrapi.extractors import extract_resource_v1
 from instagrapi.exceptions import DirectThreadNotFound
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
@@ -218,6 +219,15 @@ class ClientPublicTestCase(BaseClientMixin, unittest.TestCase):
             "resources": [],
         }
         self.assertDict(m.dict(), media)
+
+
+class ExtractorsRegressionTestCase(unittest.TestCase):
+    def test_extract_resource_v1_handles_empty_candidates(self):
+        resource = extract_resource_v1(
+            {"pk": "1", "media_type": 1, "image_versions2": {"candidates": []}}
+        )
+        self.assertIsNone(resource.thumbnail_url)
+        self.assertEqual(resource.pk, "1")
         user = {
             "pk": "25025320",
             "username": "example",
