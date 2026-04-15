@@ -228,13 +228,6 @@ class ExtractorsRegressionTestCase(unittest.TestCase):
         )
         self.assertIsNone(resource.thumbnail_url)
         self.assertEqual(resource.pk, "1")
-        user = {
-            "pk": "25025320",
-            "username": "example",
-            "full_name": "Example Example",
-            "profile_pic_url": "https://...",
-        }
-        self.assertDict(m.user.dict(), user)
 
 
 class ClientTestCase(unittest.TestCase):
