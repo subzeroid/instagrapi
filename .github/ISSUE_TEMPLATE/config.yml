@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions and how-to help
+    url: https://github.com/subzeroid/instagrapi/discussions
+    about: Ask usage questions, integration questions, and general how-to questions in Discussions instead of Issues.
+  - name: HikerAPI for data retrieval
+    url: https://hikerapi.com/p/fyfx6ygs
+    about: If your main goal is retrieving Instagram data reliably, you can try HikerAPI here (100 free requests).

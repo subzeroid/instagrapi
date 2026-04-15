@@ -1,0 +1,54 @@
+name: Feature request
+description: Suggest a focused addition or API improvement
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What concrete use case is blocked today?
+      placeholder: I need to react to a specific DM item with an emoji, but there is no direct_send_reaction() method.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API
+      description: Show the method or API shape you would like to see.
+      render: python
+      placeholder: |
+        cl.direct_send_reaction(thread_id, message_id, emoji="❤️")
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example usage
+      description: Show a realistic example.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Why current methods are insufficient
+      description: What have you tried already?
+    validations:
+      required: true
+  - type: dropdown
+    id: endpoint_knowledge
+    attributes:
+      label: Does this require new Instagram endpoint knowledge?
+      options:
+        - "yes"
+        - "no"
+        - not sure
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References, logs, HAR, or similar implementations
+      description: Include app logs, HAR captures, endpoint notes, or links to prior art if you have them.

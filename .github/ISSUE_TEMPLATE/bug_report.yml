@@ -1,0 +1,132 @@
+name: Bug report
+description: Report a reproducible bug in instagrapi
+title: "[BUG] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What broke?
+      description: Describe the bug in 1-3 sentences.
+      placeholder: media_pk_from_url() returns the wrong pk for instagram.com/share/p/... links
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - login / challenge
+        - direct / messages
+        - media / posts
+        - stories
+        - upload / publishing
+        - public / web API
+        - account / settings
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction code
+      description: Provide the smallest code snippet that still reproduces the bug.
+      render: python
+      placeholder: |
+        from instagrapi import Client
+
+        cl = Client()
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Full traceback
+      description: Paste the full traceback if there is one. If there is no traceback, write "No traceback".
+      render: pytb
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed result
+      description: What actually happened?
+      placeholder: The method returned 18066072412849671, and media_info() failed with MediaNotFound.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should have happened instead?
+    validations:
+      required: true
+  - type: input
+    id: instagrapi_version
+    attributes:
+      label: instagrapi version
+      description: Use an exact version like 2.3.0, not "latest".
+      placeholder: 2.3.0
+    validations:
+      required: true
+  - type: input
+    id: python_version
+    attributes:
+      label: Python version
+      placeholder: 3.11.9
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: Ubuntu 24.04 / Windows 11 / macOS 15
+    validations:
+      required: true
+  - type: dropdown
+    id: login_method
+    attributes:
+      label: Login method
+      options:
+        - username/password
+        - sessionid
+        - load_settings / set_settings
+        - no login required
+        - other
+    validations:
+      required: true
+  - type: input
+    id: proxy
+    attributes:
+      label: Proxy used?
+      description: Write the proxy type or "no". Do not paste credentials.
+      placeholder: no / http proxy / socks5 proxy
+    validations:
+      required: true
+  - type: dropdown
+    id: current_master
+    attributes:
+      label: Can you reproduce on current master?
+      options:
+        - "yes"
+        - "no"
+        - not tested
+    validations:
+      required: true
+  - type: textarea
+    id: raw_data
+    attributes:
+      label: Raw API response or payload sample
+      description: Paste cl.last_json, raw response JSON, or a minimized payload sample if possible. Redact secrets.
+      render: json
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that helps reproduce or triage the issue.
