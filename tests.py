@@ -5,6 +5,7 @@ import os.path
 import random
 import unittest
 from unittest import mock
+from unittest.mock import Mock
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -454,6 +455,18 @@ class ClientTestCase(unittest.TestCase):
         self.assertEqual(
             cl.get_settings()["device_settings"], settings["device_settings"]
         )
+
+    def test_media_pk_from_share_url(self):
+        cl = Client()
+        response = Mock(
+            headers={"Location": "https://www.instagram.com/p/DC2konOtSse/"}
+        )
+        with mock.patch.object(cl.public, "get", return_value=response) as public_get:
+            self.assertEqual(
+                cl.media_pk_from_url("https://www.instagram.com/share/p/BALv9Ep4YH"),
+                cl.media_pk_from_code("DC2konOtSse"),
+            )
+        public_get.assert_called_once()
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):

@@ -146,6 +146,18 @@ class MediaMixin:
         """
         path = urlparse(url).path
         parts = [p for p in path.split("/") if p]
+        if parts[:2] == ["share", "p"] and len(parts) >= 3:
+            response = self.public.get(
+                url,
+                proxies=self.public.proxies,
+                timeout=self.request_timeout,
+                allow_redirects=False,
+            )
+            location = response.headers.get("Location") or response.headers.get(
+                "location"
+            )
+            if location:
+                return self.media_pk_from_url(location)
         return self.media_pk_from_code(parts.pop())
 
     def media_info_a1(self, media_pk: str, max_id: str = None) -> Media:
