@@ -8,7 +8,7 @@ from instagrapi.types import UserShort
 IG_USERNAME = ""
 IG_PASSWORD = ""
 IG_CREDENTIAL_PATH = "./ig_settings.json"
-SLEEP_TIME = "600"  # in seconds
+SLEEP_TIME = 600  # in seconds
 
 
 class Bot:
