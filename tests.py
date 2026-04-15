@@ -391,6 +391,23 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         self.assertIn("Challenge code required", str(cm.exception))
         sleep.assert_not_called()
 
+    def test_challenge_resolve_simple_ufac_www_bloks_raises_clear_manual_error(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "message": "challenge_required",
+            "status": "ok",
+            "step_name": "ufac_www_bloks",
+            "step_data": {"screen_data": '{"screen_output_payload":{}}'},
+            "challenge_context": "dummy",
+            "challenge_type_enum_str": "UFAC_WWW_BLOKS",
+        }
+
+        with self.assertRaises(ChallengeRequired) as cm:
+            client.challenge_resolve_simple("challenge/test/")
+
+        self.assertIn("UFAC web bloks checkpoint", str(cm.exception))
+
 
 class ClientTestCase(unittest.TestCase):
     def test_jazoest(self):

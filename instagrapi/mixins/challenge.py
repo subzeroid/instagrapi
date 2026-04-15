@@ -479,6 +479,16 @@ class ChallengeResolveMixin:
                 f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
             )
             return self.bloks_change_password(pwd, self.last_json["challenge_context"])
+        elif step_name == "ufac_www_bloks":
+            raise ChallengeRequired(
+                "Manual verification required via Instagram UFAC web bloks checkpoint. "
+                "Please resolve it in the Instagram app or web flow and then retry.",
+                **{
+                    key: value
+                    for key, value in self.last_json.items()
+                    if key != "message"
+                },
+            )
         elif step_name == "selfie_captcha":
             raise ChallengeSelfieCaptcha(self.last_json)
         elif step_name == "select_contact_point_recovery":
