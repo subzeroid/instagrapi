@@ -85,7 +85,7 @@ test = [
     "Pillow==12.1.0",
     "isort==7.0.0",
     "bandit==1.8.6",
-    "mike==2.1.3",
+    "mike==2.2.0",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
     "mkdocs-minify-html-plugin>=0.3.1",
