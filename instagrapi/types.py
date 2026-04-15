@@ -28,7 +28,7 @@ def validate_external_url(cls, v):
 class Resource(TypesBaseModel):
     pk: str
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
-    thumbnail_url: HttpUrl
+    thumbnail_url: Optional[HttpUrl] = None
     media_type: int
 
 
