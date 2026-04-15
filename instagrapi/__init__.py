@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+from typing import Optional
+
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
@@ -95,8 +97,8 @@ class Client(
     def __init__(
         self,
         settings: dict = {},
-        proxy: str | None = None,
-        delay_range: list | None = None,
+        proxy: Optional[str] = None,
+        delay_range: Optional[list] = None,
         logger=DEFAULT_LOGGER,
         **kwargs,
     ):
@@ -111,7 +113,7 @@ class Client(
 
         self.init()
 
-    def set_proxy(self, dsn: str | None):
+    def set_proxy(self, dsn: Optional[str]):
         if dsn:
             assert isinstance(
                 dsn, str
