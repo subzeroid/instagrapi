@@ -33,6 +33,7 @@ from .types import (
     User,
     UserShort,
     Usertag,
+    Viewer
 )
 from .utils import InstagramIdCodec, json_value
 
@@ -202,6 +203,14 @@ def extract_user_short(data):
     data["pk"] = data.get("id", data.get("pk", None))
     assert data["pk"], f'User without pk "{data}"'
     return UserShort(**data)
+
+
+def extract_viewer(data):
+    """Extract Viewer info"""
+    user = data.pop("user")
+    user["pk"] = user.get("id", user.get("pk", None))
+    assert user["pk"], f'User without pk "{user}"'
+    return Viewer(**user, **data)
 
 
 def extract_broadcast_channel(data):
