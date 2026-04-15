@@ -6,6 +6,7 @@ import random
 import re
 import time
 import uuid
+from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Union
 from uuid import uuid4
@@ -82,7 +83,7 @@ class PreLoginFlowMixin:
         data = {
             "android_device_id": self.android_device_id,
             "client_contact_points": '[{"type":"omnistring","value":"%s","source":"last_login_attempt"}]'
-                                     % self.username,
+            % self.username,
             "phone_id": self.phone_id,
             "usages": '["account_recovery_omnibox"]',
             "logged_in_user_ids": "[]",  # "[\"123456789\",\"987654321\"]",
@@ -188,7 +189,7 @@ class PostLoginFlowMixin:
         return all(check_flow)
 
     def get_timeline_feed(
-            self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
+        self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
     ) -> Dict:
         """
         Get your timeline feed
@@ -246,7 +247,7 @@ class PostLoginFlowMixin:
         )
 
     def get_reels_tray_feed(
-            self, reason: REELS_TRAY_REASON = "pull_to_refresh"
+        self, reason: REELS_TRAY_REASON = "pull_to_refresh"
     ) -> Dict:
         """
         Get your reels tray feed
@@ -305,7 +306,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
-        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
+        self.bloks_versioning_id = (
+            "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
+        )
         self.user_agent = None
         self.settings = None
         self.override_app_version = False
@@ -325,15 +328,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
-        self.set_timezone_offset(
-            self.settings.get("timezone_offset", self.timezone_offset)
-        )
+        timezone_offset = self.settings.get("timezone_offset", self.timezone_offset)
+        locale = self.settings.get("locale", self.locale)
+        country = self.settings.get("country", self.country)
+        country_code = self.settings.get("country_code", self.country_code)
+
+        self.set_timezone_offset(timezone_offset)
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
-        self.set_locale(self.settings.get("locale", self.locale))
-        self.set_country(self.settings.get("country", self.country))
-        self.set_country_code(self.settings.get("country_code", self.country_code))
+        self.set_locale(locale)
+        self.set_country(country)
+        self.set_country_code(country_code)
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         self.set_ig_u_rur(self.settings.get("ig_u_rur"))
         self.set_ig_www_claim(self.settings.get("ig_www_claim"))
@@ -375,11 +381,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return True
 
     def login(
-            self,
-            username: Union[str, None] = None,
-            password: Union[str, None] = None,
-            relogin: bool = False,
-            verification_code: str = "",
+        self,
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
+        relogin: bool = False,
+        verification_code: str = "",
     ) -> bool:
         """
         Login
@@ -427,9 +433,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(self.password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"%d","source":["default"]}]' % int(
-                self.country_code
-            ),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]'
+            % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": username,
@@ -597,11 +602,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         -------
         Bool
         """
-        self.settings = settings
+        self.settings = deepcopy(settings)
         self.init()
         return True
 
-    def load_settings(self, path: Union[str, Path], override_app_version: bool = False) -> Dict:
+    def load_settings(
+        self, path: Union[str, Path], override_app_version: bool = False
+    ) -> Dict:
         """
         Load session settings
 
