@@ -9,7 +9,10 @@ Fast and effective unofficial Instagram API wrapper for Python.
 
 `instagrapi` combines public web and private mobile API flows, supports session persistence and challenge handling, and covers the main automation primitives for users, media, stories, direct messages, notes, locations, comments, insights, and uploads.
 
-Support **Python >= 3.9**
+Support **Python 3.10+**
+
+`Python 3.9` remains in maintenance support through **December 31, 2026**.
+This transition keeps current users stable while aligning the main supported range with modern dependency security and tooling compatibility. In particular, newer `requests` releases now target `Python 3.10+`, which is one of the reasons `Python 3.9` is now maintenance-only.
 
 ## Installation
 
