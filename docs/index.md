@@ -2,9 +2,9 @@
 
 ### We recommend using our services:
 
-* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
-* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets 🚀
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows 🔥
+* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for production-grade hosted Instagram API infrastructure ⚡⚡⚡
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and Datasets 🚀
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
