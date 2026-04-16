@@ -1,9 +1,9 @@
 # instagrapi
 
-[![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master&1)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
-![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
+[![Python](https://img.shields.io/pypi/pyversions/instagrapi)](https://pypi.org/project/instagrapi/)
+[![License](https://img.shields.io/pypi/l/instagrapi)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-gh--pages-blue)](https://subzeroid.github.io/instagrapi/)
 
 Fast and effective unofficial Instagram API wrapper for Python.
 
