@@ -125,7 +125,7 @@ jobs:
 
   build-docs:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
     steps:
       - name: Check out code
         uses: actions/checkout@v6
@@ -146,7 +146,7 @@ jobs:
 
       # upload artifact for dev build
       - name: Upload coverage results artifact
-        if: github.ref != 'refs/heads/main'
+        if: github.ref != 'refs/heads/master'
         uses: actions/upload-artifact@v7
         with:
           name: docs-site
@@ -154,7 +154,7 @@ jobs:
 
   update-dev-docs:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     steps:
       - name: Check out code
         uses: actions/checkout@v6
