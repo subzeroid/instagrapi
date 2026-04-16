@@ -2,7 +2,7 @@
 
 | Method                                                                    | Return                  | Description
 | ------------------------------------------------------------------------- | ----------------------- | ----------------------------------
-| `direct_threads(amount: int = 20, selected_filter: str = "", thread_message_limit: Optional[int] = None)` <br> Note: selected_filter = "", "flagged" or "unread" | List[DirectThread] | Get all threads from inbox
+| `direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)` <br> Note: `selected_filter` = `""`, `"flagged"` or `"unread"`; `box` = `""`, `"primary"` or `"general"` | List[DirectThread] | Get all threads from inbox
 | direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
 | direct_thread(thread_id: int, amount: int = 20)                           | DirectThread            | Get Thread with Messages
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
@@ -23,6 +23,12 @@
 | direct_send_photo(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct photo to list of users or threads
 | direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video to list of users or threads
 | video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {}) | DirectMessage | Upload video to direct thread as a story and configure it
+
+Notes:
+
+* For `direct_send()`, `direct_send_photo()`, and `direct_send_video()`, pass exactly one of `user_ids` or `thread_ids`.
+* `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
+* Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via `dump_settings()/load_settings()` are more reliable than browser-only `sessionid` reuse.
 
 Example of basic actions:
 

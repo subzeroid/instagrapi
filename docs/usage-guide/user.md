@@ -31,6 +31,13 @@ View a list of a user's medias, following and followers
 | close_friend_add(user_id: str)                | bool                  | Add to Close Friends List                                    |
 | close_friend_remove(user_id: str)             | bool                  | Remove from Close Friends List                               |
 
+Lookup helpers:
+
+| Method                                        | Return                | Description                                                  |
+|-----------------------------------------------|-----------------------|--------------------------------------------------------------|
+| user_short_gql(user_id: str, use_cache: bool = True) | UserShort      | Short user info with current GraphQL/web-profile fallback chain |
+| username_from_user_id_gql(user_id: str)       | str                   | Resolve username from user id using the same fallback chain  |
+
 Low level methods:
 
 | Method                                                                              | Return                      | Description                                                                |
@@ -104,3 +111,7 @@ followers = cl.user_followers(cl.user_id)
 for user_id in followers.keys():
     cl.user_unfollow(user_id)
 ```
+
+Tip:
+
+* `user_info_by_username()` and other high-level user helpers may internally fall back between web/public and private paths depending on what Instagram currently accepts for the session.

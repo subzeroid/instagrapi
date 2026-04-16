@@ -38,25 +38,32 @@ If you have a different resolution, then you need to prepare a file or use the S
 Common arguments:
 
 * `path` - Path to media file
-* `caption` - Caption for story (now use to fetch mentions)
+* `caption` - Optional caption text
 * `thumbnail` - Thumbnail instead capture from source file
 * `mentions` - Tag profiles in story
 * `locations` - Add locations to story
-* `links` - "Swipe Up" links (now use first)
+* `links` - Story link stickers (Instagram currently uses the first link only)
 * `hashtags` - Add hashtags to story
 * `stickers` - Add stickers to story
+* `medias` - Reshared feed media stickers
 * `polls` - Add polls to story
 
 | Method                               | Return   | Description
 | ------------------------------------ | -------- | -------------
-| photo_upload_to_story(path: Path, caption: str, upload_id: str, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], polls: List[StoryPoll], extra_data: Dict[str, str] = {})  | Story  | Upload photo (Support JPG files)
-| video_upload_to_story(path: Path, caption: str, thumbnail: Path, mentions: List[Usertag], locations: List[StoryLocation], links: List[StoryLink], hashtags: List[StoryHashtag], stickers: List[StorySticker], polls: List[StoryPoll], extra_data: Dict[str, str] = {}) | Story  | Upload video (Support MP4 files)
+| photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})  | Story  | Upload photo to story
+| video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}) | Story  | Upload video to story
 
 In `extra_data`, you can pass additional story settings, for example:
 
 | Method            | Type   | Description
 | ----------------- | ------ | ------------------
 | audience          | String | [Publish story for close friends](https://github.com/subzeroid/instagrapi/issues/1210) `{"audience": "besties"}`
+
+Notes:
+
+* `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
+* Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
+* For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
 
 
 Examples:

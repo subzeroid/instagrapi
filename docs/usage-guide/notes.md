@@ -1,4 +1,4 @@
-# Notes *WIP*
+# Notes
 
 | Method                      | Return            | Description                     |
 | --------------------------- | ----------------- | ------------------------------- |
@@ -7,7 +7,7 @@
 | get_note_text_by_user(notes: List[Note], username: str) | Optional[str] | Get note text by username |
 | create_note(text: str, audience: int = 0) | Note | Post a new Note                 |
 | delete_note(note_id: int)   | bool              | Delete a posted Note            |
-| update_last_seen_note()     | bool              | Update the last seen time |
+| last_seen_update_note()     | bool              | Update the last seen time |
 
 Example:
 
@@ -60,3 +60,12 @@ Common arguments:
 * `text` - Content of the Note
 * `audience` - Who can see the note **(0 = Followers you follow back, 1 = Close Friends only)**
 * `username` - Username used to search in an existing `notes` list
+
+Typical flow:
+
+```python
+notes = cl.get_notes()
+note = cl.get_note_by_user(notes, "instagram")
+if note:
+    print(note.text)
+```

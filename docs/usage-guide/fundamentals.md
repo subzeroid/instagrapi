@@ -10,6 +10,9 @@ This section provides detailed descriptions of all the ways `instagrapi` can be 
 
 The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
 
+Not every high-level helper has a public and private twin. Some newer flows are private-only, while some lookup helpers
+use an internal fallback chain and choose the best currently working path for the session.
+
 ## Detailed Sections
 
 * [Index](../index.md)
@@ -27,8 +30,9 @@ The first request to fetch media/user is `public` (anonymous), if instagram rais
   * [`Collection`](collection.md) - Collection of medias (name, picture and list of medias)
   * [`Comment`](comment.md) - Comments to Media
   * [`Highlight`](highlight.md) - Highlights
+  * [`Notes`](notes.md) - Direct Notes
   * [`Story`](story.md) - Story
-  * [`StoryLink`](story.md) - Link (Swipe up)
+  * [`StoryLink`](story.md) - Story link sticker
   * [`StoryLocation`](story.md) - Tag Location in Story (as sticker)
   * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)
   * [`StoryHashtag`](story.md) - Hashtag for story (as sticker)

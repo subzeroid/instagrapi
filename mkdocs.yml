@@ -10,14 +10,18 @@ nav:
   - Usage Guide:
     - Fundamentals: usage-guide/fundamentals.md
     - Interactions: usage-guide/interactions.md
+    - TOTP: usage-guide/totp.md
+    - Challenge Resolver: usage-guide/challenge_resolver.md
     - Handle Exceptions: usage-guide/handle_exception.md
     - Collection: usage-guide/collection.md
     - Comment: usage-guide/comment.md
     - Direct: usage-guide/direct.md
     - Hashtag: usage-guide/hashtag.md
+    - Highlight: usage-guide/highlight.md
     - Insight: usage-guide/insight.md
     - Location: usage-guide/location.md
     - Media: usage-guide/media.md
+    - Notes: usage-guide/notes.md
     - Story: usage-guide/story.md
     - Track: usage-guide/track.md
     - User: usage-guide/user.md

@@ -16,7 +16,7 @@
 * [`Comment`](comment.md) - Comments to Media
 * [`Highlight`](highlight.md) - Highlights
 * [`Story`](story.md) - Story
-* [`StoryLink`](story.md) - Link (Swipe up)
+* [`StoryLink`](story.md) - Story link sticker
 * [`StoryLocation`](story.md) - Tag Location in Story (as sticker)
 * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)
 * [`StoryHashtag`](story.md) - Hashtag for story (as sticker)
@@ -26,12 +26,13 @@
 * [`DirectMessage`](direct.md) - Message in Direct
 * [`Insight`](insight.md) - Insights for a post
 * [`Track`](track.md) - Music track (for Reels/Clips)
+* [`Note`](notes.md) - Direct Notes
 
 ## Interacting with Instagram Account
 
 `instagrapi` provides the following `Interactions` that can be used to control and get the information about your `Instagram` account:
 
-* Client(settings: dict = {}, proxy: str = ""): bool - Init `instagrapi` client
+* `Client(settings: dict = {}, proxy: str = "")` - Init `instagrapi` client
 
 ``` python
 cl.login("instagrapi", "42")
@@ -79,7 +80,8 @@ settings = {
       "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
       "device_id": "android-e021b636049dc0e9"
    },
-   "cookies":  {},  # set here your saved cookies
+   "authorization_data": {},  # sessionid / ds_user_id / authorization values
+   "cookies":  {},  # saved cookies
    "last_login": 1596069420.0000145,
    "device_settings": {
       "cpu": "h1",
@@ -87,13 +89,15 @@ settings = {
       "model": "h1",
       "device": "RS988",
       "resolution": "1440x2392",
-      "app_version": "117.0.0.28.123",
       "manufacturer": "LGE/lge",
-      "version_code": "168361634",
       "android_release": "6.0.1",
       "android_version": 23
    },
-   "user_agent": "Instagram 117.0.0.28.123 Android (23/6.0.1; ...US; 168361634)"
+   "user_agent": "Instagram 385.0.0.47.74 Android (...)",
+   "country": "US",
+   "country_code": 1,
+   "locale": "en_US",
+   "timezone_offset": -14400
 }
 
 cl = Client(settings)
@@ -122,7 +126,7 @@ Next time:
 
 ```python
 cl = Client()
-cl.load_settings('/tmp/dump.json')
+cl.set_settings(cl.load_settings('/tmp/dump.json'))
 cl.login(USERNAME, PASSWORD)
 cl.get_timeline_feed()  # check session
 ```
@@ -135,6 +139,7 @@ cl.get_timeline_feed()  # check session
 | private.proxies                          | dict | Stores used proxy servers for private (mobile, v1) requests
 | public.proxies                           | dict | Stores used proxy servers for public (web, graphql) requests
 | set_device(device: dict)                 | bool | Change device settings ([Android Device Information Generator Online](https://www.myfakeinfo.com/mobile/get-android-device-information.php))
+| set_app(app: Union[str, Dict] = None)    | bool | Apply a supported Instagram app version profile (`app_version`, `version_code`, `bloks_versioning_id`)
 | device                                   | dict | Return device dict which we pass to Instagram
 | set_user_agent(user_agent: str = "")     | bool | Change User-Agent header ([User Agents](https://user-agents.net/applications/instagram-app))
 | cookie_dict                              | dict | Return cookies

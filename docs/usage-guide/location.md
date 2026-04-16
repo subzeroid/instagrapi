@@ -46,6 +46,13 @@ Example:
 >>> cl.location_build(location)
 '{"name":"Russia, Saint-Petersburg","address":"Russia, Saint-Petersburg","lat":59.93318,"lng":30.30605,"external_source":"facebook_places","facebook_places_id":107617247320879}'
 
+>>> places = cl.location_search_name("Times Square")
+>>> places[0].dict()
+{'pk': 6889842, 'name': 'Times Square', ...}
+
+>>> cl.location_search_pk(places[0].pk).dict()
+{'pk': 6889842, 'name': 'Times Square', ...}
+
 >>> location = cl.location_info(107617247320879)
 >>> location.dict()
 {'pk': 107617247320879,

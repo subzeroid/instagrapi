@@ -1,3 +1,15 @@
+```text
+                            ░██                         ░██                                                         ░██
+                            ░██
+░██░████████   ░███████  ░████████  ░██████    ░████████ ░██░████  ░██████   ░████████  ░██
+░██░██    ░██ ░██           ░██          ░██  ░██    ░██ ░███           ░██  ░██    ░██ ░██
+░██░██    ░██  ░███████     ░██     ░███████  ░██    ░██ ░██       ░███████  ░██    ░██ ░██
+░██░██    ░██        ░██    ░██    ░██   ░██  ░██   ░███ ░██      ░██   ░██  ░███   ░██ ░██
+░██░██    ░██  ░███████      ░████  ░█████░██  ░█████░██ ░██       ░█████░██ ░██░█████  ░██
+                                                     ░██                     ░██
+                                               ░███████                      ░██
+```
+
 If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) project.
 However, you won't need to spend weeks or even months setting it up.
 The best service available today is [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
@@ -59,12 +71,11 @@ Features:
 * Work with Users, Posts, Comments, Insights, Collections, Location and Hashtag
 * Insights by account, posts and stories
 * Like, following, commenting, editing account (Bio) and much more else
+* Notes API helpers and location search helpers for current mobile/web flows
 
 # instagrapi - Unofficial Instagram API for Python
 
 Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using reverse-engineering with Charles Proxy and [Proxyman](https://proxyman.io/).
-
-*Instagram API valid for **25 May 2025** (last reverse-engineering check)*
 
 Support **Python >= 3.9**
 
@@ -127,6 +138,16 @@ cl.load_settings("session.json")
 cl.login(USERNAME, PASSWORD)
 ```
 
+If you want more explicit control over the loaded session object:
+
+```python
+from instagrapi import Client
+
+cl = Client()
+cl.set_settings(cl.load_settings("session.json"))
+cl.login(USERNAME, PASSWORD)
+```
+
 ### Login using a sessionid
 
 ``` python
@@ -135,6 +156,9 @@ from instagrapi import Client
 cl = Client()
 cl.login_by_sessionid("<your_sessionid>")
 ```
+
+`login_by_sessionid()` is best treated as a lightweight compatibility path. For long-lived automation, prefer the normal
+`login() -> dump_settings() -> load_settings()/set_settings()` session flow.
 
 ### List and download another user's posts
 
@@ -151,6 +175,36 @@ for media in posts:
     cl.photo_download(media.pk)
 ```
 See [examples/session_login.py](examples/session_login.py) for a standalone script demonstrating these login methods.
+
+### Search locations by name or exact pk
+
+```python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+places = cl.location_search_name("Times Square")
+place = places[0]
+same_place = cl.location_search_pk(place.pk)
+
+print(same_place.name, same_place.pk)
+```
+
+### Work with Notes
+
+```python
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+notes = cl.get_notes()
+print(cl.get_note_text_by_user(notes, "instagram"))
+
+note = cl.create_note("Hello from instagrapi", audience=0)
+cl.delete_note(note.id)
+```
 
 
 <details>
@@ -200,7 +254,7 @@ cl.video_upload_to_story(
   * [`Highlight`](https://subzeroid.github.io/instagrapi/usage-guide/highlight.html) - Highlights
   * [`Notes`](https://subzeroid.github.io/instagrapi/usage-guide/notes.html) - Notes
   * [`Story`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Story
-  * [`StoryLink`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Link Sticker
+  * [`StoryLink`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Story link sticker
   * [`StoryLocation`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
   * [`StoryMention`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Mention users in Story (user, coordinates and dimensions)
   * [`StoryHashtag`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Hashtag for story (as sticker)
