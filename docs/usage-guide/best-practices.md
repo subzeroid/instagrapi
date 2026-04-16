@@ -18,7 +18,7 @@ From our experience, here are safe limits we've seen for various actions:
 - publishing 4-16 posts for each account
 - publishing 24-48 stories
 
-We recommend using the [SOAX](https://soax.com/?r=sEysufQI) proxy service. Here's an example of using it with `instagrapi`
+The exact proxy provider matters less than consistency and quality. Here is the shape of using a proxy with `instagrapi`:
 
 ``` python
 from instagrapi import Client
@@ -31,6 +31,12 @@ after_ip = cl._send_public_request("https://api.ipify.org/")
 print(f"Before: {before_ip}")
 print(f"After: {after_ip}")
 ```
+
+Notes:
+
+* Keep one stable proxy/IP per account whenever possible.
+* Avoid rapidly rotating countries, cities, or carrier/mobile fingerprints for the same account.
+* If you do password logins, match proxy, device settings, and account reuse consistently.
 
 ## Add Delays
 
@@ -51,14 +57,14 @@ cl.delay_range = [1, 3]
 
 ## Use Sessions
 
-When using `.login()` you will login and create a new session with Instagram every time.
-This is suspicious for Instagram.
-For example, when you use your mobile device, you login to Instagram once
-and then you can use it for a long time without logging in again. This is because Instagram stores
-your session on your device and you can use it to login to Instagram without entering your username
-and password again.
+If you call `.login()` from scratch on every run, Instagram sees repeated fresh logins. That is much more suspicious than reusing a stable device session.
 
-To mimic this behavior, you can use the `.login()` method once to create a session and then store that session using `.dump_settings()` and then load it again using `.load_settings()`.
+The normal pattern is:
+
+1. Login once
+2. Save settings with `.dump_settings()`
+3. Load them later with `.load_settings()` or `.set_settings()`
+4. Reuse the same device/session identifiers across runs
 
 The first time you run your script
 
@@ -70,20 +76,31 @@ cl.login(USERNAME, PASSWORD)
 cl.dump_settings("session.json")
 ```
 
-And the next time
+And on the next run:
 
 ``` python
 from instagrapi import Client
 
 cl = Client()
 cl.load_settings("session.json")
-cl.login (USERNAME, PASSWORD) # this doesn't actually login using username/password but uses the session
-cl.get_timeline_feed() # check session
+cl.login(USERNAME, PASSWORD)
+cl.get_timeline_feed()  # optional session validity check
 ```
 
 You'll notice we do a call to `cl.get_timeline_feed()` to check if the session is valid. If it's not valid, you'll get an exception.
 
-Putting this all together, we could write a login function like this
+If you want more explicit control over the loaded settings object:
+
+```python
+from instagrapi import Client
+
+cl = Client()
+session = cl.load_settings("session.json")
+cl.set_settings(session)
+cl.login(USERNAME, PASSWORD)
+```
+
+Putting this all together, you can write a reusable login helper like this:
 
 ``` python
 from instagrapi import Client
@@ -136,4 +153,16 @@ def login_user():
 
     if not login_via_pw and not login_via_session:
         raise Exception("Couldn't login user with either password or session")
+
+    return cl
 ```
+
+## Prefer Read/Write Separation
+
+If your workload is mostly data retrieval, keep that path separate from account-changing actions.
+
+In practice:
+
+* Reading data is usually easier to scale and safer to isolate.
+* Writing actions such as posting, following, editing profile data, or sending DMs need much stricter operational hygiene.
+* When possible, use official Instagram APIs for account-changing actions and keep private API automation focused on the gaps.
