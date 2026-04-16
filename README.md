@@ -9,6 +9,16 @@ Fast and effective unofficial Instagram API wrapper for Python.
 
 `instagrapi` combines public web and private mobile API flows, supports session persistence and challenge handling, and covers the main automation primitives for users, media, stories, direct messages, notes, locations, comments, insights, and uploads.
 
+If you want to work with Instagrapi for business interests, prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe).
+You will not need to spend weeks or even months setting it up.
+The service handles millions of daily requests, provides round-the-clock support, and offers partners a special rate.
+In many cases, clients first try to save money with self-hosted private API automation, then return to [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) after spending more time and money on accounts, proxies, and challenge handling.
+It is difficult to find good accounts, good proxies, resolve challenges reliably, and keep Instagram from banning accounts.
+
+The instagrapi project is better suited for testing and research than for running a production business.
+
+✨ [aiograpi - Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
+
 Support **Python 3.10+**
 
 `Python 3.9` remains in maintenance support through **December 31, 2026**.
