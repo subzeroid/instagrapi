@@ -3,4 +3,5 @@ Pillow==12.2.0
 isort==7.0.0
 bandit==1.8.6
 pytest-xdist==3.8.0
-pytest==9.0.3
+pytest==8.4.2; python_version < "3.10"
+pytest==9.0.3; python_version >= "3.10"
