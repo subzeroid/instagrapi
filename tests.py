@@ -1512,6 +1512,47 @@ class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
 
 
 class DirectExtractorRegressionTestCase(unittest.TestCase):
+    def test_xma_share_without_target_url_is_ignored(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "xma_media_share",
+                "text": "",
+                "xma_media_share": [
+                    {
+                        "header_icon_url": "",
+                        "title_text": "Shared content",
+                    }
+                ],
+            }
+        )
+
+        self.assertIsNone(message.xma_share)
+
+    def test_xma_share_accepts_empty_header_icon_url(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "xma_media_share",
+                "text": "",
+                "xma_media_share": [
+                    {
+                        "target_url": "https://example.com/reel",
+                        "header_icon_url": "",
+                        "title_text": "Shared content",
+                    }
+                ],
+            }
+        )
+
+        self.assertIsNotNone(message.xma_share)
+        self.assertEqual(str(message.xma_share.video_url), "https://example.com/reel")
+        self.assertIsNone(message.xma_share.header_icon_url)
+
     def test_reply_visual_media_timestamp_uses_microseconds(self):
         message = extract_direct_message(
             {

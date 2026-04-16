@@ -87,13 +87,15 @@ def extract_media_v1(data):
 def extract_media_v1_xma(data):
     """Extract media from Private API"""
     media = deepcopy(data)
+    if not media.get("target_url"):
+        return None
 
     # media["media_type"] = 10
-    media["video_url"] = media.get("target_url", "")
+    media["video_url"] = media.get("target_url")
     media["title"] = media.get("title_text", "")
     media["preview_url"] = media.get("preview_url", "")
     media["preview_url_mime_type"] = media.get("preview_url_mime_type", "")
-    media["header_icon_url"] = media.get("header_icon_url", "")
+    media["header_icon_url"] = media.get("header_icon_url") or None
     media["header_icon_width"] = media.get("header_icon_width", 0)
     media["header_icon_height"] = media.get("header_icon_height", 0)
     media["header_title_text"] = media.get("header_title_text", "")
@@ -454,12 +456,16 @@ def extract_direct_message(data):
     # Handle xma_clip (new Instagram API format for clip/reel shares)
     xma_clip = data.get("xma_clip", {})
     if xma_clip:
-        data["xma_share"] = extract_media_v1_xma(xma_clip[0])
+        xma_share = extract_media_v1_xma(xma_clip[0])
+        if xma_share:
+            data["xma_share"] = xma_share
     #  Handle xma_media_share (only if xma_share not already set above by xma_clip)
     if "xma_share" not in data or data["xma_share"] is None:
         xma_media_share = data.get("xma_media_share", {})
         if xma_media_share:
-            data["xma_share"] = extract_media_v1_xma(xma_media_share[0])
+            xma_share = extract_media_v1_xma(xma_media_share[0])
+            if xma_share:
+                data["xma_share"] = xma_share
 
     # Convert main timestamp
     data["timestamp"] = datetime.datetime.fromtimestamp(
