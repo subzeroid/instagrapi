@@ -288,6 +288,21 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertIn("Missing 'data' in GraphQL response", str(cm.exception))
         self.assertIn("Incorrect Query", str(cm.exception))
 
+    def test_user_stories_anonymous_does_not_fallback_to_private(self):
+        client = Client()
+
+        with mock.patch.object(
+            client,
+            "user_stories_gql",
+            side_effect=ClientGraphqlError("Incorrect Query"),
+        ):
+            with mock.patch.object(client, "user_stories_v1") as private_fallback:
+                with self.assertRaises(ClientGraphqlError) as cm:
+                    client.user_stories("4776134209", amount=5)
+
+        private_fallback.assert_not_called()
+        self.assertIn("Incorrect Query", str(cm.exception))
+
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
     def test_get_note_helpers_by_user(self):

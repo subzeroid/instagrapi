@@ -6,7 +6,12 @@ from typing import List
 from urllib.parse import urlparse
 
 from instagrapi import config
-from instagrapi.exceptions import ClientNotFoundError, StoryNotFound, UserNotFound
+from instagrapi.exceptions import (
+    ClientGraphqlError,
+    ClientNotFoundError,
+    StoryNotFound,
+    UserNotFound,
+)
 from instagrapi.extractors import (
     extract_story_gql,
     extract_story_v1,
@@ -225,7 +230,13 @@ class StoryMixin:
             raise UserNotFound(e, user_id=user_id, **self.last_json)
         except IndexError:
             return []
-        except Exception:
+        except Exception as e:
+            if not self.user_id:
+                if isinstance(e, ClientGraphqlError):
+                    raise
+                raise ClientGraphqlError(
+                    "Anonymous story fetch failed via public API and private fallback requires login"
+                ) from e
             return self.user_stories_v1(user_id, amount)
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
