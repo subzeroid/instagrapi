@@ -1,4 +1,8 @@
 
+## Challenge Resolver
+
+Instagrapi lets you attach handlers for common login challenge flows such as code verification and password reset.
+
 ## New password challenge
 
 You can automatically change your password to solve the challenge from Instagram.
@@ -39,6 +43,12 @@ cl = Client()
 cl.challenge_code_handler = challenge_code_handler
 cl.login(IG_USERNAME, IG_PASSWORD)
 ```
+
+Notes:
+
+* `challenge_code_handler(username, choice)` should return the received code as a string. Returning a falsey value means no code is available yet.
+* Current `master` raises a clearer `ChallengeRequired` for `/auth_platform/?apc=...` flows. That path is not yet supported automatically and still requires manual verification.
+* For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.
 
 For example, you can get the code through the IMAP of Gmail:
 

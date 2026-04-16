@@ -1,16 +1,17 @@
 # Highlight
 
-| Method                                                                         | Return           | Description
-| ------------------------------------------------------------------------------ | ---------------- | ----------------------------------
-| highlight_pk_from_url(url: str)                                                | int              | Get Highlight PK from URL
-| highlight_info(highlight_pk: int)                                              | Highlight        | Get Highlight by pk or id
-| user_highlights(user_id: str, amount: int = 0)                                 | List[Highlight]  | Get a user's highlights
-| highlight_create(title: str, story_ids: List[str], cover_story_id: str = "", crop_rect: List[float] = [0.0, 0.21830457, 1.0, 0.78094524]) | Highlight | Create highlight
-| highlight_change_title(highlight_pk: str, title: str)                          | Highlight        | Change title for highlight
-| highlight_change_cover(highlight_pk: str, cover_path: Path)                    | Highlight        | Change cover for highlight
-| highlight_add_stories(highlight_pk: str, added_media_ids: List[str])           | Highlight        | Add stories to highlight
-| highlight_remove_stories(highlight_pk: str, removed_media_ids: List[str])      | Highlight        | Remove stories from highlight
-| highlight_delete(highlight_pk: str)                                            | bool             | Delete highlight
+| Method | Return | Description |
+| --- | --- | --- |
+| highlight_pk_from_url(url: str) | str | Get highlight PK from URL |
+| highlight_info(highlight_pk: str) | Highlight | Get highlight by PK or ID |
+| user_highlights(user_id: str, amount: int = 0) | List[Highlight] | Get a user's highlights |
+| highlight_create(title: str, story_ids: List[str], cover_story_id: str = "", crop_rect: List[float] = [0.0, 0.21830457, 1.0, 0.78094524]) | Highlight | Create highlight |
+| highlight_edit(highlight_pk: str, title: str = "", cover: Dict = {}, added_media_ids: List[str] = [], removed_media_ids: List[str] = []) | Highlight | Low-level highlight edit helper |
+| highlight_change_title(highlight_pk: str, title: str) | Highlight | Change title for highlight |
+| highlight_change_cover(highlight_pk: str, cover_path: Path) | Highlight | Change cover for highlight |
+| highlight_add_stories(highlight_pk: str, added_media_ids: List[str]) | Highlight | Add stories to highlight |
+| highlight_remove_stories(highlight_pk: str, removed_media_ids: List[str]) | Highlight | Remove stories from highlight |
+| highlight_delete(highlight_pk: str) | bool | Delete highlight |
 
 Example:
 
@@ -67,3 +68,9 @@ Highlight(pk='17907771728171896', id='highlight:17907771728171896', latest_reel_
 >>> cl.highlight_delete(17920472818962144)
 True
 ```
+
+Notes:
+
+* `story_ids`, `added_media_ids`, and `removed_media_ids` should use story/media IDs, not bare PKs.
+* `highlight_change_cover()` uploads the cover image first and then applies it through `highlight_edit()`.
+* `highlight_edit()` is useful when you want to combine multiple changes in one request instead of calling title/cover/story helpers separately.

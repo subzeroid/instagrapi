@@ -2,12 +2,12 @@
 
 TOTP setup and code generation
 
-| Method                              | Return    | Description
-| ----------------------------------- | --------- | ----------------------------------------------------------
-| totp_generate_seed()                | str       | Generate 2FA TOTP seed
-| totp_enable(verification_code: str) | List[str] | Enable TOTP 2FA (return backup keys, save it)
-| totp_disable()                      | bool      | Disable TOTP 2FA
-| totp_generate_code(seed: str)       | str       | Generate 2FA TOTP code (you can use it instead of Google Authenticator)
+| Method | Return | Description |
+| --- | --- | --- |
+| totp_generate_seed() | str | Generate 2FA TOTP seed |
+| totp_enable(verification_code: str) | List[str] | Enable TOTP 2FA and return backup codes |
+| totp_disable() | bool | Disable TOTP 2FA |
+| totp_generate_code(seed: str) | str | Generate a current 2FA TOTP code from a seed |
 
 
 Example:
@@ -29,3 +29,9 @@ Example:
 >>> cl.totp_disable()
 True
 ```
+
+Notes:
+
+* `totp_generate_seed()` gives you the secret key you would normally scan into an authenticator app.
+* `totp_generate_code()` is a local helper and can be used anywhere you already have the TOTP seed.
+* Save the backup codes returned by `totp_enable()` immediately. Instagram does not guarantee that you can fetch the same codes again later.
