@@ -739,7 +739,7 @@ class UploadPhotoMixin:
         if static_models:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
-            data["story_sticker_ids"] = story_sticker_ids[0]
+            data["story_sticker_ids"] = ",".join(story_sticker_ids)
         return self.private_request(
             "media/configure_to_story/", self.with_default_data(data)
         )
