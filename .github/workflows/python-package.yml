@@ -64,6 +64,32 @@ jobs:
       - name: Run isort
         run: isort --check-only instagrapi
 
+  test-compat:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          requirements: "true"
+          test-requirements: "true"
+      - name: Run compatibility smoke tests
+        run: |
+          pytest -sv \
+            tests.py::ExtractorsRegressionTestCase \
+            tests.py::PublicRegressionTestCase \
+            tests.py::ChallengeRegressionTestCase \
+            tests.py::LocationMixinRegressionTestCase \
+            tests.py::UserMixinRegressionTestCase \
+            tests.py::StoryConfigureRegressionTestCase
+
   test:
     runs-on: ubuntu-latest
     strategy:
