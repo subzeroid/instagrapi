@@ -555,6 +555,11 @@ def extract_story_v1(data):
         feed_medias.append(StoryMedia(**feed_media))
     story["medias"] = feed_medias
     story["links"] = []
+    for sticker in story.get("story_link_stickers", []):
+        story_link = sticker.get("story_link") or {}
+        story_link_url = story_link.get("url")
+        if story_link_url:
+            story["links"].append(StoryLink(**{"webUri": story_link_url}))
     for cta in story.get("story_cta", []):
         for link in cta.get("links", []):
             story["links"].append(StoryLink(**link))

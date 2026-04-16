@@ -17,6 +17,7 @@ from instagrapi.extractors import (
     extract_direct_message,
     extract_direct_thread,
     extract_resource_v1,
+    extract_story_v1,
 )
 from instagrapi.exceptions import (
     ChallengeRequired,
@@ -1777,6 +1778,60 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
             configure_args[1]["story_sticker_ids"],
             "hashtag_sticker,link_sticker_default",
         )
+
+    def test_extract_story_v1_reads_links_from_story_link_stickers(self):
+        story = extract_story_v1(
+            {
+                "pk": "1",
+                "id": "1_2",
+                "code": "abc",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": "https://example.com/thumbnail.jpg",
+                            "width": 720,
+                            "height": 1280,
+                        }
+                    ]
+                },
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "story_link_stickers": [
+                    {
+                        "x": 0.5,
+                        "y": 0.5,
+                        "width": 0.5,
+                        "height": 0.2,
+                        "rotation": 0.0,
+                        "story_link": {
+                            "url": "https://example.com/story-link",
+                            "link_type": "web",
+                        },
+                    }
+                ],
+                "story_hashtags": [
+                    {
+                        "x": 0.2,
+                        "y": 0.3,
+                        "width": 0.5,
+                        "height": 0.2,
+                        "rotation": 0.0,
+                        "hashtag": {"id": "1", "name": "example"},
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(len(story.links), 1)
+        self.assertEqual(str(story.links[0].webUri), "https://example.com/story-link")
+        self.assertEqual(len(story.stickers), 1)
+        self.assertEqual(len(story.hashtags), 1)
+        self.assertEqual(story.hashtags[0].hashtag.name, "example")
 
 
 class ClientAccountTestCase(ClientPrivateTestCase):
