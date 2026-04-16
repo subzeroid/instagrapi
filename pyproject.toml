@@ -4,34 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi"
-version = "2.4.0"
+version = "2.4.1"
 authors = [
     {name = "Mark Subzeroid", email = "143403577+subzeroid@users.noreply.github.com"}
 ]
 description = "Fast and effective Instagram Private API wrapper"
-readme = {content-type = "text/markdown", text = """
-Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver).
-
-Use the most recent version of the API from Instagram.
-
-Features:
-
-1. Performs Public API (web, anonymous) or Private API (mobile app, authorized)
-   requests depending on the situation (to avoid Instagram limits)
-2. Challenge Resolver have Email (as well as recipes for automating receive a code from email) and SMS handlers
-3. Support upload a Photo, Video, IGTV, Clips (Reels), Albums and Stories
-4. Support work with User, Media, Insights, Collections, Location (Place), Hashtag and Direct objects
-5. Like, Follow, Edit account (Bio) and much more else
-6. Insights by account, posts and stories
-7. Build stories with custom background, font animation, swipe up link and mention users
-8. In the next release, account registration and captcha passing will appear
-"""}
-license = {text = "MIT"}
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "MIT"
 requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

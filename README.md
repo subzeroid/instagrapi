@@ -1,118 +1,23 @@
-```text
-░██                         ░██                                                         ░██
-                            ░██                                                            
-░██░████████   ░███████  ░████████  ░██████    ░████████ ░██░████  ░██████   ░████████  ░██
-░██░██    ░██ ░██           ░██          ░██  ░██    ░██ ░███           ░██  ░██    ░██ ░██
-░██░██    ░██  ░███████     ░██     ░███████  ░██    ░██ ░██       ░███████  ░██    ░██ ░██
-░██░██    ░██        ░██    ░██    ░██   ░██  ░██   ░███ ░██      ░██   ░██  ░███   ░██ ░██
-░██░██    ░██  ░███████      ░████  ░█████░██  ░█████░██ ░██       ░█████░██ ░██░█████  ░██
-                                                     ░██                     ░██           
-                                               ░███████                      ░██           
-                                                                                           
-```
-
-If you want to work with Instagrapi (business interests), we strongly advise you to prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) project.
-However, you won't need to spend weeks or even months setting it up.
-The best service available today is [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe), which handles 4–5 million daily requests, provides support around-the-clock, and offers partners a special rate.
-In many instances, our clients tried to save money and preferred instagrapi, but in our experience, they ultimately returned to [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) after spending much more time and money.
-It will be difficult to find good accounts, good proxies, or resolve challenges, and IG will ban your accounts.
-
-The instagrapi more suits for testing or research than a working business!
-
-✨ [aiograpi - Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
-
-### We recommend using our services:
-
-* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for Rotating Proxies 🔒
-* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for Instagram API ⚡⚡⚡
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram Datasets, MCP and CacheAPI 🚀
-* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API 🔥
-* [InstaSurfBot](https://t.me/InstaSurfBot) telegram bot for downloading medias from Instagram ❤️
-* [OSINTagramBot](https://t.me/OSINTagramBot) telegram bot for OSINT on Instagram 🕵️‍♂️
-
-
-### 💰 [HikerAPI Affiliate Program](https://hikerapi.com/help/affiliate) — Up to 50% Commission!
-
-Refer users to HikerAPI and earn a percentage of their API spending:
-
-| Plan | Commission |
-|------|------------|
-| Start trial plan ($0.02/req) | **50%** |
-| Standard ($0.001/req) | **25%** |
-| Business ($0.00069/req) | **15%** |
-| Ultra ($0.0006/req) | **10%** |
-
-**How it works:**
-1. Create your promo code in the [dashboard](https://hikerapi.com/affiliate)
-2. Share it with your audience (in your GitHub repositories)
-3. Earn commission on every request they make, with lifetime attribution
-
-**Extras:** 2-level referral system, no caps, lifetime attribution
-
-**Payouts:** USDT / USDC (TRC-20 or ERC-20), minimum 20 USDT, request anytime from the dashboard
-
-------
+# instagrapi
 
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master&1)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)
 ![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)
 
-Features:
+Fast and effective unofficial Instagram API wrapper for Python.
 
-* Getting public data of user, posts, stories, highlights, followers and following users
-* Getting public email and phone number, if the user specified them in his business profile
-* Getting public data of post, story, album, Reels, IGTV data and the ability to download content
-* Getting public data of hashtag and location data, as well as a list of posts for them
-* Getting public data of all comments on a post and a list of users who liked it
-* Management of [proxy](https://cloqly.com/register?ref=58dbf70f), mobile devices and challenge resolver
-* Login by username and password, sessionid and support 2FA
-* Managing messages and threads for Direct and attach files
-* Download and upload a Photo, Video, IGTV, Reels, Albums and Stories
-* Work with Users, Posts, Comments, Insights, Collections, Location and Hashtag
-* Insights by account, posts and stories
-* Like, following, commenting, editing account (Bio) and much more else
-* Notes API helpers and location search helpers for current mobile/web flows
-
-# instagrapi - Unofficial Instagram API for Python
-
-Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver) without selenium. Use the most recent version of the API from Instagram, which was obtained using reverse-engineering with Charles Proxy and [Proxyman](https://proxyman.io/).
+`instagrapi` combines public web and private mobile API flows, supports session persistence and challenge handling, and covers the main automation primitives for users, media, stories, direct messages, notes, locations, comments, insights, and uploads.
 
 Support **Python >= 3.9**
 
-For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzeroid/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/subzeroid/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest) or [HikerAPI](https://hikerapi.com/p/bkXQlaVe)
-
-[Support Chat in Telegram](https://t.me/instagrapi)
-![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
-
-
-## Features
-
-1. Performs [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) or [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) requests depending on the situation (to avoid Instagram limits)
-2. [Login](https://subzeroid.github.io/instagrapi/usage-guide/interactions.html) by username and password, including 2FA and by sessionid (and uses Authorization header instead Cookies)
-3. [Challenge Resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) have Email and SMS handlers
-4. Support [upload](https://subzeroid.github.io/instagrapi/usage-guide/media.html) a Photo, Video, IGTV, Reels, Albums and Stories
-5. Support work with [User](https://subzeroid.github.io/instagrapi/usage-guide/user.html), [Media](https://subzeroid.github.io/instagrapi/usage-guide/media.html), [Comment](https://subzeroid.github.io/instagrapi/usage-guide/comment.html), [Insights](https://subzeroid.github.io/instagrapi/usage-guide/insight.html), [Collections](https://subzeroid.github.io/instagrapi/usage-guide/collection.html), [Location](https://subzeroid.github.io/instagrapi/usage-guide/location.html) (Place), [Hashtag](https://subzeroid.github.io/instagrapi/usage-guide/hashtag.html) and [Direct Message](https://subzeroid.github.io/instagrapi/usage-guide/direct.html) objects
-6. [Like](https://subzeroid.github.io/instagrapi/usage-guide/media.html), [Follow](https://subzeroid.github.io/instagrapi/usage-guide/user.html), [Edit account](https://subzeroid.github.io/instagrapi/usage-guide/account.html) (Bio) and much more else
-7. [Insights](https://subzeroid.github.io/instagrapi/usage-guide/insight.html) by account, posts and stories
-8. [Build stories](https://subzeroid.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, link sticker and mention users
-9. In the next release, account registration and captcha passing will appear
-
-## Telegram Bot for Download Posts, Stories and Highlights
-
-* https://t.me/InstaSurfBot
-* https://t.me/InstaBlastBot
-* https://t.me/InstaSavePremiumBot
-* https://t.me/InstaCopierBot
-* https://t.me/InstaMemoBot
-
-### Installation
+## Installation
 
 ```
 pip install instagrapi
 ```
 
-### Basic Usage
+## Quick Start
 
 ``` python
 from instagrapi import Client
@@ -124,7 +29,7 @@ user_id = cl.user_id_from_username(ACCOUNT_USERNAME)
 medias = cl.user_medias(user_id, 20)
 ```
 
-### Session with persistence
+## Session Persistence
 
 ``` python
 from instagrapi import Client
@@ -160,6 +65,8 @@ cl.login_by_sessionid("<your_sessionid>")
 
 `login_by_sessionid()` is best treated as a lightweight compatibility path. For long-lived automation, prefer the normal
 `login() -> dump_settings() -> load_settings()/set_settings()` session flow.
+
+## Typical Tasks
 
 ### List and download another user's posts
 
@@ -206,6 +113,42 @@ print(cl.get_note_text_by_user(notes, "instagram"))
 note = cl.create_note("Hello from instagrapi", audience=0)
 cl.delete_note(note.id)
 ```
+
+## Features
+
+* Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) or [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) depending on the situation
+* Supports login by password, 2FA, and `sessionid`
+* Includes email/SMS-based [challenge resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) hooks
+* Uploads and downloads photos, videos, albums, IGTV, reels, and stories
+* Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
+* Supports story building with mentions, hashtags, link stickers, and media stickers
+* Includes helpers for current location search and notes flows
+
+## Documentation And Support
+
+* [Documentation index](https://subzeroid.github.io/instagrapi/)
+* [Getting Started](https://subzeroid.github.io/instagrapi/getting-started.html)
+* [Usage Guide](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html)
+* [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
+* [Support chat in Telegram](https://t.me/instagrapi)
+
+For other languages, consider [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest). For async Python, see [aiograpi](https://github.com/subzeroid/aiograpi).
+
+<details>
+  <summary>ASCII Logo</summary>
+
+```text
+░██                         ░██                                                         ░██
+                            ░██
+░██░████████   ░███████  ░████████  ░██████    ░████████ ░██░████  ░██████   ░████████  ░██
+░██░██    ░██ ░██           ░██          ░██  ░██    ░██ ░███           ░██  ░██    ░██ ░██
+░██░██    ░██  ░███████     ░██     ░███████  ░██    ░██ ░██       ░███████  ░██    ░██ ░██
+░██░██    ░██        ░██    ░██    ░██   ░██  ░██   ░███ ░██      ░██   ░██  ░███   ░██ ░██
+░██░██    ░██  ░███████      ░████  ░█████░██  ░█████░██ ░██       ░█████░██ ░██░█████  ░██
+                                                     ░██                     ░██
+                                               ░███████                      ░██
+```
+</details>
 
 
 <details>
@@ -270,6 +213,34 @@ cl.video_upload_to_story(
 * [Handle Exceptions](https://subzeroid.github.io/instagrapi/usage-guide/handle_exception.html)
 * [Challenge Resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html)
 * [Exceptions](https://subzeroid.github.io/instagrapi/exceptions.html)
+
+## Ecosystem And Hosted Options
+
+If you need async Python, use [aiograpi](https://github.com/subzeroid/aiograpi).
+
+If you need hosted infrastructure instead of maintaining accounts, proxies, and challenge handling yourself, consider:
+
+* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for hosted Instagram API
+* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for rotating proxies
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram datasets, MCP, and CacheAPI
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API
+* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
+* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
+
+### [HikerAPI Affiliate Program](https://hikerapi.com/help/affiliate)
+
+Refer users to HikerAPI and earn a percentage of their API spending:
+
+| Plan | Commission |
+|------|------------|
+| Start trial plan ($0.02/req) | **50%** |
+| Standard ($0.001/req) | **25%** |
+| Business ($0.00069/req) | **15%** |
+| Ultra ($0.0006/req) | **10%** |
+
+**Extras:** 2-level referral system, no caps, lifetime attribution
+
+**Payouts:** USDT / USDC (TRC-20 or ERC-20), minimum 20 USDT, request anytime from the dashboard
 
 ## Contributing
 
