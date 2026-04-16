@@ -10,11 +10,13 @@
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)][pypi]
 
-Fast and effective Instagram Private API wrapper (public+private requests and challenge resolver). Use the most recent version of the API from Instagram, which was obtained using [reverse-engineering with Charles Proxy](https://github.com/subzeroid/instagrapi/discussions/1182) and [Proxyman](https://proxyman.io/).
+Fast and effective unofficial Instagram API wrapper for Python.
 
-*Instagram API valid for **16 Dec 2023** (last reverse-engineering check)*
+`instagrapi` combines public web and private mobile API flows, supports session persistence and challenge handling, and covers users, media, stories, direct messages, notes, uploads, and insights.
 
-Support **Python >= 3.9**
+Support **Python 3.10+**
+
+`Python 3.9` remains in maintenance support through **December 31, 2026**. One of the reasons is that newer `requests` releases now target `Python 3.10+`.
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzeroid/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/subzeroid/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest)
 
@@ -30,8 +32,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 5. Support work with [User](https://subzeroid.github.io/instagrapi/usage-guide/user.html), [Media](https://subzeroid.github.io/instagrapi/usage-guide/media.html), [Comment](https://subzeroid.github.io/instagrapi/usage-guide/comment.html), [Insights](https://subzeroid.github.io/instagrapi/usage-guide/insight.html), [Collections](https://subzeroid.github.io/instagrapi/usage-guide/collection.html), [Location](https://subzeroid.github.io/instagrapi/usage-guide/location.html) (Place), [Hashtag](https://subzeroid.github.io/instagrapi/usage-guide/hashtag.html) and [Direct Message](https://subzeroid.github.io/instagrapi/usage-guide/direct.html) objects
 6. [Like](https://subzeroid.github.io/instagrapi/usage-guide/media.html), [Follow](https://subzeroid.github.io/instagrapi/usage-guide/user.html), [Edit account](https://subzeroid.github.io/instagrapi/usage-guide/account.html) (Bio) and much more else
 7. [Insights](https://subzeroid.github.io/instagrapi/usage-guide/insight.html) by account, posts and stories
-8. [Build stories](https://subzeroid.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, swipe up link and mention users
-9. In the next release, account registration and captcha passing will appear
+8. [Build stories](https://subzeroid.github.io/instagrapi/usage-guide/story.html) with custom background, font animation, link stickers, and mentions
 
 ## Example
 
@@ -109,9 +110,9 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Collection`](usage-guide/collection.md) - Collection of medias (name, picture and list of medias)
   * [`Comment`](usage-guide/comment.md) - Comments to Media
   * [`Highlight`](usage-guide/highlight.md) - Highlights
-  * ['Notes'](usage-guide/notes.md) - Notes
+  * [`Notes`](usage-guide/notes.md) - Notes
   * [`Story`](usage-guide/story.md) - Story
-  * [`StoryLink`](usage-guide/story.md) - Link (Swipe up)
+  * [`StoryLink`](usage-guide/story.md) - Link sticker
   * [`StoryLocation`](usage-guide/story.md) - Tag Location in Story (as sticker)
   * [`StoryMention`](usage-guide/story.md) - Mention users in Story (user, coordinates and dimensions)
   * [`StoryHashtag`](usage-guide/story.md) - Hashtag for story (as sticker)
