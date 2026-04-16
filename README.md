@@ -142,6 +142,7 @@ cl.delete_note(note.id)
 * [Documentation index](https://subzeroid.github.io/instagrapi/)
 * [Getting Started](https://subzeroid.github.io/instagrapi/getting-started.html)
 * [Usage Guide](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html)
+* [Interactions reference](https://subzeroid.github.io/instagrapi/usage-guide/interactions.html)
 * [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
 * [Support chat in Telegram](https://t.me/instagrapi)
 
@@ -173,43 +174,6 @@ cl.video_upload_to_story(
 )
 ```
 </details>
-
-## Documentation
-
-* [Index](https://subzeroid.github.io/instagrapi/)
-* [Getting Started](https://subzeroid.github.io/instagrapi/getting-started.html)
-* [Usage Guide](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html)
-* [Interactions](https://subzeroid.github.io/instagrapi/usage-guide/interactions.html)
-  * [`Media`](https://subzeroid.github.io/instagrapi/usage-guide/media.html) - Publication (also called post): Photo, Video, Album, IGTV and Reels
-  * [`Resource`](https://subzeroid.github.io/instagrapi/usage-guide/media.html) - Part of Media (for albums)
-  * [`MediaOembed`](https://subzeroid.github.io/instagrapi/usage-guide/media.html) - Short version of Media
-  * [`Account`](https://subzeroid.github.io/instagrapi/usage-guide/account.html) - Full private info for your account (e.g. email, phone_number)
-  * [`TOTP`](https://subzeroid.github.io/instagrapi/usage-guide/totp.html) - 2FA TOTP helpers (generate seed, enable/disable TOTP, generate code as Google Authenticator)
-  * [`User`](https://subzeroid.github.io/instagrapi/usage-guide/user.html) - Full public user data
-  * [`UserShort`](https://subzeroid.github.io/instagrapi/usage-guide/user.html) - Short public user data (used in Usertag, Comment, Media, Direct Message)
-  * [`Usertag`](https://subzeroid.github.io/instagrapi/usage-guide/user.html) - Tag user in Media (coordinates + UserShort)
-  * [`Location`](https://subzeroid.github.io/instagrapi/usage-guide/location.html) - GEO location (GEO coordinates, name, address)
-  * [`Hashtag`](https://subzeroid.github.io/instagrapi/usage-guide/hashtag.html) - Hashtag object (id, name, picture)
-  * [`Collection`](https://subzeroid.github.io/instagrapi/usage-guide/collection.html) - Collection of medias (name, picture and list of medias)
-  * [`Comment`](https://subzeroid.github.io/instagrapi/usage-guide/comment.html) - Comments to Media
-  * [`Highlight`](https://subzeroid.github.io/instagrapi/usage-guide/highlight.html) - Highlights
-  * [`Notes`](https://subzeroid.github.io/instagrapi/usage-guide/notes.html) - Notes
-  * [`Story`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Story
-  * [`StoryLink`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Story link sticker
-  * [`StoryLocation`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Tag Location in Story (as sticker)
-  * [`StoryMention`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Mention users in Story (user, coordinates and dimensions)
-  * [`StoryHashtag`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Hashtag for story (as sticker)
-  * [`StorySticker`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - Tag sticker to story (for example from giphy)
-  * [`StoryBuild`](https://subzeroid.github.io/instagrapi/usage-guide/story.html) - [StoryBuilder](/instagrapi/story.py) return path to photo/video and mention co-ordinates
-  * [`DirectThread`](https://subzeroid.github.io/instagrapi/usage-guide/direct.html) - Thread (topic) with messages in Direct Message
-  * [`DirectMessage`](https://subzeroid.github.io/instagrapi/usage-guide/direct.html) - Message in Direct Message
-  * [`Insight`](https://subzeroid.github.io/instagrapi/usage-guide/insight.html) - Insights for a post
-  * [`Track`](https://subzeroid.github.io/instagrapi/usage-guide/track.html) - Music track (for Reels/Clips)
-* [Best Practices](https://subzeroid.github.io/instagrapi/usage-guide/best-practices.html)
-* [Development Guide](https://subzeroid.github.io/instagrapi/development-guide.html)
-* [Handle Exceptions](https://subzeroid.github.io/instagrapi/usage-guide/handle_exception.html)
-* [Challenge Resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html)
-* [Exceptions](https://subzeroid.github.io/instagrapi/exceptions.html)
 
 ## Ecosystem And Hosted Options
 
