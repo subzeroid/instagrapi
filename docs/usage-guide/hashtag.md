@@ -2,12 +2,15 @@
 
 Viewing hashtag info and medias by hashtag
 
-| Method                                             | Return              | Description
-| -------------------------------------------------- | ------------------- | ---------------------------------------
-| hashtag_info(name: str)                            | Hashtag             | Return Hashtag info (id, name, picture)
-| hashtag_related_hashtags(name: str)                | List[Hashtag]       | Return list of related Hashtag
-| hashtag_medias_top(name: str, amount: int = 9)     | List[Media]         | Return Top posts by Hashtag
-| hashtag_medias_recent(name: str, amount: int = 27) | List[Media]         | Return Most recent posts by Hashtag
+| Method | Return | Description |
+| --- | --- | --- |
+| hashtag_info(name: str) | Hashtag | Return hashtag info (`id`, `name`, `media_count`, `profile_pic_url`) |
+| hashtag_related_hashtags(name: str) | List[Hashtag] | Return related hashtags |
+| hashtag_medias_top(name: str, amount: int = 9) | List[Media] | Return top posts for a hashtag |
+| hashtag_medias_recent(name: str, amount: int = 27) | List[Media] | Return recent posts for a hashtag |
+| hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Return reels/clips for a hashtag via private API |
+| hashtag_follow(hashtag: str, unfollow: bool = False) | bool | Follow a hashtag |
+| hashtag_unfollow(hashtag: str) | bool | Unfollow a hashtag |
 
 
 Example:
@@ -144,4 +147,18 @@ QVFDR0dzT3FJT0V4amFjMaQ3czlGVzRKV3FNWDJqaE1mWmltWU5VWGYtbnV6RVpoOUlsR3dCN05RRmpL
 32
 >>> cursor
 QVFEUXpfM0RtaDdmMExPQ0k0UWRlaHFJa2RVdVlaX01LTzhkNF9Dd1N2UlhtVy1vSTZvMERfYW5XN205OTBRNFBCSVJ2ZTVfTG5ZMXVmY0VJbUM5TU9URQ==
+
+>>> cl.hashtag_follow("python")
+True
+
+>>> cl.hashtag_unfollow("python")
+True
 ```
+
+Notes:
+
+* High-level `hashtag_info()`, `hashtag_medias_top()`, and `hashtag_medias_recent()` prefer public/web paths first and fall back to private/mobile on failure.
+* For resumable pagination, use `hashtag_medias_v1_chunk()` and persist the encoded `max_id` cursor.
+* `tab_key` values differ by implementation:
+  * `hashtag_medias_a1_chunk()`: `top` or `recent`
+  * `hashtag_medias_v1_chunk()`: `top`, `recent`, or `clips`

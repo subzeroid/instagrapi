@@ -21,47 +21,54 @@ In terms of Instagram, this is called Media, usually users call it publications 
 
 ## Viewing and editing publication
 
-| Method                                                          | Return             | Description
-| --------------------------------------------------------------- | ------------------ | --------------------------------------------
-| media_id(media_pk: int)                                         | str                | Return media_id by media_pk (e.g. 2277033926878261772 -> 2277033926878261772_1903424587)
-| media_pk(media_id: str)                                         | int                | Return media_pk by media_id (e.g. 2277033926878261772_1903424587 -> 2277033926878261772)
-| media_pk_from_code(code: str)                                   | int                | Return media_pk
-| media_pk_from_url(url: str)                                     | int                | Return media_pk
-| user_medias(user_id: str, amount: int = 20)                     | List\[Media]       | Get list of medias by user_id
-| user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")           | Tuple\[List\[Media], str] | Get one page of medias by user_id
-| user_clips(user_id: str, amount: int = 50)                      | List\[Media]       | Get list of clips (reels) by user_id
-| usertag_medias(user_id: str, amount: int = 20)                  | List\[Media]       | Get medias where a user is tagged
-| media_info(media_pk: int)                                       | Media              | Return media info
-| media_delete(media_pk: int)                                     | bool               | Delete media
-| media_edit(media_pk: int, caption: str, title: str, usertags: List[Usertag], location: Location) | dict | Change caption for media
-| media_user(media_pk: int)                                       | User | Get user info for media
-| media_oembed(url: str)                                          | MediaOembed        | Return short media info by media URL
-| media_like(media_id: str)                                       | bool               | Like media
-| media_unlike(media_id: str)                                     | bool               | Unlike media
-| media_seen(media_ids: List[str], skipped_media_ids: List[str])  | bool               | Mark a media as seen
-| media_likers(media_id: str)                                     | List\[UserShort]   | Return list of users who liked this post (due to Instagram limitations, this may not return a complete list)
-| media_archive(media_id: str)                                    | bool               | Archive a media
-| media_unarchive(media_id: str)                                  | bool               | Unarchive a media
-| media_pin(media_id: str)                                        | bool               | Pin a media to user profile
-| media_unpin(media_id: str)                                      | bool               | Unpin a media to user profile
+| Method | Return | Description |
+| --- | --- | --- |
+| media_id(media_pk: str) | str | Return full `media_id` by `media_pk` (e.g. `2277033926878261772 -> 2277033926878261772_1903424587`) |
+| media_pk(media_id: str) | str | Return `media_pk` by full `media_id` |
+| media_code_from_pk(media_pk: str) | str | Return shortcode for a media PK |
+| media_pk_from_code(code: str) | str | Return media PK from shortcode |
+| media_pk_from_url(url: str) | str | Return media PK from media URL; also handles `share/p/...` redirect URLs |
+| user_medias(user_id: str, amount: int = 0) | List\[Media] | Get user feed media |
+| user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of user media and next cursor |
+| user_clips(user_id: str, amount: int = 0) | List\[Media] | Get clips/reels by user |
+| usertag_medias(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged |
+| media_info(media_pk: str, use_cache: bool = True) | Media | Return media info |
+| media_delete(media_id: str) | bool | Delete media |
+| media_edit(media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None) | dict | Edit caption, optional IGTV title, usertags, or location |
+| media_user(media_pk: str) | UserShort | Get author of media |
+| media_oembed(url: str) | dict | Return short oEmbed-style media info by URL |
+| media_like(media_id: str) | bool | Like media |
+| media_unlike(media_id: str) | bool | Unlike media |
+| media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
+| media_likers(media_id: str) | List\[UserShort] | Return users who liked this post |
+| media_archive(media_id: str) | bool | Archive media |
+| media_unarchive(media_id: str) | bool | Unarchive media |
+| media_pin(media_pk: str) | bool | Pin media to profile |
+| media_unpin(media_pk: str) | bool | Unpin media from profile |
+| media_create_livestream(title: str = "Instagram Live") | dict | Create a new livestream and return stream metadata |
+| media_start_livestream(broadcast_id: str) | dict | Start an existing livestream |
+| media_end_livestream(broadcast_id: str) | dict | End an existing livestream |
+| media_get_livestream_info(broadcast_id: str) | dict | Get livestream info |
+| media_get_livestream_comments(broadcast_id: str) | dict | Get livestream comments |
+| media_get_livestream_viewers(broadcast_id: str) | dict | Get livestream viewers |
 
 Low level methods:
 
-| Method                                                          | Return       | Description
-| --------------------------------------------------------------- | ------------ | --------------------------------------------
-| media_info_a1(media_pk: int, max_id: str = None)                | Media        | Get Media from PK by Public Web API
-| media_info_gql(media_pk: int)                                   | Media        | Get Media from PK by Public Graphql API
-| media_info_v1(media_pk: int)                                    | Media        | Get Media from PK by Private Mobile API
-| user_medias_gql(user_id: str, amount: int = 50, sleep: int = 2) | List\[Media] | Get a user's media by Public Graphql API
-| user_medias_paginated_gql(user_id: str, amount: int = 50, sleep: int = 2, end_cursor=None) | Tuple\[List\[Media], str] | Get a page of user's media by Public Graphql API
-| user_medias_v1(user_id: str, amount: int = 18)                  | List\[Media] | Get a user's media by Private Mobile API
-| user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's media by Private Mobile API
-| user_clips_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's clip by Private Mobile API
-| user_clips_paginated_v1(user_id: str, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's clip by Private Mobile API
-| user_videos_v1(user_id: str, amount: int = 50)                  | List\[Media] | Get a user's video by Private Mobile API
-| user_videos_paginated_v1(ser_id: int, amount: int = 50, end_cursor="") | Tuple\[List\[Media], str] | Get a page of user's video by Private Mobile API
-| usertag_medias_gql(user_id: str, amount: int = 20)              | List\[Media] | Get medias where a user is tagged by Public Graphql API
-| usertag_medias_v1(user_id: str, amount: int = 20)               | List\[Media] | Get medias where a user is tagged by Private Mobile API
+| Method | Return | Description |
+| --- | --- | --- |
+| media_info_a1(media_pk: str, max_id: str = None) | Media | Get media from PK via public web API |
+| media_info_gql(media_pk: str) | Media | Get media from PK via public GraphQL API |
+| media_info_v1(media_pk: str) | Media | Get media from PK via private mobile API |
+| user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media via public GraphQL API |
+| user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one public GraphQL page of user media |
+| user_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get user media via private mobile API |
+| user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of user media |
+| user_clips_v1(user_id: str, amount: int = 0) | List\[Media] | Get user clips via private mobile API |
+| user_clips_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of clips |
+| user_videos_v1(user_id: str, amount: int = 0) | List\[Media] | Get user videos via private mobile API |
+| user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of videos |
+| usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2) | List\[Media] | Get media where a user is tagged via public GraphQL API |
+| usertag_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged via private mobile API |
 
 ### Example:
 
@@ -77,6 +84,9 @@ Low level methods:
 2243811726252050162
 
 >>> cl.media_pk_from_url("https://www.instagram.com/p/BjNLpA1AhXM/")
+1787135824035452364
+
+>>> cl.media_pk_from_url("https://www.instagram.com/share/p/BA123456789/")
 1787135824035452364
 
 >>> cl.media_info(1787135824035452364).dict()
@@ -200,7 +210,19 @@ True
 ['2019-06-05', '2019-03-23', '2019-03-23', '2018-11-15', '2018-10-16']
 ['2018-10-16', '2018-10-11', '2018-10-09', '2018-10-09', '2018-08-02']
 
+>>> media_id = cl.media_id(1787135824035452364)
+>>> cl.media_like(media_id)
+True
+>>> cl.media_unlike(media_id)
+True
+
 ```
+
+Notes:
+
+* High-level `media_info()` prefers public paths and falls back to private/mobile when needed.
+* `media_pk_from_url()` now also resolves `share/p/...` URLs before extracting the canonical shortcode.
+* `media_edit()` uses `caption` and optional `location`/`usertags`; for IGTV posts it can also derive or send a separate `title`.
 
 ## Download media
 

@@ -2,16 +2,17 @@
 
 Post comment, viewing, like and unlike comments
 
-| Method                                                                                  | Return             | Description
-| --------------------------------------------------------------------------------------- | ------------------ | --------------------------
-| media_comment(media_id: str, text: str, replied_to_comment_id: Optional[int] = None) | Comment            | Add new comment to media
-| media_comments(media_id: str, amount: int = 0)                                          | List\[Comment]     | Get a list comments for media (amount=0 - all comments)
-| media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List[Comment], str] | Get chunk of comments on a media and end_cursor
-| comment_like(comment_pk: int)                                                           | bool               | Like a comment
-| comment_unlike(comment_pk: int)                                                         | bool               | Unlike a comment
-| comment_pin(media_id: str,comment_pk: int)                                              | bool               | Pin a comment
-| comment_unpin(media_id: str,comment_pk: int)                                            | bool               | Unpin a comment
-| comment_bulk_delete(media_id: str, comment_pks: List[int])                              | bool               | Delete a comment
+| Method | Return | Description |
+| --- | --- | --- |
+| media_comment(media_id: str, text: str, replied_to_comment_id: Optional[int] = None) | Comment | Add a new comment to media or reply to an existing comment |
+| media_comments(media_id: str, amount: int = 20) | List\[Comment] | Get comments for media; pass `amount=0` to keep paginating until exhaustion |
+| media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of comments and the next `min_id` cursor |
+| media_check_offensive_comment(media_id: str, text: str) | bool | Ask Instagram whether a comment text is considered offensive |
+| comment_like(comment_pk: int, revert: bool = False) | bool | Like a comment |
+| comment_unlike(comment_pk: int) | bool | Unlike a comment |
+| comment_pin(media_id: str, comment_pk: int, revert: bool = False) | bool | Pin a comment on your media |
+| comment_unpin(media_id: str, comment_pk: int) | bool | Unpin a previously pinned comment |
+| comment_bulk_delete(media_id: str, comment_pks: List[int]) | bool | Delete one or more comments from your media |
 
 
 Example:
@@ -76,6 +77,9 @@ QVFBQmZCa1dxaFB5eFpBY2luVFMwLWdmN2ZCcUV6OF9hQWlIQk12ZWZqUlctZ2pOa1J5YjJ6bFY5Q1do
 >>> next_min_id
 QVFEbHpIWmpFc3BNUkgzUFVuOGZOQlhDQ1hHeWlVWHlJSnBhb2FHbFB3YlJtNThnOUlrd01JUWdKRmRwZTRpWWU0bnZmX3VMNHlwcDBkWTJpZjQ2NE9SeQ==
 
+>>> cl.media_check_offensive_comment(media_id, "Some draft text")
+False
+
 >>> cl.comment_like(17926777897585108)
 True
 
@@ -85,3 +89,9 @@ True
 >>> cl.comment_bulk_delete(media_id, [17926777897585108])
 True
 ```
+
+Notes:
+
+* `media_comments()` fetches both regular and headload comment pages until `amount` is reached.
+* `media_comments_chunk()` is the better choice when you want to store and resume the server cursor manually.
+* `comment_pin()` / `comment_unpin()` only work on media owned by the authenticated account.

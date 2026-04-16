@@ -2,13 +2,19 @@
 
 Viewing and managing your profile
 
-| Method                                       | Return    | Description
-| -------------------------------------------- | --------- | ----------------------------------------------------------
-| account_info()                               | Account   | Get private info for your account (e.g. email, phone_number)
-| account_edit(email: str, phone_number: str, username: str, full_name: str, biography: str, external_url: str) | Account | Change profile data
-| account_change_picture(path: Path)           | UserShort | Change Profile picture
-| send_confirm_email(email: str)               | dict      | Send confirmation code to new email address
-| send_confirm_phone_number(phone_number: str) | dict      | Send confirmation code to new phone number
+| Method | Return | Description |
+| --- | --- | --- |
+| account_info() | Account | Get private info for the current account (email, phone number, birthday, biography, etc.) |
+| account_edit(**data) | Account | Update profile fields such as `username`, `full_name`, `biography`, `external_url`, `phone_number`, and `email` |
+| account_set_biography(biography: str) | bool | Update biography text, including entity-aware markup handling |
+| account_change_picture(path: Path) | UserShort | Change profile picture |
+| account_set_private() | bool | Switch account to private mode |
+| account_set_public() | bool | Switch account to public mode |
+| account_security_info() | dict | Return account security settings, backup codes, trusted devices, and 2FA state |
+| set_external_url(external_url: str) | dict | Replace bio links with a single external URL |
+| remove_bio_links(link_ids: List[int]) | dict | Remove one or more bio links by link ID |
+| reset_password(username: str) | dict | Trigger Instagram account recovery flow |
+| change_password(old_password: str, new_password: str) | bool | Change account password |
 
 Example:
 
@@ -33,6 +39,9 @@ Example:
 
 >>> cl.account_edit(external_url='https://github.com/subzeroid/instagrapi')
 Account(pk=1903424587, username='example', ..., external_url='https://github.com/subzeroid/instagrapi')
+
+>>> cl.account_set_biography("Python, APIs, and automation")
+True
 
 >>> media_pk = cl.media_pk_from_url('https://www.instagram.com/p/BWnh360Fitr/')
 1560364774164147051
@@ -63,11 +72,17 @@ UserShort(pk=1903424587, username='example', ...)
 }
 ```
 
+Notes:
+
+* `account_edit(**data)` only applies supported fields and preserves missing required profile fields from `account_info()`.
+* Use `account_set_biography()` when you want Instagram to re-process biography entities/markup explicitly.
+* `account_security_info()` and `insights_*` style methods require an authenticated session and may depend on the account type or enabled security features.
+
 Low level methods:
 
-| Method                                         | Return    | Description
-| ---------------------------------------------- | --------- | ----------------------------------------------------------
-| news_inbox_v1(mark_as_seen: bool = False)      | dict      | Get "Active recently" as is (old and new stories)
+| Method | Return | Description |
+| --- | --- | --- |
+| news_inbox_v1(mark_as_seen: bool = False) | dict | Get raw "Active recently" / inbox activity payload |
 
 Example:
 
