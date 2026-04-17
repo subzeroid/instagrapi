@@ -2,7 +2,7 @@
 
 | Method                                                                 | Return          | Description
 | ---------------------------------------------------------------------- | --------------- | ----------------------------------
-| user_stories(user_id: str, amount: int = None)                         | List[Story]     | Get list of stories by user_id
+| user_stories(user_id: str, amount: int = None)                         | List[Story]     | Get list of stories by user_id; public/web first, private fallback when authenticated
 | story_info(story_pk: int, use_cache: bool = True)                      | Story           | Return story info
 | story_delete(story_pk: int)                                            | bool            | Delete story
 | story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool            | Mark a story as seen
@@ -64,6 +64,7 @@ Notes:
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
+* Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.
 
 
 Examples:

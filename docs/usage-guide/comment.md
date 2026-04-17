@@ -95,3 +95,4 @@ Notes:
 * `media_comments()` fetches both regular and headload comment pages until `amount` is reached.
 * `media_comments_chunk()` is the better choice when you want to store and resume the server cursor manually.
 * `comment_pin()` / `comment_unpin()` only work on media owned by the authenticated account.
+* Reply creation is supported through `replied_to_comment_id`, but there is no dedicated helper yet for fetching a standalone reply thread for a comment.

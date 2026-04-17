@@ -129,13 +129,15 @@ cl.delete_note(note.id)
 
 ## Features
 
-* Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) or [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) depending on the situation
+* Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) and [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) flows where available
 * Supports login by password, 2FA, and `sessionid`
 * Includes email/SMS-based [challenge resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) hooks
 * Uploads and downloads photos, videos, albums, IGTV, reels, and stories
 * Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
 * Supports story building with mentions, hashtags, link stickers, and media stickers
 * Includes helpers for current location search and notes flows
+
+Anonymous/public web paths are best treated as opportunistic rather than guaranteed. Instagram can change or restrict them independently of the library, so production-grade workflows should prefer authenticated sessions.
 
 ## Documentation And Support
 

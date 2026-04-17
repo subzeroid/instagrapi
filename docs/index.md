@@ -27,7 +27,7 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 
 ## Features
 
-1. Performs [Public API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) (web, anonymous) or [Private API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) (mobile app, authorized) requests depending on the situation (to avoid Instagram limits)
+1. Uses [Public API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) (web, opportunistic) and [Private API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) (mobile app, authorized) flows depending on the situation
 2. [Login](https://subzeroid.github.io/instagrapi/usage-guide/interactions.html) by username and password, including 2FA and by sessionid
 3. [Challenge Resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) have Email and SMS handlers
 4. Support [upload](https://subzeroid.github.io/instagrapi/usage-guide/media.html) a Photo, Video, IGTV, Reels, Albums and Stories
@@ -76,10 +76,12 @@ cl.video_upload_to_story(
 
 ### Requests
 
-* `Public` (anonymous request via web api) methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/example/?__a=1`)
+* `Public` web methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/example/?__a=1`)
 * `Private` (authorized request via mobile api) methods have `_v1` suffix
 
-The first request to fetch media/user is `public` (anonymous), if instagram raise exception, then use `private` (authorized).
+Public web flows are not guaranteed. Instagram can change or block them independently of the library, and some helpers can only work reliably with an authenticated session.
+
+Many high-level helpers try a public/web path first and then fall back to a private/authenticated path when that makes sense for the current session.
 Example (pseudo-code):
 
 ``` python
