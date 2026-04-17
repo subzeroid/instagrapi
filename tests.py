@@ -22,6 +22,7 @@ from instagrapi.extractors import (
 )
 from instagrapi.exceptions import (
     ChallengeRequired,
+    ClientConnectionError,
     ClientGraphqlError,
     DirectThreadNotFound,
 )
@@ -555,6 +556,78 @@ class ClientTestCase(unittest.TestCase):
                 cl.media_pk_from_code("DC2konOtSse"),
             )
         public_get.assert_called_once()
+
+    def test_set_retry_config_updates_settings_and_session_adapters(self):
+        cl = Client()
+        cl.set_retry_config(
+            request_timeout=0,
+            public_request_retries_count=5,
+            public_request_retries_timeout=4,
+            session_retry_total=6,
+            session_retry_backoff_factor=1,
+            session_retry_statuses=[429, 500],
+        )
+
+        settings = cl.get_settings()
+        self.assertEqual(settings["request_timeout"], 0)
+        self.assertEqual(settings["public_request_retries_count"], 5)
+        self.assertEqual(settings["public_request_retries_timeout"], 4)
+        self.assertEqual(settings["session_retry_total"], 6)
+        self.assertEqual(settings["session_retry_backoff_factor"], 1)
+        self.assertEqual(settings["session_retry_statuses"], [429, 500])
+
+        public_retry = cl.public.adapters["https://"].max_retries
+        private_retry = cl.private.adapters["https://"].max_retries
+        self.assertEqual(public_retry.total, 6)
+        self.assertEqual(private_retry.total, 6)
+        self.assertEqual(public_retry.backoff_factor, 1)
+        self.assertEqual(private_retry.backoff_factor, 1)
+        self.assertEqual(sorted(public_retry.status_forcelist), [429, 500])
+        self.assertEqual(sorted(private_retry.status_forcelist), [429, 500])
+
+    def test_settings_round_trip_preserves_retry_config(self):
+        settings = {
+            "uuids": {},
+            "cookies": {},
+            "device_settings": {},
+            "request_timeout": 0,
+            "public_request_retries_count": 4,
+            "public_request_retries_timeout": 3,
+            "session_retry_total": 7,
+            "session_retry_backoff_factor": 1,
+            "session_retry_statuses": [429, 503],
+        }
+        cl = Client()
+        cl.set_settings(settings)
+
+        self.assertEqual(cl.request_timeout, 0)
+        self.assertEqual(cl.public_request_retries_count, 4)
+        self.assertEqual(cl.public_request_retries_timeout, 3)
+        self.assertEqual(cl.session_retry_total, 7)
+        self.assertEqual(cl.session_retry_backoff_factor, 1)
+        self.assertEqual(cl.session_retry_statuses, [429, 503])
+        self.assertEqual(cl.public.adapters["https://"].max_retries.total, 7)
+        self.assertEqual(cl.private.adapters["https://"].max_retries.total, 7)
+
+    def test_public_request_uses_client_retry_defaults(self):
+        cl = Client(
+            request_timeout=0,
+            public_request_retries_count=4,
+            public_request_retries_timeout=0,
+        )
+        attempts = {"count": 0}
+
+        def fake_send(*args, **kwargs):
+            attempts["count"] += 1
+            if attempts["count"] < 4:
+                raise ClientConnectionError("temporary")
+            return {"status": "ok"}
+
+        with mock.patch.object(cl, "_send_public_request", side_effect=fake_send):
+            result = cl.public_request("https://example.com", return_json=True)
+
+        self.assertEqual(attempts["count"], 4)
+        self.assertEqual(result, {"status": "ok"})
 
 
 class ClientDeviceTestCase(ClientPrivateTestCase):

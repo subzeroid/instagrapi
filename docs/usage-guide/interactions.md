@@ -54,6 +54,10 @@ print(cl.user_info(cl.user_id))
 | ------------------- | --------------------------------------------------------------
 | request\_logger     | Logger in which various actions from Instagram are registered
 | request\_timeout    | Timeout in seconds between requests (1 second by default)
+| public\_request\_retries\_count | Default retry count for `public_request()`
+| public\_request\_retries\_timeout | Delay between `public_request()` retries
+| session\_retry\_total | Transport-level retry count for `public` and `private` sessions
+| session\_retry\_backoff\_factor | Backoff factor for transport-level retries
 
 
 ### Login
@@ -95,7 +99,13 @@ settings = {
    "country": "US",
    "country_code": 1,
    "locale": "en_US",
-   "timezone_offset": -14400
+   "timezone_offset": -14400,
+   "request_timeout": 1,
+   "public_request_retries_count": 3,
+   "public_request_retries_timeout": 2,
+   "session_retry_total": 3,
+   "session_retry_backoff_factor": 2,
+   "session_retry_statuses": [429, 500, 502, 503, 504]
 }
 
 cl = Client(settings)
@@ -147,6 +157,25 @@ cl.get_timeline_feed()  # check session
 | set_country_code(country_code: int = 1)  | bool | Set country calling code. Default: +1 (USA)
 | set_locale(locale: str = "en_US")        | bool | Set locale (advice: use the locale of your proxy)
 | set_timezone_offset(seconds: int)        | bool | Set timezone offset in seconds
+| set_retry_config(...)                    | bool | Configure request timeout plus public/manual and session/transport retry settings
+
+Example:
+
+```python
+cl = Client(
+    request_timeout=0,
+    public_request_retries_count=4,
+    public_request_retries_timeout=1,
+    session_retry_total=5,
+    session_retry_backoff_factor=1,
+)
+
+cl.set_retry_config(
+    public_request_retries_count=2,
+    public_request_retries_timeout=0,
+    session_retry_total=3,
+)
+```
 
 ``` python
 cl = Client()

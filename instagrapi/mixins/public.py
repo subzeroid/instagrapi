@@ -35,28 +35,15 @@ class PublicRequestMixin:
     last_public_json = {}
     public_request_logger = logging.getLogger("public_request")
     request_timeout = 1
+    public_request_retries_count = 3
+    public_request_retries_timeout = 2
+    session_retry_total = 3
+    session_retry_backoff_factor = 2
+    session_retry_statuses = [429, 500, 502, 503, 504]
     last_response_ts = 0
 
     def __init__(self, *args, **kwargs):
-        # setup request session with retries
         session = requests.Session()
-        try:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["GET", "POST"],
-                backoff_factor=2,
-            )
-        except TypeError:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["GET", "POST"],
-                backoff_factor=2,
-            )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("https://", adapter)
-        session.mount("http://", adapter)
         self.public = session
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
         self.public.headers.update(
@@ -71,8 +58,66 @@ class PublicRequestMixin:
                 ),
             }
         )
-        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop(
+            "request_timeout", getattr(self, "request_timeout", self.request_timeout)
+        )
+        self.public_request_retries_count = kwargs.pop(
+            "public_request_retries_count",
+            getattr(
+                self,
+                "public_request_retries_count",
+                self.public_request_retries_count,
+            ),
+        )
+        self.public_request_retries_timeout = kwargs.pop(
+            "public_request_retries_timeout",
+            getattr(
+                self,
+                "public_request_retries_timeout",
+                self.public_request_retries_timeout,
+            ),
+        )
+        self.session_retry_total = kwargs.pop(
+            "session_retry_total",
+            getattr(self, "session_retry_total", self.session_retry_total),
+        )
+        self.session_retry_backoff_factor = kwargs.pop(
+            "session_retry_backoff_factor",
+            getattr(
+                self,
+                "session_retry_backoff_factor",
+                self.session_retry_backoff_factor,
+            ),
+        )
+        self.session_retry_statuses = list(
+            kwargs.pop(
+                "session_retry_statuses",
+                getattr(self, "session_retry_statuses", self.session_retry_statuses),
+            )
+        )
+        self._configure_public_session_retry()
         super().__init__(*args, **kwargs)
+
+    def _build_public_session_retry_strategy(self):
+        try:
+            return Retry(
+                total=self.session_retry_total,
+                status_forcelist=self.session_retry_statuses,
+                allowed_methods=["GET", "POST"],
+                backoff_factor=self.session_retry_backoff_factor,
+            )
+        except TypeError:
+            return Retry(
+                total=self.session_retry_total,
+                status_forcelist=self.session_retry_statuses,
+                method_whitelist=["GET", "POST"],
+                backoff_factor=self.session_retry_backoff_factor,
+            )
+
+    def _configure_public_session_retry(self):
+        adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
+        self.public.mount("https://", adapter)
+        self.public.mount("http://", adapter)
 
     def public_request(
         self,
@@ -82,14 +127,24 @@ class PublicRequestMixin:
         headers=None,
         update_headers=None,
         return_json=False,
-        retries_count=3,
-        retries_timeout=2,
+        retries_count=None,
+        retries_timeout=None,
     ):
         kwargs = dict(
             data=data,
             params=params,
             headers=headers,
             return_json=return_json,
+        )
+        retries_count = (
+            self.public_request_retries_count
+            if retries_count is None
+            else retries_count
+        )
+        retries_timeout = (
+            self.public_request_retries_timeout
+            if retries_timeout is None
+            else retries_timeout
         )
         assert retries_count <= 10, "Retries count is too high"
         assert retries_timeout <= 600, "Retries timeout is too high"

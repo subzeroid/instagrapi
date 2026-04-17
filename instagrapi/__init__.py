@@ -101,6 +101,20 @@ class Client(
         logger=DEFAULT_LOGGER,
         **kwargs,
     ):
+        self.request_timeout = kwargs.pop("request_timeout", 1)
+        self.public_request_retries_count = kwargs.pop(
+            "public_request_retries_count", 3
+        )
+        self.public_request_retries_timeout = kwargs.pop(
+            "public_request_retries_timeout", 2
+        )
+        self.session_retry_total = kwargs.pop("session_retry_total", 3)
+        self.session_retry_backoff_factor = kwargs.pop(
+            "session_retry_backoff_factor", 2
+        )
+        self.session_retry_statuses = list(
+            kwargs.pop("session_retry_statuses", [429, 500, 502, 503, 504])
+        )
 
         super().__init__(**kwargs)
 

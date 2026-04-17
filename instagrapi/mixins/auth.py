@@ -301,6 +301,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    public_request_retries_count = 3
+    public_request_retries_timeout = 2
+    session_retry_total = 3
+    session_retry_backoff_factor = 2
+    session_retry_statuses = [429, 500, 502, 503, 504]
     # Example: CLN,49897488153,1666640702:01f7bdb93090f4f773516fc2cf1424178a58a2295b4c754090ba02cb0a834e2d1f731e20
     ig_u_rur = ""
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
@@ -332,6 +337,24 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         locale = self.settings.get("locale", self.locale)
         country = self.settings.get("country", self.country)
         country_code = self.settings.get("country_code", self.country_code)
+        self.set_retry_config(
+            request_timeout=self.settings.get("request_timeout", self.request_timeout),
+            public_request_retries_count=self.settings.get(
+                "public_request_retries_count", self.public_request_retries_count
+            ),
+            public_request_retries_timeout=self.settings.get(
+                "public_request_retries_timeout", self.public_request_retries_timeout
+            ),
+            session_retry_total=self.settings.get(
+                "session_retry_total", self.session_retry_total
+            ),
+            session_retry_backoff_factor=self.settings.get(
+                "session_retry_backoff_factor", self.session_retry_backoff_factor
+            ),
+            session_retry_statuses=self.settings.get(
+                "session_retry_statuses", self.session_retry_statuses
+            ),
+        )
 
         self.set_timezone_offset(timezone_offset)
         self.set_device(self.settings.get("device_settings"))
@@ -592,6 +615,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
+            "request_timeout": self.request_timeout,
+            "public_request_retries_count": self.public_request_retries_count,
+            "public_request_retries_timeout": self.public_request_retries_timeout,
+            "session_retry_total": self.session_retry_total,
+            "session_retry_backoff_factor": self.session_retry_backoff_factor,
+            "session_retry_statuses": self.session_retry_statuses,
         }
 
     def set_settings(self, settings: Dict) -> bool:
@@ -647,6 +676,44 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         with open(path, "w") as fp:
             json.dump(self.get_settings(), fp, indent=4)
+        return True
+
+    def set_retry_config(
+        self,
+        request_timeout: Union[int, float, None] = None,
+        public_request_retries_count: int = None,
+        public_request_retries_timeout: Union[int, float] = None,
+        session_retry_total: int = None,
+        session_retry_backoff_factor: Union[int, float] = None,
+        session_retry_statuses: list = None,
+    ) -> bool:
+        if request_timeout is not None:
+            self.request_timeout = request_timeout
+        if public_request_retries_count is not None:
+            self.public_request_retries_count = public_request_retries_count
+        if public_request_retries_timeout is not None:
+            self.public_request_retries_timeout = public_request_retries_timeout
+        if session_retry_total is not None:
+            self.session_retry_total = session_retry_total
+        if session_retry_backoff_factor is not None:
+            self.session_retry_backoff_factor = session_retry_backoff_factor
+        if session_retry_statuses is not None:
+            self.session_retry_statuses = list(session_retry_statuses)
+
+        self._configure_public_session_retry()
+        self._configure_private_session_retry()
+
+        if self.settings is not None:
+            self.settings.update(
+                {
+                    "request_timeout": self.request_timeout,
+                    "public_request_retries_count": self.public_request_retries_count,
+                    "public_request_retries_timeout": self.public_request_retries_timeout,
+                    "session_retry_total": self.session_retry_total,
+                    "session_retry_backoff_factor": self.session_retry_backoff_factor,
+                    "session_retry_statuses": self.session_retry_statuses,
+                }
+            )
         return True
 
     def set_device(self, device: Dict = None, reset: bool = False) -> bool:

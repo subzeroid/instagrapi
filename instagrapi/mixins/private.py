@@ -80,36 +80,63 @@ class PrivateRequestMixin:
     change_password_handler = manual_change_password
     private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
+    session_retry_total = 3
+    session_retry_backoff_factor = 2
+    session_retry_statuses = [429, 500, 502, 503, 504]
     domain = config.API_DOMAIN
     last_response = None
     last_json = {}
 
     def __init__(self, *args, **kwargs):
-        # setup request session with retries
         session = requests.Session()
-        try:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["GET", "POST"],
-                backoff_factor=2,
-            )
-        except TypeError:
-            retry_strategy = Retry(
-                total=3,
-                status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["GET", "POST"],
-                backoff_factor=2,
-            )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount("https://", adapter)
-        session.mount("http://", adapter)
         self.private = session
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
-        self.request_timeout = kwargs.pop("request_timeout", self.request_timeout)
+        self.request_timeout = kwargs.pop(
+            "request_timeout", getattr(self, "request_timeout", self.request_timeout)
+        )
+        self.session_retry_total = kwargs.pop(
+            "session_retry_total",
+            getattr(self, "session_retry_total", self.session_retry_total),
+        )
+        self.session_retry_backoff_factor = kwargs.pop(
+            "session_retry_backoff_factor",
+            getattr(
+                self,
+                "session_retry_backoff_factor",
+                self.session_retry_backoff_factor,
+            ),
+        )
+        self.session_retry_statuses = list(
+            kwargs.pop(
+                "session_retry_statuses",
+                getattr(self, "session_retry_statuses", self.session_retry_statuses),
+            )
+        )
+        self._configure_private_session_retry()
         super().__init__(*args, **kwargs)
+
+    def _build_private_session_retry_strategy(self):
+        try:
+            return Retry(
+                total=self.session_retry_total,
+                status_forcelist=self.session_retry_statuses,
+                allowed_methods=["GET", "POST"],
+                backoff_factor=self.session_retry_backoff_factor,
+            )
+        except TypeError:
+            return Retry(
+                total=self.session_retry_total,
+                status_forcelist=self.session_retry_statuses,
+                method_whitelist=["GET", "POST"],
+                backoff_factor=self.session_retry_backoff_factor,
+            )
+
+    def _configure_private_session_retry(self):
+        adapter = HTTPAdapter(max_retries=self._build_private_session_retry_strategy())
+        self.private.mount("https://", adapter)
+        self.private.mount("http://", adapter)
 
     def small_delay(self):
         """
@@ -329,9 +356,9 @@ class PrivateRequestMixin:
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
-                self.private.headers[
-                    "Content-Type"
-                ] = "application/x-www-form-urlencoded; charset=UTF-8"
+                self.private.headers["Content-Type"] = (
+                    "application/x-www-form-urlencoded; charset=UTF-8"
+                )
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
@@ -391,10 +418,12 @@ class PrivateRequestMixin:
                 if last_json.get("two_factor_info"):
                     if not last_json.get("message"):
                         last_json["message"] = "Two-factor authentication required"
-                    if last_json.get("error_type") != "two_factor_required":
-                        self.logger.info(
-                            f"Changing error_type from {last_json.get('error_type')} to two_factor_required due to presence of two_factor_info"
-                        )
+                        if last_json.get("error_type") != "two_factor_required":
+                            self.logger.info(
+                                "Changing error_type from %s to two_factor_required "
+                                "due to presence of two_factor_info",
+                                last_json.get("error_type"),
+                            )
                         last_json["error_type"] = "two_factor_required"
                     raise TwoFactorRequired(**last_json)
                 elif message == "challenge_required":
