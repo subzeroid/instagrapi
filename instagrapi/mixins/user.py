@@ -4,6 +4,8 @@ from copy import deepcopy
 from json.decoder import JSONDecodeError
 from typing import Dict, List, Tuple
 
+from requests.exceptions import RequestException
+
 from instagrapi.exceptions import (
     ClientError,
     ClientGraphqlError,
@@ -346,7 +348,12 @@ class UserMixin:
                         raise e
                     user = self.user_info_by_username_gql(username)  # retry
             except Exception as e:
-                if not isinstance(e, ClientError):
+                if isinstance(e, RequestException):
+                    self.logger.warning(
+                        "Public user lookup failed, falling back to private API: %s",
+                        e,
+                    )
+                elif not isinstance(e, ClientError):
                     self.logger.exception(e)  # Register unknown error
                 user = self.user_info_by_username_v1(username)
             self._users_cache[user.pk] = user

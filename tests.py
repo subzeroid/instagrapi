@@ -11,6 +11,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 import requests
+from requests.exceptions import RetryError
 
 from instagrapi import Client
 from instagrapi.extractors import (
@@ -1713,7 +1714,6 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         client = DummyClient()
         client.response_body = self.build_web_profile_user()
         user = client.user_info_by_username_gql("Example")
-
         self.assertEqual(user.pk, "123")
         self.assertEqual(user.username, "example")
         self.assertEqual(len(client.public_request_calls), 1)
@@ -1721,6 +1721,43 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertIn(
             "web_profile_info/?username=example", client.public_request_calls[0]["url"]
         )
+
+    def test_user_info_by_username_suppresses_traceback_for_public_retry_error(self):
+        client = Client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        client.logger = Mock()
+        fallback_user = User(
+            pk="123",
+            username="example",
+            full_name="Example",
+            is_private=False,
+            is_verified=False,
+            profile_pic_url="https://example.com/pic.jpg",
+            media_count=0,
+            follower_count=0,
+            following_count=0,
+            is_business=False,
+        )
+
+        with mock.patch.object(
+            client,
+            "user_info_by_username_gql",
+            side_effect=RetryError("too many 429 error responses"),
+        ):
+            with mock.patch.object(
+                client, "user_info_by_username_v1", return_value=fallback_user
+            ) as fallback:
+                with mock.patch.object(
+                    client, "user_info", return_value=fallback_user
+                ) as user_info:
+                    user = client.user_info_by_username("Example", use_cache=False)
+
+        self.assertEqual(user.pk, "123")
+        fallback.assert_called_once_with("example")
+        user_info.assert_called_once_with("123")
+        client.logger.exception.assert_not_called()
+        client.logger.warning.assert_called_once()
 
     def test_user_info_by_username_gql_handles_missing_pinned_channels_info(self):
         class DummyClient(UserMixin):
