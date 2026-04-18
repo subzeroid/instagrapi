@@ -37,7 +37,9 @@ class DownloadVideoMixin:
     Helpers for downloading video
     """
 
-    def video_download(self, media_pk: int, folder: Path = "") -> Path:
+    def video_download(
+        self, media_pk: int, folder: Path = "", overwrite: bool = True
+    ) -> Path:
         """
         Download video using media pk
 
@@ -47,6 +49,9 @@ class DownloadVideoMixin:
             Unique Media ID
         folder: Path, optional
             Directory in which you want to download the video, default is "" and will download the files to working dir.
+        overwrite: bool, optional
+            Whether to overwrite an existing file. When False and the target path already exists, skip download and
+                return the existing path.
 
         Returns
         -------
@@ -58,10 +63,16 @@ class DownloadVideoMixin:
         filename = "{username}_{media_pk}".format(
             username=media.user.username, media_pk=media_pk
         )
-        return self.video_download_by_url(media.video_url, filename, folder)
+        return self.video_download_by_url(
+            media.video_url, filename, folder, overwrite=overwrite
+        )
 
     def video_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
+        self,
+        url: str,
+        filename: str = "",
+        folder: Path = "",
+        overwrite: bool = True,
     ) -> Path:
         """
         Download video using URL
@@ -75,6 +86,9 @@ class DownloadVideoMixin:
         folder: Path, optional
             Directory in which you want to download the video, default is "" and will download the files to working
                 directory
+        overwrite: bool, optional
+            Whether to overwrite an existing file. When False and the target path already exists, skip download and
+                return the existing path.
 
         Returns
         -------
@@ -85,6 +99,8 @@ class DownloadVideoMixin:
         fname = urlparse(url).path.rsplit("/", 1)[1]
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
+        if path.exists() and not overwrite:
+            return path.resolve()
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
         try:

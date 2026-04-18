@@ -228,12 +228,12 @@ Notes:
 
 | Method                                                       | Return  | Description                                                         |
 | ------------------------------------------------------------ | ------- | ------------------------------------------------------------------- |
-| photo_download(media_pk: int, folder: Path)                  | Path    | Download photo (path to photo with best resoluton)                  |
-| photo_download_by_url(url: str, filename: str, folder: Path) | Path    | Download photo by URL (path to photo with best resoluton)           |
-| video_download(media_pk: int, folder: Path)                  | Path    | Download video (path to video with best resoluton)                  |
-| video_download_by_url(url: str, filename: str, folder: Path) | Path    | Download Video by URL (path to video with best resoluton)           |
-| album_download(media_pk: int, folder: Path)                  | Path    | Download Album (multiple paths to photo/video with best resolutons) |
-| album_download_by_urls(urls: List[str], folder: Path)        | Path    | Download Album by URLs (multiple paths to photo/video)              |
+| photo_download(media_pk: int, folder: Path, overwrite: bool = True)                  | Path    | Download photo (path to photo with best resoluton)                  |
+| photo_download_by_url(url: str, filename: str, folder: Path, overwrite: bool = True) | Path    | Download photo by URL (path to photo with best resoluton)           |
+| video_download(media_pk: int, folder: Path, overwrite: bool = True)                  | Path    | Download video (path to video with best resoluton)                  |
+| video_download_by_url(url: str, filename: str, folder: Path, overwrite: bool = True) | Path    | Download Video by URL (path to video with best resoluton)           |
+| album_download(media_pk: int, folder: Path, overwrite: bool = True)                  | Path    | Download Album (multiple paths to photo/video with best resolutons) |
+| album_download_by_urls(urls: List[str], folder: Path, overwrite: bool = True)        | Path    | Download Album by URLs (multiple paths to photo/video)              |
 | igtv_download(media_pk: int, folder: Path)                   | Path    | Download IGTV (path to video with best resoluton)                   |
 | igtv_download_by_url(url: str, filename: str, folder: Path)  | Path    | Download IGTV by URL (path to video with best resoluton)            |
 | clip_download(media_pk: int, folder: Path)                   | Path    | Download Reels Clip (path to video with best resoluton)             |
@@ -252,6 +252,14 @@ Notes:
 
 >>> video_url = cl.media_info(1913256444155036809).video_url
 >>> cl.video_download_by_url(video_url, folder='/tmp')
+PosixPath('/tmp/45588546_367538213983456_6830188946193737023_n.mp4')
+
+```
+
+``` python
+
+>>> # Skip re-downloading if the target file already exists
+>>> cl.video_download_by_url(video_url, folder='/tmp', overwrite=False)
 PosixPath('/tmp/45588546_367538213983456_6830188946193737023_n.mp4')
 
 ```

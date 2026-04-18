@@ -18,7 +18,9 @@ class DownloadAlbumMixin:
     Helper class to download album
     """
 
-    def album_download(self, media_pk: int, folder: Path = "") -> List[Path]:
+    def album_download(
+        self, media_pk: int, folder: Path = "", overwrite: bool = True
+    ) -> List[Path]:
         """
         Download your album
 
@@ -29,6 +31,8 @@ class DownloadAlbumMixin:
         folder: Path, optional
             Directory in which you want to download the album, default is ""
             and will download the files to working directory.
+        overwrite: bool, optional
+            Whether to overwrite existing files. When False, existing files are returned as-is and not downloaded again.
 
         Returns
         -------
@@ -42,11 +46,21 @@ class DownloadAlbumMixin:
             filename = f"{media.user.username}_{resource.pk}"
             if resource.media_type == 1:
                 paths.append(
-                    self.photo_download_by_url(resource.thumbnail_url, filename, folder)
+                    self.photo_download_by_url(
+                        resource.thumbnail_url,
+                        filename,
+                        folder,
+                        overwrite=overwrite,
+                    )
                 )
             elif resource.media_type == 2:
                 paths.append(
-                    self.video_download_by_url(resource.video_url, filename, folder)
+                    self.video_download_by_url(
+                        resource.video_url,
+                        filename,
+                        folder,
+                        overwrite=overwrite,
+                    )
                 )
             else:
                 raise AlbumNotDownload(
@@ -54,7 +68,9 @@ class DownloadAlbumMixin:
                 )
         return paths
 
-    def album_download_by_urls(self, urls: List[str], folder: Path = "") -> List[Path]:
+    def album_download_by_urls(
+        self, urls: List[str], folder: Path = "", overwrite: bool = True
+    ) -> List[Path]:
         """
         Download your album using specified URLs
 
@@ -65,6 +81,8 @@ class DownloadAlbumMixin:
         folder: Path, optional
             Directory in which you want to download the album, default is ""
             and will download the files to working directory.
+        overwrite: bool, optional
+            Whether to overwrite existing files. When False, existing files are returned as-is and not downloaded again.
 
         Returns
         -------
@@ -75,9 +93,17 @@ class DownloadAlbumMixin:
         for url in urls:
             file_name = urlparse(url).path.rsplit("/", 1)[1]
             if file_name.lower().endswith((".jpg", ".jpeg")):
-                paths.append(self.photo_download_by_url(url, file_name, folder))
+                paths.append(
+                    self.photo_download_by_url(
+                        url, file_name, folder, overwrite=overwrite
+                    )
+                )
             elif file_name.lower().endswith(".mp4"):
-                paths.append(self.video_download_by_url(url, file_name, folder))
+                paths.append(
+                    self.video_download_by_url(
+                        url, file_name, folder, overwrite=overwrite
+                    )
+                )
             else:
                 raise AlbumUnknownFormat()
         return paths
