@@ -1,0 +1,44 @@
+name: Live Account Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_target:
+        description: "Which live test target to run"
+        required: true
+        default: "media"
+        type: choice
+        options:
+          - media
+          - user
+          - all
+
+env:
+  PYTHON_VERSION: "3.13.5"
+
+jobs:
+  live-test:
+    runs-on: ubuntu-latest
+    env:
+      TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          requirements: "true"
+          test-requirements: "true"
+
+      - name: Run media test
+        if: github.event.inputs.test_target == 'media' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests.py::ClientMediaTestCase
+
+      - name: Run user test
+        if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests.py::ClientUserTestCase

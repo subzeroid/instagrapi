@@ -93,39 +93,6 @@ jobs:
             tests.py::UserMixinRegressionTestCase \
             tests.py::StoryConfigureRegressionTestCase
 
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [ "3.13.5" ]
-    env:
-      TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        uses: ./.github/actions/install-dependencies
-        with:
-          requirements: "true"
-          test-requirements: "true"
-      - name: Run media test
-        run: pytest -sv tests.py::ClientMediaTestCase
-      - name: Run user test
-        run: pytest -sv tests.py::ClientUserTestCase
-      # - name: Run comment test
-      #   run: pytest -sv tests.py::ClientCommentTestCase
-      # - name: Run location test
-      #   run: pytest -sv tests.py::ClientLocationTestCase
-      # - name: Run hashtag test
-      #   run: pytest -sv tests.py::ClientHashtagTestCase
-      # - name: Run share test
-      #   run: pytest -sv tests.py::ClientShareTestCase
-      # - name: Run highlight test
-      #   run: pytest -sv tests.py::ClientHighlightTestCase
-
   build-docs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
