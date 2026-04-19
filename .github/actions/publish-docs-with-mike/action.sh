@@ -7,7 +7,11 @@ echo "::group::Configure Git User"
 echo "::endgroup::"
 
 echo "::group::Pull down latest docs commit"
-git fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin gh-pages
+if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
+  git fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin gh-pages
+else
+  echo "gh-pages branch does not exist yet; publishing docs will initialize it."
+fi
 echo "::endgroup::"
 
 echo "::group::Publish documentation"
