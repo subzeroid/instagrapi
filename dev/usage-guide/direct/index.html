@@ -1,0 +1,1249 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/direct/">
+      
+      
+        <link rel="prev" href="../comment/">
+      
+      
+        <link rel="next" href="../hashtag/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Direct - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#direct" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Direct
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="direct">Direct</h1>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)</code> <br> Note: <code>selected_filter</code> = <code>""</code>, <code>"flagged"</code> or <code>"unread"</code>; <code>box</code> = <code>""</code>, <code>"primary"</code> or <code>"general"</code></td>
+<td>List[DirectThread]</td>
+<td>Get all threads from inbox</td>
+</tr>
+<tr>
+<td>direct_pending_inbox(amount: int = 20)</td>
+<td>List[DirectThread]</td>
+<td>Get all threads from pending inbox</td>
+</tr>
+<tr>
+<td>direct_thread(thread_id: int, amount: int = 20)</td>
+<td>DirectThread</td>
+<td>Get Thread with Messages</td>
+</tr>
+<tr>
+<td>direct_messages(thread_id: int, amount: int = 20)</td>
+<td>List[DirectMessage]</td>
+<td>Get only Messages in Thread</td>
+</tr>
+<tr>
+<td>direct_answer(thread_id: int, text: str)</td>
+<td>DirectMessage</td>
+<td>Add Message to exist Thread</td>
+</tr>
+<tr>
+<td>direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [])</td>
+<td>DirectMessage</td>
+<td>Send Message to Users or Threads</td>
+</tr>
+<tr>
+<td>direct_search(query: str)</td>
+<td>List[DirectShortThread]</td>
+<td>Search threads (for example by username)</td>
+</tr>
+<tr>
+<td>direct_thread_by_participants(user_ids: List[int])</td>
+<td>DirectThread</td>
+<td>Get thread by user_id</td>
+</tr>
+<tr>
+<td>direct_thread_hide(thread_id: int)</td>
+<td>bool</td>
+<td>Delete (called "hide")</td>
+</tr>
+<tr>
+<td>direct_media_share(media_id: str, user_ids: List[int])</td>
+<td>DirectMessage</td>
+<td>Share a media to list of users</td>
+</tr>
+<tr>
+<td>direct_story_share(story_id: str, user_ids: List[int], thread_ids: List[int])</td>
+<td>DirectMessage</td>
+<td>Share a story to list of users</td>
+</tr>
+<tr>
+<td>direct_profile_share(user_id: str, user_ids: List[int], thread_ids: List[int])</td>
+<td>DirectMessage</td>
+<td>Share a user profile to list of users</td>
+</tr>
+<tr>
+<td>direct_thread_mark_unread(thread_id: int)</td>
+<td>bool</td>
+<td>Mark a thread as unread</td>
+</tr>
+<tr>
+<td>direct_message_delete(thread_id: int, message_id: int)</td>
+<td>bool</td>
+<td>Delete a message from thread</td>
+</tr>
+<tr>
+<td>direct_thread_mute(thread_id: int, revert: bool = False)</td>
+<td>bool</td>
+<td>Mute the thread</td>
+</tr>
+<tr>
+<td>direct_thread_unmute(thread_id: int)</td>
+<td>bool</td>
+<td>Unmute the thread</td>
+</tr>
+<tr>
+<td>direct_thread_mute_video_call(thread_id: int, revert: bool = False)</td>
+<td>bool</td>
+<td>Mute video call for the thread</td>
+</tr>
+<tr>
+<td>direct_thread_unmute_video_call(thread_id: int)</td>
+<td>bool</td>
+<td>Unmute video call for the thread</td>
+</tr>
+<tr>
+<td>direct_send_photo(path: Path, user_ids: List[int], thread_ids: List[int])</td>
+<td>DirectMessage</td>
+<td>Send a direct photo to list of users or threads</td>
+</tr>
+<tr>
+<td>direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int])</td>
+<td>DirectMessage</td>
+<td>Send a direct video to list of users or threads</td>
+</tr>
+<tr>
+<td>video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {})</td>
+<td>DirectMessage</td>
+<td>Upload video to direct thread as a story and configure it</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul>
+<li>For <code>direct_send()</code>, <code>direct_send_photo()</code>, and <code>direct_send_video()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
+<li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
+<li>Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via <code>dump_settings()/load_settings()</code> are more reliable than browser-only <code>sessionid</code> reuse.</li>
+</ul>
+<p>Example of basic actions:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">thread</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">thread</span><span class="o">.</span><span class="n">pk</span>
+<span class="mi">18123276039123479</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">thread</span><span class="o">.</span><span class="n">users</span>
+<span class="p">[</span><span class="n">UserShort</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="mi">123123123</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="s1">&#39;something&#39;</span><span class="p">,</span> <span class="n">full_name</span><span class="o">=</span><span class="s1">&#39;Dima Something&#39;</span><span class="p">,</span> <span class="n">profile_pic_url</span><span class="o">=</span><span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.frix7-1.fna.fbcdn.net/v/t51.2885-19/s150x150/11374323_1630877790512376_1081658215_a.jpg?_nc_ht=instagram.frix7-1.fna.fbcdn.net&amp;_nc_ohc=k22oMvVv8xEAX-UEVRB&amp;edm=AI8ESKwBAAAA&amp;ccb=7-4&amp;oh=be799948b28f19d85158153d886d16d3&amp;oe=6135D80F&amp;_nc_sid=195af5&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.frix7-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/11374323_1630877790512376_1081658215_a.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;_nc_ht=instagram.frix7-1.fna.fbcdn.net&amp;_nc_ohc=k22oMvVv8xEAX-UEVRB&amp;edm=AI8ESKwBAAAA&amp;ccb=7-4&amp;oh=be799948b28f19d85158153d886d16d3&amp;oe=6135D80F&amp;_nc_sid=195af5&#39;</span><span class="p">),</span> <span class="n">profile_pic_url_hd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_private</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stories</span><span class="o">=</span><span class="p">[])]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">thread</span><span class="o">.</span><span class="n">messages</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">300761992574947211231231241955932160</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="mi">123123123</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">754135</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua&#39;</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_pending_inbox</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">DirectThread</span><span class="p">(</span>
+    <span class="n">pk</span><span class="o">=</span><span class="mi">17881231232408606</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="mi">3402823668123123123949128156938656669726</span><span class="p">,</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">DirectMessage</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="mi">30073094913010429825449992959033344</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="mi">123123123123</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">)</span>
+    <span class="p">],</span>
+    <span class="o">...</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">DirectThread</span><span class="p">(</span>
+    <span class="n">pk</span><span class="o">=</span><span class="mi">18103276039108479</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="mi">340282366841710300949128373114263369599</span><span class="p">,</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">DirectMessage</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="mi">30076199257494728485375741955932160</span><span class="p">,</span>
+            <span class="n">user_id</span><span class="o">=</span><span class="mi">7789547</span><span class="p">,</span>
+            <span class="o">...</span>
+        <span class="p">)</span>
+    <span class="p">],</span>
+    <span class="o">...</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">message</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_messages</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">300712312341231237412312312360</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="mi">12312312</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">754135</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua&#39;</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_answer</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;Hello!&#39;</span><span class="p">)</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076213210116812312341061613568</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34028236684171031231231231233331238762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">127298</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send</span><span class="p">(</span><span class="s1">&#39;How are you?&#39;</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>  <span class="c1"># send youself</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076213210116812312341061613568</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34028236684171031231231231233331238762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">127298</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send</span><span class="p">(</span><span class="s1">&#39;How are you?&#39;</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076213210116812312341061613568</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34028236684171031231231231233331238762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">127298</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_by_participants</span><span class="p">([</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>
+<span class="n">DirectThread</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="mi">178612312342</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="mi">340282366812312312312341298762</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="p">[</span><span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076214123123123123123864</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="mi">1903424587</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span> <span class="mi">107154</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_media_share</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">3007629312312312312312300374016</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">340282366812313212334410641298762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">708276</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_story_share</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076291231321231369939116032</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">340282312312312334410641298762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">217677</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_story_share</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">30076291231231230352896</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">3402812312312310641298762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">48</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">482706</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_message_delete</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">photo_path</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_download</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/BgqFyjqloOr/&#39;</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_photo</span><span class="p">(</span><span class="n">photo_path</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>  <span class="c1"># or</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_photo</span><span class="p">(</span><span class="n">photo_path</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">300775273512312312312321568</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34028236123123123123128762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">949673</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video_path</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_download</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/B3rFQPblq40/&#39;</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>  <span class="c1"># or</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<span class="n">Analyzing</span> <span class="n">video</span> <span class="n">file</span> <span class="s2">&quot;/.../example_2155839952940084788.mp4&quot;</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">300775489123123123123664</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34012312312312312398762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">959454</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_direct</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+<span class="n">Analyzing</span> <span class="n">video</span> <span class="n">file</span> <span class="s2">&quot;/.../example_2155839952940084788.mp4&quot;</span>
+<span class="n">Generating</span> <span class="n">thumbnail</span> <span class="s2">&quot;/.../example_2155839952940084788.mp4.jpg&quot;</span><span class="o">...</span>
+<span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">3007123123123123664</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">3401212312312312398762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">959454</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_mark_unread</span><span class="p">(</span><span class="mi">340282366841710301949128122292511813703</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_mute</span><span class="p">(</span><span class="mi">340282366841710301949128122292511813703</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_mute_video_call</span><span class="p">(</span><span class="mi">340282366841710301949128122292511813703</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_unmute_video_call</span><span class="p">(</span><span class="mi">340282366841710301949128122292511813703</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_unmute</span><span class="p">(</span><span class="mi">340282366841710301949128122292511813703</span><span class="p">)</span>
+<span class="kc">True</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

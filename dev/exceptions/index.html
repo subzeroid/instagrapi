@@ -1,0 +1,2314 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/exceptions/">
+      
+      
+        <link rel="prev" href="../development-guide/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Exceptions - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#common-exceptions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Exceptions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-guide/best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proxy-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxy Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graphqlpublic-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GraphQL/Public Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#private-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#challenge-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Challenge Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Media Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#account-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Account Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collection-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#photo-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Photo Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Video Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#igtv-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IGTV Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reelsclip-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reels/Clip Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#album-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Album Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#story-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#highlight-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Highlight Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hashtag-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hashtag Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#location-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comment-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comment Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Note Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#common-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proxy-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proxy Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graphqlpublic-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GraphQL/Public Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#private-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#challenge-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Challenge Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Media Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#account-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Account Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collection-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collection Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#direct-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Direct Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#photo-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Photo Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#video-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Video Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#igtv-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IGTV Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reelsclip-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reels/Clip Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#album-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Album Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#story-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#highlight-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Highlight Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hashtag-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hashtag Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#location-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Location Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comment-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comment Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#note-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Note Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Exceptions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Exceptions</h1>
+
+<h2 id="common-exceptions">Common Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClientError</td>
+<td>Exception</td>
+<td>Base Exception for Instagram calls</td>
+</tr>
+<tr>
+<td>GenericRequestError</td>
+<td>ClientError</td>
+<td>Base Exception for Request (Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>ClientGraphqlError</td>
+<td>ClientError</td>
+<td>Exception for GraphQL calls</td>
+</tr>
+<tr>
+<td>ClientJSONDecodeError</td>
+<td>ClientError</td>
+<td>JSON Exception</td>
+</tr>
+<tr>
+<td>ClientConnectionError</td>
+<td>ClientError</td>
+<td>Connection error (Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>ClientBadRequestError</td>
+<td>ClientError</td>
+<td>HTTP 400 Exception</td>
+</tr>
+<tr>
+<td>ClientUnauthorizedError</td>
+<td>ClientError</td>
+<td>HTTP 401 Exception</td>
+</tr>
+<tr>
+<td>ClientForbiddenError</td>
+<td>ClientError</td>
+<td>HTTP 403 Exception</td>
+</tr>
+<tr>
+<td>ClientNotFoundError</td>
+<td>ClientError</td>
+<td>HTTP 404 Exception</td>
+</tr>
+<tr>
+<td>ClientThrottledError</td>
+<td>ClientError</td>
+<td>HTTP 429 Exception (Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>ClientRequestTimeout</td>
+<td>ClientError</td>
+<td>Request Timeout Exception</td>
+</tr>
+<tr>
+<td>ClientIncompleteReadError</td>
+<td>ClientError</td>
+<td>Raises when response interrupted</td>
+</tr>
+<tr>
+<td>ClientLoginRequired</td>
+<td>ClientError</td>
+<td>Raises when Instagram required Login (Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>ReloginAttemptExceeded</td>
+<td>ClientError</td>
+<td>Raises when all attempts exceeded</td>
+</tr>
+<tr>
+<td>ClientErrorWithTitle</td>
+<td>ClientError</td>
+<td>Occurs when Instagram returns an unknown error with the title</td>
+</tr>
+<tr>
+<td>ClientUnknownError</td>
+<td>ClientError</td>
+<td>Occurs when Instagram returns an unknown error</td>
+</tr>
+<tr>
+<td>WrongCursorError</td>
+<td>ClientError</td>
+<td>Occurs when the cursor for pagination is passed in the wrong format</td>
+</tr>
+<tr>
+<td>ClientStatusFail</td>
+<td>ClientError</td>
+<td>Occurs when Instagram returns message with status=fail with details</td>
+</tr>
+</tbody>
+</table>
+<h2 id="proxy-exceptions">Proxy Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ProxyError</td>
+<td>ClientError</td>
+<td>Base exception for proxy</td>
+</tr>
+<tr>
+<td>ConnectProxyError</td>
+<td>ProxyError</td>
+<td>Occurs when it is not possible to connect to your proxy</td>
+</tr>
+<tr>
+<td>AuthRequiredProxyError</td>
+<td>ProxyError</td>
+<td>Occurs when incorrect credentials are passed to authorize your proxy</td>
+</tr>
+<tr>
+<td>ProxyAddressIsBlocked</td>
+<td>PrivateError</td>
+<td>Happens when your proxy is blocked by Instagram, change your proxy!</td>
+</tr>
+<tr>
+<td>SentryBlock</td>
+<td>PrivateError</td>
+<td>Raises when get message=sentry_block (most likely you were banned from instagram by ip address. Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>RateLimitError</td>
+<td>PrivateError</td>
+<td>Raises when get message=rate_limit_error (Solution: try changing your proxy)</td>
+</tr>
+<tr>
+<td>PleaseWaitFewMinutes</td>
+<td>PrivateError</td>
+<td>Raises when get message="Please wait a few minutes before you try again" (Solution: try changing your proxy)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="graphqlpublic-exceptions">GraphQL/Public Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AccountSuspended</td>
+<td>ClientError</td>
+<td>Your account is suspended</td>
+</tr>
+<tr>
+<td>TermsUnblock</td>
+<td>ClientError</td>
+<td>Your account may be blocked, you need to agree to the terms</td>
+</tr>
+<tr>
+<td>TermsAccept</td>
+<td>ClientError</td>
+<td>Your account may be blocked, you need to agree to the terms</td>
+</tr>
+<tr>
+<td>AboutUsError</td>
+<td>ClientError</td>
+<td>Your account may be blocked</td>
+</tr>
+</tbody>
+</table>
+<h2 id="private-exceptions">Private Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PrivateError</td>
+<td>ClientError</td>
+<td>Base Exception for Private calls (received from Instagram)</td>
+</tr>
+<tr>
+<td>FeedbackRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=feedback_required</td>
+</tr>
+<tr>
+<td>PreLoginRequired</td>
+<td>ClientError</td>
+<td>Raises when authorization is required before calling a method</td>
+</tr>
+<tr>
+<td>LoginRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=login_required (from Instagram)</td>
+</tr>
+<tr>
+<td>BadPassword</td>
+<td>PrivateError</td>
+<td>Raises when get message=bad_password</td>
+</tr>
+<tr>
+<td>TwoFactorRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=two_factor_required</td>
+</tr>
+<tr>
+<td>UnknownError</td>
+<td>PrivateError</td>
+<td>Raises when get unknown message (new message from instagram)</td>
+</tr>
+<tr>
+<td>BadCredentials</td>
+<td>PrivateError</td>
+<td>The login and password pair for your account have not been passed</td>
+</tr>
+<tr>
+<td>IsRegulatedC18Error</td>
+<td>ClientBadRequestError</td>
+<td>The user is limited to 18+</td>
+</tr>
+</tbody>
+</table>
+<h2 id="challenge-exceptions">Challenge Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChallengeError</td>
+<td>PrivateError</td>
+<td>Base Challenge Exception (received from Instagram)</td>
+</tr>
+<tr>
+<td>ChallengeRedirection</td>
+<td>ChallengeError</td>
+<td>Raises when get type=CHALLENGE_REDIRECTION</td>
+</tr>
+<tr>
+<td>ChallengeRequired</td>
+<td>ChallengeError</td>
+<td>Raises when get message=challenge_required</td>
+</tr>
+<tr>
+<td>ChallengeSelfieCaptcha</td>
+<td>ChallengeError</td>
+<td>Raises when get step=selfie_captcha</td>
+</tr>
+<tr>
+<td>ChallengeUnknownStep</td>
+<td>ChallengeError</td>
+<td>Occurs when challenge is unknown</td>
+</tr>
+<tr>
+<td>SelectContactPointRecoveryForm</td>
+<td>ChallengeError</td>
+<td>Raises when get challengeType=SelectContactPointRecoveryForm</td>
+</tr>
+<tr>
+<td>RecaptchaChallengeForm</td>
+<td>ChallengeError</td>
+<td>Raises when get challengeType=RecaptchaChallengeForm</td>
+</tr>
+<tr>
+<td>SubmitPhoneNumberForm</td>
+<td>ChallengeError</td>
+<td>Raises when get challengeType=SubmitPhoneNumberForm</td>
+</tr>
+<tr>
+<td>LegacyForceSetNewPasswordForm</td>
+<td>ChallengeError</td>
+<td>Raises when get challengeType=LegacyForceSetNewPasswordForm</td>
+</tr>
+<tr>
+<td>ConsentRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=consent_required</td>
+</tr>
+<tr>
+<td>GeoBlockRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=geoblock_required</td>
+</tr>
+<tr>
+<td>CheckpointRequired</td>
+<td>PrivateError</td>
+<td>Raises when get message=checkpoint_required</td>
+</tr>
+</tbody>
+</table>
+<h2 id="media-exceptions">Media Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MediaError</td>
+<td>PrivateError</td>
+<td>Base Media Exception (received from Instagram)</td>
+</tr>
+<tr>
+<td>MediaNotFound</td>
+<td>MediaError</td>
+<td>Raises when user unavailable</td>
+</tr>
+<tr>
+<td>InvalidTargetUser</td>
+<td>PrivateError</td>
+<td>Occurs when the selected user cannot be mentioned (does not exist, has been deleted or is closed by privacy settings)</td>
+</tr>
+<tr>
+<td>InvalidMediaId</td>
+<td>PrivateError</td>
+<td>Occurs when the selected media does not exists</td>
+</tr>
+<tr>
+<td>MediaUnavailable</td>
+<td>PrivateError</td>
+<td>Occurs when the selected media is no longer available</td>
+</tr>
+</tbody>
+</table>
+<h2 id="user-exceptions">User Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UserError</td>
+<td>PrivateError</td>
+<td>Base User Exception (received from Instagram)</td>
+</tr>
+<tr>
+<td>UserNotFound</td>
+<td>UserError</td>
+<td>Raises when user unavailable</td>
+</tr>
+<tr>
+<td>PrivateAccount</td>
+<td>PrivateError</td>
+<td>The target user is closed by privacy settings</td>
+</tr>
+</tbody>
+</table>
+<h2 id="account-exceptions">Account Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ResetPasswordError</td>
+<td>ClientError</td>
+<td>Raises when password is not reset</td>
+</tr>
+<tr>
+<td>UnsupportedError</td>
+<td>ClientError</td>
+<td>Raises when option is supported</td>
+</tr>
+<tr>
+<td>UnsupportedSettingValue</td>
+<td>UnsupportedError</td>
+<td>Raises when account setting value is not supported</td>
+</tr>
+</tbody>
+</table>
+<h2 id="collection-exceptions">Collection Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CollectionError</td>
+<td>PrivateError</td>
+<td>Base Collection Exception (received from Instagram)</td>
+</tr>
+<tr>
+<td>CollectionNotFound</td>
+<td>CollectionError</td>
+<td>Raises when collection unavailable</td>
+</tr>
+</tbody>
+</table>
+<h2 id="direct-exceptions">Direct Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DirectError</td>
+<td>PrivateError</td>
+<td>Base Direct Exception</td>
+</tr>
+<tr>
+<td>DirectThreadNotFound</td>
+<td>DirectError</td>
+<td>Raises when thread not found</td>
+</tr>
+<tr>
+<td>DirectMessageNotFound</td>
+<td>DirectError</td>
+<td>Raises when message in thread not found</td>
+</tr>
+</tbody>
+</table>
+<h2 id="photo-exceptions">Photo Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PhotoNotDownload</td>
+<td>PrivateError</td>
+<td>Raises when source photo not found</td>
+</tr>
+<tr>
+<td>PhotoNotUpload</td>
+<td>PrivateError</td>
+<td>Raises when photo not upload</td>
+</tr>
+<tr>
+<td>PhotoConfigureError</td>
+<td>PhotoNotUpload</td>
+<td>Raises when photo not configured</td>
+</tr>
+<tr>
+<td>PhotoConfigureStoryError</td>
+<td>PhotoConfigureError</td>
+<td>Raises when photo story not configured</td>
+</tr>
+</tbody>
+</table>
+<h2 id="video-exceptions">Video Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VideoNotDownload</td>
+<td>PrivateError</td>
+<td>Raises when source video not found</td>
+</tr>
+<tr>
+<td>VideoNotUpload</td>
+<td>PrivateError</td>
+<td>Raises when video not upload</td>
+</tr>
+<tr>
+<td>VideoConfigureError</td>
+<td>VideoNotUpload</td>
+<td>Raises when video not configured</td>
+</tr>
+<tr>
+<td>VideoConfigureStoryError</td>
+<td>VideoConfigureError</td>
+<td>Raises when video story not configured</td>
+</tr>
+<tr>
+<td>VideoTooLongException</td>
+<td>PrivateError</td>
+<td>Raises when video too long</td>
+</tr>
+</tbody>
+</table>
+<h2 id="igtv-exceptions">IGTV Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IGTVNotUpload</td>
+<td>PrivateError</td>
+<td>Raises when IGTV not upload</td>
+</tr>
+<tr>
+<td>IGTVConfigureError</td>
+<td>IGTVNotUpload</td>
+<td>Raises when IGTV not configured</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reelsclip-exceptions">Reels/Clip Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ClipNotUpload</td>
+<td>PrivateError</td>
+<td>Raises when Reels Clip not upload</td>
+</tr>
+<tr>
+<td>ClipConfigureError</td>
+<td>ClipNotUpload</td>
+<td>Raises when Reels Clip not configured</td>
+</tr>
+</tbody>
+</table>
+<h2 id="album-exceptions">Album Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AlbumNotDownload</td>
+<td>PrivateError</td>
+<td>Raises when album not found</td>
+</tr>
+<tr>
+<td>AlbumUnknownFormat</td>
+<td>PrivateError</td>
+<td>Raises when format of media not MP4 or JPG</td>
+</tr>
+<tr>
+<td>AlbumConfigureError</td>
+<td>PrivateError</td>
+<td>Raises when album not configured</td>
+</tr>
+</tbody>
+</table>
+<h2 id="story-exceptions">Story Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>StoryNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when story not found</td>
+</tr>
+</tbody>
+</table>
+<h2 id="highlight-exceptions">Highlight Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HighlightNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when highlight not found</td>
+</tr>
+</tbody>
+</table>
+<h2 id="hashtag-exceptions">Hashtag Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HashtagError</td>
+<td>PrivateError</td>
+<td>Base exception for hashtag</td>
+</tr>
+<tr>
+<td>HashtagNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when hashtag not found</td>
+</tr>
+<tr>
+<td>HashtagPageWarning</td>
+<td>ClientForbiddenError</td>
+<td>Occurs when Instagram returns warning_message with category_name=HASHTAG_PAGE_WARNING_MESSAGE</td>
+</tr>
+</tbody>
+</table>
+<h2 id="location-exceptions">Location Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LocationError</td>
+<td>PrivateError</td>
+<td>Base exception for location</td>
+</tr>
+<tr>
+<td>LocationNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when location not found</td>
+</tr>
+</tbody>
+</table>
+<h2 id="comment-exceptions">Comment Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CommentNotFound</td>
+<td>PrivateError</td>
+<td>Raises when comment not found</td>
+</tr>
+<tr>
+<td>CommentsDisabled</td>
+<td>PrivateError</td>
+<td>The ability to comment has been disabled by the author of the post</td>
+</tr>
+</tbody>
+</table>
+<h2 id="share-exceptions">Share Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ShareDecodeError</td>
+<td>PrivateError</td>
+<td>Occurs when the data format for Share-obj is incorrect</td>
+</tr>
+</tbody>
+</table>
+<h2 id="note-exceptions">Note Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NoteNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when note not found</td>
+</tr>
+</tbody>
+</table>
+<h2 id="track-exceptions">Track Exceptions</h2>
+<table>
+<thead>
+<tr>
+<th>Exception</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TrackNotFound</td>
+<td>NotFoundError</td>
+<td>Raises when track not found</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

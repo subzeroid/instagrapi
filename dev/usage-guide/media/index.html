@@ -1,0 +1,2085 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/media/">
+      
+      
+        <link rel="prev" href="../location/">
+      
+      
+        <link rel="next" href="../notes/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Media - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#media" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Media
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-terms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic terms:
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Media types:
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-and-editing-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing and editing publication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing and editing publication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Download media
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Download media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upload-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upload media
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Upload media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cutout-stickers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutout Stickers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cutout Stickers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#basic-terms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic terms:
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#media-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Media types:
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#viewing-and-editing-publication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing and editing publication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Viewing and editing publication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#download-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Download media
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Download media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upload-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upload media
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Upload media">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cutout-stickers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutout Stickers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cutout Stickers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="media">Media</h1>
+<p>Viewing, downloading, uploading and editing publications</p>
+<p>In terms of Instagram, this is called Media, usually users call it publications or posts</p>
+<h3 id="basic-terms">Basic terms:</h3>
+<ul>
+<li><code>media_id</code> - String ID <code>"{media_id}_{user_id}"</code>, e.g. <code>"2277033926878261772_1903424587"</code></li>
+<li><code>media_pk</code> - Integer ID (real media id), e.g. <code>2277033926878261772</code></li>
+<li><code>code</code> - Short code (slug for media), e.g. <code>BjNLpA1AhXM</code> from <code>"https://www.instagram.com/p/BjNLpA1AhXM/"</code></li>
+<li><code>url</code> - URL to media publication, e.g. <code>"https://www.instagram.com/p/BjNLpA1AhXM/"</code></li>
+</ul>
+<h3 id="media-types">Media types:</h3>
+<ul>
+<li><code>Photo</code> - When media_type=1</li>
+<li><code>Video</code> - When media_type=2 and product_type=feed</li>
+<li><code>IGTV</code>  - When media_type=2 and product_type=igtv</li>
+<li><code>Reel</code>  - When media_type=2 and product_type=clips</li>
+<li><code>Album</code> - When media_type=8</li>
+</ul>
+<h2 id="viewing-and-editing-publication">Viewing and editing publication</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>media_id(media_pk: str)</td>
+<td>str</td>
+<td>Return full <code>media_id</code> by <code>media_pk</code> (e.g. <code>2277033926878261772 -&gt; 2277033926878261772_1903424587</code>)</td>
+</tr>
+<tr>
+<td>media_pk(media_id: str)</td>
+<td>str</td>
+<td>Return <code>media_pk</code> by full <code>media_id</code></td>
+</tr>
+<tr>
+<td>media_code_from_pk(media_pk: str)</td>
+<td>str</td>
+<td>Return shortcode for a media PK</td>
+</tr>
+<tr>
+<td>media_pk_from_code(code: str)</td>
+<td>str</td>
+<td>Return media PK from shortcode</td>
+</tr>
+<tr>
+<td>media_pk_from_url(url: str)</td>
+<td>str</td>
+<td>Return media PK from media URL; also handles <code>share/p/...</code> redirect URLs</td>
+</tr>
+<tr>
+<td>user_medias(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get user feed media</td>
+</tr>
+<tr>
+<td>user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one page of user media and next cursor</td>
+</tr>
+<tr>
+<td>user_clips(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get clips/reels by user</td>
+</tr>
+<tr>
+<td>usertag_medias(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get media where a user is tagged</td>
+</tr>
+<tr>
+<td>media_info(media_pk: str, use_cache: bool = True)</td>
+<td>Media</td>
+<td>Return media info</td>
+</tr>
+<tr>
+<td>media_delete(media_id: str)</td>
+<td>bool</td>
+<td>Delete media</td>
+</tr>
+<tr>
+<td>media_edit(media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None)</td>
+<td>dict</td>
+<td>Edit caption, optional IGTV title, usertags, or location</td>
+</tr>
+<tr>
+<td>media_user(media_pk: str)</td>
+<td>UserShort</td>
+<td>Get author of media</td>
+</tr>
+<tr>
+<td>media_oembed(url: str)</td>
+<td>dict</td>
+<td>Return short oEmbed-style media info by URL</td>
+</tr>
+<tr>
+<td>media_like(media_id: str)</td>
+<td>bool</td>
+<td>Like media</td>
+</tr>
+<tr>
+<td>media_unlike(media_id: str)</td>
+<td>bool</td>
+<td>Unlike media</td>
+</tr>
+<tr>
+<td>media_seen(media_ids: List[str], skipped_media_ids: List[str] = [])</td>
+<td>bool</td>
+<td>Mark media as seen</td>
+</tr>
+<tr>
+<td>media_likers(media_id: str)</td>
+<td>List[UserShort]</td>
+<td>Return users who liked this post</td>
+</tr>
+<tr>
+<td>media_archive(media_id: str)</td>
+<td>bool</td>
+<td>Archive media</td>
+</tr>
+<tr>
+<td>media_unarchive(media_id: str)</td>
+<td>bool</td>
+<td>Unarchive media</td>
+</tr>
+<tr>
+<td>media_pin(media_pk: str)</td>
+<td>bool</td>
+<td>Pin media to profile</td>
+</tr>
+<tr>
+<td>media_unpin(media_pk: str)</td>
+<td>bool</td>
+<td>Unpin media from profile</td>
+</tr>
+<tr>
+<td>media_create_livestream(title: str = "Instagram Live")</td>
+<td>dict</td>
+<td>Create a new livestream and return stream metadata</td>
+</tr>
+<tr>
+<td>media_start_livestream(broadcast_id: str)</td>
+<td>dict</td>
+<td>Start an existing livestream</td>
+</tr>
+<tr>
+<td>media_end_livestream(broadcast_id: str)</td>
+<td>dict</td>
+<td>End an existing livestream</td>
+</tr>
+<tr>
+<td>media_get_livestream_info(broadcast_id: str)</td>
+<td>dict</td>
+<td>Get livestream info</td>
+</tr>
+<tr>
+<td>media_get_livestream_comments(broadcast_id: str)</td>
+<td>dict</td>
+<td>Get livestream comments</td>
+</tr>
+<tr>
+<td>media_get_livestream_viewers(broadcast_id: str)</td>
+<td>dict</td>
+<td>Get livestream viewers</td>
+</tr>
+</tbody>
+</table>
+<p>Low level methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>media_info_a1(media_pk: str, max_id: str = None)</td>
+<td>Media</td>
+<td>Get media from PK via public web API</td>
+</tr>
+<tr>
+<td>media_info_gql(media_pk: str)</td>
+<td>Media</td>
+<td>Get media from PK via public GraphQL API</td>
+</tr>
+<tr>
+<td>media_info_v1(media_pk: str)</td>
+<td>Media</td>
+<td>Get media from PK via private mobile API</td>
+</tr>
+<tr>
+<td>user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0)</td>
+<td>List[Media]</td>
+<td>Get user media via public GraphQL API</td>
+</tr>
+<tr>
+<td>user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one public GraphQL page of user media</td>
+</tr>
+<tr>
+<td>user_medias_v1(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get user media via private mobile API</td>
+</tr>
+<tr>
+<td>user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one private API page of user media</td>
+</tr>
+<tr>
+<td>user_clips_v1(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get user clips via private mobile API</td>
+</tr>
+<tr>
+<td>user_clips_paginated_v1(user_id: str, amount: int = 0, end_cursor="")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one private API page of clips</td>
+</tr>
+<tr>
+<td>user_videos_v1(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get user videos via private mobile API</td>
+</tr>
+<tr>
+<td>user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one private API page of videos</td>
+</tr>
+<tr>
+<td>usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2)</td>
+<td>List[Media]</td>
+<td>Get media where a user is tagged via public GraphQL API</td>
+</tr>
+<tr>
+<td>usertag_medias_v1(user_id: str, amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get media where a user is tagged via private mobile API</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example">Example:</h3>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_code</span><span class="p">(</span><span class="s2">&quot;B-fKL9qpeab&quot;</span><span class="p">)</span>
+<span class="mi">2278584739065882267</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_code</span><span class="p">(</span><span class="s2">&quot;B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0&quot;</span><span class="p">)</span>
+<span class="mi">2243811726252050162</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;https://www.instagram.com/p/BjNLpA1AhXM/&quot;</span><span class="p">)</span>
+<span class="mi">1787135824035452364</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;https://www.instagram.com/share/p/BA123456789/&quot;</span><span class="p">)</span>
+<span class="mi">1787135824035452364</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_info</span><span class="p">(</span><span class="mi">1787135824035452364</span><span class="p">)</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1787135824035452364</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;1787135824035452364_1903424587&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;BjNLpA1AhXM&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2018</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">46</span><span class="p">,</span> <span class="mi">53</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">260916528</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Foros, Crimea&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;lng&#39;</span><span class="p">:</span> <span class="mf">33.7878</span><span class="p">,</span>
+  <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="mf">44.3914</span><span class="p">,</span>
+  <span class="s1">&#39;external_id&#39;</span><span class="p">:</span> <span class="mi">181364832764479</span><span class="p">,</span>
+  <span class="s1">&#39;external_id_source&#39;</span><span class="p">:</span> <span class="s1">&#39;facebook_places&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_...&amp;oe=5FD7600E&#39;</span><span class="p">)},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">48</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s1">&#39;@mind__flowers в Форосе под дождём, 24 мая 2018 #downhill #skateboarding #downhillskateboarding #crimea #foros&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1787135361353462176</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/33464086_3755...0e2362&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3220311...AE7332&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1787135762219834098</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t50.2886-16/32895...61320_n.mp4&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/3373413....8480_n.jpg&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1787133803186894424</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/324307712_n.jpg...&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_oembed</span><span class="p">(</span><span class="s2">&quot;https://www.instagram.com/p/B3mr1-OlWMG/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;version&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;В гостях у ДК @delai_krasivo_kaifui&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;author_name&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;author_url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://www.instagram.com/example&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;author_id&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+ <span class="s1">&#39;media_id&#39;</span><span class="p">:</span> <span class="s1">&#39;2154602296692269830_1903424587&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;provider_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Instagram&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;provider_url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://www.instagram.com&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;rich&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="mi">658</span><span class="p">,</span>
+ <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;html&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;blockquote&gt;...&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://instagram.frix7-1.fna.fbcdn.net/v...0655800983_n.jpg&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_width&#39;</span><span class="p">:</span> <span class="mi">640</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_height&#39;</span><span class="p">:</span> <span class="mi">480</span><span class="p">,</span>
+ <span class="s1">&#39;can_view&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_archive</span><span class="p">(</span><span class="s1">&#39;2155832952940083788_1903424587&#39;</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_unarchive</span><span class="p">(</span><span class="s1">&#39;2155832952940083788_1903424587&#39;</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_medias_gql</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2592252466151482347</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2592252466151482347_1903424587&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CP5h-I1FuPr&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url_hd&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">63</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s1">&#39;Любимые подвески ♥️ @daewon1song @tensortrucks&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">53860445</span><span class="p">,</span>
+    <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;tensortrucks&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;profile_pic_url_hd&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+   <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.3146666667</span><span class="p">,</span>
+   <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.368159204</span><span class="p">}],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2592252463089480898</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/198404255_317668533141074_749682826672118306_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=102&amp;_nc_ohc=f8FR-bZNbp8AX-A6YQ4&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=864bb145a4fa7e523f5cc22f9ac5d015&amp;oe=61145E4F&amp;_nc_sid=86f79a&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/s1080x1080/198404255_317668533141074_749682826672118306_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=102&amp;_nc_ohc=f8FR-bZNbp8AX-A6YQ4&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=864bb145a4fa7e523f5cc22f9ac5d015&amp;oe=61145E4F&amp;_nc_sid=86f79a&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2592252463081081550</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/198228498_303261361473979_3031095263106513772_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=107&amp;_nc_ohc=C9SeKrAO6poAX-nXhCG&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=6aab825e12fef746449be22c322762a1&amp;oe=61132FB0&amp;_nc_sid=86f79a&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/s1080x1080/198228498_303261361473979_3031095263106513772_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=107&amp;_nc_ohc=C9SeKrAO6poAX-nXhCG&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=6aab825e12fef746449be22c322762a1&amp;oe=61132FB0&amp;_nc_sid=86f79a&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2592252463056089912</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg?_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=108&amp;_nc_ohc=_feIkorChpsAX_wzTff&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=a22a2f5b30772fbbb02db92b9394e981&amp;oe=61147D59&amp;_nc_sid=86f79a&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/s1080x1080/199142152_323583732599636_4553823395468898634_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=108&amp;_nc_ohc=_feIkorChpsAX_wzTff&amp;edm=APU89FABAAAA&amp;ccb=7-4&amp;oh=a22a2f5b30772fbbb02db92b9394e981&amp;oe=61147D59&amp;_nc_sid=86f79a&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]}</span>
+
+<span class="c1"># Use paginated interface to resume fetch from stored cursor</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">end_cursor</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="o">...</span> <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+<span class="o">...</span>     <span class="n">medias</span><span class="p">,</span> <span class="n">end_cursor</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">user_medias_paginated</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">end_cursor</span><span class="o">=</span><span class="n">end_cursor</span><span class="p">)</span>
+<span class="o">...</span>     <span class="nb">print</span><span class="p">([</span> <span class="n">m</span><span class="o">.</span><span class="n">taken_at</span><span class="o">.</span><span class="n">date</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">medias</span> <span class="p">])</span>
+<span class="o">...</span>
+
+<span class="p">[</span><span class="s1">&#39;2021-06-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-10-16&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-10-14&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-06-13&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-06-06&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s1">&#39;2019-06-05&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-11-15&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-16&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s1">&#39;2018-10-16&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-11&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-08-02&#39;</span><span class="p">]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_id</span><span class="p">(</span><span class="mi">1787135824035452364</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_like</span><span class="p">(</span><span class="n">media_id</span><span class="p">)</span>
+<span class="kc">True</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_unlike</span><span class="p">(</span><span class="n">media_id</span><span class="p">)</span>
+<span class="kc">True</span>
+</code></pre></div>
+<p>Notes:</p>
+<ul>
+<li>High-level <code>media_info()</code> prefers public paths and falls back to private/mobile when needed.</li>
+<li><code>media_pk_from_url()</code> now also resolves <code>share/p/...</code> URLs before extracting the canonical shortcode.</li>
+<li><code>media_edit()</code> uses <code>caption</code> and optional <code>location</code>/<code>usertags</code>; for IGTV posts it can also derive or send a separate <code>title</code>.</li>
+</ul>
+<h2 id="download-media">Download media</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>photo_download(media_pk: int, folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download photo (path to photo with best resoluton)</td>
+</tr>
+<tr>
+<td>photo_download_by_url(url: str, filename: str, folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download photo by URL (path to photo with best resoluton)</td>
+</tr>
+<tr>
+<td>video_download(media_pk: int, folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download video (path to video with best resoluton)</td>
+</tr>
+<tr>
+<td>video_download_by_url(url: str, filename: str, folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download Video by URL (path to video with best resoluton)</td>
+</tr>
+<tr>
+<td>album_download(media_pk: int, folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download Album (multiple paths to photo/video with best resolutons)</td>
+</tr>
+<tr>
+<td>album_download_by_urls(urls: List[str], folder: Path, overwrite: bool = True)</td>
+<td>Path</td>
+<td>Download Album by URLs (multiple paths to photo/video)</td>
+</tr>
+<tr>
+<td>igtv_download(media_pk: int, folder: Path)</td>
+<td>Path</td>
+<td>Download IGTV (path to video with best resoluton)</td>
+</tr>
+<tr>
+<td>igtv_download_by_url(url: str, filename: str, folder: Path)</td>
+<td>Path</td>
+<td>Download IGTV by URL (path to video with best resoluton)</td>
+</tr>
+<tr>
+<td>clip_download(media_pk: int, folder: Path)</td>
+<td>Path</td>
+<td>Download Reels Clip (path to video with best resoluton)</td>
+</tr>
+<tr>
+<td>clip_download_by_url(url: str, filename: str, folder: Path)</td>
+<td>Path</td>
+<td>Download Reels Clip by URL (path to video with best resoluton)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example_1">Example:</h3>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;https://www.instagram.com/p/BqNQJleFoSJ/&quot;</span><span class="p">)</span>
+<span class="mi">1913256444155036809</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">video_url</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_info</span><span class="p">(</span><span class="mi">1913256444155036809</span><span class="p">)</span><span class="o">.</span><span class="n">video_url</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_download_by_url</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">)</span>
+<span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/tmp/45588546_367538213983456_6830188946193737023_n.mp4&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="c1"># Skip re-downloading if the target file already exists</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_download_by_url</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/tmp/45588546_367538213983456_6830188946193737023_n.mp4&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;http://www.instagram.com/p/BjNLpA1AhXM/&quot;</span><span class="p">)</span>
+<span class="mi">1787135824035452364</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">album_download</span><span class="p">(</span><span class="mi">1787135824035452364</span><span class="p">)</span>
+<span class="p">[</span><span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/app/example_1787135361353462176.mp4&#39;</span><span class="p">),</span>
+ <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/app/example_1787135762219834098.mp4&#39;</span><span class="p">),</span>
+ <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/app/example_1787133803186894424.jpg&#39;</span><span class="p">)]</span>
+</code></pre></div>
+<h2 id="upload-media">Upload media</h2>
+<p>Upload medias to your feed. Common arguments:</p>
+<ul>
+<li><code>path</code> - Path to source file</li>
+<li><code>caption</code>  - Text for you post</li>
+<li><code>usertags</code> - List[Usertag] of mention users (see <code>Usertag</code> in <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/types.py">types.py</a>)</li>
+<li><code>location</code> - Location (e.g. <code>Location(name='Test', lat=42.0, lng=42.0)</code>)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload photo (Support JPG files)</td>
+</tr>
+<tr>
+<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload video (Support MP4 files)</td>
+</tr>
+<tr>
+<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload Album (Support JPG/MP4 files)</td>
+</tr>
+<tr>
+<td>igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload IGTV (Support MP4 files)</td>
+</tr>
+<tr>
+<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload Reels Clip (Support MP4 files)</td>
+</tr>
+<tr>
+<td>clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload Reels Clip as reel with music metadata</td>
+</tr>
+</tbody>
+</table>
+<p>In <code>extra_data</code>, you can pass additional media settings, for example:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>custom_accessibility_caption</td>
+<td>String</td>
+<td><a href="https://github.com/subzeroid/instagrapi/issues/351">Set alternative text</a> <code>{"custom_accessibility_caption": "ALT TEXT HERE"}</code></td>
+</tr>
+<tr>
+<td>like_and_view_counts_disabled</td>
+<td>Int</td>
+<td><a href="https://github.com/subzeroid/instagrapi/issues/382">Disable like and view counts</a> <code>{"like_and_view_counts_disabled": 1}</code></td>
+</tr>
+<tr>
+<td>disable_comments</td>
+<td>Int</td>
+<td>Disable comments <code>{"disable_comments": 1}</code></td>
+</tr>
+<tr>
+<td>invite_coauthor_user_id</td>
+<td>Int</td>
+<td>Add a coauthor to the post <code>{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}</code>. You also need to add this user to <code>usertags</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="example_2">Example:</h3>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
+    <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Test caption for photo with #hashtags and mention users such @example&quot;</span><span class="p">,</span>
+    <span class="n">extra_data</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;custom_accessibility_caption&quot;</span><span class="p">:</span> <span class="s2">&quot;alt text example&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;like_and_view_counts_disabled&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;disable_comments&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2573347427873726764</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2573347427873726764_1903424587&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2Xdn6FCEs&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;feed&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/185486538_463522984736407_6315244509641560230_n.jpg?se=8&amp;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=107&amp;_nc_ohc=6tBMsh9HlmMAX9zI_jc&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=2b46f1e9fbd2416eb7d08b398e0f639e&amp;oe=60C30437&amp;_nc_sid=9ec724&amp;ig_cache_key=MjU3MzM0NzQyNzg3MzcyNjc2NA%3D%3D.2-ccb7-4&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/185486538_463522984736407_6315244509641560230_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;se=8&amp;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=107&amp;_nc_ohc=6tBMsh9HlmMAX9zI_jc&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=2b46f1e9fbd2416eb7d08b398e0f639e&amp;oe=60C30437&amp;_nc_sid=9ec724&amp;ig_cache_key=MjU3MzM0NzQyNzg3MzcyNjc2NA%3D%3D.2-ccb7-4&#39;</span><span class="p">),</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">),</span>
+  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s1">&#39;Test caption for photo with #hashtags and mention users such @example&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+</code></pre></div>
+<p>Now let's mention users (Usertag) and location:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">Usertag</span><span class="p">,</span> <span class="n">Location</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">example</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_info_by_username</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
+    <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Test caption for photo with #hashtags and mention users such @example&quot;</span><span class="p">,</span>
+    <span class="n">usertags</span><span class="o">=</span><span class="p">[</span><span class="n">Usertag</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">example</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)],</span>
+    <span class="n">location</span><span class="o">=</span><span class="n">Location</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Russia, Saint-Petersburg&#39;</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">59.96</span><span class="p">,</span> <span class="n">lng</span><span class="o">=</span><span class="mf">30.29</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2573355619819242434</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2573355619819242434_1903424587&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2ZU1QFMPC&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;feed&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-15/e35/185426950_474602463640866_4228057388625412955_n.jpg?se=8&amp;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=106&amp;_nc_ohc=7NrVvAEG7f4AX_XPaOK&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=bd2c90c2dcb693184e07c2777e09bb0b&amp;oe=60C4E326&amp;_nc_sid=9ec724&amp;ig_cache_key=MjU3MzM1NTYxOTgxOTI0MjQzNA%3D%3D.2-ccb7-4&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/185426950_474602463640866_4228057388625412955_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;se=8&amp;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_cat=106&amp;_nc_ohc=7NrVvAEG7f4AX_XPaOK&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=bd2c90c2dcb693184e07c2777e09bb0b&amp;oe=60C4E326&amp;_nc_sid=9ec724&amp;ig_cache_key=MjU3MzM1NTYxOTgxOTI0MjQzNA%3D%3D.2-ccb7-4&#39;</span><span class="p">),</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">107617247320879</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Russia, Saint-Petersburg&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;Russia, Saint-Petersburg&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;lng&#39;</span><span class="p">:</span> <span class="mf">30.30605</span><span class="p">,</span>
+  <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="mf">59.93318</span><span class="p">,</span>
+  <span class="s1">&#39;external_id&#39;</span><span class="p">:</span> <span class="mi">107617247320879</span><span class="p">,</span>
+  <span class="s1">&#39;external_id_source&#39;</span><span class="p">:</span> <span class="s1">&#39;facebook_places&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">),</span>
+  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s1">&#39;Test caption for photo with #hashtags and mention users such @example&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+    <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel5-1.fna.fbcdn.net/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg?tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel5-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/156689363_269505058076642_6448820957073669709_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel5-1.fna.fbcdn.net&amp;_nc_ohc=EtzrL0pAdg8AX-Xq8yS&amp;edm=ACqnv0EBAAAA&amp;ccb=7-4&amp;oh=e2fd6a9d362f8587ea8123f23b248f1b&amp;oe=60C2CB91&amp;_nc_sid=9ec724&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+   <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+   <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+</code></pre></div>
+<p>Reels:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">clips</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_clips_v1</span><span class="p">(</span><span class="mi">25025320</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">clips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="s1">&#39;3052048407587698594&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;3052048407587698594_25025320&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CpbDdszj7ei&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;clips&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-den4-1.cdninstagram.com/v/t51.2885-15/333966975_152901010970043_8971338145148712917_n.jpg?stp=dst-jpg_e15_p150x150&amp;_nc_ht=scontent-den4-1.cdninstagram.com&amp;_nc_cat=1&amp;_nc_ohc=rRuJ7u4YrqEAX-UEMFq&amp;edm=ACHbZRIBAAAA&amp;ccb=7-5&amp;ig_cache_key=MzA1MjA0ODQwNzU4NzY5ODU5NA%3D%3D.2-ccb7-5&amp;oh=00_AfC_tNEWVjJLM5RQYUiQJFHQZSmvnDtAcpzs42DRSYt1pQ&amp;oe=6409C451&amp;_nc_sid=4a9e64&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-den4-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="s1">&#39;443&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/333966975_152901010970043_8971338145148712917_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;stp=dst-jpg_e15_p150x150&amp;_nc_ht=scontent-den4-1.cdninstagram.com&amp;_nc_cat=1&amp;_nc_ohc=rRuJ7u4YrqEAX-UEMFq&amp;edm=ACHbZRIBAAAA&amp;ccb=7-5&amp;ig_cache_key=MzA1MjA0ODQwNzU4NzY5ODU5NA%3D%3D.2-ccb7-5&amp;oh=00_AfC_tNEWVjJLM5RQYUiQJFHQZSmvnDtAcpzs42DRSYt1pQ&amp;oe=6409C451&amp;_nc_sid=4a9e64&#39;</span><span class="p">),</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">213011753</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Sydney, Australia&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;phone&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;website&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;category&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;hours&#39;</span><span class="p">:</span> <span class="p">{},</span>
+  <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;city&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;zip&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+  <span class="s1">&#39;lng&#39;</span><span class="p">:</span> <span class="mf">151.20797</span><span class="p">,</span>
+  <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">33.86751</span><span class="p">,</span>
+  <span class="s1">&#39;external_id&#39;</span><span class="p">:</span> <span class="mi">110884905606108</span><span class="p">,</span>
+  <span class="s1">&#39;external_id_source&#39;</span><span class="p">:</span> <span class="s1">&#39;facebook_places&#39;</span><span class="p">},</span>
+<span class="o">....</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="cutout-stickers">Cutout Stickers</h2>
+<p>Create cutout stickers from photos for use in Direct Messages.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>photo_upload_to_cutout_sticker(path: Path, bypass_ai: bool = True)</td>
+<td>Media</td>
+<td>Upload photo and create a Cutout Sticker</td>
+</tr>
+<tr>
+<td>media_configure_to_cutout_sticker(upload_id: str, source_type: str, manual_box: List[float], use_ai_detection: bool, extra_data: Dict)</td>
+<td>Media</td>
+<td>Configure an uploaded photo as a Cutout Sticker (low-level)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>bypass_ai</code> - If <code>True</code> (default), selects the full image using manual bounding box <code>[0, 0, 1, 1]</code>. Best for pre-processed images like transparent PNGs. If <code>False</code>, uses Instagram's server-side AI (SAM) to detect and extract the subject.</li>
+</ul>
+<h3 id="example_3">Example:</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="c1"># Upload a pre-cut PNG sticker (bypass AI detection)</span>
+<span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_to_cutout_sticker</span><span class="p">(</span><span class="s2">&quot;sticker.png&quot;</span><span class="p">,</span> <span class="n">bypass_ai</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+
+<span class="c1"># Upload a photo and let Instagram AI detect the subject</span>
+<span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_to_cutout_sticker</span><span class="p">(</span><span class="s2">&quot;photo.jpg&quot;</span><span class="p">,</span> <span class="n">bypass_ai</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

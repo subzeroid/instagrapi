@@ -1,0 +1,1272 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/hashtag/">
+      
+      
+        <link rel="prev" href="../direct/">
+      
+      
+        <link rel="next" href="../highlight/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Hashtag - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hashtag" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Hashtag
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="hashtag">Hashtag</h1>
+<p>Viewing hashtag info and medias by hashtag</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hashtag_info(name: str)</td>
+<td>Hashtag</td>
+<td>Return hashtag info (<code>id</code>, <code>name</code>, <code>media_count</code>, <code>profile_pic_url</code>)</td>
+</tr>
+<tr>
+<td>hashtag_related_hashtags(name: str)</td>
+<td>List[Hashtag]</td>
+<td>Return related hashtags</td>
+</tr>
+<tr>
+<td>hashtag_medias_top(name: str, amount: int = 9)</td>
+<td>List[Media]</td>
+<td>Return top posts for a hashtag</td>
+</tr>
+<tr>
+<td>hashtag_medias_recent(name: str, amount: int = 27)</td>
+<td>List[Media]</td>
+<td>Return recent posts for a hashtag</td>
+</tr>
+<tr>
+<td>hashtag_medias_reels_v1(name: str, amount: int = 27)</td>
+<td>List[Media]</td>
+<td>Return reels/clips for a hashtag via private API</td>
+</tr>
+<tr>
+<td>hashtag_follow(hashtag: str, unfollow: bool = False)</td>
+<td>bool</td>
+<td>Follow a hashtag</td>
+</tr>
+<tr>
+<td>hashtag_unfollow(hashtag: str)</td>
+<td>bool</td>
+<td>Unfollow a hashtag</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hashtag</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_info</span><span class="p">(</span><span class="s1">&#39;downhill&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">hashtag</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="mi">17841563089103670</span><span class="p">,</span>
+ <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;downhill&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;media_count&#39;</span><span class="p">:</span> <span class="mi">5178255</span><span class="p">,</span>
+ <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/s150x150/184304495_294863488920457_8839934375675895594_n.jpg?tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=L3i9yzFUBR8AX_MAXgr&amp;edm=ABZsPhsBAAAA&amp;ccb=7-4&amp;oh=21a944a197506a42658e8273d92740b7&amp;oe=60C37E35&amp;_nc_sid=4efc9f&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel3-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/s150x150/184304495_294863488920457_8839934375675895594_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=L3i9yzFUBR8AX_MAXgr&amp;edm=ABZsPhsBAAAA&amp;ccb=7-4&amp;oh=21a944a197506a42658e8273d92740b7&amp;oe=60C37E35&amp;_nc_sid=4efc9f&#39;</span><span class="p">)}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_top</span><span class="p">(</span><span class="s1">&#39;downhill&#39;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574092718364154697</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2574092718364154697_376712420&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CO5A7BxA9tJ&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/s1080x1080/186430270_473573763896149_2030909827389015824_n.jpg?tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=4jFHY_INCnMAX-7fObK&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=9fb0c4cdb01a7aa376a96c0df366d844&amp;oe=60C4C01A&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel3-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/s1080x1080/186430270_473573763896149_2030909827389015824_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=4jFHY_INCnMAX-7fObK&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=9fb0c4cdb01a7aa376a96c0df366d844&amp;oe=60C4C01A&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">517543</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Sestola&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;lng&#39;</span><span class="p">:</span> <span class="mf">10.77328</span><span class="p">,</span>
+  <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="mf">44.2266</span><span class="p">,</span>
+  <span class="s1">&#39;external_id&#39;</span><span class="p">:</span> <span class="mi">103150459725396</span><span class="p">,</span>
+  <span class="s1">&#39;external_id_source&#39;</span><span class="p">:</span> <span class="s1">&#39;facebook_places&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">376712420</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;vascobica&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;⚡Vasco Bica®⚡&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/96211403_922669918147090_5138958292701151232_n.jpg?tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=tYlGX8kDuSgAX9WtBRF&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=ac96c75846d17519e53923a0ddb3aad0&amp;oe=60C51486&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/96211403_922669918147090_5138958292701151232_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=tYlGX8kDuSgAX9WtBRF&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=ac96c75846d17519e53923a0ddb3aad0&amp;oe=60C51486&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">327</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s1">&#39;Ready to fight ⚔️</span><span class="se">\n</span><span class="s1">#js7 </span><span class="se">\n</span><span class="s1">.</span><span class="se">\n</span><span class="s1">.</span><span class="se">\n</span><span class="s1">#swissmountainsports #racing #coppaitaliadh </span><span class="se">\n</span><span class="s1">#mirandabikeparts</span><span class="se">\xa0</span><span class="s1">#burning</span><span class="se">\xa0</span><span class="s1">#jumping </span><span class="se">\xa0</span><span class="s1">#whipit</span><span class="se">\xa0</span><span class="s1">#scrubit</span><span class="se">\xa0</span><span class="s1">#enduro</span><span class="se">\xa0</span><span class="s1">#mtblife</span><span class="se">\xa0</span><span class="s1"> #downhill</span><span class="se">\xa0</span><span class="s1">#mountainbiking</span><span class="se">\xa0</span><span class="s1">#sliding</span><span class="se">\xa0</span><span class="s1">#dirt</span><span class="se">\xa0</span><span class="s1">#dh</span><span class="se">\xa0</span><span class="s1"> #mtb</span><span class="se">\xa0</span><span class="s1">#bike</span><span class="se">\xa0</span><span class="s1">#bikelife</span><span class="se">\xa0</span><span class="s1">#friends</span><span class="se">\xa0</span><span class="s1">#mtbswitzerland</span><span class="se">\xa0</span><span class="s1">#downhillmtb</span><span class="se">\xa0</span><span class="s1">#valais</span><span class="se">\xa0</span><span class="s1"> #swissmountains</span><span class="se">\xa0\xa0</span><span class="s1">#italy #italydownhill&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">3636959873</span><span class="p">,</span>
+    <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;christopherstrm&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Christopher Ström&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/173775865_527371595096868_8991176723035066304_n.jpg?tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=tbsAzTDoLtEAX_HaT9Z&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=94a18b3b4d0d39d9dbda849b4c23a5a9&amp;oe=60C5192F&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/173775865_527371595096868_8991176723035066304_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=tbsAzTDoLtEAX_HaT9Z&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=94a18b3b4d0d39d9dbda849b4c23a5a9&amp;oe=60C5192F&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+   <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mf">0.211352657</span><span class="p">,</span>
+   <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mf">0.8478260870000001</span><span class="p">}],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_recent</span><span class="p">(</span><span class="s1">&#39;downhill&#39;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574205305714324167</span><span class="p">,</span>
+ <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2574205305714324167_2984719638&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="s1">&#39;CO5ahY6BzLH&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;taken_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+ <span class="s1">&#39;product_type&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">703017966745848</span><span class="p">,</span>
+  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Le Canyon Du Diable&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;lng&#39;</span><span class="p">:</span> <span class="mf">3.4480762482</span><span class="p">,</span>
+  <span class="s1">&#39;lat&#39;</span><span class="p">:</span> <span class="mf">43.6966105493</span><span class="p">,</span>
+  <span class="s1">&#39;external_id&#39;</span><span class="p">:</span> <span class="mi">703017966745848</span><span class="p">,</span>
+  <span class="s1">&#39;external_id_source&#39;</span><span class="p">:</span> <span class="s1">&#39;facebook_places&#39;</span><span class="p">},</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2984719638</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;lilian.champion&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Lilian 🇨🇵&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/169115203_291696755653751_6779914563403118432_n.jpg?tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=VEqYwd5W1FYAX_7ID-6&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=7fe193da2e706c0cafd9e1d432734891&amp;oe=60C59786&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-19/s150x150/169115203_291696755653751_6779914563403118432_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_ohc=VEqYwd5W1FYAX_7ID-6&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=7fe193da2e706c0cafd9e1d432734891&amp;oe=60C59786&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
+ <span class="s1">&#39;comment_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;caption_text&#39;</span><span class="p">:</span> <span class="s2">&quot;Quand on te prend en photo sans que tu aies demandé et que la personne t&#39;envoie tout par mail après...😂😁🤙🏻 Merci l&#39;inconnu du coup </span><span class="se">\n\n</span><span class="s2">#downhill #mountainlovers #ytowners #vanlife #vanlifefrance&quot;</span><span class="p">,</span>
+ <span class="s1">&#39;usertags&#39;</span><span class="p">:</span> <span class="p">[],</span>
+ <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+ <span class="s1">&#39;view_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+ <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+ <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574205301050111226</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/184312115_2977220092557985_8274386175388868273_n.jpg?tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=YoLLGA0cAhsAX8MxnSo&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=b0f2740aaff1d80c5f5219ffa267a186&amp;oe=60C4273E&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel3-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/184312115_2977220092557985_8274386175388868273_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=101&amp;_nc_ohc=YoLLGA0cAhsAX8MxnSo&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=b0f2740aaff1d80c5f5219ffa267a186&amp;oe=60C4273E&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574205301083731874</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel6-1.fna.fbcdn.net/v/t51.2885-15/e35/186524178_143770224434390_4909324648747352588_n.jpg?tp=1&amp;_nc_ht=instagram.fhel6-1.fna.fbcdn.net&amp;_nc_cat=102&amp;_nc_ohc=w6z9v4MwYg8AX9FdWk0&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=99295fa82472bf4a425fc49bd03c1310&amp;oe=60C40AFC&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel6-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/186524178_143770224434390_4909324648747352588_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel6-1.fna.fbcdn.net&amp;_nc_cat=102&amp;_nc_ohc=w6z9v4MwYg8AX9FdWk0&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=99295fa82472bf4a425fc49bd03c1310&amp;oe=60C40AFC&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574205301066842492</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-15/e35/186787154_332065288355469_7843843424299639709_n.jpg?tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_cat=109&amp;_nc_ohc=-qZy9_HakCQAX-Cqk9v&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=031077ab2f56db0bab7ffbc920f80a41&amp;oe=60C4F57B&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/186787154_332065288355469_7843843424299639709_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=scontent-hel3-1.cdninstagram.com&amp;_nc_cat=109&amp;_nc_ohc=-qZy9_HakCQAX-Cqk9v&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=031077ab2f56db0bab7ffbc920f80a41&amp;oe=60C4F57B&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2574205301075310332</span><span class="p">,</span>
+   <span class="s1">&#39;video_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+   <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg?tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=104&amp;_nc_ohc=45NguRpEtZQAX83VSGE&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=c8c087ecfba444d9d85f7bd059f42a2a&amp;oe=60C5C3C2&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel3-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=104&amp;_nc_ohc=45NguRpEtZQAX83VSGE&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=c8c087ecfba444d9d85f7bd059f42a2a&amp;oe=60C5C3C2&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
+   <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]}</span>
+</code></pre></div>
+<p>Low level methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hashtag_info_a1(name: str, max_id: str = None)</td>
+<td>Hashtag</td>
+<td>Get information about a hashtag by Public Web API</td>
+</tr>
+<tr>
+<td>hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None)</td>
+<td>Hashtag</td>
+<td>Get information about a hashtag by Public Graphql API</td>
+</tr>
+<tr>
+<td>hashtag_info_v1(name: str)</td>
+<td>Hashtag</td>
+<td>Get information about a hashtag by Private Mobile API</td>
+</tr>
+<tr>
+<td>hashtag_medias_a1_chunk(name: str, max_amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media", end_cursor: str = None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get chunk of medias and end_cursor by Public Web API</td>
+</tr>
+<tr>
+<td>hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media")</td>
+<td>List[Media]</td>
+<td>Get medias for a hashtag by Public Web API</td>
+</tr>
+<tr>
+<td>hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top|recent", max_id: str = None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API</td>
+</tr>
+<tr>
+<td>hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top|recent")</td>
+<td>List[Media]</td>
+<td>Get medias for a hashtag by Private Mobile API</td>
+</tr>
+<tr>
+<td>hashtag_medias_top_a1(name: str, amount: int = 9)</td>
+<td>List[Media]</td>
+<td>Get top medias for a hashtag by Public Web API</td>
+</tr>
+<tr>
+<td>hashtag_medias_top_v1(name: str, amount: int = 9)</td>
+<td>List[Media]</td>
+<td>Get top medias for a hashtag by Private Mobile API</td>
+</tr>
+<tr>
+<td>hashtag_medias_recent_a1(name: str, amount: int = 71)</td>
+<td>List[Media]</td>
+<td>Get recent medias for a hashtag by Public Web API</td>
+</tr>
+<tr>
+<td>hashtag_medias_recent_v1(name: str, amount: int = 27)</td>
+<td>List[Media]</td>
+<td>Get recent medias for a hashtag by Private Mobile API</td>
+</tr>
+<tr>
+<td>hashtag_medias_reels_v1(name: str, amount: int = 27)</td>
+<td>List[Media]</td>
+<td>Get recent clips (reels) for a hashtag by Private Mobile API</td>
+</tr>
+</tbody>
+</table>
+<p>Example for <a href="https://github.com/subzeroid/instagrapi/issues/79">Request for loading every next time new posts from hashtag</a>:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_v1_chunk</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">max_amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">medias</span><span class="p">)</span>
+<span class="mi">32</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cursor</span>
+<span class="n">QVFDR0dzT3FJT0V4amFjMaQ3czlGVzRKV3FNWDJqaE1mWmltWU5VWGYtbnV6RVpoOUlsR3dCN05RRmpLc2R5SVlCQTNaekV5bUVOV0F4Vno1MDkxN1Nndg</span><span class="o">==</span>
+
+<span class="c1"># NEXT cursor:</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_v1_chunk</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">max_amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">,</span> <span class="n">max_id</span><span class="o">=</span><span class="n">cursor</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">medias</span><span class="p">)</span>
+<span class="mi">32</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cursor</span>
+<span class="n">QVFEUXpfM0RtaDdmMExPQ0k0UWRlaHFJa2RVdVlaX01LTzhkNF9Dd1N2UlhtVy1vSTZvMERfYW5XN205OTBRNFBCSVJ2ZTVfTG5ZMXVmY0VJbUM5TU9URQ</span><span class="o">==</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_follow</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_unfollow</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="kc">True</span>
+</code></pre></div>
+<p>Notes:</p>
+<ul>
+<li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> prefer public/web paths first and fall back to private/mobile on failure.</li>
+<li>For resumable pagination, use <code>hashtag_medias_v1_chunk()</code> and persist the encoded <code>max_id</code> cursor.</li>
+<li><code>tab_key</code> values differ by implementation:</li>
+<li><code>hashtag_medias_a1_chunk()</code>: <code>top</code> or <code>recent</code></li>
+<li><code>hashtag_medias_v1_chunk()</code>: <code>top</code>, <code>recent</code>, or <code>clips</code></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
