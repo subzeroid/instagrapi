@@ -499,6 +499,24 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertNotIn("Authorization", client.private.headers)
         self.assertEqual(client.private.cookies.get_dict(), {})
 
+    def test_login_uses_stored_username_when_called_without_args(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(return_value=True)
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        result = client.login()
+
+        self.assertTrue(result)
+        payload = client.private_request.call_args.args[1]
+        self.assertEqual(payload["username"], "example")
+
     def test_login_two_factor_requires_verification_code(self):
         client = Client()
         client.username = "example"
@@ -548,6 +566,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(second_call.args[0], "accounts/two_factor_login/")
         self.assertEqual(second_call.args[1]["verification_code"], "123456")
         self.assertEqual(second_call.args[1]["two_factor_identifier"], "two-factor-id")
+        self.assertEqual(second_call.args[1]["username"], "example")
         client.login_flow.assert_called_once_with()
 
     def test_login_by_sessionid_falls_back_to_user_short_gql(self):
@@ -592,6 +611,24 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.user_short_gql.assert_not_called()
         self.assertEqual(client.username, "example")
         self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
+
+    def test_login_resets_relogin_attempt_after_success(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.relogin_attempt = 1
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(return_value=True)
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        result = client.login(relogin=True)
+
+        self.assertTrue(result)
+        self.assertEqual(client.relogin_attempt, 0)
 
     def test_user_stories_authenticated_falls_back_to_private(self):
         client = Client()

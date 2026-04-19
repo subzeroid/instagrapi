@@ -460,7 +460,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
-            "username": username,
+            "username": self.username,
             "adid": self.advertising_id,
             "guid": self.uuid,
             "device_id": self.android_device_id,
@@ -485,7 +485,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "phone_id": self.phone_id,
                 "_csrftoken": self.token,
                 "two_factor_identifier": two_factor_identifier,
-                "username": username,
+                "username": self.username,
                 "trust_this_device": "0",
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
@@ -501,6 +501,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if logged:
             self.login_flow()
             self.last_login = time.time()
+            self.relogin_attempt = 0
             return True
         return False
 
