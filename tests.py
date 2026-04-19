@@ -22,10 +22,16 @@ from instagrapi.extractors import (
     extract_story_v1,
 )
 from instagrapi.exceptions import (
+    BadCredentials,
     ChallengeRequired,
     ClientConnectionError,
     ClientGraphqlError,
+    ClientThrottledError,
     DirectThreadNotFound,
+    PleaseWaitFewMinutes,
+    PrivateError,
+    ReloginAttemptExceeded,
+    TwoFactorRequired,
 )
 from instagrapi.mixins.user import UserMixin
 from instagrapi.story import StoryBuilder
@@ -431,6 +437,179 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             client.challenge_resolve_simple("challenge/test/")
 
         self.assertIn("UFAC web bloks checkpoint", str(cm.exception))
+
+
+class AuthAndStoryRegressionTestCase(unittest.TestCase):
+    def test_login_requires_username_and_password(self):
+        client = Client()
+
+        with self.assertRaises(BadCredentials):
+            client.login()
+
+    def test_login_continues_after_pre_login_throttling(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(side_effect=PleaseWaitFewMinutes())
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        result = client.login()
+
+        self.assertTrue(result)
+        client.pre_login_flow.assert_called_once_with()
+        client.private_request.assert_called_once()
+        client.login_flow.assert_called_once_with()
+
+    def test_login_continues_after_client_throttled_error(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(side_effect=ClientThrottledError())
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        result = client.login()
+
+        self.assertTrue(result)
+        client.pre_login_flow.assert_called_once_with()
+        client.private_request.assert_called_once()
+        client.login_flow.assert_called_once_with()
+
+    def test_login_relogin_guard_raises_before_network_calls(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.relogin_attempt = 2
+        client.private.cookies.set("sessionid", "stale")
+        client.private.headers["Authorization"] = "Bearer stale"
+
+        with self.assertRaises(ReloginAttemptExceeded):
+            client.login(relogin=True)
+
+        self.assertEqual(client.authorization_data, {})
+        self.assertNotIn("Authorization", client.private.headers)
+        self.assertEqual(client.private.cookies.get_dict(), {})
+
+    def test_login_two_factor_requires_verification_code(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.pre_login_flow = Mock(return_value=True)
+        client.private_request = Mock(
+            side_effect=TwoFactorRequired("Two-factor authentication required")
+        )
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        with self.assertRaises(TwoFactorRequired) as cm:
+            client.login()
+
+        self.assertIn("you did not provide verification_code", str(cm.exception))
+
+    def test_login_two_factor_uses_verification_code_flow(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.uuid = "uuid-1"
+        client.phone_id = "phone-1"
+        client.android_device_id = "android-1"
+        client._token = "csrftoken"
+        client.last_json = {
+            "two_factor_info": {"two_factor_identifier": "two-factor-id"}
+        }
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer second"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(
+            side_effect=[
+                TwoFactorRequired("Two-factor authentication required"),
+                True,
+            ]
+        )
+
+        result = client.login(verification_code="123456")
+
+        self.assertTrue(result)
+        self.assertEqual(client.private_request.call_count, 2)
+        first_call = client.private_request.call_args_list[0]
+        self.assertEqual(first_call.args[0], "accounts/login/")
+        second_call = client.private_request.call_args_list[1]
+        self.assertEqual(second_call.args[0], "accounts/two_factor_login/")
+        self.assertEqual(second_call.args[1]["verification_code"], "123456")
+        self.assertEqual(second_call.args[1]["two_factor_identifier"], "two-factor-id")
+        client.login_flow.assert_called_once_with()
+
+    def test_login_by_sessionid_falls_back_to_user_short_gql(self):
+        client = Client()
+        sessionid = "1234567890123456789012345678901%3Atoken"
+        client.user_info_v1 = Mock(side_effect=PrivateError("boom"))
+        client.user_short_gql = Mock(
+            return_value=UserShort(pk="1234567890123456789", username="example")
+        )
+
+        result = client.login_by_sessionid(sessionid)
+
+        self.assertTrue(result)
+        client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
+        client.user_short_gql.assert_called_once_with(1234567890123456789012345678901)
+        self.assertEqual(client.username, "example")
+        self.assertEqual(client.authorization_data["sessionid"], sessionid)
+        self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
+
+    def test_login_by_sessionid_uses_user_info_v1_when_available(self):
+        client = Client()
+        sessionid = "1234567890123456789012345678901%3Atoken"
+        user = User(
+            pk="1234567890123456789",
+            username="example",
+            full_name="Example",
+            is_private=False,
+            profile_pic_url="https://example.com/pic.jpg",
+            is_verified=False,
+            media_count=0,
+            follower_count=0,
+            following_count=0,
+            is_business=False,
+        )
+        client.user_info_v1 = Mock(return_value=user)
+        client.user_short_gql = Mock()
+
+        result = client.login_by_sessionid(sessionid)
+
+        self.assertTrue(result)
+        client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
+        client.user_short_gql.assert_not_called()
+        self.assertEqual(client.username, "example")
+        self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
+
+    def test_user_stories_authenticated_falls_back_to_private(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "123"}
+        expected = [Mock(spec=Story)]
+
+        with mock.patch.object(
+            client,
+            "user_stories_gql",
+            side_effect=ClientGraphqlError("Incorrect Query"),
+        ):
+            with mock.patch.object(
+                client, "user_stories_v1", return_value=expected
+            ) as private_fallback:
+                result = client.user_stories("4776134209", amount=5)
+
+        private_fallback.assert_called_once_with("4776134209", 5)
+        self.assertEqual(result, expected)
 
 
 class ClientTestCase(unittest.TestCase):

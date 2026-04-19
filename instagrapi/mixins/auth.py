@@ -400,7 +400,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except (PrivateError, ValidationError):
             user = self.user_short_gql(int(user_id))
         self.username = user.username
-        self.cookie_dict["ds_user_id"] = user.pk
+        self.private.cookies.set("ds_user_id", str(user.pk))
         return True
 
     def login(
