@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from typing import Optional
 from urllib.parse import urlparse
 
@@ -95,7 +96,7 @@ class Client(
 
     def __init__(
         self,
-        settings: dict = {},
+        settings: Optional[dict] = None,
         proxy: Optional[str] = None,
         delay_range: Optional[list] = None,
         logger=DEFAULT_LOGGER,
@@ -118,7 +119,7 @@ class Client(
 
         super().__init__(**kwargs)
 
-        self.settings = settings
+        self.settings = deepcopy(settings or {})
         self.logger = logger
         self.delay_range = delay_range
 

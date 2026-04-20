@@ -796,6 +796,15 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
 
 class ClientTestCase(unittest.TestCase):
+    def test_default_settings_are_not_shared_between_clients(self):
+        first = Client()
+        second = Client()
+
+        first.set_retry_config(session_retry_total=9)
+
+        self.assertEqual(first.settings["session_retry_total"], 9)
+        self.assertEqual(second.settings["session_retry_total"], 3)
+
     def test_jazoest(self):
         phone_id = "57d64c41-a916-3fa5-bd7a-3796c1dab122"
         self.assertTrue(generate_jazoest(phone_id), "22413")
