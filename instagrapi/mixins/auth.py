@@ -1004,6 +1004,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if result["status"] == "ok":
             self.authorization_data = {}
             self.last_login = None
+            self.relogin_attempt = 0
             self.private.headers.pop("Authorization", None)
             self.private.cookies.clear()
             self.public.cookies.clear()
@@ -1012,6 +1013,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     def parse_authorization(self, authorization) -> dict:
         """Parse authorization header"""
+        if not authorization:
+            return {}
         try:
             b64part = authorization.rsplit(":", 1)[-1]
             if not b64part:

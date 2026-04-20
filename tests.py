@@ -780,6 +780,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client = Client()
         client.authorization_data = {"sessionid": "auth-session", "ds_user_id": "12345"}
         client.last_login = 123.0
+        client.relogin_attempt = 1
         client.private.headers["Authorization"] = "Bearer stale"
         client.private.cookies.set("sessionid", "private-session")
         client.public.cookies.set("sessionid", "public-session")
@@ -790,9 +791,29 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(client.authorization_data, {})
         self.assertIsNone(client.last_login)
+        self.assertEqual(client.relogin_attempt, 0)
         self.assertNotIn("Authorization", client.private.headers)
         self.assertEqual(client.private.cookies.get_dict(), {})
         self.assertEqual(client.public.cookies.get_dict(), {})
+
+    def test_parse_authorization_returns_empty_dict_for_missing_header(self):
+        client = Client()
+        client.logger = Mock()
+
+        result = client.parse_authorization(None)
+
+        self.assertEqual(result, {})
+        client.logger.exception.assert_not_called()
+
+    def test_parse_authorization_decodes_valid_bearer_header(self):
+        client = Client()
+        authorization = (
+            "Bearer IGT:2:eyJzZXNzaW9uaWQiOiAiYWJjIiwgImRzX3VzZXJfaWQiOiAiMTIzIn0="
+        )
+
+        result = client.parse_authorization(authorization)
+
+        self.assertEqual(result, {"sessionid": "abc", "ds_user_id": "123"})
 
 
 class ClientTestCase(unittest.TestCase):
