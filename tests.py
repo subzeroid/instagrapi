@@ -536,6 +536,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.password = "password"
         client.relogin_attempt = 2
         client.private.cookies.set("sessionid", "stale")
+        client.public.cookies.set("sessionid", "public-stale")
         client.private.headers["Authorization"] = "Bearer stale"
 
         with self.assertRaises(ReloginAttemptExceeded):
@@ -544,6 +545,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.authorization_data, {})
         self.assertNotIn("Authorization", client.private.headers)
         self.assertEqual(client.private.cookies.get_dict(), {})
+        self.assertEqual(client.public.cookies.get_dict(), {})
 
     def test_login_returns_early_when_user_is_already_authorized(self):
         client = Client()
