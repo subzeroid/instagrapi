@@ -417,6 +417,7 @@ class ChallengeResolveMixin:
             )
             return True
         elif step_name in ("verify_email", "verify_email_code", "select_verify_method"):
+            choice = ChallengeChoice.EMAIL
             if step_name == "select_verify_method":
                 """
                 {'step_name': 'select_verify_method',
@@ -434,21 +435,17 @@ class ChallengeResolveMixin:
                 steps = self.last_json["step_data"].keys()
                 challenge_url = challenge_url[1:]
                 if "email" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": ChallengeChoice.EMAIL}
-                    )
+                    choice = ChallengeChoice.EMAIL
+                    self._send_private_request(challenge_url, {"choice": choice})
                 elif "phone_number" in steps:
-                    self._send_private_request(
-                        challenge_url, {"choice": ChallengeChoice.SMS}
-                    )
+                    choice = ChallengeChoice.SMS
+                    self._send_private_request(challenge_url, {"choice": choice})
                 else:
                     raise ChallengeError(
                         f'ChallengeResolve: Choice "email" or "phone_number" '
                         f"(sms) not available to this account {self.last_json}"
                     )
-            code = self.challenge_code_or_raised(
-                ChallengeChoice.EMAIL, wait_seconds=5, attempts=24
-            )
+            code = self.challenge_code_or_raised(choice, wait_seconds=5, attempts=24)
             self._send_private_request(challenge_url, {"security_code": code})
             # assert 'logged_in_user' in client.last_json
             assert self.last_json.get("action", "") == "close"
@@ -515,14 +512,13 @@ class ChallengeResolveMixin:
             """
             steps = self.last_json["step_data"].keys()
             challenge_url = challenge_url[1:]
+            choice = ChallengeChoice.EMAIL
             if "email" in steps:
-                self._send_private_request(
-                    challenge_url, {"choice": ChallengeChoice.EMAIL}
-                )
+                choice = ChallengeChoice.EMAIL
+                self._send_private_request(challenge_url, {"choice": choice})
             elif "phone_number" in steps:
-                self._send_private_request(
-                    challenge_url, {"choice": ChallengeChoice.SMS}
-                )
+                choice = ChallengeChoice.SMS
+                self._send_private_request(challenge_url, {"choice": choice})
             else:
                 raise ChallengeError(
                     f'ChallengeResolve: Choice "email" or "phone_number" (sms) '
@@ -530,7 +526,7 @@ class ChallengeResolveMixin:
                 )
             wait_seconds = 5
             code = self.challenge_code_or_raised(
-                ChallengeChoice.EMAIL, wait_seconds=wait_seconds, attempts=24
+                choice, wait_seconds=wait_seconds, attempts=24
             )
             self._send_private_request(challenge_url, {"security_code": code})
 

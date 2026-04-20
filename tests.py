@@ -24,14 +24,19 @@ from instagrapi.extractors import (
 )
 from instagrapi.exceptions import (
     BadCredentials,
+    ChallengeError,
     ChallengeRequired,
+    ChallengeUnknownStep,
     ClientConnectionError,
     ClientGraphqlError,
     ClientThrottledError,
     DirectThreadNotFound,
     PleaseWaitFewMinutes,
     PrivateError,
+    RecaptchaChallengeForm,
     ReloginAttemptExceeded,
+    SelectContactPointRecoveryForm,
+    SubmitPhoneNumberForm,
     TwoFactorRequired,
 )
 from instagrapi.mixins.user import UserMixin
@@ -483,6 +488,103 @@ class ChallengeRegressionTestCase(unittest.TestCase):
 
         self.assertTrue(result)
         contact_form.assert_called_once_with("/challenge/test/")
+
+    def test_handle_challenge_result_raises_recaptcha_form(self):
+        client = Client()
+        challenge = {
+            "challengeType": "RecaptchaChallengeForm",
+            "errors": ["Captcha failed"],
+        }
+
+        with self.assertRaises(RecaptchaChallengeForm) as cm:
+            client.handle_challenge_result(challenge)
+
+        self.assertIn("Captcha failed", str(cm.exception))
+
+    def test_handle_challenge_result_raises_select_contact_point_recovery_form(self):
+        client = Client()
+        challenge = {
+            "challengeType": "SelectContactPointRecoveryForm",
+            "errors": ["Need recovery"],
+            "extraData": {
+                "content": [{"title": "Help us confirm you own this account"}]
+            },
+        }
+
+        with self.assertRaises(SelectContactPointRecoveryForm) as cm:
+            client.handle_challenge_result(challenge)
+
+        self.assertIn("Need recovery", str(cm.exception))
+
+    def test_handle_challenge_result_raises_submit_phone_number_form(self):
+        client = Client()
+        challenge = {
+            "challengeType": "SubmitPhoneNumberForm",
+            "fields": {"phone_number": "None"},
+        }
+
+        with self.assertRaises(SubmitPhoneNumberForm):
+            client.handle_challenge_result(challenge)
+
+    def test_challenge_resolve_simple_select_verify_method_uses_sms_choice_for_code(
+        self,
+    ):
+        client = Client()
+        client.last_json = {
+            "step_name": "select_verify_method",
+            "step_data": {"phone_number": "+1 *** *** 1234"},
+            "action": "close",
+            "status": "ok",
+        }
+        client._send_private_request = Mock()
+        client.challenge_code_or_raised = Mock(return_value="123456")
+
+        result = client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertTrue(result)
+        self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
+        self.assertEqual(
+            client.challenge_code_or_raised.call_args.kwargs["wait_seconds"], 5
+        )
+        self.assertEqual(
+            client.challenge_code_or_raised.call_args.kwargs["attempts"], 24
+        )
+
+    def test_challenge_resolve_simple_select_contact_point_recovery_uses_sms_choice_for_code(
+        self,
+    ):
+        client = Client()
+        client.last_json = {
+            "step_name": "select_contact_point_recovery",
+            "step_data": {"phone_number": "+1 *** *** 1234"},
+            "action": "close",
+            "status": "ok",
+        }
+        client._send_private_request = Mock(
+            side_effect=[
+                None,
+                None,
+            ]
+        )
+        client.challenge_code_or_raised = Mock(return_value="123456")
+
+        result = client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertTrue(result)
+        self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
+
+    def test_challenge_resolve_simple_unknown_step_raises_clear_error(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "step_name": "mystery_step",
+            "status": "ok",
+        }
+
+        with self.assertRaises(ChallengeUnknownStep) as cm:
+            client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertIn('Unknown step_name "mystery_step"', str(cm.exception))
 
 
 class AuthAndStoryRegressionTestCase(unittest.TestCase):
