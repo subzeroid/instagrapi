@@ -585,6 +585,38 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         with self.assertRaises(SubmitPhoneNumberForm):
             client.handle_challenge_result(challenge)
 
+    def test_handle_challenge_result_allows_sms_captcha_verification_form(self):
+        client = Client()
+        challenge = {"challenge": {"challengeType": "VerifySMSCodeFormForSMSCaptcha"}}
+
+        result = client.handle_challenge_result(challenge)
+
+        self.assertEqual(result["challengeType"], "VerifySMSCodeFormForSMSCaptcha")
+
+    def test_handle_challenge_result_rejects_malformed_nested_payload(self):
+        client = Client()
+
+        with self.assertRaises(ChallengeError) as cm:
+            client.handle_challenge_result({"challenge": "broken"})
+
+        self.assertIn("Malformed nested challenge payload", str(cm.exception))
+
+    def test_handle_challenge_result_unknown_type_includes_context(self):
+        client = Client()
+        challenge = {
+            "challengeType": "SomeNewChallengeForm",
+            "errors": ["Need manual action"],
+            "extraData": {"content": [{"text": "Open Instagram to continue"}]},
+        }
+
+        with self.assertRaises(ChallengeError) as cm:
+            client.handle_challenge_result(challenge)
+
+        self.assertIn(
+            "Unsupported challenge type: SomeNewChallengeForm", str(cm.exception)
+        )
+        self.assertIn("Need manual action", str(cm.exception))
+
     def test_challenge_resolve_simple_select_verify_method_uses_sms_choice_for_code(
         self,
     ):
@@ -650,6 +682,152 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             client.challenge_resolve_simple("/challenge/test/")
 
         self.assertIn('Unknown step_name "mystery_step"', str(cm.exception))
+
+    def test_challenge_resolve_simple_change_password_requires_handler_output(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "step_name": "change_password",
+            "challenge_context": '{"step_name":"change_password"}',
+            "status": "ok",
+        }
+        client.change_password_handler = Mock(return_value="")
+
+        with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+            with self.assertRaises(ChallengeRequired) as cm:
+                client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertIn("Password change required", str(cm.exception))
+
+    def test_challenge_resolve_simple_recovery_final_step_has_clear_error(self):
+        client = Client()
+        client.last_json = {
+            "step_name": "select_contact_point_recovery",
+            "step_data": {"phone_number": "+1 *** *** 1234"},
+            "status": "ok",
+        }
+
+        def fake_send_private_request(*args, **kwargs):
+            if "security_code" in (args[1] if len(args) > 1 else {}):
+                client.last_json = {"step_name": "unexpected_step", "status": "ok"}
+
+        client._send_private_request = Mock(side_effect=fake_send_private_request)
+        client.challenge_code_or_raised = Mock(return_value="123456")
+
+        with self.assertRaises(ChallengeError) as cm:
+            client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertIn("Unexpected final challenge step", str(cm.exception))
+
+    def test_challenge_resolve_contact_form_raises_clear_error_for_unexpected_verify_step(
+        self,
+    ):
+        client = Client()
+        client.user_agent = "Instagram Test"
+        fake_session = Mock()
+        fake_session.cookies = requests.cookies.cookiejar_from_dict(
+            {"csrftoken": "token"}
+        )
+        fake_session.get.return_value = Mock()
+        fake_session.post.return_value = Mock(json=Mock(return_value={}))
+
+        with mock.patch(
+            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
+        ):
+            with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+                with mock.patch.object(
+                    client,
+                    "handle_challenge_result",
+                    return_value={"challengeType": "UnexpectedForm"},
+                ):
+                    with self.assertRaises(ChallengeError) as cm:
+                        client.challenge_resolve_contact_form("/challenge/test/")
+
+        self.assertIn("Unexpected contact-form challenge step", str(cm.exception))
+
+    def test_challenge_resolve_contact_form_raises_clear_error_for_detail_mismatch(
+        self,
+    ):
+        client = Client()
+        client.user_agent = "Instagram Test"
+        client.username = "expected-user"
+        fake_session = Mock()
+        fake_session.cookies = requests.cookies.cookiejar_from_dict(
+            {"csrftoken": "token"}
+        )
+        fake_session.get.return_value = Mock()
+        fake_session.post.side_effect = [
+            Mock(json=Mock(return_value={})),
+            Mock(
+                json=Mock(
+                    return_value={
+                        "challengeType": "ReviewContactPointChangeForm",
+                        "extraData": {"content": []},
+                        "navigation": {"forward": "/challenge/forward/"},
+                    }
+                )
+            ),
+        ]
+
+        with mock.patch(
+            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
+        ):
+            with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+                with mock.patch.object(
+                    client,
+                    "handle_challenge_result",
+                    return_value={"challengeType": "VerifySMSCodeFormForSMSCaptcha"},
+                ):
+                    with mock.patch.object(
+                        client, "challenge_code_handler", return_value="123456"
+                    ):
+                        with self.assertRaises(ChallengeError) as cm:
+                            client.challenge_resolve_contact_form("/challenge/test/")
+
+        self.assertIn("Data invalid", str(cm.exception))
+
+    def test_challenge_resolve_contact_form_raises_clear_error_for_bad_final_response(
+        self,
+    ):
+        client = Client()
+        client.user_agent = "Instagram Test"
+        fake_session = Mock()
+        fake_session.cookies = requests.cookies.cookiejar_from_dict(
+            {"csrftoken": "token"}
+        )
+        fake_session.get.return_value = Mock()
+        fake_session.post.side_effect = [
+            Mock(json=Mock(return_value={})),
+            Mock(
+                json=Mock(
+                    return_value={
+                        "challengeType": "ReviewContactPointChangeForm",
+                        "extraData": {"content": []},
+                        "navigation": {"forward": "/challenge/forward/"},
+                    }
+                )
+            ),
+            Mock(json=Mock(return_value={"type": "NOPE", "status": "fail"})),
+        ]
+
+        with mock.patch(
+            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
+        ):
+            with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+                with mock.patch.object(
+                    client,
+                    "handle_challenge_result",
+                    return_value={"challengeType": "VerifySMSCodeFormForSMSCaptcha"},
+                ):
+                    with mock.patch.object(
+                        client, "challenge_code_handler", return_value="123456"
+                    ):
+                        with self.assertRaises(ChallengeError) as cm:
+                            client.challenge_resolve_contact_form("/challenge/test/")
+
+        self.assertIn(
+            "Unexpected final response after contact-form approval", str(cm.exception)
+        )
 
 
 class AuthAndStoryRegressionTestCase(unittest.TestCase):

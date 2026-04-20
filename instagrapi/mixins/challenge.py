@@ -217,17 +217,32 @@ class ChallengeResolveMixin:
                 break
             except ChallengeRedirection:
                 return True  # instagram redirect
-        assert result.get("challengeType") in (
+        if result.get("challengeType") not in (
             "VerifyEmailCodeForm",
             "VerifySMSCodeForm",
             "VerifySMSCodeFormForSMSCaptcha",
-        ), result
+        ):
+            raise ChallengeError(
+                "Unexpected contact-form challenge step after verification selection: "
+                f"{result}"
+            )
         for retry_code in range(5):
+            code = None
             for attempt in range(1, 11):
                 code = self.challenge_code_handler(self.username, choice)
                 if code:
                     break
                 time.sleep(WAIT_SECONDS * attempt)
+            if not code:
+                raise ChallengeRequired(
+                    "Challenge code required to continue contact-form verification. "
+                    "Provide it via challenge_code_handler or retry after manual verification.",
+                    **{
+                        key: value
+                        for key, value in self.last_json.items()
+                        if key != "message"
+                    },
+                )
             # SEND CODE
             time.sleep(WAIT_SECONDS)
             result = session.post(challenge_url, {"security_code": code}).json()
@@ -241,22 +256,37 @@ class ChallengeResolveMixin:
         challenge_type = result.get("challengeType")
         if challenge_type == "LegacyForceSetNewPasswordForm":
             self.challenge_resolve_new_password_form(result)
-        assert result.get("challengeType") == "ReviewContactPointChangeForm", result
+        if result.get("challengeType") != "ReviewContactPointChangeForm":
+            raise ChallengeError(
+                "Unexpected contact-form challenge step after security code "
+                f"submission: {result}"
+            )
         details = []
-        for data in result["extraData"]["content"]:
+        extra_data = result.get("extraData") or {}
+        content = extra_data.get("content") or []
+        for data in content:
             for entry in data.get("labeled_list_entries", []):
-                val = entry["list_item_text"]
+                val = entry.get("list_item_text")
+                if not val:
+                    continue
                 if "@" not in val:
                     val = val.replace(" ", "").replace("-", "")
                 details.append(val)
         # CHECK ACCOUNT DATA
         for detail in [self.username, self.email, self.phone_number]:
-            assert (
-                not detail or detail in details
-            ), 'ChallengeResolve: Data invalid: "%s" not in %s' % (detail, details)
+            if detail and detail not in details:
+                raise ChallengeError(
+                    f'ChallengeResolve: Data invalid: "{detail}" not in {details}'
+                )
+        navigation = result.get("navigation") or {}
+        forward = navigation.get("forward")
+        if not forward:
+            raise ChallengeError(
+                "Contact-form challenge response did not provide a forward navigation target."
+            )
         time.sleep(WAIT_SECONDS)
         result = session.post(
-            "https://i.instagram.com%s" % result.get("navigation").get("forward"),
+            "https://i.instagram.com%s" % forward,
             {
                 "choice": 0,  # I AGREE
                 "enc_new_password1": enc_password,
@@ -265,8 +295,13 @@ class ChallengeResolveMixin:
                 "new_password2": "",
             },
         ).json()
-        assert result.get("type") == "CHALLENGE_REDIRECTION", result
-        assert result.get("status") == "ok", result
+        if (
+            result.get("type") != "CHALLENGE_REDIRECTION"
+            or result.get("status") != "ok"
+        ):
+            raise ChallengeError(
+                "Unexpected final response after contact-form approval: " f"{result}"
+            )
         return True
 
     def challenge_resolve_new_password_form(self, result):
@@ -303,6 +338,10 @@ class ChallengeResolveMixin:
             comes {"challenge": {challenge_object}}
             """
             challenge = challenge["challenge"]
+            if not isinstance(challenge, dict):
+                raise ChallengeError(
+                    "Malformed nested challenge payload received from Instagram."
+                )
         challenge_type = challenge.get("challengeType")
         if challenge_type == "SelectContactPointRecoveryForm":
             """
@@ -361,14 +400,20 @@ class ChallengeResolveMixin:
             'status': 'fail'}
             """
             raise RecaptchaChallengeForm(". ".join(challenge.get("errors", [])))
-        elif challenge_type in ("VerifyEmailCodeForm", "VerifySMSCodeForm"):
+        elif challenge_type in (
+            "VerifyEmailCodeForm",
+            "VerifySMSCodeForm",
+            "VerifySMSCodeFormForSMSCaptcha",
+        ):
             # Success. Next step
             return challenge
         elif challenge_type == "SubmitPhoneNumberForm":
             raise SubmitPhoneNumberForm(challenge=challenge)
         elif challenge_type:
             # Unknown challenge_type
-            messages.append(challenge_type)
+            messages.append(f"Unsupported challenge type: {challenge_type}.")
+            if challenge.get("extraData"):
+                messages += extract_messages(challenge)
             if "errors" in challenge:
                 messages.append("\n".join(challenge["errors"]))
             messages.append("(Please manual login)")
@@ -471,11 +516,22 @@ class ChallengeResolveMixin:
             #  'challenge_type_enum_str': 'PASSWORD_RESET',
             #  'status': 'ok'}
             wait_seconds = 5
+            pwd = ""
             for attempt in range(24):
                 pwd = self.change_password_handler(self.username)
                 if pwd:
                     break
                 time.sleep(wait_seconds)
+            if not pwd:
+                raise ChallengeRequired(
+                    "Password change required. Provide a new password via "
+                    "change_password_handler or complete the flow manually.",
+                    **{
+                        key: value
+                        for key, value in self.last_json.items()
+                        if key != "message"
+                    },
+                )
             print(
                 f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
             )
@@ -539,9 +595,11 @@ class ChallengeResolveMixin:
                 return True
 
             # last form to verify account details
-            assert (
-                self.last_json["step_name"] == "review_contact_point_change"
-            ), f"Unexpected step_name {self.last_json['step_name']}"
+            if self.last_json.get("step_name") != "review_contact_point_change":
+                raise ChallengeError(
+                    "Unexpected final challenge step after contact point recovery: "
+                    f"{self.last_json.get('step_name')}"
+                )
 
             # details = self.last_json["step_data"]
 
