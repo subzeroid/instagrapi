@@ -331,6 +331,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies = requests.utils.cookiejar_from_dict(
                 self.settings["cookies"]
             )
+        else:
+            self.private.cookies.clear()
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         timezone_offset = self.settings.get("timezone_offset", self.timezone_offset)

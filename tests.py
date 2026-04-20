@@ -744,6 +744,16 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
         self.assertNotIn("Authorization", client.private.headers)
 
+    def test_init_clears_stale_private_cookies_when_settings_have_no_cookies(self):
+        client = Client()
+        client.private.cookies.set("sessionid", "stale-session")
+        client.private.cookies.set("ds_user_id", "12345")
+        client.set_settings({})
+
+        self.assertEqual(client.private.cookies.get_dict(), {})
+        self.assertIsNone(client.sessionid)
+        self.assertIsNone(client.user_id)
+
     def test_sessionid_falls_back_to_authorization_data(self):
         client = Client()
         client.private.cookies.clear()
