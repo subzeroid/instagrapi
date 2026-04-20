@@ -1001,7 +1001,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
     def logout(self) -> bool:
         result = self.private_request("accounts/logout/", {"one_tap_app_login": True})
-        return result["status"] == "ok"
+        if result["status"] == "ok":
+            self.authorization_data = {}
+            self.last_login = None
+            self.private.headers.pop("Authorization", None)
+            self.private.cookies.clear()
+            self.public.cookies.clear()
+            return True
+        return False
 
     def parse_authorization(self, authorization) -> dict:
         """Parse authorization header"""

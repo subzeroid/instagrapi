@@ -776,6 +776,24 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertFalse(result)
         self.assertIsNone(client.public.cookies.get("sessionid"))
 
+    def test_logout_clears_local_session_state_after_success(self):
+        client = Client()
+        client.authorization_data = {"sessionid": "auth-session", "ds_user_id": "12345"}
+        client.last_login = 123.0
+        client.private.headers["Authorization"] = "Bearer stale"
+        client.private.cookies.set("sessionid", "private-session")
+        client.public.cookies.set("sessionid", "public-session")
+        client.private_request = Mock(return_value={"status": "ok"})
+
+        result = client.logout()
+
+        self.assertTrue(result)
+        self.assertEqual(client.authorization_data, {})
+        self.assertIsNone(client.last_login)
+        self.assertNotIn("Authorization", client.private.headers)
+        self.assertEqual(client.private.cookies.get_dict(), {})
+        self.assertEqual(client.public.cookies.get_dict(), {})
+
 
 class ClientTestCase(unittest.TestCase):
     def test_jazoest(self):
