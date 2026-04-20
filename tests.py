@@ -12,6 +12,7 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 
 import requests
+from pydantic import ValidationError
 from requests.exceptions import RetryError
 
 from instagrapi import Client
@@ -438,6 +439,51 @@ class ChallengeRegressionTestCase(unittest.TestCase):
 
         self.assertIn("UFAC web bloks checkpoint", str(cm.exception))
 
+    def test_challenge_resolve_uses_default_context_when_missing(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-1"
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {"api_path": "/challenge/12345/nonce-code/"},
+            "status": "fail",
+        }
+
+        with mock.patch.object(client, "_send_private_request") as send_request:
+            with mock.patch.object(
+                client, "challenge_resolve_simple", return_value=True
+            ) as resolve_simple:
+                result = client.challenge_resolve(last_json)
+
+        self.assertTrue(result)
+        send_request.assert_called_once()
+        self.assertEqual(send_request.call_args.args[0], "challenge/12345/nonce-code/")
+        self.assertEqual(
+            send_request.call_args.kwargs["params"]["challenge_context"],
+            '{"step_name": "", "nonce_code": "nonce-code", "user_id": 12345, "is_stateless": false}',
+        )
+        resolve_simple.assert_called_once_with("/challenge/12345/nonce-code/")
+
+    def test_challenge_resolve_falls_back_to_contact_form(self):
+        client = Client()
+        client.last_json = {"message": "challenge_required", "status": "fail"}
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {"api_path": "/challenge/test/"},
+            "status": "fail",
+        }
+
+        with mock.patch.object(
+            client, "_send_private_request", side_effect=ChallengeRequired
+        ):
+            with mock.patch.object(
+                client, "challenge_resolve_contact_form", return_value=True
+            ) as contact_form:
+                result = client.challenge_resolve(last_json)
+
+        self.assertTrue(result)
+        contact_form.assert_called_once_with("/challenge/test/")
+
 
 class AuthAndStoryRegressionTestCase(unittest.TestCase):
     def test_login_requires_username_and_password(self):
@@ -498,6 +544,18 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.authorization_data, {})
         self.assertNotIn("Authorization", client.private.headers)
         self.assertEqual(client.private.cookies.get_dict(), {})
+
+    def test_login_returns_early_when_user_is_already_authorized(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "123"}
+        client.pre_login_flow = Mock()
+        client.private_request = Mock()
+
+        result = client.login("example", "password")
+
+        self.assertTrue(result)
+        client.pre_login_flow.assert_not_called()
+        client.private_request.assert_not_called()
 
     def test_login_uses_stored_username_when_called_without_args(self):
         client = Client()
@@ -611,6 +669,29 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.user_short_gql.assert_not_called()
         self.assertEqual(client.username, "example")
         self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
+
+    def test_login_by_sessionid_falls_back_to_user_short_gql_on_validation_error(self):
+        client = Client()
+        sessionid = "1234567890123456789012345678901%3Atoken"
+        client.user_info_v1 = Mock(
+            side_effect=ValidationError.from_exception_data("User", [])
+        )
+        client.user_short_gql = Mock(
+            return_value=UserShort(pk="1234567890123456789", username="example")
+        )
+
+        result = client.login_by_sessionid(sessionid)
+
+        self.assertTrue(result)
+        client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
+        client.user_short_gql.assert_called_once_with(1234567890123456789012345678901)
+        self.assertEqual(client.username, "example")
+
+    def test_login_by_sessionid_rejects_invalid_sessionid(self):
+        client = Client()
+
+        with self.assertRaises(AssertionError):
+            client.login_by_sessionid("short")
 
     def test_login_resets_relogin_attempt_after_success(self):
         client = Client()
