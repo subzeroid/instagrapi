@@ -744,6 +744,38 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
         self.assertNotIn("Authorization", client.private.headers)
 
+    def test_sessionid_falls_back_to_authorization_data(self):
+        client = Client()
+        client.private.cookies.clear()
+        client.authorization_data = {"sessionid": "auth-session"}
+
+        self.assertEqual(client.sessionid, "auth-session")
+
+    def test_user_id_falls_back_to_authorization_data(self):
+        client = Client()
+        client.private.cookies.clear()
+        client.authorization_data = {"ds_user_id": "12345"}
+
+        self.assertEqual(client.user_id, 12345)
+
+    def test_inject_sessionid_to_public_uses_authorization_fallback(self):
+        client = Client()
+        client.private.cookies.clear()
+        client.authorization_data = {"sessionid": "auth-session"}
+
+        result = client.inject_sessionid_to_public()
+
+        self.assertTrue(result)
+        self.assertEqual(client.public.cookies.get("sessionid"), "auth-session")
+
+    def test_inject_sessionid_to_public_returns_false_without_sessionid(self):
+        client = Client()
+
+        result = client.inject_sessionid_to_public()
+
+        self.assertFalse(result)
+        self.assertIsNone(client.public.cookies.get("sessionid"))
+
 
 class ClientTestCase(unittest.TestCase):
     def test_jazoest(self):
