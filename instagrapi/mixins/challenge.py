@@ -190,7 +190,7 @@ class ChallengeResolveMixin:
         )
         time.sleep(WAIT_SECONDS)
         choice = ChallengeChoice.EMAIL
-        result = session.post(challenge_url, {"choice": choice})
+        result = session.post(challenge_url, {"choice": choice.value})
         result = result.json()
         for retry in range(8):
             time.sleep(WAIT_SECONDS)
@@ -202,7 +202,7 @@ class ChallengeResolveMixin:
                 if choice == ChallengeChoice.SMS:  # last iteration
                     raise e
                 choice = ChallengeChoice.SMS
-                result = session.post(challenge_url, {"choice": choice})
+                result = session.post(challenge_url, {"choice": choice.value})
                 result = result.json()
                 continue  # next choice attempt
             except SubmitPhoneNumberForm as e:

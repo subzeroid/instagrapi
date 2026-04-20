@@ -25,6 +25,7 @@ from instagrapi.extractors import (
 from instagrapi.exceptions import (
     BadCredentials,
     ChallengeError,
+    ChallengeRedirection,
     ChallengeRequired,
     ChallengeUnknownStep,
     ClientConnectionError,
@@ -488,6 +489,64 @@ class ChallengeRegressionTestCase(unittest.TestCase):
 
         self.assertTrue(result)
         contact_form.assert_called_once_with("/challenge/test/")
+
+    def test_challenge_resolve_contact_form_posts_numeric_email_choice(self):
+        client = Client()
+        client.user_agent = "Instagram Test"
+        fake_session = Mock()
+        fake_session.cookies = requests.cookies.cookiejar_from_dict(
+            {"csrftoken": "token"}
+        )
+        fake_session.get.return_value = Mock()
+        fake_session.post.return_value = Mock(json=Mock(return_value={}))
+
+        with mock.patch(
+            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
+        ):
+            with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+                with mock.patch.object(
+                    client,
+                    "handle_challenge_result",
+                    side_effect=ChallengeRedirection(),
+                ):
+                    result = client.challenge_resolve_contact_form("/challenge/test/")
+
+        self.assertTrue(result)
+        self.assertEqual(
+            fake_session.post.call_args_list[0].args[1]["choice"],
+            1,
+        )
+
+    def test_challenge_resolve_contact_form_posts_numeric_sms_choice_on_fallback(self):
+        client = Client()
+        client.user_agent = "Instagram Test"
+        fake_session = Mock()
+        fake_session.cookies = requests.cookies.cookiejar_from_dict(
+            {"csrftoken": "token"}
+        )
+        fake_session.get.return_value = Mock()
+        fake_session.post.side_effect = [
+            Mock(json=Mock(return_value={})),
+            Mock(json=Mock(return_value={})),
+        ]
+
+        with mock.patch(
+            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
+        ):
+            with mock.patch("instagrapi.mixins.challenge.time.sleep"):
+                with mock.patch.object(
+                    client,
+                    "handle_challenge_result",
+                    side_effect=[
+                        SelectContactPointRecoveryForm("Need SMS", challenge={}),
+                        ChallengeRedirection(),
+                    ],
+                ):
+                    result = client.challenge_resolve_contact_form("/challenge/test/")
+
+        self.assertTrue(result)
+        self.assertEqual(fake_session.post.call_args_list[0].args[1]["choice"], 1)
+        self.assertEqual(fake_session.post.call_args_list[1].args[1]["choice"], 0)
 
     def test_handle_challenge_result_raises_recaptcha_form(self):
         client = Client()
