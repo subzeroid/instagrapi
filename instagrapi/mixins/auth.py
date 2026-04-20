@@ -318,6 +318,29 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.settings = None
         self.override_app_version = False
 
+    def _clear_session_state(
+        self,
+        *,
+        clear_private_cookies: bool = False,
+        clear_public_cookies: bool = False,
+        clear_authorization_data: bool = False,
+        clear_authorization_header: bool = False,
+        clear_last_login: bool = False,
+        reset_relogin_attempt: bool = False,
+    ) -> None:
+        if clear_authorization_data:
+            self.authorization_data = {}
+        if clear_last_login:
+            self.last_login = None
+        if reset_relogin_attempt:
+            self.relogin_attempt = 0
+        if clear_authorization_header:
+            self.private.headers.pop("Authorization", None)
+        if clear_private_cookies:
+            self.private.cookies.clear()
+        if clear_public_cookies:
+            self.public.cookies.clear()
+
     def init(self) -> bool:
         """
         Initialize Login helpers
@@ -332,7 +355,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 self.settings["cookies"]
             )
         else:
-            self.private.cookies.clear()
+            self._clear_session_state(clear_private_cookies=True)
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         timezone_offset = self.settings.get("timezone_offset", self.timezone_offset)
@@ -445,10 +468,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             raise BadCredentials("Both username and password must be provided.")
 
         if relogin:
-            self.authorization_data = {}
-            self.private.headers.pop("Authorization", None)
-            self.private.cookies.clear()
-            self.public.cookies.clear()
+            self._clear_session_state(
+                clear_authorization_data=True,
+                clear_authorization_header=True,
+                clear_private_cookies=True,
+                clear_public_cookies=True,
+            )
             if self.relogin_attempt > 1:
                 raise ReloginAttemptExceeded()
             self.relogin_attempt += 1
@@ -1007,12 +1032,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     def logout(self) -> bool:
         result = self.private_request("accounts/logout/", {"one_tap_app_login": True})
         if result["status"] == "ok":
-            self.authorization_data = {}
-            self.last_login = None
-            self.relogin_attempt = 0
-            self.private.headers.pop("Authorization", None)
-            self.private.cookies.clear()
-            self.public.cookies.clear()
+            self._clear_session_state(
+                clear_authorization_data=True,
+                clear_last_login=True,
+                reset_relogin_attempt=True,
+                clear_authorization_header=True,
+                clear_private_cookies=True,
+                clear_public_cookies=True,
+            )
             return True
         return False
 
