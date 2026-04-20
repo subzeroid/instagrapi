@@ -693,6 +693,12 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         with self.assertRaises(AssertionError):
             client.login_by_sessionid("short")
 
+    def test_login_by_sessionid_rejects_sessionid_without_numeric_prefix(self):
+        client = Client()
+
+        with self.assertRaises(AssertionError):
+            client.login_by_sessionid("abcdefghijklmnopqrstuvwxyz123456")
+
     def test_login_resets_relogin_attempt_after_success(self):
         client = Client()
         client.username = "example"
@@ -728,6 +734,15 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
         private_fallback.assert_called_once_with("4776134209", 5)
         self.assertEqual(result, expected)
+
+    def test_init_does_not_leave_blank_authorization_header(self):
+        client = Client()
+        client.set_settings({})
+        client.private.headers["Authorization"] = "Bearer stale"
+
+        client.init()
+
+        self.assertNotIn("Authorization", client.private.headers)
 
 
 class ClientTestCase(unittest.TestCase):

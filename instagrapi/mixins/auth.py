@@ -368,7 +368,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.set_ig_www_claim(self.settings.get("ig_www_claim"))
         # init headers
         headers = self.base_headers
-        headers.update({"Authorization": self.authorization})
+        if self.authorization:
+            headers.update({"Authorization": self.authorization})
+        else:
+            self.private.headers.pop("Authorization", None)
         self.private.headers.update(headers)
         return True
 
@@ -387,9 +390,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         assert isinstance(sessionid, str) and len(sessionid) > 30, "Invalid sessionid"
+        user_match = re.search(r"^\d+", sessionid)
+        assert user_match, "Invalid sessionid"
         self.settings["cookies"] = {"sessionid": sessionid}
         self.init()
-        user_id = re.search(r"^\d+", sessionid).group()
+        user_id = user_match.group()
         self.authorization_data = {
             "ds_user_id": user_id,
             "sessionid": sessionid,
