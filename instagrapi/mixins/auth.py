@@ -374,6 +374,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             headers.update({"Authorization": self.authorization})
         else:
             self.private.headers.pop("Authorization", None)
+        if not self.ig_u_rur:
+            self.private.headers.pop("IG-U-RUR", None)
         self.private.headers.update(headers)
         return True
 

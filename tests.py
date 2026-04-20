@@ -754,6 +754,13 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertIsNone(client.sessionid)
         self.assertIsNone(client.user_id)
 
+    def test_init_clears_stale_ig_u_rur_header_when_settings_have_no_value(self):
+        client = Client()
+        client.private.headers["IG-U-RUR"] = "stale-rur"
+        client.set_settings({})
+
+        self.assertNotIn("IG-U-RUR", client.private.headers)
+
     def test_sessionid_falls_back_to_authorization_data(self):
         client = Client()
         client.private.cookies.clear()
