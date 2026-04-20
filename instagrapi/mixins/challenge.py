@@ -516,7 +516,7 @@ class ChallengeResolveMixin:
             #  'challenge_type_enum_str': 'PASSWORD_RESET',
             #  'status': 'ok'}
             wait_seconds = 5
-            pwd = ""
+            pwd = None
             for attempt in range(24):
                 pwd = self.change_password_handler(self.username)
                 if pwd:
