@@ -601,6 +601,9 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         result = client.challenge_resolve_simple("/challenge/test/")
 
         self.assertTrue(result)
+        self.assertEqual(
+            client._send_private_request.call_args_list[0].args[1]["choice"], "0"
+        )
         self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
         self.assertEqual(
             client.challenge_code_or_raised.call_args.kwargs["wait_seconds"], 5
@@ -630,6 +633,9 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         result = client.challenge_resolve_simple("/challenge/test/")
 
         self.assertTrue(result)
+        self.assertEqual(
+            client._send_private_request.call_args_list[0].args[1]["choice"], "0"
+        )
         self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
 
     def test_challenge_resolve_simple_unknown_step_raises_clear_error(self):

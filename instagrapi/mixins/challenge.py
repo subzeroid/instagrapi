@@ -436,10 +436,14 @@ class ChallengeResolveMixin:
                 challenge_url = challenge_url[1:]
                 if "email" in steps:
                     choice = ChallengeChoice.EMAIL
-                    self._send_private_request(challenge_url, {"choice": choice})
+                    self._send_private_request(
+                        challenge_url, {"choice": str(choice.value)}
+                    )
                 elif "phone_number" in steps:
                     choice = ChallengeChoice.SMS
-                    self._send_private_request(challenge_url, {"choice": choice})
+                    self._send_private_request(
+                        challenge_url, {"choice": str(choice.value)}
+                    )
                 else:
                     raise ChallengeError(
                         f'ChallengeResolve: Choice "email" or "phone_number" '
@@ -515,10 +519,10 @@ class ChallengeResolveMixin:
             choice = ChallengeChoice.EMAIL
             if "email" in steps:
                 choice = ChallengeChoice.EMAIL
-                self._send_private_request(challenge_url, {"choice": choice})
+                self._send_private_request(challenge_url, {"choice": str(choice.value)})
             elif "phone_number" in steps:
                 choice = ChallengeChoice.SMS
-                self._send_private_request(challenge_url, {"choice": choice})
+                self._send_private_request(challenge_url, {"choice": str(choice.value)})
             else:
                 raise ChallengeError(
                     f'ChallengeResolve: Choice "email" or "phone_number" (sms) '
