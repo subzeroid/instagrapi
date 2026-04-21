@@ -10,6 +10,7 @@ from unittest.mock import Mock
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import requests
 from pydantic import ValidationError
@@ -145,6 +146,20 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
     cl = None
     _username_cache = {}
 
+    def test_accounts_url(self):
+        parts = urlsplit(TEST_ACCOUNTS_URL)
+        query = dict(parse_qsl(parts.query, keep_blank_values=True))
+        query.setdefault("count", "5")
+        return urlunsplit(
+            (
+                parts.scheme,
+                parts.netloc,
+                parts.path,
+                urlencode(query),
+                parts.fragment,
+            )
+        )
+
     def user_info_by_username(self, username):
         return self.cl.user_info_by_username_v1(username)
 
@@ -160,28 +175,38 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             self.cl = self.fresh_account()
 
     def fresh_account(self):
-        print(f"TEST_ACCOUNTS_URL: {TEST_ACCOUNTS_URL[:8]}...{TEST_ACCOUNTS_URL[-4:]}")
-        resp = requests.get(TEST_ACCOUNTS_URL, verify=False)
+        test_accounts_url = self.test_accounts_url()
+        print(f"TEST_ACCOUNTS_URL: {test_accounts_url[:8]}...{test_accounts_url[-8:]}")
+        resp = requests.get(test_accounts_url, verify=False)
         print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
-        acc = resp.json()[0]
-        print("New fresh account %(username)r" % acc)
-        settings = acc["client_settings"]
-        totp_seed = settings.pop("totp_seed", None)
-        cl = Client(settings=settings, proxy=acc["proxy"])
-        if totp_seed:
-            totp_code = cl.totp_generate_code(totp_seed)
-            if sessionid := settings.get("authorization_data", {}).get("sessionid"):
-                cl.login_by_sessionid(sessionid)
-            cl.login(
-                acc["username"],
-                acc["password"],
-                verification_code=totp_code,
-                relogin=True,
-            )
-            cl.totp_seed = totp_seed
-            cl.totp_code = totp_code
+        last_exc = None
+        for attempt, acc in enumerate(resp.json()[:5], start=1):
+            print(f"Fresh account attempt {attempt}: %(username)r" % acc)
+            settings = dict(acc["client_settings"])
+            totp_seed = settings.pop("totp_seed", None)
+            cl = Client(settings=settings, proxy=acc["proxy"])
+            login_kwargs = {
+                "username": acc["username"],
+                "password": acc["password"],
+                "relogin": True,
+            }
+            if totp_seed:
+                totp_code = cl.totp_generate_code(totp_seed)
+                cl.totp_seed = totp_seed
+                cl.totp_code = totp_code
+                login_kwargs["verification_code"] = totp_code
+            try:
+                cl.login(**login_kwargs)
+            except Exception as exc:
+                last_exc = exc
+                print(
+                    f"Fresh account attempt {attempt} failed for {acc['username']}: "
+                    f"{exc.__class__.__name__} {exc}"
+                )
+                continue
             cl._user_id = acc.get("user_id")
-        return cl
+            return cl
+        raise last_exc or RuntimeError("No usable fresh account returned")
 
     def __init__(self, *args, **kwargs):
         if TEST_ACCOUNTS_URL:
