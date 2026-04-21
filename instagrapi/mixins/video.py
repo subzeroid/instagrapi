@@ -319,9 +319,12 @@ class UploadVideoMixin:
                 raise e
             else:
                 if configured:
-                    media = configured.get("media")
                     self.expose()
-                    return extract_media_v1(media)
+                    return self._extract_configured_media_or_raise(
+                        configured,
+                        VideoConfigureError,
+                        "Video upload",
+                    )
         raise VideoConfigureError(response=self.last_response, **self.last_json)
 
     def video_upload_to_cutout_sticker(

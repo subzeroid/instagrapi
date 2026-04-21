@@ -31,6 +31,26 @@ class MediaMixin:
 
     _medias_cache = {}  # pk -> object
 
+    def _extract_configured_media_or_raise(
+        self, configured, exception_cls, context: str
+    ):
+        media = None
+        if isinstance(configured, dict):
+            media = configured.get("media")
+        if media is None:
+            media = (
+                self.last_json.get("media")
+                if isinstance(self.last_json, dict)
+                else None
+            )
+        if media is None:
+            raise exception_cls(
+                f"{context} configure succeeded without media payload",
+                response=self.last_response,
+                **(self.last_json if isinstance(self.last_json, dict) else {}),
+            )
+        return extract_media_v1(media)
+
     def media_id(self, media_pk: str) -> str:
         """
         Get full media id

@@ -8,7 +8,6 @@ from instagrapi.exceptions import (
     AlbumNotDownload,
     AlbumUnknownFormat,
 )
-from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
 from instagrapi.utils import date_time_original, dumps
 
@@ -241,9 +240,12 @@ class UploadAlbumMixin:
                 raise e
             else:
                 if configured:
-                    media = configured.get("media")
                     self.expose()
-                    return extract_media_v1(media)
+                    return self._extract_configured_media_or_raise(
+                        configured,
+                        configure_exception or AlbumConfigureError,
+                        "Album upload",
+                    )
         raise (configure_exception or AlbumConfigureError)(
             response=self.last_response, **self.last_json
         )

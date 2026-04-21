@@ -288,9 +288,12 @@ class UploadPhotoMixin:
                 location,
                 extra_data=extra_data,
             ):
-                media = self.last_json.get("media")
                 self.expose()
-                return extract_media_v1(media)
+                return self._extract_configured_media_or_raise(
+                    self.last_json,
+                    PhotoConfigureError,
+                    "Photo upload",
+                )
         raise PhotoConfigureError(response=self.last_response, **self.last_json)
 
     def photo_configure(

@@ -8,7 +8,6 @@ from uuid import uuid4
 
 from instagrapi import config
 from instagrapi.exceptions import ClientError, IGTVConfigureError, IGTVNotUpload
-from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
 from instagrapi.utils import date_time_original
 
@@ -194,9 +193,12 @@ class UploadIGTVMixin:
                 raise e
             else:
                 if configured:
-                    media = self.last_json.get("media")
                     self.expose()
-                    return extract_media_v1(media)
+                    return self._extract_configured_media_or_raise(
+                        configured,
+                        IGTVConfigureError,
+                        "IGTV upload",
+                    )
         raise IGTVConfigureError(response=self.last_response, **self.last_json)
 
     def igtv_configure(

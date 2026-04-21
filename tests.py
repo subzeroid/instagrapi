@@ -23,22 +23,27 @@ from instagrapi.extractors import (
     extract_story_v1,
 )
 from instagrapi.exceptions import (
+    AlbumConfigureError,
     BadCredentials,
     ChallengeError,
     ChallengeRedirection,
     ChallengeRequired,
     ChallengeUnknownStep,
+    ClipConfigureError,
     ClientConnectionError,
     ClientGraphqlError,
     ClientThrottledError,
     DirectThreadNotFound,
+    IGTVConfigureError,
     PleaseWaitFewMinutes,
+    PhotoConfigureError,
     PrivateError,
     RecaptchaChallengeForm,
     ReloginAttemptExceeded,
     SelectContactPointRecoveryForm,
     SubmitPhoneNumberForm,
     TwoFactorRequired,
+    VideoConfigureError,
 )
 from instagrapi.mixins.user import UserMixin
 from instagrapi.story import StoryBuilder
@@ -2730,6 +2735,138 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
             configure_args[1]["story_sticker_ids"],
             "hashtag_sticker,link_sticker_default",
         )
+
+
+class UploadRegressionTestCase(unittest.TestCase):
+    def build_client(self):
+        client = Client()
+        client.settings = {}
+        client._user_id = "1"
+        client.uuid = "uuid"
+        client.android_device_id = "device"
+        client.client_session_id = "client-session"
+        client.timezone_offset = 0
+        client.last_json = {}
+        client.last_response = None
+        client.set_device({})
+        client.with_default_data = lambda data: data
+        client.request_log = lambda response: None
+        client.expose = lambda: None
+        return client
+
+    def build_media_payload(self, media_type=2):
+        payload = {
+            "pk": "1",
+            "id": "1_1",
+            "code": "abc",
+            "taken_at": 1710000000,
+            "media_type": media_type,
+            "caption": {"text": "caption"},
+            "user": {
+                "pk": "1",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "like_count": 0,
+        }
+        if media_type == 2:
+            payload["video_versions"] = [
+                {
+                    "url": "https://example.com/video.mp4",
+                    "width": 720,
+                    "height": 1280,
+                }
+            ]
+            payload["image_versions2"] = {
+                "candidates": [
+                    {
+                        "url": "https://example.com/thumbnail.jpg",
+                        "width": 720,
+                        "height": 1280,
+                    }
+                ]
+            }
+        else:
+            payload["image_versions2"] = {
+                "candidates": [
+                    {
+                        "url": "https://example.com/photo.jpg",
+                        "width": 720,
+                        "height": 720,
+                    }
+                ]
+            }
+        return payload
+
+    def test_photo_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client, "photo_configure", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(PhotoConfigureError) as ctx:
+                        client.photo_upload(Path("example.jpg"), "caption")
+
+        self.assertIn("without media payload", str(ctx.exception))
+
+    def test_video_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "video_rupload",
+            return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+        ):
+            with mock.patch.object(
+                client, "video_configure", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(VideoConfigureError) as ctx:
+                        client.video_upload(Path("example.mp4"), "caption")
+
+        self.assertIn("without media payload", str(ctx.exception))
+
+    def test_album_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client, "album_configure", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(AlbumConfigureError) as ctx:
+                        client.album_upload([Path("one.jpg")], "caption")
+
+        self.assertIn("without media payload", str(ctx.exception))
+
+    def test_clip_upload_falls_back_to_last_json_media_payload(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 5),
+        ):
+            with mock.patch.object(client.private, "get", return_value=ok_response):
+                with mock.patch.object(
+                    client.private, "post", return_value=ok_response
+                ):
+                    with mock.patch.object(
+                        client, "clip_configure", return_value={"status": "ok"}
+                    ):
+                        with mock.patch(
+                            "builtins.open", mock.mock_open(read_data=b"video-bytes")
+                        ):
+                            with mock.patch("time.sleep"):
+                                media = client.clip_upload(
+                                    Path("example.mp4"), "caption"
+                                )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(str(media.video_url), "https://example.com/video.mp4")
 
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()

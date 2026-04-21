@@ -8,7 +8,6 @@ from uuid import uuid4
 
 from instagrapi import config
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
-from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Track, Usertag
 from instagrapi.utils import date_time_original
 
@@ -192,9 +191,12 @@ class UploadClipMixin:
                 raise e
             else:
                 if configured:
-                    media = self.last_json.get("media")
                     self.expose()
-                    return extract_media_v1(media)
+                    return self._extract_configured_media_or_raise(
+                        configured,
+                        ClipConfigureError,
+                        "Clip upload",
+                    )
         raise ClipConfigureError(response=self.last_response, **self.last_json)
 
     def clip_upload_as_reel_with_music(
@@ -204,7 +206,6 @@ class UploadClipMixin:
         track: Track,
         extra_data: Dict[str, str] = {},
     ) -> Media:
-
         """
         Upload CLIP as reel with music metadata.
         It also add the music under the video, therefore a mute video is required.
