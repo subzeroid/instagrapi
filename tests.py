@@ -2945,6 +2945,35 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIn("without message_metadata payload", str(ctx.exception))
 
+    def test_cutout_sticker_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client, "private_request", return_value={"status": "ok"}
+        ):
+            with self.assertRaises(PrivateError) as ctx:
+                client.media_configure_to_cutout_sticker(
+                    "1", manual_box=[0.0, 0.0, 1.0, 1.0]
+                )
+
+        self.assertIn("without media payload", str(ctx.exception))
+
+    def test_cutout_sticker_upload_uses_returned_media_payload(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"status": "ok", "media": media_payload},
+        ):
+            media = client.media_configure_to_cutout_sticker(
+                "1", manual_box=[0.0, 0.0, 1.0, 1.0]
+            )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(media.media_type, 1)
+
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
 

@@ -1216,7 +1216,11 @@ class MediaMixin:
             data["detect_subject"] = "true"
 
         result = self.private_request(url, data)
-        return extract_media_v1(result["media"])
+        return self._extract_configured_media_or_raise(
+            result,
+            PrivateError,
+            "Cutout sticker upload",
+        )
 
     def media_pin(self, media_pk: str, revert: bool = False):
         """
