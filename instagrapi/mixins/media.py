@@ -14,6 +14,7 @@ from instagrapi.exceptions import (
     PrivateError,
 )
 from instagrapi.extractors import (
+    extract_direct_message,
     extract_location,
     extract_media_gql,
     extract_media_oembed,
@@ -50,6 +51,22 @@ class MediaMixin:
                 **(self.last_json if isinstance(self.last_json, dict) else {}),
             )
         return extract_media_v1(media)
+
+    def _extract_configured_direct_message_or_raise(
+        self, configured, exception_cls, context: str
+    ):
+        message_metadata = []
+        if isinstance(configured, dict):
+            message_metadata = configured.get("message_metadata") or []
+        if not message_metadata and isinstance(self.last_json, dict):
+            message_metadata = self.last_json.get("message_metadata") or []
+        if not message_metadata:
+            raise exception_cls(
+                f"{context} configure succeeded without message_metadata payload",
+                response=self.last_response,
+                **(self.last_json if isinstance(self.last_json, dict) else {}),
+            )
+        return extract_direct_message(message_metadata[0])
 
     def media_id(self, media_pk: str) -> str:
         """

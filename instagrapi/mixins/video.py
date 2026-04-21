@@ -14,7 +14,6 @@ from instagrapi.exceptions import (
     VideoNotDownload,
     VideoNotUpload,
 )
-from instagrapi.extractors import extract_direct_message, extract_media_v1
 from instagrapi.types import (
     DirectMessage,
     Location,
@@ -511,8 +510,12 @@ class UploadVideoMixin:
                     continue
                 raise e
             if configured:
-                media = configured.get("media")
                 self.expose()
+                media = self._extract_configured_media_or_raise(
+                    configured,
+                    VideoConfigureStoryError,
+                    "Video story upload",
+                )
                 return Story(
                     links=links,
                     mentions=mentions,
@@ -521,7 +524,7 @@ class UploadVideoMixin:
                     stickers=stickers,
                     medias=medias,
                     polls=polls,
-                    **extract_media_v1(media).dict(),
+                    **media.dict(),
                 )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
@@ -962,7 +965,11 @@ class UploadVideoMixin:
                     continue
                 raise e
             if configured and thread_ids:
-                return extract_direct_message(configured.get("message_metadata", [])[0])
+                return self._extract_configured_direct_message_or_raise(
+                    configured,
+                    VideoConfigureStoryError,
+                    "Video direct upload",
+                )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
 

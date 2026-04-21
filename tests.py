@@ -38,6 +38,7 @@ from instagrapi.exceptions import (
     IGTVConfigureError,
     PleaseWaitFewMinutes,
     PhotoConfigureError,
+    PhotoConfigureStoryError,
     PrivateError,
     RecaptchaChallengeForm,
     ReloginAttemptExceeded,
@@ -45,6 +46,7 @@ from instagrapi.exceptions import (
     SubmitPhoneNumberForm,
     TwoFactorRequired,
     VideoConfigureError,
+    VideoConfigureStoryError,
 )
 from instagrapi.mixins.user import UserMixin
 from instagrapi.story import StoryBuilder
@@ -2866,6 +2868,19 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIn("without media payload", str(ctx.exception))
 
+    def test_photo_story_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 1280)):
+            with mock.patch.object(
+                client, "photo_configure_to_story", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(PhotoConfigureStoryError) as ctx:
+                        client.photo_upload_to_story(Path("story.jpg"))
+
+        self.assertIn("without media payload", str(ctx.exception))
+
     def test_clip_upload_falls_back_to_last_json_media_payload(self):
         client = self.build_client()
         client.last_json = {"media": self.build_media_payload()}
@@ -2892,6 +2907,43 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIsInstance(media, Media)
         self.assertEqual(str(media.video_url), "https://example.com/video.mp4")
+
+    def test_video_story_upload_raises_clear_error_when_configure_has_no_media(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "video_rupload",
+            return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+        ):
+            with mock.patch.object(
+                client, "video_configure_to_story", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(VideoConfigureStoryError) as ctx:
+                        client.video_upload_to_story(Path("story.mp4"))
+
+        self.assertIn("without media payload", str(ctx.exception))
+
+    def test_video_direct_upload_raises_clear_error_when_configure_has_no_message(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "video_rupload",
+            return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+        ):
+            with mock.patch.object(
+                client, "video_configure_to_story", return_value={"status": "ok"}
+            ):
+                with mock.patch("time.sleep"):
+                    with self.assertRaises(VideoConfigureStoryError) as ctx:
+                        client.video_upload_to_direct(
+                            Path("story.mp4"),
+                            thread_ids=[123],
+                        )
+
+        self.assertIn("without message_metadata payload", str(ctx.exception))
 
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
