@@ -142,3 +142,5 @@ dmypy.json
 # VSCode
 .vscode
 ig_settings.json
+.backlog/
+.playwright-mcp/
