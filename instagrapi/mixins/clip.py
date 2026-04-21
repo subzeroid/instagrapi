@@ -1,3 +1,4 @@
+import contextlib
 import json
 import random
 import tempfile
@@ -234,6 +235,7 @@ class UploadClipMixin:
         """
         tmpaudio = Path(tempfile.mktemp(".m4a"))
         tmpaudio = self.track_download_by_url(track.uri, "track", tmpaudio.parent)
+        tmpvideo = None
         try:
             highlight_start_time = track.highlight_start_times_in_ms[0]
         except IndexError:
@@ -245,30 +247,24 @@ class UploadClipMixin:
                 import moviepy as mp
             except ImportError:
                 raise Exception("Please install moviepy>=1.0.3 and retry")
-        # get all media to create the reel
-        video = mp.VideoFileClip(str(path))
-        audio_clip = mp.AudioFileClip(str(tmpaudio))
-        # set the start time of the audio and create the actual media
-        start = highlight_start_time / 1000
-        end = highlight_start_time / 1000 + video.duration
-        audio_clip = audio_clip.subclip(start, end)
-        video = video.set_audio(audio_clip)
-        # save the media in tmp folder
-        tmpvideo = Path(tempfile.mktemp(".mp4"))
-        video.write_videofile(str(tmpvideo))
-        # close the media
+        video = None
+        audio_clip = None
         try:
-            video.close()
-        except AttributeError:
-            pass
-        try:
-            audio_clip.close()
-        except AttributeError:
-            pass
-        # create the extra data to upload with it
-        data = extra_data or {}
-        data["clips_audio_metadata"] = (
-            {
+            # get all media to create the reel
+            video = mp.VideoFileClip(str(path))
+            audio_clip = mp.AudioFileClip(str(tmpaudio))
+            # set the start time of the audio and create the actual media
+            start = highlight_start_time / 1000
+            end = highlight_start_time / 1000 + video.duration
+            audio_clip = audio_clip.subclip(start, end)
+            video = video.set_audio(audio_clip)
+            video_duration = video.duration
+            # save the media in tmp folder
+            tmpvideo = Path(tempfile.mktemp(".mp4"))
+            video.write_videofile(str(tmpvideo))
+            # create the extra data to upload with it
+            data = dict(extra_data or {})
+            data["clips_audio_metadata"] = {
                 "original": {"volume_level": 0.0},
                 "song": {
                     "volume_level": 1.0,
@@ -279,24 +275,28 @@ class UploadClipMixin:
                     "track_name": track.title,
                     "is_picked_precapture": "1",
                 },
-            },
-        )
-        data["music_params"] = {
-            "audio_asset_id": track.id,
-            "audio_cluster_id": track.audio_cluster_id,
-            "audio_asset_start_time_in_ms": highlight_start_time,
-            "derived_content_start_time_in_ms": 0,
-            "overlap_duration_in_ms": int(video.duration * 1000),
-            "product": "story_camera_clips_v2",
-            "song_name": track.title,
-            "artist_name": track.display_artist,
-            "alacorn_session_id": "null",
-        }
-        clip_upload = self.clip_upload(tmpvideo, caption, extra_data=data)
-        # remove the tmp files
-        tmpvideo.unlink()
-        tmpaudio.unlink()
-        return clip_upload
+            }
+            data["music_params"] = {
+                "audio_asset_id": track.id,
+                "audio_cluster_id": track.audio_cluster_id,
+                "audio_asset_start_time_in_ms": highlight_start_time,
+                "derived_content_start_time_in_ms": 0,
+                "overlap_duration_in_ms": int(video_duration * 1000),
+                "product": "story_camera_clips_v2",
+                "song_name": track.title,
+                "artist_name": track.display_artist,
+                "alacorn_session_id": "null",
+            }
+            return self.clip_upload(tmpvideo, caption, extra_data=data)
+        finally:
+            for clip in (video, audio_clip):
+                with contextlib.suppress(AttributeError):
+                    if clip:
+                        clip.close()
+            for tmp_path in (tmpvideo, tmpaudio):
+                with contextlib.suppress(FileNotFoundError):
+                    if tmp_path:
+                        tmp_path.unlink()
 
     def clip_configure(
         self,

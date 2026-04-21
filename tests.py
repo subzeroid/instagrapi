@@ -4,6 +4,7 @@ import os
 import os.path
 import random
 import tempfile
+import types
 import unittest
 from unittest import mock
 from unittest.mock import Mock
@@ -2973,6 +2974,153 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIsInstance(media, Media)
         self.assertEqual(media.media_type, 1)
+
+    def test_clip_upload_as_reel_with_music_does_not_mutate_extra_data(self):
+        client = self.build_client()
+        extra_data = {"share_to_facebook": 1}
+        track = Mock(
+            uri="https://example.com/track.m4a",
+            highlight_start_times_in_ms=[1500],
+            display_artist="Artist",
+            id="track-id",
+            audio_cluster_id="cluster-id",
+            title="Track title",
+        )
+
+        class FakeAudioClip:
+            def __init__(self, path):
+                self.path = path
+
+            def subclip(self, start, end):
+                return self
+
+            def close(self):
+                return None
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.path = path
+                self.duration = 2.5
+
+            def set_audio(self, audio_clip):
+                self.audio_clip = audio_clip
+                return self
+
+            def write_videofile(self, path):
+                Path(path).write_bytes(b"video")
+
+            def close(self):
+                return None
+
+        fake_mp = types.ModuleType("moviepy.editor")
+        fake_mp.VideoFileClip = FakeVideoClip
+        fake_mp.AudioFileClip = FakeAudioClip
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "track.m4a"
+            audio_path.write_bytes(b"audio")
+            video_path = Path(tmpdir) / "output.mp4"
+            with mock.patch.dict(
+                "sys.modules",
+                {
+                    "moviepy": fake_mp,
+                    "moviepy.editor": fake_mp,
+                },
+            ):
+                with mock.patch(
+                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
+                ):
+                    with mock.patch.object(
+                        client, "track_download_by_url", return_value=audio_path
+                    ):
+                        with mock.patch.object(
+                            client, "clip_upload", return_value="uploaded"
+                        ) as clip_upload:
+                            result = client.clip_upload_as_reel_with_music(
+                                Path("input.mp4"),
+                                "caption",
+                                track,
+                                extra_data=extra_data,
+                            )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"share_to_facebook": 1})
+        upload_extra = clip_upload.call_args.kwargs["extra_data"]
+        self.assertEqual(upload_extra["share_to_facebook"], 1)
+        self.assertIn("clips_audio_metadata", upload_extra)
+        self.assertIn("music_params", upload_extra)
+
+    def test_clip_upload_as_reel_with_music_cleans_temp_files_on_failure(self):
+        client = self.build_client()
+        track = Mock(
+            uri="https://example.com/track.m4a",
+            highlight_start_times_in_ms=[0],
+            display_artist="Artist",
+            id="track-id",
+            audio_cluster_id="cluster-id",
+            title="Track title",
+        )
+
+        class FakeAudioClip:
+            def __init__(self, path):
+                self.path = path
+
+            def subclip(self, start, end):
+                return self
+
+            def close(self):
+                return None
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.path = path
+                self.duration = 2.5
+
+            def set_audio(self, audio_clip):
+                self.audio_clip = audio_clip
+                return self
+
+            def write_videofile(self, path):
+                Path(path).write_bytes(b"video")
+
+            def close(self):
+                return None
+
+        fake_mp = types.ModuleType("moviepy.editor")
+        fake_mp.VideoFileClip = FakeVideoClip
+        fake_mp.AudioFileClip = FakeAudioClip
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "track.m4a"
+            audio_path.write_bytes(b"audio")
+            video_path = Path(tmpdir) / "output.mp4"
+            with mock.patch.dict(
+                "sys.modules",
+                {
+                    "moviepy": fake_mp,
+                    "moviepy.editor": fake_mp,
+                },
+            ):
+                with mock.patch(
+                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
+                ):
+                    with mock.patch.object(
+                        client, "track_download_by_url", return_value=audio_path
+                    ):
+                        with mock.patch.object(
+                            client,
+                            "clip_upload",
+                            side_effect=ClipConfigureError("boom"),
+                        ):
+                            with self.assertRaises(ClipConfigureError):
+                                client.clip_upload_as_reel_with_music(
+                                    Path("input.mp4"),
+                                    "caption",
+                                    track,
+                                )
+
+            self.assertFalse(audio_path.exists())
+            self.assertFalse(video_path.exists())
 
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
