@@ -2869,6 +2869,44 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIn("without media payload", str(ctx.exception))
 
+    def test_album_upload_rejects_empty_paths_with_clear_error(self):
+        client = self.build_client()
+
+        with self.assertRaises(PrivateError) as ctx:
+            client.album_upload([], "caption")
+
+        self.assertIn("requires at least one media path", str(ctx.exception))
+
+    def test_album_upload_rejects_unknown_format_with_filename_in_error(self):
+        client = self.build_client()
+
+        with self.assertRaises(PrivateError) as ctx:
+            client.album_upload([Path("clip.mov")], "caption")
+
+        self.assertIn('Unsupported album media format ".mov"', str(ctx.exception))
+        self.assertIn("clip.mov", str(ctx.exception))
+
+    def test_album_upload_accepts_png_via_photo_rupload(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=8)
+        media_payload["carousel_media"] = [self.build_media_payload(media_type=1)]
+
+        with mock.patch.object(
+            client,
+            "photo_rupload",
+            return_value=("1", 720, 720),
+        ) as photo_rupload:
+            with mock.patch.object(
+                client,
+                "album_configure",
+                return_value={"status": "ok", "media": media_payload},
+            ):
+                with mock.patch("time.sleep"):
+                    media = client.album_upload([Path("slide.png")], "caption")
+
+        self.assertIsInstance(media, Media)
+        photo_rupload.assert_called_once_with(Path("slide.png"), to_album=True)
+
     def test_photo_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 

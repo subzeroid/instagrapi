@@ -177,10 +177,12 @@ class UploadAlbumMixin:
         Media
             An object of Media class
         """
+        if not paths:
+            raise AlbumUnknownFormat("Album upload requires at least one media path.")
         children = []
         for path in paths:
             path = Path(path)
-            if path.suffix.lower() in (".jpg", ".jpeg", ".webp"):
+            if path.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"):
                 upload_id, width, height = self.photo_rupload(path, to_album=True)
                 children.append(
                     {
@@ -220,7 +222,9 @@ class UploadAlbumMixin:
                 )
                 self.photo_rupload(thumbnail, upload_id)
             else:
-                raise AlbumUnknownFormat()
+                raise AlbumUnknownFormat(
+                    f'Unsupported album media format "{path.suffix}" for "{path.name}".'
+                )
 
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Album: {paths}")
