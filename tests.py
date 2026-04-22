@@ -46,6 +46,7 @@ from instagrapi.exceptions import (
     SelectContactPointRecoveryForm,
     SubmitPhoneNumberForm,
     TwoFactorRequired,
+    UnknownError,
     VideoConfigureError,
     VideoConfigureStoryError,
 )
@@ -1006,6 +1007,33 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(second_call.args[1]["two_factor_identifier"], "two-factor-id")
         self.assertEqual(second_call.args[1]["username"], "example")
         client.login_flow.assert_called_once_with()
+
+    def test_login_two_factor_invalid_parameters_raises_clear_bloks_hint(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.uuid = "uuid-1"
+        client.phone_id = "phone-1"
+        client.android_device_id = "android-1"
+        client._token = "csrftoken"
+        client.last_json = {
+            "two_factor_info": {"two_factor_identifier": "two-factor-id"}
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(
+            side_effect=[
+                TwoFactorRequired("Two-factor authentication required"),
+                UnknownError("Invalid Parameters", response=Mock(status_code=400)),
+            ]
+        )
+
+        with self.assertRaises(TwoFactorRequired) as cm:
+            client.login(verification_code="123456")
+
+        self.assertIn("Bloks-based two-factor verification flow", str(cm.exception))
+        self.assertEqual(client.private_request.call_count, 2)
 
     def test_login_by_sessionid_falls_back_to_user_short_gql(self):
         client = Client()

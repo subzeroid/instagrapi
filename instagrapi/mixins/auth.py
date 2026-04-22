@@ -22,6 +22,7 @@ from instagrapi.exceptions import (
     PrivateError,
     ReloginAttemptExceeded,
     TwoFactorRequired,
+    UnknownError,
 )
 from instagrapi.utils import dumps, gen_token, generate_jazoest
 
@@ -527,9 +528,23 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "waterfall_id": str(uuid4()),
                 "verification_method": "3",
             }
-            logged = self.private_request(
-                "accounts/two_factor_login/", data, login=True
-            )
+            try:
+                logged = self.private_request(
+                    "accounts/two_factor_login/", data, login=True
+                )
+            except UnknownError as exc:
+                message = getattr(exc, "message", "") or ""
+                if message.strip().lower() == "invalid parameters":
+                    raise TwoFactorRequired(
+                        "Instagram rejected accounts/two_factor_login/ with "
+                        "'Invalid Parameters'. This account may require a newer "
+                        "Bloks-based two-factor verification flow that is not "
+                        "supported automatically yet. Complete verification in the "
+                        "Instagram app or refresh the session manually, then retry.",
+                        response=getattr(exc, "response", None),
+                        **(self.last_json if isinstance(self.last_json, dict) else {}),
+                    ) from exc
+                raise
             self.authorization_data = self.parse_authorization(
                 self.last_response.headers.get("ig-set-authorization")
             )
