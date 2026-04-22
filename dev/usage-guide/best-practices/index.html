@@ -924,6 +924,89 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#handle-rate-limits-and-anti-abuse-responses-explicitly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handle Rate Limits and Anti-Abuse Responses Explicitly
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Handle Rate Limits and Anti-Abuse Responses Explicitly">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clientthrottlederror-http-429" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClientThrottledError / HTTP 429
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pleasewaitfewminutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PleaseWaitFewMinutes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feedbackrequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FeedbackRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loginrequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoginRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#challengerequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChallengeRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#use-sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1056,6 +1139,89 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#handle-rate-limits-and-anti-abuse-responses-explicitly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handle Rate Limits and Anti-Abuse Responses Explicitly
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Handle Rate Limits and Anti-Abuse Responses Explicitly">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#clientthrottlederror-http-429" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClientThrottledError / HTTP 429
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pleasewaitfewminutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PleaseWaitFewMinutes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feedbackrequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FeedbackRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loginrequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LoginRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#challengerequired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ChallengeRequired
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#practical-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#use-sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1139,6 +1305,59 @@ between requests. The delays should be random and not too long.</p>
 <span class="c1"># adds a random delay between 1 and 3 seconds after each request</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">delay_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
+<h2 id="handle-rate-limits-and-anti-abuse-responses-explicitly">Handle Rate Limits and Anti-Abuse Responses Explicitly</h2>
+<p>Instagram uses several different responses for throttling, suspicious behavior, or temporary restrictions. Treat them differently instead of retrying every error the same way.</p>
+<h3 id="clientthrottlederror-http-429"><code>ClientThrottledError</code> / HTTP 429</h3>
+<p>This usually means the current IP or request pattern is too aggressive for that path right now.</p>
+<p>Recommended response:</p>
+<ul>
+<li>stop the current burst of requests</li>
+<li>back off before retrying</li>
+<li>reduce concurrency for that account</li>
+<li>if the same account keeps hitting <code>429</code>, pause it or move it to a cleaner proxy/IP</li>
+</ul>
+<h3 id="pleasewaitfewminutes"><code>PleaseWaitFewMinutes</code></h3>
+<p>This is usually more serious than a single <code>429</code>. Instagram is telling you to slow down for that account, device, or IP combination.</p>
+<p>Recommended response:</p>
+<ul>
+<li>stop write actions for that account for a while</li>
+<li>do not spam retries in a tight loop</li>
+<li>keep the same device settings and only retry later</li>
+<li>if it keeps happening, review proxy quality and account warmup</li>
+</ul>
+<h3 id="feedbackrequired"><code>FeedbackRequired</code></h3>
+<p>This often means an action was blocked or the account is temporarily restricted.</p>
+<p>Recommended response:</p>
+<ul>
+<li>inspect <code>client.last_json.get("feedback_message")</code></li>
+<li>stop repeating the same action immediately</li>
+<li>freeze the account or action type for a cooldown window</li>
+<li>if you automate multiple action types, disable the offending one first</li>
+</ul>
+<h3 id="loginrequired"><code>LoginRequired</code></h3>
+<p>This usually means the current private session is no longer valid.</p>
+<p>Recommended response:</p>
+<ul>
+<li>relogin with the same saved device/session state</li>
+<li>validate the session with a lightweight authenticated call</li>
+<li>if relogin keeps failing, stop and inspect the account manually instead of forcing repeated fresh logins</li>
+</ul>
+<h3 id="challengerequired"><code>ChallengeRequired</code></h3>
+<p>This means Instagram wants an additional verification step. Some flows can be automated, but newer challenge paths may still require manual review.</p>
+<p>Recommended response:</p>
+<ul>
+<li>call <code>challenge_resolve(...)</code> only if you have working handlers for codes/password changes</li>
+<li>if you hit <code>/auth_platform/</code> or UFAC web flows, expect manual handling</li>
+<li>do not rotate identity aggressively in the middle of a challenge</li>
+</ul>
+<h3 id="practical-rules">Practical Rules</h3>
+<ul>
+<li>Separate read-heavy jobs from write-heavy jobs whenever possible.</li>
+<li>Use one stable proxy/IP per account instead of hopping between locations.</li>
+<li>Persist sessions and device identifiers; avoid password login from scratch on every run.</li>
+<li>Freeze accounts that hit repeated anti-abuse responses instead of hammering them harder.</li>
+<li>Track errors per account, per proxy, and per action type so you can see which variable is actually causing trouble.</li>
+</ul>
 <h2 id="use-sessions">Use Sessions</h2>
 <p>If you call <code>.login()</code> from scratch on every run, Instagram sees repeated fresh logins. That is much more suspicious than reusing a stable device session.</p>
 <p>The normal pattern is:</p>
