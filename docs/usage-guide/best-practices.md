@@ -54,6 +54,71 @@ cl = Client()
 cl.delay_range = [1, 3]
 ```
 
+## Handle Rate Limits and Anti-Abuse Responses Explicitly
+
+Instagram uses several different responses for throttling, suspicious behavior, or temporary restrictions. Treat them differently instead of retrying every error the same way.
+
+### `ClientThrottledError` / HTTP 429
+
+This usually means the current IP or request pattern is too aggressive for that path right now.
+
+Recommended response:
+
+* stop the current burst of requests
+* back off before retrying
+* reduce concurrency for that account
+* if the same account keeps hitting `429`, pause it or move it to a cleaner proxy/IP
+
+### `PleaseWaitFewMinutes`
+
+This is usually more serious than a single `429`. Instagram is telling you to slow down for that account, device, or IP combination.
+
+Recommended response:
+
+* stop write actions for that account for a while
+* do not spam retries in a tight loop
+* keep the same device settings and only retry later
+* if it keeps happening, review proxy quality and account warmup
+
+### `FeedbackRequired`
+
+This often means an action was blocked or the account is temporarily restricted.
+
+Recommended response:
+
+* inspect `client.last_json.get("feedback_message")`
+* stop repeating the same action immediately
+* freeze the account or action type for a cooldown window
+* if you automate multiple action types, disable the offending one first
+
+### `LoginRequired`
+
+This usually means the current private session is no longer valid.
+
+Recommended response:
+
+* relogin with the same saved device/session state
+* validate the session with a lightweight authenticated call
+* if relogin keeps failing, stop and inspect the account manually instead of forcing repeated fresh logins
+
+### `ChallengeRequired`
+
+This means Instagram wants an additional verification step. Some flows can be automated, but newer challenge paths may still require manual review.
+
+Recommended response:
+
+* call `challenge_resolve(...)` only if you have working handlers for codes/password changes
+* if you hit `/auth_platform/` or UFAC web flows, expect manual handling
+* do not rotate identity aggressively in the middle of a challenge
+
+### Practical Rules
+
+* Separate read-heavy jobs from write-heavy jobs whenever possible.
+* Use one stable proxy/IP per account instead of hopping between locations.
+* Persist sessions and device identifiers; avoid password login from scratch on every run.
+* Freeze accounts that hit repeated anti-abuse responses instead of hammering them harder.
+* Track errors per account, per proxy, and per action type so you can see which variable is actually causing trouble.
+
 
 ## Use Sessions
 

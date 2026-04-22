@@ -8,7 +8,8 @@ from instagrapi import Client
 from instagrapi.exceptions import (
     BadPassword, ReloginAttemptExceeded, ChallengeRequired,
     SelectContactPointRecoveryForm, RecaptchaChallengeForm,
-    FeedbackRequired, PleaseWaitFewMinutes, LoginRequired
+    FeedbackRequired, PleaseWaitFewMinutes, LoginRequired,
+    ClientThrottledError,
 )
 from instagrapi.utils import json_value
 
@@ -44,6 +45,8 @@ def handle_exception(client: Client, e: Exception):
             logger.warning("Temporary activity restriction: %s", message)
         elif "Your account has been temporarily blocked" in message:
             logger.warning("Temporary account block: %s", message)
+    elif isinstance(e, ClientThrottledError):
+        logger.warning("HTTP 429 from Instagram, back off and review proxy/account pressure")
     elif isinstance(e, PleaseWaitFewMinutes):
         logger.warning("Please wait before retrying: %s", e)
     raise e
@@ -54,5 +57,7 @@ cl.login(USERNAME, PASSWORD)
 ```
 
 In this way, you can centrally handle errors and not repeat handlers throughout your code. In a real application, you would usually extend this with your own proxy rotation, account freeze/backoff storage, or metrics hooks.
+
+For a practical playbook around `429`, `feedback_required`, `PleaseWaitFewMinutes`, and session/challenge handling, see [Best Practices](best-practices.md).
 
 Full example [here](https://github.com/subzeroid/instagrapi/blob/master/examples/handle_exception.py)
