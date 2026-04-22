@@ -400,13 +400,13 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     print(f'Analyzing CLIP file "{path}"')
     with contextlib.ExitStack() as stack:
         video = mp.VideoFileClip(str(path))
+        stack.enter_context(contextlib.closing(video))
         width, height = video.size
         if not thumbnail:
             thumbnail = f"{path}.jpg"
             print(f'Generating thumbnail "{thumbnail}"...')
             video.save_frame(thumbnail, t=(video.duration / 2))
             crop_thumbnail(thumbnail)
-        stack.enter_context(contextlib.closing(video))
     return thumbnail, width, height, video.duration
 
 

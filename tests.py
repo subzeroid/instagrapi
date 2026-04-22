@@ -3190,6 +3190,68 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(result, (Path("thumb.jpg"), 720, 1280, 5))
         self.assertTrue(closed["value"])
 
+    def test_video_analyze_video_closes_video_file_on_save_frame_error(self):
+        import instagrapi.mixins.video as video_mixin
+
+        closed = {"value": False}
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.size = (720, 1280)
+                self.duration = 5
+
+            def save_frame(self, path, t):
+                raise RuntimeError("save failed")
+
+            def close(self):
+                closed["value"] = True
+
+        fake_mp = types.ModuleType("moviepy.editor")
+        fake_mp.VideoFileClip = FakeVideoClip
+
+        with mock.patch.dict(
+            "sys.modules",
+            {
+                "moviepy": fake_mp,
+                "moviepy.editor": fake_mp,
+            },
+        ):
+            with self.assertRaises(RuntimeError):
+                video_mixin.analyze_video(Path("input.mp4"))
+
+        self.assertTrue(closed["value"])
+
+    def test_clip_analyze_video_closes_video_file_on_save_frame_error(self):
+        import instagrapi.mixins.clip as clip_mixin
+
+        closed = {"value": False}
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.size = (720, 1280)
+                self.duration = 5
+
+            def save_frame(self, path, t):
+                raise RuntimeError("save failed")
+
+            def close(self):
+                closed["value"] = True
+
+        fake_mp = types.ModuleType("moviepy.editor")
+        fake_mp.VideoFileClip = FakeVideoClip
+
+        with mock.patch.dict(
+            "sys.modules",
+            {
+                "moviepy": fake_mp,
+                "moviepy.editor": fake_mp,
+            },
+        ):
+            with self.assertRaises(RuntimeError):
+                clip_mixin.analyze_video(Path("input.mp4"))
+
+        self.assertTrue(closed["value"])
+
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
 

@@ -1,3 +1,4 @@
+import contextlib
 import random
 import time
 from pathlib import Path
@@ -999,15 +1000,12 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
             raise Exception("Please install moviepy>=1.0.3 and retry")
 
     print(f'Analyzing video file "{path}"')
-    video = mp.VideoFileClip(str(path))
-    width, height = video.size
-    if not thumbnail:
-        thumbnail = f"{path}.jpg"
-        print(f'Generating thumbnail "{thumbnail}"...')
-        video.save_frame(thumbnail, t=(video.duration / 2))
-    # duration = round(video.duration + 0.001, 3)
-    try:
-        video.close()
-    except AttributeError:
-        pass
+    with contextlib.ExitStack() as stack:
+        video = mp.VideoFileClip(str(path))
+        stack.enter_context(contextlib.closing(video))
+        width, height = video.size
+        if not thumbnail:
+            thumbnail = f"{path}.jpg"
+            print(f'Generating thumbnail "{thumbnail}"...')
+            video.save_frame(thumbnail, t=(video.duration / 2))
     return width, height, video.duration, thumbnail
