@@ -146,6 +146,8 @@ Anonymous/public web paths are best treated as opportunistic rather than guarant
 * [Getting Started](https://subzeroid.github.io/instagrapi/getting-started.html)
 * [Usage Guide](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html)
 * [Interactions reference](https://subzeroid.github.io/instagrapi/usage-guide/interactions.html)
+* [Best Practices](https://subzeroid.github.io/instagrapi/usage-guide/best-practices.html) for sessions, proxies, and anti-abuse handling
+* [Handle Exceptions](https://subzeroid.github.io/instagrapi/usage-guide/handle_exception.html) for centralizing `429`, challenge, and relogin logic
 * [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
 * [Support chat in Telegram](https://t.me/instagrapi)
 

@@ -214,6 +214,7 @@ cl.get_settings()
 
 * [Getting Started](../getting-started.md)
 * [Usage Guide](fundamentals.md)
+* [Best Practices](best-practices.md)
 * [Handle Exceptions](handle_exception.md)
 * [Challenge Resolver](challenge_resolver.md)
 * [Exceptions](../exceptions.md)
