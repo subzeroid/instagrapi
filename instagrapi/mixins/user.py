@@ -733,16 +733,18 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
+            params = {
+                "count": max_amount or MAX_USER_COUNT,
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "query": "",
+                "enable_groups": "true",
+            }
+            if max_id:
+                params["max_id"] = max_id
             result = self.private_request(
                 f"friendships/{user_id}/following/",
-                params={
-                    "max_id": max_id,
-                    "count": max_amount or MAX_USER_COUNT,
-                    "rank_token": self.rank_token,
-                    "search_surface": "follow_list_page",
-                    "query": "",
-                    "enable_groups": "true",
-                },
+                params=params,
             )
             for user in result["users"]:
                 user = extract_user_short(user)
@@ -908,16 +910,18 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
+            params = {
+                "count": max_amount or MAX_USER_COUNT,
+                "rank_token": self.rank_token,
+                "search_surface": "follow_list_page",
+                "query": "",
+                "enable_groups": "true",
+            }
+            if max_id:
+                params["max_id"] = max_id
             result = self.private_request(
                 f"friendships/{user_id}/followers/",
-                params={
-                    "max_id": max_id,
-                    "count": max_amount or MAX_USER_COUNT,
-                    "rank_token": self.rank_token,
-                    "search_surface": "follow_list_page",
-                    "query": "",
-                    "enable_groups": "true",
-                },
+                params=params,
             )
             for user in result["users"]:
                 user = extract_user_short(user)

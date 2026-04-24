@@ -2654,6 +2654,13 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
 
 
 class UserMixinRegressionTestCase(unittest.TestCase):
+    def build_private_client(self):
+        client = Client()
+        client.settings = {}
+        client.authorization_data = {"ds_user_id": "1"}
+        client.uuid = "uuid"
+        return client
+
     @staticmethod
     def build_web_profile_user(**overrides):
         user = {
@@ -2799,6 +2806,45 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(len(user.bio_links), 1)
         self.assertIsNone(user.bio_links[0].link_id)
         self.assertEqual(user.bio_links[0].url, "https://example.com")
+
+    def test_user_followers_v1_chunk_omits_empty_max_id_on_first_page(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_followers_v1_chunk("123")
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertNotIn("max_id", params)
+
+    def test_user_followers_v1_chunk_sends_non_empty_max_id_on_next_page(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_followers_v1_chunk("123", max_id="cursor")
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(params["max_id"], "cursor")
+
+    def test_user_following_v1_chunk_omits_empty_max_id_on_first_page(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_following_v1_chunk("123")
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertNotIn("max_id", params)
 
 
 class TimelineRegressionTestCase(unittest.TestCase):
