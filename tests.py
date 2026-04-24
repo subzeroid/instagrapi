@@ -3291,6 +3291,83 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertIn("clips_audio_metadata", upload_extra)
         self.assertIn("music_params", upload_extra)
 
+    def test_clip_upload_as_reel_with_music_includes_music_canonical_id(self):
+        client = self.build_client()
+        track = Mock(
+            uri="https://example.com/track.m4a",
+            highlight_start_times_in_ms=[1500],
+            display_artist="Artist",
+            id="track-id",
+            audio_cluster_id="cluster-id",
+            music_canonical_id="canonical-id",
+            title="Track title",
+        )
+
+        class FakeAudioClip:
+            def __init__(self, path):
+                self.path = path
+
+            def subclip(self, start, end):
+                return self
+
+            def close(self):
+                return None
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.path = path
+                self.duration = 2.5
+
+            def set_audio(self, audio_clip):
+                self.audio_clip = audio_clip
+                return self
+
+            def write_videofile(self, path):
+                Path(path).write_bytes(b"video")
+
+            def close(self):
+                return None
+
+        fake_mp = types.ModuleType("moviepy.editor")
+        fake_mp.VideoFileClip = FakeVideoClip
+        fake_mp.AudioFileClip = FakeAudioClip
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "track.m4a"
+            audio_path.write_bytes(b"audio")
+            video_path = Path(tmpdir) / "output.mp4"
+            with mock.patch.dict(
+                "sys.modules",
+                {
+                    "moviepy": fake_mp,
+                    "moviepy.editor": fake_mp,
+                },
+            ):
+                with mock.patch(
+                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
+                ):
+                    with mock.patch.object(
+                        client, "track_download_by_url", return_value=audio_path
+                    ):
+                        with mock.patch.object(
+                            client, "clip_upload", return_value="uploaded"
+                        ) as clip_upload:
+                            client.clip_upload_as_reel_with_music(
+                                Path("input.mp4"),
+                                "caption",
+                                track,
+                            )
+
+        upload_extra = clip_upload.call_args.kwargs["extra_data"]
+        self.assertEqual(
+            upload_extra["clips_audio_metadata"]["song"]["music_canonical_id"],
+            "canonical-id",
+        )
+        self.assertEqual(
+            upload_extra["music_params"]["music_canonical_id"],
+            "canonical-id",
+        )
+
     def test_clip_upload_as_reel_with_music_cleans_temp_files_on_failure(self):
         client = self.build_client()
         track = Mock(

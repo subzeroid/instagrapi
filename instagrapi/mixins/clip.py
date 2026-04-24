@@ -287,6 +287,11 @@ class UploadClipMixin:
                 "artist_name": track.display_artist,
                 "alacorn_session_id": "null",
             }
+            if getattr(track, "music_canonical_id", None):
+                data["clips_audio_metadata"]["song"][
+                    "music_canonical_id"
+                ] = track.music_canonical_id
+                data["music_params"]["music_canonical_id"] = track.music_canonical_id
             return self.clip_upload(tmpvideo, caption, extra_data=data)
         finally:
             for clip in (video, audio_clip):

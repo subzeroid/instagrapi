@@ -997,6 +997,7 @@ class Track(TypesBaseModel):
     subtitle: str
     display_artist: str
     audio_cluster_id: int
+    music_canonical_id: Optional[str] = None
     artist_id: Optional[int] = None
     cover_artwork_uri: Optional[HttpUrl] = None
     cover_artwork_thumbnail_uri: Optional[HttpUrl] = None
