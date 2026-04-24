@@ -10,6 +10,7 @@ from instagrapi.exceptions import (
     ClientError,
     ClientLoginRequired,
     ClientNotFoundError,
+    ClientUnauthorizedError,
     MediaNotFound,
     PrivateError,
 )
@@ -250,9 +251,12 @@ class MediaMixin:
             "parent_comment_count": 24,
             "has_threaded_comments": False,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="477b65a610463740ccdb83135b2014db"
-        )
+        try:
+            data = self.public_graphql_request(
+                variables, query_hash="477b65a610463740ccdb83135b2014db"
+            )
+        except (ClientLoginRequired, ClientUnauthorizedError):
+            return self.media_info_a1(media_pk)
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"] and self.authorization:

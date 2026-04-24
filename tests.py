@@ -34,6 +34,7 @@ from instagrapi.exceptions import (
     ClipConfigureError,
     ClientConnectionError,
     ClientGraphqlError,
+    ClientUnauthorizedError,
     ClientThrottledError,
     DirectThreadNotFound,
     IGTVConfigureError,
@@ -352,6 +353,23 @@ class PublicRegressionTestCase(unittest.TestCase):
 
         private_fallback.assert_not_called()
         self.assertIn("Incorrect Query", str(cm.exception))
+
+    def test_media_info_gql_falls_back_to_a1_on_public_401(self):
+        client = Client()
+        expected = Mock(spec=Media)
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=ClientUnauthorizedError("401", response=Mock(status_code=401)),
+        ):
+            with mock.patch.object(
+                client, "media_info_a1", return_value=expected
+            ) as fallback:
+                result = client.media_info_gql("2110901750722920960")
+
+        self.assertIs(result, expected)
+        fallback.assert_called_once_with("2110901750722920960")
 
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
