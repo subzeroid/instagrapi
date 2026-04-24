@@ -2598,6 +2598,61 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
         self.assertFalse(thread.is_close_friend_thread)
 
 
+class DirectMixinRegressionTestCase(unittest.TestCase):
+    def build_client(self):
+        client = Client()
+        client.settings = {}
+        client.authorization_data = {"ds_user_id": "1"}
+        client.last_json = {}
+        return client
+
+    def test_direct_send_video_uses_direct_story_flow_for_thread_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+
+        with mock.patch.object(
+            client, "video_upload_to_direct", return_value=expected
+        ) as video_upload:
+            result = client.direct_send_video("clip.mp4", thread_ids=[123])
+
+        self.assertIs(result, expected)
+        video_upload.assert_called_once_with(Path("clip.mp4"), thread_ids=[123])
+
+    def test_direct_send_video_resolves_existing_thread_for_user_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+
+        with mock.patch.object(
+            client,
+            "direct_thread_by_participants",
+            return_value={"thread_v2_id": "340282366841710300949128149448121770626"},
+        ) as thread_lookup:
+            with mock.patch.object(
+                client, "video_upload_to_direct", return_value=expected
+            ) as video_upload:
+                result = client.direct_send_video("clip.mp4", user_ids=[42])
+
+        self.assertIs(result, expected)
+        thread_lookup.assert_called_once_with([42])
+        video_upload.assert_called_once_with(
+            Path("clip.mp4"),
+            thread_ids=[340282366841710300949128149448121770626],
+        )
+
+    def test_direct_send_video_raises_when_existing_thread_is_missing(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client, "direct_thread_by_participants", return_value={}
+        ) as thread_lookup:
+            with mock.patch.object(client, "video_upload_to_direct") as video_upload:
+                with self.assertRaises(DirectThreadNotFound):
+                    client.direct_send_video("clip.mp4", user_ids=[42])
+
+        thread_lookup.assert_called_once_with([42])
+        video_upload.assert_not_called()
+
+
 class UserMixinRegressionTestCase(unittest.TestCase):
     @staticmethod
     def build_web_profile_user(**overrides):

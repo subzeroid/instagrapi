@@ -504,7 +504,22 @@ class DirectMixin:
         DirectMessage
             An object of DirectMessage
         """
-        return self.direct_send_file(path, user_ids, thread_ids, content_type="video")
+        assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (
+            user_ids and thread_ids
+        ), "Specify user_ids or thread_ids, but not both"
+        if user_ids:
+            thread = self.direct_thread_by_participants(user_ids)
+            thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
+            if not thread_id:
+                raise DirectThreadNotFound(
+                    "No existing direct thread found for participants; "
+                    "direct video send currently requires an existing thread",
+                    user_ids=user_ids,
+                    **(self.last_json if isinstance(self.last_json, dict) else {}),
+                )
+            thread_ids = [int(thread_id)]
+        return self.video_upload_to_direct(Path(path), thread_ids=thread_ids)
 
     def direct_send_file(
         self,
