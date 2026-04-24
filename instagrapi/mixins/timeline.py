@@ -64,10 +64,15 @@ class ReelsMixin:
             A list of objects of Media
         """
 
-        if collection_pk == "reels":
-            private_request_endpoint = "clips/connected/"
-        elif collection_pk == "explore_reels":
-            private_request_endpoint = "clips/discover/"
+        private_request_endpoint = {
+            "reels": "clips/connected/",
+            "explore_reels": "clips/discover/",
+        }.get(collection_pk)
+        if not private_request_endpoint:
+            self.logger.warning(
+                "Unsupported reels timeline collection: %r", collection_pk
+            )
+            return []
 
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
@@ -93,4 +98,4 @@ class ReelsMixin:
             if not result.get("paging_info", {}).get("more_available"):
                 return total_items
 
-            next_max_id = result.get("paging_info", {}).get("more_available")
+            next_max_id = result.get("paging_info", {}).get("max_id", "")
