@@ -18,6 +18,7 @@ from instagrapi.exceptions import (
     SelectContactPointRecoveryForm,
     SubmitPhoneNumberForm,
 )
+from instagrapi.utils import generate_jazoest
 
 WAIT_SECONDS = 5
 
@@ -618,6 +619,21 @@ class ChallengeResolveMixin:
             # # assert 'logged_in_user' in client.last_json
             # assert self.last_json.get("action", "") == "close"
             # assert self.last_json.get("status", "") == "ok"
+            return True
+        
+        #If it requires pressing a single button to pass the challenge
+        elif step_name == "STEP_NAME":
+            last_json = self.last_json
+            endpoint = "bloks/apps/com.instagram.challenge.navigation.take_challenge/"
+            jazoest = generate_jazoest(self.phone_id)
+            self._send_private_request(endpoint, 
+            {
+                "challenge_context": last_json["challenge_context"],
+                "has_follow_up_screens": False,
+                "nest_data_manifest": True,
+                "jazoest": jazoest
+            })
+            
             return True
         else:
             raise ChallengeUnknownStep(
