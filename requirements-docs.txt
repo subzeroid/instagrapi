@@ -11,4 +11,4 @@ mkdocs-material==9.7.6
 mkdocs-minify-plugin==0.8.0
 mkdocs-redirects==1.2.2
 mkdocstrings[python]==1.0.0
-mkdocs-autorefs>=1.0.0
+mkdocs-autorefs>=1.4.4
