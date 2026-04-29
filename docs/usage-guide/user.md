@@ -40,6 +40,16 @@ Lookup helpers:
 | user_short_gql(user_id: str, use_cache: bool = True) | UserShort      | Short user info with current GraphQL/web-profile fallback chain |
 | username_from_user_id_gql(user_id: str)       | str                   | Resolve username from user id using the same fallback chain  |
 
+Streamed profile fetch (raw payloads, app-side surface):
+
+| Method                                        | Return                | Description                                                  |
+|-----------------------------------------------|-----------------------|--------------------------------------------------------------|
+| user_stream_by_id_v1(user_id: str)            | dict                  | Streamed profile envelope by pk (`users/{user_id}/info_stream/`) |
+| user_stream_by_username_v1(username: str)     | dict                  | Streamed profile envelope by username (`users/{username}/usernameinfo_stream/`) |
+| user_stream_by_id_flat(user_id: str)          | dict                  | Same as `_v1` but `stream_rows[*].user` partials merged into a single dict |
+| user_stream_by_username_flat(username: str)   | dict                  | Same as `_v1` but `stream_rows[*].user` partials merged into a single dict |
+| user_web_profile_info_v1(username: str)       | dict                  | `users/web_profile_info/?username=...` via the private host (logged-in session, bypasses public-side rate limiting) |
+
 Low level methods:
 
 | Method                                                                              | Return                      | Description                                                                |

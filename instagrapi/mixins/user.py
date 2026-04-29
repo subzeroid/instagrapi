@@ -1520,3 +1520,185 @@ class UserMixin:
             "discover/fetch_suggestion_details/",
             params=params,
         )
+
+    def user_stream_by_username_v1(self, username: str) -> dict:
+        """
+        Get the streamed profile envelope by username.
+
+        ``POST /users/{username}/usernameinfo_stream/`` — IG's app-side
+        surface for a profile fetch keyed by username. Returns the
+        streamed envelope (typically with ``stream_rows``).
+
+        Parameters
+        ----------
+        username: str
+            Target IG username.
+
+        Returns
+        -------
+        dict
+            Parsed JSON response.
+
+        Raises
+        ------
+        UserNotFound
+            On 404 / unknown ClientError.
+        """
+        username = str(username).lower()
+        data = {
+            "is_prefetch": False,
+            "entry_point": "profile",
+            "from_module": "feed_timeline",
+        }
+        try:
+            return self.private_request(
+                f"users/{username}/usernameinfo_stream/", data=data
+            )
+        except ClientNotFoundError as e:
+            raise UserNotFound(e, username=username, **self.last_json)
+        except ClientError as e:
+            raise UserNotFound(e, username=username, **self.last_json)
+
+    def user_stream_by_id_v1(self, user_id: str) -> dict:
+        """
+        Get the streamed profile envelope by pk (mirror of
+        :meth:`user_stream_by_username_v1`).
+
+        ``POST /users/{user_id}/info_stream/`` — IG's app-side surface
+        for a profile fetch initiated from within the feed-timeline
+        flow. Returns the same streamed envelope as the username
+        variant.
+
+        Parameters
+        ----------
+        user_id: str
+            Target user pk.
+
+        Returns
+        -------
+        dict
+            Parsed JSON response (typically with ``stream_rows``).
+
+        Raises
+        ------
+        UserNotFound
+            On 404 / unknown ClientError.
+        """
+        data = {
+            "is_prefetch": False,
+            "entry_point": "profile",
+            "from_module": "feed_timeline",
+        }
+        try:
+            return self.private_request(f"users/{user_id}/info_stream/", data=data)
+        except (ClientNotFoundError, ClientError) as e:
+            logger.exception(
+                "Client error user_stream_by_id_v1, exception: %r, user_id %r",
+                e,
+                user_id,
+            )
+            raise UserNotFound("User not found")
+
+    def _user_stream_collector(self, resp, id=None, username=None):
+        """
+        Collapse a ``stream_rows`` envelope into a single flat user dict.
+
+        Each row in ``stream_rows`` carries a partial ``user`` payload;
+        this merges them in order so later rows override earlier ones.
+        Falls back to one extra fetch if the first response was empty
+        (defensive behaviour matching observed IG quirks).
+        """
+        data = {}
+        for urow in resp.get("stream_rows", []):
+            data.update(urow.get("user", {}))
+        if data:
+            data["pk"] = data.get("pk", data.get("pk_id"))
+            return data
+        logger.error("user_stream_collector: empty stream_rows, falling back: %r", resp)
+        if username:
+            self.user_stream_by_username_v1(username)
+        elif id:
+            self.user_stream_by_id_v1(id)
+        else:
+            raise UserNotFound(code_error=1257)
+        return self.last_json
+
+    def user_stream_by_id_flat(self, user_id: str) -> dict:
+        """
+        Flatten the streamed profile envelope for a target user pk
+        into a single user dict.
+
+        Convenience wrapper: calls :meth:`user_stream_by_id_v1` and
+        merges all ``stream_rows[*].user`` partial payloads in order.
+
+        Parameters
+        ----------
+        user_id: str
+            Target user pk.
+
+        Returns
+        -------
+        dict
+            Merged user dict (with ``pk`` resolved from ``pk`` or
+            ``pk_id`` whichever IG provided).
+        """
+        resp = self.user_stream_by_id_v1(user_id)
+        return self._user_stream_collector(resp, id=user_id)
+
+    def user_stream_by_username_flat(self, username: str) -> dict:
+        """
+        Flatten the streamed profile envelope for a target username
+        into a single user dict.
+
+        Convenience wrapper: calls :meth:`user_stream_by_username_v1`
+        and merges all ``stream_rows[*].user`` partial payloads in
+        order.
+
+        Parameters
+        ----------
+        username: str
+            Target IG username.
+
+        Returns
+        -------
+        dict
+            Merged user dict.
+        """
+        resp = self.user_stream_by_username_v1(username)
+        return self._user_stream_collector(resp, username=username)
+
+    def user_web_profile_info_v1(self, username: str) -> dict:
+        """
+        Web-scraper-style profile fetch via the private API.
+
+        ``GET /users/web_profile_info/?username={username}`` — the same
+        payload shape as the public ``api/v1/users/web_profile_info/``
+        endpoint, but routed through the private host so it can carry
+        a logged-in session and bypass some of the public-side rate
+        limiting. Returns the inner ``data`` block (already unwrapped).
+
+        Parameters
+        ----------
+        username: str
+            Target IG username.
+
+        Returns
+        -------
+        dict
+            The user payload (from ``response['data']``).
+
+        Raises
+        ------
+        UserNotFound
+            ``data`` is missing from the response or the request 404'd.
+        """
+        try:
+            result = self.private_request(
+                "users/web_profile_info/",
+                params={"username": username},
+            )
+        except (ClientNotFoundError, ClientError) as e:
+            raise UserNotFound(e, username=username, **self.last_json)
+        if data := result.get("data", {}):
+            return data
+        raise UserNotFound("Username not found", username=username, **self.last_json)

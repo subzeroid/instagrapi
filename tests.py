@@ -3310,6 +3310,97 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_user_stream_by_id_v1_sends_expected_endpoint_and_data(self):
+        client = Client()
+        with mock.patch.object(
+            client, "private_request", return_value={"stream_rows": []}
+        ) as private_request:
+            client.user_stream_by_id_v1("123")
+
+        private_request.assert_called_once_with(
+            "users/123/info_stream/",
+            data={
+                "is_prefetch": False,
+                "entry_point": "profile",
+                "from_module": "feed_timeline",
+            },
+        )
+
+    def test_user_stream_by_id_v1_promotes_not_found_to_user_not_found(self):
+        from instagrapi.exceptions import ClientNotFoundError, UserNotFound
+
+        client = Client()
+        client.last_json = {}
+        with mock.patch.object(
+            client,
+            "private_request",
+            side_effect=ClientNotFoundError("404", response=Mock(status_code=404)),
+        ):
+            with self.assertRaises(UserNotFound):
+                client.user_stream_by_id_v1("123")
+
+    def test_user_stream_by_username_v1_sends_expected_endpoint(self):
+        client = Client()
+        with mock.patch.object(
+            client, "private_request", return_value={"stream_rows": []}
+        ) as private_request:
+            client.user_stream_by_username_v1("Example")
+
+        endpoint = private_request.call_args.args[0]
+        self.assertEqual(endpoint, "users/example/usernameinfo_stream/")
+
+    def test_user_stream_by_id_flat_merges_rows_and_promotes_pk_id(self):
+        client = Client()
+        envelope = {
+            "stream_rows": [
+                {"user": {"pk_id": "9", "username": "alice", "is_private": False}},
+                {"user": {"full_name": "Alice Example"}},
+                {"user": {"username": "alice2"}},
+            ]
+        }
+        with mock.patch.object(client, "user_stream_by_id_v1", return_value=envelope):
+            user = client.user_stream_by_id_flat("9")
+
+        self.assertEqual(user["username"], "alice2")
+        self.assertEqual(user["full_name"], "Alice Example")
+        self.assertEqual(user["pk"], "9")
+        self.assertEqual(user["pk_id"], "9")
+
+    def test_user_stream_by_username_flat_falls_back_when_empty(self):
+        client = Client()
+        client.last_json = {"sentinel": True}
+        with mock.patch.object(
+            client, "user_stream_by_username_v1", return_value={"stream_rows": []}
+        ) as stream_call:
+            result = client.user_stream_by_username_flat("alice")
+
+        # First call from _flat → empty → collector triggers second.
+        self.assertEqual(stream_call.call_count, 2)
+        self.assertEqual(result, {"sentinel": True})
+
+    def test_user_web_profile_info_v1_unwraps_data(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"data": {"pk": "9", "username": "alice"}},
+        ) as private_request:
+            user = client.user_web_profile_info_v1("alice")
+
+        private_request.assert_called_once_with(
+            "users/web_profile_info/", params={"username": "alice"}
+        )
+        self.assertEqual(user, {"pk": "9", "username": "alice"})
+
+    def test_user_web_profile_info_v1_raises_user_not_found_on_empty_data(self):
+        from instagrapi.exceptions import UserNotFound
+
+        client = Client()
+        client.last_json = {}
+        with mock.patch.object(client, "private_request", return_value={"data": {}}):
+            with self.assertRaises(UserNotFound):
+                client.user_web_profile_info_v1("missing")
+
 
 class TimelineRegressionTestCase(unittest.TestCase):
     @staticmethod
