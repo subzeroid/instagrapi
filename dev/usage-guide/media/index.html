@@ -1525,6 +1525,11 @@
 <td>Get media from PK via private mobile API</td>
 </tr>
 <tr>
+<td>media_info_v2(media_id: str)</td>
+<td>Media</td>
+<td>Alternative source for media info via <code>discover/media_metadata/</code> (<code>media_or_ad</code> payload). Useful as fallback when <code>media_info_v1</code> fails on certain ad-tagged or sponsored media. Strips <code>_userid</code> suffix automatically.</td>
+</tr>
+<tr>
 <td>user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0)</td>
 <td>List[Media]</td>
 <td>Get user media via public GraphQL API</td>

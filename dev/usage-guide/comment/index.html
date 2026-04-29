@@ -1026,6 +1026,11 @@
 <td>Ask Instagram whether a comment text is considered offensive</td>
 </tr>
 <tr>
+<td>media_check_offensive_comment_v2(media_id: str, comment: str)</td>
+<td>dict</td>
+<td>Lighter variant of <code>media_check_offensive_comment</code> — same endpoint without <code>with_action_data</code> wrapping; returns the raw payload so callers can inspect category / confidence flags beyond <code>is_offensive</code></td>
+</tr>
+<tr>
 <td>comment_like(comment_pk: int, revert: bool = False)</td>
 <td>bool</td>
 <td>Like a comment</td>
