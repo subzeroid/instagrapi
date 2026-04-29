@@ -973,6 +973,34 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         self.assertIn("Challenge code required", str(cm.exception))
         sleep.assert_not_called()
 
+    def test_change_password_step_does_not_leak_password_to_stdout_or_logs(self):
+        """CodeQL py/clear-text-logging-sensitive-data — the previous
+        implementation printed the new password to stdout. Verify
+        neither print(...) nor logger.info(...) carries the password."""
+        client = Client()
+        client.last_json = {
+            "message": "challenge_required",
+            "status": "ok",
+            "step_name": "change_password",
+            "challenge_context": "{}",
+        }
+        secret = "Sup3rS3cret-Pass@2026!"
+        client.change_password_handler = lambda username: secret
+
+        printed = []
+        with mock.patch("builtins.print", side_effect=printed.append):
+            with mock.patch.object(client, "bloks_change_password", return_value=True):
+                with self.assertLogs(client.logger.name, level="INFO") as log_ctx:
+                    result = client.challenge_resolve_simple("/dummy/")
+
+        self.assertTrue(result)
+        # Password must not leak to stdout via print(...).
+        for line in printed:
+            self.assertNotIn(secret, str(line))
+        # Or to logs via self.logger.info(...).
+        for record in log_ctx.records:
+            self.assertNotIn(secret, record.getMessage())
+
     def test_challenge_resolve_simple_ufac_www_bloks_raises_clear_manual_error(self):
         client = Client()
         client.username = "example"

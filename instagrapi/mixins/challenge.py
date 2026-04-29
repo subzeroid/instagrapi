@@ -141,8 +141,11 @@ class ChallengeResolveMixin:
         """
         result = self.last_json
         challenge_url = "https://i.instagram.com%s" % challenge_url
-        enc_password = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
-        instagram_ajax = hashlib.sha256(enc_password.encode()).hexdigest()[:12]
+        # IG's web flow tags requests with an "instagram_ajax" fingerprint
+        # derived from a timestamp seed. Despite the leading "#PWD_..." marker,
+        # this string contains no password — only the current epoch.
+        ajax_seed = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
+        instagram_ajax = hashlib.sha256(ajax_seed.encode()).hexdigest()[:12]
         session = requests.Session()
         session.verify = False  # fix SSLError/HTTPSConnectionPool
         session.proxies = self.private.proxies
@@ -289,9 +292,9 @@ class ChallengeResolveMixin:
             "https://i.instagram.com%s" % forward,
             {
                 "choice": 0,  # I AGREE
-                "enc_new_password1": enc_password,
+                "enc_new_password1": ajax_seed,
                 "new_password1": "",
-                "enc_new_password2": enc_password,
+                "enc_new_password2": ajax_seed,
                 "new_password2": "",
             },
         ).json()
@@ -532,8 +535,12 @@ class ChallengeResolveMixin:
                         if key != "message"
                     },
                 )
-            print(
-                f'Password entered "{pwd}" for {self.username} ({attempt} attempts by {wait_seconds} seconds)'
+            self.logger.info(
+                "New password (%d chars) entered for %s (%d attempts by %d seconds)",
+                len(pwd),
+                self.username,
+                attempt,
+                wait_seconds,
             )
             return self.bloks_change_password(pwd, self.last_json["challenge_context"])
         elif step_name == "ufac_www_bloks":
