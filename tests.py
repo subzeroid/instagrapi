@@ -486,8 +486,8 @@ class LocationMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(location.external_id, 108835465815492)
 
 
-class HikerNextHardeningTestCase(unittest.TestCase):
-    """Hardening fixes ported from the hiker-next instagrapi fork:
+class HardeningRegressionTestCase(unittest.TestCase):
+    """Hardening fixes for malformed / edge-case IG responses:
     extract_story_v1 fallbacks, _send_private_request 401/404 handling,
     and hashtag-chunk malformed-node skipping."""
 
