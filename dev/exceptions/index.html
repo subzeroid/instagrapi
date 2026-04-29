@@ -1637,6 +1637,11 @@
 <td>ClientError</td>
 <td>Occurs when Instagram returns message with status=fail with details</td>
 </tr>
+<tr>
+<td>RelatedProfileRequired</td>
+<td>ClientError</td>
+<td>Raised by <code>user_related_profiles_gql</code> on empty results when caller has set <code>client.num_retry &lt; 4</code> (opt-in retry signal)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="proxy-exceptions">Proxy Exceptions</h2>

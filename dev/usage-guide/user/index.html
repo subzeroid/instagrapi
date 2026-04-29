@@ -1138,6 +1138,16 @@
 <td>dict</td>
 <td>Expanded social-context fields for chained suggestion ids (<code>discover/fetch_suggestion_details/</code>)</td>
 </tr>
+<tr>
+<td>discover_recommended_accounts_for_category_v1(user_id: str)</td>
+<td>dict</td>
+<td>Business-category-similar accounts: extracts <code>category_id</code> from the target's stream payload, then calls <code>discover/recommended_accounts_for_category/</code></td>
+</tr>
+<tr>
+<td>user_related_profiles_gql(user_id: str)</td>
+<td>List[UserShort]</td>
+<td>Related profiles via public GraphQL <code>edge_chaining</code> (legacy <code>query_hash</code>, gated by IG — prefer <code>chaining</code> for reliability)</td>
+</tr>
 </tbody>
 </table>
 <p>Lookup helpers:</p>
