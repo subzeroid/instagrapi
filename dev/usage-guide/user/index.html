@@ -1162,6 +1162,43 @@
 </tr>
 </tbody>
 </table>
+<p>Streamed profile fetch (raw payloads, app-side surface):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user_stream_by_id_v1(user_id: str)</td>
+<td>dict</td>
+<td>Streamed profile envelope by pk (<code>users/{user_id}/info_stream/</code>)</td>
+</tr>
+<tr>
+<td>user_stream_by_username_v1(username: str)</td>
+<td>dict</td>
+<td>Streamed profile envelope by username (<code>users/{username}/usernameinfo_stream/</code>)</td>
+</tr>
+<tr>
+<td>user_stream_by_id_flat(user_id: str)</td>
+<td>dict</td>
+<td>Same as <code>_v1</code> but <code>stream_rows[*].user</code> partials merged into a single dict</td>
+</tr>
+<tr>
+<td>user_stream_by_username_flat(username: str)</td>
+<td>dict</td>
+<td>Same as <code>_v1</code> but <code>stream_rows[*].user</code> partials merged into a single dict</td>
+</tr>
+<tr>
+<td>user_web_profile_info_v1(username: str)</td>
+<td>dict</td>
+<td><code>users/web_profile_info/?username=...</code> via the private host (logged-in session, bypasses public-side rate limiting)</td>
+</tr>
+</tbody>
+</table>
 <p>Low level methods:</p>
 <table>
 <thead>
