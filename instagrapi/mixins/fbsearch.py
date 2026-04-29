@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from instagrapi.extractors import (
     extract_hashtag_v1,
@@ -99,3 +99,147 @@ class FbSearchMixin:
             if "keyword" in item.keys():
                 data.append((item.get("client_time", None), item["keyword"]))
         return data
+
+    def fbsearch_accounts_v2(
+        self, query: str, page_token: Optional[str] = None
+    ) -> dict:
+        """
+        Search accounts via the v2 SERP endpoint.
+
+        ``GET /fbsearch/account_serp/`` — the surface IG's app uses for
+        the "Accounts" tab inside search. Returns the raw payload with
+        the full ``users`` list plus pagination cursor.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        page_token: Optional[str], default None
+            Pagination cursor from a previous response.
+
+        Returns
+        -------
+        dict
+            Raw account-serp payload (``users``, ``has_more``,
+            ``next_page_token``, etc.).
+        """
+        params = {
+            "search_surface": "account_serp",
+            "timezone_offset": self.timezone_offset,
+            "query": query,
+        }
+        if page_token:
+            params["page_token"] = page_token
+        return self.private_request("fbsearch/account_serp/", params=params)
+
+    def fbsearch_reels_v2(
+        self,
+        query: str,
+        reels_max_id: Optional[str] = None,
+        rank_token: Optional[str] = None,
+    ) -> dict:
+        """
+        Search reels via the v2 SERP endpoint.
+
+        ``GET /fbsearch/reels_serp/`` — the surface IG's app uses for
+        the "Reels" tab inside search.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        reels_max_id: Optional[str], default None
+            Pagination cursor for the next page of reels.
+        rank_token: Optional[str], default None
+            Optional client-side ranking token (forwarded to IG to
+            keep ordering stable across paginated calls).
+
+        Returns
+        -------
+        dict
+            Raw reels-serp payload.
+        """
+        params = {
+            "search_surface": "clips_search_page",
+            "timezone_offset": self.timezone_offset,
+            "query": query,
+        }
+        if reels_max_id:
+            params["reels_max_id"] = reels_max_id
+        if rank_token:
+            params["rank_token"] = rank_token
+        return self.private_request("fbsearch/reels_serp/", params=params)
+
+    def fbsearch_topsearch_v2(
+        self,
+        query: str,
+        next_max_id: Optional[str] = None,
+        reels_max_id: Optional[str] = None,
+        rank_token: Optional[str] = None,
+    ) -> dict:
+        """
+        Blended search (accounts + hashtags + media + reels) via the
+        v2 SERP endpoint.
+
+        ``GET /fbsearch/top_serp/`` — the surface IG's app uses for the
+        default "Top" tab inside search.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        next_max_id: Optional[str], default None
+            Pagination cursor for the next page of results.
+        reels_max_id: Optional[str], default None
+            Pagination cursor for the embedded reels carousel.
+        rank_token: Optional[str], default None
+            Optional client-side ranking token. When provided overrides
+            the default ``self.rank_token``.
+
+        Returns
+        -------
+        dict
+            Raw top-serp payload.
+        """
+        params = {
+            "search_surface": "top_serp",
+            "timezone_offset": self.timezone_offset,
+            "query": query,
+            "rank_token": self.rank_token,
+        }
+        if next_max_id:
+            params["next_max_id"] = next_max_id
+        if rank_token:
+            params["rank_token"] = rank_token
+        if reels_max_id:
+            params["reels_max_id"] = reels_max_id
+        return self.private_request("fbsearch/top_serp/", params=params)
+
+    def fbsearch_typehead(self, query: str) -> List[dict]:
+        """
+        Typeahead user suggestions via the streaming endpoint.
+
+        ``GET /fbsearch/typeahead_stream/`` — convenience wrapper that
+        flattens the ``stream_rows`` envelope into a flat list of user
+        dicts (each row contains a list of users; rows are
+        concatenated).
+
+        Parameters
+        ----------
+        query: str
+            Partial query string.
+
+        Returns
+        -------
+        List[dict]
+            Flat list of suggested user dicts.
+        """
+        params = {
+            "search_surface": "typeahead_search_page",
+            "timezone_offset": self.timezone_offset,
+            "query": query,
+            "context": "blended",
+        }
+        res = self.private_request("fbsearch/typeahead_stream/", params=params)
+        rows = res.get("stream_rows", []) or []
+        return [user for row in rows for user in row.get("users", [])]
