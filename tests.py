@@ -2648,6 +2648,47 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
 
         self.assertFalse(thread.is_close_friend_thread)
 
+    def test_direct_thread_parses_when_optional_fields_missing(self):
+        """IG omits business_thread_folder / read_state / assigned_admin_id /
+        shh_mode_enabled in older inbox shapes and Threads-app threads.
+        Parser must not raise ValidationError on those payloads."""
+        thread = extract_direct_thread(
+            {
+                "thread_v2_id": "1",
+                "thread_id": "2",
+                "items": [],
+                "users": [
+                    {
+                        "pk": "3",
+                        "username": "example",
+                        "profile_pic_url": "https://example.com/pic.jpg",
+                    }
+                ],
+                "left_users": [],
+                "admin_user_ids": [],
+                "last_activity_at": 1761953663000000,
+                "muted": False,
+                "named": False,
+                "canonical": False,
+                "pending": False,
+                "archived": False,
+                "thread_type": "private",
+                "thread_title": "",
+                "folder": 0,
+                "vc_muted": False,
+                "is_group": False,
+                "mentions_muted": False,
+                "approval_required_for_new_members": False,
+                "input_mode": 0,
+                "last_seen_at": {},
+            }
+        )
+
+        self.assertIsNone(thread.business_thread_folder)
+        self.assertIsNone(thread.read_state)
+        self.assertIsNone(thread.assigned_admin_id)
+        self.assertIsNone(thread.shh_mode_enabled)
+
 
 class DirectMixinRegressionTestCase(unittest.TestCase):
     def build_client(self):

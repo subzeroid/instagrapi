@@ -925,11 +925,11 @@ class DirectThread(TypesBaseModel):
     mentions_muted: bool
     approval_required_for_new_members: bool
     input_mode: int
-    business_thread_folder: int
-    read_state: int
+    business_thread_folder: Optional[int] = None
+    read_state: Optional[int] = None
     is_close_friend_thread: bool = False
-    assigned_admin_id: int
-    shh_mode_enabled: bool
+    assigned_admin_id: Optional[int] = None
+    shh_mode_enabled: Optional[bool] = None
     last_seen_at: Dict[str, LastSeenInfo] = {}
 
     def is_seen(self, user_id: str):
