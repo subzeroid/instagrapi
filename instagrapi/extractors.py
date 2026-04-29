@@ -584,6 +584,12 @@ def extract_story_v1(data):
     story["user"] = extract_user_short(story.get("user"))
     story["sponsor_tags"] = [tag["sponsor"] for tag in story.get("sponsor_tags", [])]
     story["is_paid_partnership"] = story.get("is_paid_partnership")
+    if not story.get("code"):
+        story["code"] = InstagramIdCodec.encode(story["pk"])
+    if not story.get("taken_at"):
+        story["taken_at"] = story.get("device_timestamp") or story.get(
+            "taken_at_timestamp"
+        )
     return Story(**story)
 
 

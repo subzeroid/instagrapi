@@ -20,6 +20,7 @@ from instagrapi.exceptions import (
     ClientNotFoundError,
     ClientRequestTimeout,
     ClientThrottledError,
+    ClientUnauthorizedError,
     FeedbackRequired,
     InvalidMediaId,
     InvalidTargetUser,
@@ -494,7 +495,18 @@ class PrivateRequestMixin:
             elif e.response.status_code == 429:
                 self.logger.warning("Status 429: Too many requests")
                 raise ClientThrottledError(e, response=e.response, **last_json)
+            elif e.response.status_code == 401:
+                self.logger.warning("Status 401: Unauthorized %s", endpoint)
+                raise ClientUnauthorizedError(e, response=e.response, **last_json)
             elif e.response.status_code == 404:
+                if e.response.content == b"Not Found":
+                    # Masked challenge (often on /media/.../comments/) — IG
+                    # returns the bare body "Not Found" instead of a JSON
+                    # challenge envelope. Surface it as ChallengeRequired so
+                    # callers can resolve it instead of treating the resource
+                    # as missing.
+                    self.logger.warning("Status 404 (masked challenge): %s", endpoint)
+                    raise ChallengeRequired(**last_json)
                 self.logger.warning("Status 404: Endpoint %s does not exist", endpoint)
                 raise ClientNotFoundError(e, response=e.response, **last_json)
             elif e.response.status_code == 408:
