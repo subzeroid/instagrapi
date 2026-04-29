@@ -8,28 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/development-guide/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/search/">
       
       
-        <link rel="prev" href="../usage-guide/best-practices/">
+        <link rel="prev" href="../notes/">
       
       
-        <link rel="next" href="../exceptions/">
+        <link rel="next" href="../story/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>Development Guide - instagrapi Documentation</title>
+        <title>Search - instagrapi Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -48,11 +48,11 @@
       
     
     
-      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../css/mkdocstrings.css">
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development-guide" class="md-skip">
+        <a href="#search" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +90,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+    <a href="../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Development Guide
+              Search
             
           </span>
         </div>
@@ -200,7 +200,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+    <a href="../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -230,7 +230,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -257,7 +257,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -281,18 +281,20 @@
       
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -313,7 +315,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -331,7 +333,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/fundamentals/" class="md-nav__link">
+      <a href="../fundamentals/" class="md-nav__link">
         
   
   
@@ -359,7 +361,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/interactions/" class="md-nav__link">
+      <a href="../interactions/" class="md-nav__link">
         
   
   
@@ -387,7 +389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/totp/" class="md-nav__link">
+      <a href="../totp/" class="md-nav__link">
         
   
   
@@ -415,7 +417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/challenge_resolver/" class="md-nav__link">
+      <a href="../challenge_resolver/" class="md-nav__link">
         
   
   
@@ -443,7 +445,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/handle_exception/" class="md-nav__link">
+      <a href="../handle_exception/" class="md-nav__link">
         
   
   
@@ -471,7 +473,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/collection/" class="md-nav__link">
+      <a href="../collection/" class="md-nav__link">
         
   
   
@@ -499,7 +501,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/comment/" class="md-nav__link">
+      <a href="../comment/" class="md-nav__link">
         
   
   
@@ -527,7 +529,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/direct/" class="md-nav__link">
+      <a href="../direct/" class="md-nav__link">
         
   
   
@@ -555,7 +557,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/hashtag/" class="md-nav__link">
+      <a href="../hashtag/" class="md-nav__link">
         
   
   
@@ -583,7 +585,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/highlight/" class="md-nav__link">
+      <a href="../highlight/" class="md-nav__link">
         
   
   
@@ -611,7 +613,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/insight/" class="md-nav__link">
+      <a href="../insight/" class="md-nav__link">
         
   
   
@@ -639,7 +641,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/location/" class="md-nav__link">
+      <a href="../location/" class="md-nav__link">
         
   
   
@@ -667,7 +669,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/media/" class="md-nav__link">
+      <a href="../media/" class="md-nav__link">
         
   
   
@@ -695,7 +697,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/notes/" class="md-nav__link">
+      <a href="../notes/" class="md-nav__link">
         
   
   
@@ -720,10 +722,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../usage-guide/search/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -739,6 +768,48 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#v2-serp-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v2 SERP endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#other-search-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other search helpers
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -751,7 +822,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/story/" class="md-nav__link">
+      <a href="../story/" class="md-nav__link">
         
   
   
@@ -779,7 +850,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/track/" class="md-nav__link">
+      <a href="../track/" class="md-nav__link">
         
   
   
@@ -807,7 +878,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/user/" class="md-nav__link">
+      <a href="../user/" class="md-nav__link">
         
   
   
@@ -835,7 +906,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/account/" class="md-nav__link">
+      <a href="../account/" class="md-nav__link">
         
   
   
@@ -870,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../usage-guide/best-practices/" class="md-nav__link">
+      <a href="../best-practices/" class="md-nav__link">
         
   
   
@@ -894,37 +965,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development Guide
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../development-guide/" class="md-nav__link">
         
   
   
@@ -940,109 +984,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Docker
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debugging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Debugging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Testing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#setuppy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        setup.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#continuous-integration-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Continuous Integration Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1054,7 +995,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exceptions/" class="md-nav__link">
+      <a href="../../exceptions/" class="md-nav__link">
         
   
   
@@ -1101,10 +1042,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
+  <a href="#v2-serp-endpoints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker
+        v2 SERP endpoints
       
     </span>
   </a>
@@ -1112,71 +1053,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#debugging" class="md-nav__link">
+  <a href="#other-search-helpers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Debugging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#testing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Testing
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Testing">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#stages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Stages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#setuppy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        setup.py
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#continuous-integration-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Continuous Integration Pipeline
+        Other search helpers
       
     </span>
   </a>
@@ -1203,67 +1083,99 @@
   
 
 
-<h1 id="development-guide">Development Guide</h1>
-<p>Welcome! Thank you for wanting to make the project better. This section provides an overview on how repository structure
-and how to work with the code base.</p>
-<p>Before you dive into this, it is best to read:</p>
-<ul>
-<li>The <a href="https://github.com/subzeroid/instagrapi/blob/master/CONTRIBUTING.md">Contributing guide</a></li>
-</ul>
-<h2 id="docker">Docker</h2>
-<p>The <code>instagrapi</code> project uses Docker to ease setting up a consistent development environment. The Docker documentation has
-details on how to <a href="https://docs.docker.com/install/">install docker</a> on your computer.</p>
-<p>Once that is configured, the test suite can be run locally:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="nb">test</span>
+<h1 id="search">Search</h1>
+<p>Helpers for the Facebook Search (<code>fbsearch/</code>) surface — user search, blended top results, hashtag/place lookups, and typeahead suggestions.</p>
+<h2 id="v2-serp-endpoints">v2 SERP endpoints</h2>
+<p>The <code>*_v2</code> methods hit the same <code>fbsearch/&lt;tab&gt;_serp/</code> endpoints the official Instagram app uses to render the Search → Top / Accounts / Reels tabs. They return raw payloads so callers can drive their own pagination.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fbsearch_accounts_v2(query: str, page_token: str = None)</code></td>
+<td><code>dict</code></td>
+<td>"Accounts" tab — <code>fbsearch/account_serp/</code>. Pagination via <code>next_page_token</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_reels_v2(query: str, reels_max_id: str = None, rank_token: str = None)</code></td>
+<td><code>dict</code></td>
+<td>"Reels" tab — <code>fbsearch/reels_serp/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_topsearch_v2(query: str, next_max_id: str = None, reels_max_id: str = None, rank_token: str = None)</code></td>
+<td><code>dict</code></td>
+<td>Default "Top" blended tab — <code>fbsearch/top_serp/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_typehead(query: str)</code></td>
+<td><code>List[dict]</code></td>
+<td>Typeahead user suggestions, flattened from the <code>stream_rows</code> envelope returned by <code>fbsearch/typeahead_stream/</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Top tab — first page</span>
+<span class="n">top</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_topsearch_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+
+<span class="c1"># Accounts — paginate</span>
+<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">page_token</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">&quot;next_page_token&quot;</span><span class="p">])</span>
+
+<span class="c1"># Reels — paginate</span>
+<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">reels_max_id</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">&quot;reels_max_id&quot;</span><span class="p">])</span>
+
+<span class="c1"># Typeahead — flat list of user dicts</span>
+<span class="n">users</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_typehead</span><span class="p">(</span><span class="s2">&quot;py&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>If you want to be able to execute code in the container:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>devbox
-<span class="o">(</span>your<span class="w"> </span>code<span class="w"> </span>here<span class="o">)</span>
-</code></pre></div>
-<p>In the devbox environment you'll be able to enter a python shell and import <code>instagrapi</code> or any dependencies.</p>
-<h2 id="debugging">Debugging</h2>
-<p>The docker container has <a href="https://github.com/pdbpp/pdbpp">pdb++</a> install that can be used as a debugger. (However, you are welcome to set up
-a different debugger if you would like.)</p>
-<p>This allows you to easily create a breakpoint anywhere in the code.</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">my_function</span><span class="p">():</span>
-    <span class="nb">breakpoint</span><span class="p">()</span>
-    <span class="o">...</span>
-</code></pre></div>
-<p>When your the code, you will drop into an interactive <code>pdb++</code> debugger.</p>
-<p>See the documentation on <a href="https://docs.python.org/3/library/pdb.html">pdb</a> and <a href="https://github.com/pdbpp/pdbpp#usage">pdb++</a> for more information.</p>
-<h2 id="testing">Testing</h2>
-<p>You'll be unable to merge code unless the linting and tests pass. You can run these in your container via:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="nb">test</span>
-</code></pre></div>
-<p>This will run the same tests, linting, and code coverage that are run by the CI pipeline. The only difference is that,
-when run locally, <code>black</code> and <code>isort</code> are configured to automatically correct issues they detect.</p>
-<p>Generally we should endeavor to write tests for every feature. Every new feature branch should increase the test
-coverage rather than decreasing it.</p>
-<p>We use <a href="https://docs.pytest.org/en/latest/">pytest</a> as our testing framework.</p>
-<h4 id="stages">Stages</h4>
-<p>To customize / override a specific testing stage, please read the documentation specific to that tool:</p>
-<ol>
-<li><a href="https://docs.pytest.org/en/latest/">PyTest</a></li>
-<li><a href="https://mypy.readthedocs.io/en/stable/">MyPy</a></li>
-<li><a href="https://pycqa.github.io/isort/">Isort</a></li>
-<li><a href="http://flake8.pycqa.org/en/stable/">Flake8</a></li>
-<li><a href="https://bandit.readthedocs.io/en/stable/">Bandit</a></li>
-</ol>
-<h3 id="setuppy"><code>setup.py</code></h3>
-<p>Setuptools is used to packaging the library.</p>
-<p><strong><code>setup.py</code> must not import anything from the package</strong> When installing from source, the user may not have the
-packages dependencies installed, and importing the package is likely to raise an <code>ImportError</code>. For this reason, the
-<strong>package version should be obtained without importing</strong>. This is explains why <code>setup.py</code> uses a regular expression to
-grabs the version from <code>__init__.py</code> without actually importing.</p>
-<h3 id="requirements">Requirements</h3>
-<ul>
-<li><strong>requirements.txt</strong> - Lists all direct dependencies (packages imported by the library).</li>
-<li><strong>requirements-test.txt</strong> - Lists all direct requirements needed to run the test suite &amp; lints.</li>
-</ul>
-<p>This will trigger the CI system to build a wheel and a source distributions of the package and push them to
-<a href="https://pypi.org/project/gbq/">PyPI</a>.</p>
-<h2 id="continuous-integration-pipeline">Continuous Integration Pipeline</h2>
-<p>TODO: Add CI documentation.</p>
+<h2 id="other-search-helpers">Other search helpers</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>search_users(query: str)</code></td>
+<td><code>List[UserShort]</code></td>
+<td>User search via <code>users/search/</code>.</td>
+</tr>
+<tr>
+<td><code>search_hashtags(query: str)</code></td>
+<td><code>List[Hashtag]</code></td>
+<td>Hashtag search via <code>tags/search/</code>.</td>
+</tr>
+<tr>
+<td><code>search_music(query: str)</code></td>
+<td><code>List[Track]</code></td>
+<td>Music/audio search via <code>music/audio_global_search/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_topsearch_flat(query: str)</code></td>
+<td><code>List[dict]</code></td>
+<td>Legacy flat top-search via <code>fbsearch/topsearch_flat/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_suggested_profiles(user_id: str)</code></td>
+<td><code>List[UserShort]</code></td>
+<td>Suggested profiles via <code>fbsearch/accounts_recs/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_recent()</code></td>
+<td><code>List[Tuple[int, ...]]</code></td>
+<td>Recently searched items.</td>
+</tr>
+</tbody>
+</table>
+<p>For places, see <a href="../location/">Location</a>.</p>
 
 
 
@@ -1313,10 +1225,10 @@ grabs the version from <code>__init__.py</code> without actually importing.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
