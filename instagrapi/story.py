@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 from typing import List
@@ -22,6 +23,19 @@ try:
     from PIL import Image
 except ImportError:
     raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
+
+
+def _make_tmp_path(suffix: str) -> str:
+    """Create a uniquely-named tempfile path safely.
+
+    ``tempfile.mktemp`` is deprecated and prone to TOCTOU races. We
+    use ``mkstemp`` to atomically create the file under a unique
+    name, then close the file descriptor — the path is reserved and
+    safe for the caller to reopen.
+    """
+    fd, path = tempfile.mkstemp(suffix=suffix)
+    os.close(fd)
+    return path
 
 
 class StoryBuilder:
@@ -181,7 +195,7 @@ class StoryBuilder:
         if getattr(clip, "duration", None):
             if duration > int(clip.duration) or not duration:
                 duration = int(clip.duration)
-        destination = tempfile.mktemp(".mp4")
+        destination = _make_tmp_path(".mp4")
         cvc = (
             CompositeVideoClip(clips, size=(self.width, self.height))
             .set_fps(24)
@@ -191,7 +205,7 @@ class StoryBuilder:
         paths = []
         if duration > 15:
             for i in range(duration // 15 + (1 if duration % 15 else 0)):
-                path = tempfile.mktemp(".mp4")
+                path = _make_tmp_path(".mp4")
                 start = i * 15
                 rest = duration - start
                 end = start + (rest if rest < 15 else 15)
