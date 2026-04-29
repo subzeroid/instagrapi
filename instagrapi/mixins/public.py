@@ -119,6 +119,38 @@ class PublicRequestMixin:
         self.public.mount("https://", adapter)
         self.public.mount("http://", adapter)
 
+    def public_head(self, url: str, follow_redirects: bool = False):
+        """
+        Issue a ``HEAD`` request through the public session — useful
+        for resolving short-link redirects without downloading the
+        body (e.g. ``instagram.com/share/...`` link expansion).
+
+        Bypasses :meth:`public_request`'s GET/POST machinery so the
+        per-call ``follow_redirects`` flag actually takes effect.
+
+        Parameters
+        ----------
+        url: str
+            Absolute URL.
+        follow_redirects: bool, default False
+            Whether to follow 3xx responses. Default ``False`` means
+            callers can read ``response.headers["location"]`` to
+            inspect the redirect target without actually fetching it.
+
+        Returns
+        -------
+        requests.Response
+            The raw response. Status code typically 200 / 301 / 302 /
+            307 / 308.
+        """
+        self.public_requests_count += 1
+        return self.public.head(
+            url,
+            allow_redirects=follow_redirects,
+            proxies=self.public.proxies,
+            timeout=self.request_timeout,
+        )
+
     def public_request(
         self,
         url,

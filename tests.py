@@ -371,6 +371,58 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertIs(result, expected)
         fallback.assert_called_once_with("2110901750722920960")
 
+    def test_public_head_defaults_to_no_redirect_follow(self):
+        client = Client()
+        before = client.public_requests_count
+        response = Mock(status_code=302, headers={"location": "https://target/"})
+
+        with mock.patch.object(client.public, "head", return_value=response) as head:
+            result = client.public_head("https://instagram.com/share/abc")
+
+        self.assertIs(result, response)
+        self.assertEqual(client.public_requests_count, before + 1)
+        head.assert_called_once()
+        kwargs = head.call_args.kwargs
+        self.assertFalse(kwargs["allow_redirects"])
+
+    def test_public_head_follow_redirects_override(self):
+        client = Client()
+        response = Mock(status_code=200)
+
+        with mock.patch.object(client.public, "head", return_value=response) as head:
+            client.public_head("https://instagram.com/share/abc", follow_redirects=True)
+
+        kwargs = head.call_args.kwargs
+        self.assertTrue(kwargs["allow_redirects"])
+
+
+class TrackMixinRegressionTestCase(unittest.TestCase):
+    def test_track_stream_info_by_id_sends_expected_endpoint_and_payload(self):
+        client = Client()
+        with mock.patch.object(
+            client, "private_request", return_value={}
+        ) as private_request:
+            client.track_stream_info_by_id("18000000000000000")
+
+        private_request.assert_called_once()
+        path, data = private_request.call_args.args
+        self.assertEqual(path, "clips/stream_clips_pivot_page/")
+        self.assertEqual(data["pivot_page_type"], "audio")
+        self.assertEqual(data["music_page"]["tab_type"], "clips")
+        self.assertEqual(data["music_page"]["audio_asset_id"], "18000000000000000")
+        self.assertEqual(data["music_page"]["audio_cluster_id"], "18000000000000000")
+        self.assertNotIn("max_id", data["music_page"])
+
+    def test_track_stream_info_by_id_forwards_max_id(self):
+        client = Client()
+        with mock.patch.object(
+            client, "private_request", return_value={}
+        ) as private_request:
+            client.track_stream_info_by_id("18000000000000000", max_id="next-page")
+
+        _, data = private_request.call_args.args
+        self.assertEqual(data["music_page"]["max_id"], "next-page")
+
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
     def test_get_note_helpers_by_user(self):

@@ -6,6 +6,7 @@ Viewing and downloading tracks
 | --- | --- | --- |
 | track_info_by_canonical_id(music_canonical_id: str) | Track | Get track by `music_canonical_id` |
 | track_info_by_id(track_id: str, max_id: str = "") | dict | Get raw track payload by internal Instagram track ID |
+| track_stream_info_by_id(track_id: str, max_id: str = "") | dict | Streamed clips-pivot page (`clips/stream_clips_pivot_page/`) — clips using this audio + audio-asset metadata, the surface IG's app uses to render the "Audio" page |
 | track_download_by_url(url: str, filename: str = "", folder: Path = "") | Path | Download track by URL |
 | search_music(query: str) | List[Track] | Search music and return track objects |
 

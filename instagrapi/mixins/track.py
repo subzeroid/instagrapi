@@ -45,9 +45,9 @@ class TrackMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
-    def _track_request(self, data: Dict[str, Any]) -> Dict:
+    def _track_request(self, data: Dict[str, Any], path: str = "clips/music/") -> Dict:
         try:
-            result = self.private_request("clips/music/", data)
+            result = self.private_request(path, data)
         except ClientError as e:
             if not self.last_json:
                 kw = {
@@ -104,3 +104,39 @@ class TrackMixin:
         if max_id:
             data["max_id"] = max_id
         return self._track_request(data)
+
+    def track_stream_info_by_id(self, track_id: str, max_id: str = "") -> Dict:
+        """
+        Fetch the streamed clips-pivot page for a given track id.
+
+        ``POST /clips/stream_clips_pivot_page/`` — the surface IG's app
+        uses to render the "Audio" page (clips that use this audio +
+        the audio-asset metadata). Returns the raw payload so the
+        caller can extract whatever they need (clip list, audio
+        cluster info, etc.).
+
+        Parameters
+        ----------
+        track_id: str
+            Track identifier (used as both ``audio_asset_id`` and
+            ``audio_cluster_id`` per IG's app behavior).
+        max_id: str, default ""
+            Pagination cursor for the next page of clips.
+
+        Returns
+        -------
+        Dict
+            Raw response.
+        """
+        data = {
+            "pivot_page_type": "audio",
+            "music_page": {
+                "tab_type": "clips",
+                "audio_asset_id": track_id,
+                "audio_cluster_id": track_id,
+            },
+            "_uuid": self.uuid,
+        }
+        if max_id:
+            data["music_page"]["max_id"] = max_id
+        return self._track_request(data, path="clips/stream_clips_pivot_page/")
