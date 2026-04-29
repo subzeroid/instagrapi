@@ -20,6 +20,7 @@
 | ClientUnknownError        | ClientError | Occurs when Instagram returns an unknown error
 | WrongCursorError          | ClientError | Occurs when the cursor for pagination is passed in the wrong format
 | ClientStatusFail          | ClientError | Occurs when Instagram returns message with status=fail with details
+| RelatedProfileRequired    | ClientError | Raised by `user_related_profiles_gql` on empty results when caller has set `client.num_retry < 4` (opt-in retry signal)
 
 ## Proxy Exceptions
 

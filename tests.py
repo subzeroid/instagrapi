@@ -3401,6 +3401,118 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             with self.assertRaises(UserNotFound):
                 client.user_web_profile_info_v1("missing")
 
+    def test_discover_recommended_accounts_extracts_category_id_from_stream(self):
+        client = Client()
+        stream_resp = {
+            "stream_rows": [
+                {"user": {"username": "alice"}},
+                {"user": {"category_id": 42, "is_business": True}},
+            ]
+        }
+
+        with mock.patch.object(
+            client, "user_stream_by_id_v1", return_value=stream_resp
+        ) as stream:
+            with mock.patch.object(
+                client, "private_request", return_value={"users": []}
+            ) as private_request:
+                client.discover_recommended_accounts_for_category_v1("9")
+
+        stream.assert_called_once_with("9")
+        private_request.assert_called_once_with(
+            "discover/recommended_accounts_for_category/",
+            params={"target_id": "9", "category_id": 42},
+        )
+
+    def test_discover_recommended_accounts_falls_through_with_none_category(self):
+        client = Client()
+        stream_resp = {
+            "stream_rows": [
+                {"user": {"username": "alice"}},
+                {"user": {"is_private": False}},
+            ]
+        }
+
+        with mock.patch.object(
+            client, "user_stream_by_id_v1", return_value=stream_resp
+        ):
+            with mock.patch.object(
+                client, "private_request", return_value={"users": []}
+            ) as private_request:
+                client.discover_recommended_accounts_for_category_v1("9")
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(params["target_id"], "9")
+        self.assertIsNone(params["category_id"])
+
+    def test_user_related_profiles_gql_extracts_edge_chaining_nodes(self):
+        client = Client()
+        gql_resp = {
+            "user": {
+                "edge_chaining": {
+                    "edges": [
+                        {
+                            "node": {
+                                "pk": "1",
+                                "username": "alice",
+                                "profile_pic_url": "https://example.com/a.jpg",
+                                "is_private": False,
+                            }
+                        },
+                        {
+                            "node": {
+                                "pk": "2",
+                                "username": "bob",
+                                "profile_pic_url": "https://example.com/b.jpg",
+                                "is_private": False,
+                            }
+                        },
+                    ]
+                }
+            }
+        }
+
+        with mock.patch.object(client, "public_graphql_request", return_value=gql_resp):
+            users = client.user_related_profiles_gql("9")
+
+        self.assertEqual(len(users), 2)
+        self.assertEqual([u.username for u in users], ["alice", "bob"])
+
+    def test_user_related_profiles_gql_raises_user_not_found_on_empty_response(self):
+        from instagrapi.exceptions import UserNotFound
+
+        client = Client()
+        with mock.patch.object(
+            client, "public_graphql_request", return_value={"user": None}
+        ):
+            with self.assertRaises(UserNotFound):
+                client.user_related_profiles_gql("9")
+
+    def test_user_related_profiles_gql_returns_empty_list_when_no_edges(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            return_value={"user": {"edge_chaining": {"edges": []}}},
+        ):
+            users = client.user_related_profiles_gql("9")
+
+        self.assertEqual(users, [])
+
+    def test_user_related_profiles_gql_raises_when_num_retry_under_threshold(self):
+        from instagrapi.exceptions import RelatedProfileRequired
+
+        client = Client()
+        # Opt into retry semantics by setting num_retry < 4.
+        client.num_retry = 0
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            return_value={"user": {"edge_chaining": {"edges": []}}},
+        ):
+            with self.assertRaises(RelatedProfileRequired):
+                client.user_related_profiles_gql("9")
+
 
 class TimelineRegressionTestCase(unittest.TestCase):
     @staticmethod

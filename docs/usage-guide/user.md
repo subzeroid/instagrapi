@@ -32,6 +32,8 @@ View a list of a user's medias, following and followers
 | close_friend_remove(user_id: str)             | bool                  | Remove from Close Friends List                               |
 | chaining(user_id: str)                        | dict                  | Suggested users for a profile (`discover/chaining/`) — same surface as the app's "Suggested for you" carousel |
 | fetch_suggestion_details(user_id: str, chained_ids: str) | dict       | Expanded social-context fields for chained suggestion ids (`discover/fetch_suggestion_details/`) |
+| discover_recommended_accounts_for_category_v1(user_id: str) | dict | Business-category-similar accounts: extracts `category_id` from the target's stream payload, then calls `discover/recommended_accounts_for_category/` |
+| user_related_profiles_gql(user_id: str)       | List[UserShort]       | Related profiles via public GraphQL `edge_chaining` (legacy `query_hash`, gated by IG — prefer `chaining` for reliability) |
 
 Lookup helpers:
 

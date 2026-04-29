@@ -349,9 +349,24 @@ class AgeEligibilityError(ClientError):
 
 class CaptchaChallengeRequired(ClientError):
     """Captcha challenge required, and no solver is configured or available."""
-    def __init__(self, message="Captcha challenge required, but no solver configured or available.", challenge_details=None, **kwargs):
+
+    def __init__(
+        self,
+        message="Captcha challenge required, but no solver configured or available.",
+        challenge_details=None,
+        **kwargs,
+    ):
         self.challenge_details = challenge_details if challenge_details else {}
         # Example of extracting common details:
         # self.site_key = self.challenge_details.get('site_key')
         # self.challenge_url = self.challenge_details.get('challenge_url') # URL where captcha is presented
         super().__init__(message, **kwargs)
+
+
+class RelatedProfileRequired(ClientError):
+    """Raised by user_related_profiles_gql when IG returns no related
+    profiles. Used as a retry signal — the method raises it only if
+    the caller has opted in by setting ``client.num_retry`` below 4;
+    otherwise it returns an empty list."""
+
+    pass
