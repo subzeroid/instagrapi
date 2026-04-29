@@ -289,6 +289,41 @@ class MediaMixin:
             raise e
         return extract_media_v1(result["items"].pop())
 
+    def media_info_v2(self, media_id: str) -> Media:
+        """
+        Get media via the discover-style metadata endpoint.
+
+        ``GET /discover/media_metadata/?media_id={pk}`` — alternative
+        source for media info that returns a ``media_or_ad`` payload.
+        Useful as a fallback when ``media_info_v1`` fails on certain
+        ad-tagged or sponsored media. Unlike ``media_info_v1``, this
+        endpoint expects only the numeric pk (the ``_userid`` suffix
+        is stripped automatically if you pass a full media_id).
+
+        Parameters
+        ----------
+        media_id: str
+            Media pk or full media_id (``pk_userid``).
+
+        Returns
+        -------
+        Media
+            Extracted via :func:`extract_media_v1`.
+
+        Raises
+        ------
+        MediaNotFound
+            ``media_or_ad`` was missing from the response.
+        """
+        media_id = str(media_id).split("_")[0]
+        result = self.private_request(
+            "discover/media_metadata/", params={"media_id": media_id}
+        )
+        media = result.get("media_or_ad")
+        if not media:
+            raise MediaNotFound(media_id=media_id, **(self.last_json or {}))
+        return extract_media_v1(media)
+
     def media_info(self, media_pk: str, use_cache: bool = True) -> Media:
         """
         Get Media Information from PK

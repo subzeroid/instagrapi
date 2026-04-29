@@ -8,6 +8,7 @@ Post comment, viewing, like and unlike comments
 | media_comments(media_id: str, amount: int = 20) | List\[Comment] | Get comments for media; pass `amount=0` to keep paginating until exhaustion |
 | media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of comments and the next `min_id` cursor |
 | media_check_offensive_comment(media_id: str, text: str) | bool | Ask Instagram whether a comment text is considered offensive |
+| media_check_offensive_comment_v2(media_id: str, comment: str) | dict | Lighter variant of `media_check_offensive_comment` — same endpoint without `with_action_data` wrapping; returns the raw payload so callers can inspect category / confidence flags beyond `is_offensive` |
 | comment_like(comment_pk: int, revert: bool = False) | bool | Like a comment |
 | comment_unlike(comment_pk: int) | bool | Unlike a comment |
 | comment_pin(media_id: str, comment_pk: int, revert: bool = False) | bool | Pin a comment on your media |

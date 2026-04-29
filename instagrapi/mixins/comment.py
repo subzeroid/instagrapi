@@ -181,6 +181,39 @@ class CommentMixin:
         )
         return result["is_offensive"]
 
+    def media_check_offensive_comment_v2(self, media_id: str, comment: str) -> dict:
+        """
+        Lighter-weight variant of :meth:`media_check_offensive_comment`
+        — returns the full IG payload instead of just the boolean.
+
+        Same endpoint (``POST /media/comment/check_offensive_comment/``)
+        but skips the ``with_action_data`` wrapping (no ``_csrftoken`` /
+        ``_uid`` / breadcrumb) and just sends
+        ``{comment_text, media_id, _uuid}`` directly. Closer to what
+        the IG app posts in practice. Returns the raw response so
+        callers can inspect any flags IG ships beyond ``is_offensive``
+        (e.g. category / confidence in newer payloads).
+
+        Parameters
+        ----------
+        media_id: str
+            Unique identifier of a Media.
+        comment: str
+            String to check.
+
+        Returns
+        -------
+        dict
+            Raw response payload.
+        """
+        assert self.user_id, "Login required"
+        data = {
+            "comment_text": comment,
+            "media_id": media_id,
+            "_uuid": self.uuid,
+        }
+        return self.private_request("media/comment/check_offensive_comment/", data=data)
+
     def comment_like(self, comment_pk: int, revert: bool = False) -> bool:
         """
         Like a comment on a media
