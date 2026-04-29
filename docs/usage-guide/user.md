@@ -30,6 +30,8 @@ View a list of a user's medias, following and followers
 | disable_stories_notifications(user_id: str)   | bool                  | Disable stories notifications of user                        |
 | close_friend_add(user_id: str)                | bool                  | Add to Close Friends List                                    |
 | close_friend_remove(user_id: str)             | bool                  | Remove from Close Friends List                               |
+| chaining(user_id: str)                        | dict                  | Suggested users for a profile (`discover/chaining/`) — same surface as the app's "Suggested for you" carousel |
+| fetch_suggestion_details(user_id: str, chained_ids: str) | dict       | Expanded social-context fields for chained suggestion ids (`discover/fetch_suggestion_details/`) |
 
 Lookup helpers:
 

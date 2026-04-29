@@ -12,6 +12,8 @@ from instagrapi.exceptions import (
     ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
+    InvalidTargetUser,
+    UnknownError,
     UserNotFound,
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
@@ -1445,3 +1447,76 @@ class UserMixin:
         creator_info = result.get("user", {}).pop("creator_info", {})
         user = extract_user_short(result.get("user", {}))
         return (user, creator_info)
+
+    def chaining(self, user_id: str) -> dict:
+        """
+        Get suggested users for a target user_id.
+
+        Hits Instagram's private ``discover/chaining/`` endpoint — the
+        same surface the official app uses to render the "Suggested
+        for you" carousel under a profile. Returns the raw payload so
+        the caller can decide what shape it wants (typically passed
+        straight into :meth:`fetch_suggestion_details` for the
+        expanded form).
+
+        Parameters
+        ----------
+        user_id: str
+            Target user pk.
+
+        Returns
+        -------
+        dict
+            Raw ``discover/chaining/`` response.
+
+        Raises
+        ------
+        InvalidTargetUser
+            Instagram refused chaining for this target ("Not eligible
+            for chaining."). Common on locked-down / private accounts
+            and recently-flagged users.
+        """
+        params = {
+            "module": "profile",
+            "target_id": str(user_id),
+            "profile_chaining_check": "false",
+            "eligible_for_threads_cta": "false",
+        }
+        try:
+            return self.private_request("discover/chaining/", params=params)
+        except UnknownError as e:
+            if str(e) == "Not eligible for chaining.":
+                raise InvalidTargetUser("Not eligible for chaining.") from e
+            raise
+
+    def fetch_suggestion_details(self, user_id: str, chained_ids: str) -> dict:
+        """
+        Fetch expanded details for chained suggestion ids.
+
+        Companion to :meth:`chaining`. Pass a comma-separated list of
+        user pks (typically the ``pk`` field of every entry in
+        ``chaining()['users']``) and Instagram returns the same users
+        with social-context fields filled in (mutual followers,
+        verification, friendship state, etc.).
+
+        Parameters
+        ----------
+        user_id: str
+            Target user pk that produced the chained ids.
+        chained_ids: str
+            Comma-separated list of suggested user pks.
+
+        Returns
+        -------
+        dict
+            Raw ``discover/fetch_suggestion_details/`` response.
+        """
+        params = {
+            "target_id": str(user_id),
+            "chained_ids": chained_ids,
+            "include_social_context": "1",
+        }
+        return self.private_request(
+            "discover/fetch_suggestion_details/",
+            params=params,
+        )

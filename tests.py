@@ -3133,6 +3133,71 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         params = private_request.call_args.kwargs["params"]
         self.assertNotIn("max_id", params)
 
+    def test_chaining_sends_expected_params_and_returns_payload(self):
+        client = Client()
+        expected = {"users": [{"pk": "9", "username": "suggested"}]}
+
+        with mock.patch.object(
+            client, "private_request", return_value=expected
+        ) as private_request:
+            result = client.chaining("123")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "discover/chaining/",
+            params={
+                "module": "profile",
+                "target_id": "123",
+                "profile_chaining_check": "false",
+                "eligible_for_threads_cta": "false",
+            },
+        )
+
+    def test_chaining_promotes_not_eligible_unknown_error(self):
+        from instagrapi.exceptions import InvalidTargetUser
+
+        client = Client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            side_effect=UnknownError("Not eligible for chaining."),
+        ):
+            with self.assertRaises(InvalidTargetUser) as cm:
+                client.chaining("123")
+
+        self.assertIn("Not eligible for chaining.", str(cm.exception))
+
+    def test_chaining_reraises_other_unknown_errors(self):
+        client = Client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            side_effect=UnknownError("Some other failure"),
+        ):
+            with self.assertRaises(UnknownError):
+                client.chaining("123")
+
+    def test_fetch_suggestion_details_sends_expected_params(self):
+        client = Client()
+        expected = {"users": []}
+
+        with mock.patch.object(
+            client, "private_request", return_value=expected
+        ) as private_request:
+            result = client.fetch_suggestion_details("123", "9,10,11")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "discover/fetch_suggestion_details/",
+            params={
+                "target_id": "123",
+                "chained_ids": "9,10,11",
+                "include_social_context": "1",
+            },
+        )
+
 
 class TimelineRegressionTestCase(unittest.TestCase):
     @staticmethod
