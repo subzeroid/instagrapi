@@ -69,10 +69,12 @@ test = [
     "isort==7.0.0",
     "bandit==1.8.6",
     "mike==2.2.0",
+    # mike implicitly imports pkg_resources from setuptools — see
+    # https://github.com/jimporter/mike/issues/148
+    "setuptools==82.0.1",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
-    "mkdocs-minify-html-plugin>=0.3.1",
-    "mkdocstrings==0.30.1",
+    "mkdocstrings[python]==1.0.4",
     "pytest-xdist==3.8.0",
     "pytest==9.0.3",
 ]

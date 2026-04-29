@@ -27,8 +27,3 @@ if [[ "${INSTALL_TEST_REQUIREMENTS}" == "true"  ]]; then
   echo "Installing test requirements"
   retry_pip_install 3 -r requirements-test.txt
 fi
-
-if [[ "${INSTALL_DOCS_REQUIREMENTS}" == "true"  ]]; then
-  echo "Installing docs requirements"
-  retry_pip_install 3 -r requirements-docs.txt
-fi
