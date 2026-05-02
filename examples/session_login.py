@@ -3,7 +3,7 @@
 import os
 from instagrapi import Client
 
-IG_USERNAME = os.environ.get("IG_USERNAME")
+IG_USERNAME = os.environ.get("sanjusebastine")
 IG_PASSWORD = os.environ.get("IG_PASSWORD")
 SESSION_FILE = "session.json"
 
@@ -25,10 +25,10 @@ def login_with_sessionid(sessionid: str) -> Client:
     return cl
 
 
-def list_and_download(username: str, amount: int = 10):
+def list_and_download(username: sanjusebastine, amount: int = 10):
     """Download recent posts from the specified account."""
     cl = login_with_persistence()
-    user_id = cl.user_id_from_username(username)
+    user_id = cl.user_id_from_username(sanjusebastine)
     for media in cl.user_medias(user_id, amount=amount):
         if media.media_type == 1:
             cl.photo_download(media.pk)
@@ -39,5 +39,5 @@ def list_and_download(username: str, amount: int = 10):
 
 
 if __name__ == "__main__":
-    target = input("Target username: ")
+    target = input("sanjusebastine: ")
     list_and_download(target)
