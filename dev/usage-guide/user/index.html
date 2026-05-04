@@ -1049,6 +1049,31 @@
 <td>Unfollow user</td>
 </tr>
 <tr>
+<td>user_follow_requests(amount: int = 0)</td>
+<td>List[UserShort]</td>
+<td>Get pending incoming follow requests</td>
+</tr>
+<tr>
+<td>user_follow_request_approve(user_id: str)</td>
+<td>bool</td>
+<td>Approve a pending incoming follow request</td>
+</tr>
+<tr>
+<td>user_follow_request_decline(user_id: str)</td>
+<td>bool</td>
+<td>Decline a pending incoming follow request</td>
+</tr>
+<tr>
+<td>user_follow_requests_approve(user_ids: List[str])</td>
+<td>Dict[str, bool]</td>
+<td>Approve pending incoming follow requests</td>
+</tr>
+<tr>
+<td>user_follow_requests_decline(user_ids: List[str])</td>
+<td>Dict[str, bool]</td>
+<td>Decline pending incoming follow requests</td>
+</tr>
+<tr>
 <td>user_id_from_username(username: str)</td>
 <td>int</td>
 <td>Get user_id by username</td>
@@ -1245,6 +1270,11 @@
 <td>Get user's following users information by Private Mobile API</td>
 </tr>
 <tr>
+<td>user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")</td>
+<td>Tuple[List[UserShort], str]</td>
+<td>Get pending incoming follow requests by Private Mobile API and max_id</td>
+</tr>
+<tr>
 <td>user_following_gql(user_id: str, amount: int = 0)</td>
 <td>List[UserShort]</td>
 <td>Get user's following information by Public Graphql API</td>
@@ -1261,6 +1291,8 @@
 </tr>
 </tbody>
 </table>
+<p>The batch follow request helpers call the single-user approve/decline endpoints for
+each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="n">dict_keys</span><span class="p">([</span><span class="mi">5563084402</span><span class="p">,</span> <span class="mi">43848984510</span><span class="p">,</span> <span class="mi">1498977320</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span>
