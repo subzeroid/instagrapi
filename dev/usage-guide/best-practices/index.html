@@ -930,10 +930,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#use-a-proxy" class="md-nav__link">
+  <a href="#use-a-stable-proxy-identity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Use a Proxy
+        Use a Stable Proxy Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#warm-accounts-gradually" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warm Accounts Gradually
       
     </span>
   </a>
@@ -1031,6 +1042,28 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Anti-Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#separate-library-bugs-from-operational-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Separate Library Bugs from Operational Blocks
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1145,10 +1178,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#use-a-proxy" class="md-nav__link">
+  <a href="#use-a-stable-proxy-identity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Use a Proxy
+        Use a Stable Proxy Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#warm-accounts-gradually" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warm Accounts Gradually
       
     </span>
   </a>
@@ -1250,6 +1294,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#common-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Anti-Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#separate-library-bugs-from-operational-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Separate Library Bugs from Operational Blocks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#use-sessions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1293,19 +1359,15 @@
 
 <h1 id="best-practices">Best Practices</h1>
 <p>This is a best practices guide around using the Instagram API so that you don't get rate limited or banned.</p>
-<h2 id="use-a-proxy">Use a Proxy</h2>
-<p>If you're getting errors like this</p>
+<h2 id="use-a-stable-proxy-identity">Use a Stable Proxy Identity</h2>
+<p>If you're getting errors like this:</p>
 <ul>
 <li>"The username you entered doesn't appear to belong to an account. Please check your username and try again."</li>
 </ul>
-<p>Or you notice that Instagram is sending you emails about a suspicious login attempt, you should consider using a proxy. You are getting rate limited by Instagram or they are suspicious of your location.</p>
-<p>You should have an IP address that you use consistently per user when making API requests. This will be
-less suspicious than using a different IP address every time you make a request.</p>
-<p>From our experience, here are safe limits we've seen for various actions:
-- using 10 accounts per IP address
-- publishing 4-16 posts for each account
-- publishing 24-48 stories</p>
-<p>The exact proxy provider matters less than consistency and quality. Here is the shape of using a proxy with <code>instagrapi</code>:</p>
+<p>Or you notice that Instagram is sending suspicious login emails, review the network identity for that account. Instagram may be rate limiting the IP, distrusting the login location, or challenging the account because the device/session and IP history do not look consistent.</p>
+<p>For production automation, the safest baseline is one account per stable proxy/IP. Reusing the same country, city, ASN/mobile carrier, device settings, and saved session is less suspicious than using a different IP address every time you make a request.</p>
+<p>Avoid treating any proxy type as a universal fix. Residential, mobile, ISP, and datacenter proxies can all fail if they are abused, shared too widely, or rotated aggressively. The exact provider matters less than consistency, reputation, and whether your request pattern fits the account history.</p>
+<p>Here is the shape of using a proxy with <code>instagrapi</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
@@ -1320,7 +1382,21 @@ less suspicious than using a different IP address every time you make a request.
 <ul>
 <li>Keep one stable proxy/IP per account whenever possible.</li>
 <li>Avoid rapidly rotating countries, cities, or carrier/mobile fingerprints for the same account.</li>
-<li>If you do password logins, match proxy, device settings, and account reuse consistently.</li>
+<li>Prefer proxy hostnames that resolve through the proxy when using SOCKS, for example <code>socks5h://...</code>.</li>
+<li>Match <code>set_country(...)</code>, <code>set_locale(...)</code>, device settings, and saved sessions to the account's normal environment.</li>
+<li>Do not rotate proxy identity in the middle of a challenge, password reset, or relogin loop.</li>
+<li>Treat a shared IP pool as higher risk; reduce account count and request volume if you cannot dedicate an IP per account.</li>
+</ul>
+<h2 id="warm-accounts-gradually">Warm Accounts Gradually</h2>
+<p>New, restored, or previously challenged accounts should not immediately run high-volume actions.</p>
+<p>Practical warmup rules:</p>
+<ul>
+<li>Start with read-heavy authenticated actions before write-heavy actions.</li>
+<li>Avoid repeated fresh password logins. Save settings and reuse the same device/session identity.</li>
+<li>Keep early write actions low and human-like: fewer follows, likes, comments, DMs, uploads, and profile edits.</li>
+<li>Increase volume slowly over days, not minutes.</li>
+<li>Stop and inspect the account manually after repeated challenges, forced password changes, or feedback blocks.</li>
+<li>Do not run the same workload across many accounts from the same fresh proxy pool at once.</li>
 </ul>
 <h2 id="add-delays">Add Delays</h2>
 <p>It's recommended you try to mimic the behavior of a real user. This means you should add delays
@@ -1333,6 +1409,7 @@ between requests. The delays should be random and not too long.</p>
 <span class="c1"># adds a random delay between 1 and 3 seconds after each request</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">delay_range</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
 </code></pre></div>
+<p>Delays are only one layer. For larger jobs, also limit concurrency per account, per proxy, and per action type. A single account doing many parallel actions is more suspicious than the same work spread out with clear cooldowns.</p>
 <h2 id="handle-rate-limits-and-anti-abuse-responses-explicitly">Handle Rate Limits and Anti-Abuse Responses Explicitly</h2>
 <p>Instagram uses several different responses for throttling, suspicious behavior, or temporary restrictions. Treat them differently instead of retrying every error the same way.</p>
 <h3 id="clientthrottlederror-http-429"><code>ClientThrottledError</code> / HTTP 429</h3>
@@ -1385,7 +1462,24 @@ between requests. The delays should be random and not too long.</p>
 <li>Persist sessions and device identifiers; avoid password login from scratch on every run.</li>
 <li>Freeze accounts that hit repeated anti-abuse responses instead of hammering them harder.</li>
 <li>Track errors per account, per proxy, and per action type so you can see which variable is actually causing trouble.</li>
+<li>Retry transport errors differently from account restrictions. A timeout may be retried; a challenge or feedback block needs cooldown and investigation.</li>
 </ul>
+<h2 id="common-anti-patterns">Common Anti-Patterns</h2>
+<p>These patterns often create support issues that are not library bugs:</p>
+<ul>
+<li>logging in with username/password on every script run</li>
+<li>switching proxies after every request</li>
+<li>sharing one noisy IP across many unrelated accounts</li>
+<li>retrying <code>429</code>, <code>PleaseWaitFewMinutes</code>, <code>FeedbackRequired</code>, or challenges in a tight loop</li>
+<li>mixing browser <code>sessionid</code> reuse with frequent private API password logins</li>
+<li>changing password, email, phone, profile, and posting behavior from a fresh proxy at the same time</li>
+<li>running write-heavy automation immediately after account creation or recovery</li>
+<li>ignoring <code>client.last_json</code> and treating every exception as a generic transient failure</li>
+</ul>
+<h2 id="separate-library-bugs-from-operational-blocks">Separate Library Bugs from Operational Blocks</h2>
+<p>A library bug usually reproduces consistently for the same endpoint and payload, especially across accounts with healthy sessions. Useful reports include the method called, sanitized request/response data, stack trace, dependency versions, and whether the same account works in the official app.</p>
+<p>An operational block is usually account, proxy, session, or action-pattern specific. Signs include <code>429</code>, <code>PleaseWaitFewMinutes</code>, <code>FeedbackRequired</code>, suspicious login emails, challenges, forced password changes, or behavior that disappears after cooldown, cleaner proxy identity, or manual app verification.</p>
+<p>When reporting an issue, include enough context to distinguish these cases. Remove cookies, session IDs, tokens, passwords, phone numbers, emails, and private user data before sharing logs.</p>
 <h2 id="use-sessions">Use Sessions</h2>
 <p>If you call <code>.login()</code> from scratch on every run, Instagram sees repeated fresh logins. That is much more suspicious than reusing a stable device session.</p>
 <p>The normal pattern is:</p>
