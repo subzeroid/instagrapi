@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from instagrapi.exceptions import ClientNotFoundError, DirectThreadNotFound
+from instagrapi.exceptions import ClientError, ClientNotFoundError, DirectThreadNotFound
 from instagrapi.extractors import (
     extract_direct_media,
     extract_direct_message,
@@ -520,6 +520,200 @@ class DirectMixin:
                 )
             thread_ids = [int(thread_id)]
         return self.video_upload_to_direct(Path(path), thread_ids=thread_ids)
+
+    def direct_send_voice(
+        self,
+        path: Path,
+        user_ids: List[int] = [],
+        thread_ids: List[int] = [],
+        waveform: Optional[List[float]] = None,
+    ) -> DirectMessage:
+        """
+        Send a voice (audio) DM to a list of users or threads.
+
+        Replicates the IG Android client's three-step protocol:
+
+        1. ``GET https://rupload.facebook.com/messenger_audio/{upload_id}_0_{key}``
+           returns the resumable upload offset.
+        2. ``POST`` to the same URL with the audio bytes returns
+           ``{"media_id": <int>}``.
+        3. ``POST direct_v2/threads/broadcast/voice_attachment/`` with that
+           ``media_id`` as ``attachment_fbid`` sends the message.
+
+        The audio file MUST be AAC in an MP4 container (``.m4a``); the server
+        rejects other formats at upload_finish.
+
+        Parameters
+        ----------
+        path: Path
+            Path to an m4a/AAC voice clip.
+        user_ids: List[int]
+            List of unique identifiers of Users id.
+        thread_ids: List[int]
+            List of unique identifiers of Direct Message thread id.
+        waveform: Optional[List[float]]
+            Optional list of 70 amplitude values in ``[0.0, 1.0]`` for the IG
+            voice-bubble UI. The server does not validate amplitudes — it is
+            UI-cosmetic only. Defaults to random values that produce a natural
+            buzzy bubble (zeros render as flat dots, not bars).
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage.
+        """
+        assert self.user_id, "Login required"
+        assert (user_ids or thread_ids) and not (
+            user_ids and thread_ids
+        ), "Specify user_ids or thread_ids, but not both"
+        if user_ids:
+            thread = self.direct_thread_by_participants(user_ids)
+            thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
+            if not thread_id:
+                raise DirectThreadNotFound(
+                    "No existing direct thread found for participants; "
+                    "direct voice send currently requires an existing thread",
+                    user_ids=user_ids,
+                    **(self.last_json if isinstance(self.last_json, dict) else {}),
+                )
+            thread_ids = [int(thread_id)]
+
+        audio_bytes = Path(path).read_bytes()
+        upload_id = str(int(time.time() * 1000))
+        rand_key = random.randint(-(2**31), 2**31 - 1)
+
+        # Steps 1 + 2: upload to rupload.facebook.com, get media_id.
+        media_id = self._voice_rupload(audio_bytes, upload_id, rand_key)
+
+        # Step 3: broadcast voice_attachment with media_id as attachment_fbid.
+        if waveform is None:
+            waveform = [round(random.uniform(0.2, 0.95), 3) for _ in range(70)]
+        token = self.generate_mutation_token()
+        data = {
+            "action": "send_item",
+            "thread_ids": dumps([int(tid) for tid in thread_ids]),
+            "send_attribution": "inbox",
+            "client_context": token,
+            "attachment_fbid": str(media_id),
+            "device_id": self.android_device_id,
+            "mutation_token": token,
+            "_uuid": self.uuid,
+            "waveform": dumps(waveform),
+            "waveform_sampling_frequency_hz": "10",
+            "upload_id": upload_id,
+            "offline_threading_id": token,
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/voice_attachment/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
+
+    def _voice_rupload(
+        self, audio_bytes: bytes, upload_id: str, rand_key: int
+    ) -> int:
+        """Upload audio to rupload.facebook.com and return the media_id used as
+        attachment_fbid in the voice_attachment broadcast.
+
+        Notes
+        -----
+        The IG mobile app strips most ``X-IG-*`` / ``X-Bloks-*`` / ``X-Pigeon-*``
+        headers when calling FB-domain endpoints. ``self.private`` keeps a full
+        IG-mobile header set pinned on its session, which leaks into per-call
+        requests via session-merging and causes FB rupload to return a generic
+        404 ("We're sorry, but something went wrong"). We therefore use a fresh
+        ``requests.Session`` here with only the headers FB rupload expects.
+
+        The captured request from the official client also included
+        ``x-meta-zca`` (Play Integrity attestation) and ``x-meta-usdid`` (signed
+        device id) headers. Empirical testing shows the server accepts the
+        upload without them — they appear to be informational/risk-scoring
+        rather than strictly validated.
+        """
+        import requests
+
+        entity = f"{upload_id}_0_{rand_key}"
+        url = f"https://rupload.facebook.com/messenger_audio/{entity}"
+
+        sess = requests.Session()
+        if getattr(self, "proxy", None):
+            sess.proxies = {"http": self.proxy, "https": self.proxy}
+
+        bearer = self.private.headers.get("Authorization") or (
+            f"Bearer IGT:2:{self.authorization_data.get('sessionid', '')}"
+        )
+        user_id = str(self.user_id)
+        rur = self.private.headers.get("IG-U-RUR", "")
+        mid = self.private.headers.get("X-MID", "")
+
+        headers = {
+            "authorization": bearer,
+            "ig-intended-user-id": user_id,
+            "ig-u-ds-user-id": user_id,
+            # NOTE: real client sends zstd; requests cannot decode zstd so use
+            # gzip. The server honors either.
+            "accept-encoding": "gzip",
+            "accept-language": "en-US",
+            "priority": "u=6, i",
+            "user-agent": self.user_agent,
+            "audio_type": "FILE_ATTACHMENT",
+            "x-fb-client-ip": "True",
+            "x-fb-friendly-name": "undefined:media-upload",
+            "x-fb-http-engine": "Tigon/MNS/TCP",
+            "x-fb-request-analytics-tags": (
+                '{"network_tags":{"product":"567067343352427",'
+                '"surface":"undefined","request_category":"media_upload",'
+                '"purpose":"none","retry_attempt":"0"}}'
+            ),
+            "x-fb-rmd": "state=URL_ELIGIBLE",
+            "x-fb-server-cluster": "True",
+            "x-tigon-is-retry": "False",
+            "x-ig-salt-ids": "51052545",
+        }
+        if rur:
+            headers["ig-u-rur"] = rur
+        if mid:
+            headers["x-mid"] = mid
+
+        # 1. fetch resumable offset
+        r = sess.get(url, headers=headers, timeout=30)
+        if r.status_code != 200:
+            raise ClientError(
+                f"messenger_audio offset GET failed: "
+                f"{r.status_code} {r.text[:300]}"
+            )
+        try:
+            offset = int(r.json().get("offset", 0))
+        except Exception:
+            offset = 0
+
+        # 2. POST audio bytes
+        post_headers = dict(headers)
+        post_headers.update(
+            {
+                "content-type": "application/octet-stream",
+                "offset": str(offset),
+                "x-entity-length": str(len(audio_bytes)),
+                "x-entity-name": entity,
+                "x-entity-type": "audio/mp4",
+            }
+        )
+        r = sess.post(
+            url, data=audio_bytes[offset:], headers=post_headers, timeout=120
+        )
+        if r.status_code != 200:
+            raise ClientError(
+                f"messenger_audio upload POST failed: "
+                f"{r.status_code} {r.text[:300]}"
+            )
+        try:
+            media_id = int(r.json()["media_id"])
+        except Exception as exc:
+            raise ClientError(
+                f"messenger_audio response missing media_id: {r.text[:300]}"
+            ) from exc
+        return media_id
 
     def direct_send_file(
         self,
