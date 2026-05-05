@@ -1276,7 +1276,7 @@
 <tr>
 <td>location_medias_v1(location_pk: int, amount: int = 63, tab_key: str = "ranked|recent")</td>
 <td>List[Media]</td>
-<td>Get medias for a location (Private Mobile API)</td>
+<td>Get medias for a location (Private Mobile API), paginating with the server cursor until <code>amount</code> is reached or the cursor is exhausted</td>
 </tr>
 <tr>
 <td>location_medias_top_a1(location_pk: int, amount: int = 9, sleep: float = 0.5)</td>
@@ -1296,7 +1296,7 @@
 <tr>
 <td>location_medias_recent_v1(location_pk: int, amount: int = 63)</td>
 <td>List[Media]</td>
-<td>Get recent medias for a location (Private Mobile API)</td>
+<td>Get recent medias for a location (Private Mobile API), paginating past the first chunk when the endpoint returns <code>next_max_id</code></td>
 </tr>
 </tbody>
 </table>
