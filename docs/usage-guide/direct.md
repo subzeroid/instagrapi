@@ -21,7 +21,7 @@
 | direct_thread_mute_video_call(thread_id: int, revert: bool = False)       | bool                    | Mute video call for the thread
 | direct_thread_unmute_video_call(thread_id: int)                           | bool                    | Unmute video call for the thread
 | direct_send_photo(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct photo to list of users or threads
-| direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video to list of users or threads
+| direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video (.mp4 / H.264 + AAC) to list of users or threads
 | direct_send_voice(path: Path, user_ids: List[int], thread_ids: List[int], waveform: Optional[List[float]]) | DirectMessage | Send a direct voice (audio) message; path must be m4a/AAC
 | video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {}) | DirectMessage | Upload video to direct thread as a story and configure it
 

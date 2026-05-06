@@ -1,6 +1,8 @@
 import random
 import re
+import secrets
 import time
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -488,21 +490,37 @@ class DirectMixin:
         self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
     ) -> DirectMessage:
         """
-        Send a direct video to list of users or threads
+        Send a direct video to a list of users or threads.
+
+        Replicates the IG Android client's three-step protocol (captured
+        2026-05-06). Instagram retired
+        ``direct_v2/threads/broadcast/configure_video/`` and migrated to
+        ``raven_attachment/?video=1``:
+
+        1. ``GET https://rupload.facebook.com/messenger_video/{32hex}-{seg}-{size}-{ms}-{ms}``
+           returns the resumable upload offset.
+        2. ``POST`` to the same URL with raw mp4 bytes returns
+           ``{"media_id": <int>, "id": 0}``.
+        3. ``POST direct_v2/threads/broadcast/raven_attachment/?video=1`` with a
+           signed body whose ``attachment_fbid`` and ``video_result`` both equal
+           the ``media_id`` from step 2.
+
+        The video MUST be H.264 in an MP4 container (``.mp4``); the server
+        ``x-entity-type`` is fixed at ``video/mp4``.
 
         Parameters
         ----------
         path: Path
-            Path to video that will be posted on the thread
+            Path to a .mp4 file (H.264 + AAC).
         user_ids: List[int]
-            List of unique identifier of Users id
+            List of unique identifiers of Users id.
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread id
+            List of unique identifiers of Direct Message thread id.
 
         Returns
         -------
         DirectMessage
-            An object of DirectMessage
+            An object of DirectMessage.
         """
         assert self.user_id, "Login required"
         assert (user_ids or thread_ids) and not (
@@ -519,7 +537,198 @@ class DirectMixin:
                     **(self.last_json if isinstance(self.last_json, dict) else {}),
                 )
             thread_ids = [int(thread_id)]
-        return self.video_upload_to_direct(Path(path), thread_ids=thread_ids)
+
+        path = Path(path)
+        video_bytes = path.read_bytes()
+        size = len(video_bytes)
+
+        # Probe duration + dimensions via ffprobe (best-effort; defaults work).
+        duration_sec = 1.0
+        width, height = 720, 1280
+        try:
+            import json as _json
+            import subprocess as _subprocess
+            out = _subprocess.check_output(
+                ["ffprobe", "-v", "error", "-print_format", "json",
+                 "-show_streams", str(path)],
+                stderr=_subprocess.DEVNULL,
+            )
+            info = _json.loads(out)
+            for s in info.get("streams", []):
+                if s.get("codec_type") == "video":
+                    width = int(s.get("width") or width)
+                    height = int(s.get("height") or height)
+                    if s.get("duration"):
+                        duration_sec = float(s["duration"])
+                    break
+        except Exception:  # noqa: BLE001
+            pass
+
+        # Steps 1 + 2: FB-domain rupload, returns media_id.
+        hex_id = secrets.token_hex(16)
+        ms = int(time.time() * 1000)
+        entity = f"{hex_id}-0-{size}-{ms}-{ms}"
+        upload_id = str(random.randint(10**11, 10**12 - 1))
+        waterfall_id = f"{upload_id}_{hex_id[:12].upper()}_Mixed_0"
+        media_id = self._video_rupload(video_bytes, entity, waterfall_id)
+
+        # Step 3: signed broadcast to raven_attachment/?video=1.
+        token = self.generate_mutation_token()
+        composition_id = str(uuid.uuid4())
+        camera_session_id = str(uuid.uuid4())
+        data = {
+            "recipient_users": "[]",
+            "view_mode": "permanent",
+            "has_camera_metadata": "1",
+            "camera_entry_point": "3",
+            "thread_ids": dumps([str(tid) for tid in thread_ids]),
+            "reshare_mode": "allow_reshare",
+            "original_media_type": "2",  # 2 = video
+            "send_attribution": "direct_composer",
+            "client_context": token,
+            "camera_session_id": camera_session_id,
+            "attachment_fbid": str(media_id),
+            "include_e2ee_mentioned_user_list": "1",
+            "hide_from_profile_grid": "false",
+            "timezone_offset": "0",
+            "client_shared_at": str(int(time.time())),
+            "configure_mode": "2",
+            "source_type": "3",
+            "camera_position": "back",
+            "video_result": str(media_id),
+            "_uid": str(self.user_id),
+            "device_id": self.android_device_id,
+            "composition_id": composition_id,
+            "mutation_token": token,
+            "_uuid": self.uuid,
+            "creation_surface": "camera",
+            "has_ig_camera_edits": "false",
+            "capture_type": "normal",
+            "audience": "default",
+            "upload_id": upload_id,
+            "client_timestamp": str(int(time.time())),
+            "media_transformation_info": dumps({
+                "width": str(width), "height": str(height),
+                "x_transform": "0", "y_transform": "0",
+                "zoom": "1.0", "rotation": "0.0",
+                "background_coverage": "0.0",
+            }),
+            "clips": [{"length": duration_sec, "source_type": "3",
+                       "camera_position": "back"}],
+            "poster_frame_index": 0,
+            "length": duration_sec,
+            "audio_muted": False,
+            "edits": {"filter_type": 0, "filter_strength": 1.0},
+            "extra": {"source_width": width, "source_height": height},
+            "device": {"manufacturer": "Google", "model": "sdk_gphone_arm64",
+                       "android_version": 30, "android_release": "11"},
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/raven_attachment/?video=1",
+            data=self.with_default_data(data),
+            with_signature=True,
+        )
+        return extract_direct_message(result["payload"])
+
+    def _video_rupload(
+        self, video_bytes: bytes, entity_name: str, waterfall_id: str
+    ) -> int:
+        """Upload mp4 bytes to ``rupload.facebook.com/messenger_video/...`` and
+        return the ``media_id`` used as ``attachment_fbid`` in the broadcast.
+
+        Notes
+        -----
+        Same constraint as :meth:`_voice_rupload` — ``self.private`` pins ~30
+        IG-mobile-only headers (``X-IG-*``, ``X-Bloks-*``, ``X-Pigeon-*``,
+        plus ``Host: i.instagram.com``) that FB's rupload edge rejects with a
+        generic 404. We use a fresh ``requests.Session`` here with only the
+        captured allow-list.
+        """
+        import requests
+
+        url = f"https://rupload.facebook.com/messenger_video/{entity_name}"
+
+        sess = requests.Session()
+        if getattr(self, "proxy", None):
+            sess.proxies = {"http": self.proxy, "https": self.proxy}
+
+        bearer = self.private.headers.get("Authorization") or (
+            f"Bearer IGT:2:{self.authorization_data.get('sessionid', '')}"
+        )
+        user_id = str(self.user_id)
+        rur = self.private.headers.get("IG-U-RUR", "")
+        mid = self.private.headers.get("X-MID", "")
+
+        headers = {
+            "authorization": bearer,
+            "ig-intended-user-id": user_id,
+            "ig-u-ds-user-id": user_id,
+            "accept-encoding": "gzip",
+            "accept-language": "en-US",
+            "priority": "u=6, i",
+            "user-agent": self.user_agent,
+            "video_type": "FILE_ATTACHMENT",
+            "segment-start-offset": "0",
+            "segment-type": "3",
+            "ephemeral_media_view_mode": "2",
+            "ig_raven_metadata": "{}",
+            "x_fb_video_waterfall_id": waterfall_id,
+            "x-fb-client-ip": "True",
+            "x-fb-friendly-name": "undefined:media-upload",
+            "x-fb-http-engine": "Tigon/MNS/TCP",
+            "x-fb-request-analytics-tags": (
+                '{"network_tags":{"product":"567067343352427",'
+                '"surface":"undefined","request_category":"media_upload",'
+                '"purpose":"none","retry_attempt":"0"}}'
+            ),
+            "x-fb-rmd": "state=URL_ELIGIBLE",
+            "x-fb-server-cluster": "True",
+            "x-tigon-is-retry": "False",
+            "x-ig-salt-ids": "51052545",
+        }
+        if rur:
+            headers["ig-u-rur"] = rur
+        if mid:
+            headers["x-mid"] = mid
+
+        # 1. fetch resumable offset
+        r = sess.get(url, headers=headers, timeout=30)
+        if r.status_code != 200:
+            raise ClientError(
+                f"messenger_video offset GET failed: "
+                f"{r.status_code} {r.text[:300]}"
+            )
+        try:
+            offset = int(r.json().get("offset", 0))
+        except Exception:
+            offset = 0
+
+        # 2. POST video bytes
+        post_headers = dict(headers)
+        post_headers.update(
+            {
+                "content-type": "application/octet-stream",
+                "offset": str(offset),
+                "x-entity-length": str(len(video_bytes)),
+                "x-entity-name": entity_name,
+                "x-entity-type": "video/mp4",
+            }
+        )
+        r = sess.post(
+            url, data=video_bytes[offset:], headers=post_headers, timeout=300
+        )
+        if r.status_code != 200:
+            raise ClientError(
+                f"messenger_video upload POST failed: "
+                f"{r.status_code} {r.text[:300]}"
+            )
+        try:
+            media_id = int(r.json()["media_id"])
+        except Exception as exc:
+            raise ClientError(
+                f"messenger_video response missing media_id: {r.text[:300]}"
+            ) from exc
+        return media_id
 
     def direct_send_voice(
         self,
