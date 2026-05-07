@@ -486,6 +486,23 @@ class DirectMixin:
         """
         return self.direct_send_file(path, user_ids, thread_ids, content_type="photo")
 
+    def _direct_thread_id_from_user_ids(
+        self, user_ids: List[int], media_kind: str
+    ) -> int:
+        thread = self.direct_thread_by_participants(user_ids)
+        thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
+        if not thread_id and isinstance(self.last_json, dict):
+            thread = self.last_json.get("thread") or {}
+            thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
+        if not thread_id:
+            raise DirectThreadNotFound(
+                "No existing direct thread found for participants; "
+                f"direct {media_kind} send currently requires an existing thread",
+                user_ids=user_ids,
+                **(self.last_json if isinstance(self.last_json, dict) else {}),
+            )
+        return int(thread_id)
+
     def direct_send_video(
         self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
     ) -> DirectMessage:
@@ -527,16 +544,7 @@ class DirectMixin:
             user_ids and thread_ids
         ), "Specify user_ids or thread_ids, but not both"
         if user_ids:
-            thread = self.direct_thread_by_participants(user_ids)
-            thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
-            if not thread_id:
-                raise DirectThreadNotFound(
-                    "No existing direct thread found for participants; "
-                    "direct video send currently requires an existing thread",
-                    user_ids=user_ids,
-                    **(self.last_json if isinstance(self.last_json, dict) else {}),
-                )
-            thread_ids = [int(thread_id)]
+            thread_ids = [self._direct_thread_id_from_user_ids(user_ids, "video")]
 
         path = Path(path)
         video_bytes = path.read_bytes()
@@ -548,9 +556,17 @@ class DirectMixin:
         try:
             import json as _json
             import subprocess as _subprocess
+
             out = _subprocess.check_output(
-                ["ffprobe", "-v", "error", "-print_format", "json",
-                 "-show_streams", str(path)],
+                [
+                    "ffprobe",
+                    "-v",
+                    "error",
+                    "-print_format",
+                    "json",
+                    "-show_streams",
+                    str(path),
+                ],
                 stderr=_subprocess.DEVNULL,
             )
             info = _json.loads(out)
@@ -607,21 +623,31 @@ class DirectMixin:
             "audience": "default",
             "upload_id": upload_id,
             "client_timestamp": str(int(time.time())),
-            "media_transformation_info": dumps({
-                "width": str(width), "height": str(height),
-                "x_transform": "0", "y_transform": "0",
-                "zoom": "1.0", "rotation": "0.0",
-                "background_coverage": "0.0",
-            }),
-            "clips": [{"length": duration_sec, "source_type": "3",
-                       "camera_position": "back"}],
+            "media_transformation_info": dumps(
+                {
+                    "width": str(width),
+                    "height": str(height),
+                    "x_transform": "0",
+                    "y_transform": "0",
+                    "zoom": "1.0",
+                    "rotation": "0.0",
+                    "background_coverage": "0.0",
+                }
+            ),
+            "clips": [
+                {"length": duration_sec, "source_type": "3", "camera_position": "back"}
+            ],
             "poster_frame_index": 0,
             "length": duration_sec,
             "audio_muted": False,
             "edits": {"filter_type": 0, "filter_strength": 1.0},
             "extra": {"source_width": width, "source_height": height},
-            "device": {"manufacturer": "Google", "model": "sdk_gphone_arm64",
-                       "android_version": 30, "android_release": "11"},
+            "device": {
+                "manufacturer": "Google",
+                "model": "sdk_gphone_arm64",
+                "android_version": 30,
+                "android_release": "11",
+            },
         }
         result = self.private_request(
             "direct_v2/threads/broadcast/raven_attachment/?video=1",
@@ -652,9 +678,7 @@ class DirectMixin:
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 
-        bearer = self.private.headers.get("Authorization") or (
-            f"Bearer IGT:2:{self.authorization_data.get('sessionid', '')}"
-        )
+        bearer = self.private.headers.get("Authorization") or self.authorization
         user_id = str(self.user_id)
         rur = self.private.headers.get("IG-U-RUR", "")
         mid = self.private.headers.get("X-MID", "")
@@ -695,8 +719,7 @@ class DirectMixin:
         r = sess.get(url, headers=headers, timeout=30)
         if r.status_code != 200:
             raise ClientError(
-                f"messenger_video offset GET failed: "
-                f"{r.status_code} {r.text[:300]}"
+                f"messenger_video offset GET failed: " f"{r.status_code} {r.text[:300]}"
             )
         try:
             offset = int(r.json().get("offset", 0))
@@ -714,9 +737,7 @@ class DirectMixin:
                 "x-entity-type": "video/mp4",
             }
         )
-        r = sess.post(
-            url, data=video_bytes[offset:], headers=post_headers, timeout=300
-        )
+        r = sess.post(url, data=video_bytes[offset:], headers=post_headers, timeout=300)
         if r.status_code != 200:
             raise ClientError(
                 f"messenger_video upload POST failed: "
@@ -776,16 +797,7 @@ class DirectMixin:
             user_ids and thread_ids
         ), "Specify user_ids or thread_ids, but not both"
         if user_ids:
-            thread = self.direct_thread_by_participants(user_ids)
-            thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
-            if not thread_id:
-                raise DirectThreadNotFound(
-                    "No existing direct thread found for participants; "
-                    "direct voice send currently requires an existing thread",
-                    user_ids=user_ids,
-                    **(self.last_json if isinstance(self.last_json, dict) else {}),
-                )
-            thread_ids = [int(thread_id)]
+            thread_ids = [self._direct_thread_id_from_user_ids(user_ids, "voice")]
 
         audio_bytes = Path(path).read_bytes()
         upload_id = str(int(time.time() * 1000))
@@ -819,9 +831,7 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def _voice_rupload(
-        self, audio_bytes: bytes, upload_id: str, rand_key: int
-    ) -> int:
+    def _voice_rupload(self, audio_bytes: bytes, upload_id: str, rand_key: int) -> int:
         """Upload audio to rupload.facebook.com and return the media_id used as
         attachment_fbid in the voice_attachment broadcast.
 
@@ -849,9 +859,7 @@ class DirectMixin:
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 
-        bearer = self.private.headers.get("Authorization") or (
-            f"Bearer IGT:2:{self.authorization_data.get('sessionid', '')}"
-        )
+        bearer = self.private.headers.get("Authorization") or self.authorization
         user_id = str(self.user_id)
         rur = self.private.headers.get("IG-U-RUR", "")
         mid = self.private.headers.get("X-MID", "")
@@ -889,8 +897,7 @@ class DirectMixin:
         r = sess.get(url, headers=headers, timeout=30)
         if r.status_code != 200:
             raise ClientError(
-                f"messenger_audio offset GET failed: "
-                f"{r.status_code} {r.text[:300]}"
+                f"messenger_audio offset GET failed: " f"{r.status_code} {r.text[:300]}"
             )
         try:
             offset = int(r.json().get("offset", 0))
@@ -908,9 +915,7 @@ class DirectMixin:
                 "x-entity-type": "audio/mp4",
             }
         )
-        r = sess.post(
-            url, data=audio_bytes[offset:], headers=post_headers, timeout=120
-        )
+        r = sess.post(url, data=audio_bytes[offset:], headers=post_headers, timeout=120)
         if r.status_code != 200:
             raise ClientError(
                 f"messenger_audio upload POST failed: "

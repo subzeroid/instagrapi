@@ -85,6 +85,7 @@ jobs:
           pytest -sv \
             tests.py::ExtractorsRegressionTestCase \
             tests.py::PublicRegressionTestCase \
+            tests.py::DirectMixinRegressionTestCase \
             tests.py::ChallengeRegressionTestCase \
             tests.py::CommentRepliesRegressionTestCase \
             tests.py::AuthAndStoryRegressionTestCase \
