@@ -27,6 +27,7 @@ from instagrapi.exceptions import (
     ChallengeRequired,
     ChallengeUnknownStep,
     ClientConnectionError,
+    ClientError,
     ClientGraphqlError,
     ClientThrottledError,
     ClientUnauthorizedError,
@@ -85,6 +86,13 @@ ACCOUNT_USERNAME = os.getenv("IG_USERNAME", "username")
 ACCOUNT_PASSWORD = os.getenv("IG_PASSWORD", "password*")
 ACCOUNT_SESSIONID = os.getenv("IG_SESSIONID", "")
 TEST_ACCOUNTS_URL = os.getenv("TEST_ACCOUNTS_URL")
+
+COMMENT_REPLIES_LIVE_FIXTURES = [
+    ("3735285994514812478_640806256", "18097343278673293"),
+    ("3735285994514812478_640806256", "18067227320032829"),
+    ("3735285994514812478_640806256", "18052801016557024"),
+    ("3735285994514812478_640806256", "17944918626046204"),
+]
 
 REQUIRED_MEDIA_FIELDS = [
     "pk",
@@ -574,6 +582,99 @@ class CheckOffensiveCommentV2RegressionTestCase(unittest.TestCase):
         # No authorization_data → user_id property returns None.
         with self.assertRaises(AssertionError):
             client.media_check_offensive_comment_v2("9_8", "rude")
+
+
+class CommentRepliesRegressionTestCase(unittest.TestCase):
+    def _reply_payload(self, pk, text="reply", replied_to_comment_id="100"):
+        return {
+            "pk": str(pk),
+            "text": text,
+            "user": {"pk": "1", "username": "example", "full_name": "Example"},
+            "created_at_utc": 1_700_000_000,
+            "content_type": "comment",
+            "status": "Active",
+            "replied_to_comment_id": str(replied_to_comment_id),
+            "has_liked_comment": False,
+            "comment_like_count": 0,
+        }
+
+    def test_media_comment_replies_fetches_inline_child_comments(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={
+                "child_comments": [
+                    self._reply_payload("101", "first"),
+                    self._reply_payload("102", "second"),
+                ],
+                "has_more_head_child_comments": False,
+                "status": "ok",
+            },
+        ) as private_request:
+            replies = client.media_comment_replies("123_456", "100")
+
+        private_request.assert_called_once_with(
+            "media/123_456/comments/100/inline_child_comments/", None
+        )
+        self.assertEqual([reply.pk for reply in replies], ["101", "102"])
+        self.assertTrue(all(isinstance(reply, Comment) for reply in replies))
+        self.assertEqual(replies[0].replied_to_comment_id, "100")
+
+    def test_media_comment_replies_chunk_returns_child_cursor(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={
+                "child_comments": [self._reply_payload("101")],
+                "next_min_child_cursor": "cursor-2",
+                "has_more_head_child_comments": True,
+                "status": "ok",
+            },
+        ) as private_request:
+            replies, cursor = client.media_comment_replies_chunk(
+                "123_456", "100", max_amount=10, min_id="cursor-1"
+            )
+
+        private_request.assert_called_once_with(
+            "media/123_456/comments/100/inline_child_comments/",
+            {"min_id": "cursor-1"},
+        )
+        self.assertEqual([reply.pk for reply in replies], ["101"])
+        self.assertEqual(cursor, "cursor-2")
+
+    def test_media_comment_replies_paginates_until_amount(self):
+        client = Client()
+        responses = [
+            {
+                "child_comments": [self._reply_payload("101")],
+                "next_min_child_cursor": "cursor-2",
+                "has_more_head_child_comments": True,
+                "status": "ok",
+            },
+            {
+                "child_comments": [self._reply_payload("102")],
+                "has_more_head_child_comments": False,
+                "status": "ok",
+            },
+        ]
+        with mock.patch.object(
+            client, "private_request", side_effect=responses
+        ) as private_request:
+            replies = client.media_comment_replies("123_456", "100", amount=2)
+
+        self.assertEqual(
+            private_request.call_args_list,
+            [
+                mock.call("media/123_456/comments/100/inline_child_comments/", None),
+                mock.call(
+                    "media/123_456/comments/100/inline_child_comments/",
+                    {"min_id": "cursor-2"},
+                ),
+            ],
+        )
+        self.assertEqual([reply.pk for reply in replies], ["101", "102"])
 
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
@@ -2594,6 +2695,32 @@ class ClientCommentTestCase(ClientPrivateTestCase):
             "profile_pic_url",
         ]:
             self.assertIn(field, user_fields)
+
+
+class ClientCommentRepliesLiveTestCase(ClientPrivateTestCase):
+    def test_media_comment_replies_live(self):
+        errors = []
+        for media_id, comment_id in COMMENT_REPLIES_LIVE_FIXTURES:
+            try:
+                replies = self.cl.media_comment_replies(media_id, comment_id, amount=1)
+            except ClientError as e:
+                errors.append(f"{media_id}/{comment_id}: {e.__class__.__name__} {e}")
+                continue
+            if not replies:
+                errors.append(f"{media_id}/{comment_id}: no replies")
+                continue
+
+            reply = replies[0]
+            self.assertIsInstance(reply, Comment)
+            self.assertEqual(reply.replied_to_comment_id, comment_id)
+            self.assertTrue(reply.pk)
+            self.assertTrue(reply.text)
+            return
+
+        self.fail(
+            "Could not fetch live comment replies from known public fixtures: "
+            + "; ".join(errors)
+        )
 
 
 class ClientCommentExtendTestCase(ClientPrivateTestCase):

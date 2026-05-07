@@ -86,6 +86,7 @@ jobs:
             tests.py::ExtractorsRegressionTestCase \
             tests.py::PublicRegressionTestCase \
             tests.py::ChallengeRegressionTestCase \
+            tests.py::CommentRepliesRegressionTestCase \
             tests.py::AuthAndStoryRegressionTestCase \
             tests.py::DownloadRegressionTestCase \
             tests.py::NoteMixinRegressionTestCase \

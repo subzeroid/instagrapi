@@ -7,6 +7,8 @@ Post comment, viewing, like and unlike comments
 | media_comment(media_id: str, text: str, replied_to_comment_id: Optional[int] = None) | Comment | Add a new comment to media or reply to an existing comment |
 | media_comments(media_id: str, amount: int = 20) | List\[Comment] | Get comments for media; pass `amount=0` to keep paginating until exhaustion |
 | media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of comments and the next `min_id` cursor |
+| media_comment_replies(media_id: str, comment_id: str, amount: int = 0) | List\[Comment] | Get replies for a parent media comment; pass `amount=0` to keep paginating until exhaustion |
+| media_comment_replies_chunk(media_id: str, comment_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of replies and the next child cursor |
 | media_check_offensive_comment(media_id: str, text: str) | bool | Ask Instagram whether a comment text is considered offensive |
 | media_check_offensive_comment_v2(media_id: str, comment: str) | dict | Lighter variant of `media_check_offensive_comment` — same endpoint without `with_action_data` wrapping; returns the raw payload so callers can inspect category / confidence flags beyond `is_offensive` |
 | comment_like(comment_pk: int, revert: bool = False) | bool | Like a comment |
@@ -78,6 +80,22 @@ QVFBQmZCa1dxaFB5eFpBY2luVFMwLWdmN2ZCcUV6OF9hQWlIQk12ZWZqUlctZ2pOa1J5YjJ6bFY5Q1do
 >>> next_min_id
 QVFEbHpIWmpFc3BNUkgzUFVuOGZOQlhDQ1hHeWlVWHlJSnBhb2FHbFB3YlJtNThnOUlrd01JUWdKRmRwZTRpWWU0bnZmX3VMNHlwcDBkWTJpZjQ2NE9SeQ==
 
+>>> parent_comment = cl.media_comments(media_id)[0]
+>>> replies = cl.media_comment_replies(media_id, parent_comment.pk)
+>>> replies[0].dict()
+{'pk': 17926777897585110,
+ 'text': 'Reply text',
+ 'user': {'pk': 1903424587,
+  'username': 'example',
+  'full_name': 'Example Example',
+  'profile_pic_url': None},
+ 'created_at_utc': datetime.datetime(2021, 5, 15, 14, 51, 3, tzinfo=datetime.timezone.utc),
+ 'content_type': 'comment',
+ 'status': 'Active',
+ 'replied_to_comment_id': '17926777897585108',
+ 'has_liked': False,
+ 'like_count': 0}
+
 >>> cl.media_check_offensive_comment(media_id, "Some draft text")
 False
 
@@ -95,5 +113,6 @@ Notes:
 
 * `media_comments()` fetches both regular and headload comment pages until `amount` is reached.
 * `media_comments_chunk()` is the better choice when you want to store and resume the server cursor manually.
+* `media_comment_replies()` fetches `inline_child_comments` for a parent comment and paginates with the returned child cursor.
 * `comment_pin()` / `comment_unpin()` only work on media owned by the authenticated account.
-* Reply creation is supported through `replied_to_comment_id`, but there is no dedicated helper yet for fetching a standalone reply thread for a comment.
+* Reply creation is supported through `replied_to_comment_id`; reply retrieval is supported through `media_comment_replies()`.
