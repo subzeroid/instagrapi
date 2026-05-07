@@ -1102,7 +1102,12 @@
 <tr>
 <td>direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int])</td>
 <td>DirectMessage</td>
-<td>Send a direct video to list of users or threads</td>
+<td>Send a direct video (.mp4 / H.264 + AAC) to list of users or threads</td>
+</tr>
+<tr>
+<td>direct_send_voice(path: Path, user_ids: List[int], thread_ids: List[int], waveform: Optional[List[float]])</td>
+<td>DirectMessage</td>
+<td>Send a direct voice (audio) message; path must be m4a/AAC</td>
 </tr>
 <tr>
 <td>video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {})</td>
@@ -1113,7 +1118,7 @@
 </table>
 <p>Notes:</p>
 <ul>
-<li>For <code>direct_send()</code>, <code>direct_send_photo()</code>, and <code>direct_send_video()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
+<li>For <code>direct_send()</code>, <code>direct_send_photo()</code>, <code>direct_send_video()</code>, and <code>direct_send_voice()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
 <li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
 <li>Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via <code>dump_settings()/load_settings()</code> are more reliable than browser-only <code>sessionid</code> reuse.</li>
 </ul>
@@ -1195,6 +1200,11 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">video_path</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_download</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/B3rFQPblq40/&#39;</span><span class="p">))</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">])</span>  <span class="c1"># or</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_video</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># Voice/audio DM. Audio MUST be AAC in an MP4 container (.m4a).</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1"># Convert via ffmpeg first if needed:</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c1">#   ffmpeg -i input.wav -c:a aac -b:a 64k -ac 1 -ar 44100 voice.m4a</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_send_voice</span><span class="p">(</span><span class="s2">&quot;voice.m4a&quot;</span><span class="p">,</span> <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
 <span class="n">Analyzing</span> <span class="n">video</span> <span class="n">file</span> <span class="s2">&quot;/.../example_2155839952940084788.mp4&quot;</span>
 <span class="n">DirectMessage</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="mi">300775489123123123123664</span><span class="p">,</span> <span class="n">user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">thread_id</span><span class="o">=</span><span class="mi">34012312312312312398762</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">39</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">959454</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span> <span class="n">item_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_shh_mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reactions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">animated_media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">media_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reel_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">story_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">felix_share</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">placeholder</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
