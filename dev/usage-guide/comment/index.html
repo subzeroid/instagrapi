@@ -1021,6 +1021,16 @@
 <td>Get a paginated chunk of comments and the next <code>min_id</code> cursor</td>
 </tr>
 <tr>
+<td>media_comment_replies(media_id: str, comment_id: str, amount: int = 0)</td>
+<td>List[Comment]</td>
+<td>Get replies for a parent media comment; pass <code>amount=0</code> to keep paginating until exhaustion</td>
+</tr>
+<tr>
+<td>media_comment_replies_chunk(media_id: str, comment_id: str, max_amount: int, min_id: str = None)</td>
+<td>Tuple[List[Comment], str]</td>
+<td>Get a paginated chunk of replies and the next child cursor</td>
+</tr>
+<tr>
 <td>media_check_offensive_comment(media_id: str, text: str)</td>
 <td>bool</td>
 <td>Ask Instagram whether a comment text is considered offensive</td>
@@ -1117,6 +1127,22 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">next_min_id</span>
 <span class="n">QVFEbHpIWmpFc3BNUkgzUFVuOGZOQlhDQ1hHeWlVWHlJSnBhb2FHbFB3YlJtNThnOUlrd01JUWdKRmRwZTRpWWU0bnZmX3VMNHlwcDBkWTJpZjQ2NE9SeQ</span><span class="o">==</span>
 
+<span class="o">&gt;&gt;&gt;</span> <span class="n">parent_comment</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_comments</span><span class="p">(</span><span class="n">media_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">replies</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_comment_replies</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="n">parent_comment</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">replies</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">17926777897585110</span><span class="p">,</span>
+ <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Reply text&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span>
+ <span class="s1">&#39;created_at_utc&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">51</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+ <span class="s1">&#39;content_type&#39;</span><span class="p">:</span> <span class="s1">&#39;comment&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;Active&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;replied_to_comment_id&#39;</span><span class="p">:</span> <span class="s1">&#39;17926777897585108&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_check_offensive_comment</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="s2">&quot;Some draft text&quot;</span><span class="p">)</span>
 <span class="kc">False</span>
 
@@ -1133,8 +1159,9 @@
 <ul>
 <li><code>media_comments()</code> fetches both regular and headload comment pages until <code>amount</code> is reached.</li>
 <li><code>media_comments_chunk()</code> is the better choice when you want to store and resume the server cursor manually.</li>
+<li><code>media_comment_replies()</code> fetches <code>inline_child_comments</code> for a parent comment and paginates with the returned child cursor.</li>
 <li><code>comment_pin()</code> / <code>comment_unpin()</code> only work on media owned by the authenticated account.</li>
-<li>Reply creation is supported through <code>replied_to_comment_id</code>, but there is no dedicated helper yet for fetching a standalone reply thread for a comment.</li>
+<li>Reply creation is supported through <code>replied_to_comment_id</code>; reply retrieval is supported through <code>media_comment_replies()</code>.</li>
 </ul>
 
 
