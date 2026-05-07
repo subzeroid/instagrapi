@@ -43,6 +43,23 @@ class ReelsMixin:
         """
         return self.reels_timeline_media("explore_reels", amount, last_media_pk)
 
+    def friends_reels(self, amount: int = 10, last_media_pk: int = 0) -> List[Media]:
+        """
+        Get Friends tab reels media
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 10
+        last_media_pk: int, optional
+            Last PK user has seen, function will return medias after this pk. Default is 0
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        return self.reels_timeline_media("friends_reels", amount, last_media_pk)
+
     def reels_timeline_media(
         self, collection_pk: str, amount: int = 10, last_media_pk: int = 0
     ) -> List[Media]:
@@ -67,6 +84,7 @@ class ReelsMixin:
         private_request_endpoint = {
             "reels": "clips/connected/",
             "explore_reels": "clips/discover/",
+            "friends_reels": "clips/discover/social/",
         }.get(collection_pk)
         if not private_request_endpoint:
             self.logger.warning(

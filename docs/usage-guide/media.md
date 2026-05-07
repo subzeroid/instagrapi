@@ -406,6 +406,14 @@ Now let's mention users (Usertag) and location:
 
 Reels:
 
+Timeline helpers:
+
+```python
+>>> cl.reels(amount=10)
+>>> cl.explore_reels(amount=10)
+>>> cl.friends_reels(amount=10)
+```
+
 ```python
 >>> clips = cl.user_clips_v1(25025320, amount=2)
 >>> clips[0].dict()

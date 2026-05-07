@@ -2522,6 +2522,26 @@ class ClientFollowRequestLiveTestCase(ClientPrivateTestCase):
             self.cleanup_follow_request_live_clients(target, requesters)
 
 
+class ClientTimelineLiveTestCase(ClientPrivateTestCase):
+    def test_friends_reels_live_endpoint(self):
+        result = self.cl.private_request(
+            "clips/discover/social/",
+            data=" ",
+            params={"max_id": ""},
+        )
+
+        self.assertEqual(result.get("status"), "ok")
+        self.assertIn("items", result)
+        self.assertIn("paging_info", result)
+        self.assertIsInstance(result["items"], list)
+
+        medias = self.cl.friends_reels(amount=3)
+
+        self.assertIsInstance(medias, list)
+        for media in medias:
+            self.assertIsInstance(media, Media)
+
+
 class ClientMediaTestCase(ClientPrivateTestCase):
     def test_media_id(self):
         self.assertEqual(
@@ -4704,6 +4724,26 @@ class TimelineRegressionTestCase(unittest.TestCase):
         self.assertEqual(first_call.args[0], "clips/connected/")
         self.assertEqual(first_call.kwargs["params"]["max_id"], "")
         self.assertEqual(second_call.kwargs["params"]["max_id"], "next-page")
+
+    def test_friends_reels_uses_social_discover_endpoint(self):
+        client = Client()
+        client.logger = Mock()
+        media = self.build_media_payload(pk="3", code="ghi")
+        client.private_request = Mock(
+            return_value={
+                "items": [{"media": media}],
+                "paging_info": {"more_available": False},
+            }
+        )
+
+        result = client.friends_reels(amount=1)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].pk, "3")
+        private_request = client.private_request.call_args
+        self.assertEqual(private_request.args[0], "clips/discover/social/")
+        self.assertEqual(private_request.kwargs["data"], " ")
+        self.assertEqual(private_request.kwargs["params"]["max_id"], "")
 
 
 class StoryConfigureRegressionTestCase(unittest.TestCase):

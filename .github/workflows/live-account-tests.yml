@@ -11,6 +11,7 @@ on:
         options:
           - media
           - direct
+          - timeline
           - user
           - all
 
@@ -43,6 +44,10 @@ jobs:
       - name: Run direct media test
         if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'
         run: pytest -sv tests.py::ClientDirectMediaLiveTestCase
+
+      - name: Run timeline test
+        if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests.py::ClientTimelineLiveTestCase
 
       - name: Run user test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'

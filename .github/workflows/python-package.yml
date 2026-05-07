@@ -93,6 +93,7 @@ jobs:
             tests.py::NoteMixinRegressionTestCase \
             tests.py::LocationMixinRegressionTestCase \
             tests.py::UserMixinRegressionTestCase \
+            tests.py::TimelineRegressionTestCase \
             tests.py::StoryConfigureRegressionTestCase \
             tests.py::UploadRegressionTestCase
 
