@@ -21,12 +21,13 @@
 | direct_thread_mute_video_call(thread_id: int, revert: bool = False)       | bool                    | Mute video call for the thread
 | direct_thread_unmute_video_call(thread_id: int)                           | bool                    | Unmute video call for the thread
 | direct_send_photo(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct photo to list of users or threads
-| direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video to list of users or threads
+| direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video (.mp4 / H.264 + AAC) to list of users or threads
+| direct_send_voice(path: Path, user_ids: List[int], thread_ids: List[int], waveform: Optional[List[float]]) | DirectMessage | Send a direct voice (audio) message; path must be m4a/AAC
 | video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {}) | DirectMessage | Upload video to direct thread as a story and configure it
 
 Notes:
 
-* For `direct_send()`, `direct_send_photo()`, and `direct_send_video()`, pass exactly one of `user_ids` or `thread_ids`.
+* For `direct_send()`, `direct_send_photo()`, `direct_send_video()`, and `direct_send_voice()`, pass exactly one of `user_ids` or `thread_ids`.
 * `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
 * Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via `dump_settings()/load_settings()` are more reliable than browser-only `sessionid` reuse.
 
@@ -110,6 +111,11 @@ DirectMessage(id=300775273512312312312321568, user_id=None, thread_id=3402823612
 >>> video_path = cl.video_download(cl.media_pk_from_url('https://www.instagram.com/p/B3rFQPblq40/'))
 >>> cl.direct_send_video(video_path, user_ids=[cl.user_id])  # or
 >>> cl.direct_send_video(video_path, thread_ids=[thread.id])
+
+>>> # Voice/audio DM. Audio MUST be AAC in an MP4 container (.m4a).
+>>> # Convert via ffmpeg first if needed:
+>>> #   ffmpeg -i input.wav -c:a aac -b:a 64k -ac 1 -ar 44100 voice.m4a
+>>> cl.direct_send_voice("voice.m4a", thread_ids=[thread.id])
 Analyzing video file "/.../example_2155839952940084788.mp4"
 DirectMessage(id=300775489123123123123664, user_id=None, thread_id=34012312312312312398762, timestamp=datetime.datetime(2021, 9, 1, 14, 39, 56, 959454, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
 

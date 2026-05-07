@@ -3,6 +3,7 @@ import logging
 import os
 import os.path
 import random
+import subprocess
 import tempfile
 import time
 import types
@@ -3199,6 +3200,166 @@ class ClientDirectTestCase(ClientPrivateTestCase):
             pass
 
 
+class ClientDirectMediaLiveTestCase(ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for direct media live tests")
+        self.cl = self.fresh_account()
+
+    def make_media_fixture(self, suffix, args):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest("imageio_ffmpeg is required to generate media fixtures")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+
+        try:
+            subprocess.run(
+                [imageio_ffmpeg.get_ffmpeg_exe(), "-y", *args, str(path)],
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self.skipTest(f"Could not generate {suffix} fixture: {exc}")
+        return path
+
+    def make_voice_m4a(self):
+        return self.make_media_fixture(
+            ".m4a",
+            [
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=880:duration=1",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "64k",
+                "-ac",
+                "1",
+                "-ar",
+                "44100",
+            ],
+        )
+
+    def make_video_mp4(self):
+        return self.make_media_fixture(
+            ".mp4",
+            [
+                "-f",
+                "lavfi",
+                "-i",
+                "color=c=blue:s=320x568:r=30:d=1",
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=440:duration=1",
+                "-shortest",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+                "-c:a",
+                "aac",
+                "-b:a",
+                "64k",
+            ],
+        )
+
+    def thread_id_by_participants(self, client, user_id):
+        thread = client.direct_thread_by_participants([user_id])
+        thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
+        if not thread_id and isinstance(client.last_json, dict):
+            last_thread = client.last_json.get("thread") or {}
+            thread_id = last_thread.get("thread_v2_id") or last_thread.get("thread_id")
+        return thread_id
+
+    def cleanup_direct_media_messages(self, thread_id, messages, clients):
+        for client, message in messages:
+            if not getattr(message, "id", None):
+                continue
+            try:
+                client.direct_message_delete(thread_id, message.id)
+            except Exception as exc:
+                print(
+                    "Direct media live cleanup direct_message_delete failed: "
+                    f"{exc.__class__.__name__} {exc}"
+                )
+        for client in clients:
+            try:
+                client.direct_thread_hide(thread_id)
+            except Exception as exc:
+                print(
+                    "Direct media live cleanup direct_thread_hide failed: "
+                    f"{exc.__class__.__name__} {exc}"
+                )
+
+    def test_direct_send_voice_and_video_with_thread_and_user_ids(self):
+        sender = self.cl
+        recipient = self.fresh_accounts(1, exclude_user_ids={sender.user_id})[0]
+        voice_path = self.make_voice_m4a()
+        video_path = self.make_video_mp4()
+        sent_messages = []
+        thread_id = None
+
+        try:
+            seed_message = sender.direct_send(
+                f"instagrapi direct media live warm {int(time.time())}",
+                user_ids=[recipient.user_id],
+            )
+            self.assertIsInstance(seed_message, DirectMessage)
+            sent_messages.append((sender, seed_message))
+
+            thread_id = seed_message.thread_id or self.thread_id_by_participants(
+                sender, recipient.user_id
+            )
+            self.assertTrue(thread_id)
+
+            reply_message = recipient.direct_send(
+                f"instagrapi direct media live reply {int(time.time())}",
+                user_ids=[sender.user_id],
+            )
+            self.assertIsInstance(reply_message, DirectMessage)
+            sent_messages.append((recipient, reply_message))
+
+            thread_voice = sender.direct_send_voice(voice_path, thread_ids=[thread_id])
+            self.assertIsInstance(thread_voice, DirectMessage)
+            self.assertTrue(thread_voice.id)
+            sent_messages.append((sender, thread_voice))
+
+            user_voice = sender.direct_send_voice(
+                voice_path, user_ids=[recipient.user_id]
+            )
+            self.assertIsInstance(user_voice, DirectMessage)
+            self.assertTrue(user_voice.id)
+            sent_messages.append((sender, user_voice))
+
+            thread_video = sender.direct_send_video(video_path, thread_ids=[thread_id])
+            self.assertIsInstance(thread_video, DirectMessage)
+            self.assertTrue(thread_video.id)
+            sent_messages.append((sender, thread_video))
+
+            user_video = sender.direct_send_video(
+                video_path, user_ids=[recipient.user_id]
+            )
+            self.assertIsInstance(user_video, DirectMessage)
+            self.assertTrue(user_video.id)
+            sent_messages.append((sender, user_video))
+        finally:
+            if thread_id:
+                self.cleanup_direct_media_messages(
+                    thread_id, sent_messages, [sender, recipient]
+                )
+
+
 class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
     """Test that DirectMessage and DirectThread fields use structured Pydantic models instead of raw dictionaries"""
 
@@ -3587,38 +3748,268 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         client.last_json = {}
         return client
 
-    def test_direct_send_video_uses_direct_story_flow_for_thread_ids(self):
+    def make_temp_file(self, suffix, content):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(content)
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        return path
+
+    def make_video_file(self, content=b"video-bytes"):
+        return self.make_temp_file(".mp4", content)
+
+    def make_voice_file(self, content=b"voice-bytes"):
+        return self.make_temp_file(".m4a", content)
+
+    def direct_payload(self):
+        return {
+            "payload": {
+                "item_id": "1",
+                "timestamp": 1761953663000000,
+                "user_id": "1",
+            }
+        }
+
+    def fake_rupload_session(self, media_id):
+        class FakeResponse:
+            status_code = 200
+            text = "{}"
+
+            def __init__(self, payload):
+                self.payload = payload
+
+            def json(self):
+                return self.payload
+
+        class FakeSession:
+            def __init__(self):
+                self.proxies = {}
+                self.calls = []
+
+            def get(self, url, headers, timeout):
+                self.calls.append(("GET", url, headers, None))
+                return FakeResponse({"offset": 0})
+
+            def post(self, url, data, headers, timeout):
+                self.calls.append(("POST", url, headers, data))
+                return FakeResponse({"media_id": media_id})
+
+        return FakeSession()
+
+    def test_direct_send_video_uploads_and_broadcasts_for_thread_ids(self):
         client = self.build_client()
         expected = Mock(spec=DirectMessage)
+        path = self.make_video_file()
 
-        with mock.patch.object(
-            client, "video_upload_to_direct", return_value=expected
-        ) as video_upload:
-            result = client.direct_send_video("clip.mp4", thread_ids=[123])
+        with (
+            mock.patch("instagrapi.mixins.direct.time.time", return_value=1234.567),
+            mock.patch(
+                "instagrapi.mixins.direct.secrets.token_hex", return_value="a" * 32
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.random.randint", return_value=111111111111
+            ),
+            mock.patch.object(
+                client, "_video_rupload", return_value=987654321
+            ) as rupload,
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_video(path, thread_ids=[123])
 
         self.assertIs(result, expected)
-        video_upload.assert_called_once_with(Path("clip.mp4"), thread_ids=[123])
+        rupload.assert_called_once_with(
+            b"video-bytes",
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-0-11-1234567-1234567",
+            "111111111111_AAAAAAAAAAAA_Mixed_0",
+        )
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/raven_attachment/?video=1",
+            data=mock.ANY,
+            with_signature=True,
+        )
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), ["123"])
+        self.assertEqual(data["recipient_users"], "[]")
+        self.assertEqual(data["attachment_fbid"], "987654321")
+        self.assertEqual(data["video_result"], "987654321")
+        self.assertEqual(data["client_context"], "mutation-token")
+        self.assertEqual(data["mutation_token"], "mutation-token")
 
     def test_direct_send_video_resolves_existing_thread_for_user_ids(self):
         client = self.build_client()
         expected = Mock(spec=DirectMessage)
+        path = self.make_video_file()
+        thread_id = "340282366841710300949128149448121770626"
 
-        with mock.patch.object(
-            client,
-            "direct_thread_by_participants",
-            return_value={"thread_v2_id": "340282366841710300949128149448121770626"},
-        ) as thread_lookup:
-            with mock.patch.object(
-                client, "video_upload_to_direct", return_value=expected
-            ) as video_upload:
-                result = client.direct_send_video("clip.mp4", user_ids=[42])
+        with (
+            mock.patch.object(
+                client,
+                "direct_thread_by_participants",
+                return_value={"thread_v2_id": thread_id},
+            ) as thread_lookup,
+            mock.patch.object(client, "_video_rupload", return_value=123),
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_video(path, user_ids=[42])
 
         self.assertIs(result, expected)
         thread_lookup.assert_called_once_with([42])
-        video_upload.assert_called_once_with(
-            Path("clip.mp4"),
-            thread_ids=[340282366841710300949128149448121770626],
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [thread_id])
+
+    def test_direct_send_video_resolves_existing_thread_from_last_json(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_video_file()
+        thread_id = "340282366841710300949128149448121770626"
+
+        def thread_lookup(user_ids):
+            client.last_json = {"thread": {"thread_v2_id": thread_id}}
+            return {"users": []}
+
+        with (
+            mock.patch.object(
+                client, "direct_thread_by_participants", side_effect=thread_lookup
+            ) as lookup,
+            mock.patch.object(client, "_video_rupload", return_value=123),
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_video(path, user_ids=[42])
+
+        self.assertIs(result, expected)
+        lookup.assert_called_once_with([42])
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [thread_id])
+
+    def test_direct_send_voice_uploads_and_broadcasts_for_thread_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_voice_file()
+
+        with (
+            mock.patch("instagrapi.mixins.direct.time.time", return_value=1234.567),
+            mock.patch("instagrapi.mixins.direct.random.randint", return_value=-99),
+            mock.patch.object(
+                client, "_voice_rupload", return_value=987654321
+            ) as rupload,
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_voice(
+                path, thread_ids=[123], waveform=[0.1, 0.2]
+            )
+
+        self.assertIs(result, expected)
+        rupload.assert_called_once_with(b"voice-bytes", "1234567", -99)
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/voice_attachment/",
+            data=mock.ANY,
+            with_signature=False,
         )
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [123])
+        self.assertEqual(data["attachment_fbid"], "987654321")
+        self.assertEqual(data["client_context"], "mutation-token")
+        self.assertEqual(data["mutation_token"], "mutation-token")
+        self.assertEqual(data["offline_threading_id"], "mutation-token")
+        self.assertEqual(data["upload_id"], "1234567")
+        self.assertEqual(json.loads(data["waveform"]), [0.1, 0.2])
+        self.assertEqual(data["waveform_sampling_frequency_hz"], "10")
+
+    def test_direct_send_voice_resolves_existing_thread_for_user_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_voice_file()
+        thread_id = "340282366841710300949128149448121770626"
+
+        with (
+            mock.patch.object(
+                client,
+                "direct_thread_by_participants",
+                return_value={"thread_v2_id": thread_id},
+            ) as thread_lookup,
+            mock.patch.object(client, "_voice_rupload", return_value=123),
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_voice(path, user_ids=[42], waveform=[0.3])
+
+        self.assertIs(result, expected)
+        thread_lookup.assert_called_once_with([42])
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [int(thread_id)])
+        self.assertEqual(data["attachment_fbid"], "123")
+        self.assertEqual(json.loads(data["waveform"]), [0.3])
+
+    def test_direct_send_voice_resolves_existing_thread_from_last_json(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_voice_file()
+        thread_id = "340282366841710300949128149448121770626"
+
+        def thread_lookup(user_ids):
+            client.last_json = {"thread": {"thread_v2_id": thread_id}}
+            return {"users": []}
+
+        with (
+            mock.patch.object(
+                client, "direct_thread_by_participants", side_effect=thread_lookup
+            ) as lookup,
+            mock.patch.object(client, "_voice_rupload", return_value=123),
+            mock.patch.object(
+                client, "generate_mutation_token", return_value="mutation-token"
+            ),
+            mock.patch(
+                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
+            ),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload()
+            ) as private,
+        ):
+            result = client.direct_send_voice(path, user_ids=[42], waveform=[0.3])
+
+        self.assertIs(result, expected)
+        lookup.assert_called_once_with([42])
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [int(thread_id)])
 
     def test_direct_send_video_raises_when_existing_thread_is_missing(self):
         client = self.build_client()
@@ -3626,12 +4017,58 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         with mock.patch.object(
             client, "direct_thread_by_participants", return_value={}
         ) as thread_lookup:
-            with mock.patch.object(client, "video_upload_to_direct") as video_upload:
+            with mock.patch.object(client, "_video_rupload") as rupload:
                 with self.assertRaises(DirectThreadNotFound):
                     client.direct_send_video("clip.mp4", user_ids=[42])
 
         thread_lookup.assert_called_once_with([42])
-        video_upload.assert_not_called()
+        rupload.assert_not_called()
+
+    def test_direct_send_voice_raises_when_existing_thread_is_missing(self):
+        client = self.build_client()
+        path = self.make_voice_file()
+
+        with mock.patch.object(
+            client, "direct_thread_by_participants", return_value={}
+        ) as thread_lookup:
+            with mock.patch.object(client, "_voice_rupload") as rupload:
+                with self.assertRaises(DirectThreadNotFound):
+                    client.direct_send_voice(path, user_ids=[42])
+
+        thread_lookup.assert_called_once_with([42])
+        rupload.assert_not_called()
+
+    def test_video_rupload_uses_client_authorization_fallback(self):
+        client = self.build_client()
+        client.authorization_data = {"ds_user_id": "123", "sessionid": "raw-session"}
+        client.private.headers.pop("Authorization", None)
+        session = self.fake_rupload_session(media_id=987654321)
+
+        with mock.patch("requests.Session", return_value=session):
+            media_id = client._video_rupload(
+                b"video-bytes", "entity-name", "waterfall-id"
+            )
+
+        self.assertEqual(media_id, 987654321)
+        self.assertEqual(session.calls[0][2]["authorization"], client.authorization)
+        self.assertNotEqual(
+            session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session"
+        )
+
+    def test_voice_rupload_uses_client_authorization_fallback(self):
+        client = self.build_client()
+        client.authorization_data = {"ds_user_id": "123", "sessionid": "raw-session"}
+        client.private.headers.pop("Authorization", None)
+        session = self.fake_rupload_session(media_id=987654321)
+
+        with mock.patch("requests.Session", return_value=session):
+            media_id = client._voice_rupload(b"voice-bytes", "1234567", -99)
+
+        self.assertEqual(media_id, 987654321)
+        self.assertEqual(session.calls[0][2]["authorization"], client.authorization)
+        self.assertNotEqual(
+            session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session"
+        )
 
 
 class UserMixinRegressionTestCase(unittest.TestCase):
