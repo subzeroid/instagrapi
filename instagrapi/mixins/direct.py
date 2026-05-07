@@ -486,6 +486,28 @@ class DirectMixin:
         """
         return self.direct_send_file(path, user_ids, thread_ids, content_type="photo")
 
+    def _direct_video_metadata(self, path: Path) -> Tuple[int, int, float]:
+        width, height, duration_sec = 720, 1280, 1.0
+        try:
+            import moviepy.editor as mp
+        except ImportError:
+            try:
+                import moviepy as mp
+            except ImportError:
+                return width, height, duration_sec
+
+        video = None
+        try:
+            video = mp.VideoFileClip(str(path))
+            width, height = video.size
+            duration_sec = float(video.duration or duration_sec)
+        except Exception:  # noqa: BLE001
+            return width, height, duration_sec
+        finally:
+            if video:
+                video.close()
+        return width, height, duration_sec
+
     def _direct_thread_id_from_user_ids(
         self, user_ids: List[int], media_kind: str
     ) -> int:
@@ -550,35 +572,7 @@ class DirectMixin:
         video_bytes = path.read_bytes()
         size = len(video_bytes)
 
-        # Probe duration + dimensions via ffprobe (best-effort; defaults work).
-        duration_sec = 1.0
-        width, height = 720, 1280
-        try:
-            import json as _json
-            import subprocess as _subprocess
-
-            out = _subprocess.check_output(
-                [
-                    "ffprobe",
-                    "-v",
-                    "error",
-                    "-print_format",
-                    "json",
-                    "-show_streams",
-                    str(path),
-                ],
-                stderr=_subprocess.DEVNULL,
-            )
-            info = _json.loads(out)
-            for s in info.get("streams", []):
-                if s.get("codec_type") == "video":
-                    width = int(s.get("width") or width)
-                    height = int(s.get("height") or height)
-                    if s.get("duration"):
-                        duration_sec = float(s["duration"])
-                    break
-        except Exception:  # noqa: BLE001
-            pass
+        width, height, duration_sec = self._direct_video_metadata(path)
 
         # Steps 1 + 2: FB-domain rupload, returns media_id.
         hex_id = secrets.token_hex(16)
