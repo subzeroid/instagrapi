@@ -1,6 +1,6 @@
 # instagrapi
 
-> ⚠️ **Telegram support group moved to https://t.me/aiograpi_support** — the previous `@instagrapi` group has been restricted by Meta and is no longer maintained.
+> ⚠️ **Telegram support group moved to [aiograpi_support](https://t.me/aiograpi_support)** — the previous `@instagrapi` group has been restricted by Meta and is no longer maintained.
 
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)](https://pypi.org/project/instagrapi/)
 [![Python](https://img.shields.io/pypi/pyversions/instagrapi)](https://pypi.org/project/instagrapi/)
@@ -155,7 +155,7 @@ API reference and full usage guide live at [subzeroid.github.io/instagrapi](http
 * [Best Practices](https://subzeroid.github.io/instagrapi/usage-guide/best-practices.html) for sessions, proxies, and anti-abuse handling
 * [Handle Exceptions](https://subzeroid.github.io/instagrapi/usage-guide/handle_exception.html) for centralizing `429`, challenge, and relogin logic
 * [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
-* Support chat in Telegram: https://t.me/aiograpi_support — the previous `@instagrapi` group was restricted by Meta and is no longer maintained
+* Support chat in Telegram: [aiograpi_support](https://t.me/aiograpi_support) — the previous `@instagrapi` group was restricted by Meta and is no longer maintained
 
 For other languages, consider [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest). For async Python, see [aiograpi](https://github.com/subzeroid/aiograpi).
 
