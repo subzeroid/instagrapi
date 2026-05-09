@@ -83,19 +83,19 @@ jobs:
       - name: Run compatibility smoke tests
         run: |
           pytest -sv \
-            tests/test_legacy.py::ExtractorsRegressionTestCase \
-            tests/test_legacy.py::PublicRegressionTestCase \
-            tests/test_legacy.py::DirectMixinRegressionTestCase \
-            tests/test_legacy.py::ChallengeRegressionTestCase \
-            tests/test_legacy.py::CommentRepliesRegressionTestCase \
-            tests/test_legacy.py::AuthAndStoryRegressionTestCase \
-            tests/test_legacy.py::DownloadRegressionTestCase \
-            tests/test_legacy.py::NoteMixinRegressionTestCase \
-            tests/test_legacy.py::LocationMixinRegressionTestCase \
-            tests/test_legacy.py::UserMixinRegressionTestCase \
-            tests/test_legacy.py::TimelineRegressionTestCase \
-            tests/test_legacy.py::StoryConfigureRegressionTestCase \
-            tests/test_legacy.py::UploadRegressionTestCase
+            tests/regression/test_extractors.py::ExtractorsRegressionTestCase \
+            tests/regression/test_public.py::PublicRegressionTestCase \
+            tests/regression/test_direct.py::DirectMixinRegressionTestCase \
+            tests/regression/test_challenge.py::ChallengeRegressionTestCase \
+            tests/regression/test_comments.py::CommentRepliesRegressionTestCase \
+            tests/regression/test_auth_story.py::AuthAndStoryRegressionTestCase \
+            tests/regression/test_download.py::DownloadRegressionTestCase \
+            tests/regression/test_notes.py::NoteMixinRegressionTestCase \
+            tests/regression/test_location.py::LocationMixinRegressionTestCase \
+            tests/regression/test_user.py::UserMixinRegressionTestCase \
+            tests/regression/test_timeline.py::TimelineRegressionTestCase \
+            tests/regression/test_story_configure.py::StoryConfigureRegressionTestCase \
+            tests/regression/test_upload.py::UploadRegressionTestCase
 
   build-docs:
     runs-on: ubuntu-latest
