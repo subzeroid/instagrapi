@@ -13,7 +13,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 3. Add documentation about your methods and changes to [docs](/docs)
 4. Update the README.md with details of changes to the interface, this includes new environment
    variables, exposed ports, useful file locations and container parameters.
-5. Increase the version number in [setup.py](/setup.py) and date of last reverse-engineering in the README.md to the new version that this
+5. Increase the version number in [pyproject.toml](/pyproject.toml) and date of last reverse-engineering in the README.md to the new version that this
    Pull Request would represent. The versioning scheme we use is [SemVer](http://semver.org/).
 6. You may merge the Pull Request in once you have the sign-off of two other developers, or if you
    do not have permission to do that, you may request the second reviewer to merge it for you.

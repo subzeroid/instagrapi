@@ -18,12 +18,12 @@ retry_pip_install() {
 echo "Ensuring pip is up to date"
 retry_pip_install 3 --upgrade pip
 
-if [[ "${INSTALL_REQUIREMENTS}" == "true"  ]]; then
-  echo "Installing code requirements"
-  retry_pip_install 3 -r requirements.txt
-fi
-
-if [[ "${INSTALL_TEST_REQUIREMENTS}" == "true"  ]]; then
-  echo "Installing test requirements"
-  retry_pip_install 3 -r requirements-test.txt
+if [[ "${INSTALL_TEST}" == "true"  ]]; then
+  echo "Installing project with test extras"
+  retry_pip_install 3 ".[test]"
+elif [[ "${INSTALL_PACKAGE}" == "true"  ]]; then
+  echo "Installing project package"
+  retry_pip_install 3 .
+else
+  echo "No project dependencies requested"
 fi
