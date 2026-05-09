@@ -1219,6 +1219,16 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
 pre-commit<span class="w"> </span>install
 </code></pre></div>
 <p>This installs the library, runtime dependencies, test tools, lint tools, and documentation tooling in one environment.</p>
+<p>If you use <a href="https://docs.astral.sh/uv/">uv</a>, keep the same <code>pyproject.toml</code> source of truth:</p>
+<div class="highlight"><pre><span></span><code>uv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
+pre-commit<span class="w"> </span>install
+</code></pre></div>
+<p>If you prefer to keep <code>pre-commit</code> outside the project environment, install it with <a href="https://pipx.pypa.io/">pipx</a>:</p>
+<div class="highlight"><pre><span></span><code>pipx<span class="w"> </span>install<span class="w"> </span>pre-commit
+pre-commit<span class="w"> </span>install
+</code></pre></div>
 <h2 id="debugging">Debugging</h2>
 <p>Python's built-in <a href="https://docs.python.org/3/library/pdb.html">pdb</a> debugger is enough for most local debugging. You can create a breakpoint anywhere in
 the code:</p>
@@ -1231,11 +1241,14 @@ the code:</p>
 <h2 id="testing">Testing</h2>
 <p>You'll be unable to merge code unless linting and tests pass. The main local checks are:</p>
 <div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>-sv<span class="w"> </span>tests/regression
-flake8<span class="w"> </span>.<span class="w"> </span>--count<span class="w"> </span>--select<span class="o">=</span>E9,F63,F7,F82<span class="w"> </span>--show-source<span class="w"> </span>--statistics
-flake8<span class="w"> </span>.<span class="w"> </span>--count<span class="w"> </span>--exit-zero<span class="w"> </span>--statistics
-isort<span class="w"> </span>--check-only<span class="w"> </span>instagrapi
+ruff<span class="w"> </span>check<span class="w"> </span>.
+ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
 bandit<span class="w"> </span>--ini<span class="w"> </span>.bandit<span class="w"> </span>-r<span class="w"> </span>instagrapi
 mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+</code></pre></div>
+<p>To apply automatic lint and formatting fixes locally:</p>
+<div class="highlight"><pre><span></span><code>ruff<span class="w"> </span>check<span class="w"> </span>.<span class="w"> </span>--fix
+ruff<span class="w"> </span>format<span class="w"> </span>.
 </code></pre></div>
 <p>Before committing, run the pre-commit hooks against changed files or the whole tree:</p>
 <div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
@@ -1248,8 +1261,7 @@ live in <code>tests/live/</code>.</p>
 <p>To customize / override a specific testing stage, please read the documentation specific to that tool:</p>
 <ol>
 <li><a href="https://docs.pytest.org/en/latest/">PyTest</a></li>
-<li><a href="https://pycqa.github.io/isort/">Isort</a></li>
-<li><a href="http://flake8.pycqa.org/en/stable/">Flake8</a></li>
+<li><a href="https://docs.astral.sh/ruff/">Ruff</a></li>
 <li><a href="https://bandit.readthedocs.io/en/stable/">Bandit</a></li>
 </ol>
 <h3 id="pyprojecttoml"><code>pyproject.toml</code></h3>
