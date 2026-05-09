@@ -42,9 +42,7 @@ class DownloadPhotoMixin:
     Helpers for downloading photo
     """
 
-    def photo_download(
-        self, media_pk: int, folder: Path = "", overwrite: bool = True
-    ) -> Path:
+    def photo_download(self, media_pk: int, folder: Path = "", overwrite: bool = True) -> Path:
         """
         Download photo using media pk
 
@@ -66,12 +64,8 @@ class DownloadPhotoMixin:
         """
         media = self.media_info(media_pk)
         assert media.media_type == 1, "Must been photo"
-        filename = "{username}_{media_pk}".format(
-            username=media.user.username, media_pk=media_pk
-        )
-        return self.photo_download_by_url(
-            media.thumbnail_url, filename, folder, overwrite=overwrite
-        )
+        filename = "{username}_{media_pk}".format(username=media.user.username, media_pk=media_pk)
+        return self.photo_download_by_url(media.thumbnail_url, filename, folder, overwrite=overwrite)
 
     def photo_download_by_url(
         self,
@@ -167,9 +161,7 @@ class UploadPhotoMixin:
         assert isinstance(path, Path), f"Path must been Path, now {path} ({type(path)})"
         valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError(
-                "Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported."
-            )
+            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
         image_type = "image/jpeg"
         if path.suffix.lower() == ".png":
             image_type = "image/png"
@@ -181,18 +173,14 @@ class UploadPhotoMixin:
         assert path, "Not specified path to photo"
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
-        upload_name = "{upload_id}_0_{rand}".format(
-            upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
-        )
+        upload_name = "{upload_id}_0_{rand}".format(upload_id=upload_id, rand=random.randint(1000000000, 9999999999))
         # media_type: "2" when from video/igtv/album thumbnail, "1" - upload photo only
         rupload_params = {
             "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
             "media_type": "1",  # "2" if upload_id else "1",
             "xsharing_user_ids": "[]",
             "upload_id": upload_id,
-            "image_compression": json.dumps(
-                {"lib_name": "moz", "lib_version": "3.1.m", "quality": "80"}
-            ),
+            "image_compression": json.dumps({"lib_name": "moz", "lib_version": "3.1.m", "quality": "80"}),
         }
         if to_album:
             rupload_params["is_sidecar"] = "1"
@@ -218,17 +206,13 @@ class UploadPhotoMixin:
             "Content-Length": photo_len,
         }
         response = self.private.post(
-            "https://{domain}/rupload_igphoto/{name}".format(
-                domain=config.API_DOMAIN, name=upload_name
-            ),
+            "https://{domain}/rupload_igphoto/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             data=photo_data,
             headers=headers,
         )
         self.request_log(response)
         if response.status_code != 200:
-            self.logger.error(
-                "Photo Upload failed with the following response: %s", response
-            )
+            self.logger.error("Photo Upload failed with the following response: %s", response)
             last_json = self.last_json  # local variable for read in sentry
             raise PhotoNotUpload(response.text, response=response, **last_json)
         with Image.open(path) as im:
@@ -270,9 +254,7 @@ class UploadPhotoMixin:
         path = Path(path)
         valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
         if path.suffix.lower() not in valid_extensions:
-            raise ValueError(
-                "Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported."
-            )
+            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
 
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
@@ -330,9 +312,7 @@ class UploadPhotoMixin:
         Dict
             A dictionary of response from the call
         """
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             "timezone_offset": str(self.timezone_offset),
             "camera_model": self.device.get("model", ""),
@@ -749,10 +729,7 @@ class UploadPhotoMixin:
                         "finished": poll.finished,
                         "color": poll.color,
                         "question": poll.question,
-                        "tallies": [
-                            {"count": 0, "font_size": 39.0, "text": o}
-                            for o in poll.options
-                        ],
+                        "tallies": [{"count": 0, "font_size": 39.0, "text": o} for o in poll.options],
                         **poll_extra,
                     }
                 )
@@ -762,6 +739,4 @@ class UploadPhotoMixin:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = ",".join(story_sticker_ids)
-        return self.private_request(
-            "media/configure_to_story/", self.with_default_data(data)
-        )
+        return self.private_request("media/configure_to_story/", self.with_default_data(data))

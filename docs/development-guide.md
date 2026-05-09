@@ -21,6 +21,22 @@ pre-commit install
 
 This installs the library, runtime dependencies, test tools, lint tools, and documentation tooling in one environment.
 
+If you use [uv][uv-docs], keep the same `pyproject.toml` source of truth:
+
+```bash
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[test]"
+pre-commit install
+```
+
+If you prefer to keep `pre-commit` outside the project environment, install it with [pipx][pipx-docs]:
+
+```bash
+pipx install pre-commit
+pre-commit install
+```
+
 ## Debugging
 
 Python's built-in [pdb][pdb-docs] debugger is enough for most local debugging. You can create a breakpoint anywhere in
@@ -42,11 +58,17 @@ You'll be unable to merge code unless linting and tests pass. The main local che
 
 ```bash
 pytest -sv tests/regression
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-flake8 . --count --exit-zero --statistics
-isort --check-only instagrapi
+ruff check .
+ruff format --check .
 bandit --ini .bandit -r instagrapi
 mkdocs build --strict
+```
+
+To apply automatic lint and formatting fixes locally:
+
+```bash
+ruff check . --fix
+ruff format .
 ```
 
 Before committing, run the pre-commit hooks against changed files or the whole tree:
@@ -66,9 +88,8 @@ live in `tests/live/`.
 To customize / override a specific testing stage, please read the documentation specific to that tool:
 
 1. [PyTest][pytest-docs]
-2. [Isort][isort-docs]
-3. [Flake8][flake8-docs]
-4. [Bandit][bandit-docs]
+2. [Ruff][ruff-docs]
+3. [Bandit][bandit-docs]
 
 ### `pyproject.toml`
 
@@ -90,8 +111,9 @@ TODO: Add CI documentation.
 
 [pdb-docs]: https://docs.python.org/3/library/pdb.html
 [pytest-docs]: https://docs.pytest.org/en/latest/
-[isort-docs]: https://pycqa.github.io/isort/
-[flake8-docs]: http://flake8.pycqa.org/en/stable/
+[ruff-docs]: https://docs.astral.sh/ruff/
+[uv-docs]: https://docs.astral.sh/uv/
+[pipx-docs]: https://pipx.pypa.io/
 [bandit-docs]: https://bandit.readthedocs.io/en/stable/
 [sem-ver]: https://semver.org/
 [pypi]: https://pypi.org/project/instagrapi/

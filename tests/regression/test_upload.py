@@ -66,9 +66,7 @@ class UploadRegressionTestCase(unittest.TestCase):
         client = self.build_client()
         expected = {"status": "ok", "eligible": True}
 
-        with mock.patch.object(
-            client, "private_request", return_value=expected
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
             result = client.clip_share_to_fb_config()
 
         private_request.assert_called_once()
@@ -84,9 +82,7 @@ class UploadRegressionTestCase(unittest.TestCase):
         client = self.build_client()
 
         with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
-            with mock.patch.object(
-                client, "photo_configure", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "photo_configure", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(PhotoConfigureError) as ctx:
                         client.photo_upload(Path("example.jpg"), "caption")
@@ -101,9 +97,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "video_rupload",
             return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
         ):
-            with mock.patch.object(
-                client, "video_configure", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "video_configure", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(VideoConfigureError) as ctx:
                         client.video_upload(Path("example.mp4"), "caption")
@@ -114,9 +108,7 @@ class UploadRegressionTestCase(unittest.TestCase):
         client = self.build_client()
 
         with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
-            with mock.patch.object(
-                client, "album_configure", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "album_configure", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(AlbumConfigureError) as ctx:
                         client.album_upload([Path("one.jpg")], "caption")
@@ -165,9 +157,7 @@ class UploadRegressionTestCase(unittest.TestCase):
         client = self.build_client()
 
         with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 1280)):
-            with mock.patch.object(
-                client, "photo_configure_to_story", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "photo_configure_to_story", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(PhotoConfigureStoryError) as ctx:
                         client.photo_upload_to_story(Path("story.jpg"))
@@ -184,19 +174,11 @@ class UploadRegressionTestCase(unittest.TestCase):
             return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 5),
         ):
             with mock.patch.object(client.private, "get", return_value=ok_response):
-                with mock.patch.object(
-                    client.private, "post", return_value=ok_response
-                ):
-                    with mock.patch.object(
-                        client, "clip_configure", return_value={"status": "ok"}
-                    ):
-                        with mock.patch(
-                            "builtins.open", mock.mock_open(read_data=b"video-bytes")
-                        ):
+                with mock.patch.object(client.private, "post", return_value=ok_response):
+                    with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}):
+                        with mock.patch("builtins.open", mock.mock_open(read_data=b"video-bytes")):
                             with mock.patch("time.sleep"):
-                                media = client.clip_upload(
-                                    Path("example.mp4"), "caption"
-                                )
+                                media = client.clip_upload(Path("example.mp4"), "caption")
 
         self.assertIsInstance(media, Media)
         self.assertEqual(str(media.video_url), "https://example.com/video.mp4")
@@ -211,17 +193,13 @@ class UploadRegressionTestCase(unittest.TestCase):
             return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
         ):
             with mock.patch("time.time", return_value=1778346423.0):
-                with mock.patch.object(
-                    client.private, "get", return_value=ok_response
-                ) as private_get:
+                with mock.patch.object(client.private, "get", return_value=ok_response) as private_get:
                     with mock.patch.object(
                         client.private,
                         "post",
                         side_effect=[ok_response, ok_response],
                     ) as private_post:
-                        with mock.patch.object(
-                            client, "clip_configure", return_value={"status": "ok"}
-                        ):
+                        with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}):
                             with mock.patch(
                                 "builtins.open",
                                 mock.mock_open(read_data=b"video-bytes"),
@@ -291,9 +269,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "video_rupload",
             return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
         ):
-            with mock.patch.object(
-                client, "video_configure_to_story", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "video_configure_to_story", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(VideoConfigureStoryError) as ctx:
                         client.video_upload_to_story(Path("story.mp4"))
@@ -308,9 +284,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "video_rupload",
             return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
         ):
-            with mock.patch.object(
-                client, "video_configure_to_story", return_value={"status": "ok"}
-            ):
+            with mock.patch.object(client, "video_configure_to_story", return_value={"status": "ok"}):
                 with mock.patch("time.sleep"):
                     with self.assertRaises(VideoConfigureStoryError) as ctx:
                         client.video_upload_to_direct(
@@ -323,13 +297,9 @@ class UploadRegressionTestCase(unittest.TestCase):
     def test_cutout_sticker_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
-        with mock.patch.object(
-            client, "private_request", return_value={"status": "ok"}
-        ):
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}):
             with self.assertRaises(PrivateError) as ctx:
-                client.media_configure_to_cutout_sticker(
-                    "1", manual_box=[0.0, 0.0, 1.0, 1.0]
-                )
+                client.media_configure_to_cutout_sticker("1", manual_box=[0.0, 0.0, 1.0, 1.0])
 
         self.assertIn("without media payload", str(ctx.exception))
 
@@ -342,9 +312,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "private_request",
             return_value={"status": "ok", "media": media_payload},
         ):
-            media = client.media_configure_to_cutout_sticker(
-                "1", manual_box=[0.0, 0.0, 1.0, 1.0]
-            )
+            media = client.media_configure_to_cutout_sticker("1", manual_box=[0.0, 0.0, 1.0, 1.0])
 
         self.assertIsInstance(media, Media)
         self.assertEqual(media.media_type, 1)
@@ -401,15 +369,9 @@ class UploadRegressionTestCase(unittest.TestCase):
                     "moviepy.editor": fake_mp,
                 },
             ):
-                with mock.patch(
-                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
-                ):
-                    with mock.patch.object(
-                        client, "track_download_by_url", return_value=audio_path
-                    ):
-                        with mock.patch.object(
-                            client, "clip_upload", return_value="uploaded"
-                        ) as clip_upload:
+                with mock.patch("tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]):
+                    with mock.patch.object(client, "track_download_by_url", return_value=audio_path):
+                        with mock.patch.object(client, "clip_upload", return_value="uploaded") as clip_upload:
                             result = client.clip_upload_as_reel_with_music(
                                 Path("input.mp4"),
                                 "caption",
@@ -476,15 +438,9 @@ class UploadRegressionTestCase(unittest.TestCase):
                     "moviepy.editor": fake_mp,
                 },
             ):
-                with mock.patch(
-                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
-                ):
-                    with mock.patch.object(
-                        client, "track_download_by_url", return_value=audio_path
-                    ):
-                        with mock.patch.object(
-                            client, "clip_upload", return_value="uploaded"
-                        ) as clip_upload:
+                with mock.patch("tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]):
+                    with mock.patch.object(client, "track_download_by_url", return_value=audio_path):
+                        with mock.patch.object(client, "clip_upload", return_value="uploaded") as clip_upload:
                             client.clip_upload_as_reel_with_music(
                                 Path("input.mp4"),
                                 "caption",
@@ -552,12 +508,8 @@ class UploadRegressionTestCase(unittest.TestCase):
                     "moviepy.editor": fake_mp,
                 },
             ):
-                with mock.patch(
-                    "tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]
-                ):
-                    with mock.patch.object(
-                        client, "track_download_by_url", return_value=audio_path
-                    ):
+                with mock.patch("tempfile.mktemp", side_effect=[str(audio_path), str(video_path)]):
+                    with mock.patch.object(client, "track_download_by_url", return_value=audio_path):
                         with mock.patch.object(
                             client,
                             "clip_upload",
@@ -596,9 +548,7 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "moviepy.editor": fake_mp,
             },
         ):
-            result = clip_mixin.analyze_video(
-                Path("input.mp4"), thumbnail=Path("thumb.jpg")
-            )
+            result = clip_mixin.analyze_video(Path("input.mp4"), thumbnail=Path("thumb.jpg"))
 
         self.assertEqual(result, (Path("thumb.jpg"), 720, 1280, 5))
         self.assertTrue(closed["value"])

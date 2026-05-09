@@ -48,9 +48,7 @@ class LocationMixinRegressionTestCase(unittest.TestCase):
 
         for raw in (None, "", "None"):
             with self.subTest(external_id=raw):
-                location = extract_location(
-                    {"pk": "1", "name": "Nowhere", "external_id": raw}
-                )
+                location = extract_location({"pk": "1", "name": "Nowhere", "external_id": raw})
                 self.assertIsNone(location.external_id)
 
     def test_extract_location_falls_back_to_facebook_places_id(self):

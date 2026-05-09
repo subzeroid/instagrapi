@@ -23,12 +23,8 @@ class ClientAccountTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(one, User)
         instagram = self.user_info_by_username("instagram")
         # change
-        two = self.cl.account_change_picture(
-            self.cl.photo_download_by_url(instagram.profile_pic_url)
-        )
+        two = self.cl.account_change_picture(self.cl.photo_download_by_url(instagram.profile_pic_url))
         self.assertIsInstance(two, UserShort)
         # return back
-        three = self.cl.account_change_picture(
-            self.cl.photo_download_by_url(one.profile_pic_url)
-        )
+        three = self.cl.account_change_picture(self.cl.photo_download_by_url(one.profile_pic_url))
         self.assertIsInstance(three, UserShort)

@@ -93,9 +93,7 @@ class CollectionMixin:
         """
         return self.collection_medias("liked", amount, last_media_pk)
 
-    def collection_medias_v1_chunk(
-        self, collection_pk: str, max_id: str = ""
-    ) -> Tuple[List[Media], str]:
+    def collection_medias_v1_chunk(self, collection_pk: str, max_id: str = "") -> Tuple[List[Media], str]:
         """
         Get media in a collection by collection_pk
 
@@ -125,9 +123,7 @@ class CollectionMixin:
         items = [extract_media_v1(m.get("media", m)) for m in result["items"]]
         return items, result.get("next_max_id", "")
 
-    def collection_medias_v1(
-        self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
-    ) -> List[Media]:
+    def collection_medias_v1(self, collection_pk: str, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
         Get media in a collection by collection_pk
 
@@ -151,9 +147,7 @@ class CollectionMixin:
         amount = int(amount)
         found_last_media_pk = False
         while True:
-            items, next_max_id = self.collection_medias_v1_chunk(
-                collection_pk, max_id=next_max_id
-            )
+            items, next_max_id = self.collection_medias_v1_chunk(collection_pk, max_id=next_max_id)
             for item in items:
                 if last_media_pk and last_media_pk == item.pk:
                     found_last_media_pk = True
@@ -165,9 +159,7 @@ class CollectionMixin:
                 break
         return total_items[:amount] if amount else total_items
 
-    def collection_medias(
-        self, collection_pk: str, amount: int = 21, last_media_pk: int = 0
-    ) -> List[Media]:
+    def collection_medias(self, collection_pk: str, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
         Get media in a collection by collection_pk
 
@@ -185,13 +177,9 @@ class CollectionMixin:
         List[Media]
             A list of objects of Media
         """
-        return self.collection_medias_v1(
-            collection_pk, amount=amount, last_media_pk=last_media_pk
-        )
+        return self.collection_medias_v1(collection_pk, amount=amount, last_media_pk=last_media_pk)
 
-    def media_save(
-        self, media_id: str, collection_pk: int = None, revert: bool = False
-    ) -> bool:
+    def media_save(self, media_id: str, collection_pk: int = None, revert: bool = False) -> bool:
         """
         Save a media to collection
 
@@ -218,9 +206,7 @@ class CollectionMixin:
         if collection_pk:
             data["added_collection_ids"] = f"[{int(collection_pk)}]"
         name = "unsave" if revert else "save"
-        result = self.private_request(
-            f"media/{media_id}/{name}/", self.with_action_data(data)
-        )
+        result = self.private_request(f"media/{media_id}/{name}/", self.with_action_data(data))
         return result["status"] == "ok"
 
     def media_unsave(self, media_id: str, collection_pk: int = None) -> bool:

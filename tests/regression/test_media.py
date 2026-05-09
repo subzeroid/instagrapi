@@ -14,11 +14,7 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
                 "username": "example",
                 "profile_pic_url": "https://example.com/profile.jpg",
             },
-            "image_versions2": {
-                "candidates": [
-                    {"url": "https://example.com/x.jpg", "width": 100, "height": 100}
-                ]
-            },
+            "image_versions2": {"candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}]},
         }
 
     def test_media_info_v2_strips_userid_suffix(self):

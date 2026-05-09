@@ -62,9 +62,7 @@ class HighlightMixin:
             "is_dark_mode": random.randint(0, 1),
             "will_sound_on": random.randint(0, 1),
         }
-        result = self.private_request(
-            f"highlights/{user_id}/highlights_tray/", params=params
-        )
+        result = self.private_request(f"highlights/{user_id}/highlights_tray/", params=params)
         return [extract_highlight_v1(highlight) for highlight in result.get("tray", [])]
 
     def user_highlights(self, user_id: str, amount: int = 0) -> List[Highlight]:
@@ -193,9 +191,7 @@ class HighlightMixin:
             data["title"] = title
         if cover:
             data["cover"] = dumps(cover)
-        result = self.private_request(
-            f"highlights/highlight:{highlight_pk}/edit_reel/", data=data
-        )
+        result = self.private_request(f"highlights/highlight:{highlight_pk}/edit_reel/", data=data)
         return extract_highlight_v1(result["reel"])
 
     def highlight_change_title(self, highlight_pk: str, title: str) -> Highlight:
@@ -234,9 +230,7 @@ class HighlightMixin:
         cover = {"upload_id": str(upload_id), "crop_rect": "[0.0,0.0,1.0,1.0]"}
         return self.highlight_edit(highlight_pk, cover=cover)
 
-    def highlight_add_stories(
-        self, highlight_pk: str, added_media_ids: List[str]
-    ) -> Highlight:
+    def highlight_add_stories(self, highlight_pk: str, added_media_ids: List[str]) -> Highlight:
         """
         Add stories to highlight
 
@@ -253,9 +247,7 @@ class HighlightMixin:
         """
         return self.highlight_edit(highlight_pk, added_media_ids=added_media_ids)
 
-    def highlight_remove_stories(
-        self, highlight_pk: str, removed_media_ids: List[str]
-    ) -> Highlight:
+    def highlight_remove_stories(self, highlight_pk: str, removed_media_ids: List[str]) -> Highlight:
         """
         Remove stories from highlight
 
@@ -286,7 +278,5 @@ class HighlightMixin:
         bool
         """
         data = {"_uid": str(self.user_id), "_uuid": self.uuid}
-        result = self.private_request(
-            f"highlights/highlight:{highlight_pk}/delete_reel/", data=data
-        )
+        result = self.private_request(f"highlights/highlight:{highlight_pk}/delete_reel/", data=data)
         return result.get("status") == "ok"

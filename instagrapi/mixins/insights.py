@@ -25,9 +25,7 @@ DATA_ORDERS = (
     "VIDEO_VIEW_COUNT",
     "SAVE_COUNT",
 )
-EMPTY_GRAPHQL_QUERY_PARAM = (
-    ""  # Instagram GraphQL uses this as an empty access_token placeholder.
-)
+EMPTY_GRAPHQL_QUERY_PARAM = ""  # Instagram GraphQL uses this as an empty access_token placeholder.
 
 try:
     from typing import Literal
@@ -74,15 +72,9 @@ class InsightsMixin:
         List[Dict]
             List of dictionaries of response from the call
         """
-        assert (
-            post_type in POST_TYPES
-        ), f'Unsupported post_type="{post_type}" {POST_TYPES}'
-        assert (
-            time_frame in TIME_FRAMES
-        ), f'Unsupported time_frame="{time_frame}" {TIME_FRAMES}'
-        assert (
-            data_ordering in DATA_ORDERS
-        ), f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERS}'
+        assert post_type in POST_TYPES, f'Unsupported post_type="{post_type}" {POST_TYPES}'
+        assert time_frame in TIME_FRAMES, f'Unsupported time_frame="{time_frame}" {TIME_FRAMES}'
+        assert data_ordering in DATA_ORDERS, f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERS}'
         assert self.user_id, "Login required"
         medias = []
         cursor = None

@@ -92,9 +92,7 @@ class PreLoginFlowMixin:
         }
         # if login is False:
         data["_csrftoken"] = self.token
-        return self.private_request(
-            "accounts/get_prefill_candidates/", data, login=login
-        )
+        return self.private_request("accounts/get_prefill_candidates/", data, login=login)
 
     def sync_device_features(self, login: bool = False) -> Dict:
         """
@@ -189,9 +187,7 @@ class PostLoginFlowMixin:
         check_flow.append(self.get_timeline_feed(["cold_start_fetch"]))
         return all(check_flow)
 
-    def get_timeline_feed(
-        self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None
-    ) -> Dict:
+    def get_timeline_feed(self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None) -> Dict:
         """
         Get your timeline feed
 
@@ -243,13 +239,9 @@ class PostLoginFlowMixin:
         #     data["push_disabled"] = "true"
         # if "recovered_from_crash" in options:
         #     data["recovered_from_crash"] = "1"
-        return self.private_request(
-            "feed/timeline/", json.dumps(data), with_signature=False, headers=headers
-        )
+        return self.private_request("feed/timeline/", json.dumps(data), with_signature=False, headers=headers)
 
-    def get_reels_tray_feed(
-        self, reason: REELS_TRAY_REASON = "pull_to_refresh"
-    ) -> Dict:
+    def get_reels_tray_feed(self, reason: REELS_TRAY_REASON = "pull_to_refresh") -> Dict:
         """
         Get your reels tray feed
 
@@ -312,9 +304,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
-        self.bloks_versioning_id = (
-            "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
-        )
+        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
         self.user_agent = None
         self.settings = None
         self.override_app_version = False
@@ -352,9 +342,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             A boolean value
         """
         if "cookies" in self.settings:
-            self.private.cookies = requests.utils.cookiejar_from_dict(
-                self.settings["cookies"]
-            )
+            self.private.cookies = requests.utils.cookiejar_from_dict(self.settings["cookies"])
         else:
             self._clear_session_state(clear_private_cookies=True)
         self.authorization_data = self.settings.get("authorization_data", {})
@@ -371,15 +359,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             public_request_retries_timeout=self.settings.get(
                 "public_request_retries_timeout", self.public_request_retries_timeout
             ),
-            session_retry_total=self.settings.get(
-                "session_retry_total", self.session_retry_total
-            ),
+            session_retry_total=self.settings.get("session_retry_total", self.session_retry_total),
             session_retry_backoff_factor=self.settings.get(
                 "session_retry_backoff_factor", self.session_retry_backoff_factor
             ),
-            session_retry_statuses=self.settings.get(
-                "session_retry_statuses", self.session_retry_statuses
-            ),
+            session_retry_statuses=self.settings.get("session_retry_statuses", self.session_retry_statuses),
         )
 
         self.set_timezone_offset(timezone_offset)
@@ -492,8 +476,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         enc_password = self.password_encrypt(self.password)
         data = {
             "jazoest": generate_jazoest(self.phone_id),
-            "country_codes": '[{"country_code":"%d","source":["default"]}]'
-            % int(self.country_code),
+            "country_codes": '[{"country_code":"%d","source":["default"]}]' % int(self.country_code),
             "phone_id": self.phone_id,
             "enc_password": enc_password,
             "username": self.username,
@@ -505,17 +488,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         try:
             logged = self.private_request("accounts/login/", data, login=True)
-            self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get("ig-set-authorization")
-            )
+            self.authorization_data = self.parse_authorization(self.last_response.headers.get("ig-set-authorization"))
         except TwoFactorRequired as e:
             if not verification_code.strip():
-                raise TwoFactorRequired(
-                    f"{e} (you did not provide verification_code for login method)"
-                )
-            two_factor_identifier = self.last_json.get("two_factor_info", {}).get(
-                "two_factor_identifier"
-            )
+                raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
+            two_factor_identifier = self.last_json.get("two_factor_info", {}).get("two_factor_identifier")
             data = {
                 "verification_code": verification_code,
                 "phone_id": self.phone_id,
@@ -529,9 +506,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "verification_method": "3",
             }
             try:
-                logged = self.private_request(
-                    "accounts/two_factor_login/", data, login=True
-                )
+                logged = self.private_request("accounts/two_factor_login/", data, login=True)
             except UnknownError as exc:
                 message = getattr(exc, "message", "") or ""
                 if message.strip().lower() == "invalid parameters":
@@ -545,9 +520,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                         **(self.last_json if isinstance(self.last_json, dict) else {}),
                     ) from exc
                 raise
-            self.authorization_data = self.parse_authorization(
-                self.last_response.headers.get("ig-set-authorization")
-            )
+            self.authorization_data = self.parse_authorization(self.last_response.headers.get("ig-set-authorization"))
         if logged:
             self.login_flow()
             self.last_login = time.time()
@@ -686,9 +659,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.init()
         return True
 
-    def load_settings(
-        self, path: Union[str, Path], override_app_version: bool = False
-    ) -> Dict:
+    def load_settings(self, path: Union[str, Path], override_app_version: bool = False) -> Dict:
         """
         Load session settings
 
@@ -896,9 +867,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
         self.advertising_id = uuids.get("advertising_id", self.generate_uuid())
-        self.android_device_id = uuids.get(
-            "android_device_id", self.generate_android_device_id()
-        )
+        self.android_device_id = uuids.get("android_device_id", self.generate_android_device_id())
         self.request_id = uuids.get("request_id", self.generate_uuid())
         self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
         # self.device_id = uuids.get("device_id", self.generate_uuid())
@@ -1023,11 +992,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             }
         )
         return "{!s}\n{!s}\n".format(
-            base64.b64encode(
-                hmac.new(
-                    key.encode("ascii"), data.encode("ascii"), digestmod=hashlib.sha256
-                ).digest()
-            ),
+            base64.b64encode(hmac.new(key.encode("ascii"), data.encode("ascii"), digestmod=hashlib.sha256).digest()),
             base64.b64encode(data.encode("ascii")),
         )
 

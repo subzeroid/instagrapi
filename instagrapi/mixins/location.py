@@ -107,9 +107,7 @@ class LocationMixin:
         Location
             An object of Location
         """
-        assert location and isinstance(
-            location, Location
-        ), f'Location is wrong "{location}" ({type(location)})'
+        assert location and isinstance(location, Location), f'Location is wrong "{location}" ({type(location)})'
         if location.pk and not location.lat:
             # search lat and lng
             info = self.location_info(location.pk)
@@ -129,9 +127,7 @@ class LocationMixin:
                 pass
         if not location.pk and location.external_id:
             info = self.location_info(location.external_id)
-            if info.name == location.name or (
-                info.lat == location.lat and info.lng == location.lng
-            ):
+            if info.name == location.name or (info.lat == location.lat and info.lng == location.lng):
                 location.pk = location.external_id
         return location
 
@@ -254,9 +250,7 @@ class LocationMixin:
         Tuple[List[Media], str]
             List of objects of Media and end_cursor
         """
-        assert (
-            tab_key in tab_keys_a1
-        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert tab_key in tab_keys_a1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         unique_set = set()
         medias = []
         end_cursor = None
@@ -301,9 +295,7 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        assert (
-            tab_key in tab_keys_a1
-        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert tab_key in tab_keys_a1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         medias, _ = self.location_medias_a1_chunk(location_pk, amount, sleep, tab_key)
         if amount:
             medias = medias[:amount]
@@ -335,9 +327,7 @@ class LocationMixin:
         Tuple[List[Media], str]
             List of objects of Media and max_id
         """
-        assert (
-            tab_key in tab_keys_v1
-        ), f'You must specify one of the options for "tab_key" {tab_keys_v1}'
+        assert tab_key in tab_keys_v1, f'You must specify one of the options for "tab_key" {tab_keys_v1}'
         data = {
             "_uuid": self.uuid,
             "session_id": self.client_session_id,
@@ -361,9 +351,7 @@ class LocationMixin:
             np = result.get("next_page")
             ids = result.get("next_media_ids")
             next_m_id = result.get("next_max_id")
-            next_max_id = base64.b64encode(
-                json.dumps([next_m_id, np, ids]).encode()
-            ).decode()
+            next_max_id = base64.b64encode(json.dumps([next_m_id, np, ids]).encode()).decode()
         for section in result.get("sections") or []:
             layout_content = section.get("layout_content") or {}
             nodes = layout_content.get("medias") or []
@@ -372,9 +360,7 @@ class LocationMixin:
                 medias.append(media)
         return medias, next_max_id
 
-    def location_medias_v1(
-        self, location_pk: int, amount: int = 63, tab_key: str = ""
-    ) -> List[Media]:
+    def location_medias_v1(self, location_pk: int, amount: int = 63, tab_key: str = "") -> List[Media]:
         """
         Get medias for a location by Private Mobile API
 
@@ -392,15 +378,11 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        assert (
-            tab_key in tab_keys_v1
-        ), f'You must specify one of the options for "tab_key" {tab_keys_a1}'
+        assert tab_key in tab_keys_v1, f'You must specify one of the options for "tab_key" {tab_keys_a1}'
         medias = []
         max_id = None
         while True:
-            items, max_id = self.location_medias_v1_chunk(
-                location_pk, amount, tab_key, max_id
-            )
+            items, max_id = self.location_medias_v1_chunk(location_pk, amount, tab_key, max_id)
             medias.extend(items)
             if amount and len(medias) >= amount:
                 break
@@ -410,9 +392,7 @@ class LocationMixin:
             medias = medias[:amount]
         return medias
 
-    def location_medias_top_a1(
-        self, location_pk: int, amount: int = 9, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_top_a1(self, location_pk: int, amount: int = 9, sleep: float = 0.5) -> List[Media]:
         """
         Get top medias for a location
 
@@ -430,9 +410,7 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        return self.location_medias_a1(
-            location_pk, amount, sleep=sleep, tab_key="edge_location_to_top_posts"
-        )
+        return self.location_medias_a1(location_pk, amount, sleep=sleep, tab_key="edge_location_to_top_posts")
 
     def location_medias_top_v1(self, location_pk: int, amount: int = 21) -> List[Media]:
         """
@@ -470,9 +448,7 @@ class LocationMixin:
         """
         return self.location_medias_top_v1(location_pk, amount)
 
-    def location_medias_recent_a1(
-        self, location_pk: int, amount: int = 24, sleep: float = 0.5
-    ) -> List[Media]:
+    def location_medias_recent_a1(self, location_pk: int, amount: int = 24, sleep: float = 0.5) -> List[Media]:
         """
         Get recent medias for a location
 
@@ -490,13 +466,9 @@ class LocationMixin:
         List[Media]
             List of objects of Media
         """
-        return self.location_medias_a1(
-            location_pk, amount, sleep=sleep, tab_key="edge_location_to_media"
-        )
+        return self.location_medias_a1(location_pk, amount, sleep=sleep, tab_key="edge_location_to_media")
 
-    def location_medias_recent_v1(
-        self, location_pk: int, amount: int = 63
-    ) -> List[Media]:
+    def location_medias_recent_v1(self, location_pk: int, amount: int = 63) -> List[Media]:
         """
         Get recent medias for a location
 

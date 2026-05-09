@@ -13,9 +13,7 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         client = self.build_client()
         client.uuid = "uuid-1"
 
-        with mock.patch.object(
-            client, "private_request", return_value={"status": "ok"}
-        ) as private:
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private:
             result = client.direct_thread_update_title(123, "Updated title")
 
         self.assertTrue(result)
@@ -80,24 +78,12 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
 
         with (
             mock.patch("instagrapi.mixins.direct.time.time", return_value=1234.567),
-            mock.patch(
-                "instagrapi.mixins.direct.secrets.token_hex", return_value="a" * 32
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.random.randint", return_value=111111111111
-            ),
-            mock.patch.object(
-                client, "_video_rupload", return_value=987654321
-            ) as rupload,
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch("instagrapi.mixins.direct.secrets.token_hex", return_value="a" * 32),
+            mock.patch("instagrapi.mixins.direct.random.randint", return_value=111111111111),
+            mock.patch.object(client, "_video_rupload", return_value=987654321) as rupload,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
             result = client.direct_send_video(path, thread_ids=[123])
 
@@ -133,15 +119,9 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
                 return_value={"thread_v2_id": thread_id},
             ) as thread_lookup,
             mock.patch.object(client, "_video_rupload", return_value=123),
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
             result = client.direct_send_video(path, user_ids=[42])
 
@@ -161,19 +141,11 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             return {"users": []}
 
         with (
-            mock.patch.object(
-                client, "direct_thread_by_participants", side_effect=thread_lookup
-            ) as lookup,
+            mock.patch.object(client, "direct_thread_by_participants", side_effect=thread_lookup) as lookup,
             mock.patch.object(client, "_video_rupload", return_value=123),
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
             result = client.direct_send_video(path, user_ids=[42])
 
@@ -190,22 +162,12 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         with (
             mock.patch("instagrapi.mixins.direct.time.time", return_value=1234.567),
             mock.patch("instagrapi.mixins.direct.random.randint", return_value=-99),
-            mock.patch.object(
-                client, "_voice_rupload", return_value=987654321
-            ) as rupload,
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch.object(client, "_voice_rupload", return_value=987654321) as rupload,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
-            result = client.direct_send_voice(
-                path, thread_ids=[123], waveform=[0.1, 0.2]
-            )
+            result = client.direct_send_voice(path, thread_ids=[123], waveform=[0.1, 0.2])
 
         self.assertIs(result, expected)
         rupload.assert_called_once_with(b"voice-bytes", "1234567", -99)
@@ -237,15 +199,9 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
                 return_value={"thread_v2_id": thread_id},
             ) as thread_lookup,
             mock.patch.object(client, "_voice_rupload", return_value=123),
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
             result = client.direct_send_voice(path, user_ids=[42], waveform=[0.3])
 
@@ -267,19 +223,11 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             return {"users": []}
 
         with (
-            mock.patch.object(
-                client, "direct_thread_by_participants", side_effect=thread_lookup
-            ) as lookup,
+            mock.patch.object(client, "direct_thread_by_participants", side_effect=thread_lookup) as lookup,
             mock.patch.object(client, "_voice_rupload", return_value=123),
-            mock.patch.object(
-                client, "generate_mutation_token", return_value="mutation-token"
-            ),
-            mock.patch(
-                "instagrapi.mixins.direct.extract_direct_message", return_value=expected
-            ),
-            mock.patch.object(
-                client, "private_request", return_value=self.direct_payload()
-            ) as private,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
         ):
             result = client.direct_send_voice(path, user_ids=[42], waveform=[0.3])
 
@@ -291,9 +239,7 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
     def test_direct_send_video_raises_when_existing_thread_is_missing(self):
         client = self.build_client()
 
-        with mock.patch.object(
-            client, "direct_thread_by_participants", return_value={}
-        ) as thread_lookup:
+        with mock.patch.object(client, "direct_thread_by_participants", return_value={}) as thread_lookup:
             with mock.patch.object(client, "_video_rupload") as rupload:
                 with self.assertRaises(DirectThreadNotFound):
                     client.direct_send_video("clip.mp4", user_ids=[42])
@@ -305,9 +251,7 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         client = self.build_client()
         path = self.make_voice_file()
 
-        with mock.patch.object(
-            client, "direct_thread_by_participants", return_value={}
-        ) as thread_lookup:
+        with mock.patch.object(client, "direct_thread_by_participants", return_value={}) as thread_lookup:
             with mock.patch.object(client, "_voice_rupload") as rupload:
                 with self.assertRaises(DirectThreadNotFound):
                     client.direct_send_voice(path, user_ids=[42])
@@ -322,15 +266,11 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         session = self.fake_rupload_session(media_id=987654321)
 
         with mock.patch("requests.Session", return_value=session):
-            media_id = client._video_rupload(
-                b"video-bytes", "entity-name", "waterfall-id"
-            )
+            media_id = client._video_rupload(b"video-bytes", "entity-name", "waterfall-id")
 
         self.assertEqual(media_id, 987654321)
         self.assertEqual(session.calls[0][2]["authorization"], client.authorization)
-        self.assertNotEqual(
-            session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session"
-        )
+        self.assertNotEqual(session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session")
 
     def test_voice_rupload_uses_client_authorization_fallback(self):
         client = self.build_client()
@@ -343,6 +283,4 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(media_id, 987654321)
         self.assertEqual(session.calls[0][2]["authorization"], client.authorization)
-        self.assertNotEqual(
-            session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session"
-        )
+        self.assertNotEqual(session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session")

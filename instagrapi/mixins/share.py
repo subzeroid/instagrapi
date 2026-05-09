@@ -22,12 +22,7 @@ class ShareMixin:
         if isinstance(code, str):
             code = code.encode()
         # ignore example from instagram: b'highli\xb1\xdb\x1dght:17988089629383770'
-        data = (
-            base64.b64decode(code)
-            .decode(errors="ignore")
-            .replace("\x1d", "")
-            .split(":")
-        )
+        data = base64.b64decode(code).decode(errors="ignore").replace("\x1d", "").split(":")
         return Share(type=data[0], pk=data[1])
 
     def share_info_by_url(self, url: str) -> Share:

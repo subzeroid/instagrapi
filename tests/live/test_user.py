@@ -124,17 +124,11 @@ class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
             try:
                 requester.user_unfollow(target.user_id)
             except Exception as exc:
-                print(
-                    "Follow request live cleanup user_unfollow failed: "
-                    f"{exc.__class__.__name__} {exc}"
-                )
+                print(f"Follow request live cleanup user_unfollow failed: {exc.__class__.__name__} {exc}")
         try:
             target.account_set_public()
         except Exception as exc:
-            print(
-                "Follow request live cleanup account_set_public failed: "
-                f"{exc.__class__.__name__} {exc}"
-            )
+            print(f"Follow request live cleanup account_set_public failed: {exc.__class__.__name__} {exc}")
 
     def test_follow_request_helpers_live(self):
         target = self.cl
@@ -173,13 +167,10 @@ class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
             self.wait_for_friendship(
                 single_decline,
                 target.user_id,
-                lambda relationship: relationship.following is False
-                and relationship.outgoing_request is False,
+                lambda relationship: relationship.following is False and relationship.outgoing_request is False,
             )
 
-            batch_approve_result = target.user_follow_requests_approve(
-                [str(batch_approve.user_id)]
-            )
+            batch_approve_result = target.user_follow_requests_approve([str(batch_approve.user_id)])
             self.assertEqual(batch_approve_result, {str(batch_approve.user_id): True})
             self.wait_for_friendship(
                 batch_approve,
@@ -187,16 +178,13 @@ class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
                 lambda relationship: relationship.following is True,
             )
 
-            batch_decline_result = target.user_follow_requests_decline(
-                [str(batch_decline.user_id)]
-            )
+            batch_decline_result = target.user_follow_requests_decline([str(batch_decline.user_id)])
             self.assertEqual(batch_decline_result, {str(batch_decline.user_id): True})
             self.wait_for_no_pending_user_ids(target, {batch_decline.user_id})
             self.wait_for_friendship(
                 batch_decline,
                 target.user_id,
-                lambda relationship: relationship.following is False
-                and relationship.outgoing_request is False,
+                lambda relationship: relationship.following is False and relationship.outgoing_request is False,
             )
         finally:
             self.cleanup_follow_request_live_clients(target, requesters)

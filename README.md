@@ -28,8 +28,20 @@ Support **Python 3.10+**
 
 ## Installation
 
-```
+```bash
 pip install instagrapi
+```
+
+If your project uses [uv](https://docs.astral.sh/uv/), you can add the package with:
+
+```bash
+uv add instagrapi
+```
+
+Or install it into the active virtual environment:
+
+```bash
+uv pip install instagrapi
 ```
 
 ## Quick Start

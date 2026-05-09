@@ -4,9 +4,7 @@ from tests.helpers import *
 
 class ClientHighlightTestCase(_helpers.ClientPrivateTestCase):
     def test_highlight_pk_from_url(self):
-        highlight_pk = self.cl.highlight_pk_from_url(
-            "https://www.instagram.com/stories/highlights/17983407089364361/"
-        )
+        highlight_pk = self.cl.highlight_pk_from_url("https://www.instagram.com/stories/highlights/17983407089364361/")
         self.assertEqual(highlight_pk, "17983407089364361")
 
     def test_highlight_info(self):

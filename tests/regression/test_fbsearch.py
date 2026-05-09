@@ -12,9 +12,7 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
     def test_fbsearch_accounts_v2_omits_page_token_when_absent(self):
         client = self._build_client()
-        with mock.patch.object(
-            client, "private_request", return_value={"users": []}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={"users": []}) as private_request:
             client.fbsearch_accounts_v2("alice")
 
         private_request.assert_called_once_with(
@@ -28,9 +26,7 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
     def test_fbsearch_accounts_v2_forwards_page_token(self):
         client = self._build_client()
-        with mock.patch.object(
-            client, "private_request", return_value={"users": []}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={"users": []}) as private_request:
             client.fbsearch_accounts_v2("alice", page_token="abc==")
 
         params = private_request.call_args.kwargs["params"]
@@ -38,12 +34,8 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
     def test_fbsearch_reels_v2_forwards_optional_cursors(self):
         client = self._build_client()
-        with mock.patch.object(
-            client, "private_request", return_value={}
-        ) as private_request:
-            client.fbsearch_reels_v2(
-                "dance", reels_max_id="next-page", rank_token="rt-x"
-            )
+        with mock.patch.object(client, "private_request", return_value={}) as private_request:
+            client.fbsearch_reels_v2("dance", reels_max_id="next-page", rank_token="rt-x")
 
         private_request.assert_called_once_with(
             "fbsearch/reels_serp/",
@@ -58,9 +50,7 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
     def test_fbsearch_topsearch_v2_uses_self_rank_token_by_default(self):
         client = self._build_client()
-        with mock.patch.object(
-            client, "private_request", return_value={}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={}) as private_request:
             client.fbsearch_topsearch_v2("alice")
 
         params = private_request.call_args.kwargs["params"]
@@ -73,9 +63,7 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
     def test_fbsearch_topsearch_v2_explicit_rank_token_overrides_default(self):
         client = self._build_client()
-        with mock.patch.object(
-            client, "private_request", return_value={}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={}) as private_request:
             client.fbsearch_topsearch_v2(
                 "alice",
                 next_max_id="cursor-1",

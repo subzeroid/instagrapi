@@ -47,11 +47,7 @@ class CommentMixin:
                     params = {"max_id": result.get("next_max_id")}
                 else:
                     params = {"min_id": result.get("next_min_id")}
-                if not (
-                    result.get("next_max_id")
-                    or result.get("next_min_id")
-                    or result.get("comments")
-                ):
+                if not (result.get("next_max_id") or result.get("next_min_id") or result.get("comments")):
                     break
                 result = self.private_request(f"media/{media_id}/comments/", params)
                 get_comments()
@@ -67,9 +63,7 @@ class CommentMixin:
             comments = comments[:amount]
         return comments
 
-    def media_comments_chunk(
-        self, media_id: str, max_amount: int, min_id: str = None
-    ) -> Tuple[List[Comment], str]:
+    def media_comments_chunk(self, media_id: str, max_amount: int, min_id: str = None) -> Tuple[List[Comment], str]:
         """
         Get chunk of comments on a media and end_cursor
 
@@ -116,9 +110,7 @@ class CommentMixin:
                 break
         return (comments, result.get("next_min_id"))
 
-    def media_comment_replies(
-        self, media_id: str, comment_id: str, amount: int = 0
-    ) -> List[Comment]:
+    def media_comment_replies(self, media_id: str, comment_id: str, amount: int = 0) -> List[Comment]:
         """
         Get replies for a media comment.
 
@@ -153,15 +145,10 @@ class CommentMixin:
                     raise MediaNotFound(e, media_id=media_id, **self.last_json)
                 raise e
 
-            replies.extend(
-                extract_comment(comment) for comment in result.get("child_comments", [])
-            )
+            replies.extend(extract_comment(comment) for comment in result.get("child_comments", []))
             if amount and len(replies) >= amount:
                 break
-            if not (
-                result.get("has_more_head_child_comments")
-                and result.get("next_min_child_cursor")
-            ):
+            if not (result.get("has_more_head_child_comments") and result.get("next_min_child_cursor")):
                 break
             params = {"min_id": result.get("next_min_child_cursor")}
         if amount:
@@ -205,14 +192,10 @@ class CommentMixin:
             if "Media not found" in str(e):
                 raise MediaNotFound(e, media_id=media_id, **self.last_json)
             raise e
-        replies = [
-            extract_comment(comment) for comment in result.get("child_comments", [])
-        ][:max_amount]
+        replies = [extract_comment(comment) for comment in result.get("child_comments", [])][:max_amount]
         return (replies, result.get("next_min_child_cursor"))
 
-    def media_comment(
-        self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None
-    ) -> Comment:
+    def media_comment(self, media_id: str, text: str, replied_to_comment_id: Optional[int] = None) -> Comment:
         """
         Post a comment on a media
 
@@ -332,9 +315,7 @@ class CommentMixin:
             "feed_position": str(random.randint(0, 6)),
         }
         name = "unlike" if revert else "like"
-        result = self.private_request(
-            f"media/{comment_pk}/comment_{name}/", self.with_action_data(data)
-        )
+        result = self.private_request(f"media/{comment_pk}/comment_{name}/", self.with_action_data(data))
         return result["status"] == "ok"
 
     def comment_unlike(self, comment_pk: int) -> bool:
@@ -373,9 +354,7 @@ class CommentMixin:
         data = self.with_action_data({"_uid": self.user_id, "_uuid": self.uuid})
         name = "unpin" if revert else "pin"
 
-        result = self.private_request(
-            f"media/{media_id}/{name}_comment/{comment_pk}", data
-        )
+        result = self.private_request(f"media/{media_id}/{name}_comment/{comment_pk}", data)
         return result["status"] == "ok"
 
     def comment_unpin(self, media_id: str, comment_pk: int):
@@ -417,7 +396,5 @@ class CommentMixin:
             "comment_ids_to_delete": ",".join([str(pk) for pk in comment_pks]),
             "container_module": "self_comments_v2_newsfeed_you",
         }
-        result = self.private_request(
-            f"media/{media_id}/comment/bulk_delete/", self.with_action_data(data)
-        )
+        result = self.private_request(f"media/{media_id}/comment/bulk_delete/", self.with_action_data(data))
         return result["status"] == "ok"

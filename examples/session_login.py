@@ -1,6 +1,7 @@
 """Examples for session persistence and sessionid login."""
 
 import os
+
 from instagrapi import Client
 
 IG_USERNAME = os.environ.get("IG_USERNAME")

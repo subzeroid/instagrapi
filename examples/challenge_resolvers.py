@@ -1,10 +1,11 @@
 """
 Example to handle Email/SMS challenges
 """
+
 import email
 import imaplib
-import re
 import random
+import re
 
 from instagrapi import Client
 from instagrapi.mixins.challenge import ChallengeChoice

@@ -87,9 +87,7 @@ class DirectMixin:
         threads = []
         # self.private_request("direct_v2/get_presence/")
         while True:
-            threads_chunk, cursor = self.direct_threads_chunk(
-                selected_filter, box, thread_message_limit, cursor
-            )
+            threads_chunk, cursor = self.direct_threads_chunk(selected_filter, box, thread_message_limit, cursor)
             for thread in threads_chunk:
                 threads.append(thread)
 
@@ -134,9 +132,9 @@ class DirectMixin:
             "is_prefetching": "false",
         }
         if selected_filter:
-            assert (
-                selected_filter in SELECTED_FILTERS
-            ), f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
+            assert selected_filter in SELECTED_FILTERS, (
+                f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
+            )
             params.update({"selected_filter": selected_filter})
         if box:
             assert box in BOXES, f'Unsupported box="{box}" {BOXES}'
@@ -144,9 +142,7 @@ class DirectMixin:
         if thread_message_limit:
             params.update({"thread_message_limit": thread_message_limit})
         if cursor:
-            params.update(
-                {"cursor": cursor, "direction": "older", "fetch_reason": "page_scroll"}
-            )
+            params.update({"cursor": cursor, "direction": "older", "fetch_reason": "page_scroll"})
 
         threads = []
         result = self.private_request("direct_v2/inbox/", params=params)
@@ -184,9 +180,7 @@ class DirectMixin:
             threads = threads[:amount]
         return threads
 
-    def direct_pending_chunk(
-        self, cursor: str = None
-    ) -> Tuple[List[DirectThread], str]:
+    def direct_pending_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
         """
         Get direct threads of Pending inbox. Chunk
 
@@ -329,9 +323,7 @@ class DirectMixin:
             if cursor:
                 params["cursor"] = cursor
             try:
-                result = self.private_request(
-                    f"direct_v2/threads/{thread_id}/", params=params
-                )
+                result = self.private_request(f"direct_v2/threads/{thread_id}/", params=params)
             except ClientNotFoundError as e:
                 raise DirectThreadNotFound(e, thread_id=thread_id, **self.last_json)
             thread = result["thread"]
@@ -416,12 +408,10 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
-        assert (
-            send_attribute in SEND_ATTRIBUTES
-        ), f'Unsupported send_attribute="{send_attribute}" {SEND_ATTRIBUTES}'
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
+        assert send_attribute in SEND_ATTRIBUTES, f'Unsupported send_attribute="{send_attribute}" {SEND_ATTRIBUTES}'
         method = "text"
         token = self.generate_mutation_token()
 
@@ -464,9 +454,7 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def direct_send_photo(
-        self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_send_photo(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Send a direct photo to list of users or threads
 
@@ -508,9 +496,7 @@ class DirectMixin:
                 video.close()
         return width, height, duration_sec
 
-    def _direct_thread_id_from_user_ids(
-        self, user_ids: List[int], media_kind: str
-    ) -> int:
+    def _direct_thread_id_from_user_ids(self, user_ids: List[int], media_kind: str) -> int:
         thread = self.direct_thread_by_participants(user_ids)
         thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
         if not thread_id and isinstance(self.last_json, dict):
@@ -525,9 +511,7 @@ class DirectMixin:
             )
         return int(thread_id)
 
-    def direct_send_video(
-        self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_send_video(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Send a direct video to a list of users or threads.
 
@@ -562,9 +546,9 @@ class DirectMixin:
             An object of DirectMessage.
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
         if user_ids:
             thread_ids = [self._direct_thread_id_from_user_ids(user_ids, "video")]
 
@@ -628,9 +612,7 @@ class DirectMixin:
                     "background_coverage": "0.0",
                 }
             ),
-            "clips": [
-                {"length": duration_sec, "source_type": "3", "camera_position": "back"}
-            ],
+            "clips": [{"length": duration_sec, "source_type": "3", "camera_position": "back"}],
             "poster_frame_index": 0,
             "length": duration_sec,
             "audio_muted": False,
@@ -650,9 +632,7 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
-    def _video_rupload(
-        self, video_bytes: bytes, entity_name: str, waterfall_id: str
-    ) -> int:
+    def _video_rupload(self, video_bytes: bytes, entity_name: str, waterfall_id: str) -> int:
         """Upload mp4 bytes to ``rupload.facebook.com/messenger_video/...`` and
         return the ``media_id`` used as ``attachment_fbid`` in the broadcast.
 
@@ -712,9 +692,7 @@ class DirectMixin:
         # 1. fetch resumable offset
         r = sess.get(url, headers=headers, timeout=30)
         if r.status_code != 200:
-            raise ClientError(
-                f"messenger_video offset GET failed: " f"{r.status_code} {r.text[:300]}"
-            )
+            raise ClientError(f"messenger_video offset GET failed: {r.status_code} {r.text[:300]}")
         try:
             offset = int(r.json().get("offset", 0))
         except Exception:
@@ -733,16 +711,11 @@ class DirectMixin:
         )
         r = sess.post(url, data=video_bytes[offset:], headers=post_headers, timeout=300)
         if r.status_code != 200:
-            raise ClientError(
-                f"messenger_video upload POST failed: "
-                f"{r.status_code} {r.text[:300]}"
-            )
+            raise ClientError(f"messenger_video upload POST failed: {r.status_code} {r.text[:300]}")
         try:
             media_id = int(r.json()["media_id"])
         except Exception as exc:
-            raise ClientError(
-                f"messenger_video response missing media_id: {r.text[:300]}"
-            ) from exc
+            raise ClientError(f"messenger_video response missing media_id: {r.text[:300]}") from exc
         return media_id
 
     def direct_send_voice(
@@ -787,9 +760,9 @@ class DirectMixin:
             An object of DirectMessage.
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
         if user_ids:
             thread_ids = [self._direct_thread_id_from_user_ids(user_ids, "voice")]
 
@@ -890,9 +863,7 @@ class DirectMixin:
         # 1. fetch resumable offset
         r = sess.get(url, headers=headers, timeout=30)
         if r.status_code != 200:
-            raise ClientError(
-                f"messenger_audio offset GET failed: " f"{r.status_code} {r.text[:300]}"
-            )
+            raise ClientError(f"messenger_audio offset GET failed: {r.status_code} {r.text[:300]}")
         try:
             offset = int(r.json().get("offset", 0))
         except Exception:
@@ -911,16 +882,11 @@ class DirectMixin:
         )
         r = sess.post(url, data=audio_bytes[offset:], headers=post_headers, timeout=120)
         if r.status_code != 200:
-            raise ClientError(
-                f"messenger_audio upload POST failed: "
-                f"{r.status_code} {r.text[:300]}"
-            )
+            raise ClientError(f"messenger_audio upload POST failed: {r.status_code} {r.text[:300]}")
         try:
             media_id = int(r.json()["media_id"])
         except Exception as exc:
-            raise ClientError(
-                f"messenger_audio response missing media_id: {r.text[:300]}"
-            ) from exc
+            raise ClientError(f"messenger_audio response missing media_id: {r.text[:300]}") from exc
         return media_id
 
     def direct_send_file(
@@ -948,9 +914,9 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
         method = f"configure_{content_type}"
         token = self.generate_mutation_token()
         nav_chains = [
@@ -989,9 +955,7 @@ class DirectMixin:
             data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         path = Path(path)
         upload_id = str(int(time.time() * 1000))
-        upload_id, width, height = getattr(self, f"{content_type}_rupload")(
-            path, upload_id, **kwargs
-        )[:3]
+        upload_id, width, height = getattr(self, f"{content_type}_rupload")(path, upload_id, **kwargs)[:3]
         data["upload_id"] = upload_id
         # data['content_type'] = content_type
         result = self.private_request(
@@ -1025,9 +989,9 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
 
         token = self.generate_mutation_token()
 
@@ -1082,9 +1046,7 @@ class DirectMixin:
             data=self.with_default_data(data),
             with_signature=False,
         )
-        assert (
-            result.get("status") == "ok"
-        ), f"Failed to retrieve presence of user_id={user_ids}"
+        assert result.get("status") == "ok", f"Failed to retrieve presence of user_id={user_ids}"
         return result
 
     def direct_active_presence(self) -> Dict:
@@ -1097,9 +1059,7 @@ class DirectMixin:
             Dict with active presences
         """
         params = {"recent_thread_limit": 0, "suggested_followers_limit": 100}
-        result = self.private_request(
-            "direct_v2/get_presence_active_now/", params=params
-        )
+        result = self.private_request("direct_v2/get_presence_active_now/", params=params)
         assert result.get("status") == "ok", "Failed to retrieve active presences"
 
         return result.get("user_presence", {})
@@ -1152,9 +1112,7 @@ class DirectMixin:
         thread = self.direct_thread(thread_id=thread_id)
         return self.direct_message_seen(thread_id, thread.messages[0].id)
 
-    def direct_search(
-        self, query: str, mode: SEARCH_MODE = "universal"
-    ) -> List[UserShort]:
+    def direct_search(self, query: str, mode: SEARCH_MODE = "universal") -> List[UserShort]:
         """
         Search threads by query
 
@@ -1187,14 +1145,10 @@ class DirectMixin:
         return [
             extract_user_short(item.get("user", {}))
             for item in result.get("ranked_recipients", [])
-            if "user" in item
-            and item.get("user", {}).get("username", "")
-            != ""  # Check to exclude suggestions from FB
+            if "user" in item and item.get("user", {}).get("username", "") != ""  # Check to exclude suggestions from FB
         ]
 
-    def direct_message_search(
-        self, query: str
-    ) -> List[Tuple[DirectMessage, DirectShortThread]]:
+    def direct_message_search(self, query: str) -> List[Tuple[DirectMessage, DirectShortThread]]:
         """
         Search query mentions in direct messages
 
@@ -1385,9 +1339,7 @@ class DirectMixin:
 
         return extract_direct_message(result["payload"])
 
-    def direct_story_share(
-        self, story_id: str, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_story_share(self, story_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Share a story to list of users
 
@@ -1406,9 +1358,9 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
         story_id = self.media_id(story_id)
         story_pk = self.media_pk(story_id)
         token = self.generate_mutation_token()
@@ -1456,9 +1408,7 @@ class DirectMixin:
         data = self.with_default_data({})
         data.pop("_uid", None)
         data.pop("device_id", None)
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/mark_unread/", data=data
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/mark_unread/", data=data)
         return result["status"] == "ok"
 
     def direct_message_delete(self, thread_id: int, message_id: int) -> bool:
@@ -1480,9 +1430,7 @@ class DirectMixin:
         data = self.with_default_data({})
         data.pop("_uid", None)
         data.pop("device_id", None)
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/items/{message_id}/delete/", data=data
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/items/{message_id}/delete/", data=data)
         return result["status"] == "ok"
 
     def direct_thread_mute(self, thread_id: int, revert: bool = False) -> bool:
@@ -1502,9 +1450,7 @@ class DirectMixin:
             A boolean value
         """
         name = "unmute" if revert else "mute"
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/{name}/", data={"_uuid": self.uuid}
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/{name}/", data={"_uuid": self.uuid})
         return result["status"] == "ok"
 
     def direct_thread_unmute(self, thread_id: int) -> bool:
@@ -1523,9 +1469,7 @@ class DirectMixin:
         """
         return self.direct_thread_mute(thread_id, revert=True)
 
-    def direct_thread_mute_video_call(
-        self, thread_id: int, revert: bool = False
-    ) -> bool:
+    def direct_thread_mute_video_call(self, thread_id: int, revert: bool = False) -> bool:
         """
         Mute video call for the thread
 
@@ -1542,9 +1486,7 @@ class DirectMixin:
             A boolean value
         """
         name = "unmute_video_call" if revert else "mute_video_call"
-        result = self.private_request(
-            f"direct_v2/threads/{thread_id}/{name}/", data={"_uuid": self.uuid}
-        )
+        result = self.private_request(f"direct_v2/threads/{thread_id}/{name}/", data={"_uuid": self.uuid})
         return result["status"] == "ok"
 
     def direct_thread_unmute_video_call(self, thread_id: int) -> bool:
@@ -1563,9 +1505,7 @@ class DirectMixin:
         """
         return self.direct_thread_mute_video_call(thread_id, revert=True)
 
-    def direct_profile_share(
-        self, user_id: str, user_ids: List[int] = [], thread_ids: List[int] = []
-    ) -> DirectMessage:
+    def direct_profile_share(self, user_id: str, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
         Share a profile to list of users
 
@@ -1584,9 +1524,9 @@ class DirectMixin:
             An object of DirectMessage
         """
         assert self.user_id, "Login required"
-        assert (user_ids or thread_ids) and not (
-            user_ids and thread_ids
-        ), "Specify user_ids or thread_ids, but not both"
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
         token = self.generate_mutation_token()
         kwargs = {
             "profile_user_id": user_id,
@@ -1643,9 +1583,7 @@ class DirectMixin:
             if max_timestamp:
                 params["max_timestamp"] = max_timestamp
             try:
-                result = self.private_request(
-                    f"direct_v2/threads/{thread_id}/media/", params=params
-                )
+                result = self.private_request(f"direct_v2/threads/{thread_id}/media/", params=params)
             except ClientNotFoundError as e:
                 raise DirectThreadNotFound(e, thread_id=thread_id, **self.last_json)
             for item in result["items"]:

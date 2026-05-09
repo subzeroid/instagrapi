@@ -94,9 +94,7 @@ class PrivateRequestMixin:
         self.private.verify = False  # fix SSLError/HTTPSConnectionPool
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
-        self.request_timeout = kwargs.pop(
-            "request_timeout", getattr(self, "request_timeout", self.request_timeout)
-        )
+        self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))
         self.session_retry_total = kwargs.pop(
             "session_retry_total",
             getattr(self, "session_retry_total", self.session_retry_total),
@@ -174,12 +172,8 @@ class PrivateRequestMixin:
             "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-1"),
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
-            "X-IG-Bandwidth-Speed-KBPS": str(
-                random.randint(2500000, 3000000) / 1000
-            ),  # "-1.000"
-            "X-IG-Bandwidth-TotalBytes-B": str(
-                random.randint(5000000, 90000000)
-            ),  # "0"
+            "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
+            "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),  # "0"
             "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
@@ -288,9 +282,7 @@ class PrivateRequestMixin:
         bool
             A boolean value
         """
-        user_agent = (self.settings.get("user_agent") or "").replace(
-            self.locale, locale
-        )
+        user_agent = (self.settings.get("user_agent") or "").replace(self.locale, locale)
         self.settings["locale"] = self.locale = str(locale)
         self.set_user_agent(user_agent)  # update locale in user_agent
         if "_" in locale:
@@ -357,22 +349,16 @@ class PrivateRequestMixin:
             if data:  # POST
                 # Client.direct_answer raw dict
                 # data = json.dumps(data)
-                self.private.headers["Content-Type"] = (
-                    "application/x-www-form-urlencoded; charset=UTF-8"
-                )
+                self.private.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
                 if with_signature:
                     # Client.direct_answer doesn't need a signature
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
-                response = self.private.post(
-                    api_url, data=data, params=params, proxies=self.private.proxies
-                )
+                response = self.private.post(api_url, data=data, params=params, proxies=self.private.proxies)
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
-                response = self.private.get(
-                    api_url, params=params, proxies=self.private.proxies
-                )
+                response = self.private.get(api_url, params=params, proxies=self.private.proxies)
             self.logger.debug(
                 "private_request %s: %s (%s)",
                 response.status_code,
@@ -421,8 +407,7 @@ class PrivateRequestMixin:
                         last_json["message"] = "Two-factor authentication required"
                         if last_json.get("error_type") != "two_factor_required":
                             self.logger.info(
-                                "Changing error_type from %s to two_factor_required "
-                                "due to presence of two_factor_info",
+                                "Changing error_type from %s to two_factor_required due to presence of two_factor_info",
                                 last_json.get("error_type"),
                             )
                         last_json["error_type"] = "two_factor_required"
@@ -433,8 +418,7 @@ class PrivateRequestMixin:
                     raise FeedbackRequired(
                         **dict(
                             last_json,
-                            message="%s: %s"
-                            % (message, last_json.get("feedback_message")),
+                            message="%s: %s" % (message, last_json.get("feedback_message")),
                         )
                     )
                 elif error_type == "sentry_block":
@@ -464,10 +448,7 @@ class PrivateRequestMixin:
                     raise InvalidTargetUser(e, response=e.response, **last_json)
                 elif "Invalid media_id" in message:
                     raise InvalidMediaId(e, response=e.response, **last_json)
-                elif (
-                    "Media is unavailable" in message
-                    or "Media not found or unavailable" in message
-                ):
+                elif "Media is unavailable" in message or "Media not found or unavailable" in message:
                     raise MediaUnavailable(e, response=e.response, **last_json)
                 elif "has been deleted" in message:
                     # Sorry, this photo has been deleted.
@@ -479,8 +460,7 @@ class PrivateRequestMixin:
                     # The username you entered doesn't appear to belong to an account.
                     # Please check your username and try again.
                     last_json["message"] = (
-                        "Instagram has blocked your IP address, "
-                        "use a quality proxy provider (not free, not shared)"
+                        "Instagram has blocked your IP address, use a quality proxy provider (not free, not shared)"
                     )
                     raise ProxyAddressIsBlocked(**last_json)
                 elif error_type or message:
@@ -575,9 +555,7 @@ class PrivateRequestMixin:
             self.private_requests_count += 1
             self._send_private_request(endpoint, **kwargs)
         except ClientRequestTimeout:
-            self.logger.info(
-                "Wait 60 seconds and try one more time (ClientRequestTimeout)"
-            )
+            self.logger.info("Wait 60 seconds and try one more time (ClientRequestTimeout)")
             time.sleep(60)
             return self._send_private_request(endpoint, **kwargs)
         # except BadPassword as e:

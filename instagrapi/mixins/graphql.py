@@ -14,16 +14,12 @@ from instagrapi.exceptions import (
 
 
 class PrivateGraphQLRequestMixin:
-    def private_graphql_request(
-        self, data: Dict, headers: Optional[Dict] = None, domain: Optional[str] = None
-    ) -> Dict:
+    def private_graphql_request(self, data: Dict, headers: Optional[Dict] = None, domain: Optional[str] = None) -> Dict:
         self.last_response = None
         self.last_json = {}
         response = None
         self.private.headers.update(self.base_headers)
-        self.private.headers["Content-Type"] = (
-            "application/x-www-form-urlencoded; charset=UTF-8"
-        )
+        self.private.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
         if self.authorization:
             self.private.headers["Authorization"] = self.authorization
         friendly_name = data.get("fb_api_req_friendly_name")
@@ -50,9 +46,7 @@ class PrivateGraphQLRequestMixin:
         except requests.HTTPError as exc:
             raise ClientError(exc, response=exc.response)
         except requests.ConnectionError as exc:
-            raise ClientConnectionError(
-                "{} {}".format(exc.__class__.__name__, str(exc))
-            )
+            raise ClientConnectionError("{} {}".format(exc.__class__.__name__, str(exc)))
         if self.last_json.get("errors"):
             raise ClientGraphqlError(self.last_json.get("errors"))
         if self.last_json.get("status") == "fail":

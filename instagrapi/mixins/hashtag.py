@@ -50,9 +50,7 @@ class HashtagMixin:
             raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
 
-    def hashtag_info_gql(
-        self, name: str, amount: int = 12, end_cursor: str = None
-    ) -> Hashtag:
+    def hashtag_info_gql(self, name: str, amount: int = 12, end_cursor: str = None) -> Hashtag:
         """
         Get information about a hashtag by Public Graphql API
 
@@ -75,9 +73,7 @@ class HashtagMixin:
         variables = {"tag_name": name, "show_ranked": False, "first": int(amount)}
         if end_cursor:
             variables["after"] = end_cursor
-        data = self.public_graphql_request(
-            variables, query_hash="f92f56d47dc7a55b606908374b43a314"
-        )
+        data = self.public_graphql_request(variables, query_hash="f92f56d47dc7a55b606908374b43a314")
         if not data.get("hashtag"):
             raise HashtagNotFound(name=name, **data)
         return extract_hashtag_gql(data["hashtag"])
@@ -140,10 +136,7 @@ class HashtagMixin:
         data = self.public_a1_request(f"/explore/tags/{name}/")
         if not data.get("hashtag"):
             raise HashtagNotFound(name=name, **data)
-        return [
-            extract_hashtag_gql(item["node"])
-            for item in data["hashtag"]["edge_hashtag_to_related_tags"]["edges"]
-        ]
+        return [extract_hashtag_gql(item["node"]) for item in data["hashtag"]["edge_hashtag_to_related_tags"]["edges"]]
 
     def hashtag_medias_a1_chunk(
         self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
@@ -211,9 +204,7 @@ class HashtagMixin:
             end_cursor = result["next_max_id"]
         return medias, end_cursor
 
-    def hashtag_medias_a1(
-        self, name: str, amount: int = 27, tab_key: str = ""
-    ) -> List[Media]:
+    def hashtag_medias_a1(self, name: str, amount: int = 27, tab_key: str = "") -> List[Media]:
         """
         Get medias for a hashtag by Public Web API
 
@@ -313,9 +304,7 @@ class HashtagMixin:
             next_max_id = None  # stop
         return medias, next_max_id
 
-    def hashtag_medias_v1(
-        self, name: str, amount: int = 27, tab_key: str = ""
-    ) -> List[Media]:
+    def hashtag_medias_v1(self, name: str, amount: int = 27, tab_key: str = "") -> List[Media]:
         """
         Get medias for a hashtag by Private Mobile API
 
@@ -497,9 +486,7 @@ class HashtagMixin:
         assert self.user_id, "Login required"
         name = "unfollow" if unfollow else "follow"
         data = self.with_action_data({"user_id": self.user_id})
-        result = self.private_request(
-            f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data
-        )
+        result = self.private_request(f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data)
         return result["status"] == "ok"
 
     def hashtag_unfollow(self, hashtag: str) -> bool:

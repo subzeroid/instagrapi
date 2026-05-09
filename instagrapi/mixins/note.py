@@ -38,12 +38,8 @@ class NoteMixin:
             user_id=user_id,
             user=user,
             audience=int(data.get("audience", 0)),
-            created_at=datetime.fromtimestamp(
-                int(data.get("1lcreated_at", 0)), tz=timezone.utc
-            ),
-            expires_at=datetime.fromtimestamp(
-                int(data.get("1lexpires_at", 0)), tz=timezone.utc
-            ),
+            created_at=datetime.fromtimestamp(int(data.get("1lcreated_at", 0)), tz=timezone.utc),
+            expires_at=datetime.fromtimestamp(int(data.get("1lexpires_at", 0)), tz=timezone.utc),
             is_emoji_only=bool(data.get("is_emoji_only", False)),
             has_translation=bool(data.get("has_translation", False)),
             note_style=int(data.get("note_style", 0)),
@@ -93,11 +89,7 @@ class NoteMixin:
         """
         username = str(username).lower()
         for note in notes:
-            if (
-                note.user
-                and note.user.username
-                and note.user.username.lower() == username
-            ):
+            if note.user and note.user.username and note.user.username.lower() == username:
                 return note
         return None
 
@@ -129,9 +121,7 @@ class NoteMixin:
         bool
             A boolean value
         """
-        result = self.private_request(
-            "notes/update_notes_last_seen_timestamp/", data={"_uuid": self.uuid}
-        )
+        result = self.private_request("notes/update_notes_last_seen_timestamp/", data={"_uuid": self.uuid})
         return result.get("status", "") == "ok"
 
     def delete_note(self, note_id: int) -> bool:
@@ -148,9 +138,7 @@ class NoteMixin:
         bool
             A boolean value
         """
-        result = self.private_request(
-            "notes/delete_note/", data={"id": note_id, "_uuid": self.uuid}
-        )
+        result = self.private_request("notes/delete_note/", data={"id": note_id, "_uuid": self.uuid})
         return result.get("status", "") == "ok"
 
     def notes_music_browser(self) -> Dict:
@@ -243,9 +231,7 @@ class NoteMixin:
             0,
             1,
         ), f"Invalid audience parameter={audience} (must be 0 or 1)"
-        audio_asset_id = self._track_value(
-            track, "audio_asset_id"
-        ) or self._track_value(track, "id")
+        audio_asset_id = self._track_value(track, "audio_asset_id") or self._track_value(track, "id")
         audio_cluster_id = self._track_value(track, "audio_cluster_id")
         assert audio_asset_id, "track.audio_asset_id or track.id is required"
         assert audio_cluster_id, "track.audio_cluster_id is required"

@@ -55,9 +55,7 @@ class DownloadClipMixin:
         """
         return self.video_download(media_pk, folder)
 
-    def clip_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> str:
+    def clip_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> str:
         """
         Download CLIP video using URL
 
@@ -82,9 +80,7 @@ class UploadClipMixin:
     Helpers to upload CLIP videos
     """
 
-    def clip_share_to_fb_config(
-        self, device_status: Optional[Dict[str, object]] = None
-    ) -> Dict:
+    def clip_share_to_fb_config(self, device_status: Optional[Dict[str, object]] = None) -> Dict:
         """
         Get Reel Facebook sharing configuration for the current user.
 
@@ -270,9 +266,7 @@ class UploadClipMixin:
             "Segment-Type": "3",
         }
         response = self.private.get(
-            "https://{domain}/rupload_igvideo/{name}".format(
-                domain=config.API_DOMAIN, name=upload_name
-            ),
+            "https://{domain}/rupload_igvideo/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             headers=headers,
         )
         self.request_log(response)
@@ -287,9 +281,7 @@ class UploadClipMixin:
             **headers,
         }
         response = self.private.post(
-            "https://{domain}/rupload_igvideo/{name}".format(
-                domain=config.API_DOMAIN, name=upload_name
-            ),
+            "https://{domain}/rupload_igvideo/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             data=clip_data,
             headers=headers,
         )
@@ -421,9 +413,7 @@ class UploadClipMixin:
                 "alacorn_session_id": "null",
             }
             if getattr(track, "music_canonical_id", None):
-                data["clips_audio_metadata"]["song"][
-                    "music_canonical_id"
-                ] = track.music_canonical_id
+                data["clips_audio_metadata"]["song"]["music_canonical_id"] = track.music_canonical_id
                 data["music_params"]["music_canonical_id"] = track.music_canonical_id
             return self.clip_upload(tmpvideo, caption, extra_data=data)
         finally:
@@ -479,9 +469,7 @@ class UploadClipMixin:
             A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id, for_story=True)
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             # "igtv_ads_toggled_on": "0",
             "filter_type": "0",

@@ -45,9 +45,7 @@ def extract_media_v1(data):
     media = deepcopy(data)
     if "video_versions" in media:
         # Select Best Quality by Resolutiuon
-        media["video_url"] = sorted(
-            media["video_versions"], key=lambda o: o["height"] * o["width"]
-        )[-1]["url"]
+        media["video_url"] = sorted(media["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if media["media_type"] == 2 and not media.get("product_type"):
         media["product_type"] = "feed"
     if "image_versions2" in media:
@@ -64,10 +62,7 @@ def extract_media_v1(data):
     media["location"] = location and extract_location(location)
     media["user"] = extract_user_short(media.get("user"))
     media["usertags"] = sorted(
-        [
-            extract_usertag(usertag)
-            for usertag in media.get("usertags", {}).get("in", [])
-        ],
+        [extract_usertag(usertag) for usertag in media.get("usertags", {}).get("in", [])],
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
@@ -77,9 +72,7 @@ def extract_media_v1(data):
     media["coauthor_producers"] = media.get("coauthor_producers", [])
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
-        resources=[
-            extract_resource_v1(edge) for edge in media.get("carousel_media", [])
-        ],
+        resources=[extract_resource_v1(edge) for edge in media.get("carousel_media", [])],
         **media,
     )
 
@@ -146,21 +139,16 @@ def extract_media_gql(data):
         view_count=media.get("video_view_count", 0),
         comment_count=json_value(media, "edge_media_to_comment", "count"),
         like_count=json_value(media, "edge_media_preview_like", "count"),
-        caption_text=json_value(
-            media, "edge_media_to_caption", "edges", 0, "node", "text", default=""
-        ),
+        caption_text=json_value(media, "edge_media_to_caption", "edges", 0, "node", "text", default=""),
         usertags=sorted(
             [
                 extract_usertag(usertag["node"])
-                for usertag in media.get("edge_media_to_tagged_user", {}).get(
-                    "edges", []
-                )
+                for usertag in media.get("edge_media_to_tagged_user", {}).get("edges", [])
             ],
             key=lambda tag: tag.user.pk,
         ),
         resources=[
-            extract_resource_gql(edge["node"])
-            for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
+            extract_resource_gql(edge["node"]) for edge in media.get("edge_sidecar_to_children", {}).get("edges", [])
         ],
         sponsor_tags=[
             extract_user_short(edge["node"]["sponsor"])
@@ -172,17 +160,13 @@ def extract_media_gql(data):
 
 def extract_resource_v1(data):
     if "video_versions" in data:
-        data["video_url"] = sorted(
-            data["video_versions"], key=lambda o: o["height"] * o["width"]
-        )[-1]["url"]
+        data["video_url"] = sorted(data["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     candidates = data.get("image_versions2", {}).get("candidates", [])
     data["thumbnail_url"] = (
         sorted(
             candidates,
             key=lambda o: o["height"] * o["width"],
-        )[
-            -1
-        ]["url"]
+        )[-1]["url"]
         if candidates
         else None
     )
@@ -260,9 +244,7 @@ def extract_location(data):
         data["external_id"] = None
     else:
         data["external_id"] = int(external_id)
-    data["external_id_source"] = data.get(
-        "external_id_source", data.get("external_source")
-    )
+    data["external_id_source"] = data.get("external_id_source", data.get("external_source"))
     data["address"] = data.get("address", data.get("location_address"))
     data["city"] = data.get("city", data.get("location_city"))
     data["zip"] = data.get("zip", data.get("location_zip"))
@@ -317,21 +299,15 @@ def extract_direct_thread(data):
         data["inviter"] = None
     data["left_users"] = data.get("left_users", [])
     data.setdefault("is_close_friend_thread", False)
-    data["last_activity_at"] = datetime.datetime.fromtimestamp(
-        data["last_activity_at"] // 1_000_000
-    )
+    data["last_activity_at"] = datetime.datetime.fromtimestamp(data["last_activity_at"] // 1_000_000)
 
     # Convert last_seen_at timestamps
     last_seen_at = data.get("last_seen_at", {})
     for user_id, seen_info in last_seen_at.items():
         if "timestamp" in seen_info:
-            seen_info["timestamp"] = datetime.datetime.fromtimestamp(
-                int(seen_info["timestamp"]) // 1_000_000
-            )
+            seen_info["timestamp"] = datetime.datetime.fromtimestamp(int(seen_info["timestamp"]) // 1_000_000)
         if "created_at" in seen_info:
-            seen_info["created_at"] = datetime.datetime.fromtimestamp(
-                int(seen_info["created_at"]) // 1_000_000
-            )
+            seen_info["created_at"] = datetime.datetime.fromtimestamp(int(seen_info["created_at"]) // 1_000_000)
         # Convert disappearing messages seen state timestamps
         disappearing_state = seen_info.get("disappearing_messages_seen_state")
         if disappearing_state:
@@ -363,52 +339,29 @@ def _convert_direct_visual_media_timestamps(visual_media):
 
     if "media" in visual_media and visual_media["media"]:
         media = visual_media["media"]
-        if (
-            "expiring_media_action_summary" in media
-            and media["expiring_media_action_summary"]
-        ):
-            media["expiring_media_action_summary"]["timestamp"] = (
-                datetime.datetime.fromtimestamp(
-                    int(media["expiring_media_action_summary"]["timestamp"])
-                    // 1_000_000
-                )
+        if "expiring_media_action_summary" in media and media["expiring_media_action_summary"]:
+            media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
+                int(media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
             )
 
         if "image_versions2" in media and media["image_versions2"]:
             candidates = media["image_versions2"].get("candidates", [])
             for candidate in candidates:
-                if (
-                    "url_expiration_timestamp_us" in candidate
-                    and candidate["url_expiration_timestamp_us"]
-                ):
-                    candidate["url_expiration_timestamp_us"] = (
-                        datetime.datetime.fromtimestamp(
-                            int(candidate["url_expiration_timestamp_us"]) // 1_000_000
-                        )
+                if "url_expiration_timestamp_us" in candidate and candidate["url_expiration_timestamp_us"]:
+                    candidate["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(candidate["url_expiration_timestamp_us"]) // 1_000_000
                     )
 
         if "video_versions" in media and media["video_versions"]:
             for video_version in media["video_versions"]:
-                if (
-                    "url_expiration_timestamp_us" in video_version
-                    and video_version["url_expiration_timestamp_us"]
-                ):
-                    video_version["url_expiration_timestamp_us"] = (
-                        datetime.datetime.fromtimestamp(
-                            int(video_version["url_expiration_timestamp_us"])
-                            // 1_000_000
-                        )
+                if "url_expiration_timestamp_us" in video_version and video_version["url_expiration_timestamp_us"]:
+                    video_version["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
+                        int(video_version["url_expiration_timestamp_us"]) // 1_000_000
                     )
 
-    if (
-        "expiring_media_action_summary" in visual_media
-        and visual_media["expiring_media_action_summary"]
-    ):
-        visual_media["expiring_media_action_summary"]["timestamp"] = (
-            datetime.datetime.fromtimestamp(
-                int(visual_media["expiring_media_action_summary"]["timestamp"])
-                // 1_000_000
-            )
+    if "expiring_media_action_summary" in visual_media and visual_media["expiring_media_action_summary"]:
+        visual_media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
+            int(visual_media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
         )
 
 
@@ -480,9 +433,7 @@ def extract_direct_message(data):
         data["generic_xma"] = [item for item in items if item]
 
     # Convert main timestamp
-    data["timestamp"] = datetime.datetime.fromtimestamp(
-        int(data["timestamp"]) // 1_000_000
-    )
+    data["timestamp"] = datetime.datetime.fromtimestamp(int(data["timestamp"]) // 1_000_000)
     data["user_id"] = str(data.get("user_id", ""))
     data["client_context"] = data.get("client_context", "")
 
@@ -507,9 +458,7 @@ def extract_direct_media(data):
     media = deepcopy(data)
     if "video_versions" in media:
         # Select Best Quality by Resolutiuon
-        media["video_url"] = sorted(
-            media["video_versions"], key=lambda o: o["height"] * o["width"]
-        )[-1]["url"]
+        media["video_url"] = sorted(media["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if "image_versions2" in media:
         media["thumbnail_url"] = sorted(
             media["image_versions2"]["candidates"],
@@ -546,9 +495,7 @@ def extract_story_v1(data):
     story["pk"] = str(story.get("pk"))
     if "video_versions" in story:
         # Select Best Quality by Resolutiuon
-        story["video_url"] = sorted(
-            story["video_versions"], key=lambda o: o["height"] * o["width"]
-        )[-1]["url"]
+        story["video_url"] = sorted(story["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if story["media_type"] == 2 and not story.get("product_type"):
         story["product_type"] = "story"
     if "image_versions2" in story:
@@ -556,15 +503,9 @@ def extract_story_v1(data):
             story["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         )[-1]["url"]
-    story["mentions"] = [
-        StoryMention(**mention) for mention in story.get("reel_mentions", [])
-    ]
-    story["locations"] = [
-        StoryLocation(**location) for location in story.get("story_locations", [])
-    ]
-    story["hashtags"] = [
-        StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])
-    ]
+    story["mentions"] = [StoryMention(**mention) for mention in story.get("reel_mentions", [])]
+    story["locations"] = [StoryLocation(**location) for location in story.get("story_locations", [])]
+    story["hashtags"] = [StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])]
     story["stickers"] = data.get("story_link_stickers") or []
     feed_medias = []
     story_feed_medias = data.get("story_feed_media") or []
@@ -587,9 +528,7 @@ def extract_story_v1(data):
     if not story.get("code"):
         story["code"] = InstagramIdCodec.encode(story["pk"])
     if not story.get("taken_at"):
-        story["taken_at"] = story.get("device_timestamp") or story.get(
-            "taken_at_timestamp"
-        )
+        story["taken_at"] = story.get("device_timestamp") or story.get("taken_at_timestamp")
     return Story(**story)
 
 
@@ -652,9 +591,7 @@ def extract_guide_v1(data):
 
 def extract_track(data):
     data["cover_artwork_uri"] = data.get("cover_artwork_uri") or None
-    data["cover_artwork_thumbnail_uri"] = (
-        data.get("cover_artwork_thumbnail_uri") or None
-    )
+    data["cover_artwork_thumbnail_uri"] = data.get("cover_artwork_thumbnail_uri") or None
     items = re.findall(r"<BaseURL>(.+?)</BaseURL>", data["dash_manifest"])
     data["uri"] = html.unescape(items[0]) if items else None
     data["territory_validity_periods"] = data.get("territory_validity_periods") or {}

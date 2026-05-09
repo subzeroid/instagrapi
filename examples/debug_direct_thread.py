@@ -4,8 +4,8 @@ import argparse
 import json
 import os
 import re
-from typing import Any, Dict, List
 from pathlib import Path
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 from instagrapi import Client
@@ -26,9 +26,7 @@ def login() -> Client:
         return cl
 
     if not username or not password:
-        raise RuntimeError(
-            "Set IG_USERNAME and IG_PASSWORD, or place a session.json next to this script."
-        )
+        raise RuntimeError("Set IG_USERNAME and IG_PASSWORD, or place a session.json next to this script.")
 
     cl.login(username, password)
     cl.dump_settings(SESSION_FILE)
@@ -146,9 +144,7 @@ def main() -> None:
                     path = download_url(cl, url, download_dir / slugify(stem))
                     downloads.append({"url": url, "path": str(path)})
                 except Exception as exc:
-                    downloads.append(
-                        {"url": url, "error": f"{exc.__class__.__name__}: {exc}"}
-                    )
+                    downloads.append({"url": url, "error": f"{exc.__class__.__name__}: {exc}"})
         summary = {
             "message_id": message.id,
             "item_type": message.item_type,

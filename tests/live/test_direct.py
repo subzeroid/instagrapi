@@ -22,9 +22,7 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(pong, DirectMessage)
         self.assertEqual(ping.thread_id, pong.thread_id)
         # send direct photo
-        photo = self.cl.direct_send_photo(
-            path="examples/kanada.jpg", user_ids=[instagram]
-        )
+        photo = self.cl.direct_send_photo(path="examples/kanada.jpg", user_ids=[instagram])
         self.assertIsInstance(photo, DirectMessage)
         self.assertEqual(photo.thread_id, pong.thread_id)
         # send seen
@@ -44,9 +42,7 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
 
     def test_direct_send_video(self):
         instagram = self.user_id_from_username("instagram")
-        path = self.cl.video_download(
-            self.cl.media_pk_from_url("https://www.instagram.com/p/B3rFQPblq40/")
-        )
+        path = self.cl.video_download(self.cl.media_pk_from_url("https://www.instagram.com/p/B3rFQPblq40/"))
         dm = self.cl.direct_send_video(path=path, user_ids=[instagram])
         self.assertIsInstance(dm, DirectMessage)
 
@@ -146,18 +142,12 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             try:
                 client.direct_message_delete(thread_id, message.id)
             except Exception as exc:
-                print(
-                    "Direct media live cleanup direct_message_delete failed: "
-                    f"{exc.__class__.__name__} {exc}"
-                )
+                print(f"Direct media live cleanup direct_message_delete failed: {exc.__class__.__name__} {exc}")
         for client in clients:
             try:
                 client.direct_thread_hide(thread_id)
             except Exception as exc:
-                print(
-                    "Direct media live cleanup direct_thread_hide failed: "
-                    f"{exc.__class__.__name__} {exc}"
-                )
+                print(f"Direct media live cleanup direct_thread_hide failed: {exc.__class__.__name__} {exc}")
 
     def test_direct_send_voice_and_video_with_thread_and_user_ids(self):
         sender = self.cl
@@ -175,9 +165,7 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertIsInstance(seed_message, DirectMessage)
             sent_messages.append((sender, seed_message))
 
-            thread_id = seed_message.thread_id or self.thread_id_by_participants(
-                sender, recipient.user_id
-            )
+            thread_id = seed_message.thread_id or self.thread_id_by_participants(sender, recipient.user_id)
             self.assertTrue(thread_id)
 
             reply_message = recipient.direct_send(
@@ -192,9 +180,7 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(thread_voice.id)
             sent_messages.append((sender, thread_voice))
 
-            user_voice = sender.direct_send_voice(
-                voice_path, user_ids=[recipient.user_id]
-            )
+            user_voice = sender.direct_send_voice(voice_path, user_ids=[recipient.user_id])
             self.assertIsInstance(user_voice, DirectMessage)
             self.assertTrue(user_voice.id)
             sent_messages.append((sender, user_voice))
@@ -204,17 +190,13 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(thread_video.id)
             sent_messages.append((sender, thread_video))
 
-            user_video = sender.direct_send_video(
-                video_path, user_ids=[recipient.user_id]
-            )
+            user_video = sender.direct_send_video(video_path, user_ids=[recipient.user_id])
             self.assertIsInstance(user_video, DirectMessage)
             self.assertTrue(user_video.id)
             sent_messages.append((sender, user_video))
         finally:
             if thread_id:
-                self.cleanup_direct_media_messages(
-                    thread_id, sent_messages, [sender, recipient]
-                )
+                self.cleanup_direct_media_messages(thread_id, sent_messages, [sender, recipient])
 
 
 class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
@@ -244,20 +226,14 @@ class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
                     "_uid": self.cl.user_id,
                     "client_context": token,
                     "is_partnership_folder": "false",
-                    "recipient_users": dumps(
-                        [int(client.user_id) for client in self.recipient_clients]
-                    ),
+                    "recipient_users": dumps([int(client.user_id) for client in self.recipient_clients]),
                     "thread_title": initial_title,
                 },
             )
-            thread_id = created.get("thread_id") or created.get("thread", {}).get(
-                "thread_id"
-            )
+            thread_id = created.get("thread_id") or created.get("thread", {}).get("thread_id")
             self.assertTrue(thread_id)
 
-            self.assertTrue(
-                self.cl.direct_thread_update_title(thread_id, updated_title)
-            )
+            self.assertTrue(self.cl.direct_thread_update_title(thread_id, updated_title))
             thread = self.cl.direct_thread(thread_id, amount=1)
             self.assertEqual(thread.thread_title, updated_title)
         finally:
@@ -290,10 +266,7 @@ class ClientDirectMessageTypesTestCase(_helpers.ClientPrivateTestCase):
                     self.assertIsInstance(message.reactions, MessageReactions)
 
                     # Test that reactions have proper structure
-                    if (
-                        hasattr(message.reactions, "emojis")
-                        and message.reactions.emojis
-                    ):
+                    if hasattr(message.reactions, "emojis") and message.reactions.emojis:
                         for emoji_reaction in message.reactions.emojis:
                             self.assertIsInstance(emoji_reaction, MessageReaction)
                             self.assertIsInstance(emoji_reaction.emoji, str)
@@ -326,15 +299,10 @@ class ClientDirectMessageTypesTestCase(_helpers.ClientPrivateTestCase):
                     if hasattr(message.link, "text"):
                         self.assertIsInstance(message.link.text, str)
 
-                    if (
-                        hasattr(message.link, "link_context")
-                        and message.link.link_context
-                    ):
+                    if hasattr(message.link, "link_context") and message.link.link_context:
                         self.assertIsInstance(message.link.link_context, LinkContext)
                         if hasattr(message.link.link_context, "link_url"):
-                            self.assertIsInstance(
-                                message.link.link_context.link_url, str
-                            )
+                            self.assertIsInstance(message.link.link_context.link_url, str)
 
                     return  # Found one message with link, test passed
 
@@ -355,13 +323,8 @@ class ClientDirectMessageTypesTestCase(_helpers.ClientPrivateTestCase):
                     self.assertIsInstance(message.visual_media, VisualMedia)
 
                     # Test that visual_media has proper structure
-                    if (
-                        hasattr(message.visual_media, "media")
-                        and message.visual_media.media
-                    ):
-                        self.assertIsInstance(
-                            message.visual_media.media, VisualMediaContent
-                        )
+                    if hasattr(message.visual_media, "media") and message.visual_media.media:
+                        self.assertIsInstance(message.visual_media.media, VisualMediaContent)
 
                     return  # Found one message with visual media, test passed
 

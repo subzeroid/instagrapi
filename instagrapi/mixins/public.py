@@ -58,9 +58,7 @@ class PublicRequestMixin:
                 ),
             }
         )
-        self.request_timeout = kwargs.pop(
-            "request_timeout", getattr(self, "request_timeout", self.request_timeout)
-        )
+        self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))
         self.public_request_retries_count = kwargs.pop(
             "public_request_retries_count",
             getattr(
@@ -168,25 +166,15 @@ class PublicRequestMixin:
             headers=headers,
             return_json=return_json,
         )
-        retries_count = (
-            self.public_request_retries_count
-            if retries_count is None
-            else retries_count
-        )
-        retries_timeout = (
-            self.public_request_retries_timeout
-            if retries_timeout is None
-            else retries_timeout
-        )
+        retries_count = self.public_request_retries_count if retries_count is None else retries_count
+        retries_timeout = self.public_request_retries_timeout if retries_timeout is None else retries_timeout
         assert retries_count <= 10, "Retries count is too high"
         assert retries_timeout <= 600, "Retries timeout is too high"
         for iteration in range(retries_count):
             try:
                 if self.delay_range:
                     random_delay(delay_range=self.delay_range)
-                return self._send_public_request(
-                    url, update_headers=update_headers, **kwargs
-                )
+                return self._send_public_request(url, update_headers=update_headers, **kwargs)
             except (
                 ClientLoginRequired,
                 ClientNotFoundError,
@@ -258,15 +246,11 @@ class PublicRequestMixin:
             actual_length = response.raw.tell()
             if actual_length < expected_length:
                 raise ClientIncompleteReadError(
-                    "Incomplete read ({} bytes read, {} more expected)".format(
-                        actual_length, expected_length
-                    ),
+                    "Incomplete read ({} bytes read, {} more expected)".format(actual_length, expected_length),
                     response=response,
                 )
 
-            self.public_request_logger.debug(
-                "public_request %s: %s", response.status_code, response.url
-            )
+            self.public_request_logger.debug("public_request %s: %s", response.status_code, response.url)
 
             self.public_request_logger.info(
                 "[%s] [%s] %s %s",
@@ -322,20 +306,14 @@ class PublicRequestMixin:
         params = params or {}
         params.update({"__a": 1, "__d": "dis"})
 
-        response = self.public_request(
-            url, data=data, params=params, headers=headers, return_json=True
-        )
+        response = self.public_request(url, data=data, params=params, headers=headers, return_json=True)
         return response.get("graphql") or response
 
     def public_a1_request_user_info_by_username(self, username, data=None, params=None):
         params = params or {}
-        url = (
-            self.PUBLIC_API_URL + f"api/v1/users/web_profile_info/?username={username}"
-        )
+        url = self.PUBLIC_API_URL + f"api/v1/users/web_profile_info/?username={username}"
         headers = {"x-ig-app-id": "936619743392459"}
-        response = self.public_request(
-            url, data=data, params=params, headers=headers, return_json=True
-        )
+        response = self.public_request(url, data=data, params=params, headers=headers, return_json=True)
         return response.get("user") or response
 
     def public_graphql_request(
@@ -381,9 +359,7 @@ class PublicRequestMixin:
                 summary = errors[0].get("summary") if errors else None
                 description = errors[0].get("description") if errors else None
                 raise ClientGraphqlError(
-                    "Missing 'data' in GraphQL response. Summary: '{}'. Description: '{}'".format(
-                        summary, description
-                    )
+                    "Missing 'data' in GraphQL response. Summary: '{}'. Description: '{}'".format(summary, description)
                 )
 
             return body_json["data"]
@@ -395,9 +371,7 @@ class PublicRequestMixin:
                 message = body_json.get("message", None)
             except JSONDecodeError:
                 pass
-            raise ClientGraphqlError(
-                "Error: '{}'. Message: '{}'".format(e, message), response=e.response
-            )
+            raise ClientGraphqlError("Error: '{}'. Message: '{}'".format(e, message), response=e.response)
 
 
 class TopSearchesPublicMixin:
@@ -425,9 +399,7 @@ class ProfilePublicMixin:
         }
         if end_cursor:
             variables["after"] = end_cursor
-        data = self.public_graphql_request(
-            variables, query_hash="1b84447a4d8b6d6d0426fefb34514485"
-        )
+        data = self.public_graphql_request(variables, query_hash="1b84447a4d8b6d6d0426fefb34514485")
         return data["location"]
 
     def profile_related_info(self, profile_id):
@@ -440,7 +412,5 @@ class ProfilePublicMixin:
             "include_highlight_reels": True,
             "include_related_profiles": True,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="e74d51c10ecc0fe6250a295b9bb9db74"
-        )
+        data = self.public_graphql_request(variables, query_hash="e74d51c10ecc0fe6250a295b9bb9db74")
         return data["user"]

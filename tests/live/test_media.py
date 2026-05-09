@@ -4,19 +4,13 @@ from tests.helpers import *
 
 class ClientMediaTestCase(_helpers.ClientPrivateTestCase):
     def test_media_id(self):
-        self.assertEqual(
-            self.cl.media_id(3258619191829745894), "3258619191829745894_25025320"
-        )
+        self.assertEqual(self.cl.media_id(3258619191829745894), "3258619191829745894_25025320")
 
     def test_media_pk(self):
-        self.assertEqual(
-            self.cl.media_pk("2154602296692269830_25025320"), "2154602296692269830"
-        )
+        self.assertEqual(self.cl.media_pk("2154602296692269830_25025320"), "2154602296692269830")
 
     def test_media_pk_from_code(self):
-        self.assertEqual(
-            self.cl.media_pk_from_code("B-fKL9qpeab"), "2278584739065882267"
-        )
+        self.assertEqual(self.cl.media_pk_from_code("B-fKL9qpeab"), "2278584739065882267")
         self.assertEqual(
             self.cl.media_pk_from_code("B8jnuB2HAbyc0q001y3F9CHRSoqEljK_dgkJjo0"),
             "2243811726252050162",
@@ -32,9 +26,7 @@ class ClientMediaTestCase(_helpers.ClientPrivateTestCase):
             "2110901750722920960",
         )
         self.assertEqual(
-            self.cl.media_pk_from_url(
-                "https://www.instagram.com/p/B-fKL9qpeab/?igshid=1xm76zkq7o1im"
-            ),
+            self.cl.media_pk_from_url("https://www.instagram.com/p/B-fKL9qpeab/?igshid=1xm76zkq7o1im"),
             "2278584739065882267",
         )
 
@@ -102,9 +94,7 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
             cleanup(path)
 
     def test_media_edit_igtv(self):
-        media_pk = self.cl.media_pk_from_url(
-            "https://www.instagram.com/tv/B91gKCcpnTk/"
-        )
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/tv/B91gKCcpnTk/")
         path = self.cl.igtv_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
@@ -315,9 +305,7 @@ class ClientExtractTestCase(_helpers.ClientPrivateTestCase):
                 self.assertEqual(getattr(photo_resource, key), val)
 
     def test_extract_media_igtv(self):
-        media_pk = self.cl.media_pk_from_url(
-            "https://www.instagram.com/tv/ByYn5ZNlHWf/"
-        )
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/tv/ByYn5ZNlHWf/")
         media = self.cl.media_info(media_pk)
         self.assertIsInstance(media, Media)
         self.assertTrue(len(media.resources) == 0)

@@ -53,18 +53,14 @@ class CaptchaHandlerMixin:
         if not hasattr(self, "_captcha_handler_instance"):
             # This can happen if __init__ of this mixin was not called,
             # e.g. due to incorrect super() chain.
-            raise ClientError(
-                "CaptchaHandlerMixin not properly initialized. _captcha_handler_instance is missing."
-            )
+            raise ClientError("CaptchaHandlerMixin not properly initialized. _captcha_handler_instance is missing.")
 
         if self._captcha_handler_instance:
             try:
                 # Ensure all keys expected by typical handlers are present, even if None
                 details_to_pass = {
                     "site_key": challenge_details.get("site_key"),
-                    "page_url": challenge_details.get(
-                        "page_url"
-                    ),  # Important for some solvers
+                    "page_url": challenge_details.get("page_url"),  # Important for some solvers
                     "challenge_type": challenge_details.get("challenge_type"),
                     "raw_challenge_json": challenge_details.get("raw_challenge_json"),
                 }

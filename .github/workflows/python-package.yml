@@ -28,7 +28,7 @@ jobs:
       - name: Run bandit
         run: bandit --ini .bandit -r instagrapi
 
-  flake8:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -41,27 +41,10 @@ jobs:
         with:
           test: "true"
 
-      - name: Run flake8
+      - name: Run Ruff
         run: |
-          # stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-          flake8 . --count --exit-zero --statistics
-  isort:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-      - name: Install dependencies
-        uses: ./.github/actions/install-dependencies
-        with:
-          test: "true"
-
-      - name: Run isort
-        run: isort --check-only instagrapi
+          ruff check --output-format=github .
+          ruff format --check .
 
   test-compat:
     runs-on: ubuntu-latest

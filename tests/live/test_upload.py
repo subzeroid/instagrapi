@@ -55,9 +55,7 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
         path = self.cl.photo_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
-            media = self.cl.photo_upload(
-                path, "Test caption for photo", location=self.get_location()
-            )
+            media = self.cl.photo_upload(path, "Test caption for photo", location=self.get_location())
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, "Test caption for photo")
             self.assertLocation(media.location)
@@ -70,9 +68,7 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
         path = self.cl.video_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
-            media = self.cl.video_upload(
-                path, "Test caption for video", location=self.get_location()
-            )
+            media = self.cl.video_upload(path, "Test caption for video", location=self.get_location())
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, "Test caption for video")
             self.assertLocation(media.location)
@@ -88,9 +84,7 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
             instagram = self.user_info_by_username("instagram")
             usertag = Usertag(user=instagram, x=0.5, y=0.5)
             location = self.get_location()
-            media = self.cl.album_upload(
-                paths, "Test caption for album", usertags=[usertag], location=location
-            )
+            media = self.cl.album_upload(paths, "Test caption for album", usertags=[usertag], location=location)
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, "Test caption for album")
             self.assertEqual(len(media.resources), 3)
@@ -103,17 +97,13 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(self.cl.media_delete(media.id))
 
     def test_igtv_upload(self):
-        media_pk = self.cl.media_pk_from_url(
-            "https://www.instagram.com/tv/B91gKCcpnTk/"
-        )
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/tv/B91gKCcpnTk/")
         path = self.cl.igtv_download(media_pk)
         self.assertIsInstance(path, Path)
         try:
             title = "6/6: The Transceiver Failure"
             caption_text = "Test caption for IGTV"
-            media = self.cl.igtv_upload(
-                path, title, caption_text, location=self.get_location()
-            )
+            media = self.cl.igtv_upload(path, title, caption_text, location=self.get_location())
             self.assertIsInstance(media, Media)
             self.assertEqual(media.title, title)
             self.assertEqual(media.caption_text, caption_text)
