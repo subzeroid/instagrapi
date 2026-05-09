@@ -39,20 +39,20 @@ jobs:
 
       - name: Run media test
         if: github.event.inputs.test_target == 'media' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests.py::ClientMediaTestCase tests.py::ClientCommentRepliesLiveTestCase
+        run: pytest -sv tests/test_legacy.py::ClientMediaTestCase tests/test_legacy.py::ClientCommentRepliesLiveTestCase
 
       - name: Run direct media test
         if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests.py::ClientDirectMediaLiveTestCase
+        run: pytest -sv tests/test_legacy.py::ClientDirectMediaLiveTestCase
 
       - name: Run timeline test
         if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests.py::ClientTimelineLiveTestCase
+        run: pytest -sv tests/test_legacy.py::ClientTimelineLiveTestCase
 
       - name: Run user test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests.py::ClientUserTestCase
+        run: pytest -sv tests/test_legacy.py::ClientUserTestCase
 
       - name: Run follow request live test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests.py::ClientFollowRequestLiveTestCase
+        run: pytest -sv tests/test_legacy.py::ClientFollowRequestLiveTestCase
