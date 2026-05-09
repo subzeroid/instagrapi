@@ -11,6 +11,7 @@
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
+| direct_thread_update_title(thread_id: int, title: str)                    | bool                    | Update a group thread title
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
 | direct_story_share(story_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage       | Share a story to list of users
 | direct_profile_share(user_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage      | Share a user profile to list of users
@@ -90,6 +91,9 @@ DirectMessage(id=30076213210116812312341061613568, user_id=None, thread_id=34028
 
 >>> cl.direct_thread_by_participants([cl.user_id])
 DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[DirectMessage(id=30076214123123123123123864, user_id=1903424587, thread_id=None, timestamp=datetime.datetime(2021, 8, 31, 18, 33, 49, 107154, ...)
+
+>>> cl.direct_thread_update_title(thread.id, "New group title")
+True
 
 >>> cl.direct_media_share(media.pk, user_ids=[cl.user_id])
 DirectMessage(id=3007629312312312312312300374016, user_id=None, thread_id=340282366812313212334410641298762, timestamp=datetime.datetime(2021, 8, 31, 19, 45, 20, 708276, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
