@@ -1297,6 +1297,31 @@ class DirectMixin:
         )
         return result.get("status", "") == "ok"
 
+    def direct_thread_update_title(self, thread_id: int, title: str) -> bool:
+        """
+        Update a direct thread title
+
+        Parameters
+        ----------
+        thread_id: int
+            ID of thread to update
+        title: str
+            New thread title
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/update_title/",
+            data={"_uuid": self.uuid, "title": title},
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
+
     def direct_media_share(
         self,
         media_id: str,

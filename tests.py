@@ -79,7 +79,7 @@ from instagrapi.types import (
     UserShort,
     Usertag,
 )
-from instagrapi.utils import gen_password, generate_jazoest
+from instagrapi.utils import dumps, gen_password, generate_jazoest
 from instagrapi.zones import UTC
 
 logger = logging.getLogger("instagrapi.tests")
@@ -3583,6 +3583,57 @@ class ClientDirectMediaLiveTestCase(ClientPrivateTestCase):
                 )
 
 
+class ClientDirectThreadLiveTestCase(ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        self.recipient_clients = []
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for direct thread live tests")
+        accounts = self.fresh_accounts(3)
+        self.cl = accounts[0]
+        self.recipient_clients = accounts[1:]
+
+    def test_direct_thread_update_title_live(self):
+        initial_title = f"instagrapi-title-{int(time.time())}"
+        updated_title = f"{initial_title}-updated"
+        token = self.cl.generate_mutation_token()
+        thread_id = None
+
+        try:
+            created = self.cl.private_request(
+                "direct_v2/create_group_thread/",
+                data={
+                    "_uuid": self.cl.uuid,
+                    "_uid": self.cl.user_id,
+                    "client_context": token,
+                    "is_partnership_folder": "false",
+                    "recipient_users": dumps(
+                        [int(client.user_id) for client in self.recipient_clients]
+                    ),
+                    "thread_title": initial_title,
+                },
+            )
+            thread_id = created.get("thread_id") or created.get("thread", {}).get(
+                "thread_id"
+            )
+            self.assertTrue(thread_id)
+
+            self.assertTrue(
+                self.cl.direct_thread_update_title(thread_id, updated_title)
+            )
+            thread = self.cl.direct_thread(thread_id, amount=1)
+            self.assertEqual(thread.thread_title, updated_title)
+        finally:
+            if thread_id:
+                try:
+                    self.cl.direct_thread_hide(thread_id)
+                except Exception as exc:
+                    logger.warning("Direct thread cleanup failed: %s", exc)
+
+
 class ClientDirectMessageTypesTestCase(ClientPrivateTestCase):
     """Test that DirectMessage and DirectThread fields use structured Pydantic models instead of raw dictionaries"""
 
@@ -3970,6 +4021,22 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         client.authorization_data = {"ds_user_id": "1"}
         client.last_json = {}
         return client
+
+    def test_direct_thread_update_title_posts_unsigned_title(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(
+            client, "private_request", return_value={"status": "ok"}
+        ) as private:
+            result = client.direct_thread_update_title(123, "Updated title")
+
+        self.assertTrue(result)
+        private.assert_called_once_with(
+            "direct_v2/threads/123/update_title/",
+            data={"_uuid": "uuid-1", "title": "Updated title"},
+            with_signature=False,
+        )
 
     def make_temp_file(self, suffix, content):
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
