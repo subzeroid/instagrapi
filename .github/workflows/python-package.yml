@@ -83,19 +83,19 @@ jobs:
       - name: Run compatibility smoke tests
         run: |
           pytest -sv \
-            tests.py::ExtractorsRegressionTestCase \
-            tests.py::PublicRegressionTestCase \
-            tests.py::DirectMixinRegressionTestCase \
-            tests.py::ChallengeRegressionTestCase \
-            tests.py::CommentRepliesRegressionTestCase \
-            tests.py::AuthAndStoryRegressionTestCase \
-            tests.py::DownloadRegressionTestCase \
-            tests.py::NoteMixinRegressionTestCase \
-            tests.py::LocationMixinRegressionTestCase \
-            tests.py::UserMixinRegressionTestCase \
-            tests.py::TimelineRegressionTestCase \
-            tests.py::StoryConfigureRegressionTestCase \
-            tests.py::UploadRegressionTestCase
+            tests/test_legacy.py::ExtractorsRegressionTestCase \
+            tests/test_legacy.py::PublicRegressionTestCase \
+            tests/test_legacy.py::DirectMixinRegressionTestCase \
+            tests/test_legacy.py::ChallengeRegressionTestCase \
+            tests/test_legacy.py::CommentRepliesRegressionTestCase \
+            tests/test_legacy.py::AuthAndStoryRegressionTestCase \
+            tests/test_legacy.py::DownloadRegressionTestCase \
+            tests/test_legacy.py::NoteMixinRegressionTestCase \
+            tests/test_legacy.py::LocationMixinRegressionTestCase \
+            tests/test_legacy.py::UserMixinRegressionTestCase \
+            tests/test_legacy.py::TimelineRegressionTestCase \
+            tests/test_legacy.py::StoryConfigureRegressionTestCase \
+            tests/test_legacy.py::UploadRegressionTestCase
 
   build-docs:
     runs-on: ubuntu-latest
