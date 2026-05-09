@@ -12,13 +12,11 @@ Fast and effective unofficial Instagram API wrapper for Python.
 
 `instagrapi` combines public web and private mobile API flows, supports session persistence and challenge handling, and covers the main automation primitives for users, media, stories, direct messages, notes, locations, comments, insights, and uploads.
 
-If you want to work with Instagrapi for business interests, prefer [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe).
-You will not need to spend weeks or even months setting it up.
-The service handles millions of daily requests, provides round-the-clock support, and offers partners a special rate.
-In many cases, clients first try to save money with self-hosted private API automation, then return to [HikerAPI SaaS](https://hikerapi.com/p/bkXQlaVe) after spending more time and money on accounts, proxies, and challenge handling.
-It is difficult to find good accounts, good proxies, resolve challenges reliably, and keep Instagram from banning accounts.
+Private API automation is fragile in production because account trust, proxies, device state, challenges, and rate limits can change independently of the library.
+For account-owned business workflows, prefer official Instagram APIs where they cover your use case.
+For production private API infrastructure, a hosted provider such as [HikerAPI](https://hikerapi.com/) may be a better fit than maintaining accounts, proxies, and challenge handling yourself.
 
-The instagrapi project is better suited for testing and research than for running a production business.
+The instagrapi project is best suited for testing, research, and controlled internal automation.
 
 ✨ [aiograpi - Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
 
@@ -219,33 +217,12 @@ cl.video_upload_to_story(
 ```
 </details>
 
-## Ecosystem And Hosted Options
+## Related Projects
 
 If you need async Python, use [aiograpi](https://github.com/subzeroid/aiograpi).
 
-If you need hosted infrastructure instead of maintaining accounts, proxies, and challenge handling yourself, consider:
-
-* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for production-grade hosted Instagram API infrastructure
-* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for premium rotating proxies and stable automation traffic
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and datasets
-* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows
-* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
-* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
-
-### [HikerAPI Affiliate Program](https://hikerapi.com/help/affiliate)
-
-Refer users to HikerAPI and earn a percentage of their API spending:
-
-| Plan | Commission |
-|------|------------|
-| Start trial plan ($0.02/req) | **50%** |
-| Standard ($0.001/req) | **25%** |
-| Business ($0.00069/req) | **15%** |
-| Ultra ($0.0006/req) | **10%** |
-
-**Extras:** 2-level referral system, no caps, lifetime attribution
-
-**Payouts:** USDT / USDC (TRC-20 or ERC-20), minimum 20 USDT, request anytime from the dashboard
+For other languages, see [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest).
+For hosted production Instagram API infrastructure, see [HikerAPI](https://hikerapi.com/).
 
 ## Contributing
 
