@@ -5124,6 +5124,24 @@ class UploadRegressionTestCase(unittest.TestCase):
             }
         return payload
 
+    def test_clip_share_to_fb_config_requests_reel_facebook_config(self):
+        client = self.build_client()
+        expected = {"status": "ok", "eligible": True}
+
+        with mock.patch.object(
+            client, "private_request", return_value=expected
+        ) as private_request:
+            result = client.clip_share_to_fb_config()
+
+        private_request.assert_called_once()
+        endpoint = private_request.call_args.args[0]
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(endpoint, "clips/user/share_to_fb_config/")
+        device_status = json.loads(params["device_status"])
+        self.assertEqual(device_status["chip_vendor"], "others")
+        self.assertFalse(device_status["hw_av1_dec"])
+        self.assertEqual(result, expected)
+
     def test_photo_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
