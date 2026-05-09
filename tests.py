@@ -460,6 +460,39 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertTrue(kwargs["allow_redirects"])
 
 
+class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
+    def test_private_graphql_request_posts_to_app_graphql_endpoint(self):
+        client = Client()
+        client.request_timeout = 0
+        data = {
+            "fb_api_req_friendly_name": "ExampleQuery",
+            "variables": "{}",
+        }
+        response = Mock()
+        response.url = "https://i.instagram.com/graphql/query"
+        response.json.return_value = {"data": {"ok": True}}
+        response.raise_for_status.return_value = None
+
+        with mock.patch.object(client, "request_log") as request_log:
+            with mock.patch.object(
+                client.private, "post", return_value=response
+            ) as post:
+                result = client.private_graphql_request(data)
+
+        self.assertEqual(result, {"data": {"ok": True}})
+        post.assert_called_once_with(
+            "https://i.instagram.com/graphql/query",
+            data=data,
+            proxies=client.private.proxies,
+        )
+        request_log.assert_called_once_with(response)
+        self.assertEqual(client.private.headers["X-FB-Friendly-Name"], "ExampleQuery")
+        self.assertEqual(
+            client.private.headers["Content-Type"],
+            "application/x-www-form-urlencoded; charset=UTF-8",
+        )
+
+
 class TrackMixinRegressionTestCase(unittest.TestCase):
     def test_track_stream_info_by_id_sends_expected_endpoint_and_payload(self):
         client = Client()
@@ -761,7 +794,7 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
         }
 
         with mock.patch.object(
-            client, "_private_graphql_query", return_value=graphql_response, create=True
+            client, "private_graphql_request", return_value=graphql_response
         ) as graphql_query:
             note = client.create_music_note(
                 track=track,
