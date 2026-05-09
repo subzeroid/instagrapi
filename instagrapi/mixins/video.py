@@ -37,9 +37,7 @@ class DownloadVideoMixin:
     Helpers for downloading video
     """
 
-    def video_download(
-        self, media_pk: int, folder: Path = "", overwrite: bool = True
-    ) -> Path:
+    def video_download(self, media_pk: int, folder: Path = "", overwrite: bool = True) -> Path:
         """
         Download video using media pk
 
@@ -60,12 +58,8 @@ class DownloadVideoMixin:
         """
         media = self.media_info(media_pk)
         assert media.media_type == 2, "Must been video"
-        filename = "{username}_{media_pk}".format(
-            username=media.user.username, media_pk=media_pk
-        )
-        return self.video_download_by_url(
-            media.video_url, filename, folder, overwrite=overwrite
-        )
+        filename = "{username}_{media_pk}".format(username=media.user.username, media_pk=media_pk)
+        return self.video_download_by_url(media.video_url, filename, folder, overwrite=overwrite)
 
     def video_download_by_url(
         self,
@@ -188,9 +182,7 @@ class UploadVideoMixin:
         width, height, duration, thumbnail = analyze_video(path, thumbnail)
         waterfall_id = str(uuid4())
         # upload_name example: '1576102477530_0_7823256191'
-        upload_name = "{upload_id}_0_{rand}".format(
-            upload_id=upload_id, rand=random.randint(1000000000, 9999999999)
-        )
+        upload_name = "{upload_id}_0_{rand}".format(upload_id=upload_id, rand=random.randint(1000000000, 9999999999))
         rupload_params = {
             "retry_context": '{"num_step_auto_retry":0,"num_reupload":0,"num_step_manual_retry":0}',
             "media_type": "2",
@@ -223,9 +215,7 @@ class UploadVideoMixin:
         if to_album:
             headers = {"Segment-Start-Offset": "0", "Segment-Type": "3", **headers}
         response = self.private.get(
-            "https://{domain}/rupload_igvideo/{name}".format(
-                domain=config.API_DOMAIN, name=upload_name
-            ),
+            "https://{domain}/rupload_igvideo/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             headers=headers,
         )
         self.request_log(response)
@@ -244,9 +234,7 @@ class UploadVideoMixin:
             **headers,
         }
         response = self.private.post(
-            "https://{domain}/rupload_igvideo/{name}".format(
-                domain=config.API_DOMAIN, name=upload_name
-            ),
+            "https://{domain}/rupload_igvideo/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             data=video_data,
             headers=headers,
         )
@@ -290,9 +278,7 @@ class UploadVideoMixin:
         path = Path(path)
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
-        upload_id, width, height, duration, thumbnail = self.video_rupload(
-            path, thumbnail, to_story=False
-        )
+        upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=False)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
@@ -327,9 +313,7 @@ class UploadVideoMixin:
                     )
         raise VideoConfigureError(response=self.last_response, **self.last_json)
 
-    def video_upload_to_cutout_sticker(
-        self, path: Path, bypass_ai: bool = True
-    ) -> Media:
+    def video_upload_to_cutout_sticker(self, path: Path, bypass_ai: bool = True) -> Media:
         """
         Upload video and create a Cutout Sticker.
 
@@ -402,9 +386,7 @@ class UploadVideoMixin:
             A dictionary of response from the call
         """
         self.photo_rupload(Path(thumbnail), upload_id, for_story=True)
-        usertags = [
-            {"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags
-        ]
+        usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {
             "multi_sharing": "1",
             "creation_logger_session_id": self.client_session_id,
@@ -424,9 +406,7 @@ class UploadVideoMixin:
             "caption": caption,
             **extra_data,
         }
-        return self.private_request(
-            "media/configure/?video=1", self.with_default_data(data)
-        )
+        return self.private_request("media/configure/?video=1", self.with_default_data(data))
 
     def video_upload_to_story(
         self,
@@ -478,9 +458,7 @@ class UploadVideoMixin:
         path = Path(path)
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
-        upload_id, width, height, duration, thumbnail = self.video_rupload(
-            path, thumbnail, to_story=True
-        )
+        upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=True)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
@@ -667,9 +645,7 @@ class UploadVideoMixin:
             # "attempt_id": str(uuid4()),
             "device": self.device,
             "length": duration,
-            "clips": [
-                {"length": duration, "source_type": "3", "camera_position": "back"}
-            ],
+            "clips": [{"length": duration, "source_type": "3", "camera_position": "back"}],
             # "edits": {
             #     "filter_type": 0,
             #     "filter_strength": 1.0,
@@ -862,10 +838,7 @@ class UploadVideoMixin:
                         "finished": poll.finished,
                         "color": poll.color,
                         "question": poll.question,
-                        "tallies": [
-                            {"count": 0, "font_size": 39.0, "text": o}
-                            for o in poll.options
-                        ],
+                        "tallies": [{"count": 0, "font_size": 39.0, "text": o} for o in poll.options],
                         **poll_extra,
                     }
                 )
@@ -897,9 +870,7 @@ class UploadVideoMixin:
             data["static_models"] = dumps(static_models)
         if story_sticker_ids:
             data["story_sticker_ids"] = ",".join(story_sticker_ids)
-        return self.private_request(
-            "media/configure_to_story/?video=1", self.with_default_data(data)
-        )
+        return self.private_request("media/configure_to_story/?video=1", self.with_default_data(data))
 
     def video_upload_to_direct(
         self,
@@ -937,9 +908,7 @@ class UploadVideoMixin:
         path = Path(path)
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
-        upload_id, width, height, duration, thumbnail = self.video_rupload(
-            path, thumbnail, to_story=True
-        )
+        upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=True)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)

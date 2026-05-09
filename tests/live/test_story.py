@@ -4,9 +4,7 @@ from tests.helpers import *
 
 class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
     def test_story_pk_from_url(self):
-        story_pk = self.cl.story_pk_from_url(
-            "https://www.instagram.com/stories/instagram/2581281926631793076/"
-        )
+        story_pk = self.cl.story_pk_from_url("https://www.instagram.com/stories/instagram/2581281926631793076/")
         self.assertEqual(story_pk, 2581281926631793076)
 
     def test_upload_photo_story(self):
@@ -84,9 +82,7 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
         #     )
         # ]
         try:
-            buildout = StoryBuilder(
-                path, caption, mentions, Path("./examples/background.png")
-            ).video(1)
+            buildout = StoryBuilder(path, caption, mentions, Path("./examples/background.png")).video(1)
             story = self.cl.video_upload_to_story(
                 buildout.path,
                 caption,
@@ -162,9 +158,7 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
                     # [{'webUri': HttpUrl('https://l.instagram.com/?u=https%3A%2F%2Fyoutu.be%2Fx3GYpar-e64&e=ATM59nvUNmptw8vUsyoX835T....}]
                     self.assertEqual(len(v1_val), len(gql_val))
                     if gql_val:
-                        self.assertIn(
-                            gql_val[0]["webUri"].host, v1_val[0]["webUri"].query
-                        )
+                        self.assertIn(gql_val[0]["webUri"].host, v1_val[0]["webUri"].query)
                     continue
                 if gql_val != v1_val:
                     import pudb

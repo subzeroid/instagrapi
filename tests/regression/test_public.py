@@ -69,9 +69,7 @@ class PublicRegressionTestCase(unittest.TestCase):
             "public_graphql_request",
             side_effect=ClientUnauthorizedError("401", response=Mock(status_code=401)),
         ):
-            with mock.patch.object(
-                client, "media_info_a1", return_value=expected
-            ) as fallback:
+            with mock.patch.object(client, "media_info_a1", return_value=expected) as fallback:
                 result = client.media_info_gql("2110901750722920960")
 
         self.assertIs(result, expected)
@@ -116,9 +114,7 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
         response.raise_for_status.return_value = None
 
         with mock.patch.object(client, "request_log") as request_log:
-            with mock.patch.object(
-                client.private, "post", return_value=response
-            ) as post:
+            with mock.patch.object(client.private, "post", return_value=response) as post:
                 result = client.private_graphql_request(data)
 
         self.assertEqual(result, {"data": {"ok": True}})

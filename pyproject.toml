@@ -67,9 +67,7 @@ Guides = "https://instagrapi.com/guides/"
 
 [project.optional-dependencies]
 test = [
-    "flake8==7.3.0",
     "Pillow==12.2.0",
-    "isort==8.0.1",
     "bandit==1.9.4",
     "mike==2.2.0",
     # mike implicitly imports pkg_resources from setuptools — see
@@ -78,9 +76,10 @@ test = [
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
     "mkdocstrings[python]==1.0.4",
-    "pre-commit==4.5.0",
+    "pre-commit==4.6.0",
     "pytest-xdist==3.8.0",
     "pytest==9.0.3",
+    "ruff==0.15.12",
 ]
 
 [tool.setuptools]
@@ -89,3 +88,21 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["instagrapi*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+exclude = [
+    ".eggs",
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "env",
+    "site",
+    "venv",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82", "I"]

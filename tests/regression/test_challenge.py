@@ -89,9 +89,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         }
 
         with mock.patch.object(client, "_send_private_request") as send_request:
-            with mock.patch.object(
-                client, "challenge_resolve_simple", return_value=True
-            ) as resolve_simple:
+            with mock.patch.object(client, "challenge_resolve_simple", return_value=True) as resolve_simple:
                 result = client.challenge_resolve(last_json)
 
         self.assertTrue(result)
@@ -112,12 +110,8 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             "status": "fail",
         }
 
-        with mock.patch.object(
-            client, "_send_private_request", side_effect=ChallengeRequired
-        ):
-            with mock.patch.object(
-                client, "challenge_resolve_contact_form", return_value=True
-            ) as contact_form:
+        with mock.patch.object(client, "_send_private_request", side_effect=ChallengeRequired):
+            with mock.patch.object(client, "challenge_resolve_contact_form", return_value=True) as contact_form:
                 result = client.challenge_resolve(last_json)
 
         self.assertTrue(result)
@@ -127,15 +121,11 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         client = Client()
         client.user_agent = "Instagram Test"
         fake_session = Mock()
-        fake_session.cookies = requests.cookies.cookiejar_from_dict(
-            {"csrftoken": "token"}
-        )
+        fake_session.cookies = requests.cookies.cookiejar_from_dict({"csrftoken": "token"})
         fake_session.get.return_value = Mock()
         fake_session.post.return_value = Mock(json=Mock(return_value={}))
 
-        with mock.patch(
-            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
-        ):
+        with mock.patch("instagrapi.mixins.challenge.requests.Session", return_value=fake_session):
             with mock.patch("instagrapi.mixins.challenge.time.sleep"):
                 with mock.patch.object(
                     client,
@@ -154,18 +144,14 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         client = Client()
         client.user_agent = "Instagram Test"
         fake_session = Mock()
-        fake_session.cookies = requests.cookies.cookiejar_from_dict(
-            {"csrftoken": "token"}
-        )
+        fake_session.cookies = requests.cookies.cookiejar_from_dict({"csrftoken": "token"})
         fake_session.get.return_value = Mock()
         fake_session.post.side_effect = [
             Mock(json=Mock(return_value={})),
             Mock(json=Mock(return_value={})),
         ]
 
-        with mock.patch(
-            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
-        ):
+        with mock.patch("instagrapi.mixins.challenge.requests.Session", return_value=fake_session):
             with mock.patch("instagrapi.mixins.challenge.time.sleep"):
                 with mock.patch.object(
                     client,
@@ -198,9 +184,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         challenge = {
             "challengeType": "SelectContactPointRecoveryForm",
             "errors": ["Need recovery"],
-            "extraData": {
-                "content": [{"title": "Help us confirm you own this account"}]
-            },
+            "extraData": {"content": [{"title": "Help us confirm you own this account"}]},
         }
 
         with self.assertRaises(SelectContactPointRecoveryForm) as cm:
@@ -245,9 +229,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         with self.assertRaises(ChallengeError) as cm:
             client.handle_challenge_result(challenge)
 
-        self.assertIn(
-            "Unsupported challenge type: SomeNewChallengeForm", str(cm.exception)
-        )
+        self.assertIn("Unsupported challenge type: SomeNewChallengeForm", str(cm.exception))
         self.assertIn("Need manual action", str(cm.exception))
 
     def test_challenge_resolve_simple_select_verify_method_uses_sms_choice_for_code(
@@ -266,16 +248,10 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         result = client.challenge_resolve_simple("/challenge/test/")
 
         self.assertTrue(result)
-        self.assertEqual(
-            client._send_private_request.call_args_list[0].args[1]["choice"], "0"
-        )
+        self.assertEqual(client._send_private_request.call_args_list[0].args[1]["choice"], "0")
         self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
-        self.assertEqual(
-            client.challenge_code_or_raised.call_args.kwargs["wait_seconds"], 5
-        )
-        self.assertEqual(
-            client.challenge_code_or_raised.call_args.kwargs["attempts"], 24
-        )
+        self.assertEqual(client.challenge_code_or_raised.call_args.kwargs["wait_seconds"], 5)
+        self.assertEqual(client.challenge_code_or_raised.call_args.kwargs["attempts"], 24)
 
     def test_challenge_resolve_simple_select_contact_point_recovery_uses_sms_choice_for_code(
         self,
@@ -298,9 +274,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         result = client.challenge_resolve_simple("/challenge/test/")
 
         self.assertTrue(result)
-        self.assertEqual(
-            client._send_private_request.call_args_list[0].args[1]["choice"], "0"
-        )
+        self.assertEqual(client._send_private_request.call_args_list[0].args[1]["choice"], "0")
         self.assertEqual(client.challenge_code_or_raised.call_args.args[0].name, "SMS")
 
     def test_challenge_resolve_simple_unknown_step_raises_clear_error(self):
@@ -358,15 +332,11 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         client = Client()
         client.user_agent = "Instagram Test"
         fake_session = Mock()
-        fake_session.cookies = requests.cookies.cookiejar_from_dict(
-            {"csrftoken": "token"}
-        )
+        fake_session.cookies = requests.cookies.cookiejar_from_dict({"csrftoken": "token"})
         fake_session.get.return_value = Mock()
         fake_session.post.return_value = Mock(json=Mock(return_value={}))
 
-        with mock.patch(
-            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
-        ):
+        with mock.patch("instagrapi.mixins.challenge.requests.Session", return_value=fake_session):
             with mock.patch("instagrapi.mixins.challenge.time.sleep"):
                 with mock.patch.object(
                     client,
@@ -385,9 +355,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         client.user_agent = "Instagram Test"
         client.username = "expected-user"
         fake_session = Mock()
-        fake_session.cookies = requests.cookies.cookiejar_from_dict(
-            {"csrftoken": "token"}
-        )
+        fake_session.cookies = requests.cookies.cookiejar_from_dict({"csrftoken": "token"})
         fake_session.get.return_value = Mock()
         fake_session.post.side_effect = [
             Mock(json=Mock(return_value={})),
@@ -402,18 +370,14 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             ),
         ]
 
-        with mock.patch(
-            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
-        ):
+        with mock.patch("instagrapi.mixins.challenge.requests.Session", return_value=fake_session):
             with mock.patch("instagrapi.mixins.challenge.time.sleep"):
                 with mock.patch.object(
                     client,
                     "handle_challenge_result",
                     return_value={"challengeType": "VerifySMSCodeFormForSMSCaptcha"},
                 ):
-                    with mock.patch.object(
-                        client, "challenge_code_handler", return_value="123456"
-                    ):
+                    with mock.patch.object(client, "challenge_code_handler", return_value="123456"):
                         with self.assertRaises(ChallengeError) as cm:
                             client.challenge_resolve_contact_form("/challenge/test/")
 
@@ -425,9 +389,7 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         client = Client()
         client.user_agent = "Instagram Test"
         fake_session = Mock()
-        fake_session.cookies = requests.cookies.cookiejar_from_dict(
-            {"csrftoken": "token"}
-        )
+        fake_session.cookies = requests.cookies.cookiejar_from_dict({"csrftoken": "token"})
         fake_session.get.return_value = Mock()
         fake_session.post.side_effect = [
             Mock(json=Mock(return_value={})),
@@ -443,21 +405,15 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             Mock(json=Mock(return_value={"type": "NOPE", "status": "fail"})),
         ]
 
-        with mock.patch(
-            "instagrapi.mixins.challenge.requests.Session", return_value=fake_session
-        ):
+        with mock.patch("instagrapi.mixins.challenge.requests.Session", return_value=fake_session):
             with mock.patch("instagrapi.mixins.challenge.time.sleep"):
                 with mock.patch.object(
                     client,
                     "handle_challenge_result",
                     return_value={"challengeType": "VerifySMSCodeFormForSMSCaptcha"},
                 ):
-                    with mock.patch.object(
-                        client, "challenge_code_handler", return_value="123456"
-                    ):
+                    with mock.patch.object(client, "challenge_code_handler", return_value="123456"):
                         with self.assertRaises(ChallengeError) as cm:
                             client.challenge_resolve_contact_form("/challenge/test/")
 
-        self.assertIn(
-            "Unexpected final response after contact-form approval", str(cm.exception)
-        )
+        self.assertIn("Unexpected final response after contact-form approval", str(cm.exception))

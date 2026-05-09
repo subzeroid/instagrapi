@@ -98,9 +98,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.username = "example"
         client.password = "password"
         client.pre_login_flow = Mock(return_value=True)
-        client.private_request = Mock(
-            side_effect=TwoFactorRequired("Two-factor authentication required")
-        )
+        client.private_request = Mock(side_effect=TwoFactorRequired("Two-factor authentication required"))
         client.password_encrypt = Mock(return_value="enc-password")
 
         with self.assertRaises(TwoFactorRequired) as cm:
@@ -117,9 +115,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.phone_id = "phone-1"
         client.android_device_id = "android-1"
         client._token = "csrftoken"
-        client.last_json = {
-            "two_factor_info": {"two_factor_identifier": "two-factor-id"}
-        }
+        client.last_json = {"two_factor_info": {"two_factor_identifier": "two-factor-id"}}
         client.last_response = Mock(headers={"ig-set-authorization": "Bearer second"})
         client.parse_authorization = Mock(return_value={"sessionid": "abc"})
         client.pre_login_flow = Mock(return_value=True)
@@ -154,9 +150,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.phone_id = "phone-1"
         client.android_device_id = "android-1"
         client._token = "csrftoken"
-        client.last_json = {
-            "two_factor_info": {"two_factor_identifier": "two-factor-id"}
-        }
+        client.last_json = {"two_factor_info": {"two_factor_identifier": "two-factor-id"}}
         client.pre_login_flow = Mock(return_value=True)
         client.password_encrypt = Mock(return_value="enc-password")
         client.private_request = Mock(
@@ -176,9 +170,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"
         client.user_info_v1 = Mock(side_effect=PrivateError("boom"))
-        client.user_short_gql = Mock(
-            return_value=UserShort(pk="1234567890123456789", username="example")
-        )
+        client.user_short_gql = Mock(return_value=UserShort(pk="1234567890123456789", username="example"))
 
         result = client.login_by_sessionid(sessionid)
 
@@ -218,12 +210,8 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
     def test_login_by_sessionid_falls_back_to_user_short_gql_on_validation_error(self):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"
-        client.user_info_v1 = Mock(
-            side_effect=ValidationError.from_exception_data("User", [])
-        )
-        client.user_short_gql = Mock(
-            return_value=UserShort(pk="1234567890123456789", username="example")
-        )
+        client.user_info_v1 = Mock(side_effect=ValidationError.from_exception_data("User", []))
+        client.user_short_gql = Mock(return_value=UserShort(pk="1234567890123456789", username="example"))
 
         result = client.login_by_sessionid(sessionid)
 
@@ -272,9 +260,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
             "user_stories_gql",
             side_effect=ClientGraphqlError("Incorrect Query"),
         ):
-            with mock.patch.object(
-                client, "user_stories_v1", return_value=expected
-            ) as private_fallback:
+            with mock.patch.object(client, "user_stories_v1", return_value=expected) as private_fallback:
                 result = client.user_stories("4776134209", amount=5)
 
         private_fallback.assert_called_once_with("4776134209", 5)
@@ -369,9 +355,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
     def test_parse_authorization_decodes_valid_bearer_header(self):
         client = Client()
-        authorization = (
-            "Bearer IGT:2:eyJzZXNzaW9uaWQiOiAiYWJjIiwgImRzX3VzZXJfaWQiOiAiMTIzIn0="
-        )
+        authorization = "Bearer IGT:2:eyJzZXNzaW9uaWQiOiAiYWJjIiwgImRzX3VzZXJfaWQiOiAiMTIzIn0="
 
         result = client.parse_authorization(authorization)
 

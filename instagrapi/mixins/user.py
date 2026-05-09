@@ -126,9 +126,7 @@ class UserMixin:
             "include_reel": True,
         }
         try:
-            data = self.public_graphql_request(
-                variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
-            )
+            data = self.public_graphql_request(variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7")
             if not data["user"]:
                 raise UserNotFound(user_id=user_id, **data)
             user = extract_user_short(data["user"]["reel"]["user"])
@@ -380,9 +378,7 @@ class UserMixin:
         user_id = str(user_id)
         try:
             # GraphQL haven't method to receive user by id
-            return self.user_info_by_username_gql(
-                self.username_from_user_id_gql(user_id)
-            )
+            return self.user_info_by_username_gql(self.username_from_user_id_gql(user_id))
         except JSONDecodeError as e:
             raise ClientJSONDecodeError(e, user_id=user_id)
 
@@ -417,9 +413,7 @@ class UserMixin:
                 "from_module": from_module,
                 "is_app_start": is_app_start,
             }
-            assert (
-                from_module in INFO_FROM_MODULES
-            ), f'Unsupported send_attribute="{from_module}" {INFO_FROM_MODULES}'
+            assert from_module in INFO_FROM_MODULES, f'Unsupported send_attribute="{from_module}" {INFO_FROM_MODULES}'
             if from_module != "self_profile":
                 params["entry_point"] = "profile"
 
@@ -463,9 +457,7 @@ class UserMixin:
                 user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
-        return deepcopy(
-            self._users_cache[user_id]
-        )  # return copy of cache (dict changes protection)
+        return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)
 
     def new_feed_exist(self) -> bool:
         """
@@ -548,9 +540,7 @@ class UserMixin:
         List[UserShort]
             List of users
         """
-        results = self.private_request(
-            "users/search/", params={"query": query, "count": count}
-        )
+        results = self.private_request("users/search/", params={"query": query, "count": count})
         users = results.get("users", [])
         return [extract_user_short(user) for user in users]
 
@@ -675,9 +665,7 @@ class UserMixin:
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
-            data = self.public_graphql_request(
-                variables, query_hash="58712303d941c6855d4e888c5f0cd22f"
-            )
+            data = self.public_graphql_request(variables, query_hash="58712303d941c6855d4e888c5f0cd22f")
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
             page_info = json_value(data, "user", "edge_follow", "page_info", default={})
@@ -781,9 +769,7 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_following(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
-    ) -> Dict[str, UserShort]:
+    def user_following(self, user_id: str, use_cache: bool = True, amount: int = 0) -> Dict[str, UserShort]:
         """
         Get user's following information
 
@@ -851,14 +837,10 @@ class UserMixin:
         while True:
             if end_cursor:
                 variables["after"] = end_cursor
-            data = self.public_graphql_request(
-                variables, query_hash="37479f2b8209594dde7facb0d904896a"
-            )
+            data = self.public_graphql_request(variables, query_hash="37479f2b8209594dde7facb0d904896a")
             if not data["user"] and not users:
                 raise UserNotFound(user_id=user_id, **data)
-            page_info = json_value(
-                data, "user", "edge_followed_by", "page_info", default={}
-            )
+            page_info = json_value(data, "user", "edge_followed_by", "page_info", default={})
             edges = json_value(data, "user", "edge_followed_by", "edges", default=[])
             for edge in edges:
                 users.append(extract_user_short(edge["node"]))
@@ -958,9 +940,7 @@ class UserMixin:
             users = users[:amount]
         return users
 
-    def user_followers(
-        self, user_id: str, use_cache: bool = True, amount: int = 0
-    ) -> Dict[str, UserShort]:
+    def user_followers(self, user_id: str, use_cache: bool = True, amount: int = 0) -> Dict[str, UserShort]:
         """
         Get user's followers
 
@@ -993,9 +973,7 @@ class UserMixin:
             followers = dict(list(followers.items())[:amount])
         return followers
 
-    def user_follow_requests_chunk(
-        self, max_amount: int = 0, max_id: str = ""
-    ) -> Tuple[List[UserShort], str]:
+    def user_follow_requests_chunk(self, max_amount: int = 0, max_id: str = "") -> Tuple[List[UserShort], str]:
         """
         Get pending incoming follow requests by Private Mobile API
 
@@ -1106,10 +1084,7 @@ class UserMixin:
         Dict[str, bool]
             Dict of user_id and result
         """
-        return {
-            str(user_id): self.user_follow_request_approve(str(user_id))
-            for user_id in user_ids
-        }
+        return {str(user_id): self.user_follow_request_approve(str(user_id)) for user_id in user_ids}
 
     def user_follow_requests_decline(self, user_ids: List[str]) -> Dict[str, bool]:
         """
@@ -1124,10 +1099,7 @@ class UserMixin:
         Dict[str, bool]
             Dict of user_id and result
         """
-        return {
-            str(user_id): self.user_follow_request_decline(str(user_id))
-            for user_id in user_ids
-        }
+        return {str(user_id): self.user_follow_request_decline(str(user_id)) for user_id in user_ids}
 
     def user_follow(self, user_id: str) -> bool:
         """
@@ -1478,9 +1450,7 @@ class UserMixin:
         user_id = str(user_id)
         data = self.with_action_data({"user_id": user_id, "_uid": self.user_id})
         name = "unfavorite" if revert else "favorite"
-        result = self.private_request(
-            f"friendships/{name}_for_stories/{user_id}/", data
-        )
+        result = self.private_request(f"friendships/{name}_for_stories/{user_id}/", data)
         return result["status"] == "ok"
 
     def disable_stories_notifications(self, user_id: str) -> bool:
@@ -1552,9 +1522,7 @@ class UserMixin:
         result = self.private_request("friendships/set_besties/", data)
         return json_value(result, "friendship_statuses", user_id, "is_bestie") is False
 
-    def creator_info(
-        self, user_id: str, entry_point: str = "direct_thread"
-    ) -> Tuple[UserShort, Dict]:
+    def creator_info(self, user_id: str, entry_point: str = "direct_thread") -> Tuple[UserShort, Dict]:
         """
         Retrieves Creator's information
 
@@ -1688,9 +1656,7 @@ class UserMixin:
             "from_module": "feed_timeline",
         }
         try:
-            return self.private_request(
-                f"users/{username}/usernameinfo_stream/", data=data
-            )
+            return self.private_request(f"users/{username}/usernameinfo_stream/", data=data)
         except ClientNotFoundError as e:
             raise UserNotFound(e, username=username, **self.last_json)
         except ClientError as e:
@@ -1913,17 +1879,11 @@ class UserMixin:
             "user_id": str(user_id),
             "include_chaining": True,
         }
-        data = self.public_graphql_request(
-            variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7"
-        )
+        data = self.public_graphql_request(variables, query_hash="ad99dd9d3646cc3c0dda65debcd266a7")
         if not data.get("user"):
             raise UserNotFound("User not found")
         edges = json_value(data, "user", "edge_chaining", "edges", default=[])
         res = [extract_user_short(e["node"]) for e in edges if "node" in e]
-        if (
-            not res
-            and getattr(self, "num_retry", None) is not None
-            and self.num_retry < 4
-        ):
+        if not res and getattr(self, "num_retry", None) is not None and self.num_retry < 4:
             raise RelatedProfileRequired
         return res

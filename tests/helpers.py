@@ -212,13 +212,11 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
     def fresh_account(self):
         test_accounts_url = self.build_test_accounts_url()
-        print(f"TEST_ACCOUNTS_URL: {test_accounts_url[:8]}...{test_accounts_url[-8:]}")
+        print("TEST_ACCOUNTS_URL: configured")
         try:
             resp = requests.get(test_accounts_url, verify=False)
         except requests.RequestException as exc:
-            raise RuntimeError(
-                "Could not fetch TEST_ACCOUNTS_URL: " f"{exc.__class__.__name__}"
-            ) from None
+            raise RuntimeError(f"Could not fetch TEST_ACCOUNTS_URL: {exc.__class__.__name__}") from None
         print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
         if not 200 <= resp.status_code < 300:
             raise RuntimeError(f"TEST_ACCOUNTS_URL returned HTTP {resp.status_code}")
@@ -229,10 +227,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
                 return self.client_from_test_account(acc)
             except Exception as exc:
                 last_exc = exc
-                print(
-                    f"Fresh account attempt {attempt} failed for {acc['username']}: "
-                    f"{exc.__class__.__name__} {exc}"
-                )
+                print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
                 continue
         raise last_exc or RuntimeError("No usable fresh account returned")
 
@@ -240,13 +235,11 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         exclude_user_ids = {str(user_id) for user_id in (exclude_user_ids or set())}
         request_count = count + len(exclude_user_ids) + 3
         test_accounts_url = self.build_test_accounts_url(count=request_count)
-        print(f"TEST_ACCOUNTS_URL: {test_accounts_url[:8]}...{test_accounts_url[-8:]}")
+        print("TEST_ACCOUNTS_URL: configured")
         try:
             resp = requests.get(test_accounts_url, verify=False)
         except requests.RequestException as exc:
-            raise RuntimeError(
-                "Could not fetch TEST_ACCOUNTS_URL: " f"{exc.__class__.__name__}"
-            ) from None
+            raise RuntimeError(f"Could not fetch TEST_ACCOUNTS_URL: {exc.__class__.__name__}") from None
         print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
         if not 200 <= resp.status_code < 300:
             raise RuntimeError(f"TEST_ACCOUNTS_URL returned HTTP {resp.status_code}")
@@ -260,10 +253,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
                 cl = self.client_from_test_account(acc)
             except Exception as exc:
                 last_exc = exc
-                print(
-                    f"Fresh account attempt {attempt} failed for {acc['username']}: "
-                    f"{exc.__class__.__name__} {exc}"
-                )
+                print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
                 continue
             user_id = str(cl.user_id)
             if user_id in seen_user_ids:
@@ -272,10 +262,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             accounts.append(cl)
             if len(accounts) == count:
                 return accounts
-        raise RuntimeError(
-            f"Could not get {count} usable fresh accounts"
-            + (f": {last_exc}" if last_exc else "")
-        )
+        raise RuntimeError(f"Could not get {count} usable fresh accounts" + (f": {last_exc}" if last_exc else ""))
 
     def __init__(self, *args, **kwargs):
         if TEST_ACCOUNTS_URL:
@@ -286,17 +273,13 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         settings = {}
         try:
             st = os.stat(filename)
-            if datetime.fromtimestamp(st.st_mtime) > (
-                datetime.now() - timedelta(seconds=3600)
-            ):
+            if datetime.fromtimestamp(st.st_mtime) > (datetime.now() - timedelta(seconds=3600)):
                 # use only fresh session (5 minutes)
                 settings = self.cl.load_settings(filename)
         except FileNotFoundError:
             pass
         except JSONDecodeError as e:
-            logger.info(
-                "JSONDecodeError when read stored client settings. Use empty settings"
-            )
+            logger.info("JSONDecodeError when read stored client settings. Use empty settings")
             logger.exception(e)
         self.cl.set_settings(settings)
         # self.cl.set_locale('ru_RU')
@@ -312,8 +295,4 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
 
 
 _HELPER_ONLY_NAMES = {"BaseClientMixin", "ClientPrivateTestCase"}
-__all__ = [
-    name
-    for name in globals()
-    if not name.startswith("_") and name not in _HELPER_ONLY_NAMES
-]
+__all__ = [name for name in globals() if not name.startswith("_") and name not in _HELPER_ONLY_NAMES]

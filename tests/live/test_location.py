@@ -32,9 +32,7 @@ class ClientLocationTestCase(_helpers.ClientPrivateTestCase):
         self.assertEqual(result.lng, 13.8108333333)
 
     def test_location_complete_external_id(self):
-        source = Location(
-            name="Blaues Wunder (Dresden)", lat=51.0536111111, lng=13.8108333333
-        )
+        source = Location(name="Blaues Wunder (Dresden)", lat=51.0536111111, lng=13.8108333333)
         result = self.cl.location_complete(source)
         self.assertIsInstance(result, Location)
         self.assertEqual(result.external_id, 150300262230285)

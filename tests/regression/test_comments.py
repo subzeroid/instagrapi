@@ -31,9 +31,7 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
         ) as private_request:
             replies = client.media_comment_replies("123_456", "100")
 
-        private_request.assert_called_once_with(
-            "media/123_456/comments/100/inline_child_comments/", None
-        )
+        private_request.assert_called_once_with("media/123_456/comments/100/inline_child_comments/", None)
         self.assertEqual([reply.pk for reply in replies], ["101", "102"])
         self.assertTrue(all(isinstance(reply, Comment) for reply in replies))
         self.assertEqual(replies[0].replied_to_comment_id, "100")
@@ -50,9 +48,7 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
                 "status": "ok",
             },
         ) as private_request:
-            replies, cursor = client.media_comment_replies_chunk(
-                "123_456", "100", max_amount=10, min_id="cursor-1"
-            )
+            replies, cursor = client.media_comment_replies_chunk("123_456", "100", max_amount=10, min_id="cursor-1")
 
         private_request.assert_called_once_with(
             "media/123_456/comments/100/inline_child_comments/",
@@ -76,9 +72,7 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
                 "status": "ok",
             },
         ]
-        with mock.patch.object(
-            client, "private_request", side_effect=responses
-        ) as private_request:
+        with mock.patch.object(client, "private_request", side_effect=responses) as private_request:
             replies = client.media_comment_replies("123_456", "100", amount=2)
 
         self.assertEqual(

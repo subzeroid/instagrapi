@@ -36,28 +36,18 @@ class SignUpMixin:
         self.get_signup_config()
         check = self.check_email(email)
         if not check.get("valid"):
-            raise EmailInvalidError(
-                f"Email not valid: {check.get('error_title', check)}"
-            )
+            raise EmailInvalidError(f"Email not valid: {check.get('error_title', check)}")
         if not check.get("available"):
-            raise EmailNotAvailableError(
-                f"Email not available: {check.get('feedback_message', check)}"
-            )
+            raise EmailNotAvailableError(f"Email not available: {check.get('feedback_message', check)}")
         sent = self.send_verify_email(email)
         if not sent.get("email_sent"):
-            raise EmailVerificationSendError(
-                f"Failed to send verification email: {sent}"
-            )
+            raise EmailVerificationSendError(f"Failed to send verification email: {sent}")
 
         # Date of Birth (DOB) Age Eligibility Check
         if year and month and day:
             age_check_result = self.check_age_eligibility(year, month, day)
-            if not age_check_result.get(
-                "eligible"
-            ):  # Assuming "eligible": True is success
-                raise AgeEligibilityError(
-                    f"Account not eligible based on age criteria: {age_check_result}"
-                )
+            if not age_check_result.get("eligible"):  # Assuming "eligible": True is success
+                raise AgeEligibilityError(f"Account not eligible based on age criteria: {age_check_result}")
 
         # send code confirmation
         code = ""
@@ -66,10 +56,7 @@ class SignUpMixin:
             if code:
                 break
             time.sleep(self.wait_seconds * attempt)
-        print(
-            f'Enter code "{code}" for {username} '
-            f"({attempt} attempts, by {self.wait_seconds} seconds)"
-        )
+        print(f'Enter code "{code}" for {username} ({attempt} attempts, by {self.wait_seconds} seconds)')
         signup_code = self.check_confirmation_code(email, code).get("signup_code")
         retries = 0
         kwargs = {
@@ -177,16 +164,12 @@ class SignUpMixin:
             "email": email,
             "force_sign_up_code": signup_code,
             "qs_stamp": "",
-            "sn_nonce": bytes(
-                f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"
-            ),
+            "sn_nonce": bytes(f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"),
             "waterfall_id": self.waterfall_id,
             "one_tap_opt_in": "true",
             **kwargs,
         }
-        return self.private_request(
-            "accounts/create/", data, domain="www.instagram.com"
-        )
+        return self.private_request("accounts/create/", data, domain="www.instagram.com")
 
     def challenge_flow(self, data):
         data = self.challenge_api(data)
@@ -221,9 +204,7 @@ class SignUpMixin:
             self.logger.error(
                 f"Malformed captcha challenge data from Instagram: site_key={site_key}, api_path={api_path}"
             )
-            raise ClientError(
-                "Malformed captcha challenge data from Instagram (missing site_key or api_path)."
-            )
+            raise ClientError("Malformed captcha challenge data from Instagram (missing site_key or api_path).")
 
         challenge_post_url = "https://i.instagram.com%s" % api_path
         captcha_details_for_solver = {
@@ -247,9 +228,7 @@ class SignUpMixin:
                 f"An unexpected error occurred during the captcha resolution process: {e}",
                 exc_info=True,
             )
-            raise ClientError(
-                f"Captcha resolution process failed: {e}"
-            )  # Wrap other errors
+            raise ClientError(f"Captcha resolution process failed: {e}")  # Wrap other errors
 
         # Proceed to POST the g_recaptcha_response:
         resp = self.private.post(

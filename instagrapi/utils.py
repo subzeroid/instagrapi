@@ -66,19 +66,17 @@ def generate_signature(data):
     return "signed_body=SIGNATURE.{data}".format(data=urllib.parse.quote_plus(data))
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 # Overload for when no default is provided - could return Any or None
 @overload
-def json_value(data: dict, *args: Union[str, int]) -> Any:
-    ...
+def json_value(data: dict, *args: Union[str, int]) -> Any: ...
 
 
 # Overload for when default is provided - returns either found value or default type
 @overload
-def json_value(data: dict, *args: Union[str, int], default: T) -> Union[T, Any]:
-    ...
+def json_value(data: dict, *args: Union[str, int], default: T) -> Union[T, Any]: ...
 
 
 def json_value(data: dict, *args: Union[str, int], default: Any = None) -> Any:

@@ -30,33 +30,25 @@ def filter_medias(
 
     medias = list(
         filter(
-            lambda x: True
-            if like_count_min is None
-            else x.like_count >= like_count_min,
+            lambda x: True if like_count_min is None else x.like_count >= like_count_min,
             medias,
         )
     )
     medias = list(
         filter(
-            lambda x: True
-            if like_count_max is None
-            else x.like_count <= like_count_max,
+            lambda x: True if like_count_max is None else x.like_count <= like_count_max,
             medias,
         )
     )
     medias = list(
         filter(
-            lambda x: True
-            if comment_count_min is None
-            else x.comment_count >= comment_count_min,
+            lambda x: True if comment_count_min is None else x.comment_count >= comment_count_min,
             medias,
         )
     )
     medias = list(
         filter(
-            lambda x: True
-            if comment_count_max is None
-            else x.comment_count <= comment_count_max,
+            lambda x: True if comment_count_max is None else x.comment_count <= comment_count_max,
             medias,
         )
     )
@@ -64,9 +56,9 @@ def filter_medias(
         days_back = datetime.now() - timedelta(days=days_ago_max)
         medias = list(
             filter(
-                lambda x: days_ago_max is None
-                or x.taken_at is None
-                or x.taken_at > days_back.astimezone(x.taken_at.tzinfo),
+                lambda x: (
+                    days_ago_max is None or x.taken_at is None or x.taken_at > days_back.astimezone(x.taken_at.tzinfo)
+                ),
                 medias,
             )
         )
@@ -82,9 +74,7 @@ def get_medias(
     ht_medias = []
     for hashtag in hashtags:
         if ht_type == "top":
-            ht_medias.extend(
-                cl.hashtag_medias_top(name=hashtag, amount=amount if amount <= 9 else 9)
-            )
+            ht_medias.extend(cl.hashtag_medias_top(name=hashtag, amount=amount if amount <= 9 else 9))
         elif ht_type == "recent":
             ht_medias.extend(cl.hashtag_medias_recent(name=hashtag, amount=amount))
     return list(dict([(media.pk, media) for media in ht_medias]).values())

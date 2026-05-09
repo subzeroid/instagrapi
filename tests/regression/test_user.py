@@ -51,9 +51,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "public_graphql_request",
             side_effect=ClientGraphqlError("Incorrect Query"),
         ):
-            with mock.patch.object(
-                client, "user_web_profile_info_gql", return_value=web_user
-            ) as fallback:
+            with mock.patch.object(client, "user_web_profile_info_gql", return_value=web_user) as fallback:
                 user = client.user_short_gql("25025320", use_cache=False)
 
         self.assertEqual(user.username, "instagram")
@@ -69,9 +67,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
                 self.public_request_calls = []
 
             def public_request(self, url, headers=None, **kwargs):
-                self.public_request_calls.append(
-                    {"url": url, "headers": headers, "kwargs": kwargs}
-                )
+                self.public_request_calls.append({"url": url, "headers": headers, "kwargs": kwargs})
                 return json.dumps(self.response_body)
 
         client = DummyClient()
@@ -81,9 +77,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user.username, "example")
         self.assertEqual(len(client.public_request_calls), 1)
         self.assertEqual(client.public_request_calls[0]["kwargs"], {})
-        self.assertIn(
-            "web_profile_info/?username=example", client.public_request_calls[0]["url"]
-        )
+        self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
 
     def test_user_info_by_username_suppresses_traceback_for_public_retry_error(self):
         client = Client()
@@ -108,12 +102,8 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "user_info_by_username_gql",
             side_effect=RetryError("too many 429 error responses"),
         ):
-            with mock.patch.object(
-                client, "user_info_by_username_v1", return_value=fallback_user
-            ) as fallback:
-                with mock.patch.object(
-                    client, "user_info", return_value=fallback_user
-                ) as user_info:
+            with mock.patch.object(client, "user_info_by_username_v1", return_value=fallback_user) as fallback:
+                with mock.patch.object(client, "user_info", return_value=fallback_user) as user_info:
                     user = client.user_info_by_username("Example", use_cache=False)
 
         self.assertEqual(user.pk, "123")
@@ -297,9 +287,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         client = Client()
         expected = {"users": [{"pk": "9", "username": "suggested"}]}
 
-        with mock.patch.object(
-            client, "private_request", return_value=expected
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
             result = client.chaining("123")
 
         self.assertEqual(result, expected)
@@ -343,9 +331,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         client = Client()
         expected = {"users": []}
 
-        with mock.patch.object(
-            client, "private_request", return_value=expected
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
             result = client.fetch_suggestion_details("123", "9,10,11")
 
         self.assertEqual(result, expected)
@@ -360,9 +346,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
     def test_user_stream_by_id_v1_sends_expected_endpoint_and_data(self):
         client = Client()
-        with mock.patch.object(
-            client, "private_request", return_value={"stream_rows": []}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
             client.user_stream_by_id_v1("123")
 
         private_request.assert_called_once_with(
@@ -389,9 +373,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
     def test_user_stream_by_username_v1_sends_expected_endpoint(self):
         client = Client()
-        with mock.patch.object(
-            client, "private_request", return_value={"stream_rows": []}
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
             client.user_stream_by_username_v1("Example")
 
         endpoint = private_request.call_args.args[0]
@@ -417,9 +399,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
     def test_user_stream_by_username_flat_falls_back_when_empty(self):
         client = Client()
         client.last_json = {"sentinel": True}
-        with mock.patch.object(
-            client, "user_stream_by_username_v1", return_value={"stream_rows": []}
-        ) as stream_call:
+        with mock.patch.object(client, "user_stream_by_username_v1", return_value={"stream_rows": []}) as stream_call:
             result = client.user_stream_by_username_flat("alice")
 
         # First call from _flat → empty → collector triggers second.
@@ -435,9 +415,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         ) as private_request:
             user = client.user_web_profile_info_v1("alice")
 
-        private_request.assert_called_once_with(
-            "users/web_profile_info/", params={"username": "alice"}
-        )
+        private_request.assert_called_once_with("users/web_profile_info/", params={"username": "alice"})
         self.assertEqual(user, {"pk": "9", "username": "alice"})
 
     def test_user_web_profile_info_v1_raises_user_not_found_on_empty_data(self):
@@ -458,12 +436,8 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             ]
         }
 
-        with mock.patch.object(
-            client, "user_stream_by_id_v1", return_value=stream_resp
-        ) as stream:
-            with mock.patch.object(
-                client, "private_request", return_value={"users": []}
-            ) as private_request:
+        with mock.patch.object(client, "user_stream_by_id_v1", return_value=stream_resp) as stream:
+            with mock.patch.object(client, "private_request", return_value={"users": []}) as private_request:
                 client.discover_recommended_accounts_for_category_v1("9")
 
         stream.assert_called_once_with("9")
@@ -481,12 +455,8 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             ]
         }
 
-        with mock.patch.object(
-            client, "user_stream_by_id_v1", return_value=stream_resp
-        ):
-            with mock.patch.object(
-                client, "private_request", return_value={"users": []}
-            ) as private_request:
+        with mock.patch.object(client, "user_stream_by_id_v1", return_value=stream_resp):
+            with mock.patch.object(client, "private_request", return_value={"users": []}) as private_request:
                 client.discover_recommended_accounts_for_category_v1("9")
 
         params = private_request.call_args.kwargs["params"]
@@ -530,9 +500,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         from instagrapi.exceptions import UserNotFound
 
         client = Client()
-        with mock.patch.object(
-            client, "public_graphql_request", return_value={"user": None}
-        ):
+        with mock.patch.object(client, "public_graphql_request", return_value={"user": None}):
             with self.assertRaises(UserNotFound):
                 client.user_related_profiles_gql("9")
 

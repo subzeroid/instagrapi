@@ -60,9 +60,7 @@ class ReelsMixin:
         """
         return self.reels_timeline_media("friends_reels", amount, last_media_pk)
 
-    def reels_timeline_media(
-        self, collection_pk: str, amount: int = 10, last_media_pk: int = 0
-    ) -> List[Media]:
+    def reels_timeline_media(self, collection_pk: str, amount: int = 10, last_media_pk: int = 0) -> List[Media]:
         """
         Get reels timeline media in a collection
 
@@ -87,9 +85,7 @@ class ReelsMixin:
             "friends_reels": "clips/discover/social/",
         }.get(collection_pk)
         if not private_request_endpoint:
-            self.logger.warning(
-                "Unsupported reels timeline collection: %r", collection_pk
-            )
+            self.logger.warning("Unsupported reels timeline collection: %r", collection_pk)
             return []
 
         last_media_pk = last_media_pk and int(last_media_pk)

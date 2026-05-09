@@ -26,9 +26,7 @@ def get_instagram_cookies_from_browser(browser_name):
     try:
         import browser_cookie3
     except ImportError:
-        print(
-            "browser_cookie3 not installed. Install with: pip install browser_cookie3"
-        )
+        print("browser_cookie3 not installed. Install with: pip install browser_cookie3")
         return None
 
     supported_browsers = {

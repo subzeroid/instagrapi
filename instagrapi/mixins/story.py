@@ -111,9 +111,7 @@ class StoryMixin:
         self._stories_cache.pop(self.media_pk(media_id), None)
         return self.media_delete(media_id)
 
-    def users_stories_gql(
-        self, user_ids: List[int], amount: int = 0
-    ) -> List[UserShort]:
+    def users_stories_gql(self, user_ids: List[int], amount: int = 0) -> List[UserShort]:
         """
         Get a user's stories (Public API)
 
@@ -192,16 +190,9 @@ class StoryMixin:
         List[Story]
             A list of objects of Story
         """
-        params = {
-            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
-        }
+        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
         user_id = int(user_id)
-        reel = (
-            self.private_request(f"feed/user/{user_id}/story/", params=params).get(
-                "reel"
-            )
-            or {}
-        )
+        reel = self.private_request(f"feed/user/{user_id}/story/", params=params).get("reel") or {}
         stories = []
         for item in reel.get("items", []):
             stories.append(extract_story_v1(item))
@@ -258,9 +249,7 @@ class StoryMixin:
             [self.media_id(mid) for mid in skipped_story_pks],
         )
 
-    def story_download(
-        self, story_pk: str, filename: str = "", folder: Path = ""
-    ) -> Path:
+    def story_download(self, story_pk: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download story media by media_type
 
@@ -277,9 +266,7 @@ class StoryMixin:
         url = str(story.thumbnail_url if story.media_type == 1 else story.video_url)
         return self.story_download_by_url(url, filename, folder)
 
-    def story_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> Path:
+    def story_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download story media using URL
 
@@ -307,9 +294,7 @@ class StoryMixin:
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
 
-        response = self._send_public_request(
-            url, stream=True, timeout=self.request_timeout
-        )
+        response = self._send_public_request(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
 
         with open(path, "wb") as f:
@@ -317,22 +302,16 @@ class StoryMixin:
             shutil.copyfileobj(response.raw, f)
         return path.resolve()
 
-    def story_viewers_chunk(
-        self, story_pk: int, max_amount: int = 0, max_id: str = ""
-    ) -> tuple[list[Viewer], str]:
+    def story_viewers_chunk(self, story_pk: int, max_amount: int = 0, max_id: str = "") -> tuple[list[Viewer], str]:
         unique_set: set[str] = set()
         viewers: list[Viewer] = []
         story_pk = self.media_pk(story_pk)
-        params = {
-            "supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)
-        }
+        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
 
         while True:
             if max_id:
                 params["max_id"] = max_id
-            result = self.private_request(
-                f"media/{story_pk}/list_reel_media_viewer/", params=params
-            )
+            result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
             for item in result["viewers"]:
                 viewer = extract_viewer(item)
                 if viewer.pk in unique_set:
@@ -392,9 +371,7 @@ class StoryMixin:
             "container_module": "reel_feed_timeline",
         }
         name = "unsend" if revert else "send"
-        result = self.private_request(
-            f"story_interactions/{name}_story_like", self.with_action_data(data)
-        )
+        result = self.private_request(f"story_interactions/{name}_story_like", self.with_action_data(data))
         return result["status"] == "ok"
 
     def story_unlike(self, story_id: str) -> bool:

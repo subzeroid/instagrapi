@@ -26,9 +26,7 @@ class ClientNoteLiveTestCase(_helpers.ClientPrivateTestCase):
             candidates.extend(item.get("preview_items") or [])
             for candidate in candidates:
                 track = candidate.get("track") or candidate
-                if (track.get("audio_asset_id") or track.get("id")) and track.get(
-                    "audio_cluster_id"
-                ):
+                if (track.get("audio_asset_id") or track.get("id")) and track.get("audio_cluster_id"):
                     return track
         return None
 
@@ -38,10 +36,7 @@ class ClientNoteLiveTestCase(_helpers.ClientPrivateTestCase):
                 try:
                     self.cl.delete_note(note.id)
                 except Exception as exc:
-                    print(
-                        "Notes live cleanup delete_note failed: "
-                        f"{exc.__class__.__name__} {exc}"
-                    )
+                    print(f"Notes live cleanup delete_note failed: {exc.__class__.__name__} {exc}")
 
     def test_create_music_note_from_notes_music_browser(self):
         self.delete_own_note_if_exists()
@@ -71,7 +66,4 @@ class ClientNoteLiveTestCase(_helpers.ClientPrivateTestCase):
                 try:
                     self.cl.delete_note(note.id)
                 except Exception as exc:
-                    print(
-                        "Notes live cleanup delete_note failed: "
-                        f"{exc.__class__.__name__} {exc}"
-                    )
+                    print(f"Notes live cleanup delete_note failed: {exc.__class__.__name__} {exc}")

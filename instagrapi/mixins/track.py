@@ -12,9 +12,7 @@ from instagrapi.utils import json_value
 
 
 class TrackMixin:
-    def track_download_by_url(
-        self, url: str, filename: str = "", folder: Path = ""
-    ) -> Path:
+    def track_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download track by URL
 
@@ -50,11 +48,7 @@ class TrackMixin:
             result = self.private_request(path, data)
         except ClientError as e:
             if not self.last_json:
-                kw = {
-                    k: v
-                    for k, v in data.items()
-                    if k in {"music_canonical_id", "original_sound_audio_asset_id"}
-                }
+                kw = {k: v for k, v in data.items() if k in {"music_canonical_id", "original_sound_audio_asset_id"}}
                 raise TrackNotFound(**kw)
             raise e
         return result

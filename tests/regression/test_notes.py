@@ -35,9 +35,7 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
             "items": [],
         }
 
-        with mock.patch.object(
-            client, "private_request", return_value=expected
-        ) as private_request:
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
             result = client.notes_music_browser()
 
         private_request.assert_called_once_with(
@@ -83,9 +81,7 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
             }
         }
 
-        with mock.patch.object(
-            client, "private_graphql_request", return_value=graphql_response
-        ) as graphql_query:
+        with mock.patch.object(client, "private_graphql_request", return_value=graphql_response) as graphql_query:
             note = client.create_music_note(
                 track=track,
                 text="Now playing",

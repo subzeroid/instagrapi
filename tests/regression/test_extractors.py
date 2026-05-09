@@ -3,9 +3,7 @@ from tests.helpers import *
 
 class ExtractorsRegressionTestCase(unittest.TestCase):
     def test_extract_resource_v1_handles_empty_candidates(self):
-        resource = extract_resource_v1(
-            {"pk": "1", "media_type": 1, "image_versions2": {"candidates": []}}
-        )
+        resource = extract_resource_v1({"pk": "1", "media_type": 1, "image_versions2": {"candidates": []}})
         self.assertIsNone(resource.thumbnail_url)
         self.assertEqual(resource.pk, "1")
 
@@ -78,12 +76,8 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
 
         self.assertIsNotNone(message.generic_xma)
         self.assertEqual(len(message.generic_xma), 2)
-        self.assertEqual(
-            str(message.generic_xma[0].video_url), "https://example.com/first"
-        )
-        self.assertEqual(
-            str(message.generic_xma[1].video_url), "https://example.com/second"
-        )
+        self.assertEqual(str(message.generic_xma[0].video_url), "https://example.com/first")
+        self.assertEqual(str(message.generic_xma[1].video_url), "https://example.com/second")
 
     def test_reply_visual_media_timestamp_uses_microseconds(self):
         message = extract_direct_message(

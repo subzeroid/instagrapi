@@ -47,10 +47,7 @@ class ClientCommentRepliesLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(reply.text)
             return
 
-        self.fail(
-            "Could not fetch live comment replies from known public fixtures: "
-            + "; ".join(errors)
-        )
+        self.fail("Could not fetch live comment replies from known public fixtures: " + "; ".join(errors))
 
 
 class ClientCommentExtendTestCase(_helpers.ClientPrivateTestCase):
