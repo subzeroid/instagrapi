@@ -1243,7 +1243,7 @@ the code:</p>
 <div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>-sv<span class="w"> </span>tests/regression
 ruff<span class="w"> </span>check<span class="w"> </span>.
 ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
-bandit<span class="w"> </span>--ini<span class="w"> </span>.bandit<span class="w"> </span>-r<span class="w"> </span>instagrapi
+bandit<span class="w"> </span>-c<span class="w"> </span>pyproject.toml<span class="w"> </span>-r<span class="w"> </span>instagrapi
 mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </code></pre></div>
 <p>To apply automatic lint and formatting fixes locally:</p>
