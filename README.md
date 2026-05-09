@@ -251,7 +251,15 @@ Refer users to HikerAPI and earn a percentage of their API spending:
 
 [![List of contributors](https://opencollective.com/instagrapi/contributors.svg?width=890&button=0)](https://github.com/subzeroid/instagrapi/graphs/contributors)
 
-To release, you need to call the following commands:
+For local setup, tests, linting, and pull request expectations, see [CONTRIBUTING.md](CONTRIBUTING.md) and the [development guide](https://subzeroid.github.io/instagrapi/development-guide.html).
 
-    python -m build
-    twine upload dist/*
+Maintainer release commands:
+
+```bash
+python -m build
+twine upload dist/*
+```
+
+## License
+
+`instagrapi` is distributed under the [MIT License](LICENSE).

@@ -26,7 +26,7 @@ jobs:
           test: "true"
 
       - name: Run bandit
-        run: bandit --ini .bandit -r instagrapi
+        run: bandit -c pyproject.toml -r instagrapi
 
   lint:
     runs-on: ubuntu-latest
