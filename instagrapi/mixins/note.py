@@ -15,7 +15,6 @@ from instagrapi.exceptions import (
 from instagrapi.types import Note, Track, UserShort
 from instagrapi.utils import dumps
 
-
 CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID = "3510400299951610199199089856"
 CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME = "CreateInboxTrayItemRequest"
 GRAPHQL_QUERY_URL = f"https://{config.API_DOMAIN}/graphql/query"
