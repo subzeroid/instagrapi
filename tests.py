@@ -5263,6 +5263,88 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertIsInstance(media, Media)
         self.assertEqual(str(media.video_url), "https://example.com/video.mp4")
 
+    def test_clip_upload_uses_current_reels_rupload_shape(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch("time.time", return_value=1778346423.0):
+                with mock.patch.object(
+                    client.private, "get", return_value=ok_response
+                ) as private_get:
+                    with mock.patch.object(
+                        client.private,
+                        "post",
+                        side_effect=[ok_response, ok_response],
+                    ) as private_post:
+                        with mock.patch.object(
+                            client, "clip_configure", return_value={"status": "ok"}
+                        ):
+                            with mock.patch(
+                                "builtins.open",
+                                mock.mock_open(read_data=b"video-bytes"),
+                            ):
+                                with mock.patch("time.sleep"):
+                                    client.clip_upload(Path("example.mp4"), "caption")
+
+        post_calls = private_post.call_args_list
+        self.assertEqual(len(post_calls), 2)
+        upload_settings_call, video_upload_call = post_calls
+        self.assertRegex(
+            upload_settings_call.args[0],
+            r"https://i\.instagram\.com/upload_settings/[0-9a-f-]{36}$",
+        )
+        settings_headers = upload_settings_call.kwargs["headers"]
+        self.assertEqual(settings_headers["Content-Type"], "application/json")
+        self.assertEqual(settings_headers["X-Entity-Name"], "upload_settings")
+        self.assertEqual(settings_headers["X-Entity-Type"], "application/json")
+        self.assertEqual(settings_headers["Offset"], "0")
+        self.assertEqual(
+            settings_headers["Content-Length"],
+            settings_headers["X-Entity-Length"],
+        )
+        settings_payload = json.loads(upload_settings_call.kwargs["data"])
+        self.assertEqual(
+            settings_payload["composer_session_id"],
+            upload_settings_call.args[0].rsplit("/", 1)[-1],
+        )
+        settings_properties = settings_payload["upload_setting_properties"]
+        self.assertEqual(settings_properties["context"]["source_type"], "clips")
+        self.assertEqual(settings_properties["context"]["target_id"], 1)
+        self.assertEqual(settings_properties["video"]["video_width"], 720)
+        self.assertEqual(settings_properties["video"]["video_height"], 1280)
+        self.assertEqual(settings_properties["video"]["video_original_file_size"], 11)
+        self.assertEqual(settings_payload["preview_spec"]["video_dur_ms"], 6023)
+
+        upload_url = video_upload_call.args[0]
+        upload_name = upload_url.rsplit("/", 1)[-1]
+        self.assertRegex(
+            upload_name,
+            r"^[0-9a-f]{32}-0-11-1778346423000-1778346423000$",
+        )
+        self.assertTrue(private_get.call_args.args[0].endswith(upload_name))
+
+        headers = video_upload_call.kwargs["headers"]
+        self.assertEqual(headers["Content-Type"], "application/octet-stream")
+        self.assertEqual(headers["X-Entity-Type"], "video/mp4")
+        self.assertEqual(headers["X-Entity-Length"], "11")
+        self.assertEqual(headers["X-Entity-Name"], upload_name)
+        self.assertEqual(headers["Offset"], "0")
+        self.assertEqual(headers["Segment-Start-Offset"], "0")
+        self.assertEqual(headers["Segment-Type"], "3")
+
+        rupload_params = json.loads(headers["X-Instagram-Rupload-Params"])
+        self.assertEqual(rupload_params["share_type"], "reels")
+        self.assertEqual(rupload_params["is_optimistic_upload"], "true")
+        self.assertEqual(rupload_params["content_tags"], "use_default_cover")
+        self.assertEqual(rupload_params["xsharing_user_ids"], "[]")
+        self.assertEqual(rupload_params["upload_media_duration_ms"], "6023")
+        self.assertEqual(rupload_params["session_id"], rupload_params["upload_id"])
+
     def test_video_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
