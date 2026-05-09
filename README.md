@@ -170,7 +170,8 @@ Hands-on guides for real instagrapi work — login flows, sessions, proxies, scr
 * [Instagram scraper in Python: a working setup](https://instagrapi.com/guides/instagram-scraper-python/)
 * [Upload a photo from Python](https://instagrapi.com/guides/instagrapi-upload-photo-python/)
 * [Download Instagram stories](https://instagrapi.com/guides/instagrapi-download-stories-python/)
-* [Common errors reference](https://instagrapi.com/guides/errors/) — `challenge_required`, `login_required`, `please_wait_a_few_minutes`, `feedback_required`, `proxy_address_is_blocked`
+* [Common errors reference](https://instagrapi.com/guides/errors/) — `bad_password`, `challenge_required`, `login_required`, `please_wait_a_few_minutes`, `feedback_required`, `proxy_address_is_blocked`
+* [`BadPassword`: correct password rejected by Instagram](https://instagrapi.com/guides/errors/bad-password/) — proxy/IP/device/session trust troubleshooting
 * [Framework integrations](https://instagrapi.com/guides/integrations/) — Django, FastAPI, Celery, Docker, AWS Lambda
 
 Comparing instagrapi to other tools:

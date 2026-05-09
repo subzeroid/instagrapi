@@ -140,7 +140,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
 * [Challenge Resolver](usage-guide/challenge_resolver.md)
 * [Exceptions](exceptions.md)
 
-If you are dealing with `429`, `feedback_required`, `PleaseWaitFewMinutes`, or repeated relogins, start with [Best Practices](usage-guide/best-practices.md) and [Handle Exceptions](usage-guide/handle_exception.md).
+If you are dealing with [`BadPassword` on a known-good password](https://instagrapi.com/guides/errors/bad-password/), `429`, `feedback_required`, `PleaseWaitFewMinutes`, or repeated relogins, start with [Best Practices](usage-guide/best-practices.md) and [Handle Exceptions](usage-guide/handle_exception.md).
 
 [ci]: https://github.com/subzeroid/instagrapi/actions
 [pypi]: https://pypi.org/project/instagrapi/

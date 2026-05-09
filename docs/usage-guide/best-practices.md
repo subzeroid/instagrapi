@@ -7,6 +7,7 @@ This is a best practices guide around using the Instagram API so that you don't 
 If you're getting errors like this:
 
 - "The username you entered doesn't appear to belong to an account. Please check your username and try again."
+- `BadPassword` even though the same password works in another context
 
 Or you notice that Instagram is sending suspicious login emails, review the network identity for that account. Instagram may be rate limiting the IP, distrusting the login location, or challenging the account because the device/session and IP history do not look consistent.
 
@@ -36,6 +37,8 @@ Notes:
 * Match `set_country(...)`, `set_locale(...)`, device settings, and saved sessions to the account's normal environment.
 * Do not rotate proxy identity in the middle of a challenge, password reset, or relogin loop.
 * Treat a shared IP pool as higher risk; reduce account count and request volume if you cannot dedicate an IP per account.
+
+If `BadPassword` happens with a known-good password, use the [`BadPassword` troubleshooting guide](https://instagrapi.com/guides/errors/bad-password/) to separate real credential problems from Instagram trust/risk rejections.
 
 ## Warm Accounts Gradually
 
@@ -151,7 +154,7 @@ These patterns often create support issues that are not library bugs:
 
 A library bug usually reproduces consistently for the same endpoint and payload, especially across accounts with healthy sessions. Useful reports include the method called, sanitized request/response data, stack trace, dependency versions, and whether the same account works in the official app.
 
-An operational block is usually account, proxy, session, or action-pattern specific. Signs include `429`, `PleaseWaitFewMinutes`, `FeedbackRequired`, suspicious login emails, challenges, forced password changes, or behavior that disappears after cooldown, cleaner proxy identity, or manual app verification.
+An operational block is usually account, proxy, session, or action-pattern specific. Signs include `BadPassword` with a known-good password, `429`, `PleaseWaitFewMinutes`, `FeedbackRequired`, suspicious login emails, challenges, forced password changes, or behavior that disappears after cooldown, cleaner proxy identity, or manual app verification.
 
 When reporting an issue, include enough context to distinguish these cases. Remove cookies, session IDs, tokens, passwords, phone numbers, emails, and private user data before sharing logs.
 

@@ -51,7 +51,7 @@
 | FeedbackRequired         | PrivateError | Raises when get message=feedback_required
 | PreLoginRequired         | ClientError | Raises when authorization is required before calling a method
 | LoginRequired            | PrivateError | Raises when get message=login_required (from Instagram)
-| BadPassword              | PrivateError | Raises when get message=bad_password
+| BadPassword              | PrivateError | Raises when get message=bad_password. See [`BadPassword` troubleshooting](https://instagrapi.com/guides/errors/bad-password/) for proxy/IP/device/session trust cases where the password is correct but Instagram rejects the login context.
 | TwoFactorRequired        | PrivateError | Raises when get message=two_factor_required
 | UnknownError             | PrivateError | Raises when get unknown message (new message from instagram)
 | BadCredentials           | PrivateError | The login and password pair for your account have not been passed
