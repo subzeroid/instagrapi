@@ -1043,6 +1043,7 @@
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 </code></pre></div>
 <p>In this way, you can centrally handle errors and not repeat handlers throughout your code. In a real application, you would usually extend this with your own proxy rotation, account freeze/backoff storage, or metrics hooks.</p>
+<p>For <code>BadPassword</code> with a password that works elsewhere, see the <a href="https://instagrapi.com/guides/errors/bad-password/"><code>BadPassword</code> troubleshooting guide</a>. Instagram can return <code>bad_password</code> for risky proxy/IP/device/session states, so avoid retry loops and first compare against the official app on the same network identity.</p>
 <p>For a practical playbook around <code>429</code>, <code>feedback_required</code>, <code>PleaseWaitFewMinutes</code>, and session/challenge handling, see <a href="../best-practices/">Best Practices</a>.</p>
 <p>Full example <a href="https://github.com/subzeroid/instagrapi/blob/master/examples/handle_exception.py">here</a></p>
 

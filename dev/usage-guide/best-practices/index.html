@@ -1363,6 +1363,7 @@
 <p>If you're getting errors like this:</p>
 <ul>
 <li>"The username you entered doesn't appear to belong to an account. Please check your username and try again."</li>
+<li><code>BadPassword</code> even though the same password works in another context</li>
 </ul>
 <p>Or you notice that Instagram is sending suspicious login emails, review the network identity for that account. Instagram may be rate limiting the IP, distrusting the login location, or challenging the account because the device/session and IP history do not look consistent.</p>
 <p>For production automation, the safest baseline is one account per stable proxy/IP. Reusing the same country, city, ASN/mobile carrier, device settings, and saved session is less suspicious than using a different IP address every time you make a request.</p>
@@ -1387,6 +1388,7 @@
 <li>Do not rotate proxy identity in the middle of a challenge, password reset, or relogin loop.</li>
 <li>Treat a shared IP pool as higher risk; reduce account count and request volume if you cannot dedicate an IP per account.</li>
 </ul>
+<p>If <code>BadPassword</code> happens with a known-good password, use the <a href="https://instagrapi.com/guides/errors/bad-password/"><code>BadPassword</code> troubleshooting guide</a> to separate real credential problems from Instagram trust/risk rejections.</p>
 <h2 id="warm-accounts-gradually">Warm Accounts Gradually</h2>
 <p>New, restored, or previously challenged accounts should not immediately run high-volume actions.</p>
 <p>Practical warmup rules:</p>
@@ -1478,7 +1480,7 @@ between requests. The delays should be random and not too long.</p>
 </ul>
 <h2 id="separate-library-bugs-from-operational-blocks">Separate Library Bugs from Operational Blocks</h2>
 <p>A library bug usually reproduces consistently for the same endpoint and payload, especially across accounts with healthy sessions. Useful reports include the method called, sanitized request/response data, stack trace, dependency versions, and whether the same account works in the official app.</p>
-<p>An operational block is usually account, proxy, session, or action-pattern specific. Signs include <code>429</code>, <code>PleaseWaitFewMinutes</code>, <code>FeedbackRequired</code>, suspicious login emails, challenges, forced password changes, or behavior that disappears after cooldown, cleaner proxy identity, or manual app verification.</p>
+<p>An operational block is usually account, proxy, session, or action-pattern specific. Signs include <code>BadPassword</code> with a known-good password, <code>429</code>, <code>PleaseWaitFewMinutes</code>, <code>FeedbackRequired</code>, suspicious login emails, challenges, forced password changes, or behavior that disappears after cooldown, cleaner proxy identity, or manual app verification.</p>
 <p>When reporting an issue, include enough context to distinguish these cases. Remove cookies, session IDs, tokens, passwords, phone numbers, emails, and private user data before sharing logs.</p>
 <h2 id="use-sessions">Use Sessions</h2>
 <p>If you call <code>.login()</code> from scratch on every run, Instagram sees repeated fresh logins. That is much more suspicious than reusing a stable device session.</p>
