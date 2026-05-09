@@ -4,14 +4,6 @@
     The previous `@instagrapi` Telegram group has been restricted by Meta and is no longer maintained.
     New support group: [aiograpi_support](https://t.me/aiograpi_support) — same maintainer, covers both `instagrapi` and `aiograpi`.
 
-### We recommend using our services:
-
-* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows 🔥
-* [HikerAPI](https://hikerapi.com/p/bkXQlaVe) for production-grade hosted Instagram API infrastructure ⚡⚡⚡
-* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and Datasets 🚀
-* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
-* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
-
 [![Package](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml/badge.svg?branch=master)](https://github.com/subzeroid/instagrapi/actions/workflows/python-package.yml)
 [![PyPI](https://img.shields.io/pypi/v/instagrapi)][pypi]
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/instagrapi)][pypi]
@@ -25,6 +17,16 @@ Support **Python 3.10+**
 `Python 3.9` support was dropped in `2.5.0` — pin to `instagrapi==2.4.5` if you need it.
 
 For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzeroid/instagrapi-rest/tree/main/golang), Erlang, Elixir, Nim, Haskell, Lisp, Closure, Julia, R, Java, Kotlin, Scala, OCaml, JavaScript, Crystal, Ruby, Rust, [Swift](https://github.com/subzeroid/instagrapi-rest/tree/main/swift), Objective-C, Visual Basic, .NET, Pascal, Perl, Lua, PHP and others), I suggest using [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest)
+
+For hosted production Instagram API infrastructure, see [HikerAPI](https://hikerapi.com/).
+
+Related services:
+
+* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for premium rotating proxies and stable automation traffic
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and datasets
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows
+* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
+* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
 
 Support chat in Telegram: [aiograpi_support](https://t.me/aiograpi_support)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
