@@ -957,10 +957,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
+  <a href="#local-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker
+        Local Environment
       
     </span>
   </a>
@@ -1002,10 +1002,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#setuppy" class="md-nav__link">
+  <a href="#pyprojecttoml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        setup.py
+        pyproject.toml
       
     </span>
   </a>
@@ -1013,10 +1013,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
+  <a href="#dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Requirements
+        Dependencies
       
     </span>
   </a>
@@ -1101,10 +1101,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#docker" class="md-nav__link">
+  <a href="#local-environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Docker
+        Local Environment
       
     </span>
   </a>
@@ -1146,10 +1146,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#setuppy" class="md-nav__link">
+  <a href="#pyprojecttoml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        setup.py
+        pyproject.toml
       
     </span>
   </a>
@@ -1157,10 +1157,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
+  <a href="#dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Requirements
+        Dependencies
       
     </span>
   </a>
@@ -1210,58 +1210,58 @@ and how to work with the code base.</p>
 <ul>
 <li>The <a href="https://github.com/subzeroid/instagrapi/blob/master/CONTRIBUTING.md">Contributing guide</a></li>
 </ul>
-<h2 id="docker">Docker</h2>
-<p>The <code>instagrapi</code> project uses Docker to ease setting up a consistent development environment. The Docker documentation has
-details on how to <a href="https://docs.docker.com/install/">install docker</a> on your computer.</p>
-<p>Once that is configured, the test suite can be run locally:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="nb">test</span>
+<h2 id="local-environment">Local Environment</h2>
+<p>Use a virtual environment and install the project from <code>pyproject.toml</code> with test extras:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
+pre-commit<span class="w"> </span>install
 </code></pre></div>
-<p>If you want to be able to execute code in the container:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>devbox
-<span class="o">(</span>your<span class="w"> </span>code<span class="w"> </span>here<span class="o">)</span>
-</code></pre></div>
-<p>In the devbox environment you'll be able to enter a python shell and import <code>instagrapi</code> or any dependencies.</p>
+<p>This installs the library, runtime dependencies, test tools, lint tools, and documentation tooling in one environment.</p>
 <h2 id="debugging">Debugging</h2>
-<p>The docker container has <a href="https://github.com/pdbpp/pdbpp">pdb++</a> install that can be used as a debugger. (However, you are welcome to set up
-a different debugger if you would like.)</p>
-<p>This allows you to easily create a breakpoint anywhere in the code.</p>
+<p>Python's built-in <a href="https://docs.python.org/3/library/pdb.html">pdb</a> debugger is enough for most local debugging. You can create a breakpoint anywhere in
+the code:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">my_function</span><span class="p">():</span>
     <span class="nb">breakpoint</span><span class="p">()</span>
     <span class="o">...</span>
 </code></pre></div>
-<p>When your the code, you will drop into an interactive <code>pdb++</code> debugger.</p>
-<p>See the documentation on <a href="https://docs.python.org/3/library/pdb.html">pdb</a> and <a href="https://github.com/pdbpp/pdbpp#usage">pdb++</a> for more information.</p>
+<p>When the code reaches the breakpoint, it will drop into an interactive debugger.</p>
+<p>See the documentation on <a href="https://docs.python.org/3/library/pdb.html">pdb</a> for more information.</p>
 <h2 id="testing">Testing</h2>
-<p>You'll be unable to merge code unless the linting and tests pass. You can run these in your container via:</p>
-<div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="nb">test</span>
+<p>You'll be unable to merge code unless linting and tests pass. The main local checks are:</p>
+<div class="highlight"><pre><span></span><code>pytest<span class="w"> </span>-sv<span class="w"> </span>tests/regression
+flake8<span class="w"> </span>.<span class="w"> </span>--count<span class="w"> </span>--select<span class="o">=</span>E9,F63,F7,F82<span class="w"> </span>--show-source<span class="w"> </span>--statistics
+flake8<span class="w"> </span>.<span class="w"> </span>--count<span class="w"> </span>--exit-zero<span class="w"> </span>--statistics
+isort<span class="w"> </span>--check-only<span class="w"> </span>instagrapi
+bandit<span class="w"> </span>--ini<span class="w"> </span>.bandit<span class="w"> </span>-r<span class="w"> </span>instagrapi
+mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </code></pre></div>
-<p>This will run the same tests, linting, and code coverage that are run by the CI pipeline. The only difference is that,
-when run locally, <code>black</code> and <code>isort</code> are configured to automatically correct issues they detect.</p>
+<p>Before committing, run the pre-commit hooks against changed files or the whole tree:</p>
+<div class="highlight"><pre><span></span><code>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
 <p>Generally we should endeavor to write tests for every feature. Every new feature branch should increase the test
 coverage rather than decreasing it.</p>
-<p>We use <a href="https://docs.pytest.org/en/latest/">pytest</a> as our testing framework.</p>
+<p>We use <a href="https://docs.pytest.org/en/latest/">pytest</a> as our testing framework. Regression tests live in <code>tests/regression/</code>; live-account tests
+live in <code>tests/live/</code>.</p>
 <h4 id="stages">Stages</h4>
 <p>To customize / override a specific testing stage, please read the documentation specific to that tool:</p>
 <ol>
 <li><a href="https://docs.pytest.org/en/latest/">PyTest</a></li>
-<li><a href="https://mypy.readthedocs.io/en/stable/">MyPy</a></li>
 <li><a href="https://pycqa.github.io/isort/">Isort</a></li>
 <li><a href="http://flake8.pycqa.org/en/stable/">Flake8</a></li>
 <li><a href="https://bandit.readthedocs.io/en/stable/">Bandit</a></li>
 </ol>
-<h3 id="setuppy"><code>setup.py</code></h3>
-<p>Setuptools is used to packaging the library.</p>
-<p><strong><code>setup.py</code> must not import anything from the package</strong> When installing from source, the user may not have the
-packages dependencies installed, and importing the package is likely to raise an <code>ImportError</code>. For this reason, the
-<strong>package version should be obtained without importing</strong>. This is explains why <code>setup.py</code> uses a regular expression to
-grabs the version from <code>__init__.py</code> without actually importing.</p>
-<h3 id="requirements">Requirements</h3>
+<h3 id="pyprojecttoml"><code>pyproject.toml</code></h3>
+<p>Setuptools is used to package the library through <code>pyproject.toml</code>.</p>
+<p><code>pyproject.toml</code> is the source of truth for package metadata, runtime dependencies, and test/development extras.</p>
+<h3 id="dependencies">Dependencies</h3>
 <ul>
-<li><strong>requirements.txt</strong> - Lists all direct dependencies (packages imported by the library).</li>
-<li><strong>requirements-test.txt</strong> - Lists all direct requirements needed to run the test suite &amp; lints.</li>
+<li><code>[project].dependencies</code> lists runtime dependencies imported by the library.</li>
+<li><code>[project.optional-dependencies].test</code> lists tools needed for tests, linting, docs, and local development.</li>
 </ul>
 <p>This will trigger the CI system to build a wheel and a source distributions of the package and push them to
-<a href="https://pypi.org/project/gbq/">PyPI</a>.</p>
+<a href="https://pypi.org/project/instagrapi/">PyPI</a>.</p>
 <h2 id="continuous-integration-pipeline">Continuous Integration Pipeline</h2>
 <p>TODO: Add CI documentation.</p>
 
