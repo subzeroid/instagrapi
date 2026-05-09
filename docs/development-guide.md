@@ -60,7 +60,7 @@ You'll be unable to merge code unless linting and tests pass. The main local che
 pytest -sv tests/regression
 ruff check .
 ruff format --check .
-bandit --ini .bandit -r instagrapi
+bandit -c pyproject.toml -r instagrapi
 mkdocs build --strict
 ```
 
