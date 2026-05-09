@@ -83,6 +83,17 @@ class UploadClipMixin:
     Helpers to upload CLIP videos
     """
 
+    def clip_share_to_fb_config(self) -> Dict:
+        """
+        Get Reel Facebook sharing configuration for the current user.
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
+        return self.private_request("clips/user/share_to_fb_config/")
+
     def clip_upload(
         self,
         path: Path,
