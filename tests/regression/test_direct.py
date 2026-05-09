@@ -45,6 +45,39 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             }
         }
 
+    def test_direct_send_reply_includes_replied_to_fields(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+        reply_to_message = Mock(spec=DirectMessage)
+        reply_to_message.id = "30000000000000000000000000000000000"
+        reply_to_message.client_context = "reply-client-context"
+        expected = Mock(spec=DirectMessage)
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
+        ):
+            result = client.direct_send(
+                "reply text",
+                thread_ids=[123],
+                reply_to_message=reply_to_message,
+            )
+
+        self.assertIs(result, expected)
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/text/",
+            data=mock.ANY,
+            with_signature=False,
+        )
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [123])
+        self.assertEqual(data["replied_to_action_source"], "swipe")
+        self.assertEqual(data["replied_to_item_id"], reply_to_message.id)
+        self.assertEqual(data["replied_to_client_context"], reply_to_message.client_context)
+        self.assertEqual(data["client_context"], "mutation-token")
+
     def fake_rupload_session(self, media_id):
         class FakeResponse:
             status_code = 200

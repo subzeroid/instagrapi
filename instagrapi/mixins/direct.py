@@ -401,6 +401,8 @@ class DirectMixin:
 
         send_attribute: str, optional
             Sending option. Default is "message_button"
+        reply_to_message: DirectMessage, optional
+            Message to reply to in the target thread
 
         Returns
         -------
