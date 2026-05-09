@@ -1,9 +1,117 @@
-from typing import List, Optional
+import time
+from datetime import datetime, timezone
+from json.decoder import JSONDecodeError
+from typing import Dict, List, Optional, Union
 
-from instagrapi.types import Note
+import requests
+
+from instagrapi import config
+from instagrapi.exceptions import (
+    ClientConnectionError,
+    ClientError,
+    ClientGraphqlError,
+    ClientJSONDecodeError,
+)
+from instagrapi.types import Note, Track, UserShort
+from instagrapi.utils import dumps
+
+
+CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID = "3510400299951610199199089856"
+CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME = "CreateInboxTrayItemRequest"
+GRAPHQL_QUERY_URL = f"https://{config.API_DOMAIN}/graphql/query"
 
 
 class NoteMixin:
+    def _private_graphql_query(self, data: Dict) -> Dict:
+        self.last_response = None
+        self.last_json = {}
+        response = None
+        self.private.headers.update(self.base_headers)
+        self.private.headers["Content-Type"] = (
+            "application/x-www-form-urlencoded; charset=UTF-8"
+        )
+        if self.authorization:
+            self.private.headers["Authorization"] = self.authorization
+        friendly_name = data.get("fb_api_req_friendly_name")
+        if friendly_name:
+            self.private.headers["X-FB-Friendly-Name"] = friendly_name
+        if self.request_timeout:
+            time.sleep(self.request_timeout)
+        try:
+            self.private_requests_count += 1
+            response = self.private.post(
+                GRAPHQL_QUERY_URL, data=data, proxies=self.private.proxies
+            )
+            self.request_log(response)
+            self.last_response = response
+            response.raise_for_status()
+            self.last_json = response.json()
+        except JSONDecodeError as exc:
+            url = response.url if response else GRAPHQL_QUERY_URL
+            raise ClientJSONDecodeError(
+                "JSONDecodeError {0!s} while opening {1!s}".format(exc, url),
+                response=response,
+            )
+        except requests.HTTPError as exc:
+            raise ClientError(exc, response=exc.response)
+        except requests.ConnectionError as exc:
+            raise ClientConnectionError(
+                "{} {}".format(exc.__class__.__name__, str(exc))
+            )
+        if self.last_json.get("errors"):
+            raise ClientGraphqlError(self.last_json.get("errors"))
+        if self.last_json.get("status") == "fail":
+            raise ClientError(response=response, **self.last_json)
+        return self.last_json
+
+    @staticmethod
+    def _track_value(track: Union[Track, Dict], key: str):
+        if isinstance(track, dict):
+            return track.get(key)
+        return getattr(track, key, None)
+
+    @classmethod
+    def _track_highlight_start(cls, track: Union[Track, Dict]) -> int:
+        highlight_times = cls._track_value(track, "highlight_start_times_in_ms") or []
+        return int(highlight_times[0]) if highlight_times else 0
+
+    @staticmethod
+    def _note_from_note_dict(data: Dict) -> Note:
+        author = data.get("author") or {}
+        user_id = str(data.get("author_id") or author.get("pk") or author.get("id"))
+        user = UserShort(
+            pk=str(author.get("pk") or author.get("id") or user_id),
+            username=author.get("username"),
+            full_name=author.get("full_name") or "",
+            profile_pic_url=author.get("profile_pic_url"),
+            is_private=author.get("is_private"),
+        )
+        return Note(
+            id=str(data["note_id"]),
+            text=data.get("text") or "",
+            user_id=user_id,
+            user=user,
+            audience=int(data.get("audience", 0)),
+            created_at=datetime.fromtimestamp(
+                int(data.get("1lcreated_at", 0)), tz=timezone.utc
+            ),
+            expires_at=datetime.fromtimestamp(
+                int(data.get("1lexpires_at", 0)), tz=timezone.utc
+            ),
+            is_emoji_only=bool(data.get("is_emoji_only", False)),
+            has_translation=bool(data.get("has_translation", False)),
+            note_style=int(data.get("note_style", 0)),
+        )
+
+    @staticmethod
+    def _note_dict_from_create_inbox_tray_item(result: Dict) -> Dict:
+        for payload in (result.get("data") or {}).values():
+            if payload and payload.get("success"):
+                note_dict = payload.get("inbox_tray_item", {}).get("note_dict") or {}
+                if note_dict:
+                    return note_dict
+        raise ClientGraphqlError("Failed to create music Note")
+
     def get_notes(self) -> List[Note]:
         """
         Retrieves Notes in Direct
@@ -99,6 +207,23 @@ class NoteMixin:
         )
         return result.get("status", "") == "ok"
 
+    def notes_music_browser(self) -> Dict:
+        """
+        Retrieve music candidates for Instagram Notes.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/notes_audio_browser/``.
+        """
+        result = self.private_request(
+            "music/notes_audio_browser/",
+            data={"product": "music_notes", "_uuid": self.uuid},
+            with_signature=False,
+        )
+        assert result.get("status", "") == "ok", "Failed to retrieve Notes music"
+        return result
+
     def create_note(self, text: str, audience: int = 0) -> Note:
         """
         Create personal Note
@@ -128,3 +253,104 @@ class NoteMixin:
 
         assert result.pop("status", "") == "ok", "Failed to create new Note"
         return Note(**result)
+
+    def create_music_note(
+        self,
+        track: Union[Track, Dict],
+        text: str = "",
+        audience: int = 0,
+        start_time: Optional[int] = None,
+        duration: int = 30000,
+        browse_session_id: Optional[str] = None,
+        alacorn_session_id: Optional[str] = None,
+    ) -> Note:
+        """
+        Create personal Note with attached music.
+
+        Parameters
+        ----------
+        track: Track or dict
+            Track from ``notes_music_browser()`` or a compatible dict.
+        text: str, optional
+            Content of the Note.
+        audience: int, optional
+            Audience to see Note, default 0 (Followers you follow back).
+            Best Friends - 1.
+        start_time: int, optional
+            Audio start time in milliseconds. Defaults to the first highlighted
+            start time from the track, or 0.
+        duration: int, optional
+            Audio clip duration in milliseconds, default 30000.
+        browse_session_id: str, optional
+            Browser session id. Generated when omitted.
+        alacorn_session_id: str, optional
+            Session id from ``notes_music_browser()``. If omitted, a browser
+            request is made to obtain one.
+
+        Returns
+        -------
+        Note
+            Created music Note.
+        """
+        assert self.user_id, "Login required"
+        assert audience in (
+            0,
+            1,
+        ), f"Invalid audience parameter={audience} (must be 0 or 1)"
+        audio_asset_id = self._track_value(
+            track, "audio_asset_id"
+        ) or self._track_value(track, "id")
+        audio_cluster_id = self._track_value(track, "audio_cluster_id")
+        assert audio_asset_id, "track.audio_asset_id or track.id is required"
+        assert audio_cluster_id, "track.audio_cluster_id is required"
+        if start_time is None:
+            start_time = self._track_highlight_start(track)
+        if not browse_session_id:
+            browse_session_id = self.generate_uuid()
+        if not alacorn_session_id:
+            alacorn_session_id = self.notes_music_browser().get("alacorn_session_id")
+        assert alacorn_session_id, "alacorn_session_id is required"
+
+        variables = {
+            "should_fetch_content_note_stack_video_info": False,
+            "request": {
+                "inbox_tray_item_type": "note",
+                "audience": audience,
+                "additional_params": {
+                    "note_create_params": {
+                        "text": text,
+                        "note_style": 1,
+                        "note_create_info": {
+                            "music_note_create_info": {
+                                "start_time": int(start_time),
+                                "is_reshare_eligible": False,
+                                "selected_lyrics": None,
+                                "audio_asset_id": str(audio_asset_id),
+                                "duration": int(duration),
+                                "original_note_id": None,
+                                "original_author_id": None,
+                                "audio_cluster_id": str(audio_cluster_id),
+                                "browse_session_id": browse_session_id,
+                                "alacorn_session_id": alacorn_session_id,
+                            }
+                        },
+                    }
+                },
+            },
+        }
+        data = {
+            "client_doc_id": CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID,
+            "method": "post",
+            "pretty": "false",
+            "format": "json",
+            "server_timestamps": "true",
+            "fb_api_req_friendly_name": CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME,
+            "variables": dumps(variables),
+            "enable_canonical_naming": "true",
+            "enable_canonical_variable_overrides": "true",
+            "enable_canonical_naming_ambiguous_type_prefixing": "true",
+            "locale": self.locale,
+        }
+        result = self._private_graphql_query(data)
+        note_dict = self._note_dict_from_create_inbox_tray_item(result)
+        return self._note_from_note_dict(note_dict)

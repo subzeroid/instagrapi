@@ -6,6 +6,8 @@
 | get_note_by_user(notes: List[Note], username: str) | Optional[Note] | Find a Note by username |
 | get_note_text_by_user(notes: List[Note], username: str) | Optional[str] | Get note text by username |
 | create_note(text: str, audience: int = 0) | Note | Post a new Note                 |
+| notes_music_browser()      | Dict              | Retrieve music candidates for Notes |
+| create_music_note(track: Track \| Dict, text: str = "", audience: int = 0, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None) | Note | Post a new Note with music |
 | delete_note(note_id: int)   | bool              | Delete a posted Note            |
 | last_seen_update_note()     | bool              | Update the last seen time |
 
@@ -46,9 +48,27 @@ Note(id='17849203563031468', text='Hello from Instagrapi, everyone can see it!',
 >>> cl.delete_note(note.id)
 ```
 
+Music Notes use the same audience values as text Notes. A typical flow is to
+fetch candidates from `notes_music_browser()`, choose a track from the response,
+and pass it to `create_music_note()`:
+
+```python
+music = cl.notes_music_browser()
+track = music["items"][0]["playlist"]["preview_items"][0]["track"]
+
+note = cl.create_music_note(
+    track=track,
+    text="",
+    audience=0,
+    alacorn_session_id=music.get("alacorn_session_id"),
+)
+cl.delete_note(note.id)
+```
+
 ## Get Notes  |  Post Notes  |  Delete Notes
 - *Get Notes from Direct*
 - *Publish a new note with the ability to select an audience*
+- *Publish a new note with music*
 - *Delete posted Notes*
 - *Update last seen of Notes*
 
@@ -60,6 +80,7 @@ Common arguments:
 * `text` - Content of the Note
 * `audience` - Who can see the note **(0 = Followers you follow back, 1 = Close Friends only)**
 * `username` - Username used to search in an existing `notes` list
+* `track` - Track object or raw track dict from `notes_music_browser()`
 
 Typical flow:
 
