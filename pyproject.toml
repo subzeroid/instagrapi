@@ -78,6 +78,7 @@ test = [
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
     "mkdocstrings[python]==1.0.4",
+    "pre-commit==4.5.0",
     "pytest-xdist==3.8.0",
     "pytest==9.0.3",
 ]

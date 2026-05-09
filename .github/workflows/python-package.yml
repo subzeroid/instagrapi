@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          test-requirements: "true"
+          test: "true"
 
       - name: Run bandit
         run: bandit --ini .bandit -r instagrapi
@@ -39,7 +39,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          test-requirements: "true"
+          test: "true"
 
       - name: Run flake8
         run: |
@@ -58,8 +58,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          requirements: "true"
-          test-requirements: "true"
+          test: "true"
 
       - name: Run isort
         run: isort --check-only instagrapi
@@ -78,8 +77,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          requirements: "true"
-          test-requirements: "true"
+          test: "true"
       - name: Run compatibility smoke tests
         run: |
           pytest -sv \
@@ -111,8 +109,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          requirements: "true"
-          test-requirements: "true"
+          test: "true"
 
       - name: Build Docs
         run: mkdocs build --strict
@@ -139,8 +136,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/install-dependencies
         with:
-          requirements: "true"
-          test-requirements: "true"
+          test: "true"
 
       - name: Push documentation changes
         uses: ./.github/actions/publish-docs-with-mike

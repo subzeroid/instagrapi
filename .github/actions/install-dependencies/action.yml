@@ -1,12 +1,12 @@
 name: "Install Dependencies"
 description: "Install Python dependencies"
 inputs:
-  requirements:
-    description: "Should requirements.txt be installed"
+  package:
+    description: "Install the project package"
     default: "false"
     required: false
-  test-requirements:
-    description: "Should requirements-test.txt be installed"
+  test:
+    description: "Install the project with test extras"
     default: "false"
     required: false
 runs:
@@ -16,5 +16,5 @@ runs:
       run: "$GITHUB_ACTION_PATH/action.sh"
       shell: "bash"
       env:
-        INSTALL_REQUIREMENTS: ${{ inputs.requirements }}
-        INSTALL_TEST_REQUIREMENTS: ${{ inputs.test-requirements }}
+        INSTALL_PACKAGE: ${{ inputs.package }}
+        INSTALL_TEST: ${{ inputs.test }}
