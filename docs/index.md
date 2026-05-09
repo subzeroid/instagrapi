@@ -20,6 +20,14 @@ For any other languages (e.g. C++, C#, F#, D, [Golang](https://github.com/subzer
 
 For hosted production Instagram API infrastructure, see [HikerAPI](https://hikerapi.com/).
 
+Related services:
+
+* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for premium rotating proxies and stable automation traffic
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and datasets
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows
+* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
+* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
+
 Support chat in Telegram: [aiograpi_support](https://t.me/aiograpi_support)
 ![](https://gist.githubusercontent.com/m8rge/4c2b36369c9f936c02ee883ca8ec89f1/raw/c03fd44ee2b63d7a2a195ff44e9bb071e87b4a40/telegram-single-path-24px.svg) and [GitHub Discussions](https://github.com/subzeroid/instagrapi/discussions)
 

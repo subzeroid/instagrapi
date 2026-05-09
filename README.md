@@ -224,6 +224,29 @@ If you need async Python, use [aiograpi](https://github.com/subzeroid/aiograpi).
 For other languages, see [instagrapi-rest](https://github.com/subzeroid/instagrapi-rest).
 For hosted production Instagram API infrastructure, see [HikerAPI](https://hikerapi.com/).
 
+Related services:
+
+* [Cloqly](https://cloqly.com/register?ref=58dbf70f) for premium rotating proxies and stable automation traffic
+* [DataLikers](https://datalikers.com/p/S9Lv5vBy) for Instagram MCP, Cache API, and datasets
+* [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows
+* [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
+* [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
+
+### [HikerAPI Affiliate Program](https://hikerapi.com/help/affiliate)
+
+Refer users to HikerAPI and earn a percentage of their API spending:
+
+| Plan | Commission |
+|------|------------|
+| Start trial plan ($0.02/req) | **50%** |
+| Standard ($0.001/req) | **25%** |
+| Business ($0.00069/req) | **15%** |
+| Ultra ($0.0006/req) | **10%** |
+
+**Extras:** 2-level referral system, no caps, lifetime attribution
+
+**Payouts:** USDT / USDC (TRC-20 or ERC-20), minimum 20 USDT, request anytime from the dashboard
+
 ## Contributing
 
 [![List of contributors](https://opencollective.com/instagrapi/contributors.svg?width=890&button=0)](https://github.com/subzeroid/instagrapi/graphs/contributors)
