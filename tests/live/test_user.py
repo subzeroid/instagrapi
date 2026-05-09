@@ -1,0 +1,202 @@
+from tests import helpers as _helpers
+from tests.helpers import *
+
+
+class ClientUserTestCase(_helpers.ClientPrivateTestCase):
+    def test_user_followers(self):
+        user_id = self.user_id_from_username("instagram")
+        followers = self.cl.user_followers(user_id, amount=10)
+        self.assertTrue(len(followers) == 10)
+        self.assertIsInstance(list(followers.values())[0], UserShort)
+
+
+class ClientUserExtendTestCase(_helpers.ClientPrivateTestCase):
+    def test_username_from_user_id(self):
+        self.assertEqual(self.cl.username_from_user_id(25025320), "instagram")
+
+    def test_user_following(self):
+        user_id = self.user_id_from_username("instagram")
+        self.cl.user_follow(user_id)
+        following = self.cl.user_following(self.cl.user_id, amount=1)
+        self.assertIn(user_id, following)
+        self.assertEqual(following[user_id].username, "instagram")
+        self.assertTrue(len(following) == 1)
+        self.assertIsInstance(list(following.values())[0], UserShort)
+
+    def test_user_info(self):
+        user_id = self.user_id_from_username("instagram")
+        user = self.cl.user_info(user_id)
+        self.assertIsInstance(user, User)
+        for key, value in {
+            "biography": "...Instagram...",
+            "external_url": "https://...",
+            "full_name": "Instagram",
+            "pk": "25025320",
+            "is_private": False,
+            "is_verified": True,
+            "profile_pic_url": "https://...",
+            "username": "instagram",
+        }.items():
+            if isinstance(value, str) and "..." in value:
+                self.assertTrue(value.replace("...", "") in getattr(user, key))
+            else:
+                self.assertEqual(value, getattr(user, key))
+
+    def test_user_info_by_username(self):
+        user = self.user_info_by_username("instagram")
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.pk, "25025320")
+        self.assertEqual(user.full_name, "Instagram")
+        self.assertFalse(user.is_private)
+
+    def test_user_medias(self):
+        user_id = self.user_id_from_username("instagram")
+        medias = self.cl.user_medias(user_id, amount=10)
+        self.assertGreater(len(medias), 5)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
+    def test_usertag_medias(self):
+        user_id = self.user_id_from_username("instagram")
+        medias = self.cl.usertag_medias(user_id, amount=10)
+        self.assertGreater(len(medias), 5)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
+    def test_user_follow_unfollow(self):
+        user_id = self.user_id_from_username("instagram")
+        self.cl.user_follow(user_id)
+        following = self.cl.user_following(self.cl.user_id)
+        self.assertIn(user_id, following)
+        self.cl.user_unfollow(user_id)
+        following = self.cl.user_following(self.cl.user_id)
+        self.assertNotIn(user_id, following)
+
+    # def test_send_new_note(self):
+    #     self.cl.create_note("Hello from Instagrapi!", 0)
+
+
+class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
+    def wait_for_pending_user_ids(self, client, expected_user_ids, timeout=30):
+        expected_user_ids = {str(user_id) for user_id in expected_user_ids}
+        deadline = time.time() + timeout
+        last_pending_ids = set()
+        while time.time() < deadline:
+            pending = client.user_follow_requests(amount=20)
+            last_pending_ids = {user.pk for user in pending}
+            if expected_user_ids.issubset(last_pending_ids):
+                return pending
+            time.sleep(2)
+        missing = expected_user_ids - last_pending_ids
+        self.fail(f"Pending follow requests did not appear for user ids: {missing}")
+
+    def wait_for_no_pending_user_ids(self, client, rejected_user_ids, timeout=30):
+        rejected_user_ids = {str(user_id) for user_id in rejected_user_ids}
+        deadline = time.time() + timeout
+        last_pending_ids = set()
+        while time.time() < deadline:
+            pending = client.user_follow_requests(amount=20)
+            last_pending_ids = {user.pk for user in pending}
+            if not rejected_user_ids.intersection(last_pending_ids):
+                return pending
+            time.sleep(2)
+        self.fail(
+            "Rejected follow requests are still pending for user ids: "
+            f"{rejected_user_ids.intersection(last_pending_ids)}"
+        )
+
+    def wait_for_friendship(self, client, user_id, predicate, timeout=30):
+        deadline = time.time() + timeout
+        last_relationship = None
+        while time.time() < deadline:
+            last_relationship = client.user_friendship_v1(user_id)
+            if last_relationship and predicate(last_relationship):
+                return last_relationship
+            time.sleep(2)
+        self.fail(f"Friendship state did not match for {user_id}: {last_relationship}")
+
+    def cleanup_follow_request_live_clients(self, target, requesters):
+        for requester in requesters:
+            try:
+                requester.user_unfollow(target.user_id)
+            except Exception as exc:
+                print(
+                    "Follow request live cleanup user_unfollow failed: "
+                    f"{exc.__class__.__name__} {exc}"
+                )
+        try:
+            target.account_set_public()
+        except Exception as exc:
+            print(
+                "Follow request live cleanup account_set_public failed: "
+                f"{exc.__class__.__name__} {exc}"
+            )
+
+    def test_follow_request_helpers_live(self):
+        target = self.cl
+        requesters = self.fresh_accounts(4, exclude_user_ids={target.user_id})
+        single_approve, single_decline, batch_approve, batch_decline = requesters
+        requester_ids = [str(requester.user_id) for requester in requesters]
+
+        try:
+            self.assertTrue(target.account_set_private())
+
+            for requester in requesters:
+                requester.user_follow(target.user_id)
+
+            pending = self.wait_for_pending_user_ids(target, requester_ids)
+            pending_ids = {user.pk for user in pending}
+            self.assertTrue(set(requester_ids).issubset(pending_ids))
+            self.assertTrue(all(isinstance(user, UserShort) for user in pending))
+
+            chunk_users, _ = target.user_follow_requests_chunk(max_amount=20)
+            chunk_user_ids = {user.pk for user in chunk_users}
+            self.assertTrue(set(requester_ids).issubset(chunk_user_ids))
+
+            listed_users = target.user_follow_requests(amount=20)
+            listed_user_ids = {user.pk for user in listed_users}
+            self.assertTrue(set(requester_ids).issubset(listed_user_ids))
+
+            self.assertTrue(target.user_follow_request_approve(single_approve.user_id))
+            self.wait_for_friendship(
+                single_approve,
+                target.user_id,
+                lambda relationship: relationship.following is True,
+            )
+
+            self.assertTrue(target.user_follow_request_decline(single_decline.user_id))
+            self.wait_for_no_pending_user_ids(target, {single_decline.user_id})
+            self.wait_for_friendship(
+                single_decline,
+                target.user_id,
+                lambda relationship: relationship.following is False
+                and relationship.outgoing_request is False,
+            )
+
+            batch_approve_result = target.user_follow_requests_approve(
+                [str(batch_approve.user_id)]
+            )
+            self.assertEqual(batch_approve_result, {str(batch_approve.user_id): True})
+            self.wait_for_friendship(
+                batch_approve,
+                target.user_id,
+                lambda relationship: relationship.following is True,
+            )
+
+            batch_decline_result = target.user_follow_requests_decline(
+                [str(batch_decline.user_id)]
+            )
+            self.assertEqual(batch_decline_result, {str(batch_decline.user_id): True})
+            self.wait_for_no_pending_user_ids(target, {batch_decline.user_id})
+            self.wait_for_friendship(
+                batch_decline,
+                target.user_id,
+                lambda relationship: relationship.following is False
+                and relationship.outgoing_request is False,
+            )
+        finally:
+            self.cleanup_follow_request_live_clients(target, requesters)
