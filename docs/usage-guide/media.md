@@ -296,6 +296,8 @@ Upload medias to your feed. Common arguments:
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
 | clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})             | Media   | Upload Reels Clip (Support MP4 files)
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
+| photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
+| album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
 
 
 In `extra_data`, you can pass additional media settings, for example:
@@ -349,6 +351,27 @@ In `extra_data`, you can pass additional media settings, for example:
  'video_duration': 0.0,
  'title': '',
  'resources': []}
+```
+
+Upload a photo or carousel with feed music:
+
+``` python
+>>> music = cl.music_in_feed_audio_browser()
+>>> track = music["items"][0]["playlist"]["preview_items"][0]["track"]
+
+>>> photo = cl.photo_upload_with_music(
+    "/app/image.jpg",
+    "Photo with music",
+    track,
+    alacorn_session_id=music["alacorn_session_id"],
+)
+
+>>> album = cl.album_upload_with_music(
+    ["/app/image.jpg", "/app/image2.jpg"],
+    "Carousel with music",
+    track,
+    alacorn_session_id=music["alacorn_session_id"],
+)
 ```
 
 Now let's mention users (Usertag) and location:
