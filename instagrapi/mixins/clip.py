@@ -31,6 +31,49 @@ def _make_tmp_path(suffix: str) -> str:
     return path
 
 
+class ClipMixin:
+    """
+    Helpers for CLIP/Reel actions
+    """
+
+    def clip_pin(self, media_pk: str, revert: bool = False) -> bool:
+        """
+        Pin Reel to the Reels tab/profile Reels grid
+
+        Parameters
+        ----------
+        media_pk: str
+        revert: bool, optional
+            Unpin when True
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        name = "unpin" if revert else "pin"
+        result = self.private_request(
+            f"users/{name}_timeline_media/",
+            data={"post_id": str(media_pk), "profile_grid": "clips"},
+        )
+        return result["status"] == "ok"
+
+    def clip_unpin(self, media_pk: str) -> bool:
+        """
+        Unpin Reel from the Reels tab/profile Reels grid
+
+        Parameters
+        ----------
+        media_pk: str
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        return self.clip_pin(media_pk, True)
+
+
 class DownloadClipMixin:
     """
     Helpers to download CLIP videos

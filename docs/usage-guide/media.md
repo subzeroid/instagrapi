@@ -45,6 +45,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_unarchive(media_id: str) | bool | Unarchive media |
 | media_pin(media_pk: str) | bool | Pin media to profile |
 | media_unpin(media_pk: str) | bool | Unpin media from profile |
+| clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
+| clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
 | media_create_livestream(title: str = "Instagram Live") | dict | Create a new livestream and return stream metadata |
 | media_start_livestream(broadcast_id: str) | dict | Start an existing livestream |
 | media_end_livestream(broadcast_id: str) | dict | End an existing livestream |

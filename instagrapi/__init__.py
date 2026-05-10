@@ -11,7 +11,7 @@ from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
 from instagrapi.mixins.auth import LoginMixin
 from instagrapi.mixins.bloks import BloksMixin
 from instagrapi.mixins.challenge import ChallengeResolveMixin
-from instagrapi.mixins.clip import DownloadClipMixin, UploadClipMixin
+from instagrapi.mixins.clip import ClipMixin, DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
 from instagrapi.mixins.direct import DirectMixin
@@ -84,6 +84,7 @@ class Client(
     StoryMixin,
     PasswordMixin,
     SignUpMixin,
+    ClipMixin,
     DownloadClipMixin,
     UploadClipMixin,
     ReelsMixin,
