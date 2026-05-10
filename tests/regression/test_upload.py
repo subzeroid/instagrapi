@@ -89,6 +89,23 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIn("without media payload", str(ctx.exception))
 
+    def test_photo_upload_extracts_configure_media_when_expose_overwrites_last_json(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+
+        def expose():
+            client.last_json = {"status": "ok"}
+            return client.last_json
+
+        client.expose = expose
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(client, "photo_configure", return_value={"status": "ok", "media": media_payload}):
+                with mock.patch("time.sleep"):
+                    media = client.photo_upload(Path("example.jpg"), "caption")
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(media.pk, "1")
+
     def test_video_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 

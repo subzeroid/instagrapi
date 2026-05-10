@@ -261,7 +261,7 @@ class UploadPhotoMixin:
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
-            if self.photo_configure(
+            configured = self.photo_configure(
                 upload_id,
                 width,
                 height,
@@ -269,10 +269,11 @@ class UploadPhotoMixin:
                 usertags,
                 location,
                 extra_data=extra_data,
-            ):
+            )
+            if configured:
                 self.expose()
                 return self._extract_configured_media_or_raise(
-                    self.last_json,
+                    configured,
                     PhotoConfigureError,
                     "Photo upload",
                 )
