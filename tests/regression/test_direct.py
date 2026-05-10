@@ -78,6 +78,64 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["replied_to_client_context"], reply_to_message.client_context)
         self.assertEqual(data["client_context"], "mutation-token")
 
+    def test_direct_send_reaction_posts_reaction_payload(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private,
+        ):
+            result = client.direct_send_reaction(
+                123,
+                456,
+                emoji="😂",
+                client_context="original-client-context",
+                action_source="reaction_sheet",
+            )
+
+        self.assertTrue(result)
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/reaction/",
+            data=mock.ANY,
+            with_signature=False,
+        )
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), ["123"])
+        self.assertEqual(data["_uuid"], "uuid-1")
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["client_context"], "mutation-token")
+        self.assertEqual(data["offline_threading_id"], "mutation-token")
+        self.assertEqual(data["mutation_token"], "mutation-token")
+        self.assertEqual(data["action"], "send_item")
+        self.assertEqual(data["item_type"], "reaction")
+        self.assertEqual(data["reaction_type"], "like")
+        self.assertEqual(data["reaction_status"], "created")
+        self.assertEqual(data["node_type"], "item")
+        self.assertEqual(data["item_id"], "456")
+        self.assertEqual(data["emoji"], "😂")
+        self.assertEqual(data["reaction_action_source"], "reaction_sheet")
+        self.assertEqual(data["original_message_client_context"], "original-client-context")
+
+    def test_direct_message_unlike_posts_deleted_reaction(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private,
+        ):
+            result = client.direct_message_unlike(123, 456, client_context="original-client-context")
+
+        self.assertTrue(result)
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(data["reaction_status"], "deleted")
+        self.assertEqual(data["emoji"], "❤")
+        self.assertEqual(data["reaction_type"], "like")
+        self.assertEqual(data["original_message_client_context"], "original-client-context")
+
     def fake_rupload_session(self, media_id):
         class FakeResponse:
             status_code = 200
