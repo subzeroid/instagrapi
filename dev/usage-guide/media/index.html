@@ -1874,6 +1874,16 @@
 <td>Media</td>
 <td>Upload Reels Clip as reel with music metadata</td>
 </tr>
+<tr>
+<td>photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload feed photo with music metadata</td>
+</tr>
+<tr>
+<td>album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {})</td>
+<td>Media</td>
+<td>Upload feed album/carousel with music metadata</td>
+</tr>
 </tbody>
 </table>
 <p>In <code>extra_data</code>, you can pass additional media settings, for example:</p>
@@ -1948,6 +1958,24 @@
  <span class="s1">&#39;video_duration&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
  <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
  <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+</code></pre></div>
+<p>Upload a photo or carousel with feed music:</p>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">music</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">music_in_feed_audio_browser</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">track</span> <span class="o">=</span> <span class="n">music</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;playlist&quot;</span><span class="p">][</span><span class="s2">&quot;preview_items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;track&quot;</span><span class="p">]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">photo</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_with_music</span><span class="p">(</span>
+    <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Photo with music&quot;</span><span class="p">,</span>
+    <span class="n">track</span><span class="p">,</span>
+    <span class="n">alacorn_session_id</span><span class="o">=</span><span class="n">music</span><span class="p">[</span><span class="s2">&quot;alacorn_session_id&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">album</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">album_upload_with_music</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;/app/image2.jpg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Carousel with music&quot;</span><span class="p">,</span>
+    <span class="n">track</span><span class="p">,</span>
+    <span class="n">alacorn_session_id</span><span class="o">=</span><span class="n">music</span><span class="p">[</span><span class="s2">&quot;alacorn_session_id&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 </code></pre></div>
 <p>Now let's mention users (Usertag) and location:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
