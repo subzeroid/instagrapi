@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -12,6 +12,17 @@ from instagrapi.utils import json_value
 
 
 class TrackMixin:
+    @staticmethod
+    def _track_value(track: Union[Track, Dict], key: str):
+        if isinstance(track, dict):
+            return track.get(key)
+        return getattr(track, key, None)
+
+    @classmethod
+    def _track_highlight_start(cls, track: Union[Track, Dict]) -> int:
+        highlight_times = cls._track_value(track, "highlight_start_times_in_ms") or []
+        return int(highlight_times[0]) if highlight_times else 0
+
     def track_download_by_url(self, url: str, filename: str = "", folder: Path = "") -> Path:
         """
         Download track by URL
@@ -52,6 +63,70 @@ class TrackMixin:
                 raise TrackNotFound(**kw)
             raise e
         return result
+
+    def music_in_feed_audio_browser(self, browse_session_id: Optional[str] = None) -> Dict:
+        """
+        Retrieve music candidates for feed photo and carousel posts.
+
+        Parameters
+        ----------
+        browse_session_id: str, optional
+            Browser session id. Generated when omitted.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/music_in_feed_audio_browser/``.
+        """
+        if browse_session_id is None:
+            browse_session_id = self.generate_uuid()
+        return self.private_request(
+            "music/music_in_feed_audio_browser/",
+            data={
+                "product": "music_in_feed",
+                "_uuid": self.uuid,
+                "browse_session_id": browse_session_id,
+            },
+            with_signature=False,
+        )
+
+    def _feed_music_params(
+        self,
+        track: Union[Track, Dict],
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        browse_session_id: Optional[str] = None,
+        alacorn_session_id: Optional[str] = None,
+    ) -> Dict:
+        audio_asset_id = self._track_value(track, "audio_asset_id") or self._track_value(track, "id")
+        audio_cluster_id = self._track_value(track, "audio_cluster_id")
+        assert audio_asset_id, "track.audio_asset_id or track.id is required"
+        assert audio_cluster_id, "track.audio_cluster_id is required"
+        if audio_asset_start_time is None:
+            audio_asset_start_time = self._track_highlight_start(track)
+        if alacorn_session_id is None:
+            alacorn_session_id = self._track_value(track, "alacorn_session_id")
+        if alacorn_session_id is None:
+            alacorn_session_id = self.music_in_feed_audio_browser().get("alacorn_session_id")
+        assert alacorn_session_id, "alacorn_session_id is required"
+
+        data = {
+            "audio_asset_id": audio_asset_id,
+            "audio_cluster_id": audio_cluster_id,
+            "audio_asset_start_time_in_ms": int(audio_asset_start_time),
+            "derived_content_start_time_in_ms": 0,
+            "overlap_duration_in_ms": int(overlap_duration),
+            "browse_session_id": browse_session_id,
+            "product": "music_in_feed",
+            "song_name": self._track_value(track, "title") or "",
+            "artist_name": self._track_value(track, "display_artist") or "",
+            "alacorn_session_id": alacorn_session_id,
+            "audio_apply_source": 0,
+        }
+        music_canonical_id = self._track_value(track, "music_canonical_id")
+        if music_canonical_id:
+            data["music_canonical_id"] = music_canonical_id
+        return data
 
     def track_info_by_canonical_id(self, music_canonical_id: str) -> Track:
         """

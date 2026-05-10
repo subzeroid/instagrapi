@@ -3,7 +3,7 @@ import random
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -27,6 +27,7 @@ from instagrapi.types import (
     StoryMention,
     StoryPoll,
     StorySticker,
+    Track,
     Usertag,
 )
 from instagrapi.utils import date_time_original, dumps
@@ -276,6 +277,72 @@ class UploadPhotoMixin:
                     "Photo upload",
                 )
         raise PhotoConfigureError(response=self.last_response, **self.last_json)
+
+    def photo_upload_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        upload_id: str = "",
+        usertags: List[Usertag] = [],
+        location: Location = None,
+        extra_data: Dict[str, str] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        browse_session_id: Optional[str] = None,
+        alacorn_session_id: Optional[str] = None,
+    ) -> Media:
+        """
+        Upload a feed photo with attached music.
+
+        Parameters
+        ----------
+        path: Path
+            Path to the media
+        caption: str
+            Media caption
+        track: Track or dict
+            Track from music search/browser response or a compatible dict.
+        upload_id: str, optional
+            Unique upload_id.
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload.
+        location: Location, optional
+            Location tag for this upload.
+        extra_data: Dict[str, str], optional
+            Additional configure params.
+        audio_asset_start_time: int, optional
+            Audio start time in milliseconds. Defaults to the first highlighted
+            start time from the track, or 0.
+        overlap_duration: int, optional
+            Audio duration in milliseconds, default 30000.
+        browse_session_id: str, optional
+            Music browser session id.
+        alacorn_session_id: str, optional
+            Music browser session id returned by ``music_in_feed_audio_browser``.
+            Fetched automatically when omitted.
+
+        Returns
+        -------
+        Media
+            A Media response from the call
+        """
+        data = dict(extra_data or {})
+        data["music_params"] = self._feed_music_params(
+            track,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            browse_session_id=browse_session_id,
+            alacorn_session_id=alacorn_session_id,
+        )
+        return self.photo_upload(
+            path,
+            caption,
+            upload_id=upload_id,
+            usertags=usertags,
+            location=location,
+            extra_data=data,
+        )
 
     def photo_configure(
         self,

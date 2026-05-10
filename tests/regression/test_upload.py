@@ -153,6 +153,102 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertIsInstance(media, Media)
         photo_rupload.assert_called_once_with(Path("slide.png"), to_album=True)
 
+    def test_music_in_feed_audio_browser_requests_feed_music_product(self):
+        client = self.build_client()
+        expected = {"status": "ok", "alacorn_session_id": "alacorn-1"}
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.music_in_feed_audio_browser(browse_session_id="browse-1")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "music/music_in_feed_audio_browser/",
+            data={
+                "product": "music_in_feed",
+                "_uuid": "uuid",
+                "browse_session_id": "browse-1",
+            },
+            with_signature=False,
+        )
+
+    def test_photo_upload_with_music_adds_music_params_without_mutating_extra_data(self):
+        client = self.build_client()
+        track = types.SimpleNamespace(
+            id="track-id",
+            audio_asset_id="asset-id",
+            audio_cluster_id="cluster-id",
+            highlight_start_times_in_ms=[58000],
+            title="Memories",
+            display_artist="Justin Lee",
+        )
+        extra_data = {"share_to_facebook": 1}
+
+        with mock.patch.object(client, "photo_upload", return_value="uploaded") as photo_upload:
+            result = client.photo_upload_with_music(
+                Path("photo.jpg"),
+                "caption",
+                track,
+                extra_data=extra_data,
+                alacorn_session_id="alacorn-1",
+            )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"share_to_facebook": 1})
+        upload_extra = photo_upload.call_args.kwargs["extra_data"]
+        self.assertEqual(upload_extra["share_to_facebook"], 1)
+        self.assertEqual(
+            upload_extra["music_params"],
+            {
+                "audio_asset_id": "asset-id",
+                "audio_cluster_id": "cluster-id",
+                "audio_asset_start_time_in_ms": 58000,
+                "derived_content_start_time_in_ms": 0,
+                "overlap_duration_in_ms": 30000,
+                "browse_session_id": None,
+                "product": "music_in_feed",
+                "song_name": "Memories",
+                "artist_name": "Justin Lee",
+                "alacorn_session_id": "alacorn-1",
+                "audio_apply_source": 0,
+            },
+        )
+
+    def test_album_upload_with_music_adds_music_params_without_mutating_extra_data(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [12000],
+            "title": "Album song",
+            "display_artist": "Album artist",
+        }
+        extra_data = {"disable_comments": 1}
+
+        with mock.patch.object(client, "album_upload", return_value="uploaded") as album_upload:
+            result = client.album_upload_with_music(
+                [Path("one.jpg"), Path("two.jpg")],
+                "caption",
+                track,
+                extra_data=extra_data,
+                alacorn_session_id="alacorn-1",
+                browse_session_id="browse-1",
+                overlap_duration=15000,
+            )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"disable_comments": 1})
+        upload_extra = album_upload.call_args.kwargs["extra_data"]
+        self.assertEqual(upload_extra["disable_comments"], 1)
+        self.assertEqual(upload_extra["music_params"]["audio_asset_id"], "track-id")
+        self.assertEqual(upload_extra["music_params"]["audio_cluster_id"], "cluster-id")
+        self.assertEqual(upload_extra["music_params"]["audio_asset_start_time_in_ms"], 12000)
+        self.assertEqual(upload_extra["music_params"]["overlap_duration_in_ms"], 15000)
+        self.assertEqual(upload_extra["music_params"]["browse_session_id"], "browse-1")
+        self.assertEqual(upload_extra["music_params"]["product"], "music_in_feed")
+        self.assertEqual(upload_extra["music_params"]["song_name"], "Album song")
+        self.assertEqual(upload_extra["music_params"]["artist_name"], "Album artist")
+        self.assertEqual(upload_extra["music_params"]["alacorn_session_id"], "alacorn-1")
+
     def test_photo_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
