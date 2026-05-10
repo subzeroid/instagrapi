@@ -34,6 +34,7 @@ use an internal fallback chain and choose the best currently working path for th
   * [`Highlight`](highlight.md) - Highlights
   * [`Notes`](notes.md) - Direct Notes
   * [`Story`](story.md) - Story
+  * [`StoryArchiveDay`](story.md) - Story archive day shell
   * [`StoryLink`](story.md) - Story link sticker
   * [`StoryLocation`](story.md) - Tag Location in Story (as sticker)
   * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)

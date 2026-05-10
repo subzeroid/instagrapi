@@ -24,6 +24,7 @@ from .types import (
     ReplyMessage,
     Resource,
     Story,
+    StoryArchiveDay,
     StoryHashtag,
     StoryLink,
     StoryLocation,
@@ -530,6 +531,11 @@ def extract_story_v1(data):
     if not story.get("taken_at"):
         story["taken_at"] = story.get("device_timestamp") or story.get("taken_at_timestamp")
     return Story(**story)
+
+
+def extract_story_archive_day(data):
+    """Extract story archive day from Private API"""
+    return StoryArchiveDay(**deepcopy(data))
 
 
 def extract_story_gql(data):

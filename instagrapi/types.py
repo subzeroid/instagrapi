@@ -643,6 +643,14 @@ class Story(TypesBaseModel):
     polls: List[StoryPoll] = []
 
 
+class StoryArchiveDay(TypesBaseModel):
+    id: str
+    timestamp: datetime
+    media_count: int
+    reel_type: str
+    latest_reel_media: Optional[int] = None
+
+
 class Guide(TypesBaseModel):
     id: Optional[str] = None
     title: Optional[str] = None
