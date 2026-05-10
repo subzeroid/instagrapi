@@ -149,6 +149,77 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             except Exception as exc:
                 print(f"Direct media live cleanup direct_thread_hide failed: {exc.__class__.__name__} {exc}")
 
+    def direct_message_by_id(self, client, thread_id, message_id, amount=10):
+        thread = client.direct_thread(thread_id, amount=amount)
+        for message in thread.messages:
+            if str(message.id) == str(message_id):
+                return message
+        return None
+
+    def direct_message_has_reaction(self, message, sender_id, emoji="❤"):
+        reactions = getattr(message, "reactions", None)
+        for reaction in getattr(reactions, "emojis", []) or []:
+            if str(reaction.sender_id) == str(sender_id) and reaction.emoji == emoji:
+                return True
+        return False
+
+    def test_direct_message_reaction_live(self):
+        sender = self.cl
+        recipient = self.fresh_accounts(1, exclude_user_ids={sender.user_id})[0]
+        sent_messages = []
+        thread_id = None
+
+        try:
+            seed_message = sender.direct_send(
+                f"instagrapi direct reaction live {int(time.time())}",
+                user_ids=[recipient.user_id],
+            )
+            self.assertIsInstance(seed_message, DirectMessage)
+            sent_messages.append((sender, seed_message))
+
+            thread_id = seed_message.thread_id or self.thread_id_by_participants(sender, recipient.user_id)
+            self.assertTrue(thread_id)
+
+            reply_message = recipient.direct_answer(
+                thread_id,
+                f"instagrapi direct reaction ack {int(time.time())}",
+            )
+            self.assertIsInstance(reply_message, DirectMessage)
+            sent_messages.append((recipient, reply_message))
+
+            target_message = None
+            for _ in range(6):
+                target_message = self.direct_message_by_id(recipient, thread_id, seed_message.id)
+                if target_message:
+                    break
+                time.sleep(2)
+            self.assertIsNotNone(target_message)
+
+            self.assertTrue(recipient.direct_send_reaction(thread_id, seed_message.id))
+
+            reacted_message = None
+            for _ in range(6):
+                reacted_message = self.direct_message_by_id(sender, thread_id, seed_message.id)
+                if reacted_message and self.direct_message_has_reaction(reacted_message, recipient.user_id):
+                    break
+                time.sleep(3)
+            else:
+                self.fail(f"Direct reaction was not visible: {getattr(reacted_message, 'reactions', None)}")
+
+            self.assertTrue(recipient.direct_message_unlike(thread_id, seed_message.id))
+
+            cleared_message = None
+            for _ in range(6):
+                cleared_message = self.direct_message_by_id(sender, thread_id, seed_message.id)
+                if cleared_message and not self.direct_message_has_reaction(cleared_message, recipient.user_id):
+                    break
+                time.sleep(3)
+            else:
+                self.fail(f"Direct reaction was still visible: {getattr(cleared_message, 'reactions', None)}")
+        finally:
+            if thread_id:
+                self.cleanup_direct_media_messages(thread_id, sent_messages, [sender, recipient])
+
     def test_direct_send_voice_and_video_with_thread_and_user_ids(self):
         sender = self.cl
         recipient = self.fresh_accounts(1, exclude_user_ids={sender.user_id})[0]
