@@ -16,6 +16,7 @@
 * [`Comment`](comment.md) - Comments to Media
 * [`Highlight`](highlight.md) - Highlights
 * [`Story`](story.md) - Story
+* [`StoryArchiveDay`](story.md) - Story archive day shell
 * [`StoryLink`](story.md) - Story link sticker
 * [`StoryLocation`](story.md) - Tag Location in Story (as sticker)
 * [`StoryMention`](story.md) - Mention users in Story (user, coordinates and dimensions)

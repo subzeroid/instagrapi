@@ -2,7 +2,7 @@ import json
 import shutil
 from copy import deepcopy
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 from urllib.parse import urlparse
 
 from instagrapi import config
@@ -13,12 +13,13 @@ from instagrapi.exceptions import (
     UserNotFound,
 )
 from instagrapi.extractors import (
+    extract_story_archive_day,
     extract_story_gql,
     extract_story_v1,
     extract_user_short,
     extract_viewer,
 )
-from instagrapi.types import Story, UserShort, Viewer
+from instagrapi.types import Story, StoryArchiveDay, UserShort, Viewer
 
 
 class StoryMixin:
@@ -229,6 +230,163 @@ class StoryMixin:
                     "Anonymous story fetch failed via public API and private fallback requires login"
                 ) from e
             return self.user_stories_v1(user_id, amount)
+
+    def archive_story_days_paginated_v1(
+        self,
+        amount: int = 0,
+        end_cursor: str = "",
+        include_memories: bool = True,
+        reel_id: str = "",
+    ) -> Tuple[List[StoryArchiveDay], str]:
+        """
+        Get a page of your story archive days by Private Mobile API
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of archive days to return, default is 0 (all days)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+        include_memories: bool, optional
+            Whether to include memories metadata, default value is True
+        reel_id: str, optional
+            Archive reel identifier to filter by
+
+        Returns
+        -------
+        Tuple[List[StoryArchiveDay], str]
+            A tuple containing a list of archive days and the next end_cursor value
+        """
+        amount = int(amount)
+        params = {
+            "timezone_offset": self.timezone_offset,
+            "include_memories": "1" if include_memories else "0",
+        }
+        if end_cursor:
+            params["max_id"] = end_cursor
+        if reel_id:
+            params["reel_id"] = reel_id
+        result = self.private_request("archive/reel/day_shells_paginated/", params=params)
+        items = result.get("items", [])
+        if amount:
+            items = items[:amount]
+        return ([extract_story_archive_day(item) for item in items], result.get("max_id") or "")
+
+    def archive_story_days_v1(self, amount: int = 0, include_memories: bool = True) -> List[StoryArchiveDay]:
+        """
+        Get your story archive days by Private Mobile API
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of archive days to return, default is 0 (all days)
+        include_memories: bool, optional
+            Whether to include memories metadata, default value is True
+
+        Returns
+        -------
+        List[StoryArchiveDay]
+            A list of objects of StoryArchiveDay
+        """
+        amount = int(amount)
+        days = []
+        next_max_id = ""
+        while True:
+            days_page, next_max_id = self.archive_story_days_paginated_v1(
+                amount=amount,
+                end_cursor=next_max_id,
+                include_memories=include_memories,
+            )
+            days.extend(days_page)
+            if not next_max_id:
+                break
+            if amount and len(days) >= amount:
+                break
+        if amount:
+            days = days[:amount]
+        return days
+
+    def archive_story_days(self, amount: int = 0, include_memories: bool = True) -> List[StoryArchiveDay]:
+        """
+        Get your story archive days
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of archive days to return, default is 0 (all days)
+        include_memories: bool, optional
+            Whether to include memories metadata, default value is True
+
+        Returns
+        -------
+        List[StoryArchiveDay]
+            A list of objects of StoryArchiveDay
+        """
+        return self.archive_story_days_v1(amount, include_memories)
+
+    @staticmethod
+    def _archive_story_reels(response) -> List[dict]:
+        reels = response.get("reels") or response.get("reels_media") or []
+        if isinstance(reels, dict):
+            return list(reels.values())
+        if reels:
+            return reels
+        return [value for key, value in response.items() if str(key).startswith("archiveDay:")]
+
+    def archive_stories_v1(self, amount: int = 0) -> List[Story]:
+        """
+        Get your archived stories by Private Mobile API
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of stories to return, default is 0 (all stories)
+
+        Returns
+        -------
+        List[Story]
+            A list of objects of Story
+        """
+        amount = int(amount)
+        days = self.archive_story_days_v1(amount=0)
+        stories = []
+        for start in range(0, len(days), 50):
+            day_ids = [day.id for day in days[start : start + 50]]
+            if not day_ids:
+                continue
+            data = self.with_default_data(
+                {
+                    "reel_ids": day_ids,
+                    "reason": "on_tap",
+                    "source": "archive",
+                    "batch_size": len(day_ids),
+                }
+            )
+            result = self.private_request("feed/reels_media_stream/", data=data)
+            for reel in self._archive_story_reels(result):
+                for item in reel.get("items", []):
+                    story = extract_story_v1(item)
+                    self._stories_cache[story.pk] = story
+                    stories.append(story)
+                    if amount and len(stories) >= amount:
+                        return stories
+        return stories
+
+    def archive_stories(self, amount: int = 0) -> List[Story]:
+        """
+        Get your archived stories
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of stories to return, default is 0 (all stories)
+
+        Returns
+        -------
+        List[Story]
+            A list of objects of Story
+        """
+        return self.archive_stories_v1(amount)
 
     def story_seen(self, story_pks: List[int], skipped_story_pks: List[int] = []):
         """

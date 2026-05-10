@@ -41,6 +41,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_unlike(media_id: str) | bool | Unlike media |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
 | media_likers(media_id: str) | List\[UserShort] | Return users who liked this post |
+| archive_medias(amount: int = 0) | List\[Media] | Get archived media from your account |
 | media_archive(media_id: str) | bool | Archive media |
 | media_unarchive(media_id: str) | bool | Unarchive media |
 | media_pin(media_pk: str) | bool | Pin media to profile |
@@ -72,6 +73,8 @@ Low level methods:
 | user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of videos |
 | usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2) | List\[Media] | Get media where a user is tagged via public GraphQL API |
 | usertag_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged via private mobile API |
+| archive_medias_v1(amount: int = 0) | List\[Media] | Get archived media via private mobile API |
+| archive_medias_paginated_v1(amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of archived media |
 
 ### Example:
 
@@ -153,6 +156,9 @@ Low level methods:
 
 >>> cl.media_archive('2155832952940083788_1903424587')
 True
+
+>>> [media.pk for media in cl.archive_medias(amount=5)]
+['2155832952940083788']
 
 >>> cl.media_unarchive('2155832952940083788_1903424587')
 True

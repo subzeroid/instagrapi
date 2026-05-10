@@ -125,6 +125,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Highlight`](usage-guide/highlight.md) - Highlights
   * [`Notes`](usage-guide/notes.md) - Notes
   * [`Story`](usage-guide/story.md) - Story
+  * [`StoryArchiveDay`](usage-guide/story.md) - Story archive day shell
   * [`StoryLink`](usage-guide/story.md) - Link sticker
   * [`StoryLocation`](usage-guide/story.md) - Tag Location in Story (as sticker)
   * [`StoryMention`](usage-guide/story.md) - Mention users in Story (user, coordinates and dimensions)

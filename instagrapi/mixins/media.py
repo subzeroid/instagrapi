@@ -1030,6 +1030,75 @@ class MediaMixin:
         """
         return self.media_archive(media_id, revert=True)
 
+    def archive_medias_paginated_v1(self, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Get a page of your archived medias by Private Mobile API
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        amount = int(amount)
+        params = {"max_id": end_cursor} if end_cursor else {}
+        result = self.private_request("feed/only_me_feed/", params=params)
+        items = result.get("items", [])
+        if amount:
+            items = items[:amount]
+        medias = [extract_media_v1(item.get("media", item)) for item in items]
+        return medias, result.get("max_id") or ""
+
+    def archive_medias_v1(self, amount: int = 0) -> List[Media]:
+        """
+        Get your archived medias by Private Mobile API
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        amount = int(amount)
+        medias = []
+        next_max_id = ""
+        while True:
+            medias_page, next_max_id = self.archive_medias_paginated_v1(amount=amount, end_cursor=next_max_id)
+            medias.extend(medias_page)
+            if not next_max_id:
+                break
+            if amount and len(medias) >= amount:
+                break
+        if amount:
+            medias = medias[:amount]
+        return medias
+
+    def archive_medias(self, amount: int = 0) -> List[Media]:
+        """
+        Get your archived medias
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+
+        Returns
+        -------
+        List[Media]
+            A list of objects of Media
+        """
+        return self.archive_medias_v1(amount)
+
     def usertag_medias_gql(self, user_id: str, amount: int = 0, sleep: int = 2) -> List[Media]:
         """
         Get medias where a user is tagged (by Public GraphQL API)

@@ -10,6 +10,8 @@
 | story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path            | Download story media by media_type
 | story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path            | Download story media using URL to file (mp4 or jpg)
 | story_viewers(story_pk: int, amount: int = 20)                         | List[UserShort] | List of story viewers (via Private API)
+| archive_story_days(amount: int = 0, include_memories: bool = True)      | List[StoryArchiveDay] | Get your story archive day shells
+| archive_stories(amount: int = 0)                                        | List[Story]     | Get your archived stories
 | story_like(story_id: str, revert: bool = False)                        | bool            | Like a story
 | story_unlike(story_id: str)                                            | bool            | Unlike a story
 
@@ -26,7 +28,27 @@ PosixPath('/app/189361307_229642088942817_9180243596650100310_n.mp4')
 
 >>> cl.story_download_by_url(s.thumbnail_url)  # URL to jpg file
 PosixPath('/app/191260083_2908005872746895_8988438451809588865_n.jpg')
+
+>>> days = cl.archive_story_days(amount=1)
+>>> days[0].id
+'archiveDay:1710000000000'
+
+>>> archived = cl.archive_stories(amount=5)
+>>> [story.pk for story in archived]
+['3155832952940083788']
 ```
+
+## Story Archive
+
+`archive_story_days()` returns `StoryArchiveDay` objects for the logged-in account's story archive. Use `archive_stories()` when you need the story media items from those archive days.
+
+Low level methods:
+
+| Method | Return | Description
+| ------ | ------ | -----------
+| archive_story_days_v1(amount: int = 0, include_memories: bool = True) | List[StoryArchiveDay] | Get story archive days via private mobile API
+| archive_story_days_paginated_v1(amount: int = 0, end_cursor: str = "", include_memories: bool = True, reel_id: str = "") | Tuple[List[StoryArchiveDay], str] | Get one private API page of story archive days
+| archive_stories_v1(amount: int = 0) | List[Story] | Get archived stories via private mobile API
 
 ## Upload Stories
 
