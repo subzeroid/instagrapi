@@ -150,3 +150,104 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
         finally:
             cleanup(path)
             self.assertTrue(self.cl.media_delete(media.id))
+
+
+class ClientFeedMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
+    photo_path = Path("examples/kanada.jpg")
+    album_paths = [Path("examples/kanada.jpg"), Path("examples/background.png")]
+
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for feed music upload live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def iter_track_candidates(self, value):
+        if isinstance(value, list):
+            for item in value:
+                yield from self.iter_track_candidates(item)
+            return
+        if not isinstance(value, dict):
+            return
+
+        track = value.get("track") or value
+        if (track.get("audio_asset_id") or track.get("id")) and track.get("audio_cluster_id"):
+            yield track
+
+        for key in ("items", "preview_items", "tracks"):
+            yield from self.iter_track_candidates(value.get(key) or [])
+        yield from self.iter_track_candidates((value.get("playlist") or {}).get("preview_items") or [])
+
+    def feed_music_track(self):
+        music = self.cl.music_in_feed_audio_browser()
+        self.assertEqual(music.get("status"), "ok")
+
+        alacorn_session_id = music.get("alacorn_session_id")
+        if not alacorn_session_id:
+            self.skipTest("music_in_feed_audio_browser did not return alacorn_session_id")
+
+        track = next(self.iter_track_candidates(music.get("items") or []), None)
+        if not track:
+            self.skipTest("music_in_feed_audio_browser did not return a usable track")
+        return track, alacorn_session_id
+
+    def uploaded_media_payload(self, media):
+        result = self.cl.private_request(f"media/{media.pk}/info/")
+        items = result.get("items") or []
+        self.assertTrue(items)
+        return items[0]
+
+    def assertUploadedMediaHasMusic(self, media):
+        payload = self.uploaded_media_payload(media)
+        music_metadata = payload.get("music_metadata") or {}
+        self.assertEqual(music_metadata.get("audio_type"), "licensed_music")
+
+    def cleanup_uploaded_media(self, media):
+        if not media:
+            return
+        try:
+            self.assertTrue(self.cl.media_delete(media.id))
+        except Exception as exc:
+            print(f"Feed music upload cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+
+    def test_photo_upload_with_music_live(self):
+        track, alacorn_session_id = self.feed_music_track()
+        media = None
+        try:
+            media = self.cl.photo_upload_with_music(
+                self.photo_path,
+                "",
+                track,
+                alacorn_session_id=alacorn_session_id,
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.media_type, 1)
+            self.assertUploadedMediaHasMusic(media)
+        finally:
+            self.cleanup_uploaded_media(media)
+
+    def test_album_upload_with_music_live(self):
+        track, alacorn_session_id = self.feed_music_track()
+        media = None
+        try:
+            media = self.cl.album_upload_with_music(
+                self.album_paths,
+                "",
+                track,
+                alacorn_session_id=alacorn_session_id,
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.media_type, 8)
+            self.assertGreaterEqual(len(media.resources), 2)
+            self.assertUploadedMediaHasMusic(media)
+        finally:
+            self.cleanup_uploaded_media(media)

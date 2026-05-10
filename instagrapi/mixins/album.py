@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 
 from instagrapi.exceptions import (
@@ -8,7 +8,7 @@ from instagrapi.exceptions import (
     AlbumNotDownload,
     AlbumUnknownFormat,
 )
-from instagrapi.types import Location, Media, Usertag
+from instagrapi.types import Location, Media, Track, Usertag
 from instagrapi.utils import date_time_original, dumps
 
 
@@ -227,6 +227,84 @@ class UploadAlbumMixin:
                         "Album upload",
                     )
         raise (configure_exception or AlbumConfigureError)(response=self.last_response, **self.last_json)
+
+    def album_upload_with_music(
+        self,
+        paths: List[Path],
+        caption: str,
+        track: Union[Track, Dict],
+        usertags: List[Usertag] = [],
+        location: Location = None,
+        configure_timeout: int = 3,
+        configure_handler=None,
+        configure_exception=None,
+        to_story=False,
+        extra_data: Dict[str, str] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        browse_session_id: Optional[str] = None,
+        alacorn_session_id: Optional[str] = None,
+    ) -> Media:
+        """
+        Upload a feed album/carousel with attached music.
+
+        Parameters
+        ----------
+        paths: List[Path]
+            List of paths for media to upload.
+        caption: str
+            Media caption.
+        track: Track or dict
+            Track from music search/browser response or a compatible dict.
+        usertags: List[Usertag], optional
+            List of users to be tagged on this upload.
+        location: Location, optional
+            Location tag for this upload.
+        configure_timeout: int
+            Timeout between configure attempts.
+        configure_handler
+            Configure handler method, default is None.
+        configure_exception
+            Configure exception class, default is None.
+        to_story: bool
+            Currently not used, default is False.
+        extra_data: Dict[str, str], optional
+            Additional configure params.
+        audio_asset_start_time: int, optional
+            Audio start time in milliseconds. Defaults to the first highlighted
+            start time from the track, or 0.
+        overlap_duration: int, optional
+            Audio duration in milliseconds, default 30000.
+        browse_session_id: str, optional
+            Music browser session id.
+        alacorn_session_id: str, optional
+            Music browser session id returned by ``music_in_feed_audio_browser``.
+            Fetched automatically when omitted.
+
+        Returns
+        -------
+        Media
+            A Media response from the call.
+        """
+        data = dict(extra_data or {})
+        data["music_params"] = self._feed_music_params(
+            track,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            browse_session_id=browse_session_id,
+            alacorn_session_id=alacorn_session_id,
+        )
+        return self.album_upload(
+            paths,
+            caption,
+            usertags=usertags,
+            location=location,
+            configure_timeout=configure_timeout,
+            configure_handler=configure_handler,
+            configure_exception=configure_exception,
+            to_story=to_story,
+            extra_data=data,
+        )
 
     def album_configure(
         self,
