@@ -8,6 +8,10 @@
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage           | Add Message to exist Thread
 | direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], reply_to_message: Optional[DirectMessage] = None) | DirectMessage | Send Message to Users or Threads, optionally as a reply
+| direct_send_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None) | bool | Send an emoji reaction to a message
+| direct_delete_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None) | bool | Delete your emoji reaction from a message
+| direct_message_like(thread_id: int, message_id: int, client_context: Optional[str] = None) | bool | Like a message with a heart reaction
+| direct_message_unlike(thread_id: int, message_id: int, client_context: Optional[str] = None) | bool | Remove your heart reaction from a message
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
@@ -91,6 +95,15 @@ DirectMessage(id=30076213210116812312341061613568, user_id=None, thread_id=34028
 
 >>> cl.direct_send('Reply text', thread_ids=[thread.id], reply_to_message=message)
 DirectMessage(id=30076213210116812312341061613568, user_id=None, thread_id=34028236684171031231231231233331238762, timestamp=datetime.datetime(2021, 8, 31, 18, 33, 5, 127298, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
+
+>>> cl.direct_send_reaction(thread.id, message.id, emoji="😂", client_context=message.client_context)
+True
+
+>>> cl.direct_message_like(thread.id, message.id, client_context=message.client_context)
+True
+
+>>> cl.direct_message_unlike(thread.id, message.id, client_context=message.client_context)
+True
 
 >>> cl.direct_thread_by_participants([cl.user_id])
 DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[DirectMessage(id=30076214123123123123123864, user_id=1903424587, thread_id=None, timestamp=datetime.datetime(2021, 8, 31, 18, 33, 49, 107154, ...)
