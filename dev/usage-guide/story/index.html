@@ -813,6 +813,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#story-archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story Archive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#upload-stories" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1042,6 +1053,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#story-archive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Story Archive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#upload-stories" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1134,6 +1156,16 @@
 <td>List of story viewers (via Private API)</td>
 </tr>
 <tr>
+<td>archive_story_days(amount: int = 0, include_memories: bool = True)</td>
+<td>List[StoryArchiveDay]</td>
+<td>Get your story archive day shells</td>
+</tr>
+<tr>
+<td>archive_stories(amount: int = 0)</td>
+<td>List[Story]</td>
+<td>Get your archived stories</td>
+</tr>
+<tr>
 <td>story_like(story_id: str, revert: bool = False)</td>
 <td>bool</td>
 <td>Like a story</td>
@@ -1156,7 +1188,44 @@
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">story_download_by_url</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">thumbnail_url</span><span class="p">)</span>  <span class="c1"># URL to jpg file</span>
 <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/app/191260083_2908005872746895_8988438451809588865_n.jpg&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">days</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">archive_story_days</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">days</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span>
+<span class="s1">&#39;archiveDay:1710000000000&#39;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">archived</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">archive_stories</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="n">story</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">archived</span><span class="p">]</span>
+<span class="p">[</span><span class="s1">&#39;3155832952940083788&#39;</span><span class="p">]</span>
 </code></pre></div>
+<h2 id="story-archive">Story Archive</h2>
+<p><code>archive_story_days()</code> returns <code>StoryArchiveDay</code> objects for the logged-in account's story archive. Use <code>archive_stories()</code> when you need the story media items from those archive days.</p>
+<p>Low level methods:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>archive_story_days_v1(amount: int = 0, include_memories: bool = True)</td>
+<td>List[StoryArchiveDay]</td>
+<td>Get story archive days via private mobile API</td>
+</tr>
+<tr>
+<td>archive_story_days_paginated_v1(amount: int = 0, end_cursor: str = "", include_memories: bool = True, reel_id: str = "")</td>
+<td>Tuple[List[StoryArchiveDay], str]</td>
+<td>Get one private API page of story archive days</td>
+</tr>
+<tr>
+<td>archive_stories_v1(amount: int = 0)</td>
+<td>List[Story]</td>
+<td>Get archived stories via private mobile API</td>
+</tr>
+</tbody>
+</table>
 <h2 id="upload-stories">Upload Stories</h2>
 <p>Upload medias to your stories.</p>
 <p>The story file should be at 9:16 resolution (e.g. 720x1280).

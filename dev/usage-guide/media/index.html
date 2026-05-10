@@ -1448,6 +1448,11 @@
 <td>Return users who liked this post</td>
 </tr>
 <tr>
+<td>archive_medias(amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get archived media from your account</td>
+</tr>
+<tr>
 <td>media_archive(media_id: str)</td>
 <td>bool</td>
 <td>Archive media</td>
@@ -1589,6 +1594,16 @@
 <td>List[Media]</td>
 <td>Get media where a user is tagged via private mobile API</td>
 </tr>
+<tr>
+<td>archive_medias_v1(amount: int = 0)</td>
+<td>List[Media]</td>
+<td>Get archived media via private mobile API</td>
+</tr>
+<tr>
+<td>archive_medias_paginated_v1(amount: int = 0, end_cursor="")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one private API page of archived media</td>
+</tr>
 </tbody>
 </table>
 <h3 id="example">Example:</h3>
@@ -1669,6 +1684,9 @@
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_archive</span><span class="p">(</span><span class="s1">&#39;2155832952940083788_1903424587&#39;</span><span class="p">)</span>
 <span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">media</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">archive_medias</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">5</span><span class="p">)]</span>
+<span class="p">[</span><span class="s1">&#39;2155832952940083788&#39;</span><span class="p">]</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_unarchive</span><span class="p">(</span><span class="s1">&#39;2155832952940083788_1903424587&#39;</span><span class="p">)</span>
 <span class="kc">True</span>
