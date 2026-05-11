@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/handle_exception/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/pydroid/">
       
       
-        <link rel="prev" href="../challenge_resolver/">
+        <link rel="prev" href="../notes/">
       
       
-        <link rel="next" href="../collection/">
+        <link rel="next" href="../search/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Handle Exceptions - instagrapi Documentation</title>
+        <title>Pydroid and ffmpeg - instagrapi Documentation</title>
       
     
     
@@ -69,6 +69,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#pydroid-and-ffmpeg" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -105,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Handle Exceptions
+              Pydroid and ffmpeg
             
           </span>
         </div>
@@ -437,17 +442,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../handle_exception/" class="md-nav__link">
         
   
   
@@ -463,7 +461,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -725,10 +722,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../pydroid/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydroid and ffmpeg
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -744,6 +768,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-needs-ffmpeg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What needs ffmpeg
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-upload-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal upload example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -994,6 +1082,60 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-needs-ffmpeg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What needs ffmpeg
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#minimal-upload-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Minimal upload example
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1013,67 +1155,69 @@
   
 
 
-  <h1>Handle Exceptions</h1>
+<h1 id="pydroid-and-ffmpeg">Pydroid and ffmpeg</h1>
+<p>Android/Pydroid can run many <code>instagrapi</code> flows, but video helpers need special care because Android apps often cannot execute arbitrary binaries from shared storage.</p>
+<h2 id="what-needs-ffmpeg">What needs ffmpeg</h2>
+<p><code>instagrapi</code> does not need ffmpeg for login, reads, photo uploads, downloads, or normal API requests.</p>
+<p>For standard MP4 files, <code>instagrapi</code> can read video width, height, and duration with its built-in MP4 parser. If you also pass a thumbnail file, these upload helpers do not need MoviePy/ffmpeg just to analyze the upload:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<p>You can handle any exceptions using a generic handler:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;video.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">igtv_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;video.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_story</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;story.mp4&quot;</span><span class="p">),</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
+</code></pre></div>
+<p>MoviePy/ffmpeg is still required when <code>instagrapi</code> has to render or extract media:</p>
+<ul>
+<li>automatic thumbnail generation when <code>thumbnail</code> is not provided</li>
+<li><code>StoryBuilder</code></li>
+<li><code>prepare_video()</code></li>
+<li><code>clip_upload_as_reel_with_music()</code> and other audio/video composition helpers</li>
+<li>video album uploads, because album video items currently generate thumbnails internally</li>
+<li>non-standard MP4 files that the built-in parser cannot read</li>
+</ul>
+<h2 id="error">Error</h2>
+<p>If ffmpeg is missing or cannot be executed, video thumbnail generation can fail with:</p>
+<div class="highlight"><pre><span></span><code>RuntimeError: No ffmpeg exe could be found. Install ffmpeg on your system, or set the IMAGEIO_FFMPEG_EXE environment variable.
+</code></pre></div>
+<p>Current <code>instagrapi</code> upload helpers raise a clearer error for this thumbnail path:</p>
+<div class="highlight"><pre><span></span><code>Could not generate video thumbnail. Pass thumbnail=... or install ffmpeg / set IMAGEIO_FFMPEG_EXE.
+</code></pre></div>
+<h2 id="fix">Fix</h2>
+<p>The most reliable Pydroid setup is to pre-process the video outside Pydroid and pass both files:</p>
+<ul>
+<li><code>video.mp4</code> - MP4 file accepted by Instagram, usually H.264 video with AAC audio</li>
+<li><code>thumb.jpg</code> - JPEG thumbnail for the upload</li>
+</ul>
+<p>Then call the upload method with <code>thumbnail=Path("thumb.jpg")</code>.</p>
+<p>If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install an ffmpeg binary that the Pydroid app can execute and set <code>IMAGEIO_FFMPEG_EXE</code> before running the upload:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;IMAGEIO_FFMPEG_EXE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/absolute/path/to/ffmpeg&quot;</span>
+</code></pre></div>
+<p>Verify the same Python process can execute it:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;IMAGEIO_FFMPEG_EXE&quot;</span><span class="p">],</span> <span class="s2">&quot;-version&quot;</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+<p>If this raises <code>PermissionError</code>, the file exists but Android is not allowing Pydroid to execute it. A binary placed under shared storage such as <code>/storage/emulated/0/...</code> can hit that limitation. Move ffmpeg to a location executable by the app or use a Pydroid package/plugin that provides an executable binary.</p>
+<h2 id="minimal-upload-example">Minimal upload example</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BadPassword</span><span class="p">,</span> <span class="n">ReloginAttemptExceeded</span><span class="p">,</span> <span class="n">ChallengeRequired</span><span class="p">,</span>
-    <span class="n">SelectContactPointRecoveryForm</span><span class="p">,</span> <span class="n">RecaptchaChallengeForm</span><span class="p">,</span>
-    <span class="n">FeedbackRequired</span><span class="p">,</span> <span class="n">PleaseWaitFewMinutes</span><span class="p">,</span> <span class="n">LoginRequired</span><span class="p">,</span>
-    <span class="n">ClientThrottledError</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">json_value</span>
-
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">handle_exception</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">Client</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">BadPassword</span><span class="p">):</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">relogin_attempt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ReloginAttemptExceeded</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">e</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">LoginRequired</span><span class="p">):</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-        <span class="n">client</span><span class="o">.</span><span class="n">relogin</span><span class="p">()</span>
-        <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ChallengeRequired</span><span class="p">):</span>
-        <span class="n">api_path</span> <span class="o">=</span> <span class="n">json_value</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">last_json</span><span class="p">,</span> <span class="s2">&quot;challenge&quot;</span><span class="p">,</span> <span class="s2">&quot;api_path&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">api_path</span> <span class="o">==</span> <span class="s2">&quot;/challenge/&quot;</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Generic challenge flow requires manual handling or a custom resolver&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">client</span><span class="o">.</span><span class="n">challenge_resolve</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">last_json</span><span class="p">)</span>
-            <span class="k">except</span> <span class="n">ChallengeRequired</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-            <span class="k">except</span> <span class="p">(</span><span class="n">ChallengeRequired</span><span class="p">,</span> <span class="n">SelectContactPointRecoveryForm</span><span class="p">,</span> <span class="n">RecaptchaChallengeForm</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">e</span>
-        <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">FeedbackRequired</span><span class="p">):</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">last_json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;feedback_message&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s2">&quot;This action was blocked. Please try again later&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Action blocked by Instagram: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;We restrict certain activity to protect our community&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Temporary activity restriction: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="s2">&quot;Your account has been temporarily blocked&quot;</span> <span class="ow">in</span> <span class="n">message</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Temporary account block: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ClientThrottledError</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;HTTP 429 from Instagram, back off and review proxy/account pressure&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">PleaseWaitFewMinutes</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Please wait before retrying: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-    <span class="k">raise</span> <span class="n">e</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">handle_exception</span> <span class="o">=</span> <span class="n">handle_exception</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel.mp4&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Uploaded from Pydroid&quot;</span><span class="p">,</span>
+    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel-thumb.jpg&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
 </code></pre></div>
-<p>In this way, you can centrally handle errors and not repeat handlers throughout your code. In a real application, you would usually extend this with your own proxy rotation, account freeze/backoff storage, or metrics hooks.</p>
-<p>For <code>BadPassword</code> with a password that works elsewhere, see the <a href="https://instagrapi.com/guides/errors/bad-password/"><code>BadPassword</code> troubleshooting guide</a>. Instagram can return <code>bad_password</code> for risky proxy/IP/device/session states, so avoid retry loops and first compare against the official app on the same network identity.</p>
-<p>For a practical playbook around <code>429</code>, <code>feedback_required</code>, <code>PleaseWaitFewMinutes</code>, and session/challenge handling, see <a href="../best-practices/">Best Practices</a>.</p>
-<p>Full example <a href="https://github.com/subzeroid/instagrapi/blob/master/examples/handle_exception.py">here</a></p>
+<p>If you omit <code>thumbnail=...</code>, Pydroid must have a working ffmpeg executable so <code>instagrapi</code> can capture a frame from the video.</p>
 
 
 
