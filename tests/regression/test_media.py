@@ -92,3 +92,98 @@ class CheckOffensiveCommentV2RegressionTestCase(unittest.TestCase):
         # No authorization_data → user_id property returns None.
         with self.assertRaises(AssertionError):
             client.media_check_offensive_comment_v2("9_8", "rude")
+
+
+class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
+    def _media_v1_payload(self, pk="1"):
+        return {
+            "pk": pk,
+            "id": f"{pk}_2",
+            "code": "abc",
+            "taken_at": 1710000000,
+            "media_type": 1,
+            "user": {
+                "pk": "2",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "image_versions2": {"candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}]},
+        }
+
+    def _media_gql_payload(self, pk="1"):
+        return {
+            "__typename": "GraphImage",
+            "id": pk,
+            "shortcode": "abc",
+            "taken_at_timestamp": 1710000000,
+            "owner": {
+                "id": "2",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "display_resources": [{"src": "https://example.com/x.jpg", "config_width": 100, "config_height": 100}],
+            "edge_media_to_comment": {"count": 0},
+            "edge_media_preview_like": {"count": 0},
+            "edge_media_to_caption": {"edges": []},
+            "edge_media_to_tagged_user": {"edges": []},
+        }
+
+    def test_usertag_medias_paginated_gql_returns_page_and_cursor(self):
+        client = Client()
+        payload = self._media_gql_payload()
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            return_value={
+                "user": {
+                    "edge_user_to_photos_of_you": {
+                        "page_info": {"end_cursor": "next-page"},
+                        "edges": [{"node": payload}],
+                    }
+                }
+            },
+        ) as public_graphql_request:
+            medias, end_cursor = client.usertag_medias_paginated_gql("123", amount=1, end_cursor="cursor-1")
+
+        public_graphql_request.assert_called_once_with(
+            {"id": 123, "first": 1, "after": "cursor-1"},
+            query_hash="be13233562af2d229b008d2976b998b5",
+        )
+        self.assertEqual(end_cursor, "next-page")
+        self.assertEqual([media.pk for media in medias], ["1"])
+
+    def test_usertag_medias_paginated_v1_returns_page_and_cursor(self):
+        client = Client()
+        payload = self._media_v1_payload()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"items": [payload], "next_max_id": "next-page"},
+        ) as private_request:
+            medias, end_cursor = client.usertag_medias_paginated_v1("123", amount=1, end_cursor="cursor-1")
+
+        private_request.assert_called_once_with("usertags/123/feed/", params={"max_id": "cursor-1"})
+        self.assertEqual(end_cursor, "next-page")
+        self.assertEqual([media.pk for media in medias], ["1"])
+
+    def test_usertag_medias_paginated_falls_back_to_v1(self):
+        client = Client()
+
+        with mock.patch.object(
+            client,
+            "usertag_medias_paginated_gql",
+            side_effect=ClientError("public unavailable"),
+        ) as gql:
+            with mock.patch.object(
+                client,
+                "usertag_medias_paginated_v1",
+                return_value=(["m1"], "next-page"),
+            ) as v1:
+                medias, end_cursor = client.usertag_medias_paginated("123", amount=5, end_cursor="cursor-1")
+
+        gql.assert_called_once_with(123, 5, end_cursor="cursor-1")
+        v1.assert_called_once_with(123, 5, end_cursor="cursor-1")
+        self.assertEqual(medias, ["m1"])
+        self.assertEqual(end_cursor, "next-page")
