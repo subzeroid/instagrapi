@@ -1,3 +1,4 @@
+from instagrapi.exceptions import DirectMessageNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -140,9 +141,9 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             if not getattr(message, "id", None):
                 continue
             try:
-                client.direct_message_delete(thread_id, message.id)
+                client.direct_message_unsend(thread_id, message.id)
             except Exception as exc:
-                print(f"Direct media live cleanup direct_message_delete failed: {exc.__class__.__name__} {exc}")
+                print(f"Direct media live cleanup direct_message_unsend failed: {exc.__class__.__name__} {exc}")
         for client in clients:
             try:
                 client.direct_thread_hide(thread_id)
@@ -150,11 +151,10 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
                 print(f"Direct media live cleanup direct_thread_hide failed: {exc.__class__.__name__} {exc}")
 
     def direct_message_by_id(self, client, thread_id, message_id, amount=10):
-        thread = client.direct_thread(thread_id, amount=amount)
-        for message in thread.messages:
-            if str(message.id) == str(message_id):
-                return message
-        return None
+        try:
+            return client.direct_message(thread_id, message_id, amount=amount)
+        except DirectMessageNotFound:
+            return None
 
     def direct_message_has_reaction(self, message, sender_id, emoji="❤"):
         reactions = getattr(message, "reactions", None)
