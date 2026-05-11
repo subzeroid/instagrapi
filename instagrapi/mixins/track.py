@@ -8,7 +8,7 @@ import requests
 from instagrapi.exceptions import ClientError, TrackNotFound
 from instagrapi.extractors import extract_track
 from instagrapi.types import Track
-from instagrapi.utils import json_value
+from instagrapi.utils.serialization import json_value
 
 
 class TrackMixin:

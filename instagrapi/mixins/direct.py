@@ -21,8 +21,8 @@ from instagrapi.types import (
     Media,
     UserShort,
 )
-from instagrapi.utils import dumps
-from instagrapi.video_util import read_video_metadata, read_video_metadata_with_moviepy
+from instagrapi.utils.serialization import dumps
+from instagrapi.utils.video import read_video_metadata, read_video_metadata_with_moviepy
 
 SELECTED_FILTERS = ("flagged", "unread")
 SEARCH_MODES = ("raven", "universal")

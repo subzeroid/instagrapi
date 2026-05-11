@@ -28,8 +28,9 @@ from instagrapi.types import (
     StorySticker,
     Usertag,
 )
-from instagrapi.utils import date_time_original, dumps
-from instagrapi.video_util import analyze_video_for_upload
+from instagrapi.utils.serialization import dumps
+from instagrapi.utils.timing import date_time_original
+from instagrapi.utils.video import analyze_video_for_upload
 
 
 class DownloadVideoMixin:

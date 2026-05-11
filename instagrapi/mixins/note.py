@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Union
 
 from instagrapi.exceptions import ClientGraphqlError
 from instagrapi.types import Note, Track, UserShort
-from instagrapi.utils import dumps
+from instagrapi.utils.serialization import dumps
 
 CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID = "3510400299951610199199089856"
 CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME = "CreateInboxTrayItemRequest"

@@ -24,7 +24,8 @@ from instagrapi.exceptions import (
     TwoFactorRequired,
     UnknownError,
 )
-from instagrapi.utils import dumps, gen_token, generate_jazoest
+from instagrapi.utils.auth import gen_token, generate_jazoest
+from instagrapi.utils.serialization import dumps
 
 # from instagrapi.zones import CET
 TIMELINE_FEED_REASONS = (

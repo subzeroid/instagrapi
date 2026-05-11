@@ -10,8 +10,8 @@ from uuid import uuid4
 from instagrapi import config
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
 from instagrapi.types import Location, Media, Track, Usertag
-from instagrapi.utils import date_time_original
-from instagrapi.video_util import analyze_video_for_upload
+from instagrapi.utils.timing import date_time_original
+from instagrapi.utils.video import analyze_video_for_upload
 
 try:
     from PIL import Image
