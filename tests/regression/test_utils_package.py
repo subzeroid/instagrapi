@@ -20,6 +20,7 @@ class UtilsPackageRegressionTestCase(unittest.TestCase):
         expected = {
             "instagrapi.utils.auth": ["gen_token", "generate_signature", "generate_jazoest"],
             "instagrapi.utils.ids": ["InstagramIdCodec"],
+            "instagrapi.utils.logging": ["truncate_log_text"],
             "instagrapi.utils.serialization": ["InstagrapiJSONEncoder", "dumps", "json_value"],
             "instagrapi.utils.timing": ["date_time_original", "random_delay"],
             "instagrapi.utils.validation": ["vassert"],

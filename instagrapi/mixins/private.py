@@ -37,6 +37,7 @@ from instagrapi.exceptions import (
     VideoTooLongException,
 )
 from instagrapi.utils.auth import generate_signature
+from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.serialization import dumps
 from instagrapi.utils.timing import random_delay
 
@@ -382,7 +383,7 @@ class PrivateRequestMixin:
                 response.status_code,
                 self.user_id,
                 endpoint,
-                response.text,
+                truncate_log_text(response.text),
             )
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, response.url),

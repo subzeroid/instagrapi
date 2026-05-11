@@ -24,6 +24,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     ClientUnauthorizedError,
 )
+from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.timing import random_delay
 
 
@@ -274,7 +275,7 @@ class PublicRequestMixin:
                 "Status %s: JSONDecodeError in public_request (url=%s) >>> %s",
                 response.status_code,
                 response.url,
-                response.text,
+                truncate_log_text(response.text),
             )
             raise ClientJSONDecodeError(
                 "JSONDecodeError {0!s} while opening {1!s}".format(e, url),
