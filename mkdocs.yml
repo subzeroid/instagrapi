@@ -22,6 +22,7 @@ nav:
     - Location: usage-guide/location.md
     - Media: usage-guide/media.md
     - Notes: usage-guide/notes.md
+    - Pydroid and ffmpeg: usage-guide/pydroid.md
     - Search: usage-guide/search.md
     - Story: usage-guide/story.md
     - Track: usage-guide/track.md

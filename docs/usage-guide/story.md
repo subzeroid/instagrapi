@@ -86,6 +86,7 @@ Notes:
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
+* Android/Pydroid users should pass `thumbnail=...` for video stories or configure ffmpeg. See [Pydroid and ffmpeg](pydroid.md).
 * Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.
 
 

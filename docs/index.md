@@ -124,6 +124,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Comment`](usage-guide/comment.md) - Comments to Media
   * [`Highlight`](usage-guide/highlight.md) - Highlights
   * [`Notes`](usage-guide/notes.md) - Notes
+  * [`Pydroid and ffmpeg`](usage-guide/pydroid.md) - Android/Pydroid video upload setup
   * [`Story`](usage-guide/story.md) - Story
   * [`StoryArchiveDay`](usage-guide/story.md) - Story archive day shell
   * [`StoryLink`](usage-guide/story.md) - Link sticker
