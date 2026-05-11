@@ -78,6 +78,47 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertFalse(device_status["hw_av1_dec"])
         self.assertEqual(result, expected)
 
+    def test_clip_share_to_fb_extra_data_builds_current_reel_crosspost_payload(self):
+        client = self.build_client()
+        config = {
+            "enabled": True,
+            "is_account_linked": True,
+            "reels_share_to_facebook": True,
+            "reels_destination_id": "fb-destination-id",
+            "reels_cross_app_share_type": "2",
+            "reels_cross_app_share_fb_validation_check_bypass": True,
+            "status": "ok",
+        }
+
+        result = client.clip_share_to_fb_extra_data(config=config)
+
+        self.assertEqual(
+            result,
+            {
+                "share_to_facebook": "1",
+                "is_reel_shared_to_fb": True,
+                "share_to_facebook_reels": True,
+                "share_to_fb_destination_id": "fb-destination-id",
+                "share_to_fb_destination_type": "2",
+                "cross_app_share_fb_validation_check_bypass": True,
+                "xpost_surface": "IG_REELS_COMPOSER",
+            },
+        )
+
+    def test_clip_share_to_fb_extra_data_raises_without_destination(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.clip_share_to_fb_extra_data(
+                config={
+                    "enabled": True,
+                    "default_share_to_fb_enabled": False,
+                    "status": "ok",
+                }
+            )
+
+        self.assertIn("Facebook Reel sharing configuration has no destination", str(ctx.exception))
+
     def test_clip_info_for_creation_requests_reel_creation_config(self):
         client = self.build_client()
         expected = {
@@ -489,6 +530,56 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "custom_field": "1",
             },
         )
+
+    def test_clip_upload_share_to_facebook_adds_crosspost_params_before_upload(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+        extra_data = {"disable_comments": "1"}
+        fb_extra = {
+            "share_to_facebook": "1",
+            "is_reel_shared_to_fb": True,
+            "share_to_facebook_reels": True,
+            "share_to_fb_destination_id": "fb-destination-id",
+            "share_to_fb_destination_type": "2",
+            "cross_app_share_fb_validation_check_bypass": False,
+            "xpost_surface": "IG_REELS_COMPOSER",
+        }
+
+        with mock.patch.object(client, "clip_share_to_fb_extra_data", return_value=fb_extra) as share_to_fb_extra:
+            with mock.patch(
+                "instagrapi.mixins.clip.analyze_video",
+                return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+            ) as analyze_video:
+                with mock.patch.object(client.private, "get", return_value=ok_response):
+                    with mock.patch.object(
+                        client.private,
+                        "post",
+                        side_effect=[ok_response, ok_response],
+                    ):
+                        with mock.patch.object(
+                            client, "clip_configure", return_value={"status": "ok"}
+                        ) as clip_configure:
+                            with mock.patch(
+                                "builtins.open",
+                                mock.mock_open(read_data=b"video-bytes"),
+                            ):
+                                with mock.patch("time.sleep"):
+                                    client.clip_upload(
+                                        Path("example.mp4"),
+                                        "caption",
+                                        share_to_facebook=True,
+                                        extra_data=extra_data,
+                                    )
+
+        share_to_fb_extra.assert_called_once()
+        analyze_video.assert_called_once()
+        self.assertEqual(extra_data, {"disable_comments": "1"})
+        configure_extra = clip_configure.call_args.kwargs["extra_data"]
+        self.assertEqual(configure_extra["disable_comments"], "1")
+        self.assertEqual(configure_extra["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertTrue(configure_extra["share_to_facebook_reels"])
+        self.assertEqual(configure_extra["xpost_surface"], "IG_REELS_COMPOSER")
 
     def test_video_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
