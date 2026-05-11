@@ -164,7 +164,9 @@ class UploadClipMixin:
         location: Location = None,
         configure_timeout: int = 10,
         feed_show: str = "1",
-        extra_data: Dict[str, str] = {},
+        extra_data: Dict[str, object] = {},
+        trial: bool = False,
+        trial_graduation_strategy: str = "manual",
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -184,9 +186,16 @@ class UploadClipMixin:
             Location tag for this upload, default is none
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
-        extra_data: Dict[str, str], optional
+        feed_show: str
+            Show Reel preview in feed/profile grid, default is "1".
+            Forced to "0" for Trial Reels.
+        extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params,
             like {"share_to_facebook": 1}.
+        trial: bool, optional
+            Upload as a Trial Reel for eligible accounts, default is False.
+        trial_graduation_strategy: str, optional
+            Trial Reel graduation strategy, default is "manual".
 
         Returns
         -------
@@ -201,6 +210,13 @@ class UploadClipMixin:
         with open(path, "rb") as fp:
             clip_data = fp.read()
             clip_len = str(len(clip_data))
+        configure_extra_data = dict(extra_data or {})
+        if trial:
+            feed_show = "0"
+            configure_extra_data.setdefault(
+                "trial_params",
+                {"graduation_strategy": trial_graduation_strategy},
+            )
         duration_ms = str(int(duration * 1000))
         composer_session_id = str(uuid4())
         asset_id = uuid4().hex[:12].upper()
@@ -347,7 +363,7 @@ class UploadClipMixin:
                     usertags,
                     location,
                     feed_show,
-                    extra_data=extra_data,
+                    extra_data=configure_extra_data,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -373,7 +389,7 @@ class UploadClipMixin:
         path: Path,
         caption: str,
         track: Track,
-        extra_data: Dict[str, str] = {},
+        extra_data: Dict[str, object] = {},
     ) -> Media:
         """
         Upload CLIP as reel with music metadata.
@@ -393,7 +409,7 @@ class UploadClipMixin:
             The music track to be added to the video reel
             use cl.search_music(title)[0].dict()
 
-        extra_data: Dict[str, str], optional
+        extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
@@ -480,7 +496,7 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         feed_show: str = "1",
-        extra_data: Dict[str, str] = {},
+        extra_data: Dict[str, object] = {},
     ) -> Dict:
         """
         Post Configure CLIP (send caption, thumbnail and more to Instagram)
@@ -503,7 +519,7 @@ class UploadClipMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
-        extra_data: Dict[str, str], optional
+        extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
