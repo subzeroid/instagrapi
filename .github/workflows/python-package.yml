@@ -69,6 +69,7 @@ jobs:
             tests/regression/test_direct.py::DirectMixinRegressionTestCase \
             tests/regression/test_challenge.py::ChallengeRegressionTestCase \
             tests/regression/test_comments.py::CommentRepliesRegressionTestCase \
+            tests/regression/test_current_app_profile.py::CurrentAppProfileRegressionTestCase \
             tests/regression/test_auth_story.py::AuthAndStoryRegressionTestCase \
             tests/regression/test_download.py::DownloadRegressionTestCase \
             tests/regression/test_notes.py::NoteMixinRegressionTestCase \
