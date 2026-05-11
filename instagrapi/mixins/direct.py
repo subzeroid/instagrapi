@@ -6,7 +6,12 @@ import uuid
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from instagrapi.exceptions import ClientError, ClientNotFoundError, DirectThreadNotFound
+from instagrapi.exceptions import (
+    ClientError,
+    ClientNotFoundError,
+    DirectMessageNotFound,
+    DirectThreadNotFound,
+)
 from instagrapi.extractors import (
     extract_direct_media,
     extract_direct_message,
@@ -181,6 +186,22 @@ class DirectMixin:
             threads = threads[:amount]
         return threads
 
+    def direct_requests(self, amount: int = 20) -> List[DirectThread]:
+        """
+        Get Direct message request threads, also known as pending inbox or invitations.
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of threads to return, default is 20
+
+        Returns
+        -------
+        List[DirectThread]
+            A list of objects of DirectThread
+        """
+        return self.direct_pending_inbox(amount)
+
     def direct_pending_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
         """
         Get direct threads of Pending inbox. Chunk
@@ -235,6 +256,22 @@ class DirectMixin:
             with_signature=False,
         )
         return result.get("status", "") == "ok"
+
+    def direct_request_approve(self, thread_id: int) -> bool:
+        """
+        Approve a Direct message request thread.
+
+        Parameters
+        ----------
+        thread_id: int
+            ID of thread to approve
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.direct_pending_approve(thread_id)
 
     def direct_spam_inbox(self, amount: int = 20) -> List[DirectThread]:
         """
@@ -357,6 +394,36 @@ class DirectMixin:
         """
         assert self.user_id, "Login required"
         return self.direct_thread(thread_id, amount).messages
+
+    def direct_message(self, thread_id: int, message_id: int, amount: int = 20) -> DirectMessage:
+        """
+        Get a Direct message from a thread by message id.
+
+        Parameters
+        ----------
+        thread_id: int
+            Unique identifier of a Direct Message thread
+
+        message_id: int
+            Unique identifier of a Direct Message item
+
+        amount: int, optional
+            Maximum number of latest messages to scan, default is 20
+
+        Returns
+        -------
+        DirectMessage
+            An object of DirectMessage
+        """
+        message_id = str(message_id)
+        for message in self.direct_messages(thread_id, amount):
+            if message.id == message_id:
+                return message
+        raise DirectMessageNotFound(
+            f"Direct message {message_id} not found in thread {thread_id}",
+            thread_id=thread_id,
+            message_id=message_id,
+        )
 
     def direct_answer(self, thread_id: int, text: str) -> DirectMessage:
         """
@@ -1581,6 +1648,24 @@ class DirectMixin:
         data.pop("device_id", None)
         result = self.private_request(f"direct_v2/threads/{thread_id}/items/{message_id}/delete/", data=data)
         return result["status"] == "ok"
+
+    def direct_message_unsend(self, thread_id: int, message_id: int) -> bool:
+        """
+        Unsend a message from a Direct thread.
+
+        Parameters
+        ----------
+        thread_id: int
+            Id of thread
+        message_id: int
+            Id of message
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        return self.direct_message_delete(thread_id, message_id)
 
     def direct_thread_mute(self, thread_id: int, revert: bool = False) -> bool:
         """

@@ -4,8 +4,11 @@
 | ------------------------------------------------------------------------- | ----------------------- | ----------------------------------
 | `direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)` <br> Note: `selected_filter` = `""`, `"flagged"` or `"unread"`; `box` = `""`, `"primary"` or `"general"` | List[DirectThread] | Get all threads from inbox
 | direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
+| direct_requests(amount: int = 20)                                         | List[DirectThread]      | Get message request threads (pending inbox / invitations)
+| direct_request_approve(thread_id: int)                                    | bool                    | Approve a message request thread
 | direct_thread(thread_id: int, amount: int = 20)                           | DirectThread            | Get Thread with Messages
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
+| direct_message(thread_id: int, message_id: int, amount: int = 20)         | DirectMessage           | Get one Message from Thread by id
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage           | Add Message to exist Thread
 | direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], reply_to_message: Optional[DirectMessage] = None) | DirectMessage | Send Message to Users or Threads, optionally as a reply
 | direct_send_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None) | bool | Send an emoji reaction to a message
@@ -21,6 +24,7 @@
 | direct_profile_share(user_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage      | Share a user profile to list of users
 | direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
 | direct_message_delete(thread_id: int, message_id: int)                    | bool                    | Delete a message from thread
+| direct_message_unsend(thread_id: int, message_id: int)                    | bool                    | Unsend a message from thread
 | direct_thread_mute(thread_id: int, revert: bool = False)                  | bool                    | Mute the thread
 | direct_thread_unmute(thread_id: int)                                      | bool                    | Unmute the thread
 | direct_thread_mute_video_call(thread_id: int, revert: bool = False)       | bool                    | Mute video call for the thread
@@ -33,7 +37,9 @@
 Notes:
 
 * For `direct_send()`, `direct_send_photo()`, `direct_send_video()`, and `direct_send_voice()`, pass exactly one of `user_ids` or `thread_ids`.
+* Direct message requests / invitations are exposed as `direct_requests()`; `direct_pending_inbox()` remains as the older name.
 * `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
+* `direct_message()` scans the latest `amount` messages in a thread and raises `DirectMessageNotFound` if the id is not present in that window.
 * Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via `dump_settings()/load_settings()` are more reliable than browser-only `sessionid` reuse.
 
 Example of basic actions:
@@ -67,6 +73,10 @@ DirectThread(
     ...
 )
 
+>>> request = cl.direct_requests(1)[0]
+>>> cl.direct_request_approve(request.id)
+True
+
 >>> cl.direct_thread(thread.id, 1)
 DirectThread(
     pk=18103276039108479,
@@ -82,6 +92,9 @@ DirectThread(
 )
 
 >>> message = cl.direct_messages(thread.id, 1)[0]
+DirectMessage(id=300712312341231237412312312360, user_id=12312312, thread_id=None, timestamp=datetime.datetime(2021, 8, 31, 18, 20, 28, 754135, tzinfo=datetime.timezone.utc), item_type='text', is_shh_mode=False, reactions=None, text='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua', animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
+
+>>> cl.direct_message(thread.id, message.id)
 DirectMessage(id=300712312341231237412312312360, user_id=12312312, thread_id=None, timestamp=datetime.datetime(2021, 8, 31, 18, 20, 28, 754135, tzinfo=datetime.timezone.utc), item_type='text', is_shh_mode=False, reactions=None, text='Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua', animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
 
 >>> cl.direct_answer(thread.id, 'Hello!')
@@ -121,6 +134,9 @@ DirectMessage(id=30076291231321231369939116032, user_id=None, thread_id=34028231
 DirectMessage(id=30076291231231230352896, user_id=None, thread_id=3402812312312310641298762, timestamp=datetime.datetime(2021, 8, 31, 19, 48, 38, 482706, tzinfo=datetime.timezone.utc), item_type=None, is_shh_mode=None, reactions=None, text=None, animated_media=None, media=None, media_share=None, reel_share=None, story_share=None, felix_share=None, clip=None, placeholder=None)
 
 >>> cl.direct_message_delete(thread.id, message.pk)
+True
+
+>>> cl.direct_message_unsend(thread.id, message.id)
 True
 
 >>> photo_path = cl.photo_download(cl.media_pk_from_url('https://www.instagram.com/p/BgqFyjqloOr/'))

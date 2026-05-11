@@ -1,3 +1,4 @@
+from instagrapi.exceptions import DirectMessageNotFound
 from tests.helpers import *
 
 
@@ -22,6 +23,55 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             data={"_uuid": "uuid-1", "title": "Updated title"},
             with_signature=False,
         )
+
+    def test_direct_message_returns_matching_message_by_id(self):
+        client = self.build_client()
+        first = DirectMessage(id="111", user_id="1", timestamp=datetime.fromtimestamp(1))
+        expected = DirectMessage(id="222", user_id="1", timestamp=datetime.fromtimestamp(2))
+
+        with mock.patch.object(client, "direct_messages", return_value=[first, expected]) as direct_messages:
+            result = client.direct_message(123, "222", amount=50)
+
+        self.assertIs(result, expected)
+        direct_messages.assert_called_once_with(123, 50)
+
+    def test_direct_message_raises_when_message_is_missing(self):
+        client = self.build_client()
+        message = DirectMessage(id="111", user_id="1", timestamp=datetime.fromtimestamp(1))
+
+        with mock.patch.object(client, "direct_messages", return_value=[message]):
+            with self.assertRaises(DirectMessageNotFound) as ctx:
+                client.direct_message(123, 222, amount=1)
+
+        self.assertIn("222", str(ctx.exception))
+
+    def test_direct_message_unsend_delegates_to_delete_endpoint(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "direct_message_delete", return_value=True) as delete:
+            result = client.direct_message_unsend(123, 456)
+
+        self.assertTrue(result)
+        delete.assert_called_once_with(123, 456)
+
+    def test_direct_requests_uses_pending_inbox(self):
+        client = self.build_client()
+        expected = [Mock(spec=DirectThread)]
+
+        with mock.patch.object(client, "direct_pending_inbox", return_value=expected) as pending:
+            result = client.direct_requests(amount=7)
+
+        self.assertIs(result, expected)
+        pending.assert_called_once_with(7)
+
+    def test_direct_request_approve_delegates_to_pending_approve(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "direct_pending_approve", return_value=True) as approve:
+            result = client.direct_request_approve(123)
+
+        self.assertTrue(result)
+        approve.assert_called_once_with(123)
 
     def make_temp_file(self, suffix, content):
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
