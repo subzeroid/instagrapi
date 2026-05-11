@@ -1403,6 +1403,11 @@
 <td>Get media where a user is tagged</td>
 </tr>
 <tr>
+<td>usertag_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one page of media where a user is tagged and next cursor</td>
+</tr>
+<tr>
 <td>media_info(media_pk: str, use_cache: bool = True)</td>
 <td>Media</td>
 <td>Return media info</td>
@@ -1590,9 +1595,19 @@
 <td>Get media where a user is tagged via public GraphQL API</td>
 </tr>
 <tr>
+<td>usertag_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one public GraphQL page of media where a user is tagged</td>
+</tr>
+<tr>
 <td>usertag_medias_v1(user_id: str, amount: int = 0)</td>
 <td>List[Media]</td>
 <td>Get media where a user is tagged via private mobile API</td>
+</tr>
+<tr>
+<td>usertag_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one private API page of media where a user is tagged</td>
 </tr>
 <tr>
 <td>archive_medias_v1(amount: int = 0)</td>
@@ -1746,6 +1761,11 @@
 <span class="p">[</span><span class="s1">&#39;2021-06-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-10-16&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-10-14&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-06-13&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-06-06&#39;</span><span class="p">]</span>
 <span class="p">[</span><span class="s1">&#39;2019-06-05&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-11-15&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-16&#39;</span><span class="p">]</span>
 <span class="p">[</span><span class="s1">&#39;2018-10-16&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-11&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-08-02&#39;</span><span class="p">]</span>
+
+<span class="c1"># Resume tagged-media fetches from a stored cursor</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tagged</span><span class="p">,</span> <span class="n">end_cursor</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">usertag_medias_paginated</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">end_cursor</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">next_tagged</span><span class="p">,</span> <span class="n">end_cursor</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">usertag_medias_paginated</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">end_cursor</span><span class="o">=</span><span class="n">end_cursor</span><span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_id</span><span class="p">(</span><span class="mi">1787135824035452364</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_like</span><span class="p">(</span><span class="n">media_id</span><span class="p">)</span>
