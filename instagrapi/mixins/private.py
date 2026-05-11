@@ -199,7 +199,7 @@ class PrivateRequestMixin:
             "X-MID": self.mid,  # e.g. X--ijgABABFjLLQ1NTEe0A6JSN7o, YRwa1QABBAF-ZA-1tPmnd0bEniTe
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
             "Host": self.domain,
-            "X-FB-HTTP-Engine": "Liger",
+            "X-FB-HTTP-Engine": "Tigon/MNS/TCP",
             "Connection": "keep-alive",
             # "Pragma": "no-cache",
             # "Cache-Control": "no-cache",

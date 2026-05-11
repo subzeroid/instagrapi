@@ -305,7 +305,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     ig_www_claim = ""  # e.g. hmac.AR2uidim8es5kYgDiNxY0UG_ZhffFFSt8TGCV5eA1VYYsMNx
 
     def __init__(self):
-        self.bloks_versioning_id = "ce555e5500576acd8e84a66018f54a05720f2dce29f0bb5a1f97f0c10d6fac48"
+        self.bloks_versioning_id = config.APP_SETTINGS[config.DEFAULT_APP_VERSION]["bloks_versioning_id"]
         self.user_agent = None
         self.settings = None
         self.override_app_version = False
@@ -803,6 +803,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 return app_values[idx]
             return random.choice(app_values)
 
+        def default_settings() -> Dict:
+            return config.APP_SETTINGS.get(config.DEFAULT_APP_VERSION) or pick_by_seed()
+
         if app:
             if isinstance(app, str):
                 matched = config.APP_SETTINGS.get(app)
@@ -814,11 +817,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         else:
             app_version = self.device_settings.get("app_version")
             matched = config.APP_SETTINGS.get(app_version) if app_version else None
-            if matched:
+            if matched and not override_app_version:
                 apply_settings(matched)
             else:
                 if override_app_version or not app_version:
-                    apply_settings(pick_by_seed())
+                    apply_settings(default_settings())
 
         if override_app_version:
             self.set_user_agent()
