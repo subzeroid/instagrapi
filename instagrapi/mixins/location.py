@@ -163,6 +163,23 @@ class LocationMixin:
         }
         return json.dumps(data, separators=(",", ":"))
 
+    def location_story_sticker_id(self, location: Location) -> str:
+        """
+        Build location id for story sticker tap models.
+
+        Parameters
+        ----------
+        location: Location
+            An object of location
+
+        Returns
+        -------
+        str
+        """
+        if not location:
+            return ""
+        return str(location.external_id or location.pk or "")
+
     def location_info_a1(self, location_pk: int) -> Location:
         """
         Get a location using location pk

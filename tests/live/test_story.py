@@ -176,6 +176,92 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(self.cl.story_seen([story.pk]))
 
 
+class ClientStoryLocationStickerLiveTestCase(_helpers.ClientPrivateTestCase):
+    photo_path = Path("examples/background.png")
+
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for story location sticker live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+    def get_location(self):
+        location = self.cl.location_search(lat=59.939095, lng=30.315868)[0]
+        self.assertIsInstance(location, Location)
+        return location
+
+    def story_info_with_locations(self, story_pk):
+        last_story = None
+        for _ in range(5):
+            last_story = self.cl.story_info(story_pk)
+            self.assertIsInstance(last_story, Story)
+            if last_story.locations:
+                return last_story
+            time.sleep(3)
+        return last_story
+
+    def user_story_ids(self):
+        return {story.id for story in self.cl.user_stories(self.cl.user_id, amount=10)}
+
+    def uploaded_story(self, existing_story_ids):
+        for _ in range(5):
+            for story in self.cl.user_stories(self.cl.user_id, amount=10):
+                if story.id not in existing_story_ids:
+                    return story
+            time.sleep(3)
+        return None
+
+    def cleanup_uploaded_story(self, story):
+        if not story:
+            return
+        try:
+            self.assertTrue(self.cl.story_delete(story.id))
+        except Exception as exc:
+            print(f"Story location sticker live cleanup story_delete failed: {exc.__class__.__name__} {exc}")
+
+    def test_photo_story_location_sticker_round_trips_live(self):
+        location = self.get_location()
+        story = None
+        existing_story_ids = self.user_story_ids()
+        try:
+            upload_id, width, height = self.cl.photo_rupload(self.photo_path, for_story=True)
+            time.sleep(3)
+            configured = self.cl.photo_configure_to_story(
+                upload_id=upload_id,
+                width=width,
+                height=height,
+                caption="Story location sticker live test",
+                locations=[
+                    StoryLocation(
+                        location=location,
+                        x=0.5,
+                        y=0.5,
+                        width=0.5,
+                        height=0.1,
+                    )
+                ],
+            )
+            self.assertEqual(configured.get("status"), "ok")
+
+            story = self.uploaded_story(existing_story_ids)
+            self.assertIsInstance(story, Story)
+            info = self.story_info_with_locations(story.pk)
+            self.assertTrue(info.locations)
+            self.assertIsInstance(info.locations[0].location, Location)
+            self.assertTrue(info.locations[0].location.name)
+        finally:
+            self.cleanup_uploaded_story(story)
+
+
 # class BloksTestCase(_helpers.ClientPrivateTestCase):
 #
 #     def test_bloks_change_password(self):

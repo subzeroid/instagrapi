@@ -72,6 +72,7 @@ from instagrapi.types import (
     Story,
     StoryHashtag,
     StoryLink,
+    StoryLocation,
     StoryMedia,
     StoryMention,
     StorySticker,

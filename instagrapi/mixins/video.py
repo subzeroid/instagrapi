@@ -735,7 +735,7 @@ class UploadVideoMixin:
                     "height": mention.height,
                     "rotation": 0.0,
                     "type": "location",
-                    "location_id": str(mention.location.pk),
+                    "location_id": self.location_story_sticker_id(mention.location),
                     "is_sticker": True,
                     "tap_state": 0,
                     "tap_state_str_id": "location_sticker_vibrant",
