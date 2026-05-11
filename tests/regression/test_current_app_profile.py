@@ -12,8 +12,46 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
             client.bloks_versioning_id,
             "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",
         )
-        self.assertTrue(client.user_agent.startswith("Instagram 428.0.0.47.67 Android "))
-        self.assertTrue(client.user_agent.endswith("; 961145276)"))
+        self.assertEqual(
+            client.user_agent,
+            (
+                "Instagram 428.0.0.47.67 Android (34/14; 489dpi; 1344x2992; "
+                "Genymobile/Google; Pixel 8 Pro; motion_phone_arm64; vbox86; en_US; 961145276)"
+            ),
+        )
+
+    def test_default_device_profile_matches_current_android_baseline(self):
+        client = Client()
+
+        self.assertEqual(
+            client.device_settings,
+            {
+                "android_version": 34,
+                "android_release": "14",
+                "dpi": "489dpi",
+                "resolution": "1344x2992",
+                "manufacturer": "Genymobile/Google",
+                "device": "motion_phone_arm64",
+                "model": "Pixel 8 Pro",
+                "cpu": "vbox86",
+                "app_version": "428.0.0.47.67",
+                "version_code": "961145276",
+                "bloks_versioning_id": "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",
+            },
+        )
+
+    def test_set_app_can_apply_current_default_profile_explicitly(self):
+        client = Client()
+        client.set_app("385.0.0.47.74")
+
+        client.set_app(config.DEFAULT_APP_VERSION)
+
+        self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
+        self.assertEqual(client.device_settings["version_code"], "961145276")
+        self.assertEqual(
+            client.bloks_versioning_id,
+            "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",
+        )
 
     def test_private_headers_use_current_android_transport_values(self):
         client = Client()
