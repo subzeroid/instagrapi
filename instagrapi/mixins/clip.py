@@ -137,7 +137,11 @@ class UploadClipMixin:
 
     def clip_trial_eligible(self) -> bool:
         """
-        Check whether the current user can create Trial Reels.
+        Check whether Reel creation preflight reports Trial Reels enabled.
+
+        Instagram can still reject Trial Reel publishing later during
+        configure, so keep upload-side error handling for backend
+        eligibility decisions.
 
         Returns
         -------
