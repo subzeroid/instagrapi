@@ -51,7 +51,7 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
         return mock.patch("builtins.__import__", side_effect=blocked_import)
 
     def test_mp4_metadata_parser_reads_dimensions_and_duration(self):
-        from instagrapi.video_util import read_video_metadata
+        from instagrapi.utils.video import read_video_metadata
 
         with tempfile.TemporaryDirectory() as tmpdir:
             path = self.write_sample_mp4(Path(tmpdir))

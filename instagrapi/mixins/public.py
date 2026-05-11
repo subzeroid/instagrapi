@@ -24,7 +24,7 @@ from instagrapi.exceptions import (
     ClientThrottledError,
     ClientUnauthorizedError,
 )
-from instagrapi.utils import random_delay
+from instagrapi.utils.timing import random_delay
 
 
 class PublicRequestMixin:

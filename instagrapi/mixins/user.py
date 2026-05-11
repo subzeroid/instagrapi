@@ -19,7 +19,8 @@ from instagrapi.exceptions import (
 )
 from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
 from instagrapi.types import Relationship, RelationshipShort, User, UserShort
-from instagrapi.utils import dumps, generate_jazoest, json_value
+from instagrapi.utils.auth import generate_jazoest
+from instagrapi.utils.serialization import dumps, json_value
 
 MAX_USER_COUNT = 200
 INFO_FROM_MODULES = ("self_profile", "feed_timeline", "reel_feed_timeline")

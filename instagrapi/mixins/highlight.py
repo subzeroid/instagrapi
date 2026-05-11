@@ -9,7 +9,8 @@ from instagrapi import config
 from instagrapi.exceptions import HighlightNotFound
 from instagrapi.extractors import extract_highlight_v1
 from instagrapi.types import Highlight
-from instagrapi.utils import dumps, vassert
+from instagrapi.utils.serialization import dumps
+from instagrapi.utils.validation import vassert
 
 
 class HighlightMixin:

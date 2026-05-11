@@ -36,7 +36,9 @@ from instagrapi.exceptions import (
     UserNotFound,
     VideoTooLongException,
 )
-from instagrapi.utils import dumps, generate_signature, random_delay
+from instagrapi.utils.auth import generate_signature
+from instagrapi.utils.serialization import dumps
+from instagrapi.utils.timing import random_delay
 
 
 def manual_input_code(self, username: str, choice=None):

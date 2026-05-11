@@ -8,7 +8,8 @@ import requests
 from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
-from instagrapi.utils import dumps, gen_token, generate_signature
+from instagrapi.utils.auth import gen_token, generate_signature
+from instagrapi.utils.serialization import dumps
 
 
 class AccountMixin:

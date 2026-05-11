@@ -2,7 +2,7 @@ import time
 from typing import Dict, List
 
 from instagrapi.exceptions import ClientError, MediaError, UserError
-from instagrapi.utils import json_value
+from instagrapi.utils.serialization import json_value
 
 POST_TYPES = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
 TIME_FRAMES = (

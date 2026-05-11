@@ -30,7 +30,8 @@ from instagrapi.types import (
     Track,
     Usertag,
 )
-from instagrapi.utils import date_time_original, dumps
+from instagrapi.utils.serialization import dumps
+from instagrapi.utils.timing import date_time_original
 
 try:
     from PIL import Image

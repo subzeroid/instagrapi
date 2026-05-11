@@ -23,7 +23,8 @@ from instagrapi.extractors import (
     extract_user_short,
 )
 from instagrapi.types import Location, Media, UserShort, Usertag
-from instagrapi.utils import InstagramIdCodec, json_value
+from instagrapi.utils.ids import InstagramIdCodec
+from instagrapi.utils.serialization import json_value
 
 
 class MediaMixin:
