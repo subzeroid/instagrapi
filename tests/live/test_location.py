@@ -1,3 +1,5 @@
+import base64
+
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -88,3 +90,38 @@ class ClientLocationTestCase(_helpers.ClientPrivateTestCase):
         medias = self.cl.location_medias_recent(197780767581661, amount=2)
         self.assertEqual(len(medias), 2)
         self.assertIsInstance(medias[0], Media)
+
+
+class ClientLocationPaginationLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for location pagination live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+    def test_location_medias_v1_chunk_live_cursor_shape(self):
+        medias, max_id = self.cl.location_medias_v1_chunk(197780767581661, tab_key="recent")
+        self.assertIsInstance(medias, list)
+        if medias:
+            self.assertIsInstance(medias[0], Media)
+        if not max_id:
+            return
+
+        next_max_id, page, media_ids = json.loads(base64.b64decode(max_id))
+        self.assertTrue(next_max_id)
+        self.assertIsInstance(page, int)
+        self.assertIsInstance(media_ids, list)
+
+        next_medias, _ = self.cl.location_medias_v1_chunk(197780767581661, tab_key="recent", max_id=max_id)
+        self.assertIsInstance(next_medias, list)
+        if next_medias:
+            self.assertIsInstance(next_medias[0], Media)

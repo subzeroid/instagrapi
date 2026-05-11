@@ -13,6 +13,8 @@ on:
           - upload
           - direct
           - timeline
+          - location
+          - usertag
           - user
           - all
 
@@ -55,6 +57,14 @@ jobs:
       - name: Run timeline test
         if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
         run: pytest -sv tests/live/test_timeline.py::ClientTimelineLiveTestCase
+
+      - name: Run location test
+        if: github.event.inputs.test_target == 'location' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests/live/test_location.py::ClientLocationPaginationLiveTestCase
+
+      - name: Run usertag pagination test
+        if: github.event.inputs.test_target == 'usertag' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests/live/test_user.py::ClientUsertagPaginationLiveTestCase
 
       - name: Run user test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
