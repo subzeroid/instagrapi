@@ -41,9 +41,12 @@ jobs:
         if: github.event.inputs.test_target == 'media' || github.event.inputs.test_target == 'all'
         run: pytest -sv tests/live/test_media.py::ClientMediaTestCase tests/live/test_comments.py::ClientCommentRepliesLiveTestCase
 
-      - name: Run upload music test
+      - name: Run upload live tests
         if: github.event.inputs.test_target == 'upload' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_upload.py::ClientFeedMusicUploadLiveTestCase
+        run: |
+          pytest -sv \
+            tests/live/test_upload.py::ClientFeedMusicUploadLiveTestCase \
+            tests/live/test_upload.py::ClientTrialReelUploadLiveTestCase
 
       - name: Run direct media test
         if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'

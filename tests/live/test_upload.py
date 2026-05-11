@@ -251,3 +251,96 @@ class ClientFeedMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertUploadedMediaHasMusic(media)
         finally:
             self.cleanup_uploaded_media(media)
+
+
+class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for Trial Reel upload live tests")
+        try:
+            self.cl = self.trial_reel_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def trial_reel_account(self):
+        accounts = self.fresh_accounts(5)
+        for client in accounts:
+            if self.trial_clips_enabled(client):
+                return client
+        self.skipTest("No fresh account has trial_clips_enabled")
+
+    def trial_clips_enabled(self, client):
+        result = client.private_request(f"users/{client.user_id}/info/")
+        user = result.get("user") or {}
+        return bool(user.get("trial_clips_enabled"))
+
+    def make_clip_mp4(self):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest("imageio_ffmpeg is required to generate a Trial Reel fixture")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+
+        try:
+            subprocess.run(
+                [
+                    imageio_ffmpeg.get_ffmpeg_exe(),
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "color=c=purple:s=720x1280:r=30:d=2",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "sine=frequency=440:duration=2",
+                    "-shortest",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    "64k",
+                    str(path),
+                ],
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self.skipTest(f"Could not generate Trial Reel fixture: {exc}")
+        return path
+
+    def cleanup_uploaded_media(self, media):
+        if not media:
+            return
+        try:
+            self.assertTrue(self.cl.media_delete(media.id))
+        except Exception as exc:
+            print(f"Trial Reel upload cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+
+    def test_clip_upload_trial_live(self):
+        path = self.make_clip_mp4()
+        media = None
+        try:
+            try:
+                media = self.cl.clip_upload(path, "Trial Reel live test", trial=True)
+            except UnknownError as exc:
+                if "not eligible for trial Clips" in str(exc):
+                    self.skipTest("Instagram rejected this account for trial Clips")
+                raise
+
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.media_type, 2)
+            self.assertEqual(media.product_type, "clips")
+        finally:
+            self.cleanup_uploaded_media(media)
