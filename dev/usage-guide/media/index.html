@@ -1883,9 +1883,9 @@
 <td>Upload IGTV (Support MP4 files)</td>
 </tr>
 <tr>
-<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual")</td>
 <td>Media</td>
-<td>Upload Reels Clip (Support MP4 files)</td>
+<td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts</td>
 </tr>
 <tr>
 <td>clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {})</td>
@@ -1936,6 +1936,7 @@
 </tr>
 </tbody>
 </table>
+<p>Trial Reels are available only for accounts where Instagram has enabled the feature. When <code>trial=True</code>, <code>clip_upload</code> sends <code>trial_params={"graduation_strategy": "manual"}</code> by default and disables feed preview for the upload.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
@@ -1950,6 +1951,12 @@
         <span class="s2">&quot;like_and_view_counts_disabled&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s2">&quot;disable_comments&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">trial_reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
+    <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Trying a new Reel format&quot;</span><span class="p">,</span>
+    <span class="n">trial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
