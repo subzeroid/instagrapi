@@ -15,8 +15,8 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         self.assertEqual(
             client.user_agent,
             (
-                "Instagram 428.0.0.47.67 Android (34/14; 489dpi; 1344x2992; "
-                "Genymobile/Google; Pixel 8 Pro; motion_phone_arm64; vbox86; en_US; 961145276)"
+                "Instagram 428.0.0.47.67 Android (34/14; 480dpi; 1344x2992; "
+                "Google/google; Pixel 8 Pro; husky; husky; en_US; 961145276)"
             ),
         )
 
@@ -28,12 +28,12 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
             {
                 "android_version": 34,
                 "android_release": "14",
-                "dpi": "489dpi",
+                "dpi": "480dpi",
                 "resolution": "1344x2992",
-                "manufacturer": "Genymobile/Google",
-                "device": "motion_phone_arm64",
+                "manufacturer": "Google/google",
+                "device": "husky",
                 "model": "Pixel 8 Pro",
-                "cpu": "vbox86",
+                "cpu": "husky",
                 "app_version": "428.0.0.47.67",
                 "version_code": "961145276",
                 "bloks_versioning_id": "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",

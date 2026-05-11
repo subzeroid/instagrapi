@@ -2,8 +2,8 @@ API_DOMAIN = "i.instagram.com"
 
 # Instagram 428.0.0.47.67
 # Android (34/14;
-# 489dpi; 1344x2992; Genymobile/Google;
-# Pixel 8 Pro; motion_phone_arm64; vbox86; en_US; 961145276)
+# 480dpi; 1344x2992; Google/google;
+# Pixel 8 Pro; husky; husky; en_US; 961145276)
 USER_AGENT_BASE = (
     "Instagram {app_version} "
     "Android ({android_version}/{android_release}; "
@@ -15,12 +15,12 @@ USER_AGENT_BASE = (
 DEVICE_SETTINGS = {
     "android_version": 34,
     "android_release": "14",
-    "dpi": "489dpi",
+    "dpi": "480dpi",
     "resolution": "1344x2992",
-    "manufacturer": "Genymobile/Google",
-    "device": "motion_phone_arm64",
+    "manufacturer": "Google/google",
+    "device": "husky",
     "model": "Pixel 8 Pro",
-    "cpu": "vbox86",
+    "cpu": "husky",
 }
 DEFAULT_APP_VERSION = "428.0.0.47.67"
 APP_SETTINGS = {
