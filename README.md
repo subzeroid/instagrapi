@@ -42,6 +42,10 @@ Or install it into the active virtual environment:
 uv pip install instagrapi
 ```
 
+Video uploads can use a built-in MP4 metadata parser when you provide `thumbnail=...`. Automatic thumbnail generation,
+`StoryBuilder`, and video/audio composition still need executable `ffmpeg`; Android/Pydroid users should see
+[Pydroid and ffmpeg](docs/usage-guide/pydroid.md).
+
 ## Quick Start
 
 ``` python

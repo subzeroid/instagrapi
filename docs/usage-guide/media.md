@@ -313,6 +313,8 @@ Upload medias to your feed. Common arguments:
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
 
+For video uploads in Android/Pydroid environments, pass `thumbnail=...` to avoid automatic thumbnail generation or configure executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md).
+
 
 In `extra_data`, you can pass additional media settings, for example:
 

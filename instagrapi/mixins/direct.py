@@ -22,6 +22,7 @@ from instagrapi.types import (
     UserShort,
 )
 from instagrapi.utils import dumps
+from instagrapi.video_util import read_video_metadata, read_video_metadata_with_moviepy
 
 SELECTED_FILTERS = ("flagged", "unread")
 SEARCH_MODES = ("raven", "universal")
@@ -634,24 +635,15 @@ class DirectMixin:
     def _direct_video_metadata(self, path: Path) -> Tuple[int, int, float]:
         width, height, duration_sec = 720, 1280, 1.0
         try:
-            import moviepy.editor as mp
-        except ImportError:
+            metadata = read_video_metadata(path)
+        except Exception:
             try:
-                import moviepy as mp
+                metadata = read_video_metadata_with_moviepy(path)
             except ImportError:
                 return width, height, duration_sec
-
-        video = None
-        try:
-            video = mp.VideoFileClip(str(path))
-            width, height = video.size
-            duration_sec = float(video.duration or duration_sec)
-        except Exception:  # noqa: BLE001
-            return width, height, duration_sec
-        finally:
-            if video:
-                video.close()
-        return width, height, duration_sec
+            except Exception:  # noqa: BLE001
+                return width, height, duration_sec
+        return metadata.width, metadata.height, metadata.duration or duration_sec
 
     def _direct_thread_id_from_user_ids(self, user_ids: List[int], media_kind: str) -> int:
         thread = self.direct_thread_by_participants(user_ids)

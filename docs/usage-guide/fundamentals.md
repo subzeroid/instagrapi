@@ -33,6 +33,7 @@ use an internal fallback chain and choose the best currently working path for th
   * [`Comment`](comment.md) - Comments to Media
   * [`Highlight`](highlight.md) - Highlights
   * [`Notes`](notes.md) - Direct Notes
+  * [`Pydroid and ffmpeg`](pydroid.md) - Android/Pydroid video upload setup
   * [`Story`](story.md) - Story
   * [`StoryArchiveDay`](story.md) - Story archive day shell
   * [`StoryLink`](story.md) - Story link sticker
