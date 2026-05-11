@@ -256,22 +256,16 @@ class ClientFeedMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
 class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
+        self.clients = []
         return unittest.TestCase.__init__(self, *args, **kwargs)
 
     def setUp(self):
         if not TEST_ACCOUNTS_URL:
             self.skipTest("TEST_ACCOUNTS_URL is required for Trial Reel upload live tests")
         try:
-            self.cl = self.trial_reel_account()
+            self.clients = self.fresh_accounts(5)
         except RuntimeError as exc:
             self.skipTest(str(exc))
-
-    def trial_reel_account(self):
-        accounts = self.fresh_accounts(5)
-        for client in accounts:
-            if self.trial_clips_enabled(client):
-                return client
-        self.skipTest("No fresh account has trial_clips_enabled")
 
     def trial_clips_enabled(self, client):
         result = client.private_request(f"users/{client.user_id}/info/")
@@ -320,27 +314,39 @@ class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
             self.skipTest(f"Could not generate Trial Reel fixture: {exc}")
         return path
 
-    def cleanup_uploaded_media(self, media):
+    def cleanup_uploaded_media(self, client, media):
         if not media:
             return
         try:
-            self.assertTrue(self.cl.media_delete(media.id))
+            self.assertTrue(client.media_delete(media.id))
         except Exception as exc:
             print(f"Trial Reel upload cleanup media_delete failed: {exc.__class__.__name__} {exc}")
 
     def test_clip_upload_trial_live(self):
         path = self.make_clip_mp4()
-        media = None
-        try:
+        rejected = 0
+        checked = 0
+
+        for client in self.clients:
+            if not self.trial_clips_enabled(client):
+                continue
+            checked += 1
+            media = None
             try:
-                media = self.cl.clip_upload(path, "Trial Reel live test", trial=True)
+                media = client.clip_upload(path, "Trial Reel live test", trial=True)
             except UnknownError as exc:
                 if "not eligible for trial Clips" in str(exc):
-                    self.skipTest("Instagram rejected this account for trial Clips")
+                    rejected += 1
+                    continue
                 raise
+            finally:
+                self.cleanup_uploaded_media(client, media)
 
             self.assertIsInstance(media, Media)
             self.assertEqual(media.media_type, 2)
             self.assertEqual(media.product_type, "clips")
-        finally:
-            self.cleanup_uploaded_media(media)
+            return
+
+        if checked:
+            self.skipTest(f"Instagram rejected {rejected}/{checked} trial_clips_enabled accounts for trial Clips")
+        self.skipTest("No fresh account has trial_clips_enabled")
