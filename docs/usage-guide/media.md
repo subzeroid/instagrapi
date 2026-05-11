@@ -32,6 +32,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of user media and next cursor |
 | user_clips(user_id: str, amount: int = 0) | List\[Media] | Get clips/reels by user |
 | usertag_medias(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged |
+| usertag_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of media where a user is tagged and next cursor |
 | media_info(media_pk: str, use_cache: bool = True) | Media | Return media info |
 | media_delete(media_id: str) | bool | Delete media |
 | media_edit(media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None) | dict | Edit caption, optional IGTV title, usertags, or location |
@@ -72,7 +73,9 @@ Low level methods:
 | user_videos_v1(user_id: str, amount: int = 0) | List\[Media] | Get user videos via private mobile API |
 | user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of videos |
 | usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2) | List\[Media] | Get media where a user is tagged via public GraphQL API |
+| usertag_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one public GraphQL page of media where a user is tagged |
 | usertag_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged via private mobile API |
+| usertag_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of media where a user is tagged |
 | archive_medias_v1(amount: int = 0) | List\[Media] | Get archived media via private mobile API |
 | archive_medias_paginated_v1(amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of archived media |
 
@@ -218,6 +221,11 @@ True
 ['2021-06-09', '2019-10-16', '2019-10-14', '2019-06-13', '2019-06-06']
 ['2019-06-05', '2019-03-23', '2019-03-23', '2018-11-15', '2018-10-16']
 ['2018-10-16', '2018-10-11', '2018-10-09', '2018-10-09', '2018-08-02']
+
+# Resume tagged-media fetches from a stored cursor
+
+>>> tagged, end_cursor = client.usertag_medias_paginated(1903424587, 12, end_cursor="")
+>>> next_tagged, end_cursor = client.usertag_medias_paginated(1903424587, 12, end_cursor=end_cursor)
 
 >>> media_id = cl.media_id(1787135824035452364)
 >>> cl.media_like(media_id)

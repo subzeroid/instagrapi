@@ -347,7 +347,7 @@ class LocationMixin:
             data=data,
         )
         next_max_id = None
-        if result.get("next_page"):
+        if result.get("next_page") and result.get("next_max_id"):
             np = result.get("next_page")
             ids = result.get("next_media_ids")
             next_m_id = result.get("next_max_id")

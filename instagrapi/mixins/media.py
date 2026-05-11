@@ -1143,6 +1143,70 @@ class MediaMixin:
             medias = medias[:amount]
         return [extract_media_gql(media) for media in medias]
 
+    def usertag_medias_paginated_gql(
+        self, user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a page of medias where a user is tagged (by Public GraphQL API)
+
+        Parameters
+        ----------
+        user_id: str
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        sleep: int, optional
+            Kept for API symmetry with usertag_medias_gql; not used for a single page fetch.
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        variables = {
+            "id": user_id,
+            "first": 50 if not amount or amount > 50 else amount,
+        }
+        if end_cursor:
+            variables["after"] = end_cursor
+        data = self.public_graphql_request(variables, query_hash="be13233562af2d229b008d2976b998b5")
+        page_info = json_value(data, "user", "edge_user_to_photos_of_you", "page_info", default={})
+        edges = json_value(data, "user", "edge_user_to_photos_of_you", "edges", default=[])
+        medias = [edge["node"] for edge in edges]
+        if amount:
+            medias = medias[:amount]
+        return [extract_media_gql(media) for media in medias], page_info.get("end_cursor")
+
+    def usertag_medias_paginated_v1(
+        self, user_id: str, amount: int = 0, end_cursor: str = ""
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a page of medias where a user is tagged (by Private Mobile API)
+
+        Parameters
+        ----------
+        user_id: str
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        result = self.private_request(f"usertags/{user_id}/feed/", params={"max_id": end_cursor})
+        items = result.get("items", [])
+        if amount:
+            items = items[:amount]
+        return [extract_media_v1(media) for media in items], result.get("next_max_id") or ""
+
     def usertag_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get medias where a user is tagged (by Private Mobile API)
@@ -1179,6 +1243,31 @@ class MediaMixin:
         if amount:
             medias = medias[:amount]
         return [extract_media_v1(media) for media in medias]
+
+    def usertag_medias_paginated(self, user_id: str, amount: int = 0, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Get a page of medias where a user is tagged
+
+        Parameters
+        ----------
+        user_id: str
+        amount: int, optional
+            Maximum number of media to return, default is 0 (all medias)
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        amount = int(amount)
+        user_id = int(user_id)
+        try:
+            medias, end_cursor = self.usertag_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+        except ClientError:
+            medias, end_cursor = self.usertag_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+        return medias, end_cursor
 
     def usertag_medias(self, user_id: str, amount: int = 0) -> List[Media]:
         """
