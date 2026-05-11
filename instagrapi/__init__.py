@@ -103,6 +103,7 @@ class Client(
         proxy: Optional[str] = None,
         delay_range: Optional[list] = None,
         logger=DEFAULT_LOGGER,
+        override_app_version: bool = False,
         **kwargs,
     ):
         self.request_timeout = kwargs.pop("request_timeout", 1)
@@ -115,6 +116,7 @@ class Client(
         super().__init__(**kwargs)
 
         self.settings = deepcopy(settings or {})
+        self.override_app_version = override_app_version
         self.logger = logger
         self.delay_range = delay_range
 

@@ -98,3 +98,18 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
         self.assertEqual(client.device_settings["version_code"], "961145276")
+
+    def test_constructor_override_app_version_replaces_saved_profile_with_current_default(self):
+        client = Client(
+            {
+                "device_settings": {
+                    "app_version": "385.0.0.47.74",
+                    "version_code": "378906843",
+                    "bloks_versioning_id": ("a8973d49a9cc6a6f65a4997c10216ce2a06f65a517010e64885e92029bb19221"),
+                },
+            },
+            override_app_version=True,
+        )
+
+        self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
+        self.assertEqual(client.device_settings["version_code"], "961145276")
