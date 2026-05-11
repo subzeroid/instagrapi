@@ -1936,6 +1936,16 @@
 <td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts</td>
 </tr>
 <tr>
+<td>clip_trial_eligible()</td>
+<td>bool</td>
+<td>Check whether the current account can create Trial Reels before uploading video bytes</td>
+</tr>
+<tr>
+<td>clip_info_for_creation()</td>
+<td>dict</td>
+<td>Get Reel creation preflight configuration from the mobile API</td>
+</tr>
+<tr>
 <td>clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {})</td>
 <td>Media</td>
 <td>Upload Reels Clip as reel with music metadata</td>
@@ -1985,12 +1995,22 @@
 </tr>
 </tbody>
 </table>
-<p>Trial Reels are available only for accounts where Instagram has enabled the feature. When <code>trial=True</code>, <code>clip_upload</code> sends <code>trial_params={"graduation_strategy": "manual"}</code> by default and disables feed preview for the upload.</p>
+<p>Trial Reels are available only for accounts where Instagram has enabled the feature. Use <code>clip_trial_eligible()</code> before
+uploading if you process multiple accounts and want to avoid uploading video bytes for accounts that cannot publish Trial
+Reels yet. When <code>trial=True</code>, <code>clip_upload</code> sends <code>trial_params={"graduation_strategy": "manual"}</code> by default and
+disables feed preview for the upload.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_trial_eligible</span><span class="p">():</span>
+<span class="o">...</span>     <span class="n">trial_reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
+<span class="o">...</span>         <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
+<span class="o">...</span>         <span class="s2">&quot;Trying a new Reel format&quot;</span><span class="p">,</span>
+<span class="o">...</span>         <span class="n">trial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="o">...</span>     <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
@@ -2000,12 +2020,6 @@
         <span class="s2">&quot;like_and_view_counts_disabled&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s2">&quot;disable_comments&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
     <span class="p">}</span>
-<span class="p">)</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">trial_reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
-    <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Trying a new Reel format&quot;</span><span class="p">,</span>
-    <span class="n">trial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
