@@ -78,6 +78,39 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertFalse(device_status["hw_av1_dec"])
         self.assertEqual(result, expected)
 
+    def test_clip_info_for_creation_requests_reel_creation_config(self):
+        client = self.build_client()
+        expected = {
+            "trial_config": {"is_enabled": True},
+            "auto_reshare_to_story_config": {
+                "is_enabled_for_reels": False,
+                "is_enabled_for_feed_posts": False,
+            },
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.clip_info_for_creation()
+
+        private_request.assert_called_once_with("clips/clips_info_for_creation/")
+        self.assertEqual(result, expected)
+
+    def test_clip_trial_eligible_reads_creation_trial_config(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "clip_info_for_creation",
+            return_value={"trial_config": {"is_enabled": True}, "status": "ok"},
+        ):
+            self.assertTrue(client.clip_trial_eligible())
+
+    def test_clip_trial_eligible_returns_false_when_creation_trial_config_is_missing(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "clip_info_for_creation", return_value={"status": "ok"}):
+            self.assertFalse(client.clip_trial_eligible())
+
     def test_photo_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 

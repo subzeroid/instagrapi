@@ -309,6 +309,8 @@ Upload medias to your feed. Common arguments:
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
 | clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual") | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts
+| clip_trial_eligible() | bool | Check whether the current account can create Trial Reels before uploading video bytes
+| clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
@@ -325,7 +327,10 @@ In `extra_data`, you can pass additional media settings, for example:
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
 | invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
 
-Trial Reels are available only for accounts where Instagram has enabled the feature. When `trial=True`, `clip_upload` sends `trial_params={"graduation_strategy": "manual"}` by default and disables feed preview for the upload.
+Trial Reels are available only for accounts where Instagram has enabled the feature. Use `clip_trial_eligible()` before
+uploading if you process multiple accounts and want to avoid uploading video bytes for accounts that cannot publish Trial
+Reels yet. When `trial=True`, `clip_upload` sends `trial_params={"graduation_strategy": "manual"}` by default and
+disables feed preview for the upload.
 
 ### Example:
 
@@ -335,6 +340,13 @@ Trial Reels are available only for accounts where Instagram has enabled the feat
 >>> cl = Client()
 >>> cl.login(USERNAME, PASSWORD)
 
+>>> if cl.clip_trial_eligible():
+...     trial_reel = cl.clip_upload(
+...         "/app/reel.mp4",
+...         "Trying a new Reel format",
+...         trial=True,
+...     )
+
 >>> media = cl.photo_upload(
     "/app/image.jpg",
     "Test caption for photo with #hashtags and mention users such @example",
@@ -343,12 +355,6 @@ Trial Reels are available only for accounts where Instagram has enabled the feat
         "like_and_view_counts_disabled": 1,
         "disable_comments": 1,
     }
-)
-
->>> trial_reel = cl.clip_upload(
-    "/app/reel.mp4",
-    "Trying a new Reel format",
-    trial=True,
 )
 
 >>> media.dict()

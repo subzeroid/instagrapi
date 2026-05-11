@@ -268,9 +268,7 @@ class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
             self.skipTest(str(exc))
 
     def trial_clips_enabled(self, client):
-        result = client.private_request(f"users/{client.user_id}/info/")
-        user = result.get("user") or {}
-        return bool(user.get("trial_clips_enabled"))
+        return client.clip_trial_eligible()
 
     def make_clip_mp4(self):
         try:
@@ -348,5 +346,5 @@ class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
             return
 
         if checked:
-            self.skipTest(f"Instagram rejected {rejected}/{checked} trial_clips_enabled accounts for trial Clips")
-        self.skipTest("No fresh account has trial_clips_enabled")
+            self.skipTest(f"Instagram rejected {rejected}/{checked} clip_trial_eligible accounts for trial Clips")
+        self.skipTest("No fresh account has Trial Reels enabled")

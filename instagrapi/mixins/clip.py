@@ -124,6 +124,30 @@ class UploadClipMixin:
     Helpers to upload CLIP videos
     """
 
+    def clip_info_for_creation(self) -> Dict:
+        """
+        Get Reel creation preflight configuration for the current user.
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
+        return self.private_request("clips/clips_info_for_creation/")
+
+    def clip_trial_eligible(self) -> bool:
+        """
+        Check whether the current user can create Trial Reels.
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        result = self.clip_info_for_creation()
+        trial_config = result.get("trial_config") or {}
+        return bool(trial_config.get("is_enabled"))
+
     def clip_share_to_fb_config(self, device_status: Optional[Dict[str, object]] = None) -> Dict:
         """
         Get Reel Facebook sharing configuration for the current user.
