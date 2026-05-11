@@ -1938,7 +1938,7 @@
 <tr>
 <td>clip_trial_eligible()</td>
 <td>bool</td>
-<td>Check whether the current account can create Trial Reels before uploading video bytes</td>
+<td>Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes</td>
 </tr>
 <tr>
 <td>clip_info_for_creation()</td>
@@ -1995,10 +1995,11 @@
 </tr>
 </tbody>
 </table>
-<p>Trial Reels are available only for accounts where Instagram has enabled the feature. Use <code>clip_trial_eligible()</code> before
-uploading if you process multiple accounts and want to avoid uploading video bytes for accounts that cannot publish Trial
-Reels yet. When <code>trial=True</code>, <code>clip_upload</code> sends <code>trial_params={"graduation_strategy": "manual"}</code> by default and
-disables feed preview for the upload.</p>
+<p>Trial Reels are available only for accounts where Instagram has enabled the feature. Use <code>clip_trial_eligible()</code> as a
+lightweight preflight if you process multiple accounts and want to avoid uploading video bytes for accounts where the
+Reel composer does not report Trial Reels enabled. Instagram can still reject Trial Reel publishing later during
+configure, so keep upload-side error handling for backend eligibility decisions. When <code>trial=True</code>, <code>clip_upload</code> sends
+<code>trial_params={"graduation_strategy": "manual"}</code> by default and disables feed preview for the upload.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
