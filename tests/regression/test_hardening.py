@@ -195,3 +195,19 @@ class HardeningRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(medias, ["m1", "m2"])
         self.assertEqual(client.location_medias_v1_chunk.call_count, 2)
+
+    def test_location_medias_v1_chunk_stops_when_next_max_id_is_missing(self):
+        client = Client()
+        client.private_request = Mock(
+            return_value={
+                "next_page": 335,
+                "next_media_ids": [],
+                "next_max_id": None,
+                "sections": [],
+            }
+        )
+
+        medias, next_max_id = client.location_medias_v1_chunk(123, tab_key="recent")
+
+        self.assertEqual(medias, [])
+        self.assertIsNone(next_max_id)
