@@ -14,6 +14,30 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
         client.with_default_data = lambda data: data
         return client
 
+    def build_location(self):
+        return Location(
+            pk=213597007,
+            name="Palace Square",
+            address="Palace Square, Saint Petersburg",
+            lat=59.939166,
+            lng=30.315833,
+            external_id=107617247320879,
+            external_id_source="facebook_places",
+        )
+
+    def assert_story_location_model(self, data):
+        self.assertEqual(data["story_sticker_ids"], "location_sticker")
+
+        tap_models = json.loads(data["tap_models"])
+        self.assertEqual(len(tap_models), 1)
+        location_model = tap_models[0]
+        self.assertEqual(location_model["type"], "location")
+        self.assertTrue(location_model["is_sticker"])
+        self.assertEqual(location_model["tap_state"], 0)
+        self.assertEqual(location_model["tap_state_str_id"], "location_sticker_vibrant")
+        self.assertNotIn("location", location_model)
+        self.assertEqual(location_model["location_id"], "107617247320879")
+
     def test_photo_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
 
@@ -46,3 +70,59 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
             configure_args[1]["story_sticker_ids"],
             "hashtag_sticker,link_sticker_default",
         )
+
+    def test_photo_story_location_uses_external_location_id_tap_model(self):
+        client = self.build_client()
+        location = self.build_location()
+
+        with mock.patch.object(client, "location_complete", return_value=location):
+            with mock.patch.object(client, "private_request") as private_request:
+                private_request.return_value = {"status": "ok"}
+                client.photo_configure_to_story(
+                    upload_id="1",
+                    width=720,
+                    height=1280,
+                    caption="",
+                    locations=[
+                        StoryLocation(
+                            location=location,
+                            x=0.2,
+                            y=0.3,
+                            width=0.4,
+                            height=0.1,
+                        )
+                    ],
+                )
+
+        configure_args, _ = private_request.call_args
+        self.assertEqual(configure_args[0], "media/configure_to_story/")
+        self.assert_story_location_model(configure_args[1])
+
+    def test_video_story_location_uses_external_location_id_tap_model(self):
+        client = self.build_client()
+        location = self.build_location()
+
+        with mock.patch.object(client, "location_complete", return_value=location):
+            with mock.patch.object(client, "private_request") as private_request:
+                private_request.return_value = {"status": "ok"}
+                client.video_configure_to_story(
+                    upload_id="1",
+                    width=720,
+                    height=1280,
+                    duration=3,
+                    thumbnail=Path("thumbnail.jpg"),
+                    caption="",
+                    locations=[
+                        StoryLocation(
+                            location=location,
+                            x=0.2,
+                            y=0.3,
+                            width=0.4,
+                            height=0.1,
+                        )
+                    ],
+                )
+
+        configure_args, _ = private_request.call_args
+        self.assertEqual(configure_args[0], "media/configure_to_story/?video=1")
+        self.assert_story_location_model(configure_args[1])
