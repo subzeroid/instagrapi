@@ -184,6 +184,95 @@ class UploadClipMixin:
             params={"device_status": json.dumps(device_status)},
         )
 
+    def clip_share_to_fb_extra_data(
+        self,
+        config: Optional[Dict[str, object]] = None,
+        destination_id: Optional[str] = None,
+        destination_type: Optional[str] = None,
+        destination_audience_type: Optional[str] = None,
+        xpost_surface: str = "IG_REELS_COMPOSER",
+        validation_check_bypass: Optional[bool] = None,
+    ) -> Dict[str, object]:
+        """
+        Build configure fields for sharing a Reel to Facebook.
+
+        Instagram Android 428 stores Reel Facebook cross-posting in
+        ``XPlatformParams`` fields. The old ``share_to_facebook`` flag alone is
+        not enough for accounts that require an explicit Facebook destination.
+
+        Parameters
+        ----------
+        config: Dict[str, object], optional
+            Response from ``clip_share_to_fb_config()``. When omitted, this
+            method fetches it.
+        destination_id: str, optional
+            Facebook destination id. Overrides config values.
+        destination_type: str, optional
+            Facebook destination type/posting type. Overrides config values.
+        destination_audience_type: str, optional
+            Facebook Reels audience type, e.g. ``PUBLIC``.
+        xpost_surface: str, optional
+            Cross-posting surface reported by the Instagram app.
+        validation_check_bypass: bool, optional
+            Whether to bypass app-side FB validation. Overrides config values.
+
+        Returns
+        -------
+        Dict
+            Extra configure data for ``clip_upload(..., extra_data=...)``.
+        """
+        fb_config = (config if config is not None else self.clip_share_to_fb_config()) or {}
+        if fb_config.get("share_to_fb_unavailable"):
+            raise ClientError("Facebook Reel sharing is unavailable for this account")
+        if fb_config.get("enabled") is False or fb_config.get("is_account_linked") is False:
+            raise ClientError("Facebook Reel sharing is not enabled or no Facebook account is linked")
+
+        destination_id = (
+            destination_id
+            or fb_config.get("share_to_fb_destination_id")
+            or fb_config.get("reels_destination_id")
+            or fb_config.get("destination_id")
+        )
+        destination_type = (
+            destination_type
+            or fb_config.get("share_to_fb_destination_type")
+            or fb_config.get("reels_cross_app_share_type")
+            or fb_config.get("posting_type")
+        )
+        destination_audience_type = (
+            destination_audience_type
+            or fb_config.get("share_to_fb_destination_audience_type")
+            or fb_config.get("reels_destination_audience_type")
+            or fb_config.get("audience_type")
+        )
+        if validation_check_bypass is None:
+            validation_check_bypass = fb_config.get("reels_cross_app_share_fb_validation_check_bypass")
+
+        if not destination_id:
+            raise ClientError(
+                "Facebook Reel sharing configuration has no destination. "
+                "Link a Facebook account/page in the Instagram app or pass destination_id."
+            )
+        if not destination_type:
+            raise ClientError(
+                "Facebook Reel sharing configuration has no destination type. "
+                "Pass destination_type from a linked-account app capture."
+            )
+
+        data = {
+            "share_to_facebook": "1",
+            "is_reel_shared_to_fb": True,
+            "share_to_facebook_reels": True,
+            "share_to_fb_destination_id": destination_id,
+            "share_to_fb_destination_type": destination_type,
+            "xpost_surface": xpost_surface,
+        }
+        if destination_audience_type:
+            data["share_to_fb_destination_audience_type"] = destination_audience_type
+        if validation_check_bypass is not None:
+            data["cross_app_share_fb_validation_check_bypass"] = bool(validation_check_bypass)
+        return data
+
     def clip_upload(
         self,
         path: Path,
@@ -196,6 +285,12 @@ class UploadClipMixin:
         extra_data: Dict[str, object] = {},
         trial: bool = False,
         trial_graduation_strategy: str = "manual",
+        share_to_facebook: bool = False,
+        fb_destination_id: Optional[str] = None,
+        fb_destination_type: Optional[str] = None,
+        fb_destination_audience_type: Optional[str] = None,
+        fb_xpost_surface: str = "IG_REELS_COMPOSER",
+        fb_validation_check_bypass: Optional[bool] = None,
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -220,11 +315,23 @@ class UploadClipMixin:
             Forced to "0" for Trial Reels.
         extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params,
-            like {"share_to_facebook": 1}.
+            like {"disable_comments": 1}.
         trial: bool, optional
             Upload as a Trial Reel for eligible accounts, default is False.
         trial_graduation_strategy: str, optional
             Trial Reel graduation strategy, default is "manual".
+        share_to_facebook: bool, optional
+            Share this Reel to a linked Facebook account/page, default is False.
+        fb_destination_id: str, optional
+            Facebook destination id used when share_to_facebook is True.
+        fb_destination_type: str, optional
+            Facebook destination type used when share_to_facebook is True.
+        fb_destination_audience_type: str, optional
+            Facebook Reels audience type, e.g. ``PUBLIC``.
+        fb_xpost_surface: str, optional
+            Cross-posting surface reported by the Instagram app.
+        fb_validation_check_bypass: bool, optional
+            Override the validation bypass value from share_to_fb_config.
 
         Returns
         -------
@@ -240,6 +347,15 @@ class UploadClipMixin:
             clip_data = fp.read()
             clip_len = str(len(clip_data))
         configure_extra_data = dict(extra_data or {})
+        if share_to_facebook:
+            fb_extra_data = self.clip_share_to_fb_extra_data(
+                destination_id=fb_destination_id,
+                destination_type=fb_destination_type,
+                destination_audience_type=fb_destination_audience_type,
+                xpost_surface=fb_xpost_surface,
+                validation_check_bypass=fb_validation_check_bypass,
+            )
+            configure_extra_data = {**fb_extra_data, **configure_extra_data}
         if trial:
             feed_show = "0"
             configure_extra_data.setdefault(
@@ -439,7 +555,7 @@ class UploadClipMixin:
             use cl.search_music(title)[0].dict()
 
         extra_data: Dict[str, object], optional
-            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+            Dict of extra data, if you need to add your params, like {"disable_comments": 1}.
 
         Returns
         -------
@@ -549,7 +665,7 @@ class UploadClipMixin:
         location: Location, optional
             Location tag for this upload, default is None
         extra_data: Dict[str, object], optional
-            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+            Dict of extra data, if you need to add your params, like {"disable_comments": 1}.
 
         Returns
         -------

@@ -308,9 +308,11 @@ Upload medias to your feed. Common arguments:
 | video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})            | Media   | Upload video (Support MP4 files)
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
-| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual") | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
+| clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
+| clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
@@ -333,6 +335,13 @@ Reel composer does not report Trial Reels enabled. Instagram can still reject Tr
 configure, so keep upload-side error handling for backend eligibility decisions. When `trial=True`, `clip_upload` sends
 `trial_params={"graduation_strategy": "manual"}` by default and disables feed preview for the upload.
 
+Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer
+use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields. Use
+`clip_upload(..., share_to_facebook=True)` to fetch `clip_share_to_fb_config()` and build the configure payload before
+video bytes are uploaded. If the account is not linked or Instagram does not return a Reel Facebook destination,
+instagrapi raises `ClientError` before upload. Advanced callers can pass `fb_destination_id` and `fb_destination_type`,
+or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`.
+
 ### Example:
 
 ``` python
@@ -347,6 +356,22 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 ...         "Trying a new Reel format",
 ...         trial=True,
 ...     )
+
+>>> reel = cl.clip_upload(
+...     "/app/reel.mp4",
+...     "Cross-posting this Reel to Facebook",
+...     share_to_facebook=True,
+... )
+
+>>> fb_extra = cl.clip_share_to_fb_extra_data(
+...     destination_id="FACEBOOK_DESTINATION_ID",
+...     destination_type="DESTINATION_TYPE_FROM_APP_CONFIG",
+... )
+>>> reel = cl.clip_upload(
+...     "/app/reel.mp4",
+...     "Cross-posting with explicit Facebook destination",
+...     extra_data=fb_extra,
+... )
 
 >>> media = cl.photo_upload(
     "/app/image.jpg",

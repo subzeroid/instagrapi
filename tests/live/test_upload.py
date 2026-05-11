@@ -348,3 +348,32 @@ class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
         if checked:
             self.skipTest(f"Instagram rejected {rejected}/{checked} clip_trial_eligible accounts for trial Clips")
         self.skipTest("No fresh account has Trial Reels enabled")
+
+
+class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for Reel Facebook crosspost live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def test_clip_share_to_fb_extra_data_live(self):
+        config = self.cl.clip_share_to_fb_config()
+        self.assertEqual(config.get("status"), "ok")
+        try:
+            extra_data = self.cl.clip_share_to_fb_extra_data(config=config)
+        except ClientError as exc:
+            self.skipTest(f"No linked Facebook Reel destination available: {exc}")
+
+        self.assertEqual(extra_data["share_to_facebook"], "1")
+        self.assertTrue(extra_data["share_to_facebook_reels"])
+        self.assertTrue(extra_data["is_reel_shared_to_fb"])
+        self.assertTrue(extra_data["share_to_fb_destination_id"])
+        self.assertTrue(extra_data["share_to_fb_destination_type"])
+        self.assertEqual(extra_data["xpost_surface"], "IG_REELS_COMPOSER")
