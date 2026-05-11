@@ -374,6 +374,89 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(rupload_params["upload_media_duration_ms"], "6023")
         self.assertEqual(rupload_params["session_id"], rupload_params["upload_id"])
 
+    def test_clip_upload_trial_adds_trial_params_without_mutating_extra_data(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+        extra_data = {"share_to_facebook": 1}
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch.object(client.private, "get", return_value=ok_response):
+                with mock.patch.object(
+                    client.private,
+                    "post",
+                    side_effect=[ok_response, ok_response],
+                ):
+                    with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}) as clip_configure:
+                        with mock.patch(
+                            "builtins.open",
+                            mock.mock_open(read_data=b"video-bytes"),
+                        ):
+                            with mock.patch("time.sleep"):
+                                client.clip_upload(
+                                    Path("example.mp4"),
+                                    "caption",
+                                    trial=True,
+                                    trial_graduation_strategy="manual",
+                                    extra_data=extra_data,
+                                )
+
+        self.assertEqual(extra_data, {"share_to_facebook": 1})
+        self.assertEqual(clip_configure.call_args.args[8], "0")
+        configure_extra = clip_configure.call_args.kwargs["extra_data"]
+        self.assertEqual(configure_extra["share_to_facebook"], 1)
+        self.assertEqual(
+            configure_extra["trial_params"],
+            {"graduation_strategy": "manual"},
+        )
+
+    def test_clip_upload_trial_preserves_explicit_trial_params(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+        extra_data = {
+            "trial_params": {
+                "graduation_strategy": "ss_performance",
+                "custom_field": "1",
+            },
+        }
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch.object(client.private, "get", return_value=ok_response):
+                with mock.patch.object(
+                    client.private,
+                    "post",
+                    side_effect=[ok_response, ok_response],
+                ):
+                    with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}) as clip_configure:
+                        with mock.patch(
+                            "builtins.open",
+                            mock.mock_open(read_data=b"video-bytes"),
+                        ):
+                            with mock.patch("time.sleep"):
+                                client.clip_upload(
+                                    Path("example.mp4"),
+                                    "caption",
+                                    trial=True,
+                                    extra_data=extra_data,
+                                )
+
+        self.assertEqual(clip_configure.call_args.args[8], "0")
+        configure_extra = clip_configure.call_args.kwargs["extra_data"]
+        self.assertEqual(
+            configure_extra["trial_params"],
+            {
+                "graduation_strategy": "ss_performance",
+                "custom_field": "1",
+            },
+        )
+
     def test_video_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 

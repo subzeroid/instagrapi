@@ -300,7 +300,7 @@ Upload medias to your feed. Common arguments:
 | video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})            | Media   | Upload video (Support MP4 files)
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
-| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})             | Media   | Upload Reels Clip (Support MP4 files)
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual") | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
@@ -314,6 +314,8 @@ In `extra_data`, you can pass additional media settings, for example:
 | like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/subzeroid/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
 | invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
+
+Trial Reels are available only for accounts where Instagram has enabled the feature. When `trial=True`, `clip_upload` sends `trial_params={"graduation_strategy": "manual"}` by default and disables feed preview for the upload.
 
 ### Example:
 
@@ -331,6 +333,12 @@ In `extra_data`, you can pass additional media settings, for example:
         "like_and_view_counts_disabled": 1,
         "disable_comments": 1,
     }
+)
+
+>>> trial_reel = cl.clip_upload(
+    "/app/reel.mp4",
+    "Trying a new Reel format",
+    trial=True,
 )
 
 >>> media.dict()
