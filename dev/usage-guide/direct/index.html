@@ -1195,6 +1195,8 @@
 <li>Direct message requests / invitations are exposed as <code>direct_requests()</code>; <code>direct_pending_inbox()</code> remains as the older name.</li>
 <li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
 <li><code>direct_message()</code> scans the latest <code>amount</code> messages in a thread and raises <code>DirectMessageNotFound</code> if the id is not present in that window.</li>
+<li>Shared XMA items such as <code>xma_clip</code>, <code>xma_media_share</code>, <code>xma_story_share</code>, and <code>xma_profile</code> keep their original payload in <code>message.raw_xma</code>. When Instagram includes <code>target_url</code>, the normalized link is also available through <code>message.xma_share</code>.</li>
+<li>Disappearing direct photos and videos with <code>item_type == "raven_media"</code> are exposed through <code>message.visual_media</code>.</li>
 <li>Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via <code>dump_settings()/load_settings()</code> are more reliable than browser-only <code>sessionid</code> reuse.</li>
 </ul>
 <p>Example of basic actions:</p>
