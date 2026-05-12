@@ -41,6 +41,11 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
         dm = self.cl.direct_send_photo(path="examples/kanada.jpg", user_ids=[instagram])
         self.assertIsInstance(dm, DirectMessage)
 
+    def test_direct_send_accepts_scalar_user_id_live(self):
+        instagram = self.user_id_from_username("instagram")
+        dm = self.cl.direct_send("Scalar recipient ping", user_ids=instagram)
+        self.assertIsInstance(dm, DirectMessage)
+
     def test_direct_send_video(self):
         instagram = self.user_id_from_username("instagram")
         path = self.cl.video_download(self.cl.media_pk_from_url("https://www.instagram.com/p/B3rFQPblq40/"))

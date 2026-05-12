@@ -38,6 +38,7 @@
 Notes:
 
 * For `direct_send()`, `direct_send_photo()`, `direct_send_video()`, and `direct_send_voice()`, pass exactly one of `user_ids` or `thread_ids`.
+* Direct recipient arguments accept either one id (`user_ids=123`) or a list of ids (`user_ids=[123]`).
 * Direct message requests / invitations are exposed as `direct_requests()`; `direct_pending_inbox()` remains as the older name.
 * `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
 * `direct_message()` scans the latest `amount` messages in a thread and raises `DirectMessageNotFound` if the id is not present in that window.
