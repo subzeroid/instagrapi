@@ -18,6 +18,7 @@
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
 | direct_thread_create(user_ids: List[int], title: str = "")                | str                     | Create a group thread and return its thread id
+| direct_thread_add_users(thread_id: int, user_ids: List[int])              | bool                    | Add users to a group thread
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_thread_update_title(thread_id: int, title: str)                    | bool                    | Update a group thread title
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
@@ -128,6 +129,9 @@ DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[Direc
 >>> thread_id = cl.direct_thread_create([user_id_1, user_id_2], title="New group")
 >>> cl.direct_thread(thread_id, amount=1)
 DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[...], ...)
+
+>>> cl.direct_thread_add_users(thread_id, [user_id_3])
+True
 
 >>> cl.direct_thread_update_title(thread.id, "New group title")
 True

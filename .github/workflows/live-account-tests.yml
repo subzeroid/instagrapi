@@ -54,7 +54,10 @@ jobs:
 
       - name: Run direct media test
         if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_direct.py::ClientDirectMediaLiveTestCase
+        run: |
+          pytest -sv \
+            tests/live/test_direct.py::ClientDirectMediaLiveTestCase \
+            tests/live/test_direct.py::ClientDirectThreadLiveTestCase::test_direct_thread_add_users_live
 
       - name: Run timeline test
         if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'

@@ -1514,6 +1514,33 @@ class DirectMixin:
         )
         return result.get("status", "") == "ok"
 
+    def direct_thread_add_users(self, thread_id: int, user_ids: List[int]) -> bool:
+        """
+        Add users to a group Direct thread.
+
+        Parameters
+        ----------
+        thread_id: int
+            ID of thread to add users to
+        user_ids: List[int]
+            List of unique identifiers of users to add to the group thread
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        user_ids = _direct_id_list(user_ids)
+        assert user_ids, "At least one user_id required"
+
+        result = self.private_request(
+            f"direct_v2/threads/{thread_id}/add_user/",
+            data={"_uuid": self.uuid, "user_ids": dumps([str(uid) for uid in user_ids])},
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
+
     def direct_thread_create(self, user_ids: List[int], title: str = "") -> str:
         """
         Create a group Direct thread.
