@@ -167,6 +167,51 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["replied_to_client_context"], reply_to_message.client_context)
         self.assertEqual(data["client_context"], "mutation-token")
 
+    def test_direct_send_accepts_scalar_user_id(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
+        ):
+            client.direct_send("hello", user_ids="42")
+
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["recipient_users"]), [[42]])
+
+    def test_direct_send_accepts_scalar_thread_id(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
+        ):
+            client.direct_send("hello", thread_ids="340282366841710300949128149448121770626")
+
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [340282366841710300949128149448121770626])
+
+    def test_direct_media_share_accepts_scalar_user_id(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "media_id", return_value="123_1"),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload() | {"status": "ok"}
+            ) as private,
+        ):
+            client.direct_media_share("123", user_ids=42)
+
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["recipient_users"]), [[42]])
+
     def test_direct_send_reaction_posts_reaction_payload(self):
         client = self.build_client()
         client.uuid = "uuid-1"
