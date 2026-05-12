@@ -24,6 +24,45 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
 
+    def test_direct_thread_create_posts_group_payload(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "private_request", return_value={"thread_id": "3402823668417103"}) as private,
+        ):
+            result = client.direct_thread_create([42, "43"], title="Group title")
+
+        self.assertEqual(result, "3402823668417103")
+        private.assert_called_once_with(
+            "direct_v2/create_group_thread/",
+            data={
+                "_uuid": "uuid-1",
+                "_uid": "1",
+                "client_context": "mutation-token",
+                "is_partnership_folder": "false",
+                "recipient_users": "[42,43]",
+                "thread_title": "Group title",
+            },
+        )
+
+    def test_direct_thread_create_accepts_nested_thread_id_response(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(
+                client,
+                "private_request",
+                return_value={"thread": {"thread_id": "3402823668417104"}},
+            ),
+        ):
+            result = client.direct_thread_create([42, 43])
+
+        self.assertEqual(result, "3402823668417104")
+
     def test_direct_message_returns_matching_message_by_id(self):
         client = self.build_client()
         first = DirectMessage(id="111", user_id="1", timestamp=datetime.fromtimestamp(1))
