@@ -1113,6 +1113,11 @@
 <td>Create a group thread and return its thread id</td>
 </tr>
 <tr>
+<td>direct_thread_add_users(thread_id: int, user_ids: List[int])</td>
+<td>bool</td>
+<td>Add users to a group thread</td>
+</tr>
+<tr>
 <td>direct_thread_hide(thread_id: int)</td>
 <td>bool</td>
 <td>Delete (called "hide")</td>
@@ -1285,6 +1290,9 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">thread_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_create</span><span class="p">([</span><span class="n">user_id_1</span><span class="p">,</span> <span class="n">user_id_2</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;New group&quot;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">DirectThread</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="mi">178612312342</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="mi">340282366812312312312341298762</span><span class="p">,</span> <span class="n">messages</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_add_users</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="p">[</span><span class="n">user_id_3</span><span class="p">])</span>
+<span class="kc">True</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_thread_update_title</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;New group title&quot;</span><span class="p">)</span>
 <span class="kc">True</span>
