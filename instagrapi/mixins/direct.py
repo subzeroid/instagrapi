@@ -1492,6 +1492,43 @@ class DirectMixin:
         )
         return result.get("status", "") == "ok"
 
+    def direct_thread_create(self, user_ids: List[int], title: str = "") -> str:
+        """
+        Create a group Direct thread.
+
+        Parameters
+        ----------
+        user_ids: List[int]
+            List of unique identifiers of users to add to the group thread.
+            Instagram group threads require at least two recipients besides
+            the authenticated user.
+        title: str, optional
+            Initial group thread title.
+
+        Returns
+        -------
+        str
+            Created Direct thread id.
+        """
+        assert self.user_id, "Login required"
+        assert len(user_ids) >= 2, "Group threads require at least two recipient user_ids"
+
+        result = self.private_request(
+            "direct_v2/create_group_thread/",
+            data={
+                "_uuid": self.uuid,
+                "_uid": str(self.user_id),
+                "client_context": self.generate_mutation_token(),
+                "is_partnership_folder": "false",
+                "recipient_users": dumps([int(uid) for uid in user_ids]),
+                "thread_title": title,
+            },
+        )
+        thread_id = result.get("thread_id") or result.get("thread", {}).get("thread_id")
+        if not thread_id:
+            raise ClientError("Create group thread response missing thread_id", **result)
+        return str(thread_id)
+
     def direct_media_share(
         self,
         media_id: str,

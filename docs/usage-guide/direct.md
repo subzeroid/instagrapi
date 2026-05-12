@@ -17,6 +17,7 @@
 | direct_message_unlike(thread_id: int, message_id: int, client_context: Optional[str] = None) | bool | Remove your heart reaction from a message
 | direct_search(query: str)                                                 | List[DirectShortThread] | Search threads (for example by username)
 | direct_thread_by_participants(user_ids: List[int])                        | DirectThread            | Get thread by user_id
+| direct_thread_create(user_ids: List[int], title: str = "")                | str                     | Create a group thread and return its thread id
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_thread_update_title(thread_id: int, title: str)                    | bool                    | Update a group thread title
 | direct_media_share(media_id: str, user_ids: List[int])                    | DirectMessage           | Share a media to list of users
@@ -122,6 +123,10 @@ True
 
 >>> cl.direct_thread_by_participants([cl.user_id])
 DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[DirectMessage(id=30076214123123123123123864, user_id=1903424587, thread_id=None, timestamp=datetime.datetime(2021, 8, 31, 18, 33, 49, 107154, ...)
+
+>>> thread_id = cl.direct_thread_create([user_id_1, user_id_2], title="New group")
+>>> cl.direct_thread(thread_id, amount=1)
+DirectThread(pk=178612312342, id=340282366812312312312341298762, messages=[...], ...)
 
 >>> cl.direct_thread_update_title(thread.id, "New group title")
 True

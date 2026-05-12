@@ -286,22 +286,13 @@ class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_direct_thread_update_title_live(self):
         initial_title = f"instagrapi-title-{int(time.time())}"
         updated_title = f"{initial_title}-updated"
-        token = self.cl.generate_mutation_token()
         thread_id = None
 
         try:
-            created = self.cl.private_request(
-                "direct_v2/create_group_thread/",
-                data={
-                    "_uuid": self.cl.uuid,
-                    "_uid": self.cl.user_id,
-                    "client_context": token,
-                    "is_partnership_folder": "false",
-                    "recipient_users": dumps([int(client.user_id) for client in self.recipient_clients]),
-                    "thread_title": initial_title,
-                },
+            thread_id = self.cl.direct_thread_create(
+                [int(client.user_id) for client in self.recipient_clients],
+                title=initial_title,
             )
-            thread_id = created.get("thread_id") or created.get("thread", {}).get("thread_id")
             self.assertTrue(thread_id)
 
             self.assertTrue(self.cl.direct_thread_update_title(thread_id, updated_title))
