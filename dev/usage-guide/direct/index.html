@@ -1197,6 +1197,7 @@
 <p>Notes:</p>
 <ul>
 <li>For <code>direct_send()</code>, <code>direct_send_photo()</code>, <code>direct_send_video()</code>, and <code>direct_send_voice()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
+<li>Direct recipient arguments accept either one id (<code>user_ids=123</code>) or a list of ids (<code>user_ids=[123]</code>).</li>
 <li>Direct message requests / invitations are exposed as <code>direct_requests()</code>; <code>direct_pending_inbox()</code> remains as the older name.</li>
 <li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
 <li><code>direct_message()</code> scans the latest <code>amount</code> messages in a thread and raises <code>DirectMessageNotFound</code> if the id is not present in that window.</li>
