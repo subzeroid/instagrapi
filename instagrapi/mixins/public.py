@@ -3,6 +3,9 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
+from curl_adapter import CurlCffiAdapter
+from curl_cffi import BrowserType, BrowserTypeLiteral
+
 try:
     from simplejson.errors import JSONDecodeError
 except ImportError:
@@ -43,21 +46,27 @@ class PublicRequestMixin:
     session_retry_backoff_factor = 2
     session_retry_statuses = [429, 500, 502, 503, 504]
     last_response_ts = 0
+    public_browser_type: BrowserTypeLiteral = "chrome146"
+    user_agents: dict[BrowserTypeLiteral, str] = {
+        "chrome146": f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+    }
+    public_user_agent = user_agents[public_browser_type]
+    public_accept_language = "en-US"
 
     def __init__(self, *args, **kwargs):
         session = requests.Session()
         self.public = session
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
+        self.public_browser_type = kwargs.pop("browser_type", getattr(self, "browser_type", self.public_browser_type))
+        self.public_user_agent = kwargs.pop("public_user_agent", getattr(self, "public_user_agent", self.public_user_agent))
+        self.public_accept_language = kwargs.pop("public_accept_language", getattr(self, "public_accept_language", self.public_accept_language))
         self.public.headers.update(
             {
                 "Connection": "Keep-Alive",
                 "Accept": "*/*",
                 "Accept-Encoding": "gzip,deflate",
-                "Accept-Language": "en-US",
-                "User-Agent": (
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 "
-                    "(KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
-                ),
+                "Accept-Language": self.public_accept_language,
+                "User-Agent": self.public_user_agent,
             }
         )
         self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))
@@ -115,7 +124,8 @@ class PublicRequestMixin:
             )
 
     def _configure_public_session_retry(self):
-        adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
+        # adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
+        adapter = CurlCffiAdapter(impersonate_browser_type=self.public_browser_type)
         self.public.mount("https://", adapter)
         self.public.mount("http://", adapter)
 
