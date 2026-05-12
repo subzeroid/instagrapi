@@ -46,6 +46,37 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
         dm = self.cl.direct_send("Scalar recipient ping", user_ids=instagram)
         self.assertIsInstance(dm, DirectMessage)
 
+    def test_direct_media_share(self):
+        instagram = self.user_id_from_username("instagram")
+        media = next(media for media in self.cl.user_medias(instagram, amount=5) if media.id)
+        media_type = "video" if media.media_type == 2 else "photo"
+        dm = None
+        try:
+            dm = self.cl.direct_media_share(media.id, user_ids=[instagram], media_type=media_type)
+            self.assertIsInstance(dm, DirectMessage)
+            self.assertTrue(dm.id)
+            self.assertTrue(dm.thread_id)
+
+            shared = None
+            for _ in range(6):
+                try:
+                    shared = self.cl.direct_message(dm.thread_id, dm.id, amount=10)
+                except DirectMessageNotFound:
+                    time.sleep(2)
+                    continue
+                if shared.media_share or shared.xma_share or shared.raw_xma:
+                    break
+                time.sleep(2)
+            self.assertIsNotNone(shared)
+            self.assertTrue(shared.media_share or shared.xma_share or shared.raw_xma)
+        finally:
+            if dm and dm.thread_id:
+                try:
+                    self.cl.direct_message_unsend(dm.thread_id, dm.id)
+                    self.cl.direct_thread_hide(dm.thread_id)
+                except Exception as exc:
+                    logger.warning("Direct media share cleanup failed: %s", exc)
+
     def test_direct_send_video(self):
         instagram = self.user_id_from_username("instagram")
         path = self.cl.video_download(self.cl.media_pk_from_url("https://www.instagram.com/p/B3rFQPblq40/"))
