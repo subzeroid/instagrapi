@@ -79,6 +79,47 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
         self.assertEqual(str(message.generic_xma[0].video_url), "https://example.com/first")
         self.assertEqual(str(message.generic_xma[1].video_url), "https://example.com/second")
 
+    def test_xma_clip_without_target_url_keeps_raw_payload(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "xma_clip",
+                "text": "",
+                "xma_clip": [
+                    {
+                        "title_text": "Shared reel",
+                        "preview_media_fbid": "123456789",
+                    }
+                ],
+            }
+        )
+
+        self.assertIsNone(message.xma_share)
+        self.assertEqual(message.raw_xma["xma_clip"][0]["preview_media_fbid"], "123456789")
+
+    def test_xma_media_share_keeps_raw_payload_when_normalized(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "xma_media_share",
+                "text": "",
+                "xma_media_share": [
+                    {
+                        "target_url": "https://example.com/p/abc/",
+                        "title_text": "Shared post",
+                        "preview_media_fbid": "987654321",
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(str(message.xma_share.video_url), "https://example.com/p/abc/")
+        self.assertEqual(message.raw_xma["xma_media_share"][0]["preview_media_fbid"], "987654321")
+
     def test_reply_visual_media_timestamp_uses_microseconds(self):
         message = extract_direct_message(
             {

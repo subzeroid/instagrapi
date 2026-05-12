@@ -334,6 +334,16 @@ def _direct_timestamp_from_microseconds(timestamp):
     return datetime.datetime.fromtimestamp(int(timestamp) // 1_000_000)
 
 
+def _preserve_direct_raw_xma(data):
+    raw_xma = {
+        key: deepcopy(data[key])
+        for key in ("xma_clip", "xma_media_share", "xma_story_share", "xma_profile", "generic_xma")
+        if data.get(key)
+    }
+    if raw_xma:
+        data["raw_xma"] = raw_xma
+
+
 def _convert_direct_visual_media_timestamps(visual_media):
     if not visual_media:
         return
@@ -368,6 +378,7 @@ def _convert_direct_visual_media_timestamps(visual_media):
 
 def extract_reply_message(data):
     data["id"] = data.get("item_id")
+    _preserve_direct_raw_xma(data)
     if "media_share" in data:
         ms = data["media_share"]
         if not ms.get("code"):
@@ -397,6 +408,7 @@ def extract_reply_message(data):
 
 def extract_direct_message(data):
     data["id"] = data.get("item_id")
+    _preserve_direct_raw_xma(data)
     if "replied_to_message" in data:
         data["reply"] = extract_reply_message(data["replied_to_message"])
     if "media_share" in data:
