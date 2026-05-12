@@ -300,26 +300,22 @@ def extract_direct_thread(data):
         data["inviter"] = None
     data["left_users"] = data.get("left_users", [])
     data.setdefault("is_close_friend_thread", False)
-    data["last_activity_at"] = datetime.datetime.fromtimestamp(data["last_activity_at"] // 1_000_000)
+    data["last_activity_at"] = _direct_timestamp_from_microseconds(data["last_activity_at"])
 
     # Convert last_seen_at timestamps
     last_seen_at = data.get("last_seen_at", {})
     for user_id, seen_info in last_seen_at.items():
         if "timestamp" in seen_info:
-            seen_info["timestamp"] = datetime.datetime.fromtimestamp(int(seen_info["timestamp"]) // 1_000_000)
+            seen_info["timestamp"] = _direct_timestamp_from_microseconds(seen_info["timestamp"])
         if "created_at" in seen_info:
-            seen_info["created_at"] = datetime.datetime.fromtimestamp(int(seen_info["created_at"]) // 1_000_000)
+            seen_info["created_at"] = _direct_timestamp_from_microseconds(seen_info["created_at"])
         # Convert disappearing messages seen state timestamps
         disappearing_state = seen_info.get("disappearing_messages_seen_state")
         if disappearing_state:
             if "timestamp" in disappearing_state:
-                disappearing_state["timestamp"] = datetime.datetime.fromtimestamp(
-                    int(disappearing_state["timestamp"]) // 1_000_000
-                )
+                disappearing_state["timestamp"] = _direct_timestamp_from_microseconds(disappearing_state["timestamp"])
             if "created_at" in disappearing_state:
-                disappearing_state["created_at"] = datetime.datetime.fromtimestamp(
-                    int(disappearing_state["created_at"]) // 1_000_000
-                )
+                disappearing_state["created_at"] = _direct_timestamp_from_microseconds(disappearing_state["created_at"])
 
     return DirectThread(**data)
 
@@ -334,6 +330,10 @@ def extract_direct_response(data):
     return DirectResponse(**data)
 
 
+def _direct_timestamp_from_microseconds(timestamp):
+    return datetime.datetime.fromtimestamp(int(timestamp) // 1_000_000)
+
+
 def _convert_direct_visual_media_timestamps(visual_media):
     if not visual_media:
         return
@@ -341,28 +341,28 @@ def _convert_direct_visual_media_timestamps(visual_media):
     if "media" in visual_media and visual_media["media"]:
         media = visual_media["media"]
         if "expiring_media_action_summary" in media and media["expiring_media_action_summary"]:
-            media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
-                int(media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
+            media["expiring_media_action_summary"]["timestamp"] = _direct_timestamp_from_microseconds(
+                media["expiring_media_action_summary"]["timestamp"]
             )
 
         if "image_versions2" in media and media["image_versions2"]:
             candidates = media["image_versions2"].get("candidates", [])
             for candidate in candidates:
                 if "url_expiration_timestamp_us" in candidate and candidate["url_expiration_timestamp_us"]:
-                    candidate["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
-                        int(candidate["url_expiration_timestamp_us"]) // 1_000_000
+                    candidate["url_expiration_timestamp_us"] = _direct_timestamp_from_microseconds(
+                        candidate["url_expiration_timestamp_us"]
                     )
 
         if "video_versions" in media and media["video_versions"]:
             for video_version in media["video_versions"]:
                 if "url_expiration_timestamp_us" in video_version and video_version["url_expiration_timestamp_us"]:
-                    video_version["url_expiration_timestamp_us"] = datetime.datetime.fromtimestamp(
-                        int(video_version["url_expiration_timestamp_us"]) // 1_000_000
+                    video_version["url_expiration_timestamp_us"] = _direct_timestamp_from_microseconds(
+                        video_version["url_expiration_timestamp_us"]
                     )
 
     if "expiring_media_action_summary" in visual_media and visual_media["expiring_media_action_summary"]:
-        visual_media["expiring_media_action_summary"]["timestamp"] = datetime.datetime.fromtimestamp(
-            int(visual_media["expiring_media_action_summary"]["timestamp"]) // 1_000_000
+        visual_media["expiring_media_action_summary"]["timestamp"] = _direct_timestamp_from_microseconds(
+            visual_media["expiring_media_action_summary"]["timestamp"]
         )
 
 
@@ -389,7 +389,7 @@ def extract_reply_message(data):
     if visual_media:
         _convert_direct_visual_media_timestamps(visual_media)
 
-    data["timestamp"] = datetime.datetime.fromtimestamp(data["timestamp"] // 1_000_000)
+    data["timestamp"] = _direct_timestamp_from_microseconds(data["timestamp"])
     data["user_id"] = str(data["user_id"])
 
     return ReplyMessage(**data)
@@ -434,7 +434,7 @@ def extract_direct_message(data):
         data["generic_xma"] = [item for item in items if item]
 
     # Convert main timestamp
-    data["timestamp"] = datetime.datetime.fromtimestamp(int(data["timestamp"]) // 1_000_000)
+    data["timestamp"] = _direct_timestamp_from_microseconds(data["timestamp"])
     data["user_id"] = str(data.get("user_id", ""))
     data["client_context"] = data.get("client_context", "")
 
@@ -443,9 +443,7 @@ def extract_direct_message(data):
     if reactions and "emojis" in reactions:
         for emoji_reaction in reactions["emojis"]:
             if "timestamp" in emoji_reaction:
-                emoji_reaction["timestamp"] = datetime.datetime.fromtimestamp(
-                    int(emoji_reaction["timestamp"]) // 1_000_000
-                )
+                emoji_reaction["timestamp"] = _direct_timestamp_from_microseconds(emoji_reaction["timestamp"])
 
     # Convert visual media timestamps
     visual_media = data.get("visual_media", {})
