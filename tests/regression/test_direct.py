@@ -24,6 +24,20 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
 
+    def test_direct_thread_add_users_posts_unsigned_user_ids(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private:
+            result = client.direct_thread_add_users(123, [42, "43"])
+
+        self.assertTrue(result)
+        private.assert_called_once_with(
+            "direct_v2/threads/123/add_user/",
+            data={"_uuid": "uuid-1", "user_ids": '["42","43"]'},
+            with_signature=False,
+        )
+
     def test_direct_thread_create_posts_group_payload(self):
         client = self.build_client()
         client.uuid = "uuid-1"

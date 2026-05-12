@@ -315,9 +315,10 @@ class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
     def setUp(self):
         if not TEST_ACCOUNTS_URL:
             self.skipTest("TEST_ACCOUNTS_URL is required for direct thread live tests")
-        accounts = self.fresh_accounts(3)
+        accounts = self.fresh_accounts(4)
         self.cl = accounts[0]
-        self.recipient_clients = accounts[1:]
+        self.recipient_clients = accounts[1:3]
+        self.add_client = accounts[3]
 
     def test_direct_thread_update_title_live(self):
         initial_title = f"instagrapi-title-{int(time.time())}"
@@ -334,6 +335,28 @@ class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(self.cl.direct_thread_update_title(thread_id, updated_title))
             thread = self.cl.direct_thread(thread_id, amount=1)
             self.assertEqual(thread.thread_title, updated_title)
+        finally:
+            if thread_id:
+                try:
+                    self.cl.direct_thread_hide(thread_id)
+                except Exception as exc:
+                    logger.warning("Direct thread cleanup failed: %s", exc)
+
+    def test_direct_thread_add_users_live(self):
+        title = f"instagrapi-add-users-{int(time.time())}"
+        thread_id = None
+
+        try:
+            thread_id = self.cl.direct_thread_create(
+                [int(client.user_id) for client in self.recipient_clients],
+                title=title,
+            )
+            self.assertTrue(thread_id)
+
+            self.assertTrue(self.cl.direct_thread_add_users(thread_id, [int(self.add_client.user_id)]))
+            thread = self.cl.direct_thread(thread_id, amount=1)
+            user_ids = {str(user.pk) for user in thread.users}
+            self.assertIn(str(self.add_client.user_id), user_ids)
         finally:
             if thread_id:
                 try:
