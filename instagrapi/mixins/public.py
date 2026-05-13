@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from typing import Any, Dict, Optional
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -213,11 +214,12 @@ class PublicRequestMixin:
         update_headers=None,
     ):
         self.public_requests_count += 1
+        per_request_headers = None
         if headers:
             if update_headers in [None, True]:
                 self.public.headers.update(headers)
             elif update_headers is False:
-                pass
+                per_request_headers = headers
         if self.last_response_ts and (time.time() - self.last_response_ts) < 1.0:
             time.sleep(1.0)
         if self.request_timeout:
@@ -228,6 +230,7 @@ class PublicRequestMixin:
                     url,
                     data=data,
                     params=params,
+                    headers=per_request_headers,
                     proxies=self.public.proxies,
                     timeout=timeout,
                 )
@@ -235,6 +238,7 @@ class PublicRequestMixin:
                 response = self.public.get(
                     url,
                     params=params,
+                    headers=per_request_headers,
                     proxies=self.public.proxies,
                     stream=stream,
                     timeout=timeout,
@@ -373,6 +377,62 @@ class PublicRequestMixin:
             except JSONDecodeError:
                 pass
             raise ClientGraphqlError("Error: '{}'. Message: '{}'".format(e, message), response=e.response)
+
+    def public_doc_id_graphql_request(
+        self,
+        doc_id: str,
+        variables: Dict[str, Any],
+        referer: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        POST a doc_id-based GraphQL query to www.instagram.com/graphql/query/.
+
+        Newer Instagram web GraphQL endpoints use ``doc_id`` instead of the
+        legacy ``query_hash`` / ``query_id`` scheme. Returns the parsed
+        ``data`` payload.
+        """
+        data = {
+            "variables": json.dumps(variables, separators=(",", ":")),
+            "doc_id": doc_id,
+            "server_timestamps": "true",
+        }
+        inject_sessionid = getattr(self, "inject_sessionid_to_public", None)
+        if inject_sessionid:
+            inject_sessionid()
+        merged_headers = {
+            "Accept": "*/*",
+            "Accept-Encoding": "gzip, deflate",
+            "Accept-Language": "en-US,en;q=0.8",
+            "Referer": referer or "https://www.instagram.com/",
+            "User-Agent": (
+                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+            ),
+        }
+        csrftoken = self.public.cookies.get("csrftoken")
+        if csrftoken:
+            merged_headers["X-CSRFToken"] = csrftoken
+        if headers:
+            merged_headers.update(headers)
+        body_json = self.public_request(
+            self.GRAPHQL_PUBLIC_API_URL,
+            data=data,
+            headers=merged_headers,
+            update_headers=False,
+            return_json=True,
+        )
+        if "data" not in body_json:
+            errors = body_json.get("errors") or []
+            summary = errors[0].get("summary") if errors else None
+            description = errors[0].get("description") if errors else None
+            raise ClientGraphqlError(
+                "Missing 'data' in doc_id GraphQL response (doc_id={}). Summary: '{}'. Description: '{}'".format(
+                    doc_id,
+                    summary,
+                    description,
+                )
+            )
+        return body_json["data"]
 
 
 class TopSearchesPublicMixin:

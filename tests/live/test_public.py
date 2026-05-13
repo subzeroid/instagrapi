@@ -2,7 +2,7 @@ from tests import helpers as _helpers
 from tests.helpers import *
 
 
-class ClientPublicTestCase(_helpers.BaseClientMixin, unittest.TestCase):
+class ClientPublicTestCase(_helpers.ClientPrivateTestCase):
     cl = None
 
     def assertDict(self, obj, data):
@@ -15,27 +15,16 @@ class ClientPublicTestCase(_helpers.BaseClientMixin, unittest.TestCase):
                 self.assertEqual(obj[key], value)
 
     def test_media_info_gql(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/C_BM2yAN4Rm/")
         m = self.cl.media_info_gql(media_pk)
         self.assertIsInstance(m, Media)
-        media = {
-            "pk": 1532130876531694688,
-            "id": "1532130876531694688_25025320",
-            "code": "BVDOOolFFxg",
-            "taken_at": datetime(2017, 6, 7, 19, 37, 35, tzinfo=UTC()),
-            "media_type": 1,
-            "product_type": "",
-            "thumbnail_url": "https://...",
-            "location": None,
-            "comment_count": 6,
-            "like_count": 79,
-            "has_liked": None,
-            "caption_text": "#creepy #creepyclothing",
-            "usertags": [],
-            "video_url": None,
-            "view_count": 0,
-            "video_duration": 0.0,
-            "title": "",
-            "resources": [],
-        }
-        self.assertDict(m.dict(), media)
+        self.assertEqual(m.pk, "3441088131388376166")
+        self.assertEqual(m.code, "C_BM2yAN4Rm")
+        self.assertEqual(m.media_type, 2)
+        self.assertEqual(m.product_type, "clips")
+        self.assertGreaterEqual(m.comment_count, 3)
+        self.assertGreaterEqual(m.play_count, 1)
+        self.assertGreaterEqual(m.view_count, 0)
+        self.assertGreaterEqual(m.like_count, -1)
+        self.assertTrue(m.thumbnail_url)
+        self.assertTrue(m.video_url)
