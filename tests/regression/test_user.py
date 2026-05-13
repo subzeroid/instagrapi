@@ -57,6 +57,60 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user.username, "instagram")
         fallback.assert_called_once_with("25025320")
 
+    def test_user_short_gql_uses_web_profile_doc_id_without_legacy_query_hash(self):
+        client = Client()
+        web_user = {
+            "id": "25025320",
+            "username": "instagram",
+            "full_name": "Instagram",
+            "is_private": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+        }
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=AssertionError("legacy query_hash should not be used"),
+        ) as legacy_query:
+            with mock.patch.object(client, "user_web_profile_info_gql", return_value=web_user) as profile_query:
+                user = client.user_short_gql("25025320", use_cache=False)
+
+        self.assertEqual(user.username, "instagram")
+        profile_query.assert_called_once_with("25025320")
+        legacy_query.assert_not_called()
+
+    def test_user_web_profile_info_gql_uses_public_doc_id_endpoint(self):
+        client = Client()
+        client._fb_dtsg = "token"
+        web_user = {
+            "id": "25025320",
+            "username": "instagram",
+            "full_name": "Instagram",
+            "is_private": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+        }
+
+        with mock.patch.object(client, "inject_sessionid_to_public", return_value=True):
+            with mock.patch.object(
+                client,
+                "public_request",
+                side_effect=AssertionError("legacy /api/graphql endpoint should not be used"),
+            ):
+                with mock.patch.object(
+                    client,
+                    "public_doc_id_graphql_request",
+                    return_value={"user": web_user},
+                ) as doc_id_request:
+                    user = client.user_web_profile_info_gql("25025320")
+
+        self.assertEqual(user["username"], "instagram")
+        doc_id_request.assert_called_once()
+        args, kwargs = doc_id_request.call_args
+        self.assertEqual(args[0], "26762473490008061")
+        self.assertEqual(args[1]["id"], "25025320")
+        self.assertEqual(args[1]["render_surface"], "PROFILE")
+        self.assertEqual(kwargs["referer"], "https://www.instagram.com/25025320/")
+
     def test_user_info_by_username_gql_parses_web_profile_without_update_headers_kwarg(
         self,
     ):

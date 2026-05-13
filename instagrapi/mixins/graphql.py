@@ -1,3 +1,4 @@
+import json
 import time
 from json.decoder import JSONDecodeError
 from typing import Dict, Optional
@@ -14,6 +15,54 @@ from instagrapi.exceptions import (
 
 
 class PrivateGraphQLRequestMixin:
+    def _merge_incremental_graphql_payload(self, base: Dict, payload: Dict) -> None:
+        path = payload.get("path")
+        if not isinstance(path, list) or not path or "data" not in payload:
+            return
+        target = base
+        if path and path[0] != "data":
+            target = base.get("data", {})
+        elif path and path[0] == "data":
+            path = path[1:]
+        if not path:
+            return
+        try:
+            for key in path[:-1]:
+                target = target[key]
+        except (KeyError, IndexError, TypeError):
+            return
+        key = path[-1]
+        value = payload["data"]
+        if isinstance(target, list):
+            if not isinstance(key, int):
+                return
+            try:
+                current = target[key]
+            except IndexError:
+                return
+            if isinstance(current, dict) and isinstance(value, dict):
+                current.update(value)
+            else:
+                target[key] = value
+            return
+        current = target.get(key)
+        if isinstance(current, dict) and isinstance(value, dict):
+            current.update(value)
+        else:
+            target[key] = value
+
+    def _json_from_graphql_response(self, response):
+        try:
+            return response.json()
+        except JSONDecodeError:
+            chunks = [json.loads(line) for line in response.text.splitlines() if line.strip()]
+            if not chunks:
+                raise
+            body = chunks[0]
+            for chunk in chunks[1:]:
+                self._merge_incremental_graphql_payload(body, chunk)
+            return body
+
     def private_graphql_request(self, data: Dict, headers: Optional[Dict] = None, domain: Optional[str] = None) -> Dict:
         self.last_response = None
         self.last_json = {}
@@ -36,7 +85,7 @@ class PrivateGraphQLRequestMixin:
             self.request_log(response)
             self.last_response = response
             response.raise_for_status()
-            self.last_json = response.json()
+            self.last_json = self._json_from_graphql_response(response)
         except JSONDecodeError as exc:
             url = response.url if response else url
             raise ClientJSONDecodeError(

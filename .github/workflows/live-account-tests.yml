@@ -77,7 +77,7 @@ jobs:
 
       - name: Run user test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_user.py::ClientUserTestCase
+        run: pytest -sv tests/live/test_user.py::ClientUserTestCase tests/live/test_user.py::ClientGraphQLQueryLiveTestCase
 
       - name: Run follow request live test
         if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'

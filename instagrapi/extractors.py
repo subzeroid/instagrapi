@@ -59,6 +59,9 @@ def extract_media_v1(data):
             media["image_versions2"]["candidates"],
             key=lambda o: o["height"] * o["width"],
         )[-1]["url"]
+        scrubber = media["image_versions2"].get("scrubber_spritesheet_info_candidates") or {}
+        if scrubber.get("default") and not scrubber["default"].get("sprite_urls"):
+            media["image_versions2"].pop("scrubber_spritesheet_info_candidates", None)
     if media["media_type"] == 8:
         # remove thumbnail_url and video_url for albums
         # see resources
@@ -67,8 +70,9 @@ def extract_media_v1(data):
     location = media.get("location")
     media["location"] = location and extract_location(location)
     media["user"] = extract_user_short(media.get("user"))
+    usertags = media.get("usertags") or {}
     media["usertags"] = sorted(
-        [extract_usertag(usertag) for usertag in media.get("usertags", {}).get("in", [])],
+        [extract_usertag(usertag) for usertag in usertags.get("in", [])],
         key=lambda tag: tag.user.pk,
     )
     media["like_count"] = media.get("like_count", 0)
@@ -78,7 +82,7 @@ def extract_media_v1(data):
     media["coauthor_producers"] = media.get("coauthor_producers", [])
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
-        resources=[extract_resource_v1(edge) for edge in media.get("carousel_media", [])],
+        resources=[extract_resource_v1(edge) for edge in media.get("carousel_media") or []],
         **media,
     )
 

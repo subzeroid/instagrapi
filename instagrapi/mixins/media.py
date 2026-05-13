@@ -29,6 +29,7 @@ from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.serialization import json_value
 
 MEDIA_INFO_DOC_ID = "8845758582119845"
+IG_PROFILE_TIMELINE_DOC_ID = "56030350814417327502004290437"
 
 
 class MediaMixin:
@@ -37,6 +38,125 @@ class MediaMixin:
     """
 
     _medias_cache = {}  # pk -> object
+
+    @staticmethod
+    def _find_profile_timeline_payload(data):
+        if not isinstance(data, dict):
+            return None
+        if "profile_grid_items" in data:
+            return data
+        for value in data.values():
+            found = MediaMixin._find_profile_timeline_payload(value)
+            if found:
+                return found
+        return None
+
+    @staticmethod
+    def _normalize_xdt_profile_media(media: Dict) -> Dict:
+        media = deepcopy(media)
+        user = media.get("user") or {}
+        if "pk" not in user and user.get("id"):
+            user["pk"] = user["id"]
+        media["user"] = user
+        media_id = str(media.get("id") or media.get("pk") or "")
+        if "pk" not in media and media_id:
+            media["pk"] = media_id.split("_", 1)[0]
+        if media_id and "_" not in media_id and user.get("pk"):
+            media["id"] = f"{media_id}_{user['pk']}"
+        if "taken_at" not in media and "1ltaken_at" in media:
+            media["taken_at"] = media["1ltaken_at"]
+        return media
+
+    def _user_medias_paginated_app_gql(self, user_id: str, amount: int = 0, end_cursor=None) -> Tuple[List[Media], str]:
+        count = 50 if not amount or amount > 50 else amount
+        variables = {
+            "request_media_chunk": True,
+            "skip_clips_captions_fields": False,
+            "fetch_profile_grid_items": True,
+            "exclude_comment": "false",
+            "request_hints_chunk": False,
+            "include_unseen_media_ids": False,
+            "exclude_pinned_posts": False,
+            "enable_carousel_media_count_in_deferred": True,
+            "include_fb_mentioned_users": False,
+            "include_attribution_ui_data": True,
+            "include_profile_grid_rendering_option": False,
+            "count": count,
+            "initial_count_carousel_media": 5,
+            "exclude_collaborative_posts": False,
+            "include_is_photo_comments_composer_enabled_for_author": False,
+            "include_associated_highlights": False,
+            "include_attribution_ui_data_v2": True,
+            "include_media_notes_fields": True,
+            "include_eligible_insights_entrypoints": False,
+            "include_accessibility_caption_for_carousel": True,
+            "defer_maybe_non_essential_lightweight_fields": False,
+            "num_previews_for_associated_highlights": 3,
+            "include_videos_for_associated_highlights": False,
+            "exclude_user": False,
+            "defer_hints_chunk": False,
+            "exclude_highlights": True,
+            "include_ring_creator_fields": False,
+            "include_timeline_ordered_edge": False,
+            "user_id": str(user_id),
+            "exclude_besties_content": True,
+            "force_compute_user_tags": False,
+            "enable_profile_fm_integration": False,
+            "include_is_unseen_by_viewer": False,
+        }
+        if end_cursor:
+            variables["max_id"] = end_cursor
+        data = {
+            "method": "post",
+            "pretty": "false",
+            "format": "json",
+            "server_timestamps": "true",
+            "locale": self.locale,
+            "fb_api_req_friendly_name": "IGProfileTimelineQuery",
+            "fb_api_caller_class": "graphservice",
+            "client_doc_id": IG_PROFILE_TIMELINE_DOC_ID,
+            "variables": json.dumps(variables, separators=(",", ":")),
+        }
+        response = self.private_graphql_request(
+            data,
+            headers={"X-FB-Friendly-Name": "IGProfileTimelineQuery"},
+        )
+        timeline = self._find_profile_timeline_payload(response.get("data", response))
+        if not timeline:
+            raise ClientGraphqlError("Missing profile timeline payload in IGProfileTimelineQuery response")
+        medias = []
+        for item in timeline.get("profile_grid_items") or []:
+            media = item.get("media") if isinstance(item, dict) else None
+            if not media:
+                continue
+            medias.append(extract_media_v1(self._normalize_xdt_profile_media(media)))
+        end_cursor = None
+        if timeline.get("more_available"):
+            end_cursor = timeline.get("next_max_id") or timeline.get("profile_grid_items_cursor")
+        if amount:
+            medias = medias[:amount]
+        return medias, end_cursor
+
+    def _user_medias_paginated_public_gql(
+        self, user_id: str, amount: int = 0, end_cursor=None
+    ) -> Tuple[List[Media], str]:
+        amount = int(amount)
+        user_id = int(user_id)
+        medias = []
+        variables = {
+            "id": user_id,
+            "first": 50 if not amount or amount > 50 else amount,
+        }
+        variables["after"] = end_cursor
+        data = self.public_graphql_request(variables, query_hash="e7e2f4da4b02303f74f0841279e52d76")
+        page_info = json_value(data, "user", "edge_owner_to_timeline_media", "page_info", default={})
+        edges = json_value(data, "user", "edge_owner_to_timeline_media", "edges", default=[])
+        for edge in edges:
+            medias.append(edge["node"])
+        end_cursor = page_info.get("end_cursor")
+        if amount:
+            medias = medias[:amount]
+        return ([extract_media_gql(media) for media in medias], end_cursor)
 
     def _extract_configured_media_or_raise(self, configured, exception_cls, context: str):
         media = None
@@ -540,23 +660,10 @@ class MediaMixin:
             A tuple containing a list of medias and the next end_cursor value
         """
         amount = int(amount)
-        user_id = int(user_id)
-        medias = []
-        variables = {
-            "id": user_id,
-            "first": 50 if not amount or amount > 50 else amount,
-            # These are Instagram restrictions, you can only specify <= 50
-        }
-        variables["after"] = end_cursor
-        data = self.public_graphql_request(variables, query_hash="e7e2f4da4b02303f74f0841279e52d76")
-        page_info = json_value(data, "user", "edge_owner_to_timeline_media", "page_info", default={})
-        edges = json_value(data, "user", "edge_owner_to_timeline_media", "edges", default=[])
-        for edge in edges:
-            medias.append(edge["node"])
-        end_cursor = page_info.get("end_cursor")
-        if amount:
-            medias = medias[:amount]
-        return ([extract_media_gql(media) for media in medias], end_cursor)
+        try:
+            return self._user_medias_paginated_app_gql(user_id, amount, end_cursor=end_cursor)
+        except ClientError:
+            return self._user_medias_paginated_public_gql(user_id, amount, end_cursor=end_cursor)
 
     def user_medias_gql(self, user_id: str, amount: int = 0, sleep: int = 0) -> List[Media]:
         """

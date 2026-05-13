@@ -10,6 +10,26 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(list(followers.values())[0], UserShort)
 
 
+class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
+    def test_user_short_gql(self):
+        user = self.cl.user_short_gql("25025320", use_cache=False)
+        self.assertIsInstance(user, UserShort)
+        self.assertEqual(user.pk, "25025320")
+        self.assertEqual(user.username, "instagram")
+
+    def test_username_from_user_id(self):
+        self.assertEqual(self.cl.username_from_user_id(25025320), "instagram")
+
+    def test_user_medias_gql(self):
+        user_id = self.user_id_from_username("instagram")
+        medias = self.cl.user_medias_gql(user_id, amount=2, sleep=0)
+        self.assertGreater(len(medias), 0)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
+
 class ClientUsertagPaginationLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
