@@ -499,10 +499,14 @@ Reels:
 Timeline helpers:
 
 ```python
+>>> first_page = cl.get_timeline_feed("cold_start_fetch")
+>>> second_page = cl.get_timeline_feed(max_id=first_page["next_max_id"])
 >>> cl.reels(amount=10)
 >>> cl.explore_reels(amount=10)
 >>> cl.friends_reels(amount=10)
 ```
+
+`get_timeline_feed()` remembers media ids from the previous response and sends `seen_posts` plus minimal `feed_view_info` when `max_id` is used. For stateless pagination, pass `seen_posts=...` and `feed_view_info=...` explicitly.
 
 ```python
 >>> clips = cl.user_clips_v1(25025320, amount=2)
