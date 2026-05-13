@@ -66,6 +66,7 @@ jobs:
           pytest -sv \
             tests/regression/test_extractors.py::ExtractorsRegressionTestCase \
             tests/regression/test_public.py::PublicRegressionTestCase \
+            tests/regression/test_public.py::PrivateGraphQLRequestRegressionTestCase \
             tests/regression/test_direct.py::DirectMixinRegressionTestCase \
             tests/regression/test_challenge.py::ChallengeRegressionTestCase \
             tests/regression/test_comments.py::CommentRepliesRegressionTestCase \
@@ -74,6 +75,7 @@ jobs:
             tests/regression/test_download.py::DownloadRegressionTestCase \
             tests/regression/test_notes.py::NoteMixinRegressionTestCase \
             tests/regression/test_location.py::LocationMixinRegressionTestCase \
+            tests/regression/test_media.py::UserMediasGraphQLRegressionTestCase \
             tests/regression/test_user.py::UserMixinRegressionTestCase \
             tests/regression/test_timeline.py::TimelineRegressionTestCase \
             tests/regression/test_story_configure.py::StoryConfigureRegressionTestCase \

@@ -1,3 +1,5 @@
+import json
+
 from tests.helpers import *
 
 
@@ -9,12 +11,17 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
             "code": "abc",
             "taken_at": 1710000000,
             "media_type": 1,
+            "usertags": None,
+            "carousel_media": None,
             "user": {
                 "pk": "2",
                 "username": "example",
                 "profile_pic_url": "https://example.com/profile.jpg",
             },
-            "image_versions2": {"candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}]},
+            "image_versions2": {
+                "candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}],
+                "scrubber_spritesheet_info_candidates": {"default": {"video_length": 15.4}},
+            },
         }
 
     def test_media_info_v2_strips_userid_suffix(self):
@@ -107,7 +114,10 @@ class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
                 "username": "example",
                 "profile_pic_url": "https://example.com/profile.jpg",
             },
-            "image_versions2": {"candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}]},
+            "image_versions2": {
+                "candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}],
+                "scrubber_spritesheet_info_candidates": {"default": {"video_length": 15.4}},
+            },
         }
 
     def _media_gql_payload(self, pk="1"):
@@ -187,3 +197,54 @@ class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
         v1.assert_called_once_with(123, 5, end_cursor="cursor-1")
         self.assertEqual(medias, ["m1"])
         self.assertEqual(end_cursor, "next-page")
+
+
+class UserMediasGraphQLRegressionTestCase(unittest.TestCase):
+    def _xdt_media_payload(self):
+        return {
+            "id": "1",
+            "code": "abc",
+            "1ltaken_at": 1710000000,
+            "media_type": 1,
+            "usertags": None,
+            "carousel_media": None,
+            "user": {
+                "pk": "2",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "image_versions2": {"candidates": [{"url": "https://example.com/x.jpg", "width": 100, "height": 100}]},
+        }
+
+    def test_user_medias_paginated_gql_uses_app_timeline_doc_id(self):
+        client = Client()
+        response = {
+            "data": {
+                "xdt_api__v1__profile_timeline": {
+                    "profile_grid_items": [{"media": self._xdt_media_payload()}],
+                    "more_available": True,
+                    "next_max_id": "next-page",
+                }
+            }
+        }
+
+        with mock.patch.object(client, "private_graphql_request", return_value=response) as private_graphql:
+            with mock.patch.object(
+                client,
+                "public_graphql_request",
+                side_effect=AssertionError("legacy query_hash should not be used"),
+            ) as public_graphql:
+                medias, end_cursor = client.user_medias_paginated_gql("123", amount=1, end_cursor="cursor-1")
+
+        private_graphql.assert_called_once()
+        public_graphql.assert_not_called()
+        data = private_graphql.call_args.args[0]
+        variables = json.loads(data["variables"])
+        self.assertEqual(data["fb_api_req_friendly_name"], "IGProfileTimelineQuery")
+        self.assertEqual(data["client_doc_id"], "56030350814417327502004290437")
+        self.assertEqual(variables["user_id"], "123")
+        self.assertEqual(variables["count"], 1)
+        self.assertEqual(variables["max_id"], "cursor-1")
+        self.assertEqual(end_cursor, "next-page")
+        self.assertEqual([media.pk for media in medias], ["1"])
+        self.assertEqual(medias[0].id, "1_2")

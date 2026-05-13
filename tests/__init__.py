@@ -33,6 +33,7 @@ from tests.live.test_totp import TOTPTestCase
 from tests.live.test_upload import ClientFeedMusicUploadLiveTestCase, ClienUploadTestCase
 from tests.live.test_user import (
     ClientFollowRequestLiveTestCase,
+    ClientGraphQLQueryLiveTestCase,
     ClientUserExtendTestCase,
     ClientUserTestCase,
 )
@@ -51,6 +52,8 @@ from tests.regression.test_location import LocationMixinRegressionTestCase
 from tests.regression.test_media import (
     CheckOffensiveCommentV2RegressionTestCase,
     MediaInfoV2RegressionTestCase,
+    UserMediasGraphQLRegressionTestCase,
+    UsertagMediasPaginationRegressionTestCase,
 )
 from tests.regression.test_notes import NoteMixinRegressionTestCase
 from tests.regression.test_public import (

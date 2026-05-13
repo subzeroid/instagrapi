@@ -238,3 +238,26 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
             client.private.headers["Content-Type"],
             "application/x-www-form-urlencoded; charset=UTF-8",
         )
+
+    def test_private_graphql_request_accepts_incremental_json_lines(self):
+        client = Client()
+        client.request_timeout = 0
+        data = {
+            "fb_api_req_friendly_name": "ExampleQuery",
+            "variables": "{}",
+        }
+        response = Mock()
+        response.url = "https://i.instagram.com/graphql/query"
+        response.text = (
+            '{"data":{"timeline":{"items":[{"media":{"id":"1"}}]}},"status":"ok"}\n'
+            '{"path":["timeline","items",0,"media"],"data":{"code":"abc"}}\n'
+        )
+        response.json.side_effect = JSONDecodeError("Extra data", response.text, 68)
+        response.raise_for_status.return_value = None
+
+        with mock.patch.object(client, "request_log"):
+            with mock.patch.object(client.private, "post", return_value=response):
+                result = client.private_graphql_request(data)
+
+        self.assertEqual(result["data"]["timeline"]["items"][0]["media"]["id"], "1")
+        self.assertEqual(result["data"]["timeline"]["items"][0]["media"]["code"], "abc")
