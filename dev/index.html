@@ -1291,7 +1291,7 @@ New support group: <a href="https://t.me/aiograpi_support">aiograpi_support</a> 
 </code></pre></div>
 <h3 id="requests">Requests</h3>
 <ul>
-<li><code>Public</code> web methods have a suffix <code>_gql</code> (Instagram <code>GraphQL</code>) or <code>_a1</code> (example <code>https://www.instagram.com/example/?__a=1</code>)</li>
+<li><code>Public</code> web methods have a suffix <code>_gql</code> (Instagram <code>GraphQL</code>) or <code>_a1</code> (example <code>https://www.instagram.com/example/?__a=1</code>). Some <code>_gql</code> helpers use newer <code>doc_id</code> queries when Instagram disables legacy <code>query_hash</code> endpoints.</li>
 <li><code>Private</code> (authorized request via mobile api) methods have <code>_v1</code> suffix</li>
 </ul>
 <p>Public web flows are not guaranteed. Instagram can change or block them independently of the library, and some helpers can only work reliably with an authenticated session.</p>
