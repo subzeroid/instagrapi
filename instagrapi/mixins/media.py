@@ -8,6 +8,8 @@ from urllib.parse import urlparse
 
 from instagrapi.exceptions import (
     ClientError,
+    ClientForbiddenError,
+    ClientGraphqlError,
     ClientLoginRequired,
     ClientNotFoundError,
     ClientUnauthorizedError,
@@ -25,6 +27,8 @@ from instagrapi.extractors import (
 from instagrapi.types import Location, Media, UserShort, Usertag
 from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.serialization import json_value
+
+MEDIA_INFO_DOC_ID = "8845758582119845"
 
 
 class MediaMixin:
@@ -240,8 +244,25 @@ class MediaMixin:
         }
         try:
             data = self.public_graphql_request(variables, query_hash="477b65a610463740ccdb83135b2014db")
-        except (ClientLoginRequired, ClientUnauthorizedError):
-            return self.media_info_a1(media_pk)
+        except (
+            ClientForbiddenError,
+            ClientGraphqlError,
+            ClientLoginRequired,
+            ClientNotFoundError,
+            ClientUnauthorizedError,
+        ):
+            try:
+                data = self.public_doc_id_graphql_request(
+                    MEDIA_INFO_DOC_ID,
+                    {"shortcode": shortcode},
+                    referer=f"https://www.instagram.com/p/{shortcode}/",
+                )
+            except (ClientForbiddenError, ClientLoginRequired, ClientUnauthorizedError):
+                return self.media_info_a1(media_pk)
+            media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
+            if not media:
+                raise MediaNotFound(media_pk=media_pk, **data)
+            return extract_media_gql(media)
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"] and self.authorization:

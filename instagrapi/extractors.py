@@ -39,6 +39,11 @@ from .types import (
 from .utils import InstagramIdCodec, json_value
 
 MEDIA_TYPES_GQL = {"GraphImage": 1, "GraphVideo": 2, "GraphSidecar": 8, "StoryVideo": 2}
+XDT_MEDIA_TYPES_GQL = {
+    "XDTGraphImage": "GraphImage",
+    "XDTGraphVideo": "GraphVideo",
+    "XDTGraphSidecar": "GraphSidecar",
+}
 
 
 def extract_media_v1(data):
@@ -103,6 +108,7 @@ def extract_media_v1_xma(data):
 def extract_media_gql(data):
     """Extract media from GraphQL"""
     media = deepcopy(data)
+    media["__typename"] = XDT_MEDIA_TYPES_GQL.get(media.get("__typename"), media.get("__typename"))
     user = extract_user_short(media["owner"])
     # if "full_name" in user:
     #     user = extract_user_short(user)
@@ -138,7 +144,14 @@ def extract_media_gql(data):
         location=extract_location(location) if location else None,
         user=user,
         view_count=media.get("video_view_count", 0),
-        comment_count=json_value(media, "edge_media_to_comment", "count"),
+        play_count=media.get("play_count", media.get("video_play_count")),
+        has_liked=media.get("has_liked", media.get("viewer_has_liked")),
+        comment_count=json_value(
+            media,
+            "edge_media_to_comment",
+            "count",
+            default=json_value(media, "edge_media_preview_comment", "count", default=0),
+        ),
         like_count=json_value(media, "edge_media_preview_like", "count"),
         caption_text=json_value(media, "edge_media_to_caption", "edges", 0, "node", "text", default=""),
         usertags=sorted(
