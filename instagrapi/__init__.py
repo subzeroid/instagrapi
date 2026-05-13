@@ -132,10 +132,15 @@ class Client(
                 scheme="http://" if not urlparse(self.proxy).scheme else "",
                 href=self.proxy,
             )
-            self.public.proxies = self.private.proxies = {
+            proxies = {
                 "http": proxy_href,
                 "https": proxy_href,
             }
+            self.public.proxies = self.private.proxies = proxies
+            if hasattr(self, "graphql"):
+                self.graphql.proxies = proxies
             return True
         self.public.proxies = self.private.proxies = {}
+        if hasattr(self, "graphql"):
+            self.graphql.proxies = {}
         return False

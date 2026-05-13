@@ -327,6 +327,18 @@ class MediaUnavailable(PrivateError):
     """Media is unavailable"""
 
 
+class CommentUnavailable(PrivateError):
+    """Comment is unavailable"""
+
+
+class CommentNotFound(PrivateError):
+    message = "Comment not found"
+
+
+class CommentsDisabled(PrivateError):
+    message = "Comments disabled by author"
+
+
 class ValidationError(AssertionError):
     pass
 

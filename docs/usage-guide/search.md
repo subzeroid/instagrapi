@@ -11,6 +11,9 @@ The `*_v2` methods hit the same `fbsearch/<tab>_serp/` endpoints the official In
 | `fbsearch_accounts_v2(query: str, page_token: str = None)` | `dict` | "Accounts" tab — `fbsearch/account_serp/`. Pagination via `next_page_token`. |
 | `fbsearch_reels_v2(query: str, reels_max_id: str = None, rank_token: str = None)` | `dict` | "Reels" tab — `fbsearch/reels_serp/`. |
 | `fbsearch_topsearch_v2(query: str, next_max_id: str = None, reels_max_id: str = None, rank_token: str = None)` | `dict` | Default "Top" blended tab — `fbsearch/top_serp/`. |
+| `fbsearch_item(item_id: str, search_surface: str, query: str, ...)` | `dict` | Generic `fbsearch/{item_id}/` tab helper with optional pagination cursors. |
+| `fbsearch_keyword_typeahead(query: str, timezone_offset: int = 0, count: int = 30)` | `dict` | Raw keyword/typeahead suggestions via `fbsearch/keyword_typeahead/`. |
+| `fbsearch_typeahead_stream(query: str, timezone_offset: int = 0, count: int = 30)` | `dict` | Raw streaming typeahead payload via `fbsearch/typeahead_stream/`. |
 | `fbsearch_typehead(query: str)` | `List[dict]` | Typeahead user suggestions, flattened from the `stream_rows` envelope returned by `fbsearch/typeahead_stream/`. |
 
 Example:
@@ -39,6 +42,8 @@ users = cl.fbsearch_typehead("py")
 | `search_hashtags(query: str)` | `List[Hashtag]` | Hashtag search via `tags/search/`. |
 | `search_music(query: str)` | `List[Track]` | Music/audio search via `music/audio_global_search/`. |
 | `fbsearch_topsearch_flat(query: str)` | `List[dict]` | Legacy flat top-search via `fbsearch/topsearch_flat/`. |
+| `web_search_topsearch(query: str)` | `dict` | Raw web top-search payload via `web/search/topsearch/`. |
+| `web_search_topsearch_hashtags(query: str)` | `List[Hashtag]` | Extract hashtags from the web top-search payload. |
 | `fbsearch_suggested_profiles(user_id: str)` | `List[UserShort]` | Suggested profiles via `fbsearch/accounts_recs/`. |
 | `fbsearch_recent()` | `List[Tuple[int, ...]]` | Recently searched items. |
 

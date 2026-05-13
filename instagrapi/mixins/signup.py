@@ -98,6 +98,22 @@ class SignUpMixin:
             },
         )
 
+    def check_username(self, username):
+        return self.private_request("users/check_username/", data={"username": username, "_uuid": self.uuid})
+
+    def check_phone_number(self, phone_number: str):
+        return self.private_request(
+            "accounts/check_phone_number/",
+            data={
+                "phone_id": self.phone_id,
+                "login_nonce_map": "{}",
+                "phone_number": phone_number,
+                "guid": self.uuid,
+                "device_id": self.android_device_id,
+                "prefill_shown": "False",
+            },
+        )
+
     def send_verify_email(self, email) -> dict:
         """Send request to receive code to email"""
         return self.private_request(

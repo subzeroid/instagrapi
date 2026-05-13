@@ -248,3 +248,69 @@ class UserMediasGraphQLRegressionTestCase(unittest.TestCase):
         self.assertEqual(end_cursor, "next-page")
         self.assertEqual([media.pk for media in medias], ["1"])
         self.assertEqual(medias[0].id, "1_2")
+
+    def test_aiograpi_chunk_aliases_delegate_to_paginated_helpers(self):
+        client = Client()
+        with mock.patch.object(client, "user_medias_paginated_gql", return_value=(["gql"], "gql-next")) as gql:
+            self.assertEqual(
+                client.user_medias_chunk_gql("123", sleep=1, end_cursor="cursor", amount=7), (["gql"], "gql-next")
+            )
+        gql.assert_called_once_with("123", amount=7, sleep=1, end_cursor="cursor")
+
+        with mock.patch.object(client, "user_medias_paginated_v1", return_value=(["v1"], "v1-next")) as medias_v1:
+            self.assertEqual(client.user_medias_chunk_v1("123", end_cursor="cursor"), (["v1"], "v1-next"))
+        medias_v1.assert_called_once_with("123", amount=33, end_cursor="cursor")
+
+        with mock.patch.object(client, "user_videos_paginated_v1", return_value=(["video"], "video-next")) as videos_v1:
+            self.assertEqual(client.user_videos_chunk_v1("123", end_cursor="cursor"), (["video"], "video-next"))
+        videos_v1.assert_called_once_with("123", amount=50, end_cursor="cursor")
+
+        with mock.patch.object(client, "user_clips_paginated_v1", return_value=(["clip"], "clip-next")) as clips_v1:
+            self.assertEqual(client.user_clips_chunk_v1("123", end_cursor="cursor"), (["clip"], "clip-next"))
+        clips_v1.assert_called_once_with("123", amount=50, end_cursor="cursor")
+
+        with mock.patch.object(client, "usertag_medias_paginated_v1", return_value=(["tag"], "tag-next")) as tags_v1:
+            self.assertEqual(client.usertag_medias_v1_chunk("123", max_id="cursor"), (["tag"], "tag-next"))
+        tags_v1.assert_called_once_with("123", amount=0, end_cursor="cursor")
+
+    def test_user_medias_chunk_delegates_to_paginated(self):
+        client = Client()
+        with mock.patch.object(client, "user_medias_paginated", return_value=(["media"], "next")) as paginated:
+            result = client.user_medias_chunk("123", end_cursor="cursor")
+
+        self.assertEqual(result, (["media"], "next"))
+        paginated.assert_called_once_with("123", amount=0, end_cursor="cursor")
+
+    def test_media_likers_gql_chunk_posts_doc_id_query(self):
+        client = Client()
+        client._fb_dtsg = "token"
+        with mock.patch.object(
+            client,
+            "graphql_request",
+            return_value={
+                "data": {"xdt_api__v1__likes__media_id__likers": {"users": [{"id": "1", "username": "alice"}]}}
+            },
+        ) as graphql_request:
+            users = client.media_likers_gql_chunk("123")
+
+        self.assertEqual(users, [{"id": "1", "username": "alice"}])
+        data = graphql_request.call_args.kwargs["data"]
+        self.assertEqual(data["doc_id"], "24452425501069647")
+        self.assertIn('"id":"123"', data["variables"])
+
+    def test_media_template_v1_posts_template_media_id(self):
+        client = Client()
+        client.uuid = "uuid"
+        expected = {"template": {"media_id": "123_456"}}
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.media_template_v1("123_456")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "clips/template/",
+            data={
+                "should_show_friends_media_at_top": "false",
+                "template_clips_media_id": "123_456",
+                "_uuid": "uuid",
+            },
+        )

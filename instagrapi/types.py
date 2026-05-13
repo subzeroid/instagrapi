@@ -97,6 +97,14 @@ class User(TypesBaseModel):
         raise ValidationError("external_url must be a URL or string")
 
 
+class About(TypesBaseModel):
+    username: Optional[str] = ""
+    is_verified: Optional[bool] = False
+    country: Optional[str] = ""
+    date: Optional[str] = ""
+    former_usernames: Optional[str] = ""
+
+
 class Account(TypesBaseModel):
     pk: str
     username: str

@@ -481,6 +481,128 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             with self.assertRaises(UserNotFound):
                 client.user_web_profile_info_v1("missing")
 
+    def test_user_info_by_username_a1_requests_full_public_payload(self):
+        client = Client()
+        expected = {"graphql": {"user": {"id": "1"}}}
+        with mock.patch.object(client, "public_a1_request", return_value=expected) as public_a1_request:
+            result = client.user_info_by_username_a1("Example")
+
+        self.assertEqual(result, expected)
+        public_a1_request.assert_called_once_with("/example/", full=True)
+
+    def test_user_info_v2_gql_uses_profile_doc_id(self):
+        client = Client()
+        payload = self.build_web_profile_user(id="25025320")["data"]["user"]
+        payload["pk"] = payload["id"]
+        payload["media_count"] = 0
+        payload["follower_count"] = 0
+        payload["following_count"] = 0
+        payload["profile_pic_url"] = "https://example.com/pic.jpg"
+
+        with mock.patch.object(client, "_inject_sessionid_for_v2_gql") as inject:
+            with mock.patch.object(client, "public_doc_id_graphql_request", return_value={"user": payload}) as gql:
+                user = client.user_info_v2_gql("25025320")
+
+        inject.assert_called_once_with()
+        gql.assert_called_once()
+        self.assertEqual(gql.call_args.args[0], "25980296051578533")
+        self.assertEqual(gql.call_args.args[1]["id"], "25025320")
+        self.assertEqual(user.pk, "25025320")
+
+    def test_user_info_by_username_v2_gql_resolves_username_then_profile(self):
+        client = Client()
+        with mock.patch.object(client, "_inject_sessionid_for_v2_gql"):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={
+                    "xdt_api__v1__fbsearch__non_profiled_serp": {"users": [{"username": "example", "pk": "123"}]}
+                },
+            ) as search:
+                with mock.patch.object(client, "user_info_v2_gql", return_value="user") as profile:
+                    result = client.user_info_by_username_v2_gql("Example")
+
+        self.assertEqual(result, "user")
+        search.assert_called_once_with("26347858941511777", {"hasQuery": True, "query": "example"})
+        profile.assert_called_once_with("123")
+
+    def test_user_about_v1_calls_bloks_action_and_extracts_last_json(self):
+        client = self.build_private_client()
+        client.bloks_versioning_id = "bloks"
+        client.last_json = {"layout": {"bloks_payload": {"data": []}}}
+        expected = object()
+        with mock.patch.object(client, "bloks_action", return_value={}) as bloks_action:
+            with mock.patch("instagrapi.mixins.user.extract_about_v1", return_value=expected) as extract:
+                result = client.user_about_v1("123")
+
+        self.assertIs(result, expected)
+        bloks_action.assert_called_once()
+        self.assertEqual(bloks_action.call_args.args[0], "com.instagram.interactions.about_this_account")
+        self.assertEqual(bloks_action.call_args.args[1]["target_user_id"], "123")
+        extract.assert_called_once_with(client.last_json)
+
+    def test_user_guides_v1_extracts_guides(self):
+        client = Client()
+        with mock.patch.object(client, "private_request", return_value={"guides": [{"summary": {"id": "1"}}]}) as req:
+            with mock.patch("instagrapi.mixins.user.extract_guide_v1", side_effect=lambda item: item["summary"]):
+                guides = client.user_guides_v1("123")
+
+        self.assertEqual(guides, [{"id": "1"}])
+        req.assert_called_once_with("guides/user/123/")
+
+    def test_feed_user_stream_item_posts_uuid_payload(self):
+        client = Client()
+        client.uuid = "uuid"
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
+            client.feed_user_stream_item("123", is_pull_to_refresh=True)
+
+        private_request.assert_called_once_with(
+            "feed/user_stream/123/",
+            data={"_uuid": "uuid", "is_pull_to_refresh": "true"},
+        )
+
+    def test_private_graphql_followers_list_builds_query_wrapper(self):
+        client = Client()
+        with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
+            client.private_graphql_followers_list("123", "rank", max_id=10, priority="u=3, i")
+
+        query.assert_called_once()
+        self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowersList")
+        self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__followers")
+        self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
+        self.assertEqual(query.call_args.kwargs["variables"]["max_id"], 10)
+        self.assertEqual(query.call_args.kwargs["priority"], "u=3, i")
+
+    def test_private_graphql_following_list_builds_query_wrapper(self):
+        client = Client()
+        with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
+            client.private_graphql_following_list("123", "rank")
+
+        self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowingList")
+        self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__following")
+        self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
+
+    def test_private_graphql_clips_profile_builds_query_wrapper(self):
+        client = Client()
+        with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
+            client.private_graphql_clips_profile("123", page_size=9, no_of_medias_in_each_chunk=3)
+
+        variables = query.call_args.kwargs["variables"]
+        self.assertEqual(query.call_args.kwargs["friendly_name"], "ClipsProfileQuery")
+        self.assertEqual(variables["data"]["target_user_id"], "123")
+        self.assertEqual(variables["data"]["page_size"], 9)
+        self.assertEqual(variables["data"]["no_of_medias_in_each_chunk"], 3)
+
+    def test_private_graphql_inbox_tray_for_user_builds_query_wrapper(self):
+        client = Client()
+        with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
+            client.private_graphql_inbox_tray_for_user("123", priority="u=3, i")
+
+        self.assertEqual(query.call_args.kwargs["friendly_name"], "InboxTrayRequestForUserQuery")
+        self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_get_inbox_tray_items")
+        self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
+        self.assertEqual(query.call_args.kwargs["priority"], "u=3, i")
+
     def test_discover_recommended_accounts_extracts_category_id_from_stream(self):
         client = Client()
         stream_resp = {

@@ -7,6 +7,14 @@ Post comment, viewing, like and unlike comments
 | media_comment(media_id: str, text: str, replied_to_comment_id: Optional[int] = None) | Comment | Add a new comment to media or reply to an existing comment |
 | media_comments(media_id: str, amount: int = 20) | List\[Comment] | Get comments for media; pass `amount=0` to keep paginating until exhaustion |
 | media_comments_chunk(media_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of comments and the next `min_id` cursor |
+| media_comments_v1(media_id: str, amount: int = 20) | List\[Comment] | Get comments through the private mobile comments endpoint |
+| media_comments_v1_chunk(media_id: str, min_id: str = "", max_id: str = "") | Tuple[List\[Comment], str, str] | Get one private comments page and both cursors |
+| media_stream_comments_v1_chunk(media_id: str, min_id: str = "", max_id: str = "") | Tuple[List\[Comment], str, str] | Get one streamed comments page and both cursors |
+| media_comments_gql(media_pk: str, amount: int = 50, max_requests: int = 0) | List\[dict] | Get comments through the web GraphQL doc_id endpoint |
+| media_comments_gql_chunk(media_pk: str, end_cursor: str = "") | Tuple[List\[dict], str] | Get one web GraphQL comments page |
+| media_comments_threaded_gql(media_pk: str, comment_pk: str, amount: int = 0) | List\[dict] | Get threaded replies through the web GraphQL doc_id endpoint |
+| media_comments_threaded_gql_chunk(media_pk: str, comment_pk: str, end_cursor: str = "") | Tuple[List\[dict], str] | Get one threaded GraphQL comments page |
+| media_comment_infos(media_ids: List[str]) | dict | Bulk-fetch comment summaries for media ids |
 | media_comment_replies(media_id: str, comment_id: str, amount: int = 0) | List\[Comment] | Get replies for a parent media comment; pass `amount=0` to keep paginating until exhaustion |
 | media_comment_replies_chunk(media_id: str, comment_id: str, max_amount: int, min_id: str = None) | Tuple[List\[Comment], str] | Get a paginated chunk of replies and the next child cursor |
 | media_check_offensive_comment(media_id: str, text: str) | bool | Ask Instagram whether a comment text is considered offensive |
@@ -16,6 +24,8 @@ Post comment, viewing, like and unlike comments
 | comment_pin(media_id: str, comment_pk: int, revert: bool = False) | bool | Pin a comment on your media |
 | comment_unpin(media_id: str, comment_pk: int) | bool | Unpin a previously pinned comment |
 | comment_bulk_delete(media_id: str, comment_pks: List[int]) | bool | Delete one or more comments from your media |
+| comment_likers_gql(comment_pk: str, amount: int = 0) | List\[dict] | Get comment likers through public GraphQL |
+| comment_likers_gql_chunk(comment_pk: str, end_cursor: str = "") | Tuple[List\[dict], str] | Get one public GraphQL comment-likers page |
 
 
 Example:

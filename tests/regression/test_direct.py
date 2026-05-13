@@ -523,3 +523,62 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(media_id, 987654321)
         self.assertEqual(session.calls[0][2]["authorization"], client.authorization)
         self.assertNotEqual(session.calls[0][2]["authorization"], "Bearer IGT:2:raw-session")
+
+    def test_messenger_rupload_headers_merges_common_optional_and_extra_headers(self):
+        client = self.build_client()
+        client.authorization_data = {"ds_user_id": "123", "sessionid": "raw-session"}
+        client.private.headers["Authorization"] = "Bearer token"
+        client.private.headers["IG-U-RUR"] = "rur-token"
+        client.private.headers["X-MID"] = "mid-token"
+
+        headers = client._messenger_rupload_headers({"audio_type": "FILE_ATTACHMENT"})
+
+        self.assertEqual(headers["authorization"], "Bearer token")
+        self.assertEqual(headers["ig-intended-user-id"], "123")
+        self.assertEqual(headers["ig-u-ds-user-id"], "123")
+        self.assertEqual(headers["accept-encoding"], "gzip")
+        self.assertEqual(headers["accept-language"], "en-US")
+        self.assertEqual(headers["priority"], "u=6, i")
+        self.assertEqual(headers["user-agent"], client.user_agent)
+        self.assertEqual(headers["audio_type"], "FILE_ATTACHMENT")
+        self.assertEqual(headers["ig-u-rur"], "rur-token")
+        self.assertEqual(headers["x-mid"], "mid-token")
+
+    def test_video_rupload_delegates_base_headers_to_helper(self):
+        client = self.build_client()
+        session = self.fake_rupload_session(media_id=987654321)
+
+        with (
+            mock.patch("requests.Session", return_value=session),
+            mock.patch.object(
+                client, "_messenger_rupload_headers", return_value={"authorization": "Bearer token"}
+            ) as headers,
+        ):
+            media_id = client._video_rupload(b"video-bytes", "entity-name", "waterfall-id")
+
+        self.assertEqual(media_id, 987654321)
+        headers.assert_called_once_with(
+            {
+                "video_type": "FILE_ATTACHMENT",
+                "segment-start-offset": "0",
+                "segment-type": "3",
+                "ephemeral_media_view_mode": "2",
+                "ig_raven_metadata": "{}",
+                "x_fb_video_waterfall_id": "waterfall-id",
+            }
+        )
+
+    def test_voice_rupload_delegates_base_headers_to_helper(self):
+        client = self.build_client()
+        session = self.fake_rupload_session(media_id=987654321)
+
+        with (
+            mock.patch("requests.Session", return_value=session),
+            mock.patch.object(
+                client, "_messenger_rupload_headers", return_value={"authorization": "Bearer token"}
+            ) as headers,
+        ):
+            media_id = client._voice_rupload(b"voice-bytes", "1234567", -99)
+
+        self.assertEqual(media_id, 987654321)
+        headers.assert_called_once_with({"audio_type": "FILE_ATTACHMENT"})
