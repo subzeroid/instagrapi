@@ -99,3 +99,101 @@ class FbSearchRegressionTestCase(unittest.TestCase):
             users = client.fbsearch_typehead("ali")
 
         self.assertEqual(users, [])
+
+    def test_web_search_topsearch_sends_expected_params(self):
+        client = self._build_client()
+        expected = {"hashtags": []}
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.web_search_topsearch("alice")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "web/search/topsearch/",
+            params={
+                "search_surface": "web_top_search",
+                "context": "blended",
+                "include_reel": "true",
+                "query": "alice",
+            },
+        )
+
+    def test_web_search_topsearch_hashtags_extracts_hashtags(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "web_search_topsearch",
+            return_value={"hashtags": [{"hashtag": {"id": "1", "name": "python", "media_count": 10}}]},
+        ):
+            hashtags = client.web_search_topsearch_hashtags("python")
+
+        self.assertEqual([hashtag.name for hashtag in hashtags], ["python"])
+
+    def test_fbsearch_item_forwards_optional_cursors(self):
+        client = self._build_client()
+        with mock.patch.object(client, "private_request", return_value={"items": []}) as private_request:
+            result = client.fbsearch_item(
+                "clips_serp_page",
+                "clips_serp_page",
+                "#dance",
+                timezone_offset=10800,
+                count=12,
+                reels_page_index=2,
+                has_more_reels="true",
+                reels_max_id="reels-cursor",
+                next_max_id="next-cursor",
+                rank_token="rank-token",
+                page_index=3,
+                page_token="page-token",
+                paging_token="paging-token",
+            )
+
+        self.assertEqual(result, {"items": []})
+        private_request.assert_called_once_with(
+            "fbsearch/clips_serp_page/",
+            params={
+                "search_surface": "clips_serp_page",
+                "query": "#dance",
+                "timezone_offset": 10800,
+                "count": 12,
+                "reels_page_index": 2,
+                "has_more_reels": "true",
+                "reels_max_id": "reels-cursor",
+                "next_max_id": "next-cursor",
+                "rank_token": "rank-token",
+                "page_index": 3,
+                "page_token": "page-token",
+                "paging_token": "paging-token",
+            },
+        )
+
+    def test_fbsearch_keyword_typeahead_sends_blended_context(self):
+        client = self._build_client()
+        with mock.patch.object(client, "private_request", return_value={"keywords": []}) as private_request:
+            client.fbsearch_keyword_typeahead("ali", timezone_offset=10800, count=5)
+
+        private_request.assert_called_once_with(
+            "fbsearch/keyword_typeahead/",
+            params={
+                "search_surface": "typeahead_search_page",
+                "query": "ali",
+                "context": "blended",
+                "timezone_offset": 10800,
+                "count": 5,
+            },
+        )
+
+    def test_fbsearch_typeahead_stream_sends_blended_context(self):
+        client = self._build_client()
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
+            client.fbsearch_typeahead_stream("ali", timezone_offset=10800, count=5)
+
+        private_request.assert_called_once_with(
+            "fbsearch/typeahead_stream/",
+            params={
+                "search_surface": "typeahead_search_page",
+                "query": "ali",
+                "context": "blended",
+                "timezone_offset": 10800,
+                "count": 5,
+            },
+        )

@@ -30,6 +30,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk_from_url(url: str) | str | Return media PK from media URL; also handles `share/p/...` redirect URLs |
 | user_medias(user_id: str, amount: int = 0) | List\[Media] | Get user feed media |
 | user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of user media and next cursor |
+| user_medias_chunk(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one page of user media |
 | user_clips(user_id: str, amount: int = 0) | List\[Media] | Get clips/reels by user |
 | usertag_medias(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged |
 | usertag_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of media where a user is tagged and next cursor |
@@ -42,11 +43,13 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_unlike(media_id: str) | bool | Unlike media |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
 | media_likers(media_id: str) | List\[UserShort] | Return users who liked this post |
+| media_likers_gql(media_pk: str, amount: int = 0) | List\[dict] | Return users who liked this post through the web GraphQL doc_id endpoint |
 | archive_medias(amount: int = 0) | List\[Media] | Get archived media from your account |
 | media_archive(media_id: str) | bool | Archive media |
 | media_unarchive(media_id: str) | bool | Unarchive media |
 | media_pin(media_pk: str) | bool | Pin media to profile |
 | media_unpin(media_pk: str) | bool | Unpin media from profile |
+| media_template_v1(media_id: str) | dict | Fetch a clip template payload for a Reel/clip media |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
 | clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
 | media_create_livestream(title: str = "Instagram Live") | dict | Create a new livestream and return stream metadata |
@@ -66,16 +69,21 @@ Low level methods:
 | media_info_v2(media_id: str) | Media | Alternative source for media info via `discover/media_metadata/` (`media_or_ad` payload). Useful as fallback when `media_info_v1` fails on certain ad-tagged or sponsored media. Strips `_userid` suffix automatically. |
 | user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media via public GraphQL API |
 | user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one public GraphQL page of user media |
+| user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0) | Tuple[List\[Media], str] | Compatibility alias for one public GraphQL page of user media |
 | user_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get user media via private mobile API |
 | user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of user media |
+| user_medias_chunk_v1(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one private API page of user media |
 | user_clips_v1(user_id: str, amount: int = 0) | List\[Media] | Get user clips via private mobile API |
 | user_clips_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of clips |
+| user_clips_chunk_v1(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one private API page of clips |
 | user_videos_v1(user_id: str, amount: int = 0) | List\[Media] | Get user videos via private mobile API |
 | user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of videos |
+| user_videos_chunk_v1(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one private API page of videos |
 | usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2) | List\[Media] | Get media where a user is tagged via public GraphQL API |
 | usertag_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one public GraphQL page of media where a user is tagged |
 | usertag_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get media where a user is tagged via private mobile API |
 | usertag_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of media where a user is tagged |
+| usertag_medias_v1_chunk(user_id: str, max_id: str = "") | Tuple[List\[Media], str] | Compatibility alias for one private API page of tagged media |
 | archive_medias_v1(amount: int = 0) | List\[Media] | Get archived media via private mobile API |
 | archive_medias_paginated_v1(amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of archived media |
 

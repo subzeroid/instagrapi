@@ -862,6 +862,43 @@ class DirectMixin:
         )
         return extract_direct_message(result["payload"])
 
+    def _messenger_rupload_headers(self, extra_headers: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+        bearer = self.private.headers.get("Authorization") or self.authorization
+        user_id = str(self.user_id)
+        rur = self.private.headers.get("IG-U-RUR", "")
+        mid = self.private.headers.get("X-MID", "")
+
+        headers = {
+            "authorization": bearer,
+            "ig-intended-user-id": user_id,
+            "ig-u-ds-user-id": user_id,
+            # The real client may send zstd; requests cannot decode zstd, and
+            # rupload accepts gzip for these Direct attachment flows.
+            "accept-encoding": "gzip",
+            "accept-language": "en-US",
+            "priority": "u=6, i",
+            "user-agent": self.user_agent,
+            "x-fb-client-ip": "True",
+            "x-fb-friendly-name": "undefined:media-upload",
+            "x-fb-http-engine": "Tigon/MNS/TCP",
+            "x-fb-request-analytics-tags": (
+                '{"network_tags":{"product":"567067343352427",'
+                '"surface":"undefined","request_category":"media_upload",'
+                '"purpose":"none","retry_attempt":"0"}}'
+            ),
+            "x-fb-rmd": "state=URL_ELIGIBLE",
+            "x-fb-server-cluster": "True",
+            "x-tigon-is-retry": "False",
+            "x-ig-salt-ids": "51052545",
+        }
+        if rur:
+            headers["ig-u-rur"] = rur
+        if mid:
+            headers["x-mid"] = mid
+        if extra_headers:
+            headers.update(extra_headers)
+        return headers
+
     def _video_rupload(self, video_bytes: bytes, entity_name: str, waterfall_id: str) -> int:
         """Upload mp4 bytes to ``rupload.facebook.com/messenger_video/...`` and
         return the ``media_id`` used as ``attachment_fbid`` in the broadcast.
@@ -882,42 +919,16 @@ class DirectMixin:
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 
-        bearer = self.private.headers.get("Authorization") or self.authorization
-        user_id = str(self.user_id)
-        rur = self.private.headers.get("IG-U-RUR", "")
-        mid = self.private.headers.get("X-MID", "")
-
-        headers = {
-            "authorization": bearer,
-            "ig-intended-user-id": user_id,
-            "ig-u-ds-user-id": user_id,
-            "accept-encoding": "gzip",
-            "accept-language": "en-US",
-            "priority": "u=6, i",
-            "user-agent": self.user_agent,
-            "video_type": "FILE_ATTACHMENT",
-            "segment-start-offset": "0",
-            "segment-type": "3",
-            "ephemeral_media_view_mode": "2",
-            "ig_raven_metadata": "{}",
-            "x_fb_video_waterfall_id": waterfall_id,
-            "x-fb-client-ip": "True",
-            "x-fb-friendly-name": "undefined:media-upload",
-            "x-fb-http-engine": "Tigon/MNS/TCP",
-            "x-fb-request-analytics-tags": (
-                '{"network_tags":{"product":"567067343352427",'
-                '"surface":"undefined","request_category":"media_upload",'
-                '"purpose":"none","retry_attempt":"0"}}'
-            ),
-            "x-fb-rmd": "state=URL_ELIGIBLE",
-            "x-fb-server-cluster": "True",
-            "x-tigon-is-retry": "False",
-            "x-ig-salt-ids": "51052545",
-        }
-        if rur:
-            headers["ig-u-rur"] = rur
-        if mid:
-            headers["x-mid"] = mid
+        headers = self._messenger_rupload_headers(
+            {
+                "video_type": "FILE_ATTACHMENT",
+                "segment-start-offset": "0",
+                "segment-type": "3",
+                "ephemeral_media_view_mode": "2",
+                "ig_raven_metadata": "{}",
+                "x_fb_video_waterfall_id": waterfall_id,
+            }
+        )
 
         # 1. fetch resumable offset
         r = sess.get(url, headers=headers, timeout=30)
@@ -1058,39 +1069,7 @@ class DirectMixin:
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 
-        bearer = self.private.headers.get("Authorization") or self.authorization
-        user_id = str(self.user_id)
-        rur = self.private.headers.get("IG-U-RUR", "")
-        mid = self.private.headers.get("X-MID", "")
-
-        headers = {
-            "authorization": bearer,
-            "ig-intended-user-id": user_id,
-            "ig-u-ds-user-id": user_id,
-            # NOTE: real client sends zstd; requests cannot decode zstd so use
-            # gzip. The server honors either.
-            "accept-encoding": "gzip",
-            "accept-language": "en-US",
-            "priority": "u=6, i",
-            "user-agent": self.user_agent,
-            "audio_type": "FILE_ATTACHMENT",
-            "x-fb-client-ip": "True",
-            "x-fb-friendly-name": "undefined:media-upload",
-            "x-fb-http-engine": "Tigon/MNS/TCP",
-            "x-fb-request-analytics-tags": (
-                '{"network_tags":{"product":"567067343352427",'
-                '"surface":"undefined","request_category":"media_upload",'
-                '"purpose":"none","retry_attempt":"0"}}'
-            ),
-            "x-fb-rmd": "state=URL_ELIGIBLE",
-            "x-fb-server-cluster": "True",
-            "x-tigon-is-retry": "False",
-            "x-ig-salt-ids": "51052545",
-        }
-        if rur:
-            headers["ig-u-rur"] = rur
-        if mid:
-            headers["x-mid"] = mid
+        headers = self._messenger_rupload_headers({"audio_type": "FILE_ATTACHMENT"})
 
         # 1. fetch resumable offset
         r = sess.get(url, headers=headers, timeout=30)

@@ -16,9 +16,15 @@ from instagrapi.exceptions import (
     UnknownError,
     UserNotFound,
 )
-from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
-from instagrapi.types import Relationship, RelationshipShort, User, UserShort
-from instagrapi.utils.serialization import json_value
+from instagrapi.extractors import (
+    extract_about_v1,
+    extract_guide_v1,
+    extract_user_gql,
+    extract_user_short,
+    extract_user_v1,
+)
+from instagrapi.types import About, Guide, Relationship, RelationshipShort, User, UserShort
+from instagrapi.utils.serialization import dumps, json_value
 
 MAX_USER_COUNT = 200
 INFO_FROM_MODULES = ("self_profile", "feed_timeline", "reel_feed_timeline")
@@ -183,6 +189,13 @@ class UserMixin:
             username = self.user_info_v1(user_id).username
         return username
 
+    def user_info_by_username_a1(self, username: str) -> dict:
+        """
+        Get raw public A1 user object from username.
+        """
+        username = str(username).lower()
+        return self.public_a1_request(f"/{username}/", full=True)
+
     def user_info_by_username_gql(self, username: str) -> User:
         """
         Get user object from user name
@@ -229,6 +242,57 @@ class UserMixin:
             )["data"]["user"]
         )
         return data
+
+    def _inject_sessionid_for_v2_gql(self) -> None:
+        try:
+            self.inject_sessionid_to_public()
+        except Exception as exc:
+            logger.debug("Unable to inject sessionid into public session: %r", exc)
+
+    def user_info_v2_gql(self, user_id: str) -> User:
+        """
+        Get user object via the PolarisProfilePageContentQuery doc_id.
+        """
+        variables = {
+            "id": str(user_id),
+            "render_surface": "PROFILE",
+            "__relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider": True,
+            "__relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider": False,
+            "__relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider": False,
+        }
+        self._inject_sessionid_for_v2_gql()
+        data = self.public_doc_id_graphql_request("25980296051578533", variables)
+        user_data = (data or {}).get("user")
+        if user_data is None:
+            raise UserNotFound("User not found", user_id=user_id)
+        return extract_user_v1(self._normalize_polaris_profile(user_data))
+
+    def user_info_by_username_v2_gql(self, username: str) -> User:
+        """
+        Resolve username via doc_id search, then fetch profile by user id.
+        """
+        username = str(username).lower()
+        self._inject_sessionid_for_v2_gql()
+        data = self.public_doc_id_graphql_request("26347858941511777", {"hasQuery": True, "query": username})
+        users = ((data or {}).get("xdt_api__v1__fbsearch__non_profiled_serp") or {}).get("users") or []
+        for user in users:
+            if (user.get("username") or "").lower() == username:
+                return self.user_info_v2_gql(user.get("pk") or user.get("id"))
+        raise UserNotFound("User not found", username=username)
+
+    @staticmethod
+    def _normalize_polaris_profile(user_data: dict) -> dict:
+        normalized = dict(user_data)
+        if "pk" not in normalized and "id" in normalized:
+            normalized["pk"] = normalized["id"]
+        if "is_business" not in normalized and "is_business_account" in normalized:
+            normalized["is_business"] = normalized["is_business_account"]
+        if "category" not in normalized and "category_name" in normalized:
+            normalized["category"] = normalized["category_name"]
+        friendship = normalized.get("friendship_status") or {}
+        normalized.setdefault("followed_by_viewer", friendship.get("following", False))
+        normalized.setdefault("follows_viewer", friendship.get("followed_by", False))
+        return normalized
 
     def user_info_by_username_v1(self, username: str) -> User:
         """
@@ -357,6 +421,28 @@ class UserMixin:
                 raise UserNotFound(e, user_id=user_id, **self.last_json)
             raise e
         return extract_user_v1(result["user"])
+
+    def user_about_v1(self, user_id: str) -> About:
+        """
+        Get about info from user id.
+        """
+        user_id = str(user_id)
+        bk = dumps({"bloks_version": self.bloks_versioning_id, "styles_id": "instagram"})
+        data = {
+            "referer_type": "ProfileMore",
+            "target_user_id": user_id,
+            "bk_client_context": bk,
+            "bloks_versioning_id": self.bloks_versioning_id,
+        }
+        try:
+            self.bloks_action("com.instagram.interactions.about_this_account", data)
+        except ClientNotFoundError as e:
+            raise UserNotFound(e, user_id=user_id, **self.last_json)
+        except ClientError as e:
+            if "User not found" in str(e):
+                raise UserNotFound(e, user_id=user_id, **self.last_json)
+            raise e
+        return extract_about_v1(self.last_json)
 
     def user_info(self, user_id: str, use_cache: bool = True) -> User:
         """
@@ -1485,6 +1571,14 @@ class UserMixin:
         user = extract_user_short(result.get("user", {}))
         return (user, creator_info)
 
+    def user_guides_v1(self, user_id: int) -> List[Guide]:
+        """
+        Get guides by user_id.
+        """
+        user_id = int(user_id)
+        result = self.private_request(f"guides/user/{user_id}/")
+        return [extract_guide_v1(item) for item in (result.get("guides") or [])]
+
     def chaining(self, user_id: str) -> dict:
         """
         Get suggested users for a target user_id.
@@ -1737,6 +1831,156 @@ class UserMixin:
         if data := result.get("data", {}):
             return data
         raise UserNotFound("Username not found", username=username, **self.last_json)
+
+    def feed_user_stream_item(
+        self,
+        item_id: str,
+        is_pull_to_refresh: bool = False,
+    ) -> dict:
+        """
+        Fetch the streamed feed for a user.
+        """
+        data = {
+            "_uuid": self.uuid,
+        }
+        if is_pull_to_refresh:
+            data["is_pull_to_refresh"] = "true"
+        return self.private_request(f"feed/user_stream/{item_id}/", data=data)
+
+    def private_graphql_followers_list(
+        self,
+        user_id: str,
+        rank_token: str,
+        client_doc_id: str = "28479704798344003308647327139",
+        max_id: int = None,
+        priority: str = None,
+        exclude_field_is_favorite: bool = None,
+        exclude_unused_fields: bool = None,
+    ) -> dict:
+        request_data = {
+            "rank_token": rank_token,
+            "enableGroups": True,
+        }
+        variables = {
+            "include_unseen_count": False,
+            "query": "",
+            "include_biography": False,
+            "user_id": str(user_id),
+            "request_data": request_data,
+            "search_surface": "follow_list_page",
+        }
+        if exclude_field_is_favorite is not None:
+            variables["exclude_field_is_favorite"] = exclude_field_is_favorite
+        if max_id is not None:
+            variables["max_id"] = max_id
+        if exclude_unused_fields is not None:
+            variables["exclude_unused_fields"] = exclude_unused_fields
+        return self.private_graphql_query_request(
+            friendly_name="FollowersList",
+            root_field_name="xdt_api__v1__friendships__followers",
+            variables=variables,
+            client_doc_id=client_doc_id,
+            priority=priority,
+        )
+
+    def private_graphql_following_list(
+        self,
+        user_id: str,
+        rank_token: str,
+        client_doc_id: str = "16104639289023609826830352479",
+        max_id: int = None,
+        priority: str = None,
+        exclude_field_is_favorite: bool = None,
+        exclude_unused_fields: bool = None,
+    ) -> dict:
+        request_data = {
+            "search_surface": "follow_list_page",
+            "rank_token": rank_token,
+            "includes_hashtags": True,
+        }
+        variables = {
+            "include_unseen_count": False,
+            "enable_groups": True,
+            "user_id": str(user_id),
+            "request_data": request_data,
+            "include_biography": False,
+            "query": "",
+        }
+        if exclude_field_is_favorite is not None:
+            variables["exclude_field_is_favorite"] = exclude_field_is_favorite
+        if max_id is not None:
+            variables["max_id"] = max_id
+        if exclude_unused_fields is not None:
+            variables["exclude_unused_fields"] = exclude_unused_fields
+        return self.private_graphql_query_request(
+            friendly_name="FollowingList",
+            root_field_name="xdt_api__v1__friendships__following",
+            variables=variables,
+            client_doc_id=client_doc_id,
+            priority=priority,
+        )
+
+    def private_graphql_clips_profile(
+        self,
+        target_user_id: str,
+        client_doc_id: str = "209049231614685382737238866578",
+        priority: str = None,
+        initial_stream_count: int = 6,
+        page_size: int = 12,
+        no_of_medias_in_each_chunk: int = 6,
+    ) -> dict:
+        inner_data = {
+            "target_user_id": str(target_user_id),
+            "should_stream_response": False,
+            "sort_by_views": False,
+            "max_id": None,
+            "include_feed_video": True,
+            "audience": None,
+        }
+        if page_size:
+            inner_data["page_size"] = page_size
+        if no_of_medias_in_each_chunk:
+            inner_data["no_of_medias_in_each_chunk"] = no_of_medias_in_each_chunk
+        variables = {
+            "use_stream": False,
+            "use_defer": False,
+            "enable_video_versions_in_light_media": True,
+            "exclude_caption_user_field": False,
+            "enable_thumbnails_in_light_media": False,
+            "enable_audience_in_light_media": False,
+            "enable_clips_metadata_in_light_media": False,
+            "exclude_main_user_field": False,
+            "enable_likers_in_full_media": False,
+            "data": inner_data,
+            "stream_use_customized_batch": False,
+        }
+        if initial_stream_count:
+            variables["initial_stream_count"] = initial_stream_count
+        return self.private_graphql_query_request(
+            friendly_name="ClipsProfileQuery",
+            root_field_name="xdt_user_clips_graphql",
+            variables=variables,
+            client_doc_id=client_doc_id,
+            priority=priority,
+        )
+
+    def private_graphql_inbox_tray_for_user(
+        self,
+        user_id: str,
+        client_doc_id: str = "2035639076042015234490020607",
+        priority: str = None,
+    ) -> dict:
+        variables = {
+            "user_id": str(user_id),
+            "should_fetch_content_note_stack_video_info": False,
+        }
+        return self.private_graphql_query_request(
+            friendly_name="InboxTrayRequestForUserQuery",
+            root_field_name="xdt_get_inbox_tray_items",
+            variables=variables,
+            client_doc_id=client_doc_id,
+            priority=priority,
+        )
 
     def discover_recommended_accounts_for_category_v1(self, user_id: str) -> dict:
         """

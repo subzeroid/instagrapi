@@ -304,7 +304,7 @@ class PublicRequestMixin:
         finally:
             self.last_response_ts = time.time()
 
-    def public_a1_request(self, endpoint, data=None, params=None, headers=None):
+    def public_a1_request(self, endpoint, data=None, params=None, headers=None, full=False):
         url = (self.PUBLIC_API_URL + str(endpoint)).replace(
             ".com//", ".com/"
         )  # (jarrodnorwell) fixed KeyError: 'data', fixed // error
@@ -312,6 +312,8 @@ class PublicRequestMixin:
         params.update({"__a": 1, "__d": "dis"})
 
         response = self.public_request(url, data=data, params=params, headers=headers, return_json=True)
+        if full:
+            return response
         return response.get("graphql") or response
 
     def public_a1_request_user_info_by_username(self, username, data=None, params=None):

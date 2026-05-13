@@ -25,6 +25,15 @@ class FbSearchMixin:
             locations.append(extract_location(item["location"]))
         return locations
 
+    def web_search_topsearch(self, query: str) -> dict:
+        params = {
+            "search_surface": "web_top_search",
+            "context": "blended",
+            "include_reel": "true",
+            "query": query,
+        }
+        return self.private_request("web/search/topsearch/", params=params)
+
     def fbsearch_topsearch_flat(self, query: str) -> List[dict]:
         params = {
             "search_surface": "top_search_page",
@@ -71,6 +80,86 @@ class FbSearchMixin:
         }
         result = self.private_request("fbsearch/accounts_recs/", params=params)
         return result["users"]
+
+    def web_search_topsearch_hashtags(self, query: str) -> List[Hashtag]:
+        result = self.web_search_topsearch(query)
+        return [extract_hashtag_v1(item["hashtag"]) for item in result.get("hashtags", [])]
+
+    def fbsearch_item(
+        self,
+        item_id: str,
+        search_surface: str,
+        query: str,
+        timezone_offset: int = 0,
+        count: int = 30,
+        reels_page_index: int = None,
+        has_more_reels: str = None,
+        reels_max_id: str = None,
+        next_max_id: str = None,
+        rank_token: str = None,
+        page_index: int = None,
+        page_token: str = None,
+        paging_token: str = None,
+    ) -> dict:
+        params = {
+            "search_surface": search_surface,
+            "query": query,
+        }
+        if timezone_offset:
+            params["timezone_offset"] = timezone_offset
+        if count:
+            params["count"] = count
+        if reels_page_index is not None:
+            params["reels_page_index"] = reels_page_index
+        if has_more_reels:
+            params["has_more_reels"] = has_more_reels
+        if reels_max_id:
+            params["reels_max_id"] = reels_max_id
+        if next_max_id:
+            params["next_max_id"] = next_max_id
+        if rank_token:
+            params["rank_token"] = rank_token
+        if page_index is not None:
+            params["page_index"] = page_index
+        if page_token:
+            params["page_token"] = page_token
+        if paging_token:
+            params["paging_token"] = paging_token
+        return self.private_request(f"fbsearch/{item_id}/", params=params)
+
+    def fbsearch_keyword_typeahead(
+        self,
+        query: str,
+        timezone_offset: int = 0,
+        count: int = 30,
+    ) -> dict:
+        params = {
+            "search_surface": "typeahead_search_page",
+            "query": query,
+            "context": "blended",
+        }
+        if timezone_offset:
+            params["timezone_offset"] = timezone_offset
+        if count:
+            params["count"] = count
+        return self.private_request("fbsearch/keyword_typeahead/", params=params)
+
+    def fbsearch_typeahead_stream(
+        self,
+        query: str,
+        timezone_offset: int = 0,
+        count: int = 30,
+    ) -> dict:
+        params = {
+            "search_surface": "typeahead_search_page",
+            "query": query,
+            "context": "blended",
+        }
+        if timezone_offset:
+            params["timezone_offset"] = timezone_offset
+        if count:
+            params["count"] = count
+        return self.private_request("fbsearch/typeahead_stream/", params=params)
 
     def fbsearch_recent(self) -> List[Tuple[int, Union[UserShort, Hashtag, Dict]]]:
         """

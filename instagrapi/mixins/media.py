@@ -24,9 +24,11 @@ from instagrapi.extractors import (
     extract_media_v1,
     extract_user_short,
 )
+from instagrapi.mixins.graphql import GQL_STUFF
 from instagrapi.types import Location, Media, UserShort, Usertag
+from instagrapi.utils.auth import generate_jazoest
 from instagrapi.utils.ids import InstagramIdCodec
-from instagrapi.utils.serialization import json_value
+from instagrapi.utils.serialization import dumps, json_value
 
 MEDIA_INFO_DOC_ID = "8845758582119845"
 IG_PROFILE_TIMELINE_DOC_ID = "56030350814417327502004290437"
@@ -665,6 +667,14 @@ class MediaMixin:
         except ClientError:
             return self._user_medias_paginated_public_gql(user_id, amount, end_cursor=end_cursor)
 
+    def user_medias_chunk_gql(
+        self, user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0
+    ) -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.user_medias_paginated_gql(user_id, amount=amount, sleep=sleep, end_cursor=end_cursor)
+
     def user_medias_gql(self, user_id: str, amount: int = 0, sleep: int = 0) -> List[Media]:
         """
         Get a user's media by Public Graphql API
@@ -747,6 +757,12 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media) for media in medias], next_max_id)
 
+    def user_videos_chunk_v1(self, user_id: str, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.user_videos_paginated_v1(user_id, amount=50, end_cursor=end_cursor)
+
     def user_videos_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's video by Private Mobile API
@@ -827,6 +843,12 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media) for media in medias], next_max_id)
 
+    def user_medias_chunk_v1(self, user_id: str, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.user_medias_paginated_v1(user_id, amount=33, end_cursor=end_cursor)
+
     def user_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's media by Private Mobile API
@@ -903,6 +925,12 @@ class MediaMixin:
                 self.logger.exception(e)
             medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
         return medias, end_cursor
+
+    def user_medias_chunk(self, user_id: str, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.user_medias_paginated(user_id, amount=0, end_cursor=end_cursor)
 
     def user_pinned_medias(self, user_id) -> List[Media]:
         """
@@ -1015,6 +1043,12 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_v1(media["media"]) for media in medias], next_max_id)
 
+    def user_clips_chunk_v1(self, user_id: str, end_cursor: str = "") -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.user_clips_paginated_v1(user_id, amount=50, end_cursor=end_cursor)
+
     def user_clips_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get a user's clip (reels) by Private Mobile API
@@ -1121,6 +1155,29 @@ class MediaMixin:
         media_id = self.media_id(media_id)
         result = self.private_request(f"media/{media_id}/likers/")
         return [extract_user_short(u) for u in result["users"]]
+
+    def media_likers_gql_chunk(self, media_pk: str, end_cursor: str = "") -> List[dict]:
+        """
+        Get media likers through the web GraphQL doc_id endpoint.
+        """
+        data = {
+            "variables": dumps({"id": media_pk}),
+            "doc_id": "24452425501069647",
+            "fb_dtsg": self.fb_dtsg,
+            "jazoest": generate_jazoest(self.phone_id),
+            **GQL_STUFF,
+        }
+        resp = self.graphql_request(data=data)
+        return resp.get("data", {}).get("xdt_api__v1__likes__media_id__likers", {}).get("users", [])
+
+    def media_likers_gql(self, media_pk: str, amount: int = 0) -> List[dict]:
+        """
+        Get media likers through the web GraphQL doc_id endpoint.
+        """
+        likers = self.media_likers_gql_chunk(self.media_pk(media_pk))
+        if amount:
+            likers = likers[:amount]
+        return likers
 
     def media_archive(self, media_id: str, revert: bool = False) -> bool:
         """
@@ -1336,6 +1393,12 @@ class MediaMixin:
             items = items[:amount]
         return [extract_media_v1(media) for media in items], result.get("next_max_id") or ""
 
+    def usertag_medias_v1_chunk(self, user_id: str, max_id: str = "") -> Tuple[List[Media], str]:
+        """
+        Compatibility alias for aiograpi's original chunk naming.
+        """
+        return self.usertag_medias_paginated_v1(user_id, amount=0, end_cursor=max_id)
+
     def usertag_medias_v1(self, user_id: str, amount: int = 0) -> List[Media]:
         """
         Get medias where a user is tagged (by Private Mobile API)
@@ -1509,6 +1572,17 @@ class MediaMixin:
         A boolean value
         """
         return self.media_pin(media_pk, True)
+
+    def media_template_v1(self, media_id: str):
+        """
+        Fetch a clip template (remix-from-template) for a clip media.
+        """
+        data = {
+            "should_show_friends_media_at_top": "false",
+            "template_clips_media_id": media_id,
+            "_uuid": self.uuid,
+        }
+        return self.private_request("clips/template/", data=data)
 
     def media_create_livestream(self, title="Instagram Live"):
         """

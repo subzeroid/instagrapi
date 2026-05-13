@@ -12,6 +12,8 @@ View a list of a user's medias, following and followers
 | search_following(user_id: str, query: str)    | List[UserShort]       | Search by following                                          |
 | user_info(user_id: str)                       | User                  | Get user info                                                |
 | user_info_by_username(username: str)          | User                  | Get user info by username                                    |
+| user_about_v1(user_id: str)                   | About                 | Get "About this account" info                                |
+| user_guides_v1(user_id: int)                  | List[Guide]           | Get user's guides                                            |
 | user_follow(user_id: str)                     | bool                  | Follow user                                                  |
 | user_unfollow(user_id: str)                   | bool                  | Unfollow user                                                |
 | user_follow_requests(amount: int = 0)         | List[UserShort]       | Get pending incoming follow requests                         |
@@ -56,6 +58,7 @@ Streamed profile fetch (raw payloads, app-side surface):
 | user_stream_by_id_flat(user_id: str)          | dict                  | Same as `_v1` but `stream_rows[*].user` partials merged into a single dict |
 | user_stream_by_username_flat(username: str)   | dict                  | Same as `_v1` but `stream_rows[*].user` partials merged into a single dict |
 | user_web_profile_info_v1(username: str)       | dict                  | `users/web_profile_info/?username=...` via the private host (logged-in session, bypasses public-side rate limiting) |
+| feed_user_stream_item(item_id: str, is_pull_to_refresh: bool = False) | dict | Raw streamed feed payload for a user/profile grid item |
 
 Low level methods:
 
@@ -70,6 +73,13 @@ Low level methods:
 | user_following_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's following information by Public Graphql API                     |
 | search_followers_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by followers by Private Mobile API                                  |
 | search_following_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by following by Private Mobile API                                  |
+| user_info_by_username_a1(username: str)                                             | dict                        | Raw public A1 username payload                                             |
+| user_info_v2_gql(user_id: str)                                                      | User                        | Profile lookup through current doc_id GraphQL                              |
+| user_info_by_username_v2_gql(username: str)                                         | User                        | Resolve username through doc_id search, then fetch profile                 |
+| private_graphql_followers_list(user_id: str, rank_token: str, ...)                  | dict                        | Raw private mobile GraphQL followers list                                  |
+| private_graphql_following_list(user_id: str, rank_token: str, ...)                  | dict                        | Raw private mobile GraphQL following list                                  |
+| private_graphql_clips_profile(target_user_id: str, ...)                             | dict                        | Raw private mobile GraphQL profile Reels stream                            |
+| private_graphql_inbox_tray_for_user(user_id: str, ...)                              | dict                        | Raw private mobile GraphQL inbox tray query                                |
 
 The batch follow request helpers call the single-user approve/decline endpoints for
 each `user_id`; they do not implement an auto-approval policy.
