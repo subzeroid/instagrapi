@@ -1049,6 +1049,46 @@
 <td>Get a paginated chunk of comments and the next <code>min_id</code> cursor</td>
 </tr>
 <tr>
+<td>media_comments_v1(media_id: str, amount: int = 20)</td>
+<td>List[Comment]</td>
+<td>Get comments through the private mobile comments endpoint</td>
+</tr>
+<tr>
+<td>media_comments_v1_chunk(media_id: str, min_id: str = "", max_id: str = "")</td>
+<td>Tuple[List[Comment], str, str]</td>
+<td>Get one private comments page and both cursors</td>
+</tr>
+<tr>
+<td>media_stream_comments_v1_chunk(media_id: str, min_id: str = "", max_id: str = "")</td>
+<td>Tuple[List[Comment], str, str]</td>
+<td>Get one streamed comments page and both cursors</td>
+</tr>
+<tr>
+<td>media_comments_gql(media_pk: str, amount: int = 50, max_requests: int = 0)</td>
+<td>List[dict]</td>
+<td>Get comments through the web GraphQL doc_id endpoint</td>
+</tr>
+<tr>
+<td>media_comments_gql_chunk(media_pk: str, end_cursor: str = "")</td>
+<td>Tuple[List[dict], str]</td>
+<td>Get one web GraphQL comments page</td>
+</tr>
+<tr>
+<td>media_comments_threaded_gql(media_pk: str, comment_pk: str, amount: int = 0)</td>
+<td>List[dict]</td>
+<td>Get threaded replies through the web GraphQL doc_id endpoint</td>
+</tr>
+<tr>
+<td>media_comments_threaded_gql_chunk(media_pk: str, comment_pk: str, end_cursor: str = "")</td>
+<td>Tuple[List[dict], str]</td>
+<td>Get one threaded GraphQL comments page</td>
+</tr>
+<tr>
+<td>media_comment_infos(media_ids: List[str])</td>
+<td>dict</td>
+<td>Bulk-fetch comment summaries for media ids</td>
+</tr>
+<tr>
 <td>media_comment_replies(media_id: str, comment_id: str, amount: int = 0)</td>
 <td>List[Comment]</td>
 <td>Get replies for a parent media comment; pass <code>amount=0</code> to keep paginating until exhaustion</td>
@@ -1092,6 +1132,16 @@
 <td>comment_bulk_delete(media_id: str, comment_pks: List[int])</td>
 <td>bool</td>
 <td>Delete one or more comments from your media</td>
+</tr>
+<tr>
+<td>comment_likers_gql(comment_pk: str, amount: int = 0)</td>
+<td>List[dict]</td>
+<td>Get comment likers through public GraphQL</td>
+</tr>
+<tr>
+<td>comment_likers_gql_chunk(comment_pk: str, end_cursor: str = "")</td>
+<td>Tuple[List[dict], str]</td>
+<td>Get one public GraphQL comment-likers page</td>
 </tr>
 </tbody>
 </table>

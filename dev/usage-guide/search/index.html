@@ -1140,6 +1140,21 @@
 <td>Default "Top" blended tab — <code>fbsearch/top_serp/</code>.</td>
 </tr>
 <tr>
+<td><code>fbsearch_item(item_id: str, search_surface: str, query: str, ...)</code></td>
+<td><code>dict</code></td>
+<td>Generic <code>fbsearch/{item_id}/</code> tab helper with optional pagination cursors.</td>
+</tr>
+<tr>
+<td><code>fbsearch_keyword_typeahead(query: str, timezone_offset: int = 0, count: int = 30)</code></td>
+<td><code>dict</code></td>
+<td>Raw keyword/typeahead suggestions via <code>fbsearch/keyword_typeahead/</code>.</td>
+</tr>
+<tr>
+<td><code>fbsearch_typeahead_stream(query: str, timezone_offset: int = 0, count: int = 30)</code></td>
+<td><code>dict</code></td>
+<td>Raw streaming typeahead payload via <code>fbsearch/typeahead_stream/</code>.</td>
+</tr>
+<tr>
 <td><code>fbsearch_typehead(query: str)</code></td>
 <td><code>List[dict]</code></td>
 <td>Typeahead user suggestions, flattened from the <code>stream_rows</code> envelope returned by <code>fbsearch/typeahead_stream/</code>.</td>
@@ -1190,6 +1205,16 @@
 <td><code>fbsearch_topsearch_flat(query: str)</code></td>
 <td><code>List[dict]</code></td>
 <td>Legacy flat top-search via <code>fbsearch/topsearch_flat/</code>.</td>
+</tr>
+<tr>
+<td><code>web_search_topsearch(query: str)</code></td>
+<td><code>dict</code></td>
+<td>Raw web top-search payload via <code>web/search/topsearch/</code>.</td>
+</tr>
+<tr>
+<td><code>web_search_topsearch_hashtags(query: str)</code></td>
+<td><code>List[Hashtag]</code></td>
+<td>Extract hashtags from the web top-search payload.</td>
 </tr>
 <tr>
 <td><code>fbsearch_suggested_profiles(user_id: str)</code></td>

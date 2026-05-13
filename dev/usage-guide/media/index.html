@@ -1421,6 +1421,11 @@
 <td>Get one page of user media and next cursor</td>
 </tr>
 <tr>
+<td>user_medias_chunk(user_id: str, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one page of user media</td>
+</tr>
+<tr>
 <td>user_clips(user_id: str, amount: int = 0)</td>
 <td>List[Media]</td>
 <td>Get clips/reels by user</td>
@@ -1481,6 +1486,11 @@
 <td>Return users who liked this post</td>
 </tr>
 <tr>
+<td>media_likers_gql(media_pk: str, amount: int = 0)</td>
+<td>List[dict]</td>
+<td>Return users who liked this post through the web GraphQL doc_id endpoint</td>
+</tr>
+<tr>
 <td>archive_medias(amount: int = 0)</td>
 <td>List[Media]</td>
 <td>Get archived media from your account</td>
@@ -1504,6 +1514,11 @@
 <td>media_unpin(media_pk: str)</td>
 <td>bool</td>
 <td>Unpin media from profile</td>
+</tr>
+<tr>
+<td>media_template_v1(media_id: str)</td>
+<td>dict</td>
+<td>Fetch a clip template payload for a Reel/clip media</td>
 </tr>
 <tr>
 <td>clip_pin(media_pk: str)</td>
@@ -1588,6 +1603,11 @@
 <td>Get one public GraphQL page of user media</td>
 </tr>
 <tr>
+<td>user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one public GraphQL page of user media</td>
+</tr>
+<tr>
 <td>user_medias_v1(user_id: str, amount: int = 0)</td>
 <td>List[Media]</td>
 <td>Get user media via private mobile API</td>
@@ -1596,6 +1616,11 @@
 <td>user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="")</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get one private API page of user media</td>
+</tr>
+<tr>
+<td>user_medias_chunk_v1(user_id: str, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one private API page of user media</td>
 </tr>
 <tr>
 <td>user_clips_v1(user_id: str, amount: int = 0)</td>
@@ -1608,6 +1633,11 @@
 <td>Get one private API page of clips</td>
 </tr>
 <tr>
+<td>user_clips_chunk_v1(user_id: str, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one private API page of clips</td>
+</tr>
+<tr>
 <td>user_videos_v1(user_id: str, amount: int = 0)</td>
 <td>List[Media]</td>
 <td>Get user videos via private mobile API</td>
@@ -1616,6 +1646,11 @@
 <td>user_videos_paginated_v1(user_id: int, amount: int = 0, end_cursor="")</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get one private API page of videos</td>
+</tr>
+<tr>
+<td>user_videos_chunk_v1(user_id: str, end_cursor: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one private API page of videos</td>
 </tr>
 <tr>
 <td>usertag_medias_gql(user_id: str, amount: int = 0, sleep: int = 2)</td>
@@ -1636,6 +1671,11 @@
 <td>usertag_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="")</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get one private API page of media where a user is tagged</td>
+</tr>
+<tr>
+<td>usertag_medias_v1_chunk(user_id: str, max_id: str = "")</td>
+<td>Tuple[List[Media], str]</td>
+<td>Compatibility alias for one private API page of tagged media</td>
 </tr>
 <tr>
 <td>archive_medias_v1(amount: int = 0)</td>
