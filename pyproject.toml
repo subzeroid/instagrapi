@@ -79,7 +79,7 @@ test = [
     "pre-commit==4.6.0",
     "pytest-xdist==3.8.0",
     "pytest==9.0.3",
-    "ruff==0.15.12",
+    "ruff==0.15.13",
 ]
 
 [tool.setuptools]
