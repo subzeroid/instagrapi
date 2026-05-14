@@ -51,7 +51,7 @@ keywords = [
     "instagram-note",
 ]
 dependencies = [
-    "requests==2.34.0",
+    "requests==2.34.2",
     "PySocks==1.7.1",
     "pydantic==2.13.4",
     "moviepy==1.0.3",
