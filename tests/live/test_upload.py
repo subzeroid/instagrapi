@@ -376,4 +376,7 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(extra_data["is_reel_shared_to_fb"])
         self.assertTrue(extra_data["share_to_fb_destination_id"])
         self.assertTrue(extra_data["share_to_fb_destination_type"])
+        self.assertIn(extra_data["share_to_fb_destination_type"], {"USER", "PAGE"})
         self.assertEqual(extra_data["xpost_surface"], "IG_REELS_COMPOSER")
+        self.assertEqual(extra_data["no_token_crosspost"], "1")
+        self.assertTrue(extra_data["attempt_id"])
