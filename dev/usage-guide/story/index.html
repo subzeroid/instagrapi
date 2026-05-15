@@ -14,7 +14,7 @@
         <link rel="prev" href="../search/">
       
       
-        <link rel="next" href="../track/">
+        <link rel="next" href="../termux/">
       
       
         
@@ -945,6 +945,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../termux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Termux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../track/" class="md-nav__link">
         
   
@@ -1370,7 +1398,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li><code>links</code>, <code>hashtags</code>, <code>locations</code>, <code>stickers</code>, <code>medias</code>, and <code>polls</code> are all part of the story sticker payload.</li>
 <li>Link stickers are supported through <code>StoryLink</code>; this is no longer the old Instagram "swipe up" flow.</li>
 <li>For story uploads, use a 9:16 asset or build one with <code>StoryBuilder</code>.</li>
-<li>Android/Pydroid users should pass <code>thumbnail=...</code> for video stories or configure ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a>.</li>
+<li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video extra and configure ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
 <li>Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.</li>
 </ul>
 <p>Examples:</p>
@@ -1396,7 +1424,9 @@ If you have a different resolution, then you need to prepare a file or use the S
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="build-story-to-upload">Build Story to Upload</h2>
-<p>If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder:</p>
+<p>If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video extra first:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
+</code></pre></div>
 <table>
 <thead>
 <tr>
