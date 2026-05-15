@@ -64,7 +64,7 @@ python examples/upload_media.py reel ./reel.mp4 --thumbnail ./thumb.jpg --captio
 python examples/upload_media.py trial-reel ./reel.mp4 --thumbnail ./thumb.jpg --caption "Trial Reel"
 ```
 
-For Android/Pydroid environments, pass `--thumbnail` for videos and Reels or configure executable `ffmpeg`.
+For Android environments, pass `--thumbnail` for videos and Reels or install `instagrapi[video]`, install MoviePy with `pip install --no-deps "moviepy==2.2.1"`, and configure executable `ffmpeg`.
 
 ## Upload story
 

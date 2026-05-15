@@ -3,14 +3,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Optional
 
+MOVIEPY_2_INSTALL_MESSAGE = (
+    'Install video dependencies with pip install "instagrapi[video]" and then install MoviePy with '
+    'pip install --no-deps "moviepy==2.2.1".'
+)
+MOVIEPY_2_FFMPEG_MESSAGE = f"{MOVIEPY_2_INSTALL_MESSAGE} Make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE."
+
 THUMBNAIL_FFMPEG_MESSAGE = (
-    'Could not generate video thumbnail. Pass thumbnail=... or install MoviePy with pip install "instagrapi[video]" '
-    "and configure ffmpeg / set IMAGEIO_FFMPEG_EXE."
+    f"Could not generate video thumbnail. Pass thumbnail=... or install MoviePy 2.2.1. {MOVIEPY_2_FFMPEG_MESSAGE}"
 )
 METADATA_FFMPEG_MESSAGE = (
     "Could not read video metadata with the MP4 parser and MoviePy/ffmpeg is unavailable. "
-    'Use a standard MP4 file, or install MoviePy with pip install "instagrapi[video]" and configure ffmpeg / '
-    "set IMAGEIO_FFMPEG_EXE."
+    f"Use a standard MP4 file, or install MoviePy 2.2.1. {MOVIEPY_2_FFMPEG_MESSAGE}"
 )
 
 
@@ -182,16 +186,9 @@ def _ffmpeg_unavailable(exc: Exception) -> bool:
 
 def _import_moviepy(error_message: str):
     try:
-        import moviepy.editor as mp
-    except ImportError:
-        try:
-            import moviepy as mp
-        except ImportError as exc:
-            raise RuntimeError(error_message) from exc
-        except Exception as exc:
-            if _ffmpeg_unavailable(exc):
-                raise RuntimeError(error_message) from exc
-            raise
+        import moviepy as mp
+    except ImportError as exc:
+        raise RuntimeError(error_message) from exc
     except Exception as exc:
         if _ffmpeg_unavailable(exc):
             raise RuntimeError(error_message) from exc

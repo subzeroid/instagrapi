@@ -1,6 +1,11 @@
 import builtins
+import contextlib
 import importlib
+import importlib.metadata
+import os
+import shutil
 import struct
+import subprocess
 import sys
 
 from tests.helpers import *
@@ -34,6 +39,39 @@ def _sample_mp4(width: int = 720, height: int = 1280, duration: float = 3.5) -> 
     trak = _box("trak", tkhd + mdia)
     moov = _box("moov", mvhd + trak)
     return ftyp + moov + _box("mdat", b"\x00" * 4)
+
+
+def _ffmpeg_exe() -> str:
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        ffmpeg = shutil.which("ffmpeg")
+        if ffmpeg:
+            return ffmpeg
+    raise unittest.SkipTest("ffmpeg is required for MoviePy video generation coverage")
+
+
+def _write_real_mp4(folder: Path, name: str = "source.mp4", duration: float = 4.0) -> Path:
+    path = folder / name
+    subprocess.run(
+        [
+            _ffmpeg_exe(),
+            "-y",
+            "-f",
+            "lavfi",
+            "-i",
+            f"color=c=black:s=640x360:d={duration}",
+            "-pix_fmt",
+            "yuv420p",
+            str(path),
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True,
+    )
+    return path
 
 
 class VideoMetadataRegressionTestCase(unittest.TestCase):
@@ -126,7 +164,8 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
 
         self.assertNotIn("moviepy", required_dependencies)
         self.assertIn("video = [", optional_dependencies)
-        self.assertIn('"moviepy==1.0.3"', optional_dependencies)
+        self.assertIn('"imageio-ffmpeg>=0.2.0"', optional_dependencies)
+        self.assertNotIn('"moviepy==1.0.3"', optional_dependencies)
 
     def test_story_builder_import_does_not_require_moviepy(self):
         sys.modules.pop("instagrapi.story", None)
@@ -145,7 +184,10 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
             with self.assertRaises(RuntimeError) as ctx:
                 story.StoryBuilder(Path("video.mp4")).video()
 
-        self.assertIn("instagrapi[video]", str(ctx.exception))
+        message = str(ctx.exception)
+        self.assertIn("instagrapi[video]", message)
+        self.assertIn("moviepy==2.2.1", message)
+        self.assertIn("--no-deps", message)
 
     def test_prepare_video_reports_video_extra_without_moviepy(self):
         from instagrapi.image_util import prepare_video
@@ -154,4 +196,49 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
             with self.assertRaises(RuntimeError) as ctx:
                 prepare_video("video.mp4")
 
-        self.assertIn("instagrapi[video]", str(ctx.exception))
+        message = str(ctx.exception)
+        self.assertIn("instagrapi[video]", message)
+        self.assertIn("moviepy==2.2.1", message)
+        self.assertIn("--no-deps", message)
+
+    def test_story_builder_photo_generates_video_with_moviepy_2(self):
+        from PIL import Image
+
+        from instagrapi.story import StoryBuilder
+        from instagrapi.utils.video import read_video_metadata
+
+        self.assertEqual(importlib.metadata.version("moviepy"), "2.2.1")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir = Path(tmpdir)
+            image = tmpdir / "photo.jpg"
+            Image.new("RGB", (720, 1280), "white").save(image)
+
+            build = StoryBuilder(image).photo(max_duration=1)
+            try:
+                output = Path(build.path)
+                self.assertTrue(output.exists())
+                self.assertGreater(output.stat().st_size, 0)
+                metadata = read_video_metadata(output)
+                self.assertEqual((metadata.width, metadata.height), (720, 1280))
+                self.assertAlmostEqual(metadata.duration, 1.0, delta=0.25)
+            finally:
+                with contextlib.suppress(FileNotFoundError):
+                    os.unlink(build.path)
+
+    def test_prepare_video_generates_thumbnail_with_moviepy_2(self):
+        from instagrapi.image_util import prepare_video
+
+        self.assertEqual(importlib.metadata.version("moviepy"), "2.2.1")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = _write_real_mp4(Path(tmpdir))
+            video_data, size, duration, thumbnail_data = prepare_video(
+                str(path),
+                max_size=None,
+                aspect_ratios=None,
+                skip_reencoding=True,
+            )
+
+        self.assertGreater(len(video_data), 0)
+        self.assertEqual(size, [640, 360])
+        self.assertAlmostEqual(duration, 4.0, delta=0.25)
+        self.assertGreater(len(thumbnail_data), 0)
