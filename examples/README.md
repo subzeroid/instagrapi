@@ -30,17 +30,17 @@ export IG_PUBLIC_TRANSPORT_IMPERSONATE="chrome136"
 
 | Script | Purpose |
 | --- | --- |
-| `_common.py` | Shared login, proxy, session, and environment helpers used by the examples. |
-| `session_login.py` | Minimal session persistence and `sessionid` login sample. |
-| `public_lookup.py` | Public profile lookup with optional `public_transport="curl"`. |
-| `download_user_media.py` | Login, list recent media for a username, and download photos/videos/albums. |
-| `upload_media.py` | Upload a feed photo, feed video, Reel, or Trial Reel. |
-| `upload_story.py` | Upload a photo or video story, optionally with a link sticker. |
-| `direct_message.py` | Send a Direct text message to user IDs or thread IDs. |
-| `handle_exception.py` | Centralized exception handling pattern for challenges, relogin, and rate limits. |
-| `challenge_resolvers.py` | Email/SMS challenge resolver hooks. |
-| `next_proxy.py` | Example proxy rotation scaffold. |
-| `download_all_medias.py` | Larger download script for account media. |
+| [`_common.py`](_common.py) | Shared login, proxy, session, and environment helpers used by the examples. |
+| [`session_login.py`](session_login.py) | Minimal session persistence and `sessionid` login sample. |
+| [`public_lookup.py`](public_lookup.py) | Public profile lookup with optional `public_transport="curl"`. |
+| [`download_user_media.py`](download_user_media.py) | Login, list recent media for a username, and download photos/videos/albums. |
+| [`upload_media.py`](upload_media.py) | Upload a feed photo, feed video, Reel, or Trial Reel. |
+| [`upload_story.py`](upload_story.py) | Upload a photo or video story, optionally with a link sticker. |
+| [`direct_message.py`](direct_message.py) | Send a Direct text message to user IDs or thread IDs. |
+| [`handle_exception.py`](handle_exception.py) | Centralized exception handling pattern for challenges, relogin, and rate limits. |
+| [`challenge_resolvers.py`](challenge_resolvers.py) | Email/SMS challenge resolver hooks. |
+| [`next_proxy.py`](next_proxy.py) | Example proxy rotation scaffold. |
+| [`download_all_medias.py`](download_all_medias.py) | Larger download script for account media. |
 
 ## Public lookup
 
