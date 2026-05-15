@@ -8,7 +8,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Union
+from typing import Any, Dict, Iterable, List, Union
 from uuid import uuid4
 
 import requests
@@ -188,7 +188,82 @@ class PostLoginFlowMixin:
         check_flow.append(self.get_timeline_feed(["cold_start_fetch"]))
         return all(check_flow)
 
-    def get_timeline_feed(self, reason: TIMELINE_FEED_REASON = "pull_to_refresh", max_id: str = None) -> Dict:
+    @staticmethod
+    def _timeline_media_id(media: Dict) -> str:
+        media_id = media.get("id") or media.get("media_id")
+        if media_id:
+            return str(media_id)
+
+        pk = media.get("pk")
+        user = media.get("user") or {}
+        user_pk = user.get("pk") or media.get("user_id") or media.get("owner_id")
+        if pk and user_pk:
+            return f"{pk}_{user_pk}"
+        if pk:
+            return str(pk)
+        return ""
+
+    def _timeline_seen_posts_from_response(self, response: Dict) -> List[str]:
+        media_ids = []
+        for item in response.get("feed_items") or []:
+            if not isinstance(item, dict):
+                continue
+            media = item.get("media_or_ad") or item.get("media")
+            if not isinstance(media, dict):
+                continue
+            media_id = self._timeline_media_id(media)
+            if media_id:
+                media_ids.append(media_id)
+        return media_ids
+
+    def _remember_timeline_seen_posts(self, response: Dict) -> None:
+        remembered = list(getattr(self, "_timeline_seen_posts", []))
+        known = set(remembered)
+        for media_id in self._timeline_seen_posts_from_response(response):
+            if media_id in known:
+                continue
+            remembered.append(media_id)
+            known.add(media_id)
+        self._timeline_seen_posts = remembered[-200:]
+
+    @staticmethod
+    def _join_timeline_seen_posts(seen_posts: Union[str, Iterable[str], None]) -> str:
+        if not seen_posts:
+            return ""
+        if isinstance(seen_posts, str):
+            return seen_posts
+        return ",".join(str(media_id) for media_id in seen_posts if media_id)
+
+    @staticmethod
+    def _timeline_feed_view_info(media_ids: Iterable[str]) -> List[Dict]:
+        latest_timestamp = int(time.time() * 1000)
+        return [
+            {
+                "media_id": str(media_id),
+                "version": 24,
+                "media_pct": 1.0,
+                "time_info": {"10": 1, "25": 1, "50": 1, "75": 1},
+                "latest_timestamp": latest_timestamp,
+            }
+            for media_id in media_ids
+        ]
+
+    def _timeline_feed_view_info_json(self, feed_view_info: Union[str, List[Dict], None], seen_posts: str) -> str:
+        if feed_view_info is not None:
+            if isinstance(feed_view_info, str):
+                return feed_view_info
+            return json.dumps(feed_view_info)
+        if not seen_posts:
+            return "[]"
+        return json.dumps(self._timeline_feed_view_info(seen_posts.split(",")))
+
+    def get_timeline_feed(
+        self,
+        reason: TIMELINE_FEED_REASON = "pull_to_refresh",
+        max_id: str = None,
+        seen_posts: Union[str, Iterable[str], None] = None,
+        feed_view_info: Union[str, List[Dict[str, Any]], None] = None,
+    ) -> Dict:
         """
         Get your timeline feed
 
@@ -198,6 +273,12 @@ class PostLoginFlowMixin:
             Reason to refresh the feed (cold_start_fetch, paginating, pull_to_refresh); Default "pull_to_refresh"
         max_id: str, optional
             Cursor for the next feed chunk (next cursor can be found in response["next_max_id"])
+        seen_posts: str or iterable, optional
+            Media ids already rendered by the caller. When omitted during pagination,
+            ids from previous get_timeline_feed() responses are reused.
+        feed_view_info: str or list, optional
+            JSON-serializable view telemetry. When omitted during pagination, a
+            minimal view telemetry payload is generated from seen_posts.
 
         Returns
         -------
@@ -236,11 +317,21 @@ class PostLoginFlowMixin:
         if max_id:
             data["max_id"] = max_id
             data["reason"] = "pagination"
+            if seen_posts is None:
+                seen_posts = getattr(self, "_timeline_seen_posts", [])
+
+        seen_posts_value = self._join_timeline_seen_posts(seen_posts)
+        if seen_posts_value:
+            data["seen_posts"] = seen_posts_value
+        data["feed_view_info"] = self._timeline_feed_view_info_json(feed_view_info, seen_posts_value)
+
         # if "push_disabled" in options:
         #     data["push_disabled"] = "true"
         # if "recovered_from_crash" in options:
         #     data["recovered_from_crash"] = "1"
-        return self.private_request("feed/timeline/", json.dumps(data), with_signature=False, headers=headers)
+        result = self.private_request("feed/timeline/", json.dumps(data), with_signature=False, headers=headers)
+        self._remember_timeline_seen_posts(result)
+        return result
 
     def get_reels_tray_feed(self, reason: REELS_TRAY_REASON = "pull_to_refresh") -> Dict:
         """
