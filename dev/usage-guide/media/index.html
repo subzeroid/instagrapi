@@ -2193,10 +2193,13 @@ or build <code>extra_data</code> manually with <code>clip_share_to_fb_extra_data
 </code></pre></div>
 <p>Reels:</p>
 <p>Timeline helpers:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">reels</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">first_page</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">(</span><span class="s2">&quot;cold_start_fetch&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">second_page</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">(</span><span class="n">max_id</span><span class="o">=</span><span class="n">first_page</span><span class="p">[</span><span class="s2">&quot;next_max_id&quot;</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">reels</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">explore_reels</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">friends_reels</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </code></pre></div>
+<p><code>get_timeline_feed()</code> remembers media ids from the previous response and sends <code>seen_posts</code> plus minimal <code>feed_view_info</code> when <code>max_id</code> is used. For stateless pagination, pass <code>seen_posts=...</code> and <code>feed_view_info=...</code> explicitly.</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">clips</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_clips_v1</span><span class="p">(</span><span class="mi">25025320</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">clips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
 
