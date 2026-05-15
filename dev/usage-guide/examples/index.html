@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/notes/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/examples/">
       
       
-        <link rel="prev" href="../media/">
+        <link rel="prev" href="../../getting-started/">
       
       
-        <link rel="next" href="../pydroid/">
+        <link rel="next" href="../fundamentals/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Notes - instagrapi Documentation</title>
+        <title>Examples - instagrapi Documentation</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#notes" class="md-skip">
+        <a href="#examples" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Notes
+              Examples
             
           </span>
         </div>
@@ -330,10 +330,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../examples/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -349,6 +358,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -722,37 +732,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Notes
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
         
   
   
@@ -768,37 +751,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#get-notes-post-notes-delete-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Notes | Post Notes | Delete Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1108,25 +1060,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#get-notes-post-notes-delete-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Notes | Post Notes | Delete Notes
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1145,129 +1078,62 @@
   
 
 
-<h1 id="notes">Notes</h1>
+<h1 id="examples">Examples</h1>
+<p>Runnable examples live in the repository:</p>
+<ul>
+<li><a href="https://github.com/subzeroid/instagrapi/blob/master/examples/README.md">examples/README.md</a></li>
+<li><a href="https://github.com/subzeroid/instagrapi/tree/master/examples">examples directory</a></li>
+</ul>
+<p>The examples read credentials and runtime options from environment variables instead of hard-coding secrets:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">IG_USERNAME</span><span class="o">=</span><span class="s2">&quot;your_username&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">IG_PASSWORD</span><span class="o">=</span><span class="s2">&quot;your_password&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">IG_SESSION_FILE</span><span class="o">=</span><span class="s2">&quot;./ig_settings.json&quot;</span>
+</code></pre></div>
+<p>Common scripts:</p>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Return</th>
-<th>Description</th>
+<th>Script</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>get_notes()</td>
-<td>List[Note]</td>
-<td>Retrieve direct Notes</td>
+<td><code>public_lookup.py</code></td>
+<td>Public profile lookup with optional <code>public_transport="curl"</code>.</td>
 </tr>
 <tr>
-<td>get_note_by_user(notes: List[Note], username: str)</td>
-<td>Optional[Note]</td>
-<td>Find a Note by username</td>
+<td><code>download_user_media.py</code></td>
+<td>Login, list recent media for a username, and download photos/videos/albums.</td>
 </tr>
 <tr>
-<td>get_note_text_by_user(notes: List[Note], username: str)</td>
-<td>Optional[str]</td>
-<td>Get note text by username</td>
+<td><code>upload_media.py</code></td>
+<td>Upload a feed photo, feed video, Reel, or Trial Reel.</td>
 </tr>
 <tr>
-<td>create_note(text: str, audience: int = 0)</td>
-<td>Note</td>
-<td>Post a new Note</td>
+<td><code>upload_story.py</code></td>
+<td>Upload a photo or video story, optionally with a link sticker.</td>
 </tr>
 <tr>
-<td>notes_music_browser()</td>
-<td>Dict</td>
-<td>Retrieve music candidates for Notes</td>
+<td><code>direct_message.py</code></td>
+<td>Send a Direct text message to user IDs or thread IDs.</td>
 </tr>
 <tr>
-<td>create_music_note(track: Track | Dict, text: str = "", audience: int = 0, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None)</td>
-<td>Note</td>
-<td>Post a new Note with music</td>
-</tr>
-<tr>
-<td>delete_note(note_id: int)</td>
-<td>bool</td>
-<td>Delete a posted Note</td>
-</tr>
-<tr>
-<td>last_seen_update_note()</td>
-<td>bool</td>
-<td>Update the last seen time</td>
+<td><code>handle_exception.py</code></td>
+<td>Centralized exception handling for challenges, relogin, and rate limits.</td>
 </tr>
 </tbody>
 </table>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_note</span><span class="p">(</span><span class="s2">&quot;Hello from Instagrapi, everyone can see it!&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
-<span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;17849203563031468&#39;</span><span class="p">,</span>
-<span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello from Instagrapi, everyone can see it!&#39;</span><span class="p">,</span>
-<span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="mi">12312312312</span><span class="p">,</span>
-<span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span>
-  <span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="s1">&#39;12312312312&#39;</span><span class="p">,</span>
-  <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;something&#39;</span><span class="p">,</span>
-  <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;merimi on top&#39;</span><span class="p">,</span>
-  <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-dus1-1.cdninstagram.com/v/t51.2885-19/364347953_6289474204435297_7603222331512295081_n.jpg?stp=dst-jpg_s150x150&amp;_nc_ht=scontent-dus1-1.cdninstagram.com&amp;_nc_cat=101&amp;_nc_ohc=DVaE0MQwn0YAX8-S8dm&amp;edm=AE-H4JwBAAAA&amp;ccb=7-5&amp;oh=00_AfAnH4mHGMl7B5tqzU7b9PMz9qSC4QE_-EX067lwPHnN1w&amp;oe=64DDA1CB&amp;_nc_sid=cff473&#39;</span><span class="p">,</span> <span class="p">),</span>
-  <span class="s1">&#39;profile_pic_url_hd&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-  <span class="s1">&#39;is_private&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-  <span class="s1">&#39;stories&#39;</span><span class="p">:</span> <span class="p">[]},</span>
-<span class="s1">&#39;audience&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-<span class="s1">&#39;created_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
-<span class="s1">&#39;expires_at&#39;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2023</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">43</span><span class="p">,</span> <span class="n">tzinfo</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
-<span class="s1">&#39;is_emoji_only&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-<span class="s1">&#39;has_translation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-<span class="s1">&#39;note_style&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">notes</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_notes</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">notes</span><span class="p">)</span>
-<span class="p">[</span><span class="n">Note</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;17849203563031468&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Hello from Instagrapi, everyone can see it!&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">has_translation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">note_style</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">Note</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;17902958207826742&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Am so happy 💃💃💃💃🙈🤭&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">has_translation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">note_style</span><span class="o">=</span><span class="mi">0</span><span class="p">)]</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_note_by_user</span><span class="p">(</span><span class="n">notes</span><span class="p">,</span> <span class="s2">&quot;something&quot;</span><span class="p">)</span>
-<span class="n">Note</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;17849203563031468&#39;</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s1">&#39;Hello from Instagrapi, everyone can see it!&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_note_text_by_user</span><span class="p">(</span><span class="n">notes</span><span class="p">,</span> <span class="s2">&quot;something&quot;</span><span class="p">)</span>
-<span class="s1">&#39;Hello from Instagrapi, everyone can see it!&#39;</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">last_seen_update_note</span><span class="p">()</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">delete_note</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
+<span class="nv">IG_PUBLIC_TRANSPORT</span><span class="o">=</span>curl<span class="w"> </span>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
+python<span class="w"> </span>examples/download_user_media.py<span class="w"> </span>instagram<span class="w"> </span>--amount<span class="w"> </span><span class="m">5</span><span class="w"> </span>--folder<span class="w"> </span>./downloads
+python<span class="w"> </span>examples/upload_media.py<span class="w"> </span>reel<span class="w"> </span>./reel.mp4<span class="w"> </span>--thumbnail<span class="w"> </span>./thumb.jpg<span class="w"> </span>--caption<span class="w"> </span><span class="s2">&quot;Reel&quot;</span>
+python<span class="w"> </span>examples/upload_story.py<span class="w"> </span>photo<span class="w"> </span>./story.jpg<span class="w"> </span>--caption<span class="w"> </span><span class="s2">&quot;Story&quot;</span>
+python<span class="w"> </span>examples/direct_message.py<span class="w"> </span>--user-ids<span class="w"> </span><span class="m">123456789</span><span class="w"> </span>--text<span class="w"> </span><span class="s2">&quot;Hello&quot;</span>
 </code></pre></div>
-<p>Music Notes use the same audience values as text Notes. A typical flow is to
-fetch candidates from <code>notes_music_browser()</code>, choose a track from the response,
-and pass it to <code>create_music_note()</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">music</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">notes_music_browser</span><span class="p">()</span>
-<span class="n">track</span> <span class="o">=</span> <span class="n">music</span><span class="p">[</span><span class="s2">&quot;items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;playlist&quot;</span><span class="p">][</span><span class="s2">&quot;preview_items&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;track&quot;</span><span class="p">]</span>
-
-<span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_music_note</span><span class="p">(</span>
-    <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
-    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">audience</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">alacorn_session_id</span><span class="o">=</span><span class="n">music</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alacorn_session_id&quot;</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">delete_note</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="get-notes-post-notes-delete-notes">Get Notes  |  Post Notes  |  Delete Notes</h2>
-<ul>
-<li><em>Get Notes from Direct</em></li>
-<li><em>Publish a new note with the ability to select an audience</em></li>
-<li><em>Publish a new note with music</em></li>
-<li><em>Delete posted Notes</em></li>
-<li><em>Update last seen of Notes</em></li>
-</ul>
-<p>The note should not exceed 60 characters. The rate in between Notes requests should be fairly high <em>(</em>i.e : 1 request/ 2 min)* to avoid triggering Instagram API</p>
-<p>Common arguments:</p>
-<ul>
-<li><code>note_id</code> - ID of the Note object</li>
-<li><code>text</code> - Content of the Note</li>
-<li><code>audience</code> - Who can see the note <strong>(0 = Followers you follow back, 1 = Close Friends only)</strong></li>
-<li><code>username</code> - Username used to search in an existing <code>notes</code> list</li>
-<li><code>track</code> - Track object or raw track dict from <code>notes_music_browser()</code></li>
-</ul>
-<p>Typical flow:</p>
-<div class="highlight"><pre><span></span><code><span class="n">notes</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_notes</span><span class="p">()</span>
-<span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_note_by_user</span><span class="p">(</span><span class="n">notes</span><span class="p">,</span> <span class="s2">&quot;instagram&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">note</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
-</code></pre></div>
+<p>Video uploads in Android/Pydroid environments should pass <code>--thumbnail</code> or configure executable <code>ffmpeg</code>.
+See <a href="../pydroid/">Pydroid and ffmpeg</a>.</p>
 
 
 
