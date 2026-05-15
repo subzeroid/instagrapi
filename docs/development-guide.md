@@ -102,12 +102,21 @@ Setuptools is used to package the library through `pyproject.toml`.
 * `[project].dependencies` lists runtime dependencies imported by the library.
 * `[project.optional-dependencies].test` lists tools needed for tests, linting, docs, and local development.
 
-This will trigger the CI system to build a wheel and a source distributions of the package and push them to
-[PyPI][pypi].
+Publishing is handled by the tag-based `publish.yml` workflow. Pushes and pull requests run the package workflow first;
+maintainers cut a version tag only after the checks are green.
 
 ## Continuous Integration Pipeline
 
-TODO: Add CI documentation.
+The `Package` workflow runs Bandit, Ruff, compatibility regression tests on Python 3.10 through 3.14, and a strict docs
+build. Pull requests and pushes to `master` both build the docs; pushes to `master` also publish the `dev` docs with
+`mike`.
+
+Live-account tests are kept in a separate manually triggered `Live Account Tests` workflow. It accepts a focused target
+such as `media`, `upload`, `direct`, `timeline`, `story-location`, `location`, `usertag`, `user`, or `all`, and uses the
+pooled `TEST_ACCOUNTS_URL` secret.
+
+The `Publish to PyPI` workflow runs only for version tags such as `2.6.7`. It verifies the tag matches `pyproject.toml`,
+builds the wheel and sdist, publishes through PyPI trusted publishing, and creates the GitHub release.
 
 [pdb-docs]: https://docs.python.org/3/library/pdb.html
 [pytest-docs]: https://docs.pytest.org/en/latest/

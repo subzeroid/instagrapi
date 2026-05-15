@@ -287,9 +287,12 @@ For local setup, tests, linting, and pull request expectations, see [CONTRIBUTIN
 Maintainer release commands:
 
 ```bash
-python -m build
-twine upload dist/*
+git tag -a X.Y.Z -m "Release X.Y.Z"
+git push origin X.Y.Z
+git push codeberg X.Y.Z
 ```
+
+The tag-based `publish.yml` workflow publishes to PyPI via trusted publishing and creates the GitHub release.
 
 ## License
 
