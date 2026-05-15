@@ -286,7 +286,7 @@ class UploadClipMixin:
             "share_to_fb_destination_id": destination_id,
             "share_to_fb_destination_type": destination_type,
             "xpost_surface": xpost_surface,
-            "no_token_crosspost": "1",
+            "no_token_crosspost": "1",  # nosec B105
             "attempt_id": attempt_id,
         }
         if destination_audience_type:
