@@ -72,6 +72,12 @@ user_id = cl.user_id_from_username(ACCOUNT_USERNAME)
 medias = cl.user_medias(user_id, 20)
 ```
 
+## Runnable Examples
+
+Practical scripts live in [examples/README.md](examples/README.md). They cover session login, public lookups, media
+downloads, feed uploads, Reels and Trial Reels, story uploads, Direct messages, proxies, challenge handling, and optional
+curl-backed public transport.
+
 ## Session Persistence
 
 ``` python

@@ -8,6 +8,7 @@ nav:
   - Overview: index.md
   - Getting Started: getting-started.md
   - Usage Guide:
+    - Examples: usage-guide/examples.md
     - Fundamentals: usage-guide/fundamentals.md
     - Interactions: usage-guide/interactions.md
     - TOTP: usage-guide/totp.md
