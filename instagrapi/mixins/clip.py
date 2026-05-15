@@ -192,6 +192,7 @@ class UploadClipMixin:
         destination_audience_type: Optional[str] = None,
         xpost_surface: str = "IG_REELS_COMPOSER",
         validation_check_bypass: Optional[bool] = None,
+        attempt_id: Optional[str] = None,
     ) -> Dict[str, object]:
         """
         Build configure fields for sharing a Reel to Facebook.
@@ -203,18 +204,22 @@ class UploadClipMixin:
         Parameters
         ----------
         config: Dict[str, object], optional
-            Response from ``clip_share_to_fb_config()``. When omitted, this
-            method fetches it.
+            Facebook cross-posting config. The lightweight
+            ``clip_share_to_fb_config()`` response contains availability flags;
+            app/draft configs can also contain destination fields.
         destination_id: str, optional
             Facebook destination id. Overrides config values.
         destination_type: str, optional
-            Facebook destination type/posting type. Overrides config values.
+            Facebook destination type/posting type, ``USER`` or ``PAGE``.
+            Overrides config values.
         destination_audience_type: str, optional
             Facebook Reels audience type, e.g. ``PUBLIC``.
         xpost_surface: str, optional
             Cross-posting surface reported by the Instagram app.
         validation_check_bypass: bool, optional
             Whether to bypass app-side FB validation. Overrides config values.
+        attempt_id: str, optional
+            Cross-post configure attempt id. Generated when omitted.
 
         Returns
         -------
@@ -222,8 +227,6 @@ class UploadClipMixin:
             Extra configure data for ``clip_upload(..., extra_data=...)``.
         """
         fb_config = (config if config is not None else self.clip_share_to_fb_config()) or {}
-        if fb_config.get("share_to_fb_unavailable"):
-            raise ClientError("Facebook Reel sharing is unavailable for this account")
         if fb_config.get("enabled") is False or fb_config.get("is_account_linked") is False:
             raise ClientError("Facebook Reel sharing is not enabled or no Facebook account is linked")
 
@@ -232,11 +235,12 @@ class UploadClipMixin:
             or fb_config.get("share_to_fb_destination_id")
             or fb_config.get("reels_destination_id")
             or fb_config.get("destination_id")
+            or fb_config.get("account_id")
         )
         destination_type = (
             destination_type
             or fb_config.get("share_to_fb_destination_type")
-            or fb_config.get("reels_cross_app_share_type")
+            or fb_config.get("destination_type")
             or fb_config.get("posting_type")
         )
         destination_audience_type = (
@@ -246,8 +250,18 @@ class UploadClipMixin:
             or fb_config.get("audience_type")
         )
         if validation_check_bypass is None:
-            validation_check_bypass = fb_config.get("reels_cross_app_share_fb_validation_check_bypass")
+            validation_check_bypass = fb_config.get(
+                "reels_cross_app_share_fb_validation_check_bypass",
+                fb_config.get("cross_app_share_fb_validation_check_bypass"),
+            )
 
+        has_destination = bool(destination_id and destination_type)
+        if fb_config.get("share_to_fb_unavailable") and not has_destination:
+            raise ClientError(
+                "Facebook Reel sharing is unavailable from the Reel preflight response. "
+                "If the Instagram app can still cross-post manually, pass destination_id "
+                "and destination_type explicitly."
+            )
         if not destination_id:
             raise ClientError(
                 "Facebook Reel sharing configuration has no destination. "
@@ -255,9 +269,15 @@ class UploadClipMixin:
             )
         if not destination_type:
             raise ClientError(
-                "Facebook Reel sharing configuration has no destination type. "
-                "Pass destination_type from a linked-account app capture."
+                "Facebook Reel sharing configuration has no destination type. Pass destination_type as USER or PAGE."
             )
+        destination_type = str(destination_type).upper()
+        if destination_type not in {"USER", "PAGE"}:
+            raise ClientError(
+                "Facebook Reel sharing destination type must be USER or PAGE. "
+                "Do not pass reels_cross_app_share_type here."
+            )
+        attempt_id = attempt_id or str(uuid4())
 
         data = {
             "share_to_facebook": "1",
@@ -266,6 +286,8 @@ class UploadClipMixin:
             "share_to_fb_destination_id": destination_id,
             "share_to_fb_destination_type": destination_type,
             "xpost_surface": xpost_surface,
+            "no_token_crosspost": "1",
+            "attempt_id": attempt_id,
         }
         if destination_audience_type:
             data["share_to_fb_destination_audience_type"] = destination_audience_type
@@ -325,7 +347,8 @@ class UploadClipMixin:
         fb_destination_id: str, optional
             Facebook destination id used when share_to_facebook is True.
         fb_destination_type: str, optional
-            Facebook destination type used when share_to_facebook is True.
+            Facebook destination type used when share_to_facebook is True,
+            ``USER`` or ``PAGE``.
         fb_destination_audience_type: str, optional
             Facebook Reels audience type, e.g. ``PUBLIC``.
         fb_xpost_surface: str, optional

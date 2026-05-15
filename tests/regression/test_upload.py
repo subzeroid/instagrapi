@@ -85,12 +85,13 @@ class UploadRegressionTestCase(unittest.TestCase):
             "is_account_linked": True,
             "reels_share_to_facebook": True,
             "reels_destination_id": "fb-destination-id",
-            "reels_cross_app_share_type": "2",
+            "posting_type": "USER",
+            "reels_cross_app_share_type": "CROSSPOST",
             "reels_cross_app_share_fb_validation_check_bypass": True,
             "status": "ok",
         }
 
-        result = client.clip_share_to_fb_extra_data(config=config)
+        result = client.clip_share_to_fb_extra_data(config=config, attempt_id="attempt-id")
 
         self.assertEqual(
             result,
@@ -99,11 +100,62 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "is_reel_shared_to_fb": True,
                 "share_to_facebook_reels": True,
                 "share_to_fb_destination_id": "fb-destination-id",
-                "share_to_fb_destination_type": "2",
+                "share_to_fb_destination_type": "USER",
                 "cross_app_share_fb_validation_check_bypass": True,
                 "xpost_surface": "IG_REELS_COMPOSER",
+                "no_token_crosspost": "1",
+                "attempt_id": "attempt-id",
             },
         )
+
+    def test_clip_share_to_fb_extra_data_allows_explicit_destination_when_preflight_is_unavailable(self):
+        client = self.build_client()
+
+        result = client.clip_share_to_fb_extra_data(
+            config={
+                "share_to_fb_unavailable": True,
+                "status": "ok",
+            },
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            attempt_id="attempt-id",
+        )
+
+        self.assertEqual(result["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertEqual(result["share_to_fb_destination_type"], "USER")
+        self.assertEqual(result["attempt_id"], "attempt-id")
+
+    def test_clip_share_to_fb_extra_data_allows_config_destination_when_preflight_is_unavailable(self):
+        client = self.build_client()
+
+        result = client.clip_share_to_fb_extra_data(
+            config={
+                "share_to_fb_unavailable": True,
+                "reels_destination_id": "fb-destination-id",
+                "posting_type": "PAGE",
+                "status": "ok",
+            },
+            attempt_id="attempt-id",
+        )
+
+        self.assertEqual(result["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertEqual(result["share_to_fb_destination_type"], "PAGE")
+
+    def test_clip_share_to_fb_extra_data_does_not_use_cross_app_share_type_as_destination_type(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.clip_share_to_fb_extra_data(
+                config={
+                    "enabled": True,
+                    "is_account_linked": True,
+                    "reels_destination_id": "fb-destination-id",
+                    "reels_cross_app_share_type": "CROSSPOST",
+                    "status": "ok",
+                }
+            )
+
+        self.assertIn("destination type", str(ctx.exception))
 
     def test_clip_share_to_fb_extra_data_raises_without_destination(self):
         client = self.build_client()
@@ -541,9 +593,11 @@ class UploadRegressionTestCase(unittest.TestCase):
             "is_reel_shared_to_fb": True,
             "share_to_facebook_reels": True,
             "share_to_fb_destination_id": "fb-destination-id",
-            "share_to_fb_destination_type": "2",
+            "share_to_fb_destination_type": "USER",
             "cross_app_share_fb_validation_check_bypass": False,
             "xpost_surface": "IG_REELS_COMPOSER",
+            "no_token_crosspost": "1",
+            "attempt_id": "attempt-id",
         }
 
         with mock.patch.object(client, "clip_share_to_fb_extra_data", return_value=fb_extra) as share_to_fb_extra:

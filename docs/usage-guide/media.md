@@ -321,7 +321,7 @@ Upload medias to your feed. Common arguments:
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
-| clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
+| clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None, attempt_id: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
@@ -345,11 +345,15 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 `trial_params={"graduation_strategy": "manual"}` by default and disables feed preview for the upload.
 
 Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer
-use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields. Use
-`clip_upload(..., share_to_facebook=True)` to fetch `clip_share_to_fb_config()` and build the configure payload before
-video bytes are uploaded. If the account is not linked or Instagram does not return a Reel Facebook destination,
-instagrapi raises `ClientError` before upload. Advanced callers can pass `fb_destination_id` and `fb_destination_type`,
-or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`.
+use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields such as
+`share_to_fb_destination_id`, `share_to_fb_destination_type`, `no_token_crosspost`, and `attempt_id`.
+
+`clip_share_to_fb_config()` calls the lightweight Reel sharing preflight endpoint. On recent app versions this response
+contains availability flags, not the full Account Center destination state, and some linked accounts can still return
+`share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. For those accounts, pass
+`fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually
+with `clip_share_to_fb_extra_data(...)`. If neither the preflight/config data nor the caller provides a destination,
+instagrapi raises `ClientError` before uploading video bytes.
 
 ### Example:
 
@@ -370,11 +374,13 @@ or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`.
 ...     "/app/reel.mp4",
 ...     "Cross-posting this Reel to Facebook",
 ...     share_to_facebook=True,
+...     fb_destination_id="FACEBOOK_DESTINATION_ID",
+...     fb_destination_type="USER",
 ... )
 
 >>> fb_extra = cl.clip_share_to_fb_extra_data(
 ...     destination_id="FACEBOOK_DESTINATION_ID",
-...     destination_type="DESTINATION_TYPE_FROM_APP_CONFIG",
+...     destination_type="USER",
 ... )
 >>> reel = cl.clip_upload(
 ...     "/app/reel.mp4",
