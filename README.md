@@ -30,6 +30,18 @@ Support **Python 3.10+**
 pip install instagrapi
 ```
 
+Optional public web TLS impersonation support is available as an extra:
+
+```bash
+pip install "instagrapi[curl]"
+```
+
+Use it only for public web endpoints that are sensitive to browser TLS fingerprints:
+
+```python
+cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
+```
+
 If your project uses [uv](https://docs.astral.sh/uv/), you can add the package with:
 
 ```bash

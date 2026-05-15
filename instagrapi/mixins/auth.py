@@ -456,6 +456,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "session_retry_backoff_factor", self.session_retry_backoff_factor
             ),
             session_retry_statuses=self.settings.get("session_retry_statuses", self.session_retry_statuses),
+            public_transport=self.settings.get("public_transport"),
+            public_transport_impersonate=self.settings.get("public_transport_impersonate"),
         )
 
         self.set_timezone_offset(timezone_offset)
@@ -737,6 +739,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "session_retry_total": self.session_retry_total,
             "session_retry_backoff_factor": self.session_retry_backoff_factor,
             "session_retry_statuses": self.session_retry_statuses,
+            "public_transport": self.public_transport,
+            "public_transport_impersonate": self.public_transport_impersonate,
         }
 
     def set_settings(self, settings: Dict) -> bool:
@@ -800,6 +804,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         session_retry_total: int = None,
         session_retry_backoff_factor: Union[int, float] = None,
         session_retry_statuses: list = None,
+        public_transport: str = None,
+        public_transport_impersonate: str = None,
     ) -> bool:
         if request_timeout is not None:
             self.request_timeout = request_timeout
@@ -813,6 +819,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.session_retry_backoff_factor = session_retry_backoff_factor
         if session_retry_statuses is not None:
             self.session_retry_statuses = list(session_retry_statuses)
+        if public_transport is not None:
+            self.public_transport = self._normalize_public_transport(public_transport)
+        if public_transport_impersonate is not None:
+            self.public_transport_impersonate = public_transport_impersonate
+        if public_transport is not None or public_transport_impersonate is not None:
+            self.public_user_agent = self._default_public_user_agent(
+                self.public_transport, self.public_transport_impersonate
+            )
+            self.public.headers["User-Agent"] = self.public_user_agent
 
         self._configure_public_session_retry()
         self._configure_private_session_retry()
@@ -826,6 +841,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                     "session_retry_total": self.session_retry_total,
                     "session_retry_backoff_factor": self.session_retry_backoff_factor,
                     "session_retry_statuses": self.session_retry_statuses,
+                    "public_transport": self.public_transport,
+                    "public_transport_impersonate": self.public_transport_impersonate,
                 }
             )
         return True

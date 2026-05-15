@@ -3,9 +3,6 @@ import logging
 import time
 from typing import Any, Dict, Optional
 
-from curl_adapter import CurlCffiAdapter
-from curl_cffi import BrowserType, BrowserTypeLiteral
-
 try:
     from simplejson.errors import JSONDecodeError
 except ImportError:
@@ -46,20 +43,36 @@ class PublicRequestMixin:
     session_retry_backoff_factor = 2
     session_retry_statuses = [429, 500, 502, 503, 504]
     last_response_ts = 0
-    public_browser_type: BrowserTypeLiteral = "chrome146"
-    user_agents: dict[BrowserTypeLiteral, str] = {
-        "chrome146": f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+    public_transport = "requests"
+    public_transport_impersonate = "chrome136"
+    public_user_agent = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 "
+        "(KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
+    )
+    public_curl_user_agents = {
+        "chrome136": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
     }
-    public_user_agent = user_agents[public_browser_type]
     public_accept_language = "en-US"
 
     def __init__(self, *args, **kwargs):
         session = requests.Session()
         self.public = session
         self.public.verify = False  # fix SSLError/HTTPSConnectionPool
-        self.public_browser_type = kwargs.pop("browser_type", getattr(self, "browser_type", self.public_browser_type))
-        self.public_user_agent = kwargs.pop("public_user_agent", getattr(self, "public_user_agent", self.public_user_agent))
-        self.public_accept_language = kwargs.pop("public_accept_language", getattr(self, "public_accept_language", self.public_accept_language))
+        self.public_transport = self._normalize_public_transport(
+            kwargs.pop("public_transport", getattr(self, "public_transport", self.public_transport))
+        )
+        self.public_transport_impersonate = kwargs.pop(
+            "public_transport_impersonate",
+            getattr(self, "public_transport_impersonate", self.public_transport_impersonate),
+        )
+        self.public_user_agent = kwargs.pop(
+            "public_user_agent",
+            self._default_public_user_agent(self.public_transport, self.public_transport_impersonate),
+        )
+        self.public_accept_language = kwargs.pop(
+            "public_accept_language", getattr(self, "public_accept_language", self.public_accept_language)
+        )
         self.public.headers.update(
             {
                 "Connection": "Keep-Alive",
@@ -107,6 +120,19 @@ class PublicRequestMixin:
         self._configure_public_session_retry()
         super().__init__(*args, **kwargs)
 
+    @classmethod
+    def _normalize_public_transport(cls, public_transport: str) -> str:
+        public_transport = public_transport or "requests"
+        if public_transport not in {"requests", "curl"}:
+            raise ValueError("public_transport must be 'requests' or 'curl'")
+        return public_transport
+
+    @classmethod
+    def _default_public_user_agent(cls, public_transport: str, impersonate: str) -> str:
+        if public_transport == "curl":
+            return cls.public_curl_user_agents.get(impersonate, cls.public_curl_user_agents["chrome136"])
+        return cls.public_user_agent
+
     def _build_public_session_retry_strategy(self):
         try:
             return Retry(
@@ -124,8 +150,16 @@ class PublicRequestMixin:
             )
 
     def _configure_public_session_retry(self):
-        # adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
-        adapter = CurlCffiAdapter(impersonate_browser_type=self.public_browser_type)
+        if self.public_transport == "curl":
+            try:
+                from curl_adapter import CurlCffiAdapter
+            except ImportError as exc:
+                raise RuntimeError(
+                    "curl public transport requires the optional curl extra: pip install instagrapi[curl]"
+                ) from exc
+            adapter = CurlCffiAdapter(impersonate_browser_type=self.public_transport_impersonate)
+        else:
+            adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
         self.public.mount("https://", adapter)
         self.public.mount("http://", adapter)
 
