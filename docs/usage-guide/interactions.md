@@ -59,6 +59,8 @@ print(cl.user_info(cl.user_id))
 | public\_request\_retries\_timeout | Delay between `public_request()` retries
 | session\_retry\_total | Transport-level retry count for `public` and `private` sessions
 | session\_retry\_backoff\_factor | Backoff factor for transport-level retries
+| public\_transport | Public web transport: `requests` by default, or `curl` when `instagrapi[curl]` is installed
+| public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
 
 
 ### Login
@@ -106,7 +108,9 @@ settings = {
    "public_request_retries_timeout": 2,
    "session_retry_total": 3,
    "session_retry_backoff_factor": 2,
-   "session_retry_statuses": [429, 500, 502, 503, 504]
+   "session_retry_statuses": [429, 500, 502, 503, 504],
+   "public_transport": "requests",
+   "public_transport_impersonate": "chrome136"
 }
 
 cl = Client(settings)
@@ -177,6 +181,21 @@ cl.set_retry_config(
     session_retry_total=3,
 )
 ```
+
+For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:
+
+```bash
+pip install "instagrapi[curl]"
+```
+
+Then opt in explicitly:
+
+```python
+cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
+```
+
+The default remains `public_transport="requests"`. Private mobile API requests still use the regular mobile session.
+See [Public Transport](public-transport.md) for live comparison results and caveats.
 
 ``` python
 cl = Client()

@@ -2,6 +2,21 @@ from tests import helpers as _helpers
 from tests.helpers import *
 
 
+class PublicTransportLiveTestCase(unittest.TestCase):
+    def test_curl_public_transport_user_info_by_username_gql(self):
+        try:
+            import curl_adapter  # noqa: F401
+        except ImportError:
+            self.skipTest("instagrapi[curl] is required for curl public transport live tests")
+
+        cl = Client(public_transport="curl", request_timeout=0, public_request_retries_count=2)
+        user = cl.user_info_by_username_gql("instagram")
+
+        self.assertIsInstance(user, User)
+        self.assertEqual(user.pk, "25025320")
+        self.assertEqual(user.username, "instagram")
+
+
 class ClientPublicTestCase(_helpers.ClientPrivateTestCase):
     cl = None
 

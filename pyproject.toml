@@ -66,6 +66,9 @@ Issues = "https://github.com/subzeroid/instagrapi/issues"
 Guides = "https://instagrapi.com/guides/"
 
 [project.optional-dependencies]
+curl = [
+    "curl-adapter>=1.2.1",
+]
 test = [
     "Pillow==12.2.0",
     "bandit==1.9.4",

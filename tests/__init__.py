@@ -24,7 +24,7 @@ from tests.live.test_media import (
     ClientMediaTestCase,
 )
 from tests.live.test_notes import ClientNoteLiveTestCase
-from tests.live.test_public import ClientPublicTestCase
+from tests.live.test_public import ClientPublicTestCase, PublicTransportLiveTestCase
 from tests.live.test_share import ClientShareTestCase
 from tests.live.test_signup import SignUpTestCase
 from tests.live.test_story import ClientStoryTestCase
