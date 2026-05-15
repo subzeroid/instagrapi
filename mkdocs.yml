@@ -27,6 +27,7 @@ nav:
     - Public Transport: usage-guide/public-transport.md
     - Search: usage-guide/search.md
     - Story: usage-guide/story.md
+    - Termux: usage-guide/termux.md
     - Track: usage-guide/track.md
     - User: usage-guide/user.md
     - Account: usage-guide/account.md

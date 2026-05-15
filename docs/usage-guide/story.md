@@ -86,7 +86,7 @@ Notes:
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
-* Android/Pydroid users should pass `thumbnail=...` for video stories or configure ffmpeg. See [Pydroid and ffmpeg](pydroid.md).
+* Android users should pass `thumbnail=...` for video stories or install the optional video extra and configure ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
 * Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.
 
 
@@ -117,7 +117,11 @@ cl.video_upload_to_story(
 
 ## Build Story to Upload
 
-If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder:
+If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video extra first:
+
+```bash
+pip install "instagrapi[video]"
+```
 
 | Method                                                | Return     | Description                              |
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |

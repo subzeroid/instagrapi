@@ -4,11 +4,13 @@ from pathlib import Path
 from typing import Callable, Optional
 
 THUMBNAIL_FFMPEG_MESSAGE = (
-    "Could not generate video thumbnail. Pass thumbnail=... or install ffmpeg / set IMAGEIO_FFMPEG_EXE."
+    'Could not generate video thumbnail. Pass thumbnail=... or install MoviePy with pip install "instagrapi[video]" '
+    "and configure ffmpeg / set IMAGEIO_FFMPEG_EXE."
 )
 METADATA_FFMPEG_MESSAGE = (
     "Could not read video metadata with the MP4 parser and MoviePy/ffmpeg is unavailable. "
-    "Use a standard MP4 file, or install ffmpeg / set IMAGEIO_FFMPEG_EXE."
+    'Use a standard MP4 file, or install MoviePy with pip install "instagrapi[video]" and configure ffmpeg / '
+    "set IMAGEIO_FFMPEG_EXE."
 )
 
 

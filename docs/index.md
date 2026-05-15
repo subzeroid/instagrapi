@@ -126,6 +126,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Highlight`](usage-guide/highlight.md) - Highlights
   * [`Notes`](usage-guide/notes.md) - Notes
   * [`Pydroid and ffmpeg`](usage-guide/pydroid.md) - Android/Pydroid video upload setup
+  * [`Termux`](usage-guide/termux.md) - Termux install notes and optional video helpers
   * [`Public Transport`](usage-guide/public-transport.md) - Optional curl transport for public web requests
   * [`Story`](usage-guide/story.md) - Story
   * [`StoryArchiveDay`](usage-guide/story.md) - Story archive day shell

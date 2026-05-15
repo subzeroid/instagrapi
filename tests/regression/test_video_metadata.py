@@ -1,5 +1,7 @@
 import builtins
+import importlib
 import struct
+import sys
 
 from tests.helpers import *
 
@@ -116,3 +118,40 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
         message = str(ctx.exception)
         self.assertIn("Pass thumbnail=...", message)
         self.assertIn("IMAGEIO_FFMPEG_EXE", message)
+
+    def test_core_install_does_not_require_moviepy(self):
+        pyproject = Path("pyproject.toml").read_text()
+        required_dependencies = pyproject.split("[project.optional-dependencies]", 1)[0]
+        optional_dependencies = pyproject.split("[project.optional-dependencies]", 1)[1]
+
+        self.assertNotIn("moviepy", required_dependencies)
+        self.assertIn("video = [", optional_dependencies)
+        self.assertIn('"moviepy==1.0.3"', optional_dependencies)
+
+    def test_story_builder_import_does_not_require_moviepy(self):
+        sys.modules.pop("instagrapi.story", None)
+        with self.block_moviepy_imports(ImportError("no moviepy")):
+            try:
+                story = importlib.import_module("instagrapi.story")
+            except Exception as exc:
+                self.fail(f"StoryBuilder import should not require MoviePy: {exc}")
+
+        self.assertEqual(story.StoryBuilder(Path("photo.jpg")).path, Path("photo.jpg"))
+
+    def test_story_builder_render_reports_video_extra_without_moviepy(self):
+        sys.modules.pop("instagrapi.story", None)
+        with self.block_moviepy_imports(ImportError("no moviepy")):
+            story = importlib.import_module("instagrapi.story")
+            with self.assertRaises(RuntimeError) as ctx:
+                story.StoryBuilder(Path("video.mp4")).video()
+
+        self.assertIn("instagrapi[video]", str(ctx.exception))
+
+    def test_prepare_video_reports_video_extra_without_moviepy(self):
+        from instagrapi.image_util import prepare_video
+
+        with self.block_moviepy_imports(ImportError("no moviepy")):
+            with self.assertRaises(RuntimeError) as ctx:
+                prepare_video("video.mp4")
+
+        self.assertIn("instagrapi[video]", str(ctx.exception))
