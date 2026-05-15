@@ -1253,8 +1253,9 @@
 </code></pre></div>
 <p>MoviePy/ffmpeg is still required when <code>instagrapi</code> has to render or extract media. Install the optional video extra for these flows:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">&quot;moviepy==2.2.1&quot;</span>
 </code></pre></div>
-<p>The extra is intentionally not part of the default install, because it pulls in MoviePy and NumPy and can be hard to build on Android.</p>
+<p>The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi keeps <code>Pillow&gt;=12.2.0</code> for security fixes; the <code>--no-deps</code> install keeps the safe Pillow version. MoviePy <code>1.x</code> is no longer supported by instagrapi's video helpers.</p>
 <ul>
 <li>automatic thumbnail generation when <code>thumbnail</code> is not provided</li>
 <li><code>StoryBuilder</code></li>
@@ -1268,7 +1269,7 @@
 <div class="highlight"><pre><span></span><code>RuntimeError: No ffmpeg exe could be found. Install ffmpeg on your system, or set the IMAGEIO_FFMPEG_EXE environment variable.
 </code></pre></div>
 <p>Current <code>instagrapi</code> upload helpers raise a clearer error for this thumbnail path:</p>
-<div class="highlight"><pre><span></span><code>Could not generate video thumbnail. Pass thumbnail=... or install MoviePy with pip install &quot;instagrapi[video]&quot; and configure ffmpeg / set IMAGEIO_FFMPEG_EXE.
+<div class="highlight"><pre><span></span><code>Could not generate video thumbnail. Pass thumbnail=... or install MoviePy 2.2.1. Install video dependencies with pip install &quot;instagrapi[video]&quot; and then install MoviePy with pip install --no-deps &quot;moviepy==2.2.1&quot;. Make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE.
 </code></pre></div>
 <h2 id="fix">Fix</h2>
 <p>The most reliable Pydroid setup is to pre-process the video outside Pydroid and pass both files:</p>
@@ -1277,7 +1278,7 @@
 <li><code>thumb.jpg</code> - JPEG thumbnail for the upload</li>
 </ul>
 <p>Then call the upload method with <code>thumbnail=Path("thumb.jpg")</code>.</p>
-<p>If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install the optional video extra, install an ffmpeg binary that the Pydroid app can execute, and set <code>IMAGEIO_FFMPEG_EXE</code> before running the upload:</p>
+<p>If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install the optional video dependencies and MoviePy, install an ffmpeg binary that the Pydroid app can execute, and set <code>IMAGEIO_FFMPEG_EXE</code> before running the upload:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;IMAGEIO_FFMPEG_EXE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/absolute/path/to/ffmpeg&quot;</span>

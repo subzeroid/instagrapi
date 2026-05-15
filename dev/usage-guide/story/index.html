@@ -1398,7 +1398,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li><code>links</code>, <code>hashtags</code>, <code>locations</code>, <code>stickers</code>, <code>medias</code>, and <code>polls</code> are all part of the story sticker payload.</li>
 <li>Link stickers are supported through <code>StoryLink</code>; this is no longer the old Instagram "swipe up" flow.</li>
 <li>For story uploads, use a 9:16 asset or build one with <code>StoryBuilder</code>.</li>
-<li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video extra and configure ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
+<li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
 <li>Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.</li>
 </ul>
 <p>Examples:</p>
@@ -1424,9 +1424,11 @@ If you have a different resolution, then you need to prepare a file or use the S
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="build-story-to-upload">Build Story to Upload</h2>
-<p>If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video extra first:</p>
+<p>If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video dependencies first:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">&quot;moviepy==2.2.1&quot;</span>
 </code></pre></div>
+<p>MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi keeps <code>Pillow&gt;=12.2.0</code> for security fixes; the <code>--no-deps</code> install keeps the safe Pillow version. Older MoviePy <code>1.x</code> imports such as <code>moviepy.editor</code> and clip methods such as <code>set_duration</code>, <code>set_position</code>, <code>resize</code>, and <code>subclip</code> are not supported by instagrapi's video helpers.</p>
 <table>
 <thead>
 <tr>
