@@ -109,6 +109,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
 
 * [Getting Started](getting-started.md)
 * [Usage Guide](usage-guide/fundamentals.md)
+* [Runnable Examples](usage-guide/examples.md)
 * [Interactions](usage-guide/interactions.md)
   * [`Media`](usage-guide/media.md) - Publication (also called post): Photo, Video, Album, IGTV and Reels
   * [`Resource`](usage-guide/media.md) - Part of Media (for albums)
