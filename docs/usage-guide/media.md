@@ -321,7 +321,7 @@ Upload medias to your feed. Common arguments:
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
-| clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None, attempt_id: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
+| clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
@@ -353,7 +353,8 @@ contains availability flags, not the full Account Center destination state, and 
 `share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. For those accounts, pass
 `fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually
 with `clip_share_to_fb_extra_data(...)`. If neither the preflight/config data nor the caller provides a destination,
-instagrapi raises `ClientError` before uploading video bytes.
+instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated
+automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
 
 ### Example:
 
