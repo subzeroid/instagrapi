@@ -195,6 +195,7 @@ cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 ```
 
 The default remains `public_transport="requests"`. Private mobile API requests still use the regular mobile session.
+See [Public Transport](public-transport.md) for live comparison results and caveats.
 
 ``` python
 cl = Client()

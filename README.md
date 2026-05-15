@@ -42,6 +42,8 @@ Use it only for public web endpoints that are sensitive to browser TLS fingerpri
 cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 ```
 
+See the [public transport guide](docs/usage-guide/public-transport.md) for live comparison results and caveats.
+
 If your project uses [uv](https://docs.astral.sh/uv/), you can add the package with:
 
 ```bash
