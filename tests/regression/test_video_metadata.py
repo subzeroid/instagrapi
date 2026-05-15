@@ -213,7 +213,7 @@ class VideoMetadataRegressionTestCase(unittest.TestCase):
             image = tmpdir / "photo.jpg"
             Image.new("RGB", (720, 1280), "white").save(image)
 
-            build = StoryBuilder(image, caption="MoviePy 2").photo(max_duration=1, link="https://example.com")
+            build = StoryBuilder(image).photo(max_duration=1)
             try:
                 output = Path(build.path)
                 self.assertTrue(output.exists())
