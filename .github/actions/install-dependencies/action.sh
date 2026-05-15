@@ -21,6 +21,8 @@ retry_pip_install 3 --upgrade pip
 if [[ "${INSTALL_TEST}" == "true"  ]]; then
   echo "Installing project with test extras"
   retry_pip_install 3 ".[test]"
+  echo "Installing MoviePy 2.2.1 without dependency downgrades"
+  retry_pip_install 3 --no-deps "moviepy==2.2.1"
 elif [[ "${INSTALL_PACKAGE}" == "true"  ]]; then
   echo "Installing project package"
   retry_pip_install 3 .

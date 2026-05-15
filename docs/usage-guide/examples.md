@@ -35,4 +35,4 @@ python examples/upload_story.py photo ./story.jpg --caption "Story"
 python examples/direct_message.py --user-ids 123456789 --text "Hello"
 ```
 
-Video uploads in Android environments should pass `--thumbnail` or install the optional video extra and configure executable `ffmpeg`. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
+Video uploads in Android environments should pass `--thumbnail` or install the optional video dependencies, MoviePy `2.2.1`, and executable `ffmpeg`. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).

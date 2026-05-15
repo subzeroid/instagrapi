@@ -21,9 +21,10 @@ MoviePy/ffmpeg is still required when `instagrapi` has to render or extract medi
 
 ```bash
 pip install "instagrapi[video]"
+pip install --no-deps "moviepy==2.2.1"
 ```
 
-The extra is intentionally not part of the default install, because it pulls in MoviePy and NumPy and can be hard to build on Android.
+The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi keeps `Pillow>=12.2.0` for security fixes; the `--no-deps` install keeps the safe Pillow version. MoviePy `1.x` is no longer supported by instagrapi's video helpers.
 
 * automatic thumbnail generation when `thumbnail` is not provided
 * `StoryBuilder`
@@ -43,7 +44,7 @@ RuntimeError: No ffmpeg exe could be found. Install ffmpeg on your system, or se
 Current `instagrapi` upload helpers raise a clearer error for this thumbnail path:
 
 ```text
-Could not generate video thumbnail. Pass thumbnail=... or install MoviePy with pip install "instagrapi[video]" and configure ffmpeg / set IMAGEIO_FFMPEG_EXE.
+Could not generate video thumbnail. Pass thumbnail=... or install MoviePy 2.2.1. Install video dependencies with pip install "instagrapi[video]" and then install MoviePy with pip install --no-deps "moviepy==2.2.1". Make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE.
 ```
 
 ## Fix
@@ -55,7 +56,7 @@ The most reliable Pydroid setup is to pre-process the video outside Pydroid and 
 
 Then call the upload method with `thumbnail=Path("thumb.jpg")`.
 
-If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install the optional video extra, install an ffmpeg binary that the Pydroid app can execute, and set `IMAGEIO_FFMPEG_EXE` before running the upload:
+If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install the optional video dependencies and MoviePy, install an ffmpeg binary that the Pydroid app can execute, and set `IMAGEIO_FFMPEG_EXE` before running the upload:
 
 ```python
 import os

@@ -86,7 +86,7 @@ Notes:
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
-* Android users should pass `thumbnail=...` for video stories or install the optional video extra and configure ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
+* Android users should pass `thumbnail=...` for video stories or install the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
 * Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.
 
 
@@ -117,11 +117,14 @@ cl.video_upload_to_story(
 
 ## Build Story to Upload
 
-If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video extra first:
+If you want to format your story correctly (correct resolution, user mentions, etc) use StoryBuilder. StoryBuilder renders media with MoviePy and ffmpeg, so install the optional video dependencies first:
 
 ```bash
 pip install "instagrapi[video]"
+pip install --no-deps "moviepy==2.2.1"
 ```
+
+MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi keeps `Pillow>=12.2.0` for security fixes; the `--no-deps` install keeps the safe Pillow version. Older MoviePy `1.x` imports such as `moviepy.editor` and clip methods such as `set_duration`, `set_position`, `resize`, and `subclip` are not supported by instagrapi's video helpers.
 
 | Method                                                | Return     | Description                              |
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |

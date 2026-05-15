@@ -11,7 +11,7 @@ from instagrapi import config
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
 from instagrapi.types import Location, Media, Track, Usertag
 from instagrapi.utils.timing import date_time_original
-from instagrapi.utils.video import analyze_video_for_upload
+from instagrapi.utils.video import MOVIEPY_2_INSTALL_MESSAGE, analyze_video_for_upload
 
 try:
     from PIL import Image
@@ -570,23 +570,22 @@ class UploadClipMixin:
         except IndexError:
             highlight_start_time = 0
         try:
-            import moviepy.editor as mp
-        except ImportError:
-            try:
-                import moviepy as mp
-            except ImportError:
-                raise RuntimeError('Install video helpers with pip install "instagrapi[video]" and retry')
+            from moviepy import AudioFileClip, VideoFileClip
+        except ImportError as exc:
+            raise RuntimeError(
+                f"clip_upload_as_reel_with_music() requires MoviePy 2.2.1. {MOVIEPY_2_INSTALL_MESSAGE}"
+            ) from exc
         video = None
         audio_clip = None
         try:
             # get all media to create the reel
-            video = mp.VideoFileClip(str(path))
-            audio_clip = mp.AudioFileClip(str(tmpaudio))
+            video = VideoFileClip(str(path))
+            audio_clip = AudioFileClip(str(tmpaudio))
             # set the start time of the audio and create the actual media
             start = highlight_start_time / 1000
             end = highlight_start_time / 1000 + video.duration
-            audio_clip = audio_clip.subclip(start, end)
-            video = video.set_audio(audio_clip)
+            audio_clip = audio_clip.subclipped(start, end)
+            video = video.with_audio(audio_clip)
             video_duration = video.duration
             # save the media in tmp folder
             tmpvideo = Path(_make_tmp_path(".mp4"))
