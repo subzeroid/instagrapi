@@ -872,6 +872,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../public-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public Transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../search/" class="md-nav__link">
         
   
@@ -1291,6 +1319,14 @@
 <td>session_retry_backoff_factor</td>
 <td>Backoff factor for transport-level retries</td>
 </tr>
+<tr>
+<td>public_transport</td>
+<td>Public web transport: <code>requests</code> by default, or <code>curl</code> when <code>instagrapi[curl]</code> is installed</td>
+</tr>
+<tr>
+<td>public_transport_impersonate</td>
+<td>Browser fingerprint used by the optional curl public transport</td>
+</tr>
 </tbody>
 </table>
 <h3 id="login">Login</h3>
@@ -1367,7 +1403,9 @@
    <span class="s2">&quot;public_request_retries_timeout&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
    <span class="s2">&quot;session_retry_total&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
    <span class="s2">&quot;session_retry_backoff_factor&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-   <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">]</span>
+   <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
+   <span class="s2">&quot;public_transport&quot;</span><span class="p">:</span> <span class="s2">&quot;requests&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span>
 <span class="p">}</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
@@ -1518,6 +1556,14 @@
     <span class="n">session_retry_total</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
+<p>For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[curl]&quot;</span>
+</code></pre></div>
+<p>Then opt in explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">&quot;curl&quot;</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">&quot;chrome136&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The default remains <code>public_transport="requests"</code>. Private mobile API requests still use the regular mobile session.
+See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 
 <span class="c1"># Los Angles user:</span>

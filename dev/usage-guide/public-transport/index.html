@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/insight/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/public-transport/">
       
       
-        <link rel="prev" href="../highlight/">
+        <link rel="prev" href="../pydroid/">
       
       
-        <link rel="next" href="../location/">
+        <link rel="next" href="../search/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Insight - instagrapi Documentation</title>
+        <title>Public Transport - instagrapi Documentation</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#insights" class="md-skip">
+        <a href="#public-transport" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Insight
+              Public Transport
             
           </span>
         </div>
@@ -610,19 +610,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
         
   
   
@@ -638,7 +629,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -760,10 +750,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../public-transport/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public Transport
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -779,6 +796,48 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#live-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live Comparison
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1032,6 +1091,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#live-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Live Comparison
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1050,57 +1139,89 @@
   
 
 
-<h1 id="insights">Insights</h1>
-<p>Get business/professional account statistics. Common arguments:</p>
+<h1 id="public-transport">Public Transport</h1>
+<p><code>instagrapi</code> uses two network surfaces:</p>
 <ul>
-<li><code>post_type</code> - Media type: "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO".</li>
-<li><code>time_frame</code> - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".</li>
-<li><code>data_ordering</code> - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".</li>
+<li>private mobile API requests, used for authenticated mobile flows;</li>
+<li>public web requests, used by helpers such as public profile and public media lookups.</li>
+</ul>
+<p>The default public web transport is <code>requests</code>. It has the smallest dependency footprint and keeps the existing
+transport-level retry behavior.</p>
+<p>For public web endpoints that are sensitive to browser TLS fingerprints, you can install the optional curl transport:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[curl]&quot;</span>
+</code></pre></div>
+<p>Then opt in explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">&quot;curl&quot;</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">&quot;chrome136&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Private mobile API requests still use the regular mobile session. The curl transport only changes the public web
+session.</p>
+<h2 id="live-comparison">Live Comparison</h2>
+<p>This is a point-in-time live comparison from May 15, 2026. Instagram public web behavior changes frequently, so treat
+these numbers as a practical signal, not a guarantee.</p>
+<p>Method:</p>
+<ul>
+<li>branch: curl public transport PR branch;</li>
+<li>environment: fresh remote Linux clone with <code>instagrapi[curl]</code> installed;</li>
+<li>Python: 3.12;</li>
+<li>rounds: 4;</li>
+<li>public request retry loop: disabled with <code>public_request_retries_count = 1</code>;</li>
+<li>curl impersonation: <code>chrome136</code>;</li>
+<li>identical inputs for both transports.</li>
 </ul>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Return</th>
-<th>Description</th>
+<th>Public web helper</th>
+<th style="text-align: right;"><code>requests</code></th>
+<th style="text-align: right;"><code>curl</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2)</td>
-<td>List[Dict]</td>
-<td>Return feed media edges with insight stats and pagination</td>
+<td><code>user_info_by_username_gql("instagram")</code></td>
+<td style="text-align: right;">0/4 ok, p50 12.05s</td>
+<td style="text-align: right;">3/4 ok, p50 1.42s</td>
 </tr>
 <tr>
-<td>insights_account()</td>
-<td>Dict</td>
-<td>Get account-level insights (activity, audience, content tabs)</td>
+<td><code>user_info_by_username_gql("1fexd")</code></td>
+<td style="text-align: right;">0/4 ok, p50 12.05s</td>
+<td style="text-align: right;">2/4 ok, p50 0.20s</td>
 </tr>
 <tr>
-<td>insights_media(media_pk: int)</td>
-<td>Dict</td>
-<td>Get insights for a single media object</td>
+<td><code>media_pk_from_url("https://www.instagram.com/p/C_BM2yAN4Rm/")</code></td>
+<td style="text-align: right;">4/4 ok, p50 0.00s</td>
+<td style="text-align: right;">4/4 ok, p50 0.00s</td>
+</tr>
+<tr>
+<td><code>media_info_gql("3441088131388376166")</code></td>
+<td style="text-align: right;">0/4 ok, p50 2.49s</td>
+<td style="text-align: right;">0/4 ok, p50 2.45s</td>
+</tr>
+<tr>
+<td>Total</td>
+<td style="text-align: right;">4/16 ok, p50 7.28s</td>
+<td style="text-align: right;">9/16 ok, p50 0.23s</td>
 </tr>
 </tbody>
 </table>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
-
-<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media_feed_all</span><span class="p">(</span><span class="s2">&quot;VIDEO&quot;</span><span class="p">,</span> <span class="s2">&quot;ONE_WEEK&quot;</span><span class="p">,</span> <span class="s2">&quot;LIKE_COUNT&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_account</span><span class="p">()</span>
-
-<span class="n">media_pk</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/CP5h-I1FuPr/&#39;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media</span><span class="p">(</span><span class="n">media_pk</span><span class="p">)</span>
-</code></pre></div>
-<p>Notes:</p>
+<p>Observed failures:</p>
 <ul>
-<li>These methods require an authenticated business/professional account. Personal accounts can raise <code>UserError</code>.</li>
-<li><code>insights_media_feed_all()</code> paginates internally and sleeps between pages; reduce <code>count</code> if you only need a small sample.</li>
-<li><code>insights_media()</code> raises <code>MediaError</code> when Instagram does not return insight data for the requested media.</li>
+<li><code>requests</code> repeatedly hit <code>429</code> on <code>users/web_profile_info</code>;</li>
+<li><code>curl</code> avoided those <code>429</code> responses in early rounds, then hit <code>401</code> on the same public endpoint;</li>
+<li>both transports hit <code>404</code> on the tested public media info path.</li>
 </ul>
+<h2 id="recommendation">Recommendation</h2>
+<p>Use the default <code>requests</code> transport unless you specifically need public web endpoints that are being rate limited or
+blocked by TLS fingerprint checks.</p>
+<p>Use <code>public_transport="curl"</code> when:</p>
+<ul>
+<li>public profile web lookups return repeated <code>429</code> responses with the default transport;</li>
+<li>you can install the optional native dependencies pulled by <code>instagrapi[curl]</code>;</li>
+<li>you understand that public web access is still opportunistic and can return <code>401</code>, <code>403</code>, <code>404</code>, or <code>429</code>.</li>
+</ul>
+<p>Prefer authenticated private API helpers for production workflows when an equivalent private/mobile path exists.</p>
 
 
 
