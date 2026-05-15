@@ -54,7 +54,7 @@ dependencies = [
     "requests==2.34.2",
     "PySocks==1.7.1",
     "pydantic==2.13.4",
-    "moviepy==1.0.3",
+    "Pillow==12.2.0",
     "pycryptodomex==3.23.0",
 ]
 
@@ -69,8 +69,10 @@ Guides = "https://instagrapi.com/guides/"
 curl = [
     "curl-adapter>=1.2.1",
 ]
+video = [
+    "moviepy==1.0.3",
+]
 test = [
-    "Pillow==12.2.0",
     "bandit==1.9.4",
     "mike==2.2.0",
     # mike implicitly imports pkg_resources from setuptools — see

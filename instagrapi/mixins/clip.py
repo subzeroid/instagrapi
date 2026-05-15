@@ -575,7 +575,7 @@ class UploadClipMixin:
             try:
                 import moviepy as mp
             except ImportError:
-                raise Exception("Please install moviepy>=1.0.3 and retry")
+                raise RuntimeError('Install video helpers with pip install "instagrapi[video]" and retry')
         video = None
         audio_clip = None
         try:

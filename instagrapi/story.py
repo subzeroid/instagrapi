@@ -6,23 +6,48 @@ from urllib.parse import urlparse
 
 from .types import StoryBuild, StoryMention, StorySticker
 
-try:
-    from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
-except ImportError:
-    try:
-        from moviepy.editor import (
-            CompositeVideoClip,
-            ImageClip,
-            TextClip,
-            VideoFileClip,
-        )
-    except ImportError:
-        raise Exception("Please install moviepy>=1.0.3 and retry")
+STORY_BUILDER_VIDEO_EXTRA_MESSAGE = (
+    'StoryBuilder requires MoviePy and ffmpeg. Install it with pip install "instagrapi[video]" '
+    "and make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE."
+)
+STORY_BUILDER_PILLOW_MESSAGE = "StoryBuilder photo rendering requires Pillow. Install Pillow and retry."
 
-try:
-    from PIL import Image
-except ImportError:
-    raise Exception("You don't have PIL installed. Please install PIL or Pillow>=8.1.1")
+
+def _ffmpeg_unavailable(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "ffmpeg" in message or "imageio_ffmpeg_exe" in message or "no ffmpeg exe" in message
+
+
+def _import_moviepy_for_story():
+    try:
+        from moviepy import CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+    except ImportError:
+        try:
+            from moviepy.editor import (
+                CompositeVideoClip,
+                ImageClip,
+                TextClip,
+                VideoFileClip,
+            )
+        except ImportError as exc:
+            raise RuntimeError(STORY_BUILDER_VIDEO_EXTRA_MESSAGE) from exc
+        except Exception as exc:
+            if _ffmpeg_unavailable(exc):
+                raise RuntimeError(STORY_BUILDER_VIDEO_EXTRA_MESSAGE) from exc
+            raise
+    except Exception as exc:
+        if _ffmpeg_unavailable(exc):
+            raise RuntimeError(STORY_BUILDER_VIDEO_EXTRA_MESSAGE) from exc
+        raise
+    return CompositeVideoClip, ImageClip, TextClip, VideoFileClip
+
+
+def _import_pillow_for_story():
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise RuntimeError(STORY_BUILDER_PILLOW_MESSAGE) from exc
+    return Image
 
 
 def _make_tmp_path(suffix: str) -> str:
@@ -106,6 +131,7 @@ class StoryBuilder:
         StoryBuild
             An object of StoryBuild
         """
+        CompositeVideoClip, ImageClip, TextClip, _ = _import_moviepy_for_story()
         clips = []
         stickers = []
         # Background
@@ -229,6 +255,7 @@ class StoryBuilder:
         StoryBuild
             An object of StoryBuild
         """
+        _, _, _, VideoFileClip = _import_moviepy_for_story()
         clip = VideoFileClip(str(self.path), has_mask=True)
         build = self.build_main(clip, max_duration, font, fontsize, color, link)
         clip.close()
@@ -262,6 +289,8 @@ class StoryBuilder:
             An object of StoryBuild
         """
 
+        _, ImageClip, _, _ = _import_moviepy_for_story()
+        Image = _import_pillow_for_story()
         with Image.open(self.path) as im:
             image_width, image_height = im.size
 

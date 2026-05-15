@@ -34,6 +34,7 @@ use an internal fallback chain and choose the best currently working path for th
   * [`Highlight`](highlight.md) - Highlights
   * [`Notes`](notes.md) - Direct Notes
   * [`Pydroid and ffmpeg`](pydroid.md) - Android/Pydroid video upload setup
+  * [`Termux`](termux.md) - Termux install notes and optional video helpers
   * [`Story`](story.md) - Story
   * [`StoryArchiveDay`](story.md) - Story archive day shell
   * [`StoryLink`](story.md) - Story link sticker
