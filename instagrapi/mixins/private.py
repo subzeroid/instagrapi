@@ -200,6 +200,11 @@ class PrivateRequestMixin:
             "Accept-Encoding": "gzip, deflate",  # ignore zstd
             "Host": self.domain,
             "X-FB-HTTP-Engine": "Tigon/MNS/TCP",
+            "X-Tigon-Is-Retry": "False",
+            "X-Zero-Balance": "INIT",
+            "X-Zero-Eh": "",
+            "X-Zero-State": "unknown",
+            "Zero-HTTP-Network-Interface": "wifi",
             "Connection": "keep-alive",
             # "Pragma": "no-cache",
             # "Cache-Control": "no-cache",

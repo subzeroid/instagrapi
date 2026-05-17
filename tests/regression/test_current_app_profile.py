@@ -57,12 +57,25 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         client = Client()
 
         self.assertEqual(client.private.headers["X-FB-HTTP-Engine"], "Tigon/MNS/TCP")
+        self.assertEqual(client.private.headers["X-Tigon-Is-Retry"], "False")
         self.assertEqual(client.private.headers["X-IG-Capabilities"], "3brTv10=")
         self.assertEqual(client.private.headers["X-IG-App-ID"], "567067343352427")
+        self.assertEqual(client.private.headers["X-Zero-Balance"], "INIT")
+        self.assertEqual(client.private.headers["X-Zero-Eh"], "")
+        self.assertEqual(client.private.headers["X-Zero-State"], "unknown")
+        self.assertEqual(client.private.headers["Zero-HTTP-Network-Interface"], "wifi")
         self.assertEqual(
             client.private.headers["X-Bloks-Version-Id"],
             "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",
         )
+
+    def test_default_private_headers_omit_signed_integrity_values(self):
+        client = Client()
+        lower_headers = {key.lower() for key in client.private.headers}
+
+        self.assertNotIn("x-meta-zca", lower_headers)
+        self.assertNotIn("x-meta-usdid", lower_headers)
+        self.assertNotIn("x-ig-attest-params", lower_headers)
 
     def test_saved_legacy_app_profile_is_not_overridden_by_default(self):
         client = Client(
