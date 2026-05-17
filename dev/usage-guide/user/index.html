@@ -1432,14 +1432,14 @@
 <td>Resolve username through doc_id search, then fetch profile</td>
 </tr>
 <tr>
-<td>private_graphql_followers_list(user_id: str, rank_token: str, ...)</td>
+<td>private_graphql_followers_list(user_id: str, rank_token: str, ..., order: str = None)</td>
 <td>dict</td>
-<td>Raw private mobile GraphQL followers list</td>
+<td>Raw private mobile GraphQL followers list. Supports <code>date_followed_latest</code> and <code>date_followed_earliest</code></td>
 </tr>
 <tr>
-<td>private_graphql_following_list(user_id: str, rank_token: str, ...)</td>
+<td>private_graphql_following_list(user_id: str, rank_token: str, ..., order: str = None)</td>
 <td>dict</td>
-<td>Raw private mobile GraphQL following list</td>
+<td>Raw private mobile GraphQL following list. Supports mobile <code>order</code> when accepted by Instagram</td>
 </tr>
 <tr>
 <td>private_graphql_clips_profile(target_user_id: str, ...)</td>
@@ -1503,6 +1503,9 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <p>Sorted followers:</p>
 <div class="highlight"><pre><span></span><code><span class="n">latest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
 <span class="n">earliest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_earliest&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Raw private GraphQL helpers expose the same mobile <code>order</code> variable for callers that need the <code>FollowersList</code>/<code>FollowingList</code> payload directly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">private_graphql_followers_list</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">cl</span><span class="o">.</span><span class="n">rank_token</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Example: We go around the list of our followers and unfollow from them:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
