@@ -181,6 +181,7 @@ cl.delete_note(note.id)
 * Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
 * Supports story building with mentions, hashtags, link stickers, and media stickers
 * Includes helpers for current location search and notes flows
+* Supports mobile follower sorting with `date_followed_latest` and `date_followed_earliest`
 * App-side discovery surfaces: `chaining`, `fetch_suggestion_details`, `discover_recommended_accounts_for_category_v1`, `user_stream_*`, `user_web_profile_info_v1`
 * v2 search SERPs: `fbsearch_accounts_v2`, `fbsearch_reels_v2`, `fbsearch_topsearch_v2`, `fbsearch_typehead`
 * Alternative media-info path (`media_info_v2`) for ad-tagged / sponsored media that the canonical endpoint refuses
