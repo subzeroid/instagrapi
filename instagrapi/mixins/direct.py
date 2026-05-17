@@ -916,6 +916,7 @@ class DirectMixin:
         url = f"https://rupload.facebook.com/messenger_video/{entity_name}"
 
         sess = requests.Session()
+        sess.verify = self.tls_verify
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 
@@ -1066,6 +1067,7 @@ class DirectMixin:
         url = f"https://rupload.facebook.com/messenger_audio/{entity}"
 
         sess = requests.Session()
+        sess.verify = self.tls_verify
         if getattr(self, "proxy", None):
             sess.proxies = {"http": self.proxy, "https": self.proxy}
 

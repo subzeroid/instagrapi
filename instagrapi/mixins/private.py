@@ -94,7 +94,7 @@ class PrivateRequestMixin:
     def __init__(self, *args, **kwargs):
         session = requests.Session()
         self.private = session
-        self.private.verify = False  # fix SSLError/HTTPSConnectionPool
+        self.private.verify = getattr(self, "tls_verify", True)
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))

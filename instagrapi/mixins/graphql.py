@@ -76,7 +76,7 @@ class PrivateGraphQLRequestMixin:
 
     def __init__(self, *args, **kwargs):
         self.graphql = requests.Session()
-        self.graphql.verify = False
+        self.graphql.verify = getattr(self, "tls_verify", True)
         self.graphql.headers.update(
             {
                 "Connection": "Keep-Alive",
