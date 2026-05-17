@@ -225,6 +225,41 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         params = private_request.call_args.kwargs["params"]
         self.assertEqual(params["max_id"], "cursor")
 
+    def test_user_followers_v1_chunk_sends_order_when_provided(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_followers_v1_chunk("123", order="date_followed_latest")
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(params["order"], "date_followed_latest")
+
+    def test_user_followers_with_order_uses_private_api_without_cache(self):
+        client = self.build_private_client()
+        cached_user = UserShort(pk="old", username="cached")
+        sorted_user = UserShort(pk="new", username="sorted")
+        client._users_followers = {"123": {cached_user.pk: cached_user}}
+
+        with mock.patch.object(
+            client,
+            "user_followers_v1",
+            return_value=[sorted_user],
+        ) as user_followers_v1:
+            with mock.patch.object(
+                client,
+                "user_followers_gql",
+                side_effect=AssertionError("sorted followers should use private API"),
+            ):
+                followers = client.user_followers("123", order="date_followed_latest")
+
+        user_followers_v1.assert_called_once_with("123", 0, order="date_followed_latest")
+        self.assertEqual(list(followers), ["new"])
+        self.assertEqual(list(client._users_followers["123"]), ["old"])
+
     def test_user_following_v1_chunk_omits_empty_max_id_on_first_page(self):
         client = self.build_private_client()
 

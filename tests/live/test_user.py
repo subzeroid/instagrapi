@@ -9,6 +9,12 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(len(followers) == 10)
         self.assertIsInstance(list(followers.values())[0], UserShort)
 
+    def test_user_followers_sorted_v1(self):
+        user_id = self.user_id_from_username("instagram")
+        followers = self.cl.user_followers_v1(user_id, amount=5, order="date_followed_latest")
+        self.assertTrue(len(followers) == 5)
+        self.assertIsInstance(followers[0], UserShort)
+
 
 class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_user_short_gql(self):
