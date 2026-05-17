@@ -504,6 +504,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#tls-verification-and-debugging-proxies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS verification and debugging proxies
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1259,6 +1270,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#tls-verification-and-debugging-proxies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS verification and debugging proxies
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1328,7 +1350,7 @@
 <h2 id="interacting-with-instagram-account">Interacting with Instagram Account</h2>
 <p><code>instagrapi</code> provides the following <code>Interactions</code> that can be used to control and get the information about your <code>Instagram</code> account:</p>
 <ul>
-<li><code>Client(settings: dict = {}, proxy: str = "")</code> - Init <code>instagrapi</code> client</li>
+<li><code>Client(settings: dict = {}, proxy: str = "", tls_verify: Union[bool, str] = True)</code> - Init <code>instagrapi</code> client</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">&quot;instagrapi&quot;</span><span class="p">,</span> <span class="s2">&quot;42&quot;</span><span class="p">)</span>
 <span class="c1"># cl.login(&quot;instagrapi&quot;, &quot;42&quot;, verification_code=&quot;123456&quot;)  # with 2FA verification_code</span>
@@ -1382,6 +1404,10 @@
 <tr>
 <td>public_transport_impersonate</td>
 <td>Browser fingerprint used by the optional curl public transport</td>
+</tr>
+<tr>
+<td>tls_verify</td>
+<td>TLS certificate verification: <code>True</code> by default, <code>False</code> for temporary trusted MITM debugging, or a CA bundle path</td>
 </tr>
 </tbody>
 </table>
@@ -1461,7 +1487,8 @@
    <span class="s2">&quot;session_retry_backoff_factor&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
    <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
    <span class="s2">&quot;public_transport&quot;</span><span class="p">:</span> <span class="s2">&quot;requests&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span>
+   <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span><span class="p">,</span>
+   <span class="s2">&quot;tls_verify&quot;</span><span class="p">:</span> <span class="kc">True</span>
 <span class="p">}</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
@@ -1595,6 +1622,11 @@
 <td>bool</td>
 <td>Configure request timeout plus public/manual and session/transport retry settings</td>
 </tr>
+<tr>
+<td>set_tls_verify(tls_verify: bool | str)</td>
+<td>bool</td>
+<td>Update TLS certificate verification for existing public, private and GraphQL sessions</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1620,6 +1652,15 @@
 </code></pre></div>
 <p>The default remains <code>public_transport="requests"</code>. Private mobile API requests still use the regular mobile session.
 See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
+<h3 id="tls-verification-and-debugging-proxies">TLS verification and debugging proxies</h3>
+<p>By default <code>instagrapi</code> verifies TLS certificates on all client sessions. Keep this enabled for production, residential proxies, and normal CONNECT-tunnel proxies.</p>
+<p>If you use a trusted local debugging proxy that intercepts TLS, prefer installing its CA certificate and pointing the client at that bundle:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="s2">&quot;/path/to/proxy-ca.pem&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>For short local captures you can disable verification explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<p>Do not disable TLS verification on untrusted networks or shared proxies because session cookies and passwords can be intercepted.</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 
 <span class="c1"># Los Angles user:</span>
