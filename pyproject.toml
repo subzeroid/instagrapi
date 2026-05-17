@@ -53,7 +53,8 @@ keywords = [
 dependencies = [
     "requests==2.34.2",
     "PySocks==1.7.1",
-    "pydantic==2.13.4",
+    "pydantic==2.12.5; sys_platform == 'android'",
+    "pydantic>=2.12.5,<2.14; sys_platform != 'android'",
     "Pillow==12.2.0",
     "pycryptodomex==3.23.0",
 ]
