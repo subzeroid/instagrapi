@@ -128,6 +128,43 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
         self.assertEqual([hashtag.name for hashtag in hashtags], ["python"])
 
+    def test_search_music_skips_non_track_items(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={
+                "items": [
+                    {"artist": {"pk": "123", "username": "hanszimmer"}, "track": None},
+                    {"playlist": {"id": "456", "title": "Hans Zimmer Essentials"}},
+                    {
+                        "track": {
+                            "id": "789",
+                            "title": "Time",
+                            "subtitle": "Hans Zimmer",
+                            "display_artist": "Hans Zimmer",
+                            "audio_cluster_id": 111,
+                            "cover_artwork_uri": None,
+                            "cover_artwork_thumbnail_uri": None,
+                            "highlight_start_times_in_ms": [0],
+                            "is_explicit": False,
+                            "dash_manifest": "",
+                            "has_lyrics": False,
+                            "audio_asset_id": 222,
+                            "duration_in_ms": 123000,
+                            "allows_saving": True,
+                        }
+                    },
+                ]
+            },
+        ) as private_request:
+            tracks = client.search_music("Hans Zimmer")
+
+        self.assertEqual([track.title for track in tracks], ["Time"])
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "music/audio_global_search/")
+        self.assertIn("params", private_request.call_args.kwargs)
+
     def test_fbsearch_item_forwards_optional_cursors(self):
         client = self._build_client()
         with mock.patch.object(client, "private_request", return_value={"items": []}) as private_request:
