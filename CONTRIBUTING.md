@@ -80,6 +80,10 @@ Maintainers handle release versioning and publishing unless a maintainer asks fo
 Maintainer-only release flow:
 
 ```bash
-python -m build
-twine upload dist/*
+git tag -a X.Y.Z -m "Release X.Y.Z"
+git push origin X.Y.Z
+git push codeberg X.Y.Z
 ```
+
+The `publish.yml` workflow builds the distributions, publishes to PyPI via trusted publishing, and creates the GitHub
+release.
