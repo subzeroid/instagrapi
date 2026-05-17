@@ -8,10 +8,12 @@ Termux can run many `instagrapi` flows, but Android does not use the same binary
 pkg update
 pkg install python python-pillow
 python -m pip install -U pip setuptools wheel
-python -m pip install instagrapi
+python -m pip install --extra-index-url https://termux-user-repository.github.io/pypi/ instagrapi
 ```
 
 `python-pillow` is recommended because photo uploads use Pillow through `instagrapi.image_util`. Installing it with `pkg` avoids a slow or fragile Pillow source build in pip.
+
+The Termux User Repository PyPI index provides Android wheels for native packages that PyPI may only publish as desktop Linux wheels. On Android, `instagrapi` uses `pydantic==2.12.5`, which depends on `pydantic-core==2.41.5`; that version has Android wheels for Python 3.13 in the Termux index. Newer `pydantic-core` releases may otherwise try to build with Rust and fail on-device.
 
 ## Video Uploads
 
