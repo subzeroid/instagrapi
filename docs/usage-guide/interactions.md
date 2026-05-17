@@ -33,7 +33,7 @@
 
 `instagrapi` provides the following `Interactions` that can be used to control and get the information about your `Instagram` account:
 
-* `Client(settings: dict = {}, proxy: str = "")` - Init `instagrapi` client
+* `Client(settings: dict = {}, proxy: str = "", tls_verify: Union[bool, str] = True)` - Init `instagrapi` client
 
 ``` python
 cl.login("instagrapi", "42")
@@ -61,6 +61,7 @@ print(cl.user_info(cl.user_id))
 | session\_retry\_backoff\_factor | Backoff factor for transport-level retries
 | public\_transport | Public web transport: `requests` by default, or `curl` when `instagrapi[curl]` is installed
 | public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
+| tls\_verify | TLS certificate verification: `True` by default, `False` for temporary trusted MITM debugging, or a CA bundle path
 
 
 ### Login
@@ -110,7 +111,8 @@ settings = {
    "session_retry_backoff_factor": 2,
    "session_retry_statuses": [429, 500, 502, 503, 504],
    "public_transport": "requests",
-   "public_transport_impersonate": "chrome136"
+   "public_transport_impersonate": "chrome136",
+   "tls_verify": True
 }
 
 cl = Client(settings)
@@ -163,6 +165,7 @@ cl.get_timeline_feed()  # check session
 | set_locale(locale: str = "en_US")        | bool | Set locale (advice: use the locale of your proxy)
 | set_timezone_offset(seconds: int)        | bool | Set timezone offset in seconds
 | set_retry_config(...)                    | bool | Configure request timeout plus public/manual and session/transport retry settings
+| set_tls_verify(tls_verify: bool \| str)  | bool | Update TLS certificate verification for existing public, private and GraphQL sessions
 
 Example:
 
@@ -196,6 +199,24 @@ cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 
 The default remains `public_transport="requests"`. Private mobile API requests still use the regular mobile session.
 See [Public Transport](public-transport.md) for live comparison results and caveats.
+
+### TLS verification and debugging proxies
+
+By default `instagrapi` verifies TLS certificates on all client sessions. Keep this enabled for production, residential proxies, and normal CONNECT-tunnel proxies.
+
+If you use a trusted local debugging proxy that intercepts TLS, prefer installing its CA certificate and pointing the client at that bundle:
+
+```python
+cl = Client(tls_verify="/path/to/proxy-ca.pem")
+```
+
+For short local captures you can disable verification explicitly:
+
+```python
+cl = Client(tls_verify=False)
+```
+
+Do not disable TLS verification on untrusted networks or shared proxies because session cookies and passwords can be intercepted.
 
 ``` python
 cl = Client()

@@ -142,7 +142,7 @@ class ChallengeResolveMixin:
         ajax_seed = "#PWD_INSTAGRAM_BROWSER:0:%s:" % str(int(time.time()))
         instagram_ajax = hashlib.sha256(ajax_seed.encode()).hexdigest()[:12]
         session = requests.Session()
-        session.verify = False  # fix SSLError/HTTPSConnectionPool
+        session.verify = self.tls_verify
         session.proxies = self.private.proxies
         session.headers.update(
             {

@@ -443,6 +443,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         locale = self.settings.get("locale", self.locale)
         country = self.settings.get("country", self.country)
         country_code = self.settings.get("country_code", self.country_code)
+        self.set_tls_verify(self.settings.get("tls_verify", self.tls_verify))
         self.set_retry_config(
             request_timeout=self.settings.get("request_timeout", self.request_timeout),
             public_request_retries_count=self.settings.get(
@@ -741,6 +742,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "session_retry_statuses": self.session_retry_statuses,
             "public_transport": self.public_transport,
             "public_transport_impersonate": self.public_transport_impersonate,
+            "tls_verify": self.tls_verify,
         }
 
     def set_settings(self, settings: Dict) -> bool:
@@ -794,6 +796,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         with open(path, "w") as fp:
             json.dump(self.get_settings(), fp, indent=4)
+        return True
+
+    def set_tls_verify(self, tls_verify: Union[bool, str]) -> bool:
+        self.tls_verify = tls_verify
+        for name in ("public", "private", "graphql"):
+            session = getattr(self, name, None)
+            if session is not None:
+                session.verify = tls_verify
+        if self.settings is not None:
+            self.settings["tls_verify"] = tls_verify
         return True
 
     def set_retry_config(

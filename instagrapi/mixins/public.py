@@ -58,7 +58,7 @@ class PublicRequestMixin:
     def __init__(self, *args, **kwargs):
         session = requests.Session()
         self.public = session
-        self.public.verify = False  # fix SSLError/HTTPSConnectionPool
+        self.public.verify = getattr(self, "tls_verify", True)
         self.public_transport = self._normalize_public_transport(
             kwargs.pop("public_transport", getattr(self, "public_transport", self.public_transport))
         )

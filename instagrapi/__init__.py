@@ -106,6 +106,7 @@ class Client(
         override_app_version: bool = False,
         **kwargs,
     ):
+        self.tls_verify = kwargs.pop("tls_verify", True)
         self.request_timeout = kwargs.pop("request_timeout", 1)
         self.public_request_retries_count = kwargs.pop("public_request_retries_count", 3)
         self.public_request_retries_timeout = kwargs.pop("public_request_retries_timeout", 2)
