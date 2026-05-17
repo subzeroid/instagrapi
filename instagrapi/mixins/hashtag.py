@@ -1,5 +1,6 @@
 import base64
 import json
+import warnings
 from typing import List, Tuple
 
 from instagrapi.exceptions import (
@@ -23,6 +24,21 @@ class HashtagMixin:
     Helpers for managing Hashtag
     """
 
+    def _normalize_hashtag_name(self, name: str) -> str:
+        normalized = name.strip()
+        if normalized.startswith("#"):
+            normalized = normalized.lstrip("#").strip()
+            if not normalized:
+                raise ValueError("Hashtag name cannot be empty")
+            warnings.warn(
+                f"Hashtag names should not include a leading '#'; normalized to {normalized!r}.",
+                UserWarning,
+                stacklevel=3,
+            )
+        if not normalized:
+            raise ValueError("Hashtag name cannot be empty")
+        return normalized
+
     def hashtag_info_a1(self, name: str, max_id: str = None) -> Hashtag:
         """
         Get information about a hashtag by Public Web API
@@ -40,6 +56,7 @@ class HashtagMixin:
         Hashtag
             An object of Hashtag
         """
+        name = self._normalize_hashtag_name(name)
         params = {"max_id": max_id} if max_id else None
         try:
             data = self.public_a1_request(f"/explore/tags/{name}/", params=params)
@@ -70,6 +87,7 @@ class HashtagMixin:
         Hashtag
             An object of Hashtag
         """
+        name = self._normalize_hashtag_name(name)
         variables = {"tag_name": name, "show_ranked": False, "first": int(amount)}
         if end_cursor:
             variables["after"] = end_cursor
@@ -92,6 +110,7 @@ class HashtagMixin:
         Hashtag
             An object of Hashtag
         """
+        name = self._normalize_hashtag_name(name)
         result = self.private_request(f"tags/{name}/info/")
         return extract_hashtag_v1(result)
 
@@ -109,6 +128,7 @@ class HashtagMixin:
         Hashtag
             An object of Hashtag
         """
+        name = self._normalize_hashtag_name(name)
         try:
             hashtag = self.hashtag_info_a1(name)
         except Exception:
@@ -133,6 +153,7 @@ class HashtagMixin:
         List[Hashtag]
             List of objects of Hashtag
         """
+        name = self._normalize_hashtag_name(name)
         data = self.public_a1_request(f"/explore/tags/{name}/")
         if not data.get("hashtag"):
             raise HashtagNotFound(name=name, **data)
@@ -160,6 +181,7 @@ class HashtagMixin:
         Tuple[List[Media], str]
             List of objects of Media and end_cursor
         """
+        name = self._normalize_hashtag_name(name)
         assert tab_key in (
             "recent",
             "top",
@@ -222,6 +244,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         medias, _ = self.hashtag_medias_a1_chunk(name, amount, tab_key)
         if amount:
             medias = medias[:amount]
@@ -249,6 +272,7 @@ class HashtagMixin:
         Tuple[List[Media], str]
             List of objects of Media and max_id
         """
+        name = self._normalize_hashtag_name(name)
         assert tab_key in (
             "top",
             "recent",
@@ -322,6 +346,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         medias = []
         max_id = None
         while True:
@@ -351,6 +376,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         return self.hashtag_medias_a1(name, amount, tab_key="top")
 
     def hashtag_medias_top_v1(self, name: str, amount: int = 9) -> List[Media]:
@@ -369,6 +395,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         return self.hashtag_medias_v1(name, amount, tab_key="top")
 
     def hashtag_medias_top(self, name: str, amount: int = 9) -> List[Media]:
@@ -387,6 +414,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         try:
             medias = self.hashtag_medias_top_a1(name, amount)
         except ClientError:
@@ -409,6 +437,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         return self.hashtag_medias_a1(name, amount, tab_key="recent")
 
     def hashtag_medias_recent_v1(self, name: str, amount: int = 27) -> List[Media]:
@@ -427,6 +456,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         return self.hashtag_medias_v1(name, amount, tab_key="recent")
 
     def hashtag_medias_recent(self, name: str, amount: int = 27) -> List[Media]:
@@ -445,6 +475,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         try:
             medias = self.hashtag_medias_recent_a1(name, amount)
         except ClientError:
@@ -467,6 +498,7 @@ class HashtagMixin:
         List[Media]
             List of objects of Media
         """
+        name = self._normalize_hashtag_name(name)
         return self.hashtag_medias_v1(name, amount, tab_key="clips")
 
     def hashtag_follow(self, hashtag: str, unfollow: bool = False) -> bool:

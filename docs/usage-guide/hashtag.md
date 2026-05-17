@@ -2,6 +2,8 @@
 
 Viewing hashtag info and medias by hashtag
 
+Pass hashtag names without the leading `#`, for example `pizza`. If a leading `#` is provided, instagrapi strips it and emits a warning; an empty hashtag name raises `ValueError`.
+
 | Method | Return | Description |
 | --- | --- | --- |
 | hashtag_info(name: str) | Hashtag | Return hashtag info (`id`, `name`, `media_count`, `profile_pic_url`) |
