@@ -1121,9 +1121,9 @@
 </thead>
 <tbody>
 <tr>
-<td>user_followers(user_id: str, amount: int = 0)</td>
+<td>user_followers(user_id: str, amount: int = 0, order: str = None)</td>
 <td>Dict[int, UserShort]</td>
-<td>Get dict of followers users (amount=0 - fetch all followers)</td>
+<td>Get dict of followers users (amount=0 - fetch all followers). Use <code>order="date_followed_latest"</code> or <code>order="date_followed_earliest"</code> for mobile follower sorting</td>
 </tr>
 <tr>
 <td>user_following(user_id: str, amount: int = 0)</td>
@@ -1382,14 +1382,14 @@
 <td>Get user's followers information by Public Graphql API</td>
 </tr>
 <tr>
-<td>user_followers_v1_chunk(user_id: str, max_amount: int = 0, max_id: str = "")</td>
+<td>user_followers_v1_chunk(user_id: str, max_amount: int = 0, max_id: str = "", order: str = None)</td>
 <td>Tuple[List[UserShort], str]</td>
-<td>Get user's followers information by Private Mobile API and max_id (cursor)</td>
+<td>Get user's followers information by Private Mobile API and max_id (cursor). Supports <code>date_followed_latest</code> and <code>date_followed_earliest</code></td>
 </tr>
 <tr>
-<td>user_followers_v1(user_id: str, amount: int = 0)</td>
+<td>user_followers_v1(user_id: str, amount: int = 0, order: str = None)</td>
 <td>List[UserShort]</td>
-<td>Get user's followers information by Private Mobile API</td>
+<td>Get user's followers information by Private Mobile API. Supports <code>date_followed_latest</code> and <code>date_followed_earliest</code></td>
 </tr>
 <tr>
 <td>user_following_v1(user_id: str, amount: int = 0)</td>
@@ -1499,6 +1499,10 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
  <span class="s1">&#39;biography&#39;</span><span class="p">:</span> <span class="s1">&#39;Engineer: Python, JavaScript, Erlang&#39;</span><span class="p">,</span>
  <span class="s1">&#39;external_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://example.org/&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;example.org&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">),</span>
  <span class="s1">&#39;is_business&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</code></pre></div>
+<p>Sorted followers:</p>
+<div class="highlight"><pre><span></span><code><span class="n">latest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
+<span class="n">earliest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_earliest&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Example: We go around the list of our followers and unfollow from them:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
