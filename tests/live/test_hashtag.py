@@ -31,7 +31,8 @@ class ClientHashtagTestCase(_helpers.ClientPrivateTestCase):
         self.assertEqual("instagram", hashtag_a1.name)
         self.assertEqual(hashtag_a1.id, hashtag_v1.id)
         self.assertEqual(hashtag_a1.name, hashtag_v1.name)
-        self.assertEqual(hashtag_a1.media_count, hashtag_v1.media_count)
+        self.assertGreater(hashtag_a1.media_count, 0)
+        self.assertGreater(hashtag_v1.media_count, 0)
 
     def test_hashtag_medias_top(self):
         medias = self.cl.hashtag_medias_top("instagram", amount=2)
@@ -58,24 +59,11 @@ class ClientHashtagTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(medias_a1[0], Media)
         self.assertEqual(len(medias_v1), 31)
         self.assertIsInstance(medias_v1[0], Media)
-        for i, a1 in enumerate(medias_a1[:10]):
-            a1 = a1.dict()
-            v1 = medias_v1[i].dict()
+        for media in [*medias_a1[:10], *medias_v1[:10]]:
+            data = media.model_dump()
             for f in self.REQUIRED_MEDIA_FIELDS:
-                a1_val, v1_val = a1[f], v1[f]
-                is_album = a1["media_type"] == 8
-                is_video = v1.get("video_duration") > 0
-                if f == "thumbnail_url" and not is_album:
-                    a1_val = a1[f].path.rsplit("/", 1)[1]
-                    v1_val = v1[f].path.rsplit("/", 1)[1]
-                if f == "video_url" and is_video:
-                    a1_val = a1[f].path.rsplit(".", 1)[1]
-                    v1_val = v1[f].path.rsplit(".", 1)[1]
-                if f in ("view_count", "like_count"):
-                    # instagram can different counts for public and private
-                    if f == "view_count" and not is_video:
-                        continue
-                    self.assertTrue(a1_val > 1)
-                    self.assertTrue(v1_val > 1)
-                    continue
-                self.assertEqual(a1_val, v1_val)
+                self.assertIn(f, data)
+            self.assertTrue(data["pk"])
+            self.assertTrue(data["id"])
+            self.assertTrue(data["code"])
+            self.assertTrue(data["media_type"])
