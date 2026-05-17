@@ -1223,9 +1223,10 @@
 <div class="highlight"><pre><span></span><code>pkg<span class="w"> </span>update
 pkg<span class="w"> </span>install<span class="w"> </span>python<span class="w"> </span>python-pillow
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span>setuptools<span class="w"> </span>wheel
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>instagrapi
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--extra-index-url<span class="w"> </span>https://termux-user-repository.github.io/pypi/<span class="w"> </span>instagrapi
 </code></pre></div>
 <p><code>python-pillow</code> is recommended because photo uploads use Pillow through <code>instagrapi.image_util</code>. Installing it with <code>pkg</code> avoids a slow or fragile Pillow source build in pip.</p>
+<p>The Termux User Repository PyPI index provides Android wheels for native packages that PyPI may only publish as desktop Linux wheels. On Android, <code>instagrapi</code> uses <code>pydantic==2.12.5</code>, which depends on <code>pydantic-core==2.41.5</code>; that version has Android wheels for Python 3.13 in the Termux index. Newer <code>pydantic-core</code> releases may otherwise try to build with Rust and fail on-device.</p>
 <h2 id="video-uploads">Video Uploads</h2>
 <p>For standard MP4 uploads, pass your own thumbnail and <code>instagrapi</code> can read width, height, and duration with its built-in MP4 parser:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
