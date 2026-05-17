@@ -512,7 +512,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except (PrivateError, ValidationError):
             user = self.user_short_gql(int(user_id))
         self.username = user.username
+        self.authorization_data["ds_user_id"] = str(user.pk)
         self.private.cookies.set("ds_user_id", str(user.pk))
+        self.private.headers.update(self.base_headers)
+        self.private.headers.update({"Authorization": self.authorization})
         return True
 
     def login(

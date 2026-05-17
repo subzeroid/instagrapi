@@ -207,6 +207,31 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.username, "example")
         self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
 
+    def test_login_by_sessionid_primes_authorization_header_for_direct_uploads(self):
+        client = Client()
+        sessionid = "1234567890123456789012345678901%3Atoken"
+        user = User(
+            pk="1234567890123456789",
+            username="example",
+            full_name="Example",
+            is_private=False,
+            profile_pic_url="https://example.com/pic.jpg",
+            is_verified=False,
+            media_count=0,
+            follower_count=0,
+            following_count=0,
+            is_business=False,
+        )
+        client.user_info_v1 = Mock(return_value=user)
+        client.user_short_gql = Mock()
+
+        result = client.login_by_sessionid(sessionid)
+
+        self.assertTrue(result)
+        self.assertEqual(client.private.headers.get("IG-U-DS-USER-ID"), "1234567890123456789")
+        self.assertEqual(client.private.headers.get("IG-INTENDED-USER-ID"), "1234567890123456789")
+        self.assertEqual(client.private.headers.get("Authorization"), client.authorization)
+
     def test_login_by_sessionid_falls_back_to_user_short_gql_on_validation_error(self):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"
