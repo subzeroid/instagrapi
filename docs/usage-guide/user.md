@@ -76,8 +76,8 @@ Low level methods:
 | user_info_by_username_a1(username: str)                                             | dict                        | Raw public A1 username payload                                             |
 | user_info_v2_gql(user_id: str)                                                      | User                        | Profile lookup through current doc_id GraphQL                              |
 | user_info_by_username_v2_gql(username: str)                                         | User                        | Resolve username through doc_id search, then fetch profile                 |
-| private_graphql_followers_list(user_id: str, rank_token: str, ...)                  | dict                        | Raw private mobile GraphQL followers list                                  |
-| private_graphql_following_list(user_id: str, rank_token: str, ...)                  | dict                        | Raw private mobile GraphQL following list                                  |
+| private_graphql_followers_list(user_id: str, rank_token: str, ..., order: str = None) | dict                      | Raw private mobile GraphQL followers list. Supports `date_followed_latest` and `date_followed_earliest` |
+| private_graphql_following_list(user_id: str, rank_token: str, ..., order: str = None) | dict                      | Raw private mobile GraphQL following list. Supports mobile `order` when accepted by Instagram |
 | private_graphql_clips_profile(target_user_id: str, ...)                             | dict                        | Raw private mobile GraphQL profile Reels stream                            |
 | private_graphql_inbox_tray_for_user(user_id: str, ...)                              | dict                        | Raw private mobile GraphQL inbox tray query                                |
 
@@ -138,6 +138,12 @@ Sorted followers:
 ``` python
 latest_followers = cl.user_followers(cl.user_id, amount=50, order="date_followed_latest")
 earliest_followers = cl.user_followers_v1(cl.user_id, amount=50, order="date_followed_earliest")
+```
+
+Raw private GraphQL helpers expose the same mobile `order` variable for callers that need the `FollowersList`/`FollowingList` payload directly:
+
+``` python
+payload = cl.private_graphql_followers_list(cl.user_id, cl.rank_token, order="date_followed_latest")
 ```
 
 Example: We go around the list of our followers and unfollow from them:

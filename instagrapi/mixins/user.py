@@ -1881,9 +1881,10 @@ class UserMixin:
         self,
         user_id: str,
         rank_token: str,
-        client_doc_id: str = "28479704798344003308647327139",
+        client_doc_id: str = "28479704797510738576165798526",
         max_id: int = None,
         priority: str = None,
+        order: str = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
     ) -> dict:
@@ -1892,17 +1893,25 @@ class UserMixin:
             "enableGroups": True,
         }
         variables = {
-            "include_unseen_count": False,
-            "query": "",
-            "include_biography": False,
             "user_id": str(user_id),
+            "skip_suggested_users": True,
+            "skip_more_groups_available": True,
+            "skip_friendship_followers_fields": True,
             "request_data": request_data,
+            "skip_page_size": True,
+            "skip_pending_admins": True,
+            "skip_has_more": True,
             "search_surface": "follow_list_page",
+            "query": "",
+            "skip_big_list": True,
+            "include_unseen_count": True,
         }
         if exclude_field_is_favorite is not None:
             variables["exclude_field_is_favorite"] = exclude_field_is_favorite
         if max_id is not None:
             variables["max_id"] = max_id
+        if order is not None:
+            variables["order"] = order
         if exclude_unused_fields is not None:
             variables["exclude_unused_fields"] = exclude_unused_fields
         return self.private_graphql_query_request(
@@ -1911,15 +1920,17 @@ class UserMixin:
             variables=variables,
             client_doc_id=client_doc_id,
             priority=priority,
+            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
         )
 
     def private_graphql_following_list(
         self,
         user_id: str,
         rank_token: str,
-        client_doc_id: str = "16104639289023609826830352479",
+        client_doc_id: str = "161046392817718486717479294775",
         max_id: int = None,
         priority: str = None,
+        order: str = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
     ) -> dict:
@@ -1929,17 +1940,31 @@ class UserMixin:
             "includes_hashtags": True,
         }
         variables = {
-            "include_unseen_count": False,
-            "enable_groups": True,
             "user_id": str(user_id),
+            "skip_use_clickable_see_more": True,
+            "skip_preview_hashtags": True,
+            "skip_should_limit_list_of_followers": True,
+            "skip_pending_admins": True,
+            "skip_more_groups_available": True,
+            "skip_friendship_followers_fields": False,
             "request_data": request_data,
-            "include_biography": False,
+            "skip_page_size": True,
+            "skip_friend_requests": True,
+            "skip_big_list": True,
             "query": "",
+            "include_profile_update_info": True,
+            "skip_suggested_users": True,
+            "include_unseen_count": True,
+            "skip_has_more": True,
+            "enable_groups": True,
+            "skip_hashtag_count": True,
         }
         if exclude_field_is_favorite is not None:
             variables["exclude_field_is_favorite"] = exclude_field_is_favorite
         if max_id is not None:
             variables["max_id"] = max_id
+        if order is not None:
+            variables["order"] = order
         if exclude_unused_fields is not None:
             variables["exclude_unused_fields"] = exclude_unused_fields
         return self.private_graphql_query_request(
@@ -1948,6 +1973,7 @@ class UserMixin:
             variables=variables,
             client_doc_id=client_doc_id,
             priority=priority,
+            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
         )
 
     def private_graphql_clips_profile(

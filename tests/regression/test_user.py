@@ -599,23 +599,41 @@ class UserMixinRegressionTestCase(unittest.TestCase):
     def test_private_graphql_followers_list_builds_query_wrapper(self):
         client = Client()
         with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
-            client.private_graphql_followers_list("123", "rank", max_id=10, priority="u=3, i")
+            client.private_graphql_followers_list(
+                "123",
+                "rank",
+                max_id=10,
+                priority="u=3, i",
+                order="date_followed_latest",
+            )
 
         query.assert_called_once()
         self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowersList")
         self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__followers")
+        self.assertEqual(query.call_args.kwargs["client_doc_id"], "28479704797510738576165798526")
         self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
         self.assertEqual(query.call_args.kwargs["variables"]["max_id"], 10)
+        self.assertEqual(query.call_args.kwargs["variables"]["order"], "date_followed_latest")
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_suggested_users"])
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_page_size"])
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_pending_admins"])
         self.assertEqual(query.call_args.kwargs["priority"], "u=3, i")
+        self.assertEqual(query.call_args.kwargs["extra_headers"]["X-FB-RMD"], "state=URL_ELIGIBLE")
 
     def test_private_graphql_following_list_builds_query_wrapper(self):
         client = Client()
         with mock.patch.object(client, "private_graphql_query_request", return_value={"data": {}}) as query:
-            client.private_graphql_following_list("123", "rank")
+            client.private_graphql_following_list("123", "rank", order="date_followed_earliest")
 
         self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowingList")
         self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__following")
+        self.assertEqual(query.call_args.kwargs["client_doc_id"], "161046392817718486717479294775")
         self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
+        self.assertEqual(query.call_args.kwargs["variables"]["order"], "date_followed_earliest")
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_use_clickable_see_more"])
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_page_size"])
+        self.assertTrue(query.call_args.kwargs["variables"]["skip_friend_requests"])
+        self.assertEqual(query.call_args.kwargs["extra_headers"]["X-FB-RMD"], "state=URL_ELIGIBLE")
 
     def test_private_graphql_clips_profile_builds_query_wrapper(self):
         client = Client()

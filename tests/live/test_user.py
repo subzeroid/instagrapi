@@ -15,6 +15,34 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(len(followers) == 5)
         self.assertIsInstance(followers[0], UserShort)
 
+    def test_private_graphql_followers_list_sorted(self):
+        user_id = self.user_id_from_username("instagram")
+        result = None
+        for _ in range(3):
+            try:
+                result = self.cl.private_graphql_followers_list(
+                    user_id,
+                    self.cl.rank_token,
+                    order="date_followed_latest",
+                )
+                break
+            except ClientGraphqlError:
+                time.sleep(2)
+        if result is None:
+            result = self.cl.private_graphql_followers_list(
+                user_id,
+                self.cl.rank_token,
+                order="date_followed_latest",
+            )
+
+        data = result.get("data") or {}
+        followers = next(
+            (value for key, value in data.items() if "xdt_api__v1__friendships__followers" in key),
+            None,
+        )
+        self.assertIsInstance(followers, dict)
+        self.assertGreater(len(followers.get("users", [])), 0)
+
 
 class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_user_short_gql(self):
