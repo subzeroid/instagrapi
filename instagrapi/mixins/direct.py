@@ -71,6 +71,12 @@ class DirectMixin:
     Helpers for managing Direct Messaging
     """
 
+    def _direct_request_tracking_params(self) -> Dict[str, str]:
+        return {
+            "eb_device_id": "0",
+            "igd_request_log_tracking_id": self.generate_uuid(),
+        }
+
     def direct_threads(
         self,
         amount: int = 20,
@@ -140,11 +146,16 @@ class DirectMixin:
         """
         assert self.user_id, "Login required"
         params = {
+            **self._direct_request_tracking_params(),
             "visual_message_return_type": "unseen",
             "thread_message_limit": "10",
             "persistentBadging": "true",
             "limit": "20",
             "is_prefetching": "false",
+            "fetch_reason": "initial_snapshot",
+            "include_old_mrs": "false",
+            "no_pending_badge": "true",
+            "push_disabled": "true",
         }
         if selected_filter:
             assert selected_filter in SELECTED_FILTERS, (
@@ -1349,11 +1360,13 @@ class DirectMixin:
         assert mode in SEARCH_MODES, f'Unsupported mode="{mode}" {SEARCH_MODES}'
 
         params = {
+            "max_ai_bot_results": "0",
             "max_ig_bus_results": "10",
             "mode": mode,
             "show_threads": "true",
             "query": str(query),
             "max_ig_results": "10",
+            "max_ibc_results": "20",
             "max_fb_results": "0",
         }
         result = self.private_request(
@@ -1381,6 +1394,7 @@ class DirectMixin:
             List of Tuples with DirectMessage (matched query) and its DirectThread
         """
         params = {
+            "hide_locked_threads": '{"message_content":"false"}',
             "offsets": '{"message_content":"0","reshared_content":""}',
             "query": query,
             "result_types": '["message_content","reshared_content"]',
@@ -1883,7 +1897,11 @@ class DirectMixin:
             A list of objects of Media
         """
         assert self.user_id, "Login required"
-        params = {"limit": 20, "media_type": "photos_and_videos"}
+        params = {
+            **self._direct_request_tracking_params(),
+            "limit": 20,
+            "media_type": "media_shares",
+        }
         max_timestamp = None
         items = []
         while True:

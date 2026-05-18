@@ -350,6 +350,13 @@ class ClientTrialReelUploadLiveTestCase(_helpers.ClientPrivateTestCase):
         self.skipTest("No fresh account has Trial Reels enabled")
 
 
+class ClientClipCreationPreflightLiveTestCase(_helpers.ClientPrivateTestCase):
+    def test_clip_info_for_creation_live(self):
+        result = self.cl.clip_info_for_creation()
+
+        self.assertEqual(result.get("status"), "ok")
+
+
 class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
