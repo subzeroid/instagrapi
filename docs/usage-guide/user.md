@@ -73,7 +73,6 @@ Low level methods:
 | user_following_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's following information by Public Graphql API                     |
 | search_followers_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by followers by Private Mobile API                                  |
 | search_following_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by following by Private Mobile API                                  |
-| user_info_by_username_a1(username: str)                                             | dict                        | Raw public A1 username payload                                             |
 | user_info_v2_gql(user_id: str)                                                      | User                        | Profile lookup through current doc_id GraphQL                              |
 | user_info_by_username_v2_gql(username: str)                                         | User                        | Resolve username through doc_id search, then fetch profile                 |
 | private_graphql_followers_list(user_id: str, rank_token: str, ..., order: str = None) | dict                      | Raw private mobile GraphQL followers list. Supports `date_followed_latest` and `date_followed_earliest` |

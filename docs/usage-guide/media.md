@@ -63,7 +63,6 @@ Low level methods:
 
 | Method | Return | Description |
 | --- | --- | --- |
-| media_info_a1(media_pk: str, max_id: str = None) | Media | Get media from PK via public web API |
 | media_info_gql(media_pk: str) | Media | Get media from PK via public GraphQL API. Falls back from legacy `query_hash` to the newer `doc_id` media query when available. |
 | media_info_v1(media_pk: str) | Media | Get media from PK via private mobile API |
 | media_info_v2(media_id: str) | Media | Alternative source for media info via `discover/media_metadata/` (`media_or_ad` payload). Useful as fallback when `media_info_v1` fails on certain ad-tagged or sponsored media. Strips `_userid` suffix automatically. |
