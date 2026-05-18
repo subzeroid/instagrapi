@@ -192,13 +192,6 @@ class UserMixin:
             username = self.user_info_v1(user_id).username
         return username
 
-    def user_info_by_username_a1(self, username: str) -> dict:
-        """
-        Get raw public A1 user object from username.
-        """
-        username = str(username).lower()
-        return self.public_a1_request(f"/{username}/", full=True)
-
     def user_info_by_username_gql(self, username: str) -> User:
         """
         Get user object from user name

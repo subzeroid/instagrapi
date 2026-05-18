@@ -106,7 +106,7 @@ class PublicRegressionTestCase(unittest.TestCase):
         private_fallback.assert_not_called()
         self.assertIn("Incorrect Query", str(cm.exception))
 
-    def test_media_info_gql_falls_back_to_a1_when_doc_id_is_unauthorized(self):
+    def test_media_info_gql_falls_back_to_private_when_doc_id_is_unauthorized(self):
         client = Client()
         expected = Mock(spec=Media)
 
@@ -120,7 +120,7 @@ class PublicRegressionTestCase(unittest.TestCase):
                 "public_doc_id_graphql_request",
                 side_effect=ClientForbiddenError("403", response=Mock(status_code=403)),
             ):
-                with mock.patch.object(client, "media_info_a1", return_value=expected) as fallback:
+                with mock.patch.object(client, "media_info_v1", return_value=expected) as fallback:
                     result = client.media_info_gql("2110901750722920960")
 
         self.assertIs(result, expected)

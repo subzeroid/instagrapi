@@ -516,15 +516,6 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             with self.assertRaises(UserNotFound):
                 client.user_web_profile_info_v1("missing")
 
-    def test_user_info_by_username_a1_requests_full_public_payload(self):
-        client = Client()
-        expected = {"graphql": {"user": {"id": "1"}}}
-        with mock.patch.object(client, "public_a1_request", return_value=expected) as public_a1_request:
-            result = client.user_info_by_username_a1("Example")
-
-        self.assertEqual(result, expected)
-        public_a1_request.assert_called_once_with("/example/", full=True)
-
     def test_user_info_v2_gql_uses_profile_doc_id(self):
         client = Client()
         payload = self.build_web_profile_user(id="25025320")["data"]["user"]

@@ -85,7 +85,7 @@ cl.video_upload_to_story(
 
 ### Requests
 
-* `Public` web methods have a suffix `_gql` (Instagram `GraphQL`) or `_a1` (example `https://www.instagram.com/example/?__a=1`). Some `_gql` helpers use newer `doc_id` queries when Instagram disables legacy `query_hash` endpoints.
+* `Public` web methods have a suffix `_gql` (Instagram `GraphQL`). Some `_gql` helpers use newer `doc_id` queries when Instagram disables legacy `query_hash` endpoints. Legacy `?__a=1` helpers were removed because that public web response is no longer reliable.
 * `Private` (authorized request via mobile api) methods have `_v1` suffix
 
 Public web flows are not guaranteed. Instagram can change or block them independently of the library, and some helpers can only work reliably with an authenticated session.
