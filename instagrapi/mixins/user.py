@@ -1160,7 +1160,14 @@ class UserMixin:
         if user_id in self._users_following.get(self.user_id, []):
             self.logger.debug("User %s already followed", user_id)
             return False
-        data = self.with_action_data({"user_id": user_id})
+        data = self.with_action_data(
+            {
+                "user_id": user_id,
+                "_uid": str(self.user_id),
+                "include_follow_friction_check": "1",
+                "container_module": "profile",
+            }
+        )
         result = self.private_request(f"friendships/create/{user_id}/", data)
         if self.user_id in self._users_following:
             self._users_following.pop(self.user_id)  # reset
@@ -1181,7 +1188,13 @@ class UserMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(user_id)
-        data = self.with_action_data({"user_id": user_id})
+        data = self.with_action_data(
+            {
+                "user_id": user_id,
+                "_uid": str(self.user_id),
+                "container_module": "profile",
+            }
+        )
         result = self.private_request(f"friendships/destroy/{user_id}/", data)
         if self.user_id in self._users_following:
             self._users_following[self.user_id].pop(user_id, None)

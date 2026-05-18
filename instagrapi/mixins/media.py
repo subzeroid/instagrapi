@@ -583,12 +583,19 @@ class MediaMixin:
             A boolean value
         """
         assert self.user_id, "Login required"
-        media_id = self.media_pk(media_id)
+        media_id = str(media_id)
         data = {
             "inventory_source": "media_or_ad",
             "media_id": media_id,
+            "_uid": str(self.user_id),
             "radio_type": "wifi-none",
+            "delivery_class": "organic",
+            "tap_source": "button",
+            "is_2m_enabled": "false",
+            "is_from_swipe": "false",
             "is_carousel_bumped_post": "false",
+            "floating_context_items": "[]",
+            "media_pct_watched": "0",
             "container_module": "feed_timeline",
             "feed_position": str(random.randint(0, 6)),
         }

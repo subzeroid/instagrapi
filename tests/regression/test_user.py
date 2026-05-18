@@ -372,6 +372,45 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(result, {"1": False, "2": True})
         decline.assert_has_calls([mock.call("1"), mock.call("2")])
 
+    def test_user_follow_posts_current_action_context(self):
+        client = self.build_private_client()
+        client.android_device_id = "android-device"
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"friendship_status": {"following": True}},
+        ) as private_request:
+            self.assertTrue(client.user_follow("42"))
+
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "friendships/create/42/")
+        self.assertEqual(data["user_id"], "42")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["radio_type"], "wifi-none")
+        self.assertEqual(data["include_follow_friction_check"], "1")
+        self.assertEqual(data["container_module"], "profile")
+
+    def test_user_unfollow_posts_current_action_context(self):
+        client = self.build_private_client()
+        client.android_device_id = "android-device"
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"friendship_status": {"following": False}},
+        ) as private_request:
+            self.assertTrue(client.user_unfollow("42"))
+
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "friendships/destroy/42/")
+        self.assertEqual(data["user_id"], "42")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["radio_type"], "wifi-none")
+        self.assertEqual(data["container_module"], "profile")
+
     def test_chaining_sends_expected_params_and_returns_payload(self):
         client = Client()
         expected = {"users": [{"pk": "9", "username": "suggested"}]}
