@@ -1361,24 +1361,9 @@
 </thead>
 <tbody>
 <tr>
-<td>location_info_a1(location_pk: int)</td>
-<td>Location</td>
-<td>Get a location using location pk (Public Web API)</td>
-</tr>
-<tr>
 <td>location_info_v1(location_pk: int)</td>
 <td>Location</td>
 <td>Get a location using location pk (Private Mobile API)</td>
-</tr>
-<tr>
-<td>location_medias_a1_chunk(location_pk: int, max_amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts|edge_location_to_media", max_id: str = None)</td>
-<td>Tuple[List[Media], str]</td>
-<td>Get chunk of medias and end_cursor (Public Web API)</td>
-</tr>
-<tr>
-<td>location_medias_a1(location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts|edge_location_to_media")</td>
-<td>List[Media]</td>
-<td>Get medias for a location (Public Web API)</td>
 </tr>
 <tr>
 <td>location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: str = "ranked|recent", max_id: str = None)</td>
@@ -1391,19 +1376,9 @@
 <td>Get medias for a location (Private Mobile API), paginating with the server cursor until <code>amount</code> is reached or the cursor is exhausted</td>
 </tr>
 <tr>
-<td>location_medias_top_a1(location_pk: int, amount: int = 9, sleep: float = 0.5)</td>
-<td>List[Media]</td>
-<td>Get top medias for a location (Public Web API)</td>
-</tr>
-<tr>
 <td>location_medias_top_v1(location_pk: int, amount: int = 21)</td>
 <td>List[Media]</td>
 <td>Get top medias for a location (Private Mobile API)</td>
-</tr>
-<tr>
-<td>location_medias_recent_a1(location_pk: int, amount: int = 24, sleep: float = 0.5)</td>
-<td>List[Media]</td>
-<td>Get recent medias for a location (Public Web API)</td>
 </tr>
 <tr>
 <td>location_medias_recent_v1(location_pk: int, amount: int = 63)</td>

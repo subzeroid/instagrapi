@@ -1124,11 +1124,6 @@
 <td>Return hashtag info (<code>id</code>, <code>name</code>, <code>media_count</code>, <code>profile_pic_url</code>)</td>
 </tr>
 <tr>
-<td>hashtag_related_hashtags(name: str)</td>
-<td>List[Hashtag]</td>
-<td>Return related hashtags</td>
-</tr>
-<tr>
 <td>hashtag_medias_top(name: str, amount: int = 9)</td>
 <td>List[Media]</td>
 <td>Return top posts for a hashtag</td>
@@ -1264,11 +1259,6 @@
 </thead>
 <tbody>
 <tr>
-<td>hashtag_info_a1(name: str, max_id: str = None)</td>
-<td>Hashtag</td>
-<td>Get information about a hashtag by Public Web API</td>
-</tr>
-<tr>
 <td>hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None)</td>
 <td>Hashtag</td>
 <td>Get information about a hashtag by Public Graphql API</td>
@@ -1277,16 +1267,6 @@
 <td>hashtag_info_v1(name: str)</td>
 <td>Hashtag</td>
 <td>Get information about a hashtag by Private Mobile API</td>
-</tr>
-<tr>
-<td>hashtag_medias_a1_chunk(name: str, max_amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media", end_cursor: str = None)</td>
-<td>Tuple[List[Media], str]</td>
-<td>Get chunk of medias and end_cursor by Public Web API</td>
-</tr>
-<tr>
-<td>hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "edge_hashtag_to_top_posts|edge_hashtag_to_media")</td>
-<td>List[Media]</td>
-<td>Get medias for a hashtag by Public Web API</td>
 </tr>
 <tr>
 <td>hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top|recent", max_id: str = None)</td>
@@ -1299,19 +1279,9 @@
 <td>Get medias for a hashtag by Private Mobile API</td>
 </tr>
 <tr>
-<td>hashtag_medias_top_a1(name: str, amount: int = 9)</td>
-<td>List[Media]</td>
-<td>Get top medias for a hashtag by Public Web API</td>
-</tr>
-<tr>
 <td>hashtag_medias_top_v1(name: str, amount: int = 9)</td>
 <td>List[Media]</td>
 <td>Get top medias for a hashtag by Private Mobile API</td>
-</tr>
-<tr>
-<td>hashtag_medias_recent_a1(name: str, amount: int = 71)</td>
-<td>List[Media]</td>
-<td>Get recent medias for a hashtag by Public Web API</td>
 </tr>
 <tr>
 <td>hashtag_medias_recent_v1(name: str, amount: int = 27)</td>
@@ -1348,11 +1318,10 @@
 </code></pre></div>
 <p>Notes:</p>
 <ul>
-<li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> prefer public/web paths first and fall back to private/mobile on failure.</li>
+<li>Instagram's old public hashtag web page JSON (<code>?__a=1</code>) is no longer reliable and the <code>_a1</code> helpers were removed. Use the high-level hashtag methods or the authenticated private/mobile <code>_v1</code> helpers.</li>
+<li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> use the private/mobile helpers.</li>
 <li>For resumable pagination, use <code>hashtag_medias_v1_chunk()</code> and persist the encoded <code>max_id</code> cursor.</li>
-<li><code>tab_key</code> values differ by implementation:</li>
-<li><code>hashtag_medias_a1_chunk()</code>: <code>top</code> or <code>recent</code></li>
-<li><code>hashtag_medias_v1_chunk()</code>: <code>top</code>, <code>recent</code>, or <code>clips</code></li>
+<li><code>hashtag_medias_v1_chunk()</code> accepts <code>top</code>, <code>recent</code>, or <code>clips</code> as <code>tab_key</code>.</li>
 </ul>
 
 
