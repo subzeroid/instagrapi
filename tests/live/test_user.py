@@ -175,12 +175,14 @@ class ClientUserExtendTestCase(_helpers.ClientPrivateTestCase):
 
     def test_user_follow_unfollow(self):
         user_id = self.user_id_from_username("instagram")
-        self.cl.user_follow(user_id)
-        following = self.cl.user_following(self.cl.user_id)
-        self.assertIn(user_id, following)
-        self.cl.user_unfollow(user_id)
-        following = self.cl.user_following(self.cl.user_id)
-        self.assertNotIn(user_id, following)
+        try:
+            self.assertTrue(self.cl.user_follow(user_id))
+            relationship = self.cl.user_friendship_v1(user_id)
+            self.assertTrue(relationship.following)
+        finally:
+            self.cl.user_unfollow(user_id)
+        relationship = self.cl.user_friendship_v1(user_id)
+        self.assertFalse(relationship.following)
 
     # def test_send_new_note(self):
     #     self.cl.create_note("Hello from Instagrapi!", 0)

@@ -70,8 +70,12 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(likers[0], UserShort)
 
     def test_media_like_by_pk(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/ByU3LAslgWY/")
-        self.assertTrue(self.cl.media_like(media_pk))
+        user_id = self.user_id_from_username("instagram")
+        media = self.cl.user_medias_v1(user_id, amount=1)[0]
+        try:
+            self.assertTrue(self.cl.media_like(media.pk))
+        finally:
+            self.cl.media_unlike(media.pk)
 
     def test_media_edit(self):
         # Upload photo
@@ -128,19 +132,18 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
             cleanup(path)
 
     def test_media_like_and_unlike(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
-        self.assertTrue(self.cl.media_unlike(media_pk))
-        media = self.cl.media_info_v1(media_pk)
-        like_count = int(media.like_count)
+        user_id = self.user_id_from_username("instagram")
+        media = self.cl.user_medias_v1(user_id, amount=1)[0]
+        media_pk = media.pk
+        self.assertTrue(self.cl.media_unlike(media.id))
         # like
         self.assertTrue(self.cl.media_like(media.id))
         media = self.cl.media_info_v1(media_pk)  # refresh after like
-        new_like_count = int(media.like_count)
-        self.assertEqual(new_like_count, like_count + 1)
+        self.assertTrue(media.has_liked)
         # unlike
         self.assertTrue(self.cl.media_unlike(media.id))
         media = self.cl.media_info_v1(media_pk)  # refresh after unlike
-        self.assertEqual(media.like_count, like_count)
+        self.assertFalse(media.has_liked)
 
 
 class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
