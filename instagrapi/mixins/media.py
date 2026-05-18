@@ -347,14 +347,11 @@ class MediaMixin:
             ClientNotFoundError,
             ClientUnauthorizedError,
         ):
-            try:
-                data = self.public_doc_id_graphql_request(
-                    MEDIA_INFO_DOC_ID,
-                    {"shortcode": shortcode},
-                    referer=f"https://www.instagram.com/p/{shortcode}/",
-                )
-            except (ClientForbiddenError, ClientLoginRequired, ClientUnauthorizedError):
-                return self.media_info_v1(media_pk)
+            data = self.public_doc_id_graphql_request(
+                MEDIA_INFO_DOC_ID,
+                {"shortcode": shortcode},
+                referer=f"https://www.instagram.com/p/{shortcode}/",
+            )
             media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
             if not media:
                 raise MediaNotFound(media_pk=media_pk, **data)
