@@ -120,16 +120,16 @@ Low level methods:
 
 | Method                                         | Return  | Description
 | ---------------------------------------------- | ------- | --------------------------------------------
-| hashtag_info_a1(name: str, max_id: str = None) | Hashtag | Get information about a hashtag by legacy Public Web API with authenticated private fallback
+| hashtag_info_a1(name: str, max_id: str = None) | Hashtag | Legacy `_a1` compatibility wrapper around Private Mobile API
 | hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
 | hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
-| hashtag_medias_a1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", end_cursor: str = None) | Tuple[List[Media], str] | Get chunk of medias and cursor by legacy Public Web API with authenticated private fallback
-| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by legacy Public Web API with authenticated private fallback
+| hashtag_medias_a1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", end_cursor: str = None) | Tuple[List[Media], str] | Legacy `_a1` compatibility wrapper around Private Mobile API
+| hashtag_medias_a1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Legacy `_a1` compatibility wrapper around Private Mobile API
 | hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
 | hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
-| hashtag_medias_top_a1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by legacy Public Web API with authenticated private fallback
+| hashtag_medias_top_a1(name: str, amount: int = 9) | List[Media] | Legacy `_a1` compatibility wrapper around Private Mobile API
 | hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
-| hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Get recent medias for a hashtag by legacy Public Web API with authenticated private fallback
+| hashtag_medias_recent_a1(name: str, amount: int = 71) | List[Media] | Legacy `_a1` compatibility wrapper around Private Mobile API
 | hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
 | hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Get recent clips (reels) for a hashtag by Private Mobile API
 
@@ -159,8 +159,8 @@ True
 
 Notes:
 
-* Instagram's old public hashtag web page JSON (`?__a=1`) is no longer reliable. The `_a1` helpers keep their legacy names for compatibility, try the web path first, and fall back to authenticated private/mobile hashtag endpoints when possible.
-* High-level `hashtag_info()`, `hashtag_medias_top()`, and `hashtag_medias_recent()` also fall back to private/mobile on web failure.
+* Instagram's old public hashtag web page JSON (`?__a=1`) is no longer reliable. The `_a1` hashtag helpers keep their legacy names for compatibility, but use authenticated private/mobile hashtag endpoints.
+* High-level `hashtag_info()`, `hashtag_medias_top()`, and `hashtag_medias_recent()` use those compatibility wrappers first and then the direct private/mobile helpers.
 * For resumable pagination, use `hashtag_medias_v1_chunk()` and persist the encoded `max_id` cursor.
 * `tab_key` values differ by implementation:
   * `hashtag_medias_a1_chunk()`: `top` or `recent`

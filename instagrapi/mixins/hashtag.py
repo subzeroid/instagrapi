@@ -5,8 +5,6 @@ from typing import List, Tuple
 
 from instagrapi.exceptions import (
     ClientError,
-    ClientLoginRequired,
-    ClientUnauthorizedError,
     HashtagNotFound,
     WrongCursorError,
 )
@@ -41,7 +39,7 @@ class HashtagMixin:
 
     def hashtag_info_a1(self, name: str, max_id: str = None) -> Hashtag:
         """
-        Get information about a hashtag by Public Web API
+        Get information about a hashtag by legacy `_a1` compatibility wrapper
 
         Parameters
         ----------
@@ -57,18 +55,7 @@ class HashtagMixin:
             An object of Hashtag
         """
         name = self._normalize_hashtag_name(name)
-        params = {"max_id": max_id} if max_id else None
-        try:
-            try:
-                data = self.public_a1_request(f"/explore/tags/{name}/", params=params)
-            except ClientUnauthorizedError:
-                self.inject_sessionid_to_public()
-                data = self.public_a1_request(f"/explore/tags/{name}/", params=params)
-            if not data.get("hashtag"):
-                raise HashtagNotFound(name=name, **data)
-            return extract_hashtag_gql(data["hashtag"])
-        except ClientError:
-            return self.hashtag_info_v1(name)
+        return self.hashtag_info_v1(name)
 
     def hashtag_info_gql(self, name: str, amount: int = 12, end_cursor: str = None) -> Hashtag:
         """
@@ -166,7 +153,7 @@ class HashtagMixin:
         self, name: str, max_amount: int = 27, tab_key: str = "", end_cursor: str = None
     ) -> Tuple[List[Media], str]:
         """
-        Get chunk of medias and end_cursor by Public Web API
+        Get chunk of medias by legacy `_a1` compatibility wrapper
 
         Parameters
         ----------
@@ -189,54 +176,11 @@ class HashtagMixin:
             "recent",
             "top",
         ), 'You must specify one of the options for "tab_key" ("recent" or "top")'
-        url = f"/explore/tags/{name}/"
-        medias = []
-        try:
-            while True:
-                params = {"max_id": end_cursor} if end_cursor else {}
-                try:
-                    data = self.public_a1_request(url, params=params)
-                except (ClientUnauthorizedError, ClientLoginRequired):
-                    self.inject_sessionid_to_public()
-                    data = self.public_a1_request(url, params=params)
-
-                result = data["data"][tab_key]
-                for section in result["sections"]:
-                    layout_content = section.get("layout_content") or {}
-                    nodes = layout_content.get("medias") or []
-                    for node in nodes:
-                        if max_amount and len(medias) >= max_amount:
-                            break
-                        try:
-                            media = extract_media_v1(node["media"])
-                        except (KeyError, AttributeError, TypeError) as exc:
-                            # One malformed node would otherwise crash the whole
-                            # chunk and lose the rest of the page. Skip and keep
-                            # going.
-                            self.logger.warning("Skipping malformed hashtag node: %s", exc)
-                            continue
-                        # media_pk = node["media"]["id"]
-                        # if media_pk in unique_set:
-                        #     continue
-                        # unique_set.add(media_pk)
-                        # check contains hashtag in caption
-                        # if f"#{name}" not in media.caption_text:
-                        #     continue
-                        medias.append(media)
-                if not result["more_available"]:
-                    break
-                if max_amount and len(medias) >= max_amount:
-                    break
-                end_cursor = result["next_max_id"]
-        except (ClientError, KeyError, TypeError):
-            return self.hashtag_medias_v1_chunk(name, max_amount, tab_key, end_cursor)
-        if max_amount and len(medias) < max_amount:
-            return self.hashtag_medias_v1_chunk(name, max_amount, tab_key, end_cursor)
-        return medias, end_cursor
+        return self.hashtag_medias_v1_chunk(name, max_amount, tab_key, end_cursor)
 
     def hashtag_medias_a1(self, name: str, amount: int = 27, tab_key: str = "") -> List[Media]:
         """
-        Get medias for a hashtag by Public Web API
+        Get medias for a hashtag by legacy `_a1` compatibility wrapper
 
         Parameters
         ----------
