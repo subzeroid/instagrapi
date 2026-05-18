@@ -257,6 +257,52 @@ class PostLoginFlowMixin:
             return "[]"
         return json.dumps(self._timeline_feed_view_info(seen_posts.split(",")))
 
+    @staticmethod
+    def _timeline_session_level_signals_json() -> str:
+        inactive_time = -1
+        return dumps(
+            {
+                "time_since_current_surface_session_start": 0,
+                "time_since_fg_session_start": 0,
+                "time_since_last_background": 0,
+                "num_ad_seen_current_surface_current_session": 0,
+                "app_entry": "normal",
+                "last_surfaces_visited_current_session": [],
+                "video_play_count": 0,
+                "video_pause_count": 0,
+                "video_dwell_time_sum": 0,
+                "video_dwell_time_max": 0,
+                "video_view_count": 0,
+                "video_intentional_audio_on": 0,
+                "video_intentional_audio_off": 0,
+                "video_audio_on_count": 0,
+                "feed_to_reels_iv_entry": 0,
+                "time_since_last_ad_click": inactive_time,
+                "time_since_last_ad_like": inactive_time,
+                "time_since_last_organic_like": inactive_time,
+                "time_since_last_like": inactive_time,
+                "time_since_last_organic_business_profile_visit": inactive_time,
+                "time_since_last_ad_imp": inactive_time,
+                "time_since_last_search": inactive_time,
+                "time_since_last_organic_engagement_event": inactive_time,
+                "time_since_last_ad_profile_visit": inactive_time,
+                "time_since_last_ad_cta": inactive_time,
+                "time_since_last_ad_caption_more_click": inactive_time,
+                "time_since_last_ad_comment_button": inactive_time,
+                "time_since_last_ad_share": inactive_time,
+                "time_since_last_ad_media_tap": inactive_time,
+                "time_since_last_ad_gesture": inactive_time,
+                "time_since_last_search_result_click": inactive_time,
+                "time_since_last_serp_click": inactive_time,
+                "time_since_last_organic_share": inactive_time,
+                "time_since_last_organic_comment": inactive_time,
+                "time_since_last_organic_caption_click": inactive_time,
+                "time_since_last_organic_media_tap": inactive_time,
+                "time_since_last_organic_gesture": inactive_time,
+                "num_search_clicks_current_session": 0,
+            }
+        )
+
     def get_timeline_feed(
         self,
         reason: TIMELINE_FEED_REASON = "pull_to_refresh",
@@ -291,22 +337,33 @@ class PostLoginFlowMixin:
             "X-CM-Bandwidth-KBPS": "-1.000",  # str(random.randint(2000, 5000)),
             "X-CM-Latency": str(random.randint(1, 5)),
         }
+        request_time_ms = str(int(time.time() * 1000))
         data = {
+            "app_start_time": request_time_ms,
             "has_camera_permission": "1",
             "feed_view_info": "[]",  # e.g. [{"media_id":"2634223601739446191_7450075998","version":24,
             # "media_pct":1.0,"time_info":{"10":63124,"25":63124,"50":63124,"75":63124},"latest_timestamp":1628253523186}]
+            "client_recorded_request_time_ms": request_time_ms,
+            "client_seen_store_media_list": "",
+            "client_view_state_media_list": "[]",
+            "device_timezone_name": self.timezone_name,
+            "feed_reshare_info": "",
             "phone_id": self.phone_id,
             "reason": reason,
             "battery_level": 100,  # Random battery level is not simulating real bahaviour
             "timezone_offset": str(self.timezone_offset),
             # "_csrftoken": self.token, No longer in data
             "device_id": self.uuid,
+            "include_attribution_ui_data": "true",
+            "push_disabled": self._bool_to_ig_string(self.push_disabled),
             "request_id": self.request_id,
+            "request_build_time": request_time_ms,
             "_uuid": self.uuid,
             "is_charging": random.randint(0, 1),
             "is_dark_mode": 1,  # Random dark mode is not simulating real bahaviour
             "will_sound_on": random.randint(0, 1),
             "session_id": self.client_session_id,
+            "session_level_signals": self._timeline_session_level_signals_json(),
             "bloks_versioning_id": self.bloks_versioning_id,
         }
         if reason in ["pull_to_refresh", "auto_refresh"]:
@@ -317,6 +374,9 @@ class PostLoginFlowMixin:
         if max_id:
             data["max_id"] = max_id
             data["reason"] = "pagination"
+            data["organic_realtime_information"] = "[]"
+            data["pagination_source"] = "feed_recs"
+            data["triggered_by_visible_spinner"] = "false"
             if seen_posts is None:
                 seen_posts = getattr(self, "_timeline_seen_posts", [])
 
@@ -386,6 +446,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    timezone_name: str = ""
+    push_disabled: bool = True
     public_request_retries_count = 3
     public_request_retries_timeout = 2
     session_retry_total = 3
@@ -440,6 +502,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         timezone_offset = self.settings.get("timezone_offset", self.timezone_offset)
+        timezone_name = self.settings.get("timezone_name", self.timezone_name)
+        push_disabled = self.settings.get("push_disabled", self.push_disabled)
         locale = self.settings.get("locale", self.locale)
         country = self.settings.get("country", self.country)
         country_code = self.settings.get("country_code", self.country_code)
@@ -461,7 +525,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             public_transport_impersonate=self.settings.get("public_transport_impersonate"),
         )
 
-        self.set_timezone_offset(timezone_offset)
+        self.set_timezone_offset(timezone_offset, timezone_name=timezone_name or None)
+        self.set_push_disabled(push_disabled)
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
@@ -737,6 +802,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
+            "timezone_name": self.timezone_name,
+            "push_disabled": self.push_disabled,
             "request_timeout": self.request_timeout,
             "public_request_retries_count": self.public_request_retries_count,
             "public_request_retries_timeout": self.public_request_retries_timeout,

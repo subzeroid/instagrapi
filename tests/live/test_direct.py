@@ -89,6 +89,37 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
         except DirectThreadNotFound:
             pass
 
+    def test_direct_search_live(self):
+        users = self.cl.direct_search("instagram")
+
+        self.assertIsInstance(users, list)
+        for user in users:
+            self.assertIsInstance(user, UserShort)
+
+    def test_direct_media_live(self):
+        threads = self.cl.direct_threads(amount=5)
+        cleanup_message = None
+        if threads:
+            thread_id = threads[0].id
+        else:
+            instagram = self.user_id_from_username("instagram")
+            cleanup_message = self.cl.direct_send("Media lookup ping", user_ids=[instagram])
+            thread_id = cleanup_message.thread_id
+
+        try:
+            medias = self.cl.direct_media(thread_id, amount=1)
+        finally:
+            if cleanup_message:
+                try:
+                    self.cl.direct_message_unsend(cleanup_message.thread_id, cleanup_message.id)
+                    self.cl.direct_thread_hide(cleanup_message.thread_id)
+                except Exception as exc:
+                    logger.warning("Direct media lookup cleanup failed: %s", exc)
+
+        self.assertIsInstance(medias, list)
+        for media in medias:
+            self.assertIsInstance(media, Media)
+
 
 class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):

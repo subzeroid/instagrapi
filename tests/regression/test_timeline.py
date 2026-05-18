@@ -121,3 +121,77 @@ class TimelineRegressionTestCase(unittest.TestCase):
         self.assertEqual(second_data["seen_posts"], "111_1,222_1")
         feed_view_info = json.loads(second_data["feed_view_info"])
         self.assertEqual([item["media_id"] for item in feed_view_info], ["111_1", "222_1"])
+
+    def test_get_timeline_feed_sends_current_app_request_metadata(self):
+        client = Client()
+        client.private_request = Mock(return_value={"feed_items": []})
+        client.set_timezone_offset(0)
+
+        with mock.patch("instagrapi.mixins.auth.time.time", return_value=1778379170.083):
+            client.get_timeline_feed("cold_start_fetch")
+
+        data = json.loads(client.private_request.call_args.args[1])
+        self.assertEqual(data["app_start_time"], "1778379170083")
+        self.assertEqual(data["client_recorded_request_time_ms"], "1778379170083")
+        self.assertEqual(data["client_seen_store_media_list"], "")
+        self.assertEqual(data["client_view_state_media_list"], "[]")
+        self.assertEqual(data["device_timezone_name"], "GMT")
+        self.assertEqual(data["feed_reshare_info"], "")
+        self.assertEqual(data["include_attribution_ui_data"], "true")
+        self.assertEqual(data["push_disabled"], "true")
+        self.assertEqual(data["request_build_time"], "1778379170083")
+        session_level_signals = json.loads(data["session_level_signals"])
+        self.assertEqual(session_level_signals["app_entry"], "normal")
+        self.assertEqual(session_level_signals["video_play_count"], 0)
+
+    def test_get_timeline_feed_uses_configured_timezone_name_and_push_state(self):
+        client = Client(settings={"timezone_offset": 10800, "timezone_name": "Europe/Moscow", "push_disabled": False})
+        client.private_request = Mock(return_value={"feed_items": []})
+
+        client.get_timeline_feed("cold_start_fetch")
+
+        data = json.loads(client.private_request.call_args.args[1])
+        self.assertEqual(data["timezone_offset"], "10800")
+        self.assertEqual(data["device_timezone_name"], "Europe/Moscow")
+        self.assertEqual(data["push_disabled"], "false")
+        self.assertEqual(client.get_settings()["timezone_name"], "Europe/Moscow")
+        self.assertFalse(client.get_settings()["push_disabled"])
+
+    def test_get_timeline_feed_accepts_timezone_and_push_constructor_kwargs(self):
+        client = Client(timezone_offset=10800, timezone_name="Europe/Moscow", push_disabled=False)
+        client.private_request = Mock(return_value={"feed_items": []})
+
+        client.get_timeline_feed("cold_start_fetch")
+
+        data = json.loads(client.private_request.call_args.args[1])
+        self.assertEqual(data["timezone_offset"], "10800")
+        self.assertEqual(data["device_timezone_name"], "Europe/Moscow")
+        self.assertEqual(data["push_disabled"], "false")
+
+    def test_get_timeline_feed_derives_timezone_name_from_offset(self):
+        client = Client()
+        client.private_request = Mock(return_value={"feed_items": []})
+        client.set_timezone_offset(19800)
+
+        client.get_timeline_feed("cold_start_fetch")
+
+        data = json.loads(client.private_request.call_args.args[1])
+        self.assertEqual(data["timezone_offset"], "19800")
+        self.assertEqual(data["device_timezone_name"], "GMT+05:30")
+
+    def test_get_timeline_feed_sends_current_app_pagination_metadata(self):
+        client = Client()
+        client.private_request = Mock(
+            side_effect=[
+                {"feed_items": [{"media_or_ad": {"id": "111_1"}}], "next_max_id": "next-page"},
+                {"feed_items": []},
+            ]
+        )
+
+        client.get_timeline_feed("cold_start_fetch")
+        client.get_timeline_feed(max_id="next-page")
+
+        data = json.loads(client.private_request.call_args_list[1].args[1])
+        self.assertEqual(data["organic_realtime_information"], "[]")
+        self.assertEqual(data["pagination_source"], "feed_recs")
+        self.assertEqual(data["triggered_by_visible_spinner"], "false")

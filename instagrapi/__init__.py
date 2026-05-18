@@ -113,6 +113,9 @@ class Client(
         self.session_retry_total = kwargs.pop("session_retry_total", 3)
         self.session_retry_backoff_factor = kwargs.pop("session_retry_backoff_factor", 2)
         self.session_retry_statuses = list(kwargs.pop("session_retry_statuses", [429, 500, 502, 503, 504]))
+        self.timezone_offset = kwargs.pop("timezone_offset", -14400)
+        self.timezone_name = kwargs.pop("timezone_name", "")
+        self.push_disabled = kwargs.pop("push_disabled", True)
 
         super().__init__(**kwargs)
 

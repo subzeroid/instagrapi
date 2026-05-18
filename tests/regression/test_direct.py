@@ -117,6 +117,74 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertIs(result, expected)
         pending.assert_called_once_with(7)
 
+    def test_direct_threads_chunk_sends_current_inbox_query_params(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "private_request", return_value={"inbox": {"threads": []}}) as private:
+            threads, cursor = client.direct_threads_chunk()
+
+        self.assertEqual(threads, [])
+        self.assertIsNone(cursor)
+        params = private.call_args.kwargs["params"]
+        self.assertEqual(params["eb_device_id"], "0")
+        self.assertRegex(params["igd_request_log_tracking_id"], r"^[0-9a-f-]{36}$")
+        self.assertEqual(params["fetch_reason"], "initial_snapshot")
+        self.assertEqual(params["include_old_mrs"], "false")
+        self.assertEqual(params["no_pending_badge"], "true")
+        self.assertEqual(params["push_disabled"], "true")
+
+    def test_direct_threads_chunk_uses_configured_push_state(self):
+        client = self.build_client()
+        client.set_push_disabled(False)
+
+        with mock.patch.object(client, "private_request", return_value={"inbox": {"threads": []}}) as private:
+            client.direct_threads_chunk()
+
+        params = private.call_args.kwargs["params"]
+        self.assertEqual(params["push_disabled"], "false")
+        self.assertFalse(client.get_settings()["push_disabled"])
+
+    def test_direct_search_sends_current_ranked_recipient_limits(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "private_request", return_value={"ranked_recipients": []}) as private:
+            result = client.direct_search("alice")
+
+        self.assertEqual(result, [])
+        params = private.call_args.kwargs["params"]
+        self.assertEqual(params["max_ai_bot_results"], "0")
+        self.assertEqual(params["max_ibc_results"], "20")
+
+    def test_direct_message_search_hides_locked_threads(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"status": "ok", "message_search_results": {}},
+        ) as private:
+            result = client.direct_message_search("alice")
+
+        self.assertEqual(result, [])
+        params = private.call_args.kwargs["params"]
+        self.assertEqual(params["hide_locked_threads"], '{"message_content":"false"}')
+
+    def test_direct_media_sends_current_thread_media_query_params(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"items": [], "more_available": False},
+        ) as private:
+            result = client.direct_media(123)
+
+        self.assertEqual(result, [])
+        params = private.call_args.kwargs["params"]
+        self.assertEqual(params["eb_device_id"], "0")
+        self.assertRegex(params["igd_request_log_tracking_id"], r"^[0-9a-f-]{36}$")
+        self.assertEqual(params["media_type"], "media_shares")
+
     def test_direct_request_approve_delegates_to_pending_approve(self):
         client = self.build_client()
 

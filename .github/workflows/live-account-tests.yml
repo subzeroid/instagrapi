@@ -56,6 +56,8 @@ jobs:
         if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'
         run: |
           pytest -sv \
+            tests/live/test_direct.py::ClientDirectTestCase::test_direct_search_live \
+            tests/live/test_direct.py::ClientDirectTestCase::test_direct_media_live \
             tests/live/test_direct.py::ClientDirectMediaLiveTestCase \
             tests/live/test_direct.py::ClientDirectThreadLiveTestCase::test_direct_thread_add_users_live
 

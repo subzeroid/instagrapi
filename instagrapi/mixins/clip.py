@@ -124,16 +124,41 @@ class UploadClipMixin:
     Helpers to upload CLIP videos
     """
 
-    def clip_info_for_creation(self) -> Dict:
+    @staticmethod
+    def _default_video_device_status() -> Dict[str, object]:
+        return {
+            "hw_av1_dec": False,
+            "hw_vp9_dec": False,
+            "hw_avc_dec": False,
+            "10bit_hw_av1_dec": False,
+            "10bit_hw_vp9_dec": False,
+            "is_hlg_supported": False,
+            "chip_vendor": "others",
+            "chip_name": "unknown",
+            "core_count": 0,
+            "max_ghz_sum": 0,
+            "min_ghz_sum": 0,
+        }
+
+    def clip_info_for_creation(self, device_status: Optional[Dict[str, object]] = None) -> Dict:
         """
         Get Reel creation preflight configuration for the current user.
+
+        Parameters
+        ----------
+        device_status: Dict[str, object], optional
+            Device video capability status sent by the Instagram Android app.
 
         Returns
         -------
         Dict
             A dictionary of response from the call
         """
-        return self.private_request("clips/clips_info_for_creation/")
+        device_status = device_status or self._default_video_device_status()
+        return self.private_request(
+            "clips/clips_info_for_creation/",
+            params={"device_status": json.dumps(device_status)},
+        )
 
     def clip_trial_eligible(self) -> bool:
         """
@@ -166,19 +191,7 @@ class UploadClipMixin:
         Dict
             A dictionary of response from the call
         """
-        device_status = device_status or {
-            "hw_av1_dec": False,
-            "hw_vp9_dec": False,
-            "hw_avc_dec": False,
-            "10bit_hw_av1_dec": False,
-            "10bit_hw_vp9_dec": False,
-            "is_hlg_supported": False,
-            "chip_vendor": "others",
-            "chip_name": "unknown",
-            "core_count": 0,
-            "max_ghz_sum": 0,
-            "min_ghz_sum": 0,
-        }
+        device_status = device_status or self._default_video_device_status()
         return self.private_request(
             "clips/user/share_to_fb_config/",
             params={"device_status": json.dumps(device_status)},
