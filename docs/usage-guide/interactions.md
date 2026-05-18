@@ -71,9 +71,11 @@ print(cl.user_info(cl.user_id))
 | login(username: str, password: str)  | bool    | Login by username and password (get new cookies if it does not exist in settings)
 | login(username: str, password: str, verification\_code: str) | bool | Login by username and password with 2FA verification code (use Google Authenticator or something similar to generate TOTP code, not work with SMS)
 | relogin()                            | bool    | Re-login with clean cookies (required cl.username and cl.password)
-| login\_by\_sessionid(sessionid: str) | bool    | Lightweight compatibility login using a browser/session cookie value
+| login\_by\_sessionid(sessionid: str) | bool    | Lightweight compatibility login using a session cookie value
 | inject\_sessionid\_to\_public()      | bool    | Inject sessionid from Private Session to Public Session
 | logout()                             | bool    | Logout
+
+`login_by_sessionid()` only works when Instagram accepts that `sessionid` for the private mobile API. A browser/web `sessionid` can be rejected with `login_required` or invalidated server-side; for long-lived automation, prefer `login()` once, then `dump_settings()` and reuse the saved settings.
 
 You can pass settings to the Client (and save cookies), it has the following format:
 

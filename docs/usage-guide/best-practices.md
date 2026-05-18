@@ -146,6 +146,7 @@ These patterns often create support issues that are not library bugs:
 * sharing one noisy IP across many unrelated accounts
 * retrying `429`, `PleaseWaitFewMinutes`, `FeedbackRequired`, or challenges in a tight loop
 * mixing browser `sessionid` reuse with frequent private API password logins
+* treating a browser/web `sessionid` as equivalent to a stable private mobile session after Instagram returns `login_required`
 * changing password, email, phone, profile, and posting behavior from a fresh proxy at the same time
 * running write-heavy automation immediately after account creation or recovery
 * ignoring `client.last_json` and treating every exception as a generic transient failure
