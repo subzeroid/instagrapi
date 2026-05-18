@@ -297,7 +297,27 @@ class PrivateRequestMixin:
             self.set_country(locale.rsplit("_", 1)[1])
         return True
 
-    def set_timezone_offset(self, seconds: int = 0):
+    @staticmethod
+    def _timezone_name_from_offset(seconds: int) -> str:
+        seconds = int(seconds)
+        if seconds == 0:
+            return "GMT"
+        sign = "+" if seconds > 0 else "-"
+        seconds = abs(seconds)
+        hours, remainder = divmod(seconds, 3600)
+        minutes = remainder // 60
+        return f"GMT{sign}{hours:02d}:{minutes:02d}"
+
+    @staticmethod
+    def _bool_to_ig_string(value: bool) -> str:
+        return "true" if bool(value) else "false"
+
+    def set_timezone_name(self, timezone_name: str = ""):
+        """Set your timezone name for request metadata."""
+        self.settings["timezone_name"] = self.timezone_name = str(timezone_name)
+        return True
+
+    def set_timezone_offset(self, seconds: int = 0, timezone_name=None):
         """Set you timezone offset in seconds
 
         Parameters
@@ -311,6 +331,14 @@ class PrivateRequestMixin:
             A boolean value
         """
         self.settings["timezone_offset"] = self.timezone_offset = int(seconds)
+        self.set_timezone_name(
+            self._timezone_name_from_offset(self.timezone_offset) if timezone_name is None else timezone_name
+        )
+        return True
+
+    def set_push_disabled(self, disabled: bool = True):
+        """Configure whether request metadata reports push as disabled."""
+        self.settings["push_disabled"] = self.push_disabled = bool(disabled)
         return True
 
     def set_ig_u_rur(self, value):

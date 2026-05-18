@@ -346,7 +346,7 @@ class PostLoginFlowMixin:
             "client_recorded_request_time_ms": request_time_ms,
             "client_seen_store_media_list": "",
             "client_view_state_media_list": "[]",
-            "device_timezone_name": "GMT",
+            "device_timezone_name": self.timezone_name,
             "feed_reshare_info": "",
             "phone_id": self.phone_id,
             "reason": reason,
@@ -355,7 +355,7 @@ class PostLoginFlowMixin:
             # "_csrftoken": self.token, No longer in data
             "device_id": self.uuid,
             "include_attribution_ui_data": "true",
-            "push_disabled": "true",
+            "push_disabled": self._bool_to_ig_string(self.push_disabled),
             "request_id": self.request_id,
             "request_build_time": request_time_ms,
             "_uuid": self.uuid,
@@ -446,6 +446,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     country_code = 1  # Phone code, default USA
     locale = "en_US"
     timezone_offset: int = -14400  # New York, GMT-4 in seconds
+    timezone_name: str = ""
+    push_disabled: bool = True
     public_request_retries_count = 3
     public_request_retries_timeout = 2
     session_retry_total = 3
@@ -500,6 +502,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.authorization_data = self.settings.get("authorization_data", {})
         self.last_login = self.settings.get("last_login")
         timezone_offset = self.settings.get("timezone_offset", self.timezone_offset)
+        timezone_name = self.settings.get("timezone_name", self.timezone_name)
+        push_disabled = self.settings.get("push_disabled", self.push_disabled)
         locale = self.settings.get("locale", self.locale)
         country = self.settings.get("country", self.country)
         country_code = self.settings.get("country_code", self.country_code)
@@ -521,7 +525,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             public_transport_impersonate=self.settings.get("public_transport_impersonate"),
         )
 
-        self.set_timezone_offset(timezone_offset)
+        self.set_timezone_offset(timezone_offset, timezone_name=timezone_name or None)
+        self.set_push_disabled(push_disabled)
         self.set_device(self.settings.get("device_settings"))
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
@@ -797,6 +802,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "country_code": self.country_code,
             "locale": self.locale,
             "timezone_offset": self.timezone_offset,
+            "timezone_name": self.timezone_name,
+            "push_disabled": self.push_disabled,
             "request_timeout": self.request_timeout,
             "public_request_retries_count": self.public_request_retries_count,
             "public_request_retries_timeout": self.public_request_retries_timeout,

@@ -155,7 +155,7 @@ class DirectMixin:
             "fetch_reason": "initial_snapshot",
             "include_old_mrs": "false",
             "no_pending_badge": "true",
-            "push_disabled": "true",
+            "push_disabled": self._bool_to_ig_string(self.push_disabled),
         }
         if selected_filter:
             assert selected_filter in SELECTED_FILTERS, (
