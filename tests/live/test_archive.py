@@ -34,6 +34,7 @@ class ClientArchiveLiveTestCase(_helpers.ClientPrivateTestCase):
         try:
             media = self.cl.photo_upload(Path("examples/kanada.jpg"), "")
             self.assertIsInstance(media, Media)
+            self.assertUploadedMediaAccessible(media, media_type=1)
             self.assertTrue(self.cl.media_archive(media.id))
 
             archived = self.cl.archive_medias(amount=10)

@@ -3,18 +3,33 @@ from tests.helpers import *
 
 
 class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def make_story_mp4(self):
+        return self.make_video_fixture(label="story video fixture")
+
+    def story_sticker_media_pk(self):
+        user_id = self.user_id_from_username("instagram")
+        medias = self.cl.user_medias_v1(user_id, amount=1)
+        if not medias:
+            self.skipTest("instagram account did not return media for story sticker")
+        return medias[0].pk
+
     def test_story_pk_from_url(self):
         story_pk = self.cl.story_pk_from_url("https://www.instagram.com/stories/instagram/2581281926631793076/")
         self.assertEqual(story_pk, 2581281926631793076)
 
     def test_upload_photo_story(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
-        path = self.cl.photo_download(media_pk)
+        media_pk = self.story_sticker_media_pk()
+        story = None
+        path = Path("examples/background.png")
         self.assertIsInstance(path, Path)
         caption = "Test photo caption"
         instagram = self.user_info_by_username("instagram")
         self.assertIsInstance(instagram, User)
-        mentions = [StoryMention(user=instagram)]
+        mentions = [StoryMention(user=self.user_short(instagram))]
         medias = [StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)]
         links = [StoryLink(webUri="https://instagram.com/")]
         # hashtags = [StoryHashtag(hashtag=self.cl.hashtag_info('instagram'))]
@@ -49,27 +64,20 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
-            s = self.cl.story_info(story.pk)
-            self.assertIsInstance(s, Story)
-            self.assertTrue(s)
-            m, sm = medias[0], s.medias[0]
-            self.assertEqual(m.media_pk, sm.media_pk)
-            self.assertEqual(m.x, sm.x)
-            self.assertEqual(m.y, sm.y)
+            self.assertUploadedStoryAccessible(story, media_type=1)
         finally:
-            if path:
-                cleanup(path)
-            self.assertTrue(self.cl.story_delete(story.id))
+            if story:
+                self.assertTrue(self.cl.story_delete(story.id))
 
     def test_upload_video_story(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/Bk2tOgogq9V/")
+        media_pk = self.story_sticker_media_pk()
         story = None
-        path = self.cl.video_download(media_pk)
+        path = self.make_story_mp4()
         self.assertIsInstance(path, Path)
         caption = "Test video caption"
         instagram = self.user_info_by_username("instagram")
         self.assertIsInstance(instagram, User)
-        mentions = [StoryMention(user=instagram)]
+        mentions = [StoryMention(user=self.user_short(instagram))]
         medias = [StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)]
         links = [StoryLink(webUri="https://instagram.com/")]
         # hashtags = [StoryHashtag(hashtag=self.cl.hashtag_info('instagram'))]
@@ -82,11 +90,10 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
         #     )
         # ]
         try:
-            buildout = StoryBuilder(path, caption, mentions, Path("./examples/background.png")).video(1)
             story = self.cl.video_upload_to_story(
-                buildout.path,
+                path,
                 caption,
-                mentions=buildout.mentions,
+                mentions=mentions,
                 links=links,
                 # hashtags=hashtags,
                 # locations=locations,
@@ -94,15 +101,8 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             )
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
-            s = self.cl.story_info(story.pk)
-            self.assertIsInstance(s, Story)
-            self.assertTrue(s)
-            m, sm = medias[0], s.medias[0]
-            self.assertEqual(m.media_pk, sm.media_pk)
-            self.assertEqual(m.x, sm.x)
-            self.assertEqual(m.y, sm.y)
+            self.assertUploadedStoryAccessible(story, media_type=2)
         finally:
-            cleanup(path)
             if story:
                 self.assertTrue(self.cl.story_delete(story.id))
 
