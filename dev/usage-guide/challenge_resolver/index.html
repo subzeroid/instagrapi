@@ -1242,12 +1242,14 @@
     <span class="k">return</span> <span class="kc">False</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">phone_number</span> <span class="o">=</span> <span class="s2">&quot;+15551234567&quot;</span>  <span class="c1"># required for submit_phone challenges</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">challenge_code_handler</span> <span class="o">=</span> <span class="n">challenge_code_handler</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">IG_USERNAME</span><span class="p">,</span> <span class="n">IG_PASSWORD</span><span class="p">)</span>
 </code></pre></div>
 <p>Notes:</p>
 <ul>
 <li><code>challenge_code_handler(username, choice)</code> should return the received code as a string. Returning a falsey value means no code is available yet.</li>
+<li>Login <code>submit_phone</code> challenges use <code>client.phone_number</code>, then call <code>challenge_code_handler(username, ChallengeChoice.SMS)</code> for the received code.</li>
 <li>Signup SMS challenges use the <code>phone_number</code> passed to <code>signup(...)</code> and call <code>challenge_code_handler(username, ChallengeChoice.SMS)</code> for the received code.</li>
 <li>Current <code>master</code> raises a clearer <code>ChallengeRequired</code> for <code>/auth_platform/?apc=...</code> flows. That path is not yet supported automatically and still requires manual verification.</li>
 <li>For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.</li>
