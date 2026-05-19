@@ -47,6 +47,7 @@ cl.login(IG_USERNAME, IG_PASSWORD)
 Notes:
 
 * `challenge_code_handler(username, choice)` should return the received code as a string. Returning a falsey value means no code is available yet.
+* Signup SMS challenges use the `phone_number` passed to `signup(...)` and call `challenge_code_handler(username, ChallengeChoice.SMS)` for the received code.
 * Current `master` raises a clearer `ChallengeRequired` for `/auth_platform/?apc=...` flows. That path is not yet supported automatically and still requires manual verification.
 * For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.
 
