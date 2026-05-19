@@ -360,6 +360,7 @@ contains availability flags, not the full Account Center destination state, and 
 with `clip_share_to_fb_extra_data(...)`. If neither the preflight/config data nor the caller provides a destination,
 instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated
 automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
+`bloks_fxcal_link_reels_share()` exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram.
 
 ### Example:
 

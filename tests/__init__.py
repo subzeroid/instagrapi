@@ -38,6 +38,7 @@ from tests.live.test_user import (
     ClientUserTestCase,
 )
 from tests.regression.test_auth_story import AuthAndStoryRegressionTestCase
+from tests.regression.test_bloks import BloksRegressionTestCase
 from tests.regression.test_challenge import ChallengeRegressionTestCase
 from tests.regression.test_comments import CommentRepliesRegressionTestCase
 from tests.regression.test_direct import DirectMixinRegressionTestCase
