@@ -1,3 +1,4 @@
+from instagrapi.extractors import extract_media_v1
 from tests.helpers import *
 
 
@@ -230,16 +231,32 @@ class UploadRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "clip_info_for_creation", return_value={"status": "ok"}):
             self.assertFalse(client.clip_trial_eligible())
 
-    def test_photo_upload_raises_clear_error_when_configure_has_no_media(self):
+    def test_photo_upload_falls_back_to_recent_media_when_configure_has_no_media(self):
+        client = self.build_client()
+        existing_media = extract_media_v1(self.build_media_payload(media_type=1))
+        uploaded_media = extract_media_v1(dict(self.build_media_payload(media_type=1), pk="2", id="2_1", code="def"))
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(client, "photo_configure", return_value={"status": "ok"}):
+                with mock.patch.object(
+                    client, "user_medias_v1", side_effect=[[existing_media], [uploaded_media, existing_media]]
+                ):
+                    with mock.patch("time.sleep"):
+                        media = client.photo_upload(Path("example.jpg"), "caption")
+
+        self.assertEqual(media.id, uploaded_media.id)
+
+    def test_photo_upload_raises_clear_error_when_configure_has_no_media_and_recent_media_missing(self):
         client = self.build_client()
 
         with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
             with mock.patch.object(client, "photo_configure", return_value={"status": "ok"}):
-                with mock.patch("time.sleep"):
-                    with self.assertRaises(PhotoConfigureError) as ctx:
-                        client.photo_upload(Path("example.jpg"), "caption")
+                with mock.patch.object(client, "user_medias_v1", return_value=[]):
+                    with mock.patch("time.sleep"):
+                        with self.assertRaises(PhotoConfigureError) as ctx:
+                            client.photo_upload(Path("example.jpg"), "caption")
 
-        self.assertIn("without media payload", str(ctx.exception))
+        self.assertIn("without media payload and uploaded media was not visible", str(ctx.exception))
 
     def test_photo_upload_extracts_configure_media_when_expose_overwrites_last_json(self):
         client = self.build_client()

@@ -180,6 +180,52 @@ class MediaMixin:
             )
         return media
 
+    def _current_media_ids(self, amount: int = 20):
+        user_id = self.user_id or getattr(self, "_user_id", None)
+        if not user_id:
+            return None
+        try:
+            return {str(media.id) for media in self.user_medias_v1(user_id, amount=amount)}
+        except Exception as e:
+            self.logger.debug("Unable to read current feed media before upload: %s", e)
+            return None
+
+    def _new_media_after_upload(self, previous_media_ids, attempts: int = 5, delay: int = 3, amount: int = 20):
+        user_id = self.user_id or getattr(self, "_user_id", None)
+        if previous_media_ids is None or not user_id:
+            return None
+        for attempt in range(attempts):
+            try:
+                medias = self.user_medias_v1(user_id, amount=amount)
+            except Exception as e:
+                self.logger.debug("Unable to read uploaded feed media on attempt %s: %s", attempt, e)
+            else:
+                for media in medias:
+                    if str(media.id) not in previous_media_ids:
+                        return media
+            if attempt < attempts - 1:
+                time.sleep(delay)
+        return None
+
+    def _extract_configured_media_or_recent(
+        self,
+        configured,
+        exception_cls,
+        context: str,
+        previous_media_ids,
+    ):
+        media = self._extract_configured_media(configured)
+        if media is not None:
+            return media
+        media = self._new_media_after_upload(previous_media_ids)
+        if media is not None:
+            return media
+        raise exception_cls(
+            f"{context} configure succeeded without media payload and uploaded media was not visible",
+            response=self.last_response,
+            **(self.last_json if isinstance(self.last_json, dict) else {}),
+        )
+
     def _current_story_ids(self, amount: int = 20):
         user_id = self.user_id or getattr(self, "_user_id", None)
         if not user_id:
