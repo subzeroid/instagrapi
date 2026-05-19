@@ -208,7 +208,8 @@ class BloksMixin:
         params = {
             "client_input_params": {
                 "selected_method": selected_method,
-                "cloud_trust_token": None,
+                # Instagram payload field name, not a secret value.
+                "cloud_trust_token": None,  # nosec B105
                 "network_bssid": None,
             },
             "server_params": server_params,
@@ -294,7 +295,8 @@ class BloksMixin:
                 "should_trust_device": int(should_trust_device),
                 "family_device_id": self.phone_id,
                 "device_id": self.android_device_id,
-                "cloud_trust_token": None,
+                # Instagram payload field name, not a secret value.
+                "cloud_trust_token": None,  # nosec B105
                 "network_bssid": None,
                 "machine_id": self.mid,
             },
