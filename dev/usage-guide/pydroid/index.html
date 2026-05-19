@@ -1264,6 +1264,7 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <li>video album uploads, because album video items currently generate thumbnails internally</li>
 <li>non-standard MP4 files that the built-in parser cannot read</li>
 </ul>
+<p>Use <code>clip_upload_with_music(..., thumbnail=...)</code> when you only need Reels music metadata and do not need local audio muxing.</p>
 <h2 id="error">Error</h2>
 <p>If ffmpeg is missing or cannot be executed, video thumbnail generation can fail with:</p>
 <div class="highlight"><pre><span></span><code>RuntimeError: No ffmpeg exe could be found. Install ffmpeg on your system, or set the IMAGEIO_FFMPEG_EXE environment variable.
