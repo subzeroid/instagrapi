@@ -467,10 +467,20 @@ class UploadPhotoMixin:
         """
         path = Path(path)
         upload_id, width, height = self.photo_rupload(path, upload_id, for_story=True)
+        previous_story_ids = self._current_story_ids()
+        story_kwargs = {
+            "links": links,
+            "mentions": mentions,
+            "hashtags": hashtags,
+            "locations": locations,
+            "stickers": stickers,
+            "medias": medias,
+            "polls": polls,
+        }
         for attempt in range(10):
             self.logger.debug(f"Attempt #{attempt} to configure Photo: {path}")
             time.sleep(3)
-            if self.photo_configure_to_story(
+            configured = self.photo_configure_to_story(
                 upload_id,
                 width,
                 height,
@@ -483,22 +493,15 @@ class UploadPhotoMixin:
                 medias,
                 polls,
                 extra_data=extra_data,
-            ):
+            )
+            if configured:
                 self.expose()
-                media = self._extract_configured_media_or_raise(
-                    self.last_json,
+                return self._extract_configured_story_or_recent(
+                    configured,
                     PhotoConfigureStoryError,
                     "Photo story upload",
-                )
-                return Story(
-                    links=links,
-                    mentions=mentions,
-                    hashtags=hashtags,
-                    locations=locations,
-                    stickers=stickers,
-                    medias=medias,
-                    polls=polls,
-                    **media.dict(),
+                    previous_story_ids,
+                    story_kwargs,
                 )
         raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
 

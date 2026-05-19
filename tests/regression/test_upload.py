@@ -62,6 +62,28 @@ class UploadRegressionTestCase(unittest.TestCase):
             }
         return payload
 
+    def build_story(self, story_pk="10", media_type=1):
+        return Story(
+            pk=str(story_pk),
+            id=f"{story_pk}_1",
+            code=f"story{story_pk}",
+            taken_at=datetime.now(UTC()),
+            media_type=media_type,
+            product_type="story",
+            thumbnail_url="https://example.com/story.jpg",
+            user=UserShort(
+                pk="1",
+                username="example",
+                profile_pic_url="https://example.com/profile.jpg",
+            ),
+            sponsor_tags=[],
+            mentions=[],
+            links=[],
+            hashtags=[],
+            locations=[],
+            stickers=[],
+        )
+
     def test_clip_share_to_fb_config_requests_reel_facebook_config(self):
         client = self.build_client()
         expected = {"status": "ok", "eligible": True}
@@ -473,16 +495,18 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(upload_extra["music_params"]["overlap_duration_in_ms"], 2500)
         self.assertIn("clips_audio_metadata", upload_extra)
 
-    def test_photo_story_upload_raises_clear_error_when_configure_has_no_media(self):
+    def test_photo_story_upload_falls_back_to_recent_story_when_configure_has_no_media(self):
         client = self.build_client()
+        existing = self.build_story("10")
+        uploaded = self.build_story("11")
 
         with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 1280)):
             with mock.patch.object(client, "photo_configure_to_story", return_value={"status": "ok"}):
-                with mock.patch("time.sleep"):
-                    with self.assertRaises(PhotoConfigureStoryError) as ctx:
-                        client.photo_upload_to_story(Path("story.jpg"))
+                with mock.patch.object(client, "user_stories", side_effect=[[existing], [uploaded, existing]]):
+                    with mock.patch("time.sleep"):
+                        result = client.photo_upload_to_story(Path("story.jpg"))
 
-        self.assertIn("without media payload", str(ctx.exception))
+        self.assertEqual(result.id, uploaded.id)
 
     def test_clip_upload_falls_back_to_last_json_media_payload(self):
         client = self.build_client()
@@ -716,8 +740,10 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertTrue(configure_extra["share_to_facebook_reels"])
         self.assertEqual(configure_extra["xpost_surface"], "IG_REELS_COMPOSER")
 
-    def test_video_story_upload_raises_clear_error_when_configure_has_no_media(self):
+    def test_video_story_upload_falls_back_to_recent_story_when_configure_has_no_media(self):
         client = self.build_client()
+        existing = self.build_story("20", media_type=2)
+        uploaded = self.build_story("21", media_type=2)
 
         with mock.patch.object(
             client,
@@ -725,11 +751,11 @@ class UploadRegressionTestCase(unittest.TestCase):
             return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
         ):
             with mock.patch.object(client, "video_configure_to_story", return_value={"status": "ok"}):
-                with mock.patch("time.sleep"):
-                    with self.assertRaises(VideoConfigureStoryError) as ctx:
-                        client.video_upload_to_story(Path("story.mp4"))
+                with mock.patch.object(client, "user_stories", side_effect=[[existing], [uploaded, existing]]):
+                    with mock.patch("time.sleep"):
+                        result = client.video_upload_to_story(Path("story.mp4"))
 
-        self.assertIn("without media payload", str(ctx.exception))
+        self.assertEqual(result.id, uploaded.id)
 
     def test_video_direct_upload_raises_clear_error_when_configure_has_no_message(self):
         client = self.build_client()

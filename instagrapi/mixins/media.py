@@ -25,7 +25,7 @@ from instagrapi.extractors import (
     extract_user_short,
 )
 from instagrapi.mixins.graphql import GQL_STUFF
-from instagrapi.types import Location, Media, UserShort, Usertag
+from instagrapi.types import Location, Media, Story, UserShort, Usertag
 from instagrapi.utils.auth import generate_jazoest
 from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.serialization import dumps, json_value
@@ -160,19 +160,72 @@ class MediaMixin:
             medias = medias[:amount]
         return ([extract_media_gql(media) for media in medias], end_cursor)
 
-    def _extract_configured_media_or_raise(self, configured, exception_cls, context: str):
+    def _extract_configured_media(self, configured):
         media = None
         if isinstance(configured, dict):
             media = configured.get("media")
         if media is None:
             media = self.last_json.get("media") if isinstance(self.last_json, dict) else None
         if media is None:
+            return None
+        return extract_media_v1(media)
+
+    def _extract_configured_media_or_raise(self, configured, exception_cls, context: str):
+        media = self._extract_configured_media(configured)
+        if media is None:
             raise exception_cls(
                 f"{context} configure succeeded without media payload",
                 response=self.last_response,
                 **(self.last_json if isinstance(self.last_json, dict) else {}),
             )
-        return extract_media_v1(media)
+        return media
+
+    def _current_story_ids(self, amount: int = 20):
+        user_id = self.user_id or getattr(self, "_user_id", None)
+        if not user_id:
+            return None
+        try:
+            return {str(story.id) for story in self.user_stories(user_id, amount=amount)}
+        except Exception as e:
+            self.logger.debug("Unable to read current stories before upload: %s", e)
+            return None
+
+    def _new_story_after_upload(self, previous_story_ids, attempts: int = 5, delay: int = 3, amount: int = 20):
+        user_id = self.user_id or getattr(self, "_user_id", None)
+        if previous_story_ids is None or not user_id:
+            return None
+        for attempt in range(attempts):
+            try:
+                stories = self.user_stories(user_id, amount=amount)
+            except Exception as e:
+                self.logger.debug("Unable to read uploaded story on attempt %s: %s", attempt, e)
+            else:
+                for story in stories:
+                    if str(story.id) not in previous_story_ids:
+                        return story
+            if attempt < attempts - 1:
+                time.sleep(delay)
+        return None
+
+    def _extract_configured_story_or_recent(
+        self,
+        configured,
+        exception_cls,
+        context: str,
+        previous_story_ids,
+        story_kwargs,
+    ):
+        media = self._extract_configured_media(configured)
+        if media is not None:
+            return Story(**story_kwargs, **media.model_dump())
+        story = self._new_story_after_upload(previous_story_ids)
+        if story is not None:
+            return story.model_copy(update=story_kwargs)
+        raise exception_cls(
+            f"{context} configure succeeded without media payload and uploaded story was not visible",
+            response=self.last_response,
+            **(self.last_json if isinstance(self.last_json, dict) else {}),
+        )
 
     def _extract_configured_direct_message_or_raise(self, configured, exception_cls, context: str):
         message_metadata = []
