@@ -1586,6 +1586,7 @@ between requests. The delays should be random and not too long.</p>
 <li>sharing one noisy IP across many unrelated accounts</li>
 <li>retrying <code>429</code>, <code>PleaseWaitFewMinutes</code>, <code>FeedbackRequired</code>, or challenges in a tight loop</li>
 <li>mixing browser <code>sessionid</code> reuse with frequent private API password logins</li>
+<li>treating a browser/web <code>sessionid</code> as equivalent to a stable private mobile session after Instagram returns <code>login_required</code></li>
 <li>changing password, email, phone, profile, and posting behavior from a fresh proxy at the same time</li>
 <li>running write-heavy automation immediately after account creation or recovery</li>
 <li>ignoring <code>client.last_json</code> and treating every exception as a generic transient failure</li>

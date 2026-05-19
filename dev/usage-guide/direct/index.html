@@ -1132,9 +1132,34 @@
 <td>Get message request threads (pending inbox / invitations)</td>
 </tr>
 <tr>
+<td>direct_pending_requests_preview(pending_inbox_filters: Optional[List[str]] = None)</td>
+<td>Dict</td>
+<td>Get lightweight pending request counters</td>
+</tr>
+<tr>
 <td>direct_request_approve(thread_id: int)</td>
 <td>bool</td>
 <td>Approve a message request thread</td>
+</tr>
+<tr>
+<td>direct_has_interop_upgraded()</td>
+<td>bool</td>
+<td>Check Direct interop upgrade state</td>
+</tr>
+<tr>
+<td>direct_search_gen_ai_bots(amount: int = 20)</td>
+<td>List[UserShort]</td>
+<td>Search generated AI bot suggestions</td>
+</tr>
+<tr>
+<td>direct_channels(user_id: Optional[int] = None, thread_subtypes: Optional[List[int]] = None)</td>
+<td>List[Dict]</td>
+<td>Get Direct channels for a user</td>
+</tr>
+<tr>
+<td>direct_set_e2ee_eligibility(e2ee_eligibility: int = 4)</td>
+<td>bool</td>
+<td>Set Direct E2EE eligibility state</td>
 </tr>
 <tr>
 <td>direct_thread(thread_id: int, amount: int = 20)</td>
@@ -1288,6 +1313,8 @@
 <li>For <code>direct_send()</code>, <code>direct_send_photo()</code>, <code>direct_send_video()</code>, and <code>direct_send_voice()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
 <li>Direct recipient arguments accept either one id (<code>user_ids=123</code>) or a list of ids (<code>user_ids=[123]</code>).</li>
 <li>Direct message requests / invitations are exposed as <code>direct_requests()</code>; <code>direct_pending_inbox()</code> remains as the older name.</li>
+<li><code>direct_pending_requests_preview()</code> is the lightweight Android-app preview for request counters; use <code>direct_requests()</code> when you need the actual threads.</li>
+<li><code>direct_channels()</code> and <code>direct_search_gen_ai_bots()</code> expose raw app surfaces whose response shape may vary by rollout.</li>
 <li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
 <li><code>direct_message()</code> scans the latest <code>amount</code> messages in a thread and raises <code>DirectMessageNotFound</code> if the id is not present in that window.</li>
 <li>Shared XMA items such as <code>xma_clip</code>, <code>xma_media_share</code>, <code>xma_story_share</code>, and <code>xma_profile</code> keep their original payload in <code>message.raw_xma</code>. When Instagram includes <code>target_url</code>, the normalized link is also available through <code>message.xma_share</code>.</li>
