@@ -5,7 +5,12 @@
 | `direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)` <br> Note: `selected_filter` = `""`, `"flagged"` or `"unread"`; `box` = `""`, `"primary"` or `"general"` | List[DirectThread] | Get all threads from inbox
 | direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
 | direct_requests(amount: int = 20)                                         | List[DirectThread]      | Get message request threads (pending inbox / invitations)
+| direct_pending_requests_preview(pending_inbox_filters: Optional[List[str]] = None) | Dict             | Get lightweight pending request counters
 | direct_request_approve(thread_id: int)                                    | bool                    | Approve a message request thread
+| direct_has_interop_upgraded()                                             | bool                    | Check Direct interop upgrade state
+| direct_search_gen_ai_bots(amount: int = 20)                               | List[UserShort]         | Search generated AI bot suggestions
+| direct_channels(user_id: Optional[int] = None, thread_subtypes: Optional[List[int]] = None) | List[Dict] | Get Direct channels for a user
+| direct_set_e2ee_eligibility(e2ee_eligibility: int = 4)                    | bool                    | Set Direct E2EE eligibility state
 | direct_thread(thread_id: int, amount: int = 20)                           | DirectThread            | Get Thread with Messages
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
 | direct_message(thread_id: int, message_id: int, amount: int = 20)         | DirectMessage           | Get one Message from Thread by id
@@ -41,6 +46,8 @@ Notes:
 * For `direct_send()`, `direct_send_photo()`, `direct_send_video()`, and `direct_send_voice()`, pass exactly one of `user_ids` or `thread_ids`.
 * Direct recipient arguments accept either one id (`user_ids=123`) or a list of ids (`user_ids=[123]`).
 * Direct message requests / invitations are exposed as `direct_requests()`; `direct_pending_inbox()` remains as the older name.
+* `direct_pending_requests_preview()` is the lightweight Android-app preview for request counters; use `direct_requests()` when you need the actual threads.
+* `direct_channels()` and `direct_search_gen_ai_bots()` expose raw app surfaces whose response shape may vary by rollout.
 * `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
 * `direct_message()` scans the latest `amount` messages in a thread and raises `DirectMessageNotFound` if the id is not present in that window.
 * Shared XMA items such as `xma_clip`, `xma_media_share`, `xma_story_share`, and `xma_profile` keep their original payload in `message.raw_xma`. When Instagram includes `target_url`, the normalized link is also available through `message.xma_share`.
