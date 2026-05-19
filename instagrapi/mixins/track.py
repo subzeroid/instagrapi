@@ -90,6 +90,225 @@ class TrackMixin:
             with_signature=False,
         )
 
+    def music_trending(self, product: str = "feed_post") -> Dict:
+        """
+        Retrieve trending music candidates.
+
+        Parameters
+        ----------
+        product: str, optional
+            Music product surface. The Android app uses ``feed_post`` for the
+            successful current feed-post path.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/trending/``.
+        """
+        return self.private_request(
+            "music/trending/",
+            data={"product": product, "_uuid": self.uuid},
+            with_signature=False,
+        )
+
+    def music_top_trends(self, product: str = "music_in_feed", page_size: int = 15) -> Dict:
+        """
+        Retrieve top trending music candidates.
+
+        Parameters
+        ----------
+        product: str, optional
+            Music product surface.
+        page_size: int, optional
+            Number of trend rows requested.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/top_trends/``.
+        """
+        return self.private_request(
+            "music/top_trends/",
+            data={
+                "product": product,
+                "_uuid": self.uuid,
+                "page_size": str(page_size),
+            },
+            with_signature=False,
+        )
+
+    def music_search_v2(
+        self,
+        query: str,
+        product: str = "music_in_feed",
+        from_typeahead: bool = False,
+        search_session_id: Optional[str] = None,
+        browse_session_id: Optional[str] = None,
+    ) -> Dict:
+        """
+        Search music through the current ``music/search_v2/`` app endpoint.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        product: str, optional
+            Music product surface.
+        from_typeahead: bool, optional
+            Whether the query came from a typeahead suggestion.
+        search_session_id: str, optional
+            Search session id. Generated when omitted.
+        browse_session_id: str, optional
+            Browse session id. Generated when omitted.
+
+        Returns
+        -------
+        Dict
+            Raw search response.
+        """
+        if search_session_id is None:
+            search_session_id = self.generate_uuid()
+        if browse_session_id is None:
+            browse_session_id = self.generate_uuid()
+        return self.private_request(
+            "music/search_v2/",
+            data={
+                "from_typeahead": self._bool_to_ig_string(from_typeahead),
+                "search_session_id": search_session_id,
+                "product": product,
+                "q": str(query),
+                "_uuid": self.uuid,
+                "browse_session_id": browse_session_id,
+            },
+            with_signature=False,
+        )
+
+    def music_keyword_search(
+        self,
+        query: str,
+        product: str = "music_in_feed",
+        num_keywords: int = 3,
+        search_session_id: str = "",
+        browse_session_id: Optional[str] = None,
+    ) -> Dict:
+        """
+        Search music keywords for typeahead.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        product: str, optional
+            Music product surface.
+        num_keywords: int, optional
+            Number of keyword suggestions requested.
+        search_session_id: str, optional
+            Search session id.
+        browse_session_id: str, optional
+            Browse session id. Generated when omitted.
+
+        Returns
+        -------
+        Dict
+            Raw keyword response.
+        """
+        if browse_session_id is None:
+            browse_session_id = self.generate_uuid()
+        return self.private_request(
+            "music/keyword_search/",
+            params={
+                "num_keywords": str(num_keywords),
+                "search_session_id": search_session_id,
+                "product": product,
+                "q": str(query),
+                "browse_session_id": browse_session_id,
+            },
+        )
+
+    def music_bookmark(
+        self,
+        original_audio_id: str,
+        surface_requested_from: str = "audio_aggregation_page",
+    ) -> bool:
+        """
+        Bookmark an original audio track.
+
+        Parameters
+        ----------
+        original_audio_id: str
+            Original audio id to bookmark.
+        surface_requested_from: str, optional
+            App surface requesting the bookmark.
+
+        Returns
+        -------
+        bool
+            A boolean value.
+        """
+        result = self.private_request(
+            "music/bookmark_music/",
+            data={
+                "original_audio_id": str(original_audio_id),
+                "_uuid": self.uuid,
+                "surface_requested_from": surface_requested_from,
+            },
+            with_signature=False,
+        )
+        return bool(result.get("success")) or result.get("status") == "ok"
+
+    def music_clips_audio_browser(
+        self,
+        product: str = "story_camera_clips_v2",
+        browse_session_id: Optional[str] = None,
+    ) -> Dict:
+        """
+        Retrieve music candidates for the Reels/Clips camera surface.
+
+        Parameters
+        ----------
+        product: str, optional
+            Music product surface.
+        browse_session_id: str, optional
+            Browse session id. Generated when omitted.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/clips_audio_browser/``.
+        """
+        if browse_session_id is None:
+            browse_session_id = self.generate_uuid()
+        return self.private_request(
+            "music/clips_audio_browser/",
+            data={
+                "product": product,
+                "_uuid": self.uuid,
+                "browse_session_id": browse_session_id,
+            },
+            with_signature=False,
+        )
+
+    def music_verify_original_audio_title(self, original_audio_name: str) -> bool:
+        """
+        Validate an original audio title for Reels publishing.
+
+        Parameters
+        ----------
+        original_audio_name: str
+            Proposed original audio title.
+
+        Returns
+        -------
+        bool
+            ``True`` when Instagram accepts the title.
+        """
+        result = self.private_request(
+            "music/verify_original_audio_title/",
+            data={"original_audio_name": original_audio_name, "_uuid": self.uuid},
+            with_signature=False,
+        )
+        return bool(result.get("is_valid"))
+
     def _feed_music_params(
         self,
         track: Union[Track, Dict],
