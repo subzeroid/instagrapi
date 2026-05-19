@@ -1214,6 +1214,41 @@
 <td>dict</td>
 <td>Browse music candidates for feed photo and carousel uploads</td>
 </tr>
+<tr>
+<td>music_trending(product: str = "feed_post")</td>
+<td>dict</td>
+<td>Browse trending music candidates</td>
+</tr>
+<tr>
+<td>music_top_trends(product: str = "music_in_feed", page_size: int = 15)</td>
+<td>dict</td>
+<td>Browse top trending music candidates</td>
+</tr>
+<tr>
+<td>music_search_v2(query: str, product: str = "music_in_feed", from_typeahead: bool = False, search_session_id: str = None, browse_session_id: str = None)</td>
+<td>dict</td>
+<td>Search music through the current app endpoint</td>
+</tr>
+<tr>
+<td>music_keyword_search(query: str, product: str = "music_in_feed", num_keywords: int = 3, search_session_id: str = "", browse_session_id: str = None)</td>
+<td>dict</td>
+<td>Search music keyword suggestions</td>
+</tr>
+<tr>
+<td>music_clips_audio_browser(product: str = "story_camera_clips_v2", browse_session_id: str = None)</td>
+<td>dict</td>
+<td>Browse music candidates for the Reels/Clips camera</td>
+</tr>
+<tr>
+<td>music_verify_original_audio_title(original_audio_name: str)</td>
+<td>bool</td>
+<td>Validate an original audio title for Reels publishing</td>
+</tr>
+<tr>
+<td>music_bookmark(original_audio_id: str, surface_requested_from: str = "audio_aggregation_page")</td>
+<td>bool</td>
+<td>Bookmark an original audio track</td>
+</tr>
 </tbody>
 </table>
 <h3 id="example">Example:</h3>
@@ -1294,6 +1329,7 @@
 <ul>
 <li><code>track_info_by_canonical_id()</code> is the high-level typed path and usually the one you want for reels/clips music metadata.</li>
 <li><code>track_info_by_id()</code> returns the lower-level raw response shape, which is useful for debugging or when you already have an Instagram track ID.</li>
+<li>The <code>music_*</code> helpers expose raw app music surfaces so callers can inspect rollout-specific fields and reuse IDs in upload flows.</li>
 </ul>
 
 
