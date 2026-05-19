@@ -152,6 +152,96 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(self.cl.media_delete(media.id))
 
 
+class ClientClipMusicMetadataUploadLiveTestCase(_helpers.ClientPrivateTestCase):
+    thumbnail_path = Path("examples/kanada.jpg")
+
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for Reel music metadata upload live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def make_clip_mp4(self):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest("imageio_ffmpeg is required to generate a Reel fixture")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+
+        try:
+            subprocess.run(
+                [
+                    imageio_ffmpeg.get_ffmpeg_exe(),
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "color=c=black:s=720x1280:r=30:d=4",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    "sine=frequency=440:duration=4",
+                    "-shortest",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    "64k",
+                    str(path),
+                ],
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self.skipTest(f"Could not generate Reel fixture: {exc}")
+        return path
+
+    def first_music_track(self):
+        tracks = self.cl.search_music("Runaway")
+        if not tracks:
+            self.skipTest("search_music did not return a usable track")
+        return tracks[0]
+
+    def cleanup_uploaded_media(self, media):
+        if not media:
+            return
+        try:
+            self.assertTrue(self.cl.media_delete(media.id))
+        except Exception as exc:
+            print(f"Reel music metadata upload cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+
+    def test_clip_upload_with_music_live(self):
+        path = self.make_clip_mp4()
+        track = self.first_music_track()
+        media = None
+        try:
+            media = self.cl.clip_upload_with_music(
+                path,
+                "Reel music metadata live test",
+                track,
+                thumbnail=self.thumbnail_path,
+                overlap_duration=4000,
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.media_type, 2)
+            self.assertEqual(media.product_type, "clips")
+        finally:
+            self.cleanup_uploaded_media(media)
+
+
 class ClientFeedMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
     photo_path = Path("examples/kanada.jpg")
     album_paths = [Path("examples/kanada.jpg"), Path("examples/background.png")]

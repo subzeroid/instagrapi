@@ -33,6 +33,8 @@ The extra is intentionally not part of the default install, because it pulls in 
 * video album uploads, because album video items currently generate thumbnails internally
 * non-standard MP4 files that the built-in parser cannot read
 
+Use `clip_upload_with_music(..., thumbnail=...)` when you only need Reels music metadata and do not need local audio muxing.
+
 ## Error
 
 If ffmpeg is missing or cannot be executed, video thumbnail generation can fail with:

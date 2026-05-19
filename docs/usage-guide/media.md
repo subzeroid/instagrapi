@@ -321,7 +321,9 @@ Upload medias to your feed. Common arguments:
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
 | clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
-| clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload Reels Clip as reel with music metadata
+| clip_music_extra_data(track: Track or dict, extra_data: Dict = {}) | dict | Build Reels music configure fields for manual `clip_upload(..., extra_data=...)`
+| clip_upload_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {}) | Media | Upload a Reel with music metadata without local audio muxing
+| clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload a Reel after locally muxing the track into the video with MoviePy
 | photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
 | album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
 

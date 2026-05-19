@@ -4,7 +4,7 @@ import os
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from uuid import uuid4
 
 from instagrapi import config
@@ -627,33 +627,13 @@ class UploadClipMixin:
             tmpvideo = Path(_make_tmp_path(".mp4"))
             video.write_videofile(str(tmpvideo))
             # create the extra data to upload with it
-            data = dict(extra_data or {})
-            data["clips_audio_metadata"] = {
-                "original": {"volume_level": 0.0},
-                "song": {
-                    "volume_level": 1.0,
-                    "is_saved": "0",
-                    "artist_name": track.display_artist,
-                    "audio_asset_id": track.id,
-                    "audio_cluster_id": track.audio_cluster_id,
-                    "track_name": track.title,
-                    "is_picked_precapture": "1",
-                },
-            }
-            data["music_params"] = {
-                "audio_asset_id": track.id,
-                "audio_cluster_id": track.audio_cluster_id,
-                "audio_asset_start_time_in_ms": highlight_start_time,
-                "derived_content_start_time_in_ms": 0,
-                "overlap_duration_in_ms": int(video_duration * 1000),
-                "product": "story_camera_clips_v2",
-                "song_name": track.title,
-                "artist_name": track.display_artist,
-                "alacorn_session_id": "null",
-            }
-            if getattr(track, "music_canonical_id", None):
-                data["clips_audio_metadata"]["song"]["music_canonical_id"] = track.music_canonical_id
-                data["music_params"]["music_canonical_id"] = track.music_canonical_id
+            data = self.clip_music_extra_data(
+                track,
+                extra_data=extra_data,
+                audio_asset_start_time=highlight_start_time,
+                overlap_duration=int(video_duration * 1000),
+                original_volume=0.0,
+            )
             return self.clip_upload(tmpvideo, caption, extra_data=data)
         finally:
             for clip in (video, audio_clip):
@@ -664,6 +644,105 @@ class UploadClipMixin:
                 with contextlib.suppress(FileNotFoundError):
                     if tmp_path:
                         tmp_path.unlink()
+
+    def clip_music_extra_data(
+        self,
+        track: Union[Track, Dict],
+        extra_data: Dict[str, object] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        original_volume: float = 1.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_clips_v2",
+        alacorn_session_id: str = "null",
+    ) -> Dict[str, object]:
+        """
+        Build Reel music metadata for ``clip_upload(..., extra_data=...)``.
+
+        This helper only adds the metadata fields used by the app configure
+        request. It does not download or mux audio into the local video file.
+        """
+        audio_asset_id = self._track_value(track, "audio_asset_id") or self._track_value(track, "id")
+        audio_cluster_id = self._track_value(track, "audio_cluster_id")
+        assert audio_asset_id, "track.audio_asset_id or track.id is required"
+        assert audio_cluster_id, "track.audio_cluster_id is required"
+        if audio_asset_start_time is None:
+            audio_asset_start_time = self._track_highlight_start(track)
+
+        artist_name = self._track_value(track, "display_artist") or ""
+        track_name = self._track_value(track, "title") or ""
+        data = dict(extra_data or {})
+        data["clips_audio_metadata"] = {
+            "original": {"volume_level": original_volume},
+            "song": {
+                "volume_level": music_volume,
+                "is_saved": "0",
+                "artist_name": artist_name,
+                "audio_asset_id": audio_asset_id,
+                "audio_cluster_id": audio_cluster_id,
+                "track_name": track_name,
+                "is_picked_precapture": "1",
+            },
+        }
+        data["music_params"] = {
+            "audio_asset_id": audio_asset_id,
+            "audio_cluster_id": audio_cluster_id,
+            "audio_asset_start_time_in_ms": int(audio_asset_start_time),
+            "derived_content_start_time_in_ms": 0,
+            "overlap_duration_in_ms": int(overlap_duration),
+            "product": product,
+            "song_name": track_name,
+            "artist_name": artist_name,
+            "alacorn_session_id": alacorn_session_id,
+        }
+        music_canonical_id = self._track_value(track, "music_canonical_id")
+        if music_canonical_id:
+            data["clips_audio_metadata"]["song"]["music_canonical_id"] = music_canonical_id
+            data["music_params"]["music_canonical_id"] = music_canonical_id
+        return data
+
+    def clip_upload_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        thumbnail: Path = None,
+        usertags: List[Usertag] = [],
+        location: Location = None,
+        extra_data: Dict[str, object] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        original_volume: float = 1.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_clips_v2",
+        alacorn_session_id: str = "null",
+        **kwargs,
+    ) -> Media:
+        """
+        Upload a Reel with music metadata without local audio muxing.
+
+        Pass ``thumbnail=...`` to avoid automatic thumbnail generation in
+        environments where ffmpeg is not available.
+        """
+        data = self.clip_music_extra_data(
+            track,
+            extra_data=extra_data,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            original_volume=original_volume,
+            music_volume=music_volume,
+            product=product,
+            alacorn_session_id=alacorn_session_id,
+        )
+        return self.clip_upload(
+            path,
+            caption,
+            thumbnail=thumbnail,
+            usertags=usertags,
+            location=location,
+            extra_data=data,
+            **kwargs,
+        )
 
     def clip_configure(
         self,

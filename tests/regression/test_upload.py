@@ -396,6 +396,83 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(upload_extra["music_params"]["artist_name"], "Album artist")
         self.assertEqual(upload_extra["music_params"]["alacorn_session_id"], "alacorn-1")
 
+    def test_clip_music_extra_data_builds_reels_music_payload_from_dict(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [40500],
+            "title": "Runaway",
+            "display_artist": "AURORA",
+            "music_canonical_id": "canonical-id",
+        }
+
+        result = client.clip_music_extra_data(track, overlap_duration=34000)
+
+        self.assertEqual(
+            result["clips_audio_metadata"],
+            {
+                "original": {"volume_level": 1.0},
+                "song": {
+                    "volume_level": 1.0,
+                    "is_saved": "0",
+                    "artist_name": "AURORA",
+                    "audio_asset_id": "track-id",
+                    "audio_cluster_id": "cluster-id",
+                    "track_name": "Runaway",
+                    "is_picked_precapture": "1",
+                    "music_canonical_id": "canonical-id",
+                },
+            },
+        )
+        self.assertEqual(
+            result["music_params"],
+            {
+                "audio_asset_id": "track-id",
+                "audio_cluster_id": "cluster-id",
+                "audio_asset_start_time_in_ms": 40500,
+                "derived_content_start_time_in_ms": 0,
+                "overlap_duration_in_ms": 34000,
+                "product": "story_camera_clips_v2",
+                "song_name": "Runaway",
+                "artist_name": "AURORA",
+                "alacorn_session_id": "null",
+                "music_canonical_id": "canonical-id",
+            },
+        )
+
+    def test_clip_upload_with_music_adds_reels_music_metadata_without_mutating_extra_data(self):
+        client = self.build_client()
+        extra_data = {"disable_comments": 1}
+        track = types.SimpleNamespace(
+            id="track-id",
+            audio_cluster_id="cluster-id",
+            highlight_start_times_in_ms=[1500],
+            title="Track title",
+            display_artist="Artist",
+        )
+
+        with mock.patch.object(client, "clip_upload", return_value="uploaded") as clip_upload:
+            result = client.clip_upload_with_music(
+                Path("clip.mp4"),
+                "caption",
+                track,
+                extra_data=extra_data,
+                overlap_duration=2500,
+            )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"disable_comments": 1})
+        clip_upload.assert_called_once()
+        self.assertEqual(clip_upload.call_args.args[:2], (Path("clip.mp4"), "caption"))
+        upload_extra = clip_upload.call_args.kwargs["extra_data"]
+        self.assertEqual(upload_extra["disable_comments"], 1)
+        self.assertEqual(upload_extra["music_params"]["audio_asset_id"], "track-id")
+        self.assertEqual(upload_extra["music_params"]["audio_cluster_id"], "cluster-id")
+        self.assertEqual(upload_extra["music_params"]["audio_asset_start_time_in_ms"], 1500)
+        self.assertEqual(upload_extra["music_params"]["overlap_duration_in_ms"], 2500)
+        self.assertIn("clips_audio_metadata", upload_extra)
+
     def test_photo_story_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
