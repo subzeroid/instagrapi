@@ -1,18 +1,21 @@
 import random
 import secrets
 import time
+from typing import Optional
 from urllib.parse import urlsplit
 from uuid import uuid4
 
 from instagrapi.exceptions import (
     AgeEligibilityError,
     CaptchaChallengeRequired,
+    ChallengeRequired,
     ClientError,
     EmailInvalidError,
     EmailNotAvailableError,
     EmailVerificationSendError,
 )
 from instagrapi.extractors import extract_user_short
+from instagrapi.mixins.challenge import ChallengeChoice
 from instagrapi.types import UserShort
 
 CHOICE_EMAIL = 1
@@ -94,7 +97,7 @@ class SignUpMixin:
             data = self.accounts_create(**kwargs)
             if data.get("message") != "challenge_required":
                 break
-            if self.challenge_flow(data["challenge"]):
+            if self.challenge_flow(data["challenge"], phone_number=phone_number, username=username):
                 kwargs.update({"suggestedUsername": "", "sn_result": "MLA"})
             retries += 1
         return extract_user_short(data["created_user"])
@@ -208,18 +211,43 @@ class SignUpMixin:
         }
         return self.private_request("accounts/create/", data, domain="www.instagram.com")
 
-    def challenge_flow(self, data):
+    def challenge_flow(
+        self,
+        data,
+        phone_number: str = "",
+        username: str = "",
+        wait_seconds: Optional[int] = None,
+        attempts: int = 10,
+    ) -> bool:
         data = self.challenge_api(data)
-        while True:
+        wait_seconds = self.wait_seconds if wait_seconds is None else wait_seconds
+        username = username or getattr(self, "username", "")
+
+        for _ in range(10):
+            if data.get("status") == "ok":
+                return True
             if data.get("message") == "challenge_required":
                 data = self.challenge_captcha(data["challenge"])
                 continue
-            elif data.get("challengeType") == "SubmitPhoneNumberForm":
-                data = self.challenge_submit_phone_number(data)
+            if data.get("challengeType") == "SubmitPhoneNumberForm":
+                if not phone_number:
+                    raise ClientError("phone_number is required for signup SMS challenge")
+                data = self.challenge_submit_phone_number(data, phone_number)
                 continue
-            elif data.get("challengeType") == "VerifySMSCodeFormForSMSCaptcha":
-                data = self.challenge_verify_sms_captcha(data)
+            if data.get("challengeType") == "VerifySMSCodeFormForSMSCaptcha":
+                security_code = ""
+                for attempt in range(attempts):
+                    security_code = self.challenge_code_handler(username, ChallengeChoice.SMS)
+                    if security_code:
+                        break
+                    if wait_seconds:
+                        time.sleep(wait_seconds * (attempt + 1))
+                if not security_code:
+                    raise ChallengeRequired("SMS code required for signup challenge")
+                data = self.challenge_verify_sms_captcha(data, security_code)
                 continue
+            raise ClientError(f"Unsupported signup challenge step: {data}")
+        raise ClientError(f"Signup challenge flow did not complete: {data}")
 
     def challenge_api(self, data):
         resp = self.private.get(
