@@ -32,6 +32,10 @@ class ClientMediaTestCase(_helpers.ClientPrivateTestCase):
 
 
 class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
     def test_media_user(self):
         user = self.cl.media_user(2154602296692269830)
         self.assertIsInstance(user, UserShort)
@@ -79,14 +83,15 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
 
     def test_media_edit(self):
         # Upload photo
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/BVDOOolFFxg/")
-        path = self.cl.photo_download(media_pk)
+        path = self.copy_media_fixture("examples/kanada.jpg")
         self.assertIsInstance(path, Path)
+        media = None
         try:
             msg = "Test caption for photo"
             media = self.cl.photo_upload(path, msg)
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, msg)
+            self.assertUploadedMediaAccessible(media, media_type=1, caption_text=msg)
             # Change caption
             msg = "New caption %s" % random.randint(1, 100)
             self.cl.media_edit(media.pk, msg)
@@ -94,16 +99,26 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, msg)
             self.assertTrue(self.cl.media_delete(media.pk))
+            media = None
         finally:
-            cleanup(path)
+            if media:
+                self.cl.media_delete(media.id)
 
     def test_media_edit_igtv(self):
-        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/tv/B91gKCcpnTk/")
-        path = self.cl.igtv_download(media_pk)
+        path = self.make_video_fixture(label="IGTV edit fixture", duration=61)
         self.assertIsInstance(path, Path)
+        media = None
         try:
-            media = self.cl.igtv_upload(path, "Test title", "Test caption for IGTV")
+            try:
+                media = self.cl.igtv_upload(path, "Test title", "Test caption for IGTV")
+            except RetryError as exc:
+                if "configure_to_igtv" in str(exc) and "500 error responses" in str(exc):
+                    self.skipTest("Instagram returned server 500 for configure_to_igtv")
+                raise
             self.assertIsInstance(media, Media)
+            self.assertUploadedMediaAccessible(
+                media, media_type=2, caption_text="Test caption for IGTV", title="Test title"
+            )
             # Enter title
             title = "Title %s" % random.randint(1, 100)
             msg = "New caption %s" % random.randint(1, 100)
@@ -128,8 +143,10 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
             self.assertEqual(media.title, msg)
             self.assertEqual(media.caption_text, msg)
             self.assertTrue(self.cl.media_delete(media.id))
+            media = None
         finally:
-            cleanup(path)
+            if media:
+                self.cl.media_delete(media.id)
 
     def test_media_like_and_unlike(self):
         user_id = self.user_id_from_username("instagram")

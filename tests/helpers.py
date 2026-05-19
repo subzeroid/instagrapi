@@ -3,6 +3,7 @@ import logging
 import os
 import os.path
 import random
+import shutil
 import subprocess
 import tempfile
 import time
@@ -206,6 +207,125 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             info = self.user_info_by_username(username)
             self._username_cache[username] = info
         return str(info.pk)
+
+    def user_short(self, user):
+        return UserShort(
+            pk=user.pk,
+            username=user.username,
+            full_name=user.full_name,
+            profile_pic_url=user.profile_pic_url,
+            is_private=user.is_private,
+        )
+
+    def copy_media_fixture(self, source):
+        source = Path(source)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=source.suffix) as tmp:
+            path = Path(tmp.name)
+        shutil.copyfile(source, path)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        return path
+
+    def make_video_fixture(self, label="video fixture", width=720, height=1280, duration=4, color="black"):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest(f"imageio_ffmpeg is required to generate a {label}")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+
+        try:
+            subprocess.run(
+                [
+                    imageio_ffmpeg.get_ffmpeg_exe(),
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    f"color=c={color}:s={width}x{height}:r=30:d={duration}",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    f"sine=frequency=440:duration={duration}",
+                    "-shortest",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:a",
+                    "aac",
+                    "-b:a",
+                    "64k",
+                    str(path),
+                ],
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self.skipTest(f"Could not generate {label}: {exc}")
+        return path
+
+    def uploaded_media_payload(self, media, client=None, attempts=5, delay=3):
+        client = client or self.cl
+        last_error = None
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            try:
+                result = client.private_request(f"media/{media.pk}/info/")
+                items = result.get("items") or []
+                self.assertTrue(items, "media info did not return items")
+                return items[0]
+            except Exception as exc:
+                last_error = exc
+        self.fail(f"Uploaded media {media.id} was not accessible after {attempts} media_info attempts: {last_error}")
+
+    def assertUploadedMediaAccessible(
+        self,
+        media,
+        media_type=None,
+        product_type=None,
+        caption_text=None,
+        title=None,
+        min_resources=None,
+        client=None,
+    ):
+        self.assertIsInstance(media, Media)
+        payload = self.uploaded_media_payload(media, client=client)
+        self.assertEqual(str(payload.get("pk")), str(media.pk))
+        self.assertEqual(str(payload.get("id")), str(media.id))
+        if media_type is not None:
+            self.assertEqual(payload.get("media_type"), media_type)
+        if product_type is not None:
+            self.assertEqual(payload.get("product_type"), product_type)
+        if caption_text is not None:
+            self.assertEqual((payload.get("caption") or {}).get("text", ""), caption_text)
+        if title is not None:
+            self.assertEqual(payload.get("title"), title)
+        if min_resources is not None:
+            self.assertGreaterEqual(len(payload.get("carousel_media") or []), min_resources)
+        return payload
+
+    def assertUploadedStoryAccessible(self, story, media_type=None, product_type=None, attempts=5, delay=3):
+        self.assertIsInstance(story, Story)
+        last_error = None
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            try:
+                info = self.cl.story_info(story.pk)
+                self.assertIsInstance(info, Story)
+                self.assertEqual(str(info.id), str(story.id))
+                if media_type is not None:
+                    self.assertEqual(info.media_type, media_type)
+                if product_type is not None:
+                    self.assertEqual(info.product_type, product_type)
+                return info
+            except Exception as exc:
+                last_error = exc
+        self.fail(f"Uploaded story {story.id} was not accessible after {attempts} story_info attempts: {last_error}")
 
     def setup_method(self, *args, **kwargs):
         if TEST_ACCOUNTS_URL:

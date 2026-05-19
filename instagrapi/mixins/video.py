@@ -460,6 +460,16 @@ class UploadVideoMixin:
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
         upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=True)
+        previous_story_ids = self._current_story_ids()
+        story_kwargs = {
+            "links": links,
+            "mentions": mentions,
+            "hashtags": hashtags,
+            "locations": locations,
+            "stickers": stickers,
+            "medias": medias,
+            "polls": polls,
+        }
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
             time.sleep(3)
@@ -491,20 +501,12 @@ class UploadVideoMixin:
                 raise e
             if configured:
                 self.expose()
-                media = self._extract_configured_media_or_raise(
+                return self._extract_configured_story_or_recent(
                     configured,
                     VideoConfigureStoryError,
                     "Video story upload",
-                )
-                return Story(
-                    links=links,
-                    mentions=mentions,
-                    hashtags=hashtags,
-                    locations=locations,
-                    stickers=stickers,
-                    medias=medias,
-                    polls=polls,
-                    **media.dict(),
+                    previous_story_ids,
+                    story_kwargs,
                 )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
 
