@@ -426,6 +426,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -442,6 +460,36 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bloks-two-factor-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloks two-factor flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1088,6 +1136,25 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bloks-two-factor-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bloks two-factor flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1162,6 +1229,31 @@
 <li><code>totp_generate_code()</code> is a local helper and can be used anywhere you already have the TOTP seed.</li>
 <li>Save the backup codes returned by <code>totp_enable()</code> immediately. Instagram does not guarantee that you can fetch the same codes again later.</li>
 </ul>
+<h2 id="bloks-two-factor-flow">Bloks two-factor flow</h2>
+<p>Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy <code>accounts/two_factor_login/</code> endpoint can reject a valid code with <code>Invalid Parameters</code>.</p>
+<p><code>Client.login(..., verification_code="123456")</code> still uses the legacy mobile endpoint first. If Instagram requires the newer flow, use the low-level Bloks helpers with the <code>two_step_verification_context</code> returned by the login challenge response:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+
+<span class="c1"># The context comes from Instagram&#39;s login challenge response.</span>
+<span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;&lt;two_step_verification_context&gt;&quot;</span>
+
+<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_entrypoint</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_method_picker</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_select_method</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">selected_method</span><span class="o">=</span><span class="s2">&quot;totp&quot;</span><span class="p">)</span>
+
+<span class="n">code</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_generate_code</span><span class="p">(</span><span class="s2">&quot;&lt;totp seed&gt;&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;totp&quot;</span><span class="p">)</span>
+<span class="n">login_payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_extract_login_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">bloks_apply_login_response</span><span class="p">(</span><span class="n">login_payload</span><span class="p">)</span>
+</code></pre></div>
+<p>For SMS, select and verify the <code>sms</code> challenge instead:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_select_method</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">selected_method</span><span class="o">=</span><span class="s2">&quot;sms&quot;</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;sms&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><code>bloks_extract_login_response(...)</code> returns decoded <code>login_response</code>, response <code>headers</code>, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns <code>{}</code> when the response is an intermediate UI state or an error. <code>bloks_apply_login_response(...)</code> can then copy the returned authorization data and cookies into the current client session.</p>
+<p>This is intentionally low-level. The full CAA login flow that produces <code>two_step_verification_context</code> is not wired into <code>Client.login()</code> yet, because it depends on newer login response state and account-specific verification behavior.</p>
 
 
 
