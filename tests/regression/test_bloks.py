@@ -1,3 +1,5 @@
+import base64
+
 from tests.helpers import *
 
 
@@ -19,6 +21,26 @@ class BloksRegressionTestCase(unittest.TestCase):
         self.assertEqual(result, expected)
         private_request.assert_called_once_with(
             "bloks/async_action/com.example.action/",
+            data={
+                "params": dumps(params),
+                "_uuid": "uuid-1",
+                "bk_client_context": dumps({"bloks_version": "bloks-version", "styles_id": "instagram"}),
+                "bloks_versioning_id": "bloks-version",
+            },
+            with_signature=False,
+        )
+
+    def test_bloks_app_posts_unsigned_bloks_payload(self):
+        client = self.build_client()
+        params = {"server_params": {"flow": "example_flow"}}
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.bloks_app("com.example.app", params)
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "bloks/apps/com.example.app/",
             data={
                 "params": dumps(params),
                 "_uuid": "uuid-1",
@@ -50,3 +72,206 @@ class BloksRegressionTestCase(unittest.TestCase):
             },
             bloks_versioning_id="",
         )
+
+    def test_bloks_two_step_verification_entrypoint_uses_current_payload(self):
+        client = self.build_client()
+        client.android_device_id = "android-1"
+        client.phone_id = "family-device-1"
+        client.mid = "machine-1"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_app", return_value=expected) as bloks_app:
+            result = client.bloks_two_step_verification_entrypoint(
+                "context-1",
+                screen_id="screen-1",
+                should_fallback_to_sms=True,
+            )
+
+        self.assertEqual(result, expected)
+        bloks_app.assert_called_once_with(
+            "com.bloks.www.two_step_verification.entrypoint",
+            {
+                "client_input_params": {
+                    "device_id": "android-1",
+                    "is_whatsapp_installed": 0,
+                    "machine_id": "machine-1",
+                },
+                "server_params": {
+                    "should_fallback_to_sms": 1,
+                    "family_device_id": "family-device-1",
+                    "device_id": "android-1",
+                    "INTERNAL_INFRA_screen_id": "screen-1",
+                    "two_step_verification_context": "context-1",
+                    "flow_source": "two_factor_login",
+                },
+            },
+            bloks_versioning_id="",
+        )
+
+    def test_bloks_two_step_verification_method_picker_uses_current_payload(self):
+        client = self.build_client()
+        client.android_device_id = "android-1"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_app", return_value=expected) as bloks_app:
+            result = client.bloks_two_step_verification_method_picker("context-1")
+
+        self.assertEqual(result, expected)
+        bloks_app.assert_called_once_with(
+            "com.bloks.www.two_step_verification.method_picker",
+            {
+                "client_input_params": {"is_whatsapp_installed": 0},
+                "server_params": {
+                    "should_fallback_to_sms": 0,
+                    "device_id": "android-1",
+                    "two_step_verification_context": "context-1",
+                    "flow_source": "two_factor_login",
+                },
+            },
+            bloks_versioning_id="",
+        )
+
+    def test_bloks_two_step_verification_select_method_uses_current_payload(self):
+        client = self.build_client()
+        client.android_device_id = "android-1"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_async_action", return_value=expected) as bloks_async_action:
+            result = client.bloks_two_step_verification_select_method(
+                "context-1",
+                selected_method="sms",
+                latency_qpl_marker_id=36707139,
+                latency_qpl_instance_id=123,
+            )
+
+        self.assertEqual(result, expected)
+        bloks_async_action.assert_called_once_with(
+            "com.bloks.www.two_step_verification.method_picker.navigation.async",
+            {
+                "client_input_params": {
+                    "selected_method": "sms",
+                    "cloud_trust_token": None,
+                    "network_bssid": None,
+                },
+                "server_params": {
+                    "should_fallback_to_sms": 0,
+                    "INTERNAL__latency_qpl_marker_id": 36707139,
+                    "device_id": "android-1",
+                    "spectra_reg_login_data": None,
+                    "INTERNAL__latency_qpl_instance_id": 123,
+                    "two_step_verification_context": "context-1",
+                    "flow_source": "two_factor_login",
+                },
+            },
+            bloks_versioning_id="",
+        )
+
+    def test_bloks_two_step_verification_verify_code_uses_current_payload(self):
+        client = self.build_client()
+        client.android_device_id = "android-1"
+        client.phone_id = "family-device-1"
+        client.mid = "machine-1"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_async_action", return_value=expected) as bloks_async_action:
+            result = client.bloks_two_step_verification_verify_code(
+                "context-1",
+                "123456",
+                challenge="sms",
+                should_trust_device=False,
+            )
+
+        self.assertEqual(result, expected)
+        bloks_async_action.assert_called_once_with(
+            "com.bloks.www.two_step_verification.verify_code.async",
+            {
+                "client_input_params": {
+                    "auth_secure_device_id": "",
+                    "block_store_machine_id": "",
+                    "code": "123456",
+                    "should_trust_device": 0,
+                    "family_device_id": "family-device-1",
+                    "device_id": "android-1",
+                    "cloud_trust_token": None,
+                    "network_bssid": None,
+                    "machine_id": "machine-1",
+                },
+                "server_params": {
+                    "should_fallback_to_sms": 0,
+                    "device_id": "android-1",
+                    "spectra_reg_login_data": None,
+                    "challenge": "sms",
+                    "two_step_verification_context": "context-1",
+                    "flow_source": "two_factor_login",
+                },
+            },
+            bloks_versioning_id="",
+        )
+
+    def test_bloks_extract_login_response_parses_embedded_action_payload(self):
+        client = self.build_client()
+        login_payload = {
+            "login_response": dumps(
+                {
+                    "logged_in_user": {"pk": 123, "username": "example"},
+                    "trusted_device_nonce": "nonce-1",
+                    "credential_type": "password",
+                }
+            ),
+            "headers": dumps({"IG-Set-Authorization": "Bearer IGT:2:encoded"}),
+            "cookies": (
+                "Set-Cookie: csrftoken=token-1; Domain=.instagram.com; Path=/; Secure\r\n"
+                "Set-Cookie: ds_user_id=123; Domain=.instagram.com; Path=/; Secure\r\n"
+                "Set-Cookie: sessionid=123%3Aabc; Domain=.instagram.com; Path=/; Secure"
+            ),
+            "exact_profile_identified": "1",
+        }
+        result = {
+            "layout": {
+                "bloks_payload": {
+                    "action": f"BK.action({dumps('ignored')}, {dumps(dumps(login_payload))})",
+                }
+            }
+        }
+
+        parsed = client.bloks_extract_login_response(result)
+
+        self.assertEqual(parsed["login_response"]["logged_in_user"]["username"], "example")
+        self.assertEqual(parsed["headers"]["IG-Set-Authorization"], "Bearer IGT:2:encoded")
+        self.assertEqual(parsed["cookies"]["sessionid"], "123%3Aabc")
+        self.assertEqual(parsed["raw_cookies"], login_payload["cookies"])
+        self.assertEqual(parsed["raw"]["exact_profile_identified"], "1")
+
+    def test_bloks_apply_login_response_updates_client_session(self):
+        client = self.build_client()
+        authorization_data = {
+            "ds_user_id": "123",
+            "sessionid": "123%3Aabc",
+            "should_use_header_over_cookies": True,
+        }
+        authorization = "Bearer IGT:2:" + base64.b64encode(dumps(authorization_data).encode()).decode()
+
+        result = client.bloks_apply_login_response(
+            {
+                "headers": {
+                    "IG-Set-Authorization": authorization,
+                    "ig-set-ig-u-rur": "RUR,123,1:token",
+                    "x-ig-set-www-claim": "hmac.claim",
+                },
+                "cookies": {
+                    "csrftoken": "token-1",
+                    "ds_user_id": "123",
+                    "sessionid": "123%3Aabc",
+                },
+            }
+        )
+
+        self.assertTrue(result)
+        self.assertEqual(client.authorization_data, authorization_data)
+        self.assertEqual(client.private.cookies.get("csrftoken"), "token-1")
+        self.assertEqual(client.private.cookies.get("ds_user_id"), "123")
+        self.assertEqual(client.private.cookies.get("sessionid"), "123%3Aabc")
+        self.assertEqual(client.public.cookies.get("sessionid"), "123%3Aabc")
+        self.assertEqual(client.private.headers["Authorization"], client.authorization)
+        self.assertEqual(client.ig_u_rur, "RUR,123,1:token")
+        self.assertEqual(client.ig_www_claim, "hmac.claim")
