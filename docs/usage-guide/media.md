@@ -41,6 +41,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_oembed(url: str) | dict | Return short oEmbed-style media info by URL |
 | media_like(media_id: str) | bool | Like media |
 | media_unlike(media_id: str) | bool | Unlike media |
+| media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None) | dict | Create a note attached to a media item |
+| media_note_delete(note_id: str, extra_data: Optional[Dict] = None) | bool | Delete a note attached to a media item |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
 | media_likers(media_id: str) | List\[UserShort] | Return users who liked this post |
 | media_likers_gql(media_pk: str, amount: int = 0) | List\[dict] | Return users who liked this post through the web GraphQL doc_id endpoint |
@@ -58,6 +60,10 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_get_livestream_info(broadcast_id: str) | dict | Get livestream info |
 | media_get_livestream_comments(broadcast_id: str) | dict | Get livestream comments |
 | media_get_livestream_viewers(broadcast_id: str) | dict | Get livestream viewers |
+
+Media notes are separate from Direct inbox Notes. Use `media_note_create()` and
+`media_note_delete()` for the note surface attached to a post or Reel; use the
+[Notes guide](notes.md) for Direct inbox Notes.
 
 Low level methods:
 
