@@ -3,7 +3,7 @@ import random
 import time
 from copy import deepcopy
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from instagrapi.exceptions import (
@@ -618,6 +618,88 @@ class MediaMixin:
             A boolean value
         """
         return self.media_like(media_id, revert=True)
+
+    def media_note_create(
+        self,
+        media_id: str,
+        text: str = "",
+        audience: int = 7,
+        note_style: int = 13,
+        extra_data: Optional[Dict] = None,
+    ) -> Dict:
+        """
+        Create a note attached to a media item.
+
+        This is separate from Direct inbox Notes created by
+        :meth:`create_note`; it mirrors the Android app's
+        ``media/create_note/v2/`` flow for notes attached to posts/Reels.
+
+        Parameters
+        ----------
+        media_id: str
+            Full media id, for example ``"3884795301060104481_52448022913"``.
+        text: str, optional
+            Note text.
+        audience: int, optional
+            Raw media-note audience value. The Android app sends ``7``.
+        note_style: int, optional
+            Raw media-note style value. The Android app sends ``13``.
+        extra_data: Dict, optional
+            Additional app-surface fields such as ``tracking_token``,
+            ``ranking_info_token`` or ``nav_chain`` when the caller has them.
+
+        Returns
+        -------
+        Dict
+            Raw created note response.
+        """
+        assert self.user_id, "Login required"
+        data = {
+            "inventory_source": "recommended_clips_chaining_model",
+            "media_client_position": "0",
+            "media_id": str(media_id),
+            "note_style": str(note_style),
+            "carousel_index": "-1",
+            "text": text,
+            "_uuid": self.uuid,
+            "audience": str(audience),
+            "event_source": "ufi",
+            "container_module": "clips_viewer_clips_tab",
+        }
+        if extra_data:
+            data.update(extra_data)
+        return self.private_request("media/create_note/v2/", data=data, with_signature=False)
+
+    def media_note_delete(self, note_id: str, extra_data: Optional[Dict] = None) -> bool:
+        """
+        Delete a note attached to a media item.
+
+        Parameters
+        ----------
+        note_id: str
+            ID of the media note to delete.
+        extra_data: Dict, optional
+            Additional app-surface fields such as ``tracking_token``,
+            ``ranking_info_token`` or ``nav_chain`` when the caller has them.
+
+        Returns
+        -------
+        bool
+            A boolean value.
+        """
+        assert self.user_id, "Login required"
+        data = {
+            "inventory_source": "recommended_clips_chaining_model",
+            "carousel_index": "-1",
+            "_uuid": self.uuid,
+            "event_source": "ufi",
+            "container_module": "clips_viewer_clips_tab",
+            "note_id": str(note_id),
+        }
+        if extra_data:
+            data.update(extra_data)
+        result = self.private_request("media/delete_note/", data=data, with_signature=False)
+        return result.get("status", "") == "ok"
 
     def user_medias_paginated_gql(
         self, user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None

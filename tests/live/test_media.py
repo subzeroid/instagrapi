@@ -145,6 +145,19 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
         media = self.cl.media_info_v1(media_pk)  # refresh after unlike
         self.assertFalse(media.has_liked)
 
+    def test_media_note_create_and_delete(self):
+        user_id = self.user_id_from_username("instagram")
+        media = self.cl.user_medias_v1(user_id, amount=1)[0]
+        note = None
+        try:
+            note = self.cl.media_note_create(media.id, text="")
+            self.assertEqual(note.get("status"), "ok")
+            self.assertTrue(note.get("id"))
+            self.assertEqual(note.get("text"), "")
+        finally:
+            if note and note.get("id"):
+                self.assertTrue(self.cl.media_note_delete(note["id"]))
+
 
 class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
     def assertLocation(self, v1, gql):
