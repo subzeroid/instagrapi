@@ -1560,6 +1560,16 @@
 <td>Unlike media</td>
 </tr>
 <tr>
+<td>media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None)</td>
+<td>dict</td>
+<td>Create a note attached to a media item</td>
+</tr>
+<tr>
+<td>media_note_delete(note_id: str, extra_data: Optional[Dict] = None)</td>
+<td>bool</td>
+<td>Delete a note attached to a media item</td>
+</tr>
+<tr>
 <td>media_seen(media_ids: List[str], skipped_media_ids: List[str] = [])</td>
 <td>bool</td>
 <td>Mark media as seen</td>
@@ -1646,6 +1656,9 @@
 </tr>
 </tbody>
 </table>
+<p>Media notes are separate from Direct inbox Notes. Use <code>media_note_create()</code> and
+<code>media_note_delete()</code> for the note surface attached to a post or Reel; use the
+<a href="../notes/">Notes guide</a> for Direct inbox Notes.</p>
 <p>Low level methods:</p>
 <table>
 <thead>
