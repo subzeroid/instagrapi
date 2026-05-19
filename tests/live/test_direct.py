@@ -96,6 +96,20 @@ class ClientDirectTestCase(_helpers.ClientPrivateTestCase):
         for user in users:
             self.assertIsInstance(user, UserShort)
 
+    def test_direct_bootstrap_helpers_live(self):
+        preview = self.cl.direct_pending_requests_preview()
+        self.assertIsInstance(preview, dict)
+        self.assertIn("pending_requests_total", preview)
+        self.assertIsInstance(self.cl.direct_has_interop_upgraded(), bool)
+
+        bots = self.cl.direct_search_gen_ai_bots(amount=2)
+        self.assertIsInstance(bots, list)
+        for bot in bots:
+            self.assertIsInstance(bot, UserShort)
+
+        channels = self.cl.direct_channels()
+        self.assertIsInstance(channels, list)
+
     def test_direct_media_live(self):
         threads = self.cl.direct_threads(amount=5)
         cleanup_message = None

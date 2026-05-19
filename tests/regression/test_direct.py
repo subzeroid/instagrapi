@@ -185,6 +185,90 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertRegex(params["igd_request_log_tracking_id"], r"^[0-9a-f-]{36}$")
         self.assertEqual(params["media_type"], "media_shares")
 
+    def test_direct_pending_requests_preview_uses_current_preview_endpoint(self):
+        client = self.build_client()
+        response = {
+            "pending_requests_total": 1,
+            "unread_pending_requests": 1,
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=response) as private:
+            result = client.direct_pending_requests_preview()
+
+        self.assertEqual(result, response)
+        private.assert_called_once_with(
+            "direct_v2/async_get_pending_requests_preview/",
+            params={"pending_inbox_filters": "[]"},
+        )
+
+    def test_direct_has_interop_upgraded_returns_boolean_state(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"has_interop_upgraded": False, "status": "ok"},
+        ) as private:
+            result = client.direct_has_interop_upgraded()
+
+        self.assertFalse(result)
+        private.assert_called_once_with("direct_v2/has_interop_upgraded/")
+
+    def test_direct_search_gen_ai_bots_returns_user_results(self):
+        client = self.build_client()
+        response = {
+            "user_search_results": [
+                {
+                    "pk": 64528677628,
+                    "username": "meta_ai",
+                    "full_name": "Meta AI",
+                    "profile_pic_url": "https://example.com/meta.jpg",
+                }
+            ],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=response) as private:
+            result = client.direct_search_gen_ai_bots(amount=5)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].username, "meta_ai")
+        private.assert_called_once_with(
+            "direct_v2/search_gen_ai_bots/",
+            params={"num_ai_bots": "5"},
+        )
+
+    def test_direct_channels_uses_authenticated_user_by_default(self):
+        client = self.build_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"all_channels_list": [{"thread_id": "123"}], "status": "ok"},
+        ) as private:
+            result = client.direct_channels()
+
+        self.assertEqual(result, [{"thread_id": "123"}])
+        private.assert_called_once_with(
+            "direct_v2/get_all_channels/",
+            params={"user_id": "1", "thread_subtypes": "[29]"},
+        )
+
+    def test_direct_set_e2ee_eligibility_posts_unsigned_value(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private:
+            result = client.direct_set_e2ee_eligibility(4)
+
+        self.assertTrue(result)
+        private.assert_called_once_with(
+            "direct_v2/set_e2ee_eligibility/",
+            data={"_uuid": "uuid-1", "e2ee_eligibility": "4"},
+            with_signature=False,
+        )
+
     def test_direct_request_approve_delegates_to_pending_approve(self):
         client = self.build_client()
 

@@ -222,6 +222,28 @@ class DirectMixin:
         """
         return self.direct_pending_inbox(amount)
 
+    def direct_pending_requests_preview(self, pending_inbox_filters: Optional[List[str]] = None) -> Dict:
+        """
+        Get the lightweight Direct message requests preview.
+
+        This mirrors the Android app's inbox bootstrap request and returns
+        counters such as ``pending_requests_total`` and
+        ``unread_pending_requests`` without loading the full pending inbox.
+
+        Parameters
+        ----------
+        pending_inbox_filters: List[str], optional
+            Optional pending inbox filters. Defaults to an empty list.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``direct_v2/async_get_pending_requests_preview/``.
+        """
+        assert self.user_id, "Login required"
+        params = {"pending_inbox_filters": dumps(pending_inbox_filters or [])}
+        return self.private_request("direct_v2/async_get_pending_requests_preview/", params=params)
+
     def direct_pending_chunk(self, cursor: str = None) -> Tuple[List[DirectThread], str]:
         """
         Get direct threads of Pending inbox. Chunk
@@ -1418,6 +1440,65 @@ class DirectMixin:
             )
         return data
 
+    def direct_has_interop_upgraded(self) -> bool:
+        """
+        Check whether the account's Direct inbox has upgraded interop messaging.
+
+        Returns
+        -------
+        bool
+            ``True`` when the account reports upgraded Direct interop state.
+        """
+        assert self.user_id, "Login required"
+        result = self.private_request("direct_v2/has_interop_upgraded/")
+        return bool(result.get("has_interop_upgraded"))
+
+    def direct_search_gen_ai_bots(self, amount: int = 20) -> List[UserShort]:
+        """
+        Search Instagram's generated AI Direct bot suggestions.
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of AI bot suggestions requested from the API.
+
+        Returns
+        -------
+        List[UserShort]
+            User-like bot entries returned by Direct search.
+        """
+        assert self.user_id, "Login required"
+        result = self.private_request(
+            "direct_v2/search_gen_ai_bots/",
+            params={"num_ai_bots": str(amount)},
+        )
+        return [extract_user_short(item) for item in result.get("user_search_results", []) if item.get("username")]
+
+    def direct_channels(self, user_id: Optional[int] = None, thread_subtypes: Optional[List[int]] = None) -> List[Dict]:
+        """
+        Get all Direct channels for a user.
+
+        Parameters
+        ----------
+        user_id: int, optional
+            Instagram user id. Defaults to the authenticated user.
+        thread_subtypes: List[int], optional
+            Direct channel thread subtype filters. Defaults to ``[29]`` as used
+            by the Android app.
+
+        Returns
+        -------
+        List[Dict]
+            Raw channel entries from ``all_channels_list``.
+        """
+        assert self.user_id, "Login required"
+        params = {
+            "user_id": str(user_id or self.user_id),
+            "thread_subtypes": dumps(thread_subtypes or [29]),
+        }
+        result = self.private_request("direct_v2/get_all_channels/", params=params)
+        return result.get("all_channels_list", [])
+
     def direct_thread_by_participants(self, user_ids: List[int]) -> Dict:
         """
         Get direct thread by participants
@@ -1532,6 +1613,30 @@ class DirectMixin:
         result = self.private_request(
             f"direct_v2/threads/{thread_id}/add_user/",
             data={"_uuid": self.uuid, "user_ids": dumps([str(uid) for uid in user_ids])},
+            with_signature=False,
+        )
+        return result.get("status", "") == "ok"
+
+    def direct_set_e2ee_eligibility(self, e2ee_eligibility: int = 4) -> bool:
+        """
+        Set Direct end-to-end encryption eligibility state.
+
+        Parameters
+        ----------
+        e2ee_eligibility: int, optional
+            Raw eligibility value accepted by Instagram. The Android 428 app
+            sends ``4`` during Direct bootstrap.
+
+        Returns
+        -------
+        bool
+            A boolean value.
+        """
+        assert self.user_id, "Login required"
+
+        result = self.private_request(
+            "direct_v2/set_e2ee_eligibility/",
+            data={"_uuid": self.uuid, "e2ee_eligibility": str(e2ee_eligibility)},
             with_signature=False,
         )
         return result.get("status", "") == "ok"
