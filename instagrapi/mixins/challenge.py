@@ -433,8 +433,16 @@ class ChallengeResolveMixin:
                 },
             )
             return True
-        elif step_name in ("verify_email", "verify_email_code", "select_verify_method"):
-            choice = ChallengeChoice.EMAIL
+        elif step_name in (
+            "verify_email",
+            "verify_email_code",
+            "verify_phone",
+            "verify_phone_code",
+            "verify_sms",
+            "verify_sms_code",
+            "select_verify_method",
+        ):
+            choice = ChallengeChoice.SMS if "phone" in step_name or "sms" in step_name else ChallengeChoice.EMAIL
             if step_name == "select_verify_method":
                 """
                 {'step_name': 'select_verify_method',
@@ -468,6 +476,18 @@ class ChallengeResolveMixin:
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
             return True
+        elif step_name == "submit_phone":
+            phone_number = getattr(self, "phone_number", None)
+            if not phone_number:
+                raise ChallengeRequired(
+                    "Phone number required to continue submit_phone challenge. "
+                    "Set client.phone_number or complete the flow manually.",
+                    **{key: value for key, value in self.last_json.items() if key != "message"},
+                )
+            self._send_private_request(challenge_url, {"phone_number": phone_number})
+            if self.last_json.get("step_name") == step_name:
+                raise ChallengeError(f"submit_phone challenge did not advance after phone submission: {self.last_json}")
+            return self.challenge_resolve_simple(challenge_url)
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
