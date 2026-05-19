@@ -10,6 +10,7 @@ on:
         type: choice
         options:
           - media
+          - comment
           - upload
           - direct
           - timeline
@@ -43,6 +44,10 @@ jobs:
       - name: Run media test
         if: github.event.inputs.test_target == 'media' || github.event.inputs.test_target == 'all'
         run: pytest -sv tests/live/test_media.py::ClientMediaTestCase tests/live/test_comments.py::ClientCommentRepliesLiveTestCase
+
+      - name: Run comment write test
+        if: github.event.inputs.test_target == 'comment' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests/live/test_comments.py::ClientCommentExtendTestCase::test_media_comment
 
       - name: Run upload live tests
         if: github.event.inputs.test_target == 'upload' || github.event.inputs.test_target == 'all'

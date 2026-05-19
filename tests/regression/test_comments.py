@@ -2,6 +2,12 @@ from tests.helpers import *
 
 
 class CommentRepliesRegressionTestCase(unittest.TestCase):
+    def _build_logged_in_client(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "1"}
+        client.android_device_id = "android-device"
+        return client
+
     def _reply_payload(self, pk, text="reply", replied_to_comment_id="100"):
         return {
             "pk": str(pk),
@@ -14,6 +20,38 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
             "has_liked_comment": False,
             "comment_like_count": 0,
         }
+
+    def test_media_comment_posts_current_action_context(self):
+        client = self._build_logged_in_client()
+        expected_comment = self._reply_payload("101", text="hello")
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"comment": expected_comment},
+        ) as private_request:
+            comment = client.media_comment("123_456", "hello", replied_to_comment_id=100)
+
+        self.assertIsInstance(comment, Comment)
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/123_456/comment/")
+        self.assertEqual(data["media_id"], "123_456")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["_uuid"], client.uuid)
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["radio_type"], "wifi-none")
+        self.assertEqual(data["delivery_class"], "organic")
+        self.assertEqual(data["tap_source"], "button")
+        self.assertEqual(data["is_2m_enabled"], "false")
+        self.assertEqual(data["is_carousel_bumped_post"], "false")
+        self.assertEqual(data["is_from_swipe"], "false")
+        self.assertEqual(data["floating_context_items"], "[]")
+        self.assertEqual(data["media_pct_watched"], "0")
+        self.assertEqual(data["container_module"], "feed_timeline")
+        self.assertIn(data["feed_position"], {str(i) for i in range(7)})
+        self.assertEqual(data["comment_text"], "hello")
+        self.assertEqual(data["replied_to_comment_id"], 100)
+        self.assertIn("user_breadcrumb", data)
+        self.assertIn("idempotence_token", data)
 
     def test_media_comment_replies_fetches_inline_child_comments(self):
         client = Client()

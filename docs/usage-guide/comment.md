@@ -126,3 +126,4 @@ Notes:
 * `media_comment_replies()` fetches `inline_child_comments` for a parent comment and paginates with the returned child cursor.
 * `comment_pin()` / `comment_unpin()` only work on media owned by the authenticated account.
 * Reply creation is supported through `replied_to_comment_id`; reply retrieval is supported through `media_comment_replies()`.
+* Comment creation is a write action and can still trigger Instagram spam or trust checks. Reuse saved sessions, keep volume low on new accounts, and stop when Instagram returns feedback/challenge responses.
