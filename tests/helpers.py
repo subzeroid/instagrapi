@@ -167,7 +167,7 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
         parts = urlsplit(TEST_ACCOUNTS_URL)
         query = dict(parse_qsl(parts.query, keep_blank_values=True))
         if count is None:
-            query.setdefault("count", "5")
+            query["count"] = "5"
         else:
             query["count"] = str(count)
         return urlunsplit(

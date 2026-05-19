@@ -51,11 +51,46 @@ class ClientCommentRepliesLiveTestCase(_helpers.ClientPrivateTestCase):
 
 
 class ClientCommentExtendTestCase(_helpers.ClientPrivateTestCase):
+    def cleanup_comment(self, media_id, comment_pk):
+        try:
+            self.cl.comment_bulk_delete(media_id, [comment_pk])
+        except Exception as exc:
+            print(f"Comment live cleanup comment_bulk_delete failed: {exc.__class__.__name__} {exc}")
+
+    def cleanup_media(self, media_id):
+        try:
+            self.cl.media_delete(media_id)
+        except Exception as exc:
+            print(f"Comment live cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+
+    def assertCommentAccessible(self, media_id, comment_pk, text, attempts=5, delay=3):
+        last_error = None
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            try:
+                comments = self.cl.media_comments_v1(media_id, amount=20)
+            except Exception as exc:
+                last_error = exc
+                continue
+            for item in comments:
+                if str(item.pk) == str(comment_pk) and item.text == text:
+                    return item
+        self.fail(f"Comment {comment_pk} was not readable after {attempts} attempts: {last_error}")
+
     def test_media_comment(self):
         text = "Test text [%s]" % datetime.now().strftime("%s")
         now = datetime.now(tz=UTC())
-        comment = self.cl.media_comment_v1(2276404890775267248, text)
+        caption_text = "Comment live fixture [%s]" % datetime.now().strftime("%s")
+        path = self.copy_media_fixture("examples/kanada.jpg")
+        media = self.cl.photo_upload(path, caption_text)
+        self.addCleanup(self.cleanup_media, media.id)
+        self.assertUploadedMediaAccessible(media, media_type=1, caption_text=caption_text)
+        media_id = media.id
+        comment = self.cl.media_comment(media_id, text)
+        self.addCleanup(self.cleanup_comment, media_id, comment.pk)
         self.assertIsInstance(comment, Comment)
+        self.assertCommentAccessible(media_id, comment.pk, text)
         comment = comment.dict()
         for key, val in {
             "text": text,

@@ -444,8 +444,16 @@ class CommentMixin:
         media_id = self.media_id(media_id)
         data = {
             "delivery_class": "organic",
-            "feed_position": "0",
-            "container_module": "self_comments_v2_feed_contextual_self_profile",  # "comments_v2",
+            "feed_position": str(random.randint(0, 6)),
+            "container_module": "feed_timeline",
+            "media_id": media_id,
+            "_uid": str(self.user_id),
+            "tap_source": "button",
+            "is_2m_enabled": "false",
+            "is_carousel_bumped_post": "false",
+            "is_from_swipe": "false",
+            "floating_context_items": "[]",
+            "media_pct_watched": "0",
             "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
             "idempotence_token": self.generate_uuid(),
             "comment_text": text,
