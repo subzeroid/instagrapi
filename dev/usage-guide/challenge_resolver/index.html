@@ -1248,6 +1248,7 @@
 <p>Notes:</p>
 <ul>
 <li><code>challenge_code_handler(username, choice)</code> should return the received code as a string. Returning a falsey value means no code is available yet.</li>
+<li>Signup SMS challenges use the <code>phone_number</code> passed to <code>signup(...)</code> and call <code>challenge_code_handler(username, ChallengeChoice.SMS)</code> for the received code.</li>
 <li>Current <code>master</code> raises a clearer <code>ChallengeRequired</code> for <code>/auth_platform/?apc=...</code> flows. That path is not yet supported automatically and still requires manual verification.</li>
 <li>For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.</li>
 </ul>
