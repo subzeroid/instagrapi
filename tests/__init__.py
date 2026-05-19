@@ -30,7 +30,11 @@ from tests.live.test_signup import SignUpTestCase
 from tests.live.test_story import ClientStoryTestCase
 from tests.live.test_timeline import ClientTimelineLiveTestCase
 from tests.live.test_totp import TOTPTestCase
-from tests.live.test_upload import ClientFeedMusicUploadLiveTestCase, ClienUploadTestCase
+from tests.live.test_upload import (
+    ClientClipMusicMetadataUploadLiveTestCase,
+    ClientFeedMusicUploadLiveTestCase,
+    ClienUploadTestCase,
+)
 from tests.live.test_user import (
     ClientFollowRequestLiveTestCase,
     ClientGraphQLQueryLiveTestCase,
