@@ -2,10 +2,61 @@ from tests import helpers as _helpers
 from tests.helpers import *
 
 
-class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
+class _ClipMusicMetadataAssertionsMixin:
+    @staticmethod
+    def music_asset_info(music_info):
+        if not isinstance(music_info, dict):
+            return {}
+        asset_info = music_info.get("music_asset_info")
+        if isinstance(asset_info, dict):
+            return asset_info
+        return {}
+
+    def wait_for_clip_music_metadata(self, media, attempts=8):
+        last_clips_metadata = {}
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(5)
+            result = self.cl.private_request(f"media/{media.pk}/info/")
+            items = result.get("items") or []
+            self.assertTrue(items, "media info did not return items")
+            clips_metadata = items[0].get("clips_metadata") or {}
+            last_clips_metadata = clips_metadata
+            if clips_metadata.get("music_info"):
+                return clips_metadata
+        self.fail(f"Reel music metadata was not visible after {attempts} media_info attempts: {last_clips_metadata}")
+
+    def assert_clip_uses_music_track(self, media, track):
+        clips_metadata = self.wait_for_clip_music_metadata(media)
+        self.assertEqual(clips_metadata.get("audio_type"), "licensed_music")
+        music_info = clips_metadata.get("music_info") or {}
+        self.assertTrue(music_info, "clips_metadata.music_info is empty")
+        asset_info = self.music_asset_info(music_info)
+        self.assertTrue(asset_info, "clips_metadata.music_info.music_asset_info is empty")
+
+        expected_asset_id = getattr(track, "audio_asset_id", None) or getattr(track, "id", None)
+        expected_cluster_id = getattr(track, "audio_cluster_id", None)
+        if expected_asset_id:
+            self.assertEqual(str(asset_info.get("audio_asset_id")), str(expected_asset_id))
+        if expected_cluster_id:
+            self.assertEqual(str(asset_info.get("audio_cluster_id")), str(expected_cluster_id))
+
+
+class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
         return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for upload live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
 
     def get_location(self):
         location = self.cl.location_search(lat=59.939095, lng=30.315868)[0]
@@ -141,16 +192,22 @@ class ClienUploadTestCase(_helpers.ClientPrivateTestCase):
             title = "Kill My Vibe (feat. Tom G)"
             caption = "Test caption for reel"
             track = self.cl.search_music(title)[0]
-            media = self.cl.clip_upload_as_reel_with_music(path, caption, track)
+            try:
+                media = self.cl.clip_upload_as_reel_with_music(path, caption, track)
+            except RuntimeError as exc:
+                if "requires MoviePy 2.2.1" in str(exc):
+                    self.skipTest(str(exc))
+                raise
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, caption)
             self.assertUploadedMediaAccessible(media, media_type=2, product_type="clips", caption_text=caption)
+            self.assert_clip_uses_music_track(media, track)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
 
 
-class ClientClipMusicMetadataUploadLiveTestCase(_helpers.ClientPrivateTestCase):
+class ClientClipMusicMetadataUploadLiveTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPrivateTestCase):
     thumbnail_path = Path("examples/kanada.jpg")
 
     def __init__(self, *args, **kwargs):
@@ -223,44 +280,6 @@ class ClientClipMusicMetadataUploadLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(self.cl.media_delete(media.id))
         except Exception as exc:
             print(f"Reel music metadata upload cleanup media_delete failed: {exc.__class__.__name__} {exc}")
-
-    @staticmethod
-    def music_asset_info(music_info):
-        if not isinstance(music_info, dict):
-            return {}
-        asset_info = music_info.get("music_asset_info")
-        if isinstance(asset_info, dict):
-            return asset_info
-        return {}
-
-    def wait_for_clip_music_metadata(self, media, attempts=8):
-        last_clips_metadata = {}
-        for attempt in range(attempts):
-            if attempt:
-                time.sleep(5)
-            result = self.cl.private_request(f"media/{media.pk}/info/")
-            items = result.get("items") or []
-            self.assertTrue(items, "media info did not return items")
-            clips_metadata = items[0].get("clips_metadata") or {}
-            last_clips_metadata = clips_metadata
-            if clips_metadata.get("music_info"):
-                return clips_metadata
-        self.fail(f"Reel music metadata was not visible after {attempts} media_info attempts: {last_clips_metadata}")
-
-    def assert_clip_uses_music_track(self, media, track):
-        clips_metadata = self.wait_for_clip_music_metadata(media)
-        self.assertEqual(clips_metadata.get("audio_type"), "licensed_music")
-        music_info = clips_metadata.get("music_info") or {}
-        self.assertTrue(music_info, "clips_metadata.music_info is empty")
-        asset_info = self.music_asset_info(music_info)
-        self.assertTrue(asset_info, "clips_metadata.music_info.music_asset_info is empty")
-
-        expected_asset_id = getattr(track, "audio_asset_id", None) or getattr(track, "id", None)
-        expected_cluster_id = getattr(track, "audio_cluster_id", None)
-        if expected_asset_id:
-            self.assertEqual(str(asset_info.get("audio_asset_id")), str(expected_asset_id))
-        if expected_cluster_id:
-            self.assertEqual(str(asset_info.get("audio_cluster_id")), str(expected_cluster_id))
 
     def test_clip_upload_with_music_live(self):
         path = self.make_clip_mp4()
