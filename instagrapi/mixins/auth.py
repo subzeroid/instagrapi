@@ -507,6 +507,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         value = self._find_login_response_value(data, "two_step_verification_context")
         return value.strip() if isinstance(value, str) else ""
 
+    def _exception_context(self, data: Dict) -> Dict:
+        context = deepcopy(data)
+        message = context.pop("message", None)
+        if message is not None:
+            context["instagram_message"] = message
+        return context
+
     def _login_response_bool(self, data: Dict, key: str) -> bool:
         value = self._find_login_response_value(data, key)
         if isinstance(value, bool):
@@ -535,7 +542,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 "verification in the Instagram app or capture a fresh login "
                 "response with the current app flow.",
                 response=getattr(exc, "response", None),
-                **login_json,
+                **self._exception_context(login_json),
             ) from exc
 
         challenge = self._infer_bloks_two_factor_challenge(login_json)
@@ -555,8 +562,25 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "the raw Bloks response and retry with the selected verification "
             "method required by the account.",
             response=getattr(exc, "response", None),
-            **login_json,
+            **self._exception_context(login_json),
         ) from exc
+
+    def _login_with_caa_bloks_two_factor(self, verification_code: str, password: str, exc: Exception) -> bool:
+        caa_result = self.bloks_caa_login_send_request(password, login_attempt_count=1)
+        context = self.bloks_extract_two_step_verification_context(caa_result)
+        login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
+        if not context:
+            raise TwoFactorRequired(
+                "Instagram rejected the legacy login endpoint and may require "
+                "a newer CAA/Bloks login flow, but the CAA response did not "
+                "include two_step_verification_context required for automatic "
+                "Bloks two-factor verification. Complete verification in the "
+                "Instagram app or inspect the current login response.",
+                response=getattr(exc, "response", None),
+                **self._exception_context(login_json),
+            ) from exc
+        login_json["two_step_verification_context"] = context
+        return self._login_with_bloks_two_factor(verification_code, login_json, exc)
 
     def init(self) -> bool:
         """
@@ -726,15 +750,19 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.authorization_data = self.parse_authorization(self.last_response.headers.get("ig-set-authorization"))
         except BadPassword as exc:
             login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
-            if not self._extract_two_step_verification_context(login_json):
+            context = self._extract_two_step_verification_context(login_json)
+            if not context and not verification_code.strip():
                 raise
             if not verification_code.strip():
                 raise TwoFactorRequired(
                     f"{exc} (Instagram returned a Bloks two-factor context; provide verification_code for login)",
                     response=getattr(exc, "response", None),
-                    **login_json,
+                    **self._exception_context(login_json),
                 ) from exc
-            logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
+            if context:
+                logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
+            else:
+                logged = self._login_with_caa_bloks_two_factor(verification_code, self.password, exc)
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
