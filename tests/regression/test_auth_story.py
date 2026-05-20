@@ -271,6 +271,58 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
+    def test_login_bad_password_without_context_tries_caa_bloks_context_when_code_provided(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {"message": "The password you entered is incorrect.", "error_type": "bad_password"}
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
+        caa_result = {"layout": {"bloks_payload": {"action": "action-with-context"}}}
+        client.bloks_caa_login_send_request = Mock(return_value=caa_result)
+        client.bloks_extract_two_step_verification_context = Mock(return_value="context-1")
+        client.bloks_two_step_verification_entrypoint = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_method_picker = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_select_method = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
+        client.bloks_apply_login_response = Mock(return_value=True)
+
+        result = client.login(verification_code="654321")
+
+        self.assertTrue(result)
+        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
+        client.bloks_extract_two_step_verification_context.assert_called_once_with(caa_result)
+        client.bloks_two_step_verification_select_method.assert_called_once_with("context-1", selected_method="totp")
+        client.bloks_two_step_verification_verify_code.assert_called_once_with(
+            "context-1",
+            "654321",
+            challenge="totp",
+        )
+        client.login_flow.assert_called_once_with()
+
+    def test_login_bad_password_without_context_raises_clear_error_when_caa_has_no_context(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {"message": "The password you entered is incorrect.", "error_type": "bad_password"}
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
+        client.bloks_caa_login_send_request = Mock(return_value={"layout": {"bloks_payload": {"action": ""}}})
+        client.bloks_extract_two_step_verification_context = Mock(return_value="")
+        client.bloks_two_step_verification_verify_code = Mock()
+
+        with self.assertRaises(TwoFactorRequired) as cm:
+            client.login(verification_code="654321")
+
+        self.assertIn("CAA response did not include two_step_verification_context", str(cm.exception))
+        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
+        client.bloks_two_step_verification_verify_code.assert_not_called()
+
     def test_login_by_sessionid_falls_back_to_user_short_gql(self):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"

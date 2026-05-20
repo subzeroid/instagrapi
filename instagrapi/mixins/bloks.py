@@ -1,7 +1,10 @@
 import json
+import re
+import time
 from http.cookies import SimpleCookie
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional
+from uuid import uuid4
 
 from instagrapi.utils.serialization import dumps
 
@@ -307,6 +310,187 @@ class BloksMixin:
             params,
             bloks_versioning_id=bloks_versioning_id,
         )
+
+    def bloks_caa_login_send_request(
+        self,
+        password: str,
+        username: str = "",
+        login_attempt_count: int = 1,
+        try_num: int = 1,
+        waterfall_id: str = "",
+        offline_experiment_group: str = "caa_iteration_v3_perf_ig_4",
+        bloks_versioning_id: str = "",
+    ) -> Dict:
+        """
+        Send the current CAA/Bloks login request used before Bloks 2FA.
+
+        This low-level helper is intentionally conservative: it uses ordinary
+        device/session identifiers already available on the client and leaves
+        attestation-like fields empty instead of inventing fake values.
+
+        Returns
+        -------
+        Dict
+            Raw Instagram response.
+        """
+        contact_point = username or self.username
+        encrypted_password = password if password.startswith("#PWD_") else self.password_encrypt(password)
+        flow_id = waterfall_id or str(uuid4())
+        text_input_id = flow_id[:8]
+        params = {
+            "client_input_params": {
+                "blocked_uids": [],
+                "aac": dumps(
+                    {
+                        "aac_init_timestamp": int(time.time()),
+                        "aaccs": "",
+                        "aacjid": str(uuid4()),
+                    }
+                ),
+                "sim_phones": [],
+                "aymh_accounts": [],
+                "network_bssid": None,
+                "secure_family_device_id": "",
+                "has_granted_read_contacts_permissions": 0,
+                "auth_secure_device_id": "",
+                "has_whatsapp_installed": 0,
+                "password": encrypted_password,
+                "sso_token_map_json_string": "",
+                "block_store_machine_id": "",
+                "ig_vetted_device_nonces": None,
+                "cloud_trust_token": None,
+                "event_flow": "login_manual",
+                "password_contains_non_ascii": str(not password.isascii()).lower(),
+                "client_known_key_hash": "",
+                "sso_accounts_auth_data": [],
+                "encrypted_msisdn": "",
+                "has_granted_read_phone_permissions": 0,
+                "app_manager_id": "",
+                "should_show_nested_nta_from_aymh": 0,
+                "device_id": self.android_device_id,
+                "zero_balance_state": "",
+                "login_attempt_count": login_attempt_count,
+                "machine_id": self.mid,
+                "flash_call_permission_status": {
+                    "READ_PHONE_STATE": "DENIED",
+                    "READ_CALL_LOG": "DENIED",
+                    "ANSWER_PHONE_CALLS": "DENIED",
+                },
+                "accounts_list": [],
+                "gms_incoming_call_retriever_eligibility": "not_eligible",
+                "family_device_id": self.phone_id,
+                "fb_ig_device_id": [],
+                "device_emails": [],
+                "try_num": try_num,
+                "lois_settings": {"lois_token": ""},
+                "event_step": "home_page",
+                "headers_infra_flow_id": "",
+                "openid_tokens": {},
+                "contact_point": contact_point,
+            },
+            "server_params": {
+                "should_trigger_override_login_2fa_action": 0,
+                "is_from_logged_out": 0,
+                "should_trigger_override_login_success_action": 0,
+                "login_credential_type": "none",
+                "server_login_source": "login",
+                "waterfall_id": flow_id,
+                "two_step_login_type": "one_step_login",
+                "login_source": "Login",
+                "is_platform_login": 0,
+                "login_entry_point": "logged_out",
+                "INTERNAL__latency_qpl_marker_id": 36707139,
+                "is_from_aymh": 0,
+                "offline_experiment_group": offline_experiment_group,
+                "is_from_landing_page": 0,
+                "left_nav_button_action": "NONE",
+                "password_text_input_id": f"{text_input_id}:105",
+                "is_from_empty_password": 0,
+                "is_from_msplit_fallback": 0,
+                "ar_event_source": "login_home_page",
+                "qe_device_id": self.uuid,
+                "username_text_input_id": f"{text_input_id}:104",
+                "layered_homepage_experiment_group": "Deploy: Not in Experiment",
+                "device_id": self.android_device_id,
+                "login_surface": "login_home",
+                "INTERNAL__latency_qpl_instance_id": int(time.time() * 1000),
+                "reg_flow_source": "login_home_native_integration_point",
+                "is_caa_perf_enabled": 1,
+                "credential_type": "password",
+                "is_from_password_entry_page": 0,
+                "caller": "gslr",
+                "family_device_id": self.phone_id,
+                "is_from_assistive_id": 0,
+                "access_flow_version": "pre_mt_behavior",
+                "is_from_logged_in_switcher": 0,
+            },
+        }
+        return self.bloks_async_action(
+            "com.bloks.www.bloks.caa.login.async.send_login_request",
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+        )
+
+    def _find_bloks_value(self, data: Any, key: str) -> Any:
+        if isinstance(data, dict):
+            value = data.get(key)
+            if value:
+                return value
+            for child in data.values():
+                value = self._find_bloks_value(child, key)
+                if value:
+                    return value
+        elif isinstance(data, list):
+            for child in data:
+                value = self._find_bloks_value(child, key)
+                if value:
+                    return value
+        elif isinstance(data, str) and len(data) < 10000 and key in data:
+            try:
+                value = self._find_bloks_value(json.loads(data), key)
+            except (TypeError, ValueError):
+                value = None
+            if value:
+                return value
+        return None
+
+    @staticmethod
+    def _extract_first_json_string(value: str, start: int) -> str:
+        quote_index = value.find('"', start)
+        if quote_index < 0:
+            return ""
+        try:
+            decoded, _ = json.JSONDecoder().raw_decode(value[quote_index:])
+        except JSONDecodeError:
+            return ""
+        return decoded if isinstance(decoded, str) else ""
+
+    def bloks_extract_two_step_verification_context(self, result: Dict) -> str:
+        """
+        Extract ``two_step_verification_context`` from a CAA/Bloks login result.
+
+        Current app responses can place this context inside the Bloks action
+        program that redirects to ``two_step_verification.entrypoint``. This
+        helper first checks normal JSON containers, then parses that action
+        parameter map without logging or returning any other sensitive fields.
+        """
+        value = self._find_bloks_value(result, "two_step_verification_context")
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+        action = result.get("layout", {}).get("bloks_payload", {}).get("action", "")
+        if not isinstance(action, str) or "two_step_verification.entrypoint" not in action:
+            return ""
+        marker = '"two_step_verification_context"'
+        marker_index = action.find(marker)
+        if marker_index < 0:
+            return ""
+        key_list_end = action.find(")", marker_index)
+        if key_list_end < 0:
+            return ""
+        value_group = re.search(r"\(dkc\s+", action[key_list_end:])
+        if not value_group:
+            return ""
+        return self._extract_first_json_string(action, key_list_end + value_group.start()).strip()
 
     def bloks_extract_login_response(self, result: Dict) -> Dict[str, Any]:
         """

@@ -208,6 +208,56 @@ class BloksRegressionTestCase(unittest.TestCase):
             bloks_versioning_id="",
         )
 
+    def test_bloks_caa_login_send_request_uses_current_payload(self):
+        client = self.build_client()
+        client.username = "example"
+        client.android_device_id = "android-1"
+        client.phone_id = "family-device-1"
+        client.uuid = "uuid-1"
+        client.mid = "machine-1"
+        client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:encrypted")
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_async_action", return_value=expected) as bloks_async_action:
+            result = client.bloks_caa_login_send_request("password", login_attempt_count=1)
+
+        self.assertEqual(result, expected)
+        bloks_async_action.assert_called_once()
+        action, params = bloks_async_action.call_args.args[:2]
+        self.assertEqual(action, "com.bloks.www.bloks.caa.login.async.send_login_request")
+        self.assertEqual(params["client_input_params"]["contact_point"], "example")
+        self.assertEqual(params["client_input_params"]["password"], "#PWD_INSTAGRAM:4:1:encrypted")
+        self.assertEqual(params["client_input_params"]["device_id"], "android-1")
+        self.assertEqual(params["client_input_params"]["family_device_id"], "family-device-1")
+        self.assertEqual(params["client_input_params"]["machine_id"], "machine-1")
+        self.assertEqual(params["client_input_params"]["login_attempt_count"], 1)
+        self.assertEqual(params["client_input_params"]["try_num"], 1)
+        self.assertEqual(params["server_params"]["login_credential_type"], "none")
+        self.assertEqual(params["server_params"]["credential_type"], "password")
+        self.assertEqual(params["server_params"]["family_device_id"], "family-device-1")
+        self.assertEqual(params["server_params"]["device_id"], "android-1")
+        self.assertIn("waterfall_id", params["server_params"])
+
+    def test_bloks_extract_two_step_verification_context_from_caa_action(self):
+        client = self.build_client()
+        result = {
+            "layout": {
+                "bloks_payload": {
+                    "action": (
+                        '(... "com.bloks.www.two_step_verification.entrypoint" '
+                        '(dkc "server_params" "client_input_params") '
+                        '(dkc (f4i (dkc "two_step_verification_context" "flow_source" '
+                        '"device_id" "should_fallback_to_sms" "family_device_id" '
+                        '"INTERNAL_INFRA_screen_id") '
+                        '(dkc "context-1" "two_factor_login" "android-1" 0 '
+                        '"family-device-1" "screen-1"))))'
+                    )
+                }
+            }
+        }
+
+        self.assertEqual(client.bloks_extract_two_step_verification_context(result), "context-1")
+
     def test_bloks_extract_login_response_parses_embedded_action_payload(self):
         client = self.build_client()
         login_payload = {

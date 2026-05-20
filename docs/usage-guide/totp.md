@@ -40,7 +40,7 @@ Notes:
 
 Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy `accounts/two_factor_login/` endpoint can reject a valid code with `Invalid Parameters`.
 
-`Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram returns a `two_step_verification_context`, instagrapi automatically retries through the Bloks two-factor flow. When the context is not present, the exception explains that the account still needs manual app verification or a fresh current-app login response.
+`Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram returns a `two_step_verification_context`, instagrapi automatically retries through the Bloks two-factor flow. If the legacy login response does not expose that context, instagrapi can make a current CAA/Bloks login request to recover the context and continue the same Bloks verification path. When Instagram still does not return enough state, the exception explains that the account needs manual app verification or a fresh current-app login response.
 
 The low-level helpers remain available when you need to inspect or drive the flow manually:
 
@@ -69,6 +69,8 @@ cl.bloks_two_step_verification_select_method(context, selected_method="sms")
 result = cl.bloks_two_step_verification_verify_code(context, "123456", challenge="sms")
 ```
 
+`bloks_caa_login_send_request(...)` is also available as a low-level helper for inspecting the CAA/Bloks login response manually. `bloks_extract_two_step_verification_context(...)` extracts the context from that response when Instagram returns the current Bloks redirect action.
+
 `bloks_extract_login_response(...)` returns decoded `login_response`, response `headers`, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns `{}` when the response is an intermediate UI state or an error. `bloks_apply_login_response(...)` can then copy the returned authorization data and cookies into the current client session.
 
-Automatic fallback can only run after Instagram exposes `two_step_verification_context` to the client. A `BadPassword` response with a known-good password can still be account-risk handling before Instagram exposes that context, so treat it as a signal to inspect proxy/IP, device consistency, and the raw login response.
+Automatic fallback can only run after Instagram exposes `two_step_verification_context` to the client or to the CAA/Bloks login response. A `BadPassword` response with a known-good password can still be account-risk handling before Instagram exposes that context, so treat it as a signal to inspect proxy/IP, device consistency, and the raw login response.
