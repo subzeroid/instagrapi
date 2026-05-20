@@ -15,6 +15,8 @@ Viewing and managing your profile
 | remove_bio_links(link_ids: List[int]) | dict | Remove one or more bio links by link ID |
 | reset_password(username: str) | dict | Trigger Instagram account recovery flow |
 | change_password(old_password: str, new_password: str) | bool | Change account password |
+| send_confirm_email(email: str) | dict | Send a confirmation code to a new email address |
+| confirm_email(email: str, code: str) | dict | Confirm a new email address with the received code |
 
 Example:
 
@@ -60,6 +62,9 @@ UserShort(pk=1903424587, username='example', ...)
     'error_type': 'email_unchanged',
     'status': 'ok'
 }
+
+>>> cl.confirm_email("addr@example.com", "123456")
+{'status': 'ok'}
 
 >>> cl.send_confirm_phone_number("+5599999999")
 {
