@@ -1331,7 +1331,7 @@ New support group: <a href="https://t.me/aiograpi_support">aiograpi_support</a> 
 <h2 id="features">Features</h2>
 <ol>
 <li>Uses <a href="https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html">Public API</a> (web, opportunistic) and <a href="https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html">Private API</a> (mobile app, authorized) flows depending on the situation</li>
-<li><a href="https://subzeroid.github.io/instagrapi/usage-guide/interactions.html">Login</a> by username and password, including 2FA, low-level <a href="usage-guide/totp/#bloks-two-factor-flow">Bloks 2FA</a> helpers, and by sessionid</li>
+<li><a href="https://subzeroid.github.io/instagrapi/usage-guide/interactions.html">Login</a> by username and password, including 2FA, <a href="usage-guide/totp/#bloks-two-factor-flow">Bloks 2FA</a> fallback/helpers, and by sessionid</li>
 <li><a href="https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html">Challenge Resolver</a> have Email and SMS handlers</li>
 <li>Support <a href="https://subzeroid.github.io/instagrapi/usage-guide/media.html">upload</a> a Photo, Video, IGTV, Reels, Albums and Stories</li>
 <li>Support work with <a href="https://subzeroid.github.io/instagrapi/usage-guide/user.html">User</a>, <a href="https://subzeroid.github.io/instagrapi/usage-guide/media.html">Media</a>, <a href="https://subzeroid.github.io/instagrapi/usage-guide/comment.html">Comment</a>, <a href="https://subzeroid.github.io/instagrapi/usage-guide/insight.html">Insights</a>, <a href="https://subzeroid.github.io/instagrapi/usage-guide/collection.html">Collections</a>, <a href="https://subzeroid.github.io/instagrapi/usage-guide/location.html">Location</a> (Place), <a href="https://subzeroid.github.io/instagrapi/usage-guide/hashtag.html">Hashtag</a> and <a href="https://subzeroid.github.io/instagrapi/usage-guide/direct.html">Direct Message</a> objects</li>
@@ -1400,7 +1400,7 @@ Example (pseudo-code):</p>
 <li><a href="usage-guide/media/"><code>Resource</code></a> - Part of Media (for albums)</li>
 <li><a href="usage-guide/media/"><code>MediaOembed</code></a> - Short version of Media</li>
 <li><a href="usage-guide/account/"><code>Account</code></a> - Full private info for your account (e.g. email, phone_number)</li>
-<li><a href="usage-guide/totp/"><code>TOTP</code></a> - 2FA TOTP helpers, code generation, and low-level Bloks verification helpers</li>
+<li><a href="usage-guide/totp/"><code>TOTP</code></a> - 2FA TOTP helpers, code generation, and Bloks verification fallback/helpers</li>
 <li><a href="usage-guide/user/"><code>User</code></a> - Full public user data</li>
 <li><a href="usage-guide/user/"><code>UserShort</code></a> - Short public user data (used in Usertag, Comment, Media, Direct Message)</li>
 <li><a href="usage-guide/user/"><code>Usertag</code></a> - Tag user in Media (coordinates + UserShort)</li>

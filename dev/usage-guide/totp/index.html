@@ -1231,7 +1231,8 @@
 </ul>
 <h2 id="bloks-two-factor-flow">Bloks two-factor flow</h2>
 <p>Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy <code>accounts/two_factor_login/</code> endpoint can reject a valid code with <code>Invalid Parameters</code>.</p>
-<p><code>Client.login(..., verification_code="123456")</code> still uses the legacy mobile endpoint first. If Instagram requires the newer flow, use the low-level Bloks helpers with the <code>two_step_verification_context</code> returned by the login challenge response:</p>
+<p><code>Client.login(..., verification_code="123456")</code> still uses the legacy mobile endpoint first. If Instagram returns a <code>two_step_verification_context</code>, instagrapi automatically retries through the Bloks two-factor flow. When the context is not present, the exception explains that the account still needs manual app verification or a fresh current-app login response.</p>
+<p>The low-level helpers remain available when you need to inspect or drive the flow manually:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
@@ -1253,7 +1254,7 @@
 <span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;sms&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p><code>bloks_extract_login_response(...)</code> returns decoded <code>login_response</code>, response <code>headers</code>, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns <code>{}</code> when the response is an intermediate UI state or an error. <code>bloks_apply_login_response(...)</code> can then copy the returned authorization data and cookies into the current client session.</p>
-<p>This is intentionally low-level. The full CAA login flow that produces <code>two_step_verification_context</code> is not wired into <code>Client.login()</code> yet, because it depends on newer login response state and account-specific verification behavior.</p>
+<p>Automatic fallback can only run after Instagram exposes <code>two_step_verification_context</code> to the client. A <code>BadPassword</code> response with a known-good password can still be account-risk handling before Instagram exposes that context, so treat it as a signal to inspect proxy/IP, device consistency, and the raw login response.</p>
 
 
 
