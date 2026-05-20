@@ -214,6 +214,50 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_apply_login_response.assert_called_once_with({"layout": {}})
         client.login_flow.assert_called_once_with()
 
+    def test_login_two_factor_backup_code_with_context_uses_bloks_without_legacy_two_factor_request(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.uuid = "uuid-1"
+        client.phone_id = "phone-1"
+        client.android_device_id = "android-1"
+        client._token = "csrftoken"
+        client.last_json = {
+            "two_factor_info": {
+                "two_factor_identifier": "two-factor-id",
+                "two_step_verification_context": "context-1",
+                "totp_two_factor_on": True,
+                "sms_two_factor_on": False,
+            }
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(side_effect=[TwoFactorRequired("Two-factor authentication required")])
+        client.bloks_two_step_verification_entrypoint = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_method_picker = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_select_method = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_enter_backup_code = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
+        client.bloks_apply_login_response = Mock(return_value=True)
+
+        result = client.login(verification_code="1234 5678")
+
+        self.assertTrue(result)
+        self.assertEqual(client.private_request.call_count, 1)
+        client.bloks_two_step_verification_select_method.assert_called_once_with(
+            "context-1",
+            selected_method="backup_codes",
+        )
+        client.bloks_two_step_verification_enter_backup_code.assert_called_once_with("context-1")
+        client.bloks_two_step_verification_verify_code.assert_called_once_with(
+            "context-1",
+            "12345678",
+            challenge="backup_codes",
+        )
+        client.login_flow.assert_called_once_with()
+
     def test_login_two_factor_invalid_parameters_without_context_keeps_clear_error(self):
         client = Client()
         client.username = "example"
@@ -300,6 +344,42 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
             "context-1",
             "654321",
             challenge="totp",
+        )
+        client.login_flow.assert_called_once_with()
+
+    def test_login_with_eight_digit_backup_code_selects_backup_code_bloks_challenge(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "two_step_verification_context": "context-1",
+            "sms_two_factor_on": False,
+            "totp_two_factor_on": True,
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
+        client.bloks_two_step_verification_entrypoint = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_method_picker = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_select_method = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_enter_backup_code = Mock(return_value={"status": "ok"})
+        client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
+        client.bloks_apply_login_response = Mock(return_value=True)
+
+        result = client.login(verification_code="1234 5678")
+
+        self.assertTrue(result)
+        client.bloks_two_step_verification_select_method.assert_called_once_with(
+            "context-1",
+            selected_method="backup_codes",
+        )
+        client.bloks_two_step_verification_enter_backup_code.assert_called_once_with("context-1")
+        client.bloks_two_step_verification_verify_code.assert_called_once_with(
+            "context-1",
+            "12345678",
+            challenge="backup_codes",
         )
         client.login_flow.assert_called_once_with()
 

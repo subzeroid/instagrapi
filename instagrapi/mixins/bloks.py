@@ -252,6 +252,35 @@ class BloksMixin:
             bloks_versioning_id=bloks_versioning_id,
         )
 
+    def bloks_two_step_verification_enter_backup_code(
+        self,
+        two_step_verification_context: str,
+        flow_source: str = "two_factor_login",
+        screen_id: Optional[str] = None,
+        bloks_versioning_id: str = "",
+    ) -> Dict:
+        """
+        Open the Bloks backup-code entry app.
+
+        Returns
+        -------
+        Dict
+            Raw Instagram response.
+        """
+        server_params = {
+            "device_id": self.android_device_id,
+            "two_step_verification_context": two_step_verification_context,
+            "flow_source": flow_source,
+        }
+        if screen_id:
+            server_params["INTERNAL_INFRA_screen_id"] = screen_id
+        params = {"server_params": server_params}
+        return self.bloks_app(
+            "com.bloks.www.two_factor_login.enter_backup_code",
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+        )
+
     def bloks_two_step_verification_verify_code(
         self,
         two_step_verification_context: str,

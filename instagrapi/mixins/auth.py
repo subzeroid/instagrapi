@@ -524,7 +524,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return value.strip().lower() in {"1", "true", "yes"}
         return False
 
-    def _infer_bloks_two_factor_challenge(self, data: Dict) -> str:
+    def _normalize_backup_code(self, code: str) -> str:
+        return re.sub(r"[\s-]+", "", str(code).strip())
+
+    def _looks_like_backup_code(self, code: str) -> bool:
+        return bool(re.fullmatch(r"\d{8}", self._normalize_backup_code(code)))
+
+    def _infer_bloks_two_factor_challenge(self, data: Dict, verification_code: str = "") -> str:
+        if self._looks_like_backup_code(verification_code):
+            return "backup_codes"
         sms_enabled = self._login_response_bool(data, "sms_two_factor_on")
         totp_enabled = self._login_response_bool(data, "totp_two_factor_on")
         if sms_enabled and not totp_enabled:
@@ -545,13 +553,16 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 **self._exception_context(login_json),
             ) from exc
 
-        challenge = self._infer_bloks_two_factor_challenge(login_json)
+        challenge = self._infer_bloks_two_factor_challenge(login_json, verification_code)
         self.bloks_two_step_verification_entrypoint(context)
         self.bloks_two_step_verification_method_picker(context)
         self.bloks_two_step_verification_select_method(context, selected_method=challenge)
+        if challenge == "backup_codes":
+            self.bloks_two_step_verification_enter_backup_code(context)
+        code = self._normalize_backup_code(verification_code) if challenge == "backup_codes" else verification_code
         result = self.bloks_two_step_verification_verify_code(
             context,
-            verification_code,
+            code,
             challenge=challenge,
         )
         if self.bloks_apply_login_response(result):
@@ -767,31 +778,36 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             if not verification_code.strip():
                 raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
             two_factor_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
-            two_factor_identifier = self.last_json.get("two_factor_info", {}).get("two_factor_identifier")
-            data = {
-                "verification_code": verification_code,
-                "phone_id": self.phone_id,
-                "_csrftoken": self.token,
-                "two_factor_identifier": two_factor_identifier,
-                "username": self.username,
-                "trust_this_device": "0",
-                "guid": self.uuid,
-                "device_id": self.android_device_id,
-                "waterfall_id": str(uuid4()),
-                "verification_method": "3",
-            }
-            try:
-                logged = self.private_request("accounts/two_factor_login/", data, login=True)
-            except UnknownError as exc:
-                message = getattr(exc, "message", "") or ""
-                if message.strip().lower() == "invalid parameters":
-                    logged = self._login_with_bloks_two_factor(verification_code, two_factor_json, exc)
-                else:
-                    raise
+            if self._looks_like_backup_code(verification_code) and self._extract_two_step_verification_context(
+                two_factor_json
+            ):
+                logged = self._login_with_bloks_two_factor(verification_code, two_factor_json, e)
             else:
-                self.authorization_data = self.parse_authorization(
-                    self.last_response.headers.get("ig-set-authorization")
-                )
+                two_factor_identifier = self.last_json.get("two_factor_info", {}).get("two_factor_identifier")
+                data = {
+                    "verification_code": verification_code,
+                    "phone_id": self.phone_id,
+                    "_csrftoken": self.token,
+                    "two_factor_identifier": two_factor_identifier,
+                    "username": self.username,
+                    "trust_this_device": "0",
+                    "guid": self.uuid,
+                    "device_id": self.android_device_id,
+                    "waterfall_id": str(uuid4()),
+                    "verification_method": "3",
+                }
+                try:
+                    logged = self.private_request("accounts/two_factor_login/", data, login=True)
+                except UnknownError as exc:
+                    message = getattr(exc, "message", "") or ""
+                    if message.strip().lower() == "invalid parameters":
+                        logged = self._login_with_bloks_two_factor(verification_code, two_factor_json, exc)
+                    else:
+                        raise
+                else:
+                    self.authorization_data = self.parse_authorization(
+                        self.last_response.headers.get("ig-set-authorization")
+                    )
         if logged:
             self.login_flow()
             self.last_login = time.time()

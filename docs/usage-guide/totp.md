@@ -42,6 +42,14 @@ Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In th
 
 `Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram returns a `two_step_verification_context`, instagrapi automatically retries through the Bloks two-factor flow. If the legacy login response does not expose that context, instagrapi can make a current CAA/Bloks login request to recover the context and continue the same Bloks verification path. When Instagram still does not return enough state, the exception explains that the account needs manual app verification or a fresh current-app login response.
 
+8-digit backup codes can be passed through the same `verification_code` parameter:
+
+``` python
+cl.login(USERNAME, PASSWORD, verification_code="12345678")
+```
+
+When the code is 8 digits and Instagram exposes `two_step_verification_context`, instagrapi selects the Bloks `backup_codes` challenge instead of sending the code to the legacy TOTP/SMS endpoint.
+
 The low-level helpers remain available when you need to inspect or drive the flow manually:
 
 ``` python
@@ -67,6 +75,14 @@ For SMS, select and verify the `sms` challenge instead:
 ``` python
 cl.bloks_two_step_verification_select_method(context, selected_method="sms")
 result = cl.bloks_two_step_verification_verify_code(context, "123456", challenge="sms")
+```
+
+For backup codes, select `backup_codes`, open the backup-code entry screen, then verify the 8-digit code:
+
+``` python
+cl.bloks_two_step_verification_select_method(context, selected_method="backup_codes")
+cl.bloks_two_step_verification_enter_backup_code(context)
+result = cl.bloks_two_step_verification_verify_code(context, "12345678", challenge="backup_codes")
 ```
 
 `bloks_caa_login_send_request(...)` is also available as a low-level helper for inspecting the CAA/Bloks login response manually. `bloks_extract_two_step_verification_context(...)` extracts the context from that response when Instagram returns the current Bloks redirect action.

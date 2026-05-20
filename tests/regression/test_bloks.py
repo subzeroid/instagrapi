@@ -208,6 +208,31 @@ class BloksRegressionTestCase(unittest.TestCase):
             bloks_versioning_id="",
         )
 
+    def test_bloks_two_step_verification_enter_backup_code_uses_current_payload(self):
+        client = self.build_client()
+        client.android_device_id = "android-1"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "bloks_app", return_value=expected) as bloks_app:
+            result = client.bloks_two_step_verification_enter_backup_code(
+                "context-1",
+                screen_id="screen-1",
+            )
+
+        self.assertEqual(result, expected)
+        bloks_app.assert_called_once_with(
+            "com.bloks.www.two_factor_login.enter_backup_code",
+            {
+                "server_params": {
+                    "device_id": "android-1",
+                    "INTERNAL_INFRA_screen_id": "screen-1",
+                    "two_step_verification_context": "context-1",
+                    "flow_source": "two_factor_login",
+                },
+            },
+            bloks_versioning_id="",
+        )
+
     def test_bloks_caa_login_send_request_uses_current_payload(self):
         client = self.build_client()
         client.username = "example"
