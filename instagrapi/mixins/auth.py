@@ -17,6 +17,7 @@ from pydantic import ValidationError
 from instagrapi import config
 from instagrapi.exceptions import (
     BadCredentials,
+    BadPassword,
     ClientThrottledError,
     PleaseWaitFewMinutes,
     PrivateError,
@@ -486,6 +487,77 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if clear_public_cookies:
             self.public.cookies.clear()
 
+    def _find_login_response_value(self, data: Any, key: str) -> Any:
+        if isinstance(data, dict):
+            value = data.get(key)
+            if value:
+                return value
+            for child in data.values():
+                value = self._find_login_response_value(child, key)
+                if value:
+                    return value
+        elif isinstance(data, list):
+            for child in data:
+                value = self._find_login_response_value(child, key)
+                if value:
+                    return value
+        return None
+
+    def _extract_two_step_verification_context(self, data: Dict) -> str:
+        value = self._find_login_response_value(data, "two_step_verification_context")
+        return value.strip() if isinstance(value, str) else ""
+
+    def _login_response_bool(self, data: Dict, key: str) -> bool:
+        value = self._find_login_response_value(data, key)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            return bool(value)
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes"}
+        return False
+
+    def _infer_bloks_two_factor_challenge(self, data: Dict) -> str:
+        sms_enabled = self._login_response_bool(data, "sms_two_factor_on")
+        totp_enabled = self._login_response_bool(data, "totp_two_factor_on")
+        if sms_enabled and not totp_enabled:
+            return "sms"
+        return "totp"
+
+    def _login_with_bloks_two_factor(self, verification_code: str, login_json: Dict, exc: Exception) -> bool:
+        context = self._extract_two_step_verification_context(login_json)
+        if not context:
+            raise TwoFactorRequired(
+                "Instagram rejected the legacy two-factor login endpoint and "
+                "may require a newer Bloks-based two-factor verification flow, "
+                "but the response did not include two_step_verification_context "
+                "required for the Bloks two-factor fallback. Complete "
+                "verification in the Instagram app or capture a fresh login "
+                "response with the current app flow.",
+                response=getattr(exc, "response", None),
+                **login_json,
+            ) from exc
+
+        challenge = self._infer_bloks_two_factor_challenge(login_json)
+        self.bloks_two_step_verification_entrypoint(context)
+        self.bloks_two_step_verification_method_picker(context)
+        self.bloks_two_step_verification_select_method(context, selected_method=challenge)
+        result = self.bloks_two_step_verification_verify_code(
+            context,
+            verification_code,
+            challenge=challenge,
+        )
+        if self.bloks_apply_login_response(result):
+            return True
+        raise TwoFactorRequired(
+            "Instagram accepted the Bloks two-factor verification request, but "
+            "the response did not include an embedded login payload. Inspect "
+            "the raw Bloks response and retry with the selected verification "
+            "method required by the account.",
+            response=getattr(exc, "response", None),
+            **login_json,
+        ) from exc
+
     def init(self) -> bool:
         """
         Initialize Login helpers
@@ -652,9 +724,21 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         try:
             logged = self.private_request("accounts/login/", data, login=True)
             self.authorization_data = self.parse_authorization(self.last_response.headers.get("ig-set-authorization"))
+        except BadPassword as exc:
+            login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
+            if not self._extract_two_step_verification_context(login_json):
+                raise
+            if not verification_code.strip():
+                raise TwoFactorRequired(
+                    f"{exc} (Instagram returned a Bloks two-factor context; provide verification_code for login)",
+                    response=getattr(exc, "response", None),
+                    **login_json,
+                ) from exc
+            logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
+            two_factor_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
             two_factor_identifier = self.last_json.get("two_factor_info", {}).get("two_factor_identifier")
             data = {
                 "verification_code": verification_code,
@@ -673,17 +757,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             except UnknownError as exc:
                 message = getattr(exc, "message", "") or ""
                 if message.strip().lower() == "invalid parameters":
-                    raise TwoFactorRequired(
-                        "Instagram rejected accounts/two_factor_login/ with "
-                        "'Invalid Parameters'. This account may require a newer "
-                        "Bloks-based two-factor verification flow that is not "
-                        "supported automatically yet. Complete verification in the "
-                        "Instagram app or refresh the session manually, then retry.",
-                        response=getattr(exc, "response", None),
-                        **(self.last_json if isinstance(self.last_json, dict) else {}),
-                    ) from exc
-                raise
-            self.authorization_data = self.parse_authorization(self.last_response.headers.get("ig-set-authorization"))
+                    logged = self._login_with_bloks_two_factor(verification_code, two_factor_json, exc)
+                else:
+                    raise
+            else:
+                self.authorization_data = self.parse_authorization(
+                    self.last_response.headers.get("ig-set-authorization")
+                )
         if logged:
             self.login_flow()
             self.last_login = time.time()

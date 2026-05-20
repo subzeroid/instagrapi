@@ -176,7 +176,7 @@ cl.delete_note(note.id)
 ## Features
 
 * Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) and [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) flows where available
-* Supports login by password, 2FA, `sessionid`, and low-level [Bloks 2FA](https://subzeroid.github.io/instagrapi/usage-guide/totp.html#bloks-two-factor-flow) helpers for newer verification flows
+* Supports login by password, 2FA, `sessionid`, and [Bloks 2FA](https://subzeroid.github.io/instagrapi/usage-guide/totp.html#bloks-two-factor-flow) fallback/helpers for newer verification flows
 * Includes email/SMS-based [challenge resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) hooks
 * Uploads and downloads photos, videos, albums, IGTV, reels, and stories
 * Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
