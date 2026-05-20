@@ -300,6 +300,26 @@ class AccountMixin:
             self.with_extra_data({"send_source": "personal_information", "email": email}),
         )
 
+    def confirm_email(self, email: str, code: str) -> dict:
+        """
+        Confirm new email address by code
+
+        Parameters
+        ----------
+        email: str
+            Email address
+        code: str
+            Confirmation code
+
+        Returns
+        -------
+        dict
+        """
+        return self.private_request(
+            "accounts/verify_email_code/",
+            self.with_extra_data({"email": email, "code": code}),
+        )
+
     def send_confirm_phone_number(self, phone_number: str) -> dict:
         """
         Send confirmation code to new phone number
