@@ -103,6 +103,10 @@ class FeedbackRequired(PrivateError):
     pass
 
 
+class SignupSpamError(FeedbackRequired):
+    """Raised when Instagram rejects the legacy signup flow as spam."""
+
+
 class ChallengeError(PrivateError):
     pass
 
