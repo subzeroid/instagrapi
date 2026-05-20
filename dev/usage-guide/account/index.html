@@ -1172,6 +1172,16 @@
 <td>bool</td>
 <td>Change account password</td>
 </tr>
+<tr>
+<td>send_confirm_email(email: str)</td>
+<td>dict</td>
+<td>Send a confirmation code to a new email address</td>
+</tr>
+<tr>
+<td>confirm_email(email: str, code: str)</td>
+<td>dict</td>
+<td>Confirm a new email address with the received code</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1216,6 +1226,9 @@
     <span class="s1">&#39;error_type&#39;</span><span class="p">:</span> <span class="s1">&#39;email_unchanged&#39;</span><span class="p">,</span>
     <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span>
 <span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">confirm_email</span><span class="p">(</span><span class="s2">&quot;addr@example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">send_confirm_phone_number</span><span class="p">(</span><span class="s2">&quot;+5599999999&quot;</span><span class="p">)</span>
 <span class="p">{</span>
