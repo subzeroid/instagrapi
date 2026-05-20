@@ -2,37 +2,57 @@ from tests.helpers import *
 
 
 class SignUpTestCase(unittest.TestCase):
-    def signup_code_handler(self, code_env, command_env):
-        code = os.environ.get(code_env)
-        if code:
-            return code
-        command = os.environ.get(command_env)
-        if not command:
-            self.skipTest(f"{code_env} or {command_env} is required for signup live tests")
+    def run_signup_command(self, command, context):
+        env = os.environ.copy()
+        env.update({key: value for key, value in context.items() if value})
         result = subprocess.run(
             command,
             shell=True,
             check=True,
             capture_output=True,
             text=True,
+            env=env,
         )
-        code = result.stdout.strip()
+        return result.stdout.strip()
+
+    def signup_email(self, username):
+        email = os.environ.get("IG_SIGNUP_EMAIL")
+        if email:
+            return email
+        command = os.environ.get("IG_SIGNUP_EMAIL_COMMAND")
+        if not command:
+            self.skipTest("IG_SIGNUP_EMAIL or IG_SIGNUP_EMAIL_COMMAND is required for email signup live test")
+        email = self.run_signup_command(command, {"IG_SIGNUP_USERNAME": username})
+        if not email:
+            self.skipTest("IG_SIGNUP_EMAIL_COMMAND did not return an email address")
+        return email
+
+    def signup_code_handler(self, code_env, command_env, context):
+        code = os.environ.get(code_env)
+        if code:
+            return code
+        command = os.environ.get(command_env)
+        if not command:
+            self.skipTest(f"{code_env} or {command_env} is required for signup live tests")
+        code = self.run_signup_command(command, context)
         if not code:
             self.skipTest(f"{command_env} did not return a signup code")
         return code
 
     def test_email_signup_live(self):
-        email = os.environ.get("IG_SIGNUP_EMAIL")
-        if not email:
-            self.skipTest("IG_SIGNUP_EMAIL is required for email signup live test")
         cl = Client()
         username = gen_password()
+        email = self.signup_email(username)
         password = gen_password(12)
         phone_number = os.environ.get("IG_PHONE_NUMBER")
         full_name = f"John {username}"
         cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(
             "IG_SIGNUP_EMAIL_CODE",
             "IG_SIGNUP_EMAIL_CODE_COMMAND",
+            {
+                "IG_SIGNUP_USERNAME": username,
+                "IG_SIGNUP_EMAIL": email,
+            },
         )
         user = cl.signup(
             username,
@@ -60,6 +80,10 @@ class SignUpTestCase(unittest.TestCase):
         cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(
             "IG_SIGNUP_SMS_CODE",
             "IG_SIGNUP_SMS_CODE_COMMAND",
+            {
+                "IG_SIGNUP_USERNAME": username,
+                "IG_SIGNUP_PHONE_NUMBER": phone_number,
+            },
         )
         user = cl.signup(
             username,

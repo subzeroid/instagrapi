@@ -1,6 +1,7 @@
 from instagrapi.exceptions import FeedbackRequired, SignupSpamError
 from instagrapi.mixins.challenge import ChallengeChoice
 from tests.helpers import *
+from tests.live.test_signup import SignUpTestCase
 
 
 class PasswordEncryptionRegressionTestCase(unittest.TestCase):
@@ -385,3 +386,42 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
             phone_number="+15551234567",
             username="example",
         )
+
+
+class SignupLiveHelperRegressionTestCase(unittest.TestCase):
+    def test_signup_email_command_receives_username_context(self):
+        case = SignUpTestCase("test_email_signup_live")
+        completed = subprocess.CompletedProcess(args="email-command", returncode=0, stdout="fresh@example.test\n")
+
+        with mock.patch.dict(os.environ, {"IG_SIGNUP_EMAIL_COMMAND": "email-command"}, clear=True):
+            with mock.patch("tests.live.test_signup.subprocess.run", return_value=completed) as run:
+                email = case.signup_email("freshuser")
+
+        self.assertEqual(email, "fresh@example.test")
+        self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_USERNAME"], "freshuser")
+
+    def test_signup_code_command_receives_signup_context(self):
+        case = SignUpTestCase("test_email_signup_live")
+        completed = subprocess.CompletedProcess(args="code-command", returncode=0, stdout="123456\n")
+
+        with mock.patch.dict(os.environ, {"IG_SIGNUP_EMAIL_CODE_COMMAND": "code-command"}, clear=True):
+            with mock.patch("tests.live.test_signup.subprocess.run", return_value=completed) as run:
+                code = case.signup_code_handler(
+                    "IG_SIGNUP_EMAIL_CODE",
+                    "IG_SIGNUP_EMAIL_CODE_COMMAND",
+                    {
+                        "IG_SIGNUP_USERNAME": "freshuser",
+                        "IG_SIGNUP_EMAIL": "fresh@example.test",
+                    },
+                )
+
+        self.assertEqual(code, "123456")
+        self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_USERNAME"], "freshuser")
+        self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_EMAIL"], "fresh@example.test")
+
+    def test_signup_email_skips_without_static_email_or_command(self):
+        case = SignUpTestCase("test_email_signup_live")
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(unittest.SkipTest):
+                case.signup_email("freshuser")
