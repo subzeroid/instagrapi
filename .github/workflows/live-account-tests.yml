@@ -13,6 +13,7 @@ on:
           - comment
           - upload
           - direct
+          - signup
           - timeline
           - story-location
           - location
@@ -28,6 +29,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
+      IG_SIGNUP_EMAIL: ${{ secrets.IG_SIGNUP_EMAIL }}
+      IG_SIGNUP_EMAIL_CODE: ${{ secrets.IG_SIGNUP_EMAIL_CODE }}
+      IG_SIGNUP_EMAIL_CODE_COMMAND: ${{ secrets.IG_SIGNUP_EMAIL_CODE_COMMAND }}
+      IG_SIGNUP_PHONE_NUMBER: ${{ secrets.IG_SIGNUP_PHONE_NUMBER }}
+      IG_SIGNUP_SMS_CODE: ${{ secrets.IG_SIGNUP_SMS_CODE }}
+      IG_SIGNUP_SMS_CODE_COMMAND: ${{ secrets.IG_SIGNUP_SMS_CODE_COMMAND }}
     steps:
       - name: Check out code
         uses: actions/checkout@v6
@@ -65,6 +72,10 @@ jobs:
             tests/live/test_direct.py::ClientDirectTestCase::test_direct_media_live \
             tests/live/test_direct.py::ClientDirectMediaLiveTestCase \
             tests/live/test_direct.py::ClientDirectThreadLiveTestCase::test_direct_thread_add_users_live
+
+      - name: Run signup live tests
+        if: github.event.inputs.test_target == 'signup' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests/live/test_signup.py::SignUpTestCase
 
       - name: Run timeline test
         if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
