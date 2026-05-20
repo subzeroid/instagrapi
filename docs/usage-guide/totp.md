@@ -40,7 +40,9 @@ Notes:
 
 Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy `accounts/two_factor_login/` endpoint can reject a valid code with `Invalid Parameters`.
 
-`Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram requires the newer flow, use the low-level Bloks helpers with the `two_step_verification_context` returned by the login challenge response:
+`Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram returns a `two_step_verification_context`, instagrapi automatically retries through the Bloks two-factor flow. When the context is not present, the exception explains that the account still needs manual app verification or a fresh current-app login response.
+
+The low-level helpers remain available when you need to inspect or drive the flow manually:
 
 ``` python
 from instagrapi import Client
@@ -69,4 +71,4 @@ result = cl.bloks_two_step_verification_verify_code(context, "123456", challenge
 
 `bloks_extract_login_response(...)` returns decoded `login_response`, response `headers`, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns `{}` when the response is an intermediate UI state or an error. `bloks_apply_login_response(...)` can then copy the returned authorization data and cookies into the current client session.
 
-This is intentionally low-level. The full CAA login flow that produces `two_step_verification_context` is not wired into `Client.login()` yet, because it depends on newer login response state and account-specific verification behavior.
+Automatic fallback can only run after Instagram exposes `two_step_verification_context` to the client. A `BadPassword` response with a known-good password can still be account-risk handling before Instagram exposes that context, so treat it as a signal to inspect proxy/IP, device consistency, and the raw login response.
