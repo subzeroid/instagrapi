@@ -48,6 +48,59 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_signup_requires_email_or_phone_number(self):
+        client = Client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.signup("example", "password", email="", phone_number="")
+
+        self.assertIn("email or phone_number", str(ctx.exception))
+
+    def test_signup_with_phone_number_uses_sms_flow(self):
+        client = Client()
+        client.wait_seconds = 0
+        client.challenge_code_handler = mock.Mock(return_value="123456")
+        client.send_signup_sms_code = mock.Mock(return_value={"status": "ok"})
+
+        with mock.patch.object(client, "get_signup_config", return_value={}):
+            with mock.patch.object(client, "check_email") as check_email:
+                with mock.patch.object(client, "check_phone_number", return_value={"status": "ok"}) as check_phone:
+                    with mock.patch.object(
+                        client,
+                        "accounts_create",
+                        return_value={"created_user": {"pk": "1", "username": "example"}},
+                    ) as accounts_create:
+                        with mock.patch(
+                            "instagrapi.mixins.signup.extract_user_short",
+                            return_value="created-user",
+                        ):
+                            result = client.signup(
+                                username="example",
+                                password="password",
+                                email="",
+                                phone_number="+15551234567",
+                                full_name="Example User",
+                                year=2000,
+                                month=5,
+                                day=12,
+                            )
+
+        self.assertEqual(result, "created-user")
+        check_email.assert_not_called()
+        check_phone.assert_called_once_with("+15551234567")
+        client.send_signup_sms_code.assert_called_once_with("+15551234567")
+        client.challenge_code_handler.assert_called_once_with("example", ChallengeChoice.SMS)
+        accounts_create.assert_called_once_with(
+            username="example",
+            password="password",
+            full_name="Example User",
+            year=2000,
+            month=5,
+            day=12,
+            phone_number="+15551234567",
+            phone_code="123456",
+        )
+
     def test_accounts_create_primary_signup_omits_secondary_account_flag(self):
         client = Client()
         client.phone_id = "phone-id"
@@ -77,6 +130,51 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["username"], "example")
         self.assertEqual(data["force_sign_up_code"], "signup-code")
         private_request.assert_called_once()
+
+    def test_accounts_create_phone_signup_uses_validated_endpoint(self):
+        client = Client()
+        client.phone_id = "phone-id"
+        client.uuid = "uuid"
+        client.android_device_id = "android-id"
+        client.adid = "adid"
+        client.waterfall_id = "waterfall-id"
+        client.password_encrypt = mock.Mock(return_value="enc-password")
+
+        with mock.patch.object(
+            client, "private_request", return_value={"created_user": {"pk": "1"}}
+        ) as private_request:
+            result = client.accounts_create(
+                username="example",
+                password="password",
+                phone_number="+15551234567",
+                phone_code="123456",
+                full_name="Example User",
+                year=2000,
+                month=5,
+                day=12,
+            )
+
+        self.assertEqual(result, {"created_user": {"pk": "1"}})
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "accounts/create_validated/")
+        self.assertNotIn("is_secondary_account_creation", data)
+        self.assertNotIn("email", data)
+        self.assertEqual(data["username"], "example")
+        self.assertEqual(data["phone_number"], "+15551234567")
+        self.assertEqual(data["verification_code"], "123456")
+        self.assertEqual(data["force_sign_up_code"], "")
+        self.assertEqual(data["has_sms_consent"], "true")
+        private_request.assert_called_once()
+
+    def test_accounts_create_requires_email_or_phone_number(self):
+        client = Client()
+
+        with mock.patch.object(client, "private_request") as private_request:
+            with self.assertRaises(ClientError) as ctx:
+                client.accounts_create(username="example", password="password")
+
+        self.assertIn("email or phone_number", str(ctx.exception))
+        private_request.assert_not_called()
 
     def test_accounts_create_spam_feedback_raises_signup_specific_error(self):
         client = Client()
