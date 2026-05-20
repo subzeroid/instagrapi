@@ -355,10 +355,10 @@ class BloksMixin:
                 "auth_secure_device_id": "",
                 "has_whatsapp_installed": 0,
                 "password": encrypted_password,
-                "sso_token_map_json_string": "",
+                "sso_token_map_json_string": "",  # nosec B105
                 "block_store_machine_id": "",
                 "ig_vetted_device_nonces": None,
-                "cloud_trust_token": None,
+                "cloud_trust_token": None,  # nosec B105
                 "event_flow": "login_manual",
                 "password_contains_non_ascii": str(not password.isascii()).lower(),
                 "client_known_key_hash": "",
@@ -382,7 +382,7 @@ class BloksMixin:
                 "fb_ig_device_id": [],
                 "device_emails": [],
                 "try_num": try_num,
-                "lois_settings": {"lois_token": ""},
+                "lois_settings": {"lois_token": ""},  # nosec B105
                 "event_step": "home_page",
                 "headers_infra_flow_id": "",
                 "openid_tokens": {},
@@ -405,7 +405,7 @@ class BloksMixin:
                 "is_from_landing_page": 0,
                 "left_nav_button_action": "NONE",
                 "password_text_input_id": f"{text_input_id}:105",
-                "is_from_empty_password": 0,
+                "is_from_empty_password": 0,  # nosec B105
                 "is_from_msplit_fallback": 0,
                 "ar_event_source": "login_home_page",
                 "qe_device_id": self.uuid,
@@ -417,7 +417,7 @@ class BloksMixin:
                 "reg_flow_source": "login_home_native_integration_point",
                 "is_caa_perf_enabled": 1,
                 "credential_type": "password",
-                "is_from_password_entry_page": 0,
+                "is_from_password_entry_page": 0,  # nosec B105
                 "caller": "gslr",
                 "family_device_id": self.phone_id,
                 "is_from_assistive_id": 0,
