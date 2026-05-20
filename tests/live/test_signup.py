@@ -27,6 +27,9 @@ class SignUpTestCase(unittest.TestCase):
             self.skipTest("IG_SIGNUP_EMAIL_COMMAND did not return an email address")
         return email
 
+    def signup_phone_number(self):
+        return os.environ.get("IG_SIGNUP_PHONE_NUMBER") or os.environ.get("IG_PHONE_NUMBER")
+
     def signup_code_handler(self, code_env, command_env, context):
         code = os.environ.get(code_env)
         if code:
@@ -44,7 +47,7 @@ class SignUpTestCase(unittest.TestCase):
         username = gen_password()
         email = self.signup_email(username)
         password = gen_password(12)
-        phone_number = os.environ.get("IG_PHONE_NUMBER")
+        phone_number = self.signup_phone_number()
         full_name = f"John {username}"
         cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(
             "IG_SIGNUP_EMAIL_CODE",
@@ -70,7 +73,7 @@ class SignUpTestCase(unittest.TestCase):
         self.assertTrue(user.profile_pic_url.startswith("https://"))
 
     def test_phone_signup_live(self):
-        phone_number = os.environ.get("IG_SIGNUP_PHONE_NUMBER") or os.environ.get("IG_PHONE_NUMBER")
+        phone_number = self.signup_phone_number()
         if not phone_number:
             self.skipTest("IG_SIGNUP_PHONE_NUMBER or IG_PHONE_NUMBER is required for phone signup live test")
         cl = Client()

@@ -425,3 +425,18 @@ class SignupLiveHelperRegressionTestCase(unittest.TestCase):
         with mock.patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(unittest.SkipTest):
                 case.signup_email("freshuser")
+
+    def test_signup_phone_number_prefers_signup_specific_env(self):
+        case = SignUpTestCase("test_phone_signup_live")
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                "IG_PHONE_NUMBER": "+15550000000",
+                "IG_SIGNUP_PHONE_NUMBER": "+15551234567",
+            },
+            clear=True,
+        ):
+            phone_number = case.signup_phone_number()
+
+        self.assertEqual(phone_number, "+15551234567")
