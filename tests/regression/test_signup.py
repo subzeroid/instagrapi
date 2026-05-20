@@ -1,3 +1,4 @@
+from instagrapi.exceptions import FeedbackRequired, SignupSpamError
 from instagrapi.mixins.challenge import ChallengeChoice
 from tests.helpers import *
 
@@ -46,6 +47,63 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
                 "prefill_shown": "False",
             },
         )
+
+    def test_accounts_create_primary_signup_omits_secondary_account_flag(self):
+        client = Client()
+        client.phone_id = "phone-id"
+        client.uuid = "uuid"
+        client.android_device_id = "android-id"
+        client.adid = "adid"
+        client.waterfall_id = "waterfall-id"
+        client.password_encrypt = mock.Mock(return_value="enc-password")
+
+        with mock.patch.object(
+            client, "private_request", return_value={"created_user": {"pk": "1"}}
+        ) as private_request:
+            result = client.accounts_create(
+                username="example",
+                password="password",
+                email="addr@example.com",
+                signup_code="signup-code",
+                full_name="Example User",
+                year=2000,
+                month=5,
+                day=12,
+            )
+
+        self.assertEqual(result, {"created_user": {"pk": "1"}})
+        data = private_request.call_args.args[1]
+        self.assertNotIn("is_secondary_account_creation", data)
+        self.assertEqual(data["username"], "example")
+        self.assertEqual(data["force_sign_up_code"], "signup-code")
+        private_request.assert_called_once()
+
+    def test_accounts_create_spam_feedback_raises_signup_specific_error(self):
+        client = Client()
+        client.phone_id = "phone-id"
+        client.uuid = "uuid"
+        client.android_device_id = "android-id"
+        client.adid = "adid"
+        client.waterfall_id = "waterfall-id"
+        client.password_encrypt = mock.Mock(return_value="enc-password")
+        feedback = FeedbackRequired(
+            message="feedback_required: Try Again Later",
+            feedback_message="We limit how often you can do certain things on Instagram.",
+            spam=True,
+        )
+
+        with mock.patch.object(client, "private_request", side_effect=feedback):
+            with self.assertRaises(SignupSpamError) as ctx:
+                client.accounts_create(
+                    username="example",
+                    password="password",
+                    email="addr@example.com",
+                    signup_code="signup-code",
+                )
+
+        self.assertIn("legacy signup flow", str(ctx.exception))
+        self.assertTrue(ctx.exception.spam)
+        self.assertEqual(ctx.exception.feedback_message, "We limit how often you can do certain things on Instagram.")
 
     def test_challenge_api_rejects_external_api_path(self):
         client = Client()

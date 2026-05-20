@@ -13,6 +13,8 @@ from instagrapi.exceptions import (
     EmailInvalidError,
     EmailNotAvailableError,
     EmailVerificationSendError,
+    FeedbackRequired,
+    SignupSpamError,
 )
 from instagrapi.extractors import extract_user_short
 from instagrapi.mixins.challenge import ChallengeChoice
@@ -184,7 +186,6 @@ class SignUpMixin:
     ) -> dict:
         # timestamp = datetime.now().strftime("%s")  # Unused variable
         data = {
-            "is_secondary_account_creation": "true",
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
             "tos_version": "row",
             "suggestedUsername": "",
@@ -209,7 +210,18 @@ class SignUpMixin:
             "one_tap_opt_in": "true",
             **kwargs,
         }
-        return self.private_request("accounts/create/", data, domain="www.instagram.com")
+        try:
+            return self.private_request("accounts/create/", data, domain="www.instagram.com")
+        except FeedbackRequired as exc:
+            if getattr(exc, "spam", False):
+                details = vars(exc).copy()
+                details.pop("message", None)
+                raise SignupSpamError(
+                    "Instagram rejected the legacy signup flow as spam. "
+                    "Modern app signup uses additional device trust checks that instagrapi does not currently generate.",
+                    **details,
+                ) from exc
+            raise
 
     def challenge_flow(
         self,
