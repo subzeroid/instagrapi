@@ -1,11 +1,7 @@
 import json
-from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Dict
 
-import requests
-
-from instagrapi.exceptions import ClientError, ClientLoginRequired
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
 from instagrapi.utils.auth import gen_token, generate_signature
@@ -17,40 +13,42 @@ class AccountMixin:
     Helper class to manage your account
     """
 
-    def reset_password(self, username: str) -> Dict:
+    def send_password_reset(self, identifier: str, recaptcha_challenge_field: str = "") -> Dict:
         """
-        Reset your password
+        Send a password reset link or code to the account email or phone.
+
+        Parameters
+        ----------
+        identifier: str
+            Username, email address, or phone number for the account.
+        recaptcha_challenge_field: str, default ""
+            Recaptcha challenge token when Instagram asks for one.
 
         Returns
         -------
         Dict
             Jsonified response from Instagram
         """
-        response = requests.post(
+        csrf_token = self.public.cookies.get("csrftoken") or gen_token()
+        return self.public_request(
             "https://www.instagram.com/accounts/account_recovery_send_ajax/",
-            data={"email_or_username": username, "recaptcha_challenge_field": ""},
+            data={"email_or_username": identifier, "recaptcha_challenge_field": recaptcha_challenge_field},
             headers={
                 "x-requested-with": "XMLHttpRequest",
-                "x-csrftoken": gen_token(),
-                "Connection": "Keep-Alive",
-                "Accept": "*/*",
-                "Accept-Encoding": "gzip,deflate",
-                "Accept-Language": "en-US",
-                "User-Agent": (
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) "
-                    "AppleWebKit/605.1.15 (KHTML, like Gecko) "
-                    "Version/11.1.2 Safari/605.1.15"
-                ),
+                "x-csrftoken": csrf_token,
             },
-            proxies=self.public.proxies,
-            timeout=self.request_timeout,
+            return_json=True,
+            update_headers=False,
         )
-        try:
-            return response.json()
-        except JSONDecodeError as e:
-            if "/login/" in response.url:
-                raise ClientLoginRequired(e, response=response)
-            raise ClientError(e, response=response)
+
+    def reset_password(self, username: str) -> Dict:
+        """
+        Send a password reset link or code.
+
+        This method is kept for backward compatibility. Use
+        :meth:`send_password_reset` in new code.
+        """
+        return self.send_password_reset(username)
 
     def account_info(self) -> Account:
         """
