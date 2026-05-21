@@ -68,6 +68,25 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         self.assertTrue(location.pk)
         self.assertTrue(location.name)
 
+    def assertAlbumResourceUsertagsAccessible(self, media, expected_usertags, attempts=8, delay=5):
+        last_resources = []
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            info = self.cl.media_info_v1(media.pk)
+            last_resources = info.resources
+            if len(last_resources) < len(expected_usertags):
+                continue
+            for resource, expected_tag in zip(last_resources, expected_usertags):
+                if not resource.usertags:
+                    break
+                tag = resource.usertags[0]
+                if str(tag.user.pk) != str(expected_tag.user.pk) or tag.x != expected_tag.x or tag.y != expected_tag.y:
+                    break
+            else:
+                return info
+        self.fail(f"Album resource usertags were not visible after {attempts} media_info_v1 attempts: {last_resources}")
+
     def test_photo_upload_without_location(self):
         path = self.copy_media_fixture("examples/kanada.jpg")
         self.assertIsInstance(path, Path)
@@ -134,6 +153,33 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             keep_path(usertag.user)
             self.assertEqual(media.usertags, [usertag])
             self.assertUploadedMediaAccessible(media, media_type=8, caption_text=caption_text, min_resources=2)
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_album_upload_with_per_slide_usertags_visible_after_media_info(self):
+        paths = [
+            self.copy_media_fixture("examples/kanada.jpg"),
+            self.copy_media_fixture("examples/background.png"),
+        ]
+        [self.assertIsInstance(path, Path) for path in paths]
+        media = None
+        try:
+            instagram = self.user_short(self.user_info_by_username("instagram"))
+            first_tag = Usertag(user=instagram, x=0.25, y=0.75)
+            second_tag = Usertag(user=instagram, x=0.75, y=0.25)
+            caption_text = "Test caption for album per-slide tags"
+            media = self.cl.album_upload(
+                paths,
+                caption_text,
+                usertags=[[first_tag], [second_tag]],
+                location=self.get_location(),
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            info = self.assertAlbumResourceUsertagsAccessible(media, [first_tag, second_tag])
+            self.assertEqual(info.caption_text, caption_text)
+            self.assertEqual(len(info.resources), 2)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
