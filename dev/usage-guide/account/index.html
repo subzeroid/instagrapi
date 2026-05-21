@@ -1163,9 +1163,14 @@
 <td>Remove one or more bio links by link ID</td>
 </tr>
 <tr>
+<td>send_password_reset(identifier: str, recaptcha_challenge_field: str = "")</td>
+<td>dict</td>
+<td>Send an Instagram password reset link or code to the account email or phone</td>
+</tr>
+<tr>
 <td>reset_password(username: str)</td>
 <td>dict</td>
-<td>Trigger Instagram account recovery flow</td>
+<td>Backward-compatible alias for <code>send_password_reset()</code></td>
 </tr>
 <tr>
 <td>change_password(old_password: str, new_password: str)</td>
@@ -1244,6 +1249,7 @@
 <ul>
 <li><code>account_edit(**data)</code> only applies supported fields and preserves missing required profile fields from <code>account_info()</code>.</li>
 <li>Use <code>account_set_biography()</code> when you want Instagram to re-process biography entities/markup explicitly.</li>
+<li><code>send_password_reset()</code> starts Instagram's recovery flow by requesting a reset link or code. It does not set a new password by itself; continue with the link/code flow that Instagram sends to the account email or phone.</li>
 <li><code>account_security_info()</code> and <code>insights_*</code> style methods require an authenticated session and may depend on the account type or enabled security features.</li>
 </ul>
 <p>Low level methods:</p>
