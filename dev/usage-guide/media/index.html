@@ -2164,7 +2164,7 @@ contains availability flags, not the full Account Center destination state, and 
 with <code>clip_share_to_fb_extra_data(...)</code>. If neither the preflight/config data nor the caller provides a destination,
 instagrapi raises <code>ClientError</code> before uploading video bytes. The Reel cross-post <code>attempt_id</code> is generated
 automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> when replaying or testing a specific low-level payload.
-<code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram.</p>
+<code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
