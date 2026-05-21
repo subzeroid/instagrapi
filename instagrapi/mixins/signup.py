@@ -52,49 +52,76 @@ class SignUpMixin:
         self,
         username: str,
         password: str,
-        email: str,
-        phone_number: str,
+        email: str = "",
+        phone_number: str = "",
         full_name: str = "",
         year: int = None,
         month: int = None,
         day: int = None,
     ) -> UserShort:
+        if not (email or phone_number):
+            raise ClientError("Use email or phone_number for signup")
+
         self.get_signup_config()
-        check = self.check_email(email)
-        if not check.get("valid"):
-            raise EmailInvalidError(f"Email not valid: {check.get('error_title', check)}")
-        if not check.get("available"):
-            raise EmailNotAvailableError(f"Email not available: {check.get('feedback_message', check)}")
-        sent = self.send_verify_email(email)
-        if not sent.get("email_sent"):
-            raise EmailVerificationSendError(f"Failed to send verification email: {sent}")
-
-        # Date of Birth (DOB) Age Eligibility Check
-        if year and month and day:
-            age_check_result = self.check_age_eligibility(year, month, day)
-            if not age_check_result.get("eligible"):  # Assuming "eligible": True is success
-                raise AgeEligibilityError(f"Account not eligible based on age criteria: {age_check_result}")
-
-        # send code confirmation
-        code = ""
-        for attempt in range(1, 11):
-            code = self.challenge_code_handler(username, CHOICE_EMAIL)
-            if code:
-                break
-            time.sleep(self.wait_seconds * attempt)
-        print(f'Enter code "{code}" for {username} ({attempt} attempts, by {self.wait_seconds} seconds)')
-        signup_code = self.check_confirmation_code(email, code).get("signup_code")
-        retries = 0
         kwargs = {
             "username": username,
             "password": password,
-            "email": email,
-            "signup_code": signup_code,
             "full_name": full_name,
             "year": year,
             "month": month,
             "day": day,
         }
+
+        if email:
+            check = self.check_email(email)
+            if not check.get("valid"):
+                raise EmailInvalidError(f"Email not valid: {check.get('error_title', check)}")
+            if not check.get("available"):
+                raise EmailNotAvailableError(f"Email not available: {check.get('feedback_message', check)}")
+            sent = self.send_verify_email(email)
+            if not sent.get("email_sent"):
+                raise EmailVerificationSendError(f"Failed to send verification email: {sent}")
+
+            # Date of Birth (DOB) Age Eligibility Check
+            if year and month and day:
+                age_check_result = self.check_age_eligibility(year, month, day)
+                if not age_check_result.get("eligible"):  # Assuming "eligible": True is success
+                    raise AgeEligibilityError(f"Account not eligible based on age criteria: {age_check_result}")
+
+            # send code confirmation
+            code = ""
+            for attempt in range(1, 11):
+                code = self.challenge_code_handler(username, CHOICE_EMAIL)
+                if code:
+                    break
+                time.sleep(self.wait_seconds * attempt)
+            print(f'Enter code "{code}" for {username} ({attempt} attempts, by {self.wait_seconds} seconds)')
+            signup_code = self.check_confirmation_code(email, code).get("signup_code")
+            kwargs["email"] = email
+            kwargs["signup_code"] = signup_code
+
+        if phone_number and not email:
+            kwargs["phone_number"] = phone_number
+            check = self.check_phone_number(phone_number)
+            if check.get("status") != "ok" and not check.get("valid"):
+                raise ClientError(f"Phone number not valid ({check})")
+            sms = self.send_signup_sms_code(phone_number)
+            if sms.get("status") != "ok":
+                raise ClientError(f"Error when verify phone number ({sms})")
+            attempt = 1
+            if "verification_code" in sms:
+                code = sms["verification_code"]
+            else:
+                code = ""
+                for attempt in range(1, 11):
+                    code = self.challenge_code_handler(username, ChallengeChoice.SMS)
+                    if code:
+                        break
+                    time.sleep(self.wait_seconds * attempt)
+            print(f'Enter code "{code}" for {username} ({attempt} attempts, by {self.wait_seconds} seconds)')
+            kwargs["phone_code"] = code
+
+        retries = 0
         while retries < 3:
             data = self.accounts_create(**kwargs)
             if data.get("message") != "challenge_required":
@@ -133,10 +160,23 @@ class SignUpMixin:
             data={
                 "phone_id": self.phone_id,
                 "login_nonce_map": "{}",
-                "phone_number": phone_number,
+                "phone_number": phone_number.replace(" ", "+"),
                 "guid": self.uuid,
                 "device_id": self.android_device_id,
                 "prefill_shown": "False",
+            },
+        )
+
+    def send_signup_sms_code(self, phone_number: str):
+        return self.private_request(
+            "accounts/send_signup_sms_code/",
+            data={
+                "phone_id": self.phone_id,
+                "phone_number": phone_number.replace(" ", "+"),
+                "guid": self.uuid,
+                "device_id": self.android_device_id,
+                "android_build_type": "release",
+                "waterfall_id": self.waterfall_id,
             },
         )
 
@@ -176,14 +216,19 @@ class SignUpMixin:
         self,
         username: str,
         password: str,
-        email: str,
-        signup_code: str,
+        email: str = "",
+        signup_code: str = "",
+        phone_number: str = "",
+        phone_code: str = "",
         full_name: str = "",
         year: int = None,
         month: int = None,
         day: int = None,
         **kwargs,
     ) -> dict:
+        if not (email or phone_number):
+            raise ClientError("Use email or phone_number for signup")
+
         # timestamp = datetime.now().strftime("%s")  # Unused variable
         data = {
             "jazoest": str(int(random.randint(22300, 22399))),  # "22341",
@@ -202,16 +247,36 @@ class SignUpMixin:
             "year": year,
             "device_id": self.android_device_id,
             "_uuid": self.uuid,
-            "email": email,
-            "force_sign_up_code": signup_code,
-            "qs_stamp": "",
-            "sn_nonce": bytes(f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"),
             "waterfall_id": self.waterfall_id,
             "one_tap_opt_in": "true",
             **kwargs,
         }
+        if email and not phone_number:
+            endpoint = "accounts/create/"
+            domain = "www.instagram.com"
+            data.update(
+                {
+                    "email": email,
+                    "force_sign_up_code": signup_code,
+                    "qs_stamp": "",
+                    "sn_nonce": bytes(f"{email}|{str(int(time.time()))}|{secrets.token_bytes(24)}", "utf-8"),
+                }
+            )
+        else:
+            endpoint = "accounts/create_validated/"
+            domain = None
+            data.update(
+                {
+                    "phone_number": phone_number,
+                    "verification_code": phone_code,
+                    "force_sign_up_code": "",
+                    "has_sms_consent": "true",
+                }
+            )
+            if data.get("logged_in_user_id"):
+                data["is_secondary_account_creation"] = "true"
         try:
-            return self.private_request("accounts/create/", data, domain="www.instagram.com")
+            return self.private_request(endpoint, data, domain=domain)
         except FeedbackRequired as exc:
             if getattr(exc, "spam", False):
                 details = vars(exc).copy()
