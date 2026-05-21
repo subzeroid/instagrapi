@@ -2018,6 +2018,7 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">video_download_by_url</span><span class="p">(</span><span class="n">video_url</span><span class="p">,</span> <span class="n">folder</span><span class="o">=</span><span class="s1">&#39;/tmp&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">PosixPath</span><span class="p">(</span><span class="s1">&#39;/tmp/45588546_367538213983456_6830188946193737023_n.mp4&#39;</span><span class="p">)</span>
 </code></pre></div>
+<p>If Instagram returns a <code>Content-Length</code> header and the downloaded file is shorter, download helpers remove the partial file and raise <code>ClientIncompleteReadError</code>.</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;http://www.instagram.com/p/BjNLpA1AhXM/&quot;</span><span class="p">)</span>
 <span class="mi">1787135824035452364</span>
 
