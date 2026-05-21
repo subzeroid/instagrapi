@@ -1,5 +1,6 @@
 import json
 
+from instagrapi.extractors import extract_media_v1
 from tests.helpers import *
 
 
@@ -59,6 +60,59 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "private_request", return_value={}):
             with self.assertRaises(MediaNotFound):
                 client.media_info_v2("9_8")
+
+    def test_extract_media_v1_preserves_album_resource_usertags(self):
+        payload = self._media_or_ad_payload()
+        payload["media_type"] = 8
+        payload["carousel_media"] = [
+            {
+                "pk": "10",
+                "id": "10_2",
+                "media_type": 1,
+                "image_versions2": {
+                    "candidates": [{"url": "https://example.com/one.jpg", "width": 100, "height": 100}],
+                },
+                "usertags": {
+                    "in": [
+                        {
+                            "user": {
+                                "pk": "100",
+                                "username": "first",
+                                "profile_pic_url": "https://example.com/first.jpg",
+                            },
+                            "position": [0.25, 0.75],
+                        }
+                    ]
+                },
+            },
+            {
+                "pk": "20",
+                "id": "20_2",
+                "media_type": 1,
+                "image_versions2": {
+                    "candidates": [{"url": "https://example.com/two.jpg", "width": 100, "height": 100}],
+                },
+                "usertags": {
+                    "in": [
+                        {
+                            "user": {
+                                "pk": "200",
+                                "username": "second",
+                                "profile_pic_url": "https://example.com/second.jpg",
+                            },
+                            "position": [0.5, 0.5],
+                        }
+                    ]
+                },
+            },
+        ]
+
+        media = extract_media_v1(payload)
+
+        self.assertEqual(media.resources[0].usertags[0].user.pk, "100")
+        self.assertEqual(media.resources[0].usertags[0].x, 0.25)
+        self.assertEqual(media.resources[1].usertags[0].user.pk, "200")
+        self.assertEqual(media.resources[1].usertags[0].y, 0.5)
 
 
 class CheckOffensiveCommentV2RegressionTestCase(unittest.TestCase):

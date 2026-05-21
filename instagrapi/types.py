@@ -26,6 +26,7 @@ class Resource(TypesBaseModel):
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     thumbnail_url: Optional[HttpUrl] = None
     media_type: int
+    usertags: List["Usertag"] = []
 
 
 class BioLink(TypesBaseModel):

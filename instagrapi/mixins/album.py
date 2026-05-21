@@ -125,7 +125,7 @@ class UploadAlbumMixin:
         self,
         paths: List[Path],
         caption: str,
-        usertags: List[Usertag] = [],
+        usertags: Union[List[Usertag], List[List[Usertag]]] = [],
         location: Location = None,
         configure_timeout: int = 3,
         configure_handler=None,
@@ -142,8 +142,9 @@ class UploadAlbumMixin:
             List of paths for media to upload
         caption: str
             Media caption
-        usertags: List[Usertag], optional
-            List of users to be tagged on this upload, default is empty list.
+        usertags: List[Usertag] or List[List[Usertag]], optional
+            List of users to tag. A flat list tags the first carousel item for backward compatibility.
+            Use a nested list to tag each carousel item by index: ``usertags[0]`` applies to ``paths[0]``.
         location: Location, optional
             Location tag for this upload, default is none
         configure_timeout: int
@@ -234,7 +235,7 @@ class UploadAlbumMixin:
         paths: List[Path],
         caption: str,
         track: Union[Track, Dict],
-        usertags: List[Usertag] = [],
+        usertags: Union[List[Usertag], List[List[Usertag]]] = [],
         location: Location = None,
         configure_timeout: int = 3,
         configure_handler=None,
@@ -257,8 +258,9 @@ class UploadAlbumMixin:
             Media caption.
         track: Track or dict
             Track from music search/browser response or a compatible dict.
-        usertags: List[Usertag], optional
-            List of users to be tagged on this upload.
+        usertags: List[Usertag] or List[List[Usertag]], optional
+            List of users to tag. A flat list tags the first carousel item for backward compatibility.
+            Use a nested list to tag each carousel item by index: ``usertags[0]`` applies to ``paths[0]``.
         location: Location, optional
             Location tag for this upload.
         configure_timeout: int
@@ -311,7 +313,7 @@ class UploadAlbumMixin:
         self,
         childs: List,
         caption: str,
-        usertags: List[Usertag] = [],
+        usertags: Union[List[Usertag], List[List[Usertag]]] = [],
         location: Location = None,
         extra_data: Dict[str, str] = {},
     ) -> Dict:
@@ -324,8 +326,9 @@ class UploadAlbumMixin:
             List of media/resources of an album
         caption: str
             Media caption
-        usertags: List[Usertag], optional
-            List of users to be tagged on this upload, default is empty list.
+        usertags: List[Usertag] or List[List[Usertag]], optional
+            List of users to tag. A flat list tags the first carousel item for backward compatibility.
+            Use a nested list to tag each carousel item by index: ``usertags[0]`` applies to ``childs[0]``.
         location: Location, optional
             Location tag for this upload, default is None
         extra_data: Dict[str, str], optional
@@ -338,8 +341,16 @@ class UploadAlbumMixin:
         """
         upload_id = str(int(time.time() * 1000))
         if usertags:
-            usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
-            childs[0]["usertags"] = dumps({"in": usertags})
+            if isinstance(usertags[0], list):
+                for child, child_usertags in zip(childs, usertags):
+                    if not child_usertags:
+                        continue
+                    child["usertags"] = dumps(
+                        {"in": [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in child_usertags]}
+                    )
+            else:
+                child_usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
+                childs[0]["usertags"] = dumps({"in": child_usertags})
         data = {
             "timezone_offset": str(self.timezone_offset),
             "source_type": "4",
