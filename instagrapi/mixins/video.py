@@ -11,7 +11,6 @@ from instagrapi import config
 from instagrapi.exceptions import (
     VideoConfigureError,
     VideoConfigureStoryError,
-    VideoNotDownload,
     VideoNotUpload,
 )
 from instagrapi.types import (
@@ -98,29 +97,7 @@ class DownloadVideoMixin:
             return path.resolve()
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-        try:
-            content_length = int(response.headers.get("Content-Length"))
-        except TypeError:
-            print(
-                """
-                The program detected an mis-formatted link, and hence can't download it.
-                This problem occurs when the URL is passed into
-                    'video_download_by_url()' or the 'clip_download_by_url()'.
-                The raw URL needs to be re-formatted into one that is recognizable by the methods.
-                Use this code: url=self.cl.media_info(self.cl.media_pk_from_url('insert the url here')).video_url
-                You can remove the 'self' from the code above if needed.
-                """
-            )
-            raise Exception("The program detected an mis-formatted link.")
-        file_length = len(response.content)
-        if content_length != file_length:
-            raise VideoNotDownload(
-                f'Broken file "{path}" (Content-length={content_length}, but file length={file_length})'
-            )
-        with open(path, "wb") as f:
-            f.write(response.content)
-            f.close()
-        return path.resolve()
+        return self._download_response_to_path(response, path)
 
     def video_download_by_url_origin(self, url: str) -> bytes:
         """
@@ -138,13 +115,7 @@ class DownloadVideoMixin:
         """
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-        content_length = int(response.headers.get("Content-Length"))
-        file_length = len(response.content)
-        if content_length != file_length:
-            raise VideoNotDownload(
-                f'Broken file from url "{url}" (Content-length={content_length}, but file length={file_length})'
-            )
-        return response.content
+        return self._download_response_bytes(response, url)
 
 
 class UploadVideoMixin:

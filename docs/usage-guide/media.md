@@ -295,6 +295,8 @@ PosixPath('/tmp/45588546_367538213983456_6830188946193737023_n.mp4')
 
 ```
 
+If Instagram returns a `Content-Length` header and the downloaded file is shorter, download helpers remove the partial file and raise `ClientIncompleteReadError`.
+
 ``` python
 
 >>> cl.media_pk_from_url("http://www.instagram.com/p/BjNLpA1AhXM/")

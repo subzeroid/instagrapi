@@ -1,6 +1,8 @@
 import json
 import logging
+import shutil
 import time
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 try:
@@ -347,6 +349,47 @@ class PublicRequestMixin:
             raise ClientConnectionError("{} {}".format(e.__class__.__name__, str(e)))
         finally:
             self.last_response_ts = time.time()
+
+    def _expected_content_length(self, response) -> Optional[int]:
+        content_length = response.headers.get("Content-Length")
+        if not content_length:
+            return None
+        try:
+            return int(content_length)
+        except (TypeError, ValueError):
+            return None
+
+    def _raise_for_incomplete_download(self, actual_length: int, expected_length: Optional[int], source: str) -> None:
+        if expected_length is None or actual_length == expected_length:
+            return
+        raise ClientIncompleteReadError(
+            f"Broken file {source} (Content-length={expected_length}, but file length={actual_length})"
+        )
+
+    def _download_response_to_path(self, response, path: Path) -> Path:
+        path = Path(path)
+        try:
+            with open(path, "wb") as f:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, f)
+            self._raise_for_incomplete_download(
+                path.stat().st_size,
+                self._expected_content_length(response),
+                f'"{path}"',
+            )
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
+        return path.resolve()
+
+    def _download_response_bytes(self, response, url: str) -> bytes:
+        content = response.content
+        self._raise_for_incomplete_download(
+            len(content),
+            self._expected_content_length(response),
+            f'from url "{url}"',
+        )
+        return content
 
     def public_graphql_request(
         self,

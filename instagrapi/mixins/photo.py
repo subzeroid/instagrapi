@@ -1,6 +1,5 @@
 import json
 import random
-import shutil
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -105,10 +104,7 @@ class DownloadPhotoMixin:
             return path.resolve()
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-        with open(path, "wb") as f:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, f)
-        return path.resolve()
+        return self._download_response_to_path(response, path)
 
     def photo_download_by_url_origin(self, url: str) -> bytes:
         """
@@ -126,8 +122,7 @@ class DownloadPhotoMixin:
         url = str(url)
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-        response.raw.decode_content = True
-        return response.content
+        return self._download_response_bytes(response, url)
 
 
 class UploadPhotoMixin:

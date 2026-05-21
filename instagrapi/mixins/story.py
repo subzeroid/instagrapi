@@ -1,5 +1,4 @@
 import json
-import shutil
 from copy import deepcopy
 from pathlib import Path
 from typing import List, Tuple
@@ -454,11 +453,7 @@ class StoryMixin:
 
         response = self._send_public_request(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-
-        with open(path, "wb") as f:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, f)
-        return path.resolve()
+        return self._download_response_to_path(response, path)
 
     def story_viewers_chunk(self, story_pk: int, max_amount: int = 0, max_id: str = "") -> tuple[list[Viewer], str]:
         unique_set: set[str] = set()
