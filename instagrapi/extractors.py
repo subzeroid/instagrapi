@@ -178,6 +178,7 @@ def extract_media_gql(data):
 
 
 def extract_resource_v1(data):
+    data = deepcopy(data)
     if "video_versions" in data:
         data["video_url"] = sorted(data["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     candidates = data.get("image_versions2", {}).get("candidates", [])
@@ -188,6 +189,11 @@ def extract_resource_v1(data):
         )[-1]["url"]
         if candidates
         else None
+    )
+    usertags = data.get("usertags") or {}
+    data["usertags"] = sorted(
+        [extract_usertag(usertag) for usertag in usertags.get("in", [])],
+        key=lambda tag: tag.user.pk,
     )
     return Resource(**data)
 

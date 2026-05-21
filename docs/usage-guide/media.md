@@ -473,6 +473,16 @@ Now let's mention users (Usertag) and location:
     location=Location(name='Russia, Saint-Petersburg', lat=59.96, lng=30.29)
 )
 
+>>> other = cl.user_info_by_username('other')
+>>> album = cl.album_upload(
+    ["/app/image.jpg", "/app/image2.jpg"],
+    "Album with per-slide tags",
+    usertags=[
+        [Usertag(user=example, x=0.5, y=0.5)],
+        [Usertag(user=other, x=0.25, y=0.75)],
+    ],
+)
+
 >>> media.dict()
 {'pk': 2573355619819242434,
  'id': '2573355619819242434_1903424587',
@@ -510,6 +520,10 @@ Now let's mention users (Usertag) and location:
  'title': '',
  'resources': []}
 ```
+
+For `album_upload`, nested `usertags` are matched by index with `paths`: `usertags[0]` applies to `paths[0]`, `usertags[1]` applies to `paths[1]`, and so on. A flat `List[Usertag]` is still accepted for backward compatibility and tags only the first carousel item.
+
+When reading an album, the same index rule applies to resources: tags for the first carousel item are in `media.resources[0].usertags`, tags for the second item are in `media.resources[1].usertags`, etc.
 
 Reels:
 

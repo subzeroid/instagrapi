@@ -339,6 +339,41 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertIsInstance(media, Media)
         photo_rupload.assert_called_once_with(Path("slide.png"), to_album=True)
 
+    def test_album_configure_assigns_nested_usertags_by_carousel_index(self):
+        client = self.build_client()
+        first_user = UserShort(pk="10", username="first")
+        second_user = UserShort(pk="20", username="second")
+        children = [{"upload_id": "1"}, {"upload_id": "2"}]
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            client.album_configure(
+                children,
+                "caption",
+                usertags=[
+                    [Usertag(user=first_user, x=0.25, y=0.75)],
+                    [Usertag(user=second_user, x=0.5, y=0.5)],
+                ],
+            )
+
+        metadata = private_request.call_args.args[1]["children_metadata"]
+        first_tags = json.loads(metadata[0]["usertags"])
+        second_tags = json.loads(metadata[1]["usertags"])
+        self.assertEqual(first_tags, {"in": [{"user_id": "10", "position": [0.25, 0.75]}]})
+        self.assertEqual(second_tags, {"in": [{"user_id": "20", "position": [0.5, 0.5]}]})
+
+    def test_album_configure_keeps_flat_usertags_on_first_carousel_item(self):
+        client = self.build_client()
+        user = UserShort(pk="10", username="first")
+        children = [{"upload_id": "1"}, {"upload_id": "2"}]
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            client.album_configure(children, "caption", usertags=[Usertag(user=user, x=0.25, y=0.75)])
+
+        metadata = private_request.call_args.args[1]["children_metadata"]
+        first_tags = json.loads(metadata[0]["usertags"])
+        self.assertEqual(first_tags, {"in": [{"user_id": "10", "position": [0.25, 0.75]}]})
+        self.assertNotIn("usertags", metadata[1])
+
     def test_music_in_feed_audio_browser_requests_feed_music_product(self):
         client = self.build_client()
         expected = {"status": "ok", "alacorn_session_id": "alacorn-1"}
