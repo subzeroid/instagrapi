@@ -1,4 +1,3 @@
-import shutil
 from pathlib import Path
 from typing import Any, Dict, Optional, Union
 from urllib.parse import urlparse
@@ -49,10 +48,7 @@ class TrackMixin:
         path = Path(folder) / filename
         response = requests.get(url, stream=True, timeout=self.request_timeout)
         response.raise_for_status()
-        with open(path, "wb") as f:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, f)
-        return path.resolve()
+        return self._download_response_to_path(response, path)
 
     def _track_request(self, data: Dict[str, Any], path: str = "clips/music/") -> Dict:
         try:
