@@ -202,6 +202,28 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
             query_hash="5f0b1f6281e72053cbc07909c8d154ae",
         )
 
+    def test_comment_pin_posts_to_slash_terminated_endpoint(self):
+        client = self._build_logged_in_client()
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.comment_pin("123_456", 789)
+
+        self.assertTrue(result)
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/123_456/pin_comment/789/")
+        self.assertEqual(data["_uid"], client.user_id)
+        self.assertEqual(data["_uuid"], client.uuid)
+
+    def test_comment_unpin_posts_to_slash_terminated_endpoint(self):
+        client = self._build_logged_in_client()
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.comment_unpin("123_456", 789)
+
+        self.assertTrue(result)
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/123_456/unpin_comment/789/")
+        self.assertEqual(data["_uid"], client.user_id)
+        self.assertEqual(data["_uuid"], client.uuid)
+
     def test_media_comment_replies_chunk_returns_child_cursor(self):
         client = Client()
         with mock.patch.object(
