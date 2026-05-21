@@ -2264,6 +2264,16 @@ automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> whe
     <span class="n">location</span><span class="o">=</span><span class="n">Location</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Russia, Saint-Petersburg&#39;</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="mf">59.96</span><span class="p">,</span> <span class="n">lng</span><span class="o">=</span><span class="mf">30.29</span><span class="p">)</span>
 <span class="p">)</span>
 
+<span class="o">&gt;&gt;&gt;</span> <span class="n">other</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_info_by_username</span><span class="p">(</span><span class="s1">&#39;other&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">album</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">album_upload</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span> <span class="s2">&quot;/app/image2.jpg&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;Album with per-slide tags&quot;</span><span class="p">,</span>
+    <span class="n">usertags</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">[</span><span class="n">Usertag</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">example</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)],</span>
+        <span class="p">[</span><span class="n">Usertag</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">other</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)],</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
 <span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">2573355619819242434</span><span class="p">,</span>
  <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;2573355619819242434_1903424587&#39;</span><span class="p">,</span>
@@ -2301,6 +2311,8 @@ automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> whe
  <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
  <span class="s1">&#39;resources&#39;</span><span class="p">:</span> <span class="p">[]}</span>
 </code></pre></div>
+<p>For <code>album_upload</code>, nested <code>usertags</code> are matched by index with <code>paths</code>: <code>usertags[0]</code> applies to <code>paths[0]</code>, <code>usertags[1]</code> applies to <code>paths[1]</code>, and so on. A flat <code>List[Usertag]</code> is still accepted for backward compatibility and tags only the first carousel item.</p>
+<p>When reading an album, the same index rule applies to resources: tags for the first carousel item are in <code>media.resources[0].usertags</code>, tags for the second item are in <code>media.resources[1].usertags</code>, etc.</p>
 <p>Reels:</p>
 <p>Timeline helpers:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">first_page</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">(</span><span class="s2">&quot;cold_start_fetch&quot;</span><span class="p">)</span>
