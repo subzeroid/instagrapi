@@ -13,7 +13,8 @@ Viewing and managing your profile
 | account_security_info() | dict | Return account security settings, backup codes, trusted devices, and 2FA state |
 | set_external_url(external_url: str) | dict | Replace bio links with a single external URL |
 | remove_bio_links(link_ids: List[int]) | dict | Remove one or more bio links by link ID |
-| reset_password(username: str) | dict | Trigger Instagram account recovery flow |
+| send_password_reset(identifier: str, recaptcha_challenge_field: str = "") | dict | Send an Instagram password reset link or code to the account email or phone |
+| reset_password(username: str) | dict | Backward-compatible alias for `send_password_reset()` |
 | change_password(old_password: str, new_password: str) | bool | Change account password |
 | send_confirm_email(email: str) | dict | Send a confirmation code to a new email address |
 | confirm_email(email: str, code: str) | dict | Confirm a new email address with the received code |
@@ -81,6 +82,7 @@ Notes:
 
 * `account_edit(**data)` only applies supported fields and preserves missing required profile fields from `account_info()`.
 * Use `account_set_biography()` when you want Instagram to re-process biography entities/markup explicitly.
+* `send_password_reset()` starts Instagram's recovery flow by requesting a reset link or code. It does not set a new password by itself; continue with the link/code flow that Instagram sends to the account email or phone.
 * `account_security_info()` and `insights_*` style methods require an authenticated session and may depend on the account type or enabled security features.
 
 Low level methods:
