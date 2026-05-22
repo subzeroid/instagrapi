@@ -123,6 +123,8 @@ class RealtimeClient:
         packet = decode_packet(self.transport.recv_packet())
         if packet.packet_type != "publish":
             return packet
+        if packet.topic is None:
+            return packet
         payload = self.dispatch_packet(packet.topic, packet.payload)
         if packet.qos == 1 and packet.packet_id is not None:
             self.transport.send(b"\x40\x02" + packet.packet_id.to_bytes(2, "big"))
