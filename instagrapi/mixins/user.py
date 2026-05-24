@@ -55,6 +55,10 @@ class UserMixin:
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
     _fb_dtsg = None
 
+    @staticmethod
+    def _normalize_username(username: str) -> str:
+        return str(username).strip().lstrip("@").strip().lower()
+
     def user_id_from_username(self, username: str) -> str:
         """
         Get full media id
@@ -73,7 +77,7 @@ class UserMixin:
         -------
         'example' -> 1903424587
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         return str(self.user_info_by_username(username).pk)
 
     def user_short_gql(self, user_id: str, use_cache: bool = True) -> UserShort:
@@ -206,7 +210,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         temporary_public_headers = {
             "Host": "www.instagram.com",
             "X-Requested-With": "XMLHttpRequest",
@@ -267,7 +271,7 @@ class UserMixin:
         """
         Resolve username via doc_id search, then fetch profile by user id.
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         self._inject_sessionid_for_v2_gql()
         data = self.public_doc_id_graphql_request("26347858941511777", {"hasQuery": True, "query": username})
         users = ((data or {}).get("xdt_api__v1__fbsearch__non_profiled_serp") or {}).get("users") or []
@@ -304,7 +308,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         try:
             result = self.private_request(f"users/{username}/usernameinfo/")
         except ClientNotFoundError as e:
@@ -331,7 +335,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         if not use_cache or username not in self._usernames_cache:
             try:
                 try:
@@ -1711,7 +1715,7 @@ class UserMixin:
         UserNotFound
             On 404 / unknown ClientError.
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         data = {
             "is_prefetch": False,
             "entry_point": "profile",
@@ -1829,6 +1833,7 @@ class UserMixin:
         dict
             Merged user dict.
         """
+        username = self._normalize_username(username)
         resp = self.user_stream_by_username_v1(username)
         return self._user_stream_collector(resp, username=username)
 
@@ -1857,6 +1862,7 @@ class UserMixin:
         UserNotFound
             ``data`` is missing from the response or the request 404'd.
         """
+        username = self._normalize_username(username)
         try:
             result = self.private_request(
                 "users/web_profile_info/",
