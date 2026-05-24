@@ -133,6 +133,109 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.public_request_calls[0]["kwargs"], {})
         self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
 
+    def test_user_info_by_username_gql_normalizes_username(self):
+        class DummyClient(UserMixin):
+            response_body = None
+
+            def __init__(self):
+                self.public_request_calls = []
+
+            def public_request(self, url, headers=None, **kwargs):
+                self.public_request_calls.append({"url": url, "headers": headers, "kwargs": kwargs})
+                return json.dumps(self.response_body)
+
+        client = DummyClient()
+        client.response_body = self.build_web_profile_user()
+
+        user = client.user_info_by_username_gql(" @Example ")
+
+        self.assertEqual(user.username, "example")
+        self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
+
+    def test_user_info_by_username_v1_normalizes_username(self):
+        client = Client()
+        payload = {
+            "user": {
+                "pk": "123",
+                "username": "example",
+                "full_name": "Example",
+                "is_private": False,
+                "is_verified": False,
+                "profile_pic_url": "https://example.com/pic.jpg",
+                "media_count": 0,
+                "follower_count": 0,
+                "following_count": 0,
+                "is_business": False,
+            }
+        }
+
+        with mock.patch.object(client, "private_request", return_value=payload) as private_request:
+            user = client.user_info_by_username_v1(" @Example ")
+
+        self.assertEqual(user.username, "example")
+        private_request.assert_called_once_with("users/example/usernameinfo/")
+
+    def test_user_info_by_username_uses_normalized_cache_key(self):
+        client = Client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = User(
+            pk="123",
+            username="example",
+            full_name="Example",
+            is_private=False,
+            is_verified=False,
+            profile_pic_url="https://example.com/pic.jpg",
+            media_count=0,
+            follower_count=0,
+            following_count=0,
+            is_business=False,
+        )
+
+        with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as gql:
+            with mock.patch.object(client, "user_info", return_value=user):
+                client.user_info_by_username("@Example")
+                client.user_info_by_username(" example ")
+
+        gql.assert_called_once_with("example")
+        self.assertEqual(client._usernames_cache, {"example": "123"})
+
+    def test_user_info_by_username_v2_gql_normalizes_search_query(self):
+        client = Client()
+        with mock.patch.object(client, "_inject_sessionid_for_v2_gql"):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={
+                    "xdt_api__v1__fbsearch__non_profiled_serp": {"users": [{"username": "example", "pk": "123"}]}
+                },
+            ) as search:
+                with mock.patch.object(client, "user_info_v2_gql", return_value="user"):
+                    result = client.user_info_by_username_v2_gql(" @Example ")
+
+        self.assertEqual(result, "user")
+        search.assert_called_once_with("26347858941511777", {"hasQuery": True, "query": "example"})
+
+    def test_user_stream_by_username_v1_normalizes_endpoint(self):
+        client = Client()
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
+            client.user_stream_by_username_v1(" @Example ")
+
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "users/example/usernameinfo_stream/")
+
+    def test_user_web_profile_info_v1_normalizes_username_param(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"data": {"pk": "9", "username": "example"}},
+        ) as private_request:
+            user = client.user_web_profile_info_v1(" @Example ")
+
+        private_request.assert_called_once_with("users/web_profile_info/", params={"username": "example"})
+        self.assertEqual(user, {"pk": "9", "username": "example"})
+
     def test_user_info_by_username_suppresses_traceback_for_public_retry_error(self):
         client = Client()
         client._usernames_cache = {}
