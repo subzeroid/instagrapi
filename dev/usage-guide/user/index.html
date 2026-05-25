@@ -1392,6 +1392,16 @@
 <td>Get user's followers information by Private Mobile API. Supports <code>date_followed_latest</code> and <code>date_followed_earliest</code></td>
 </tr>
 <tr>
+<td>user_followers_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: str = None)</td>
+<td>Tuple[List[UserShort], str]</td>
+<td>Get user's followers through the private mobile GraphQL <code>FollowersList</code> surface and max_id cursor</td>
+</tr>
+<tr>
+<td>user_followers_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: str = None)</td>
+<td>List[UserShort]</td>
+<td>Get user's followers through the private mobile GraphQL <code>FollowersList</code> surface</td>
+</tr>
+<tr>
 <td>user_following_v1(user_id: str, amount: int = 0)</td>
 <td>List[UserShort]</td>
 <td>Get user's following users information by Private Mobile API</td>
@@ -1501,6 +1511,9 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 </code></pre></div>
 <p>Raw private GraphQL helpers expose the same mobile <code>order</code> variable for callers that need the <code>FollowersList</code>/<code>FollowingList</code> payload directly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">private_graphql_followers_list</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">cl</span><span class="o">.</span><span class="n">rank_token</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Use <code>user_followers_private_gql()</code> when you want the current mobile GraphQL followers list parsed into <code>UserShort</code> objects:</p>
+<div class="highlight"><pre><span></span><code><span class="n">followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_private_gql</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Example: We go around the list of our followers and unfollow from them:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
