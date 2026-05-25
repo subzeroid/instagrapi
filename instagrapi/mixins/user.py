@@ -8,6 +8,7 @@ from requests.exceptions import RequestException
 
 from instagrapi.exceptions import (
     ClientError,
+    ClientGraphqlError,
     ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
@@ -969,6 +970,119 @@ class UserMixin:
             List of objects of User type
         """
         users, _ = self.user_followers_v1_chunk(str(user_id), amount, order=order)
+        if amount:
+            users = users[:amount]
+        return users
+
+    @staticmethod
+    def _private_graphql_root(data: Dict, root_field_name: str) -> Dict:
+        payload = data.get("data") or data
+        if not isinstance(payload, dict):
+            return {}
+        root = payload.get(root_field_name)
+        if isinstance(root, dict):
+            return root
+        for key, value in payload.items():
+            if root_field_name in str(key) and isinstance(value, dict):
+                return value
+        return {}
+
+    def user_followers_private_gql_chunk(
+        self,
+        user_id: str,
+        max_amount: int = 0,
+        max_id: str = None,
+        rank_token: str = None,
+        order: FOLLOWERS_ORDER = None,
+        priority: str = "u=3, i",
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's followers information by Private GraphQL API and max_id.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of users to return from the fetched chunk, default is 0 - full chunk
+        max_id: str, optional
+            The cursor from which it is worth continuing to receive the list of followers
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: str, optional
+            Followers sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            List of users and next max_id cursor
+        """
+        user_id = str(user_id)
+        result = self.private_graphql_followers_list(
+            user_id,
+            rank_token or self.rank_token,
+            max_id=max_id,
+            order=order,
+            priority=priority,
+        )
+        followers = self._private_graphql_root(result, "xdt_api__v1__friendships__followers")
+        if not followers:
+            raise ClientGraphqlError("Missing private GraphQL followers payload")
+        users = []
+        for user in followers.get("users") or []:
+            users.append(extract_user_short(user))
+            if max_amount and len(users) >= max_amount:
+                break
+        return users, followers.get("next_max_id")
+
+    def user_followers_private_gql(
+        self,
+        user_id: str,
+        amount: int = 0,
+        rank_token: str = None,
+        order: FOLLOWERS_ORDER = None,
+        priority: str = "u=3, i",
+    ) -> List[UserShort]:
+        """
+        Get user's followers information by Private GraphQL API.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of users to return, default is 0 - Inf
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: str, optional
+            Followers sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of UserShort type
+        """
+        users = []
+        max_id = None
+        while True:
+            chunk_amount = max(amount - len(users), 0) if amount else 0
+            chunk, max_id = self.user_followers_private_gql_chunk(
+                user_id,
+                max_amount=chunk_amount,
+                max_id=max_id,
+                rank_token=rank_token,
+                order=order,
+                priority=priority,
+            )
+            users.extend(chunk)
+            if amount and len(users) >= amount:
+                break
+            if not max_id or not chunk:
+                break
         if amount:
             users = users[:amount]
         return users
