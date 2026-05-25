@@ -547,6 +547,231 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(upload_extra["music_params"]["overlap_duration_in_ms"], 2500)
         self.assertIn("clips_audio_metadata", upload_extra)
 
+    def test_story_music_extra_data_builds_story_music_payload_from_dict(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_asset_id": "asset-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [40500],
+            "title": "Runaway",
+            "display_artist": "AURORA",
+            "music_canonical_id": "canonical-id",
+        }
+        extra_data = {
+            "share_to_facebook": "1",
+            "edits": {"crop_zoom": 1.0},
+        }
+
+        result = client.story_music_extra_data(
+            track,
+            extra_data=extra_data,
+            overlap_duration=34000,
+            audio_overlay_uuid="overlay-id",
+        )
+
+        self.assertEqual(extra_data, {"share_to_facebook": "1", "edits": {"crop_zoom": 1.0}})
+        self.assertEqual(result["share_to_facebook"], "1")
+        self.assertEqual(result["edits"]["crop_zoom"], 1.0)
+        self.assertEqual(
+            json.loads(result["music_burnin_params"]),
+            {"asset_fbid": "asset-id", "offset_ms": 40500},
+        )
+        self.assertEqual(
+            result["music_params"],
+            {
+                "audio_asset_id": "asset-id",
+                "audio_cluster_id": "cluster-id",
+                "audio_asset_start_time_in_ms": 40500,
+                "overlap_duration_in_ms": 34000,
+                "product": "story_camera_music_overlay_post_capture",
+                "song_name": "Runaway",
+                "artist_name": "AURORA",
+                "alacorn_session_id": "null",
+                "music_canonical_id": "canonical-id",
+            },
+        )
+        self.assertEqual(
+            result["edits"]["audio_state_edits"],
+            {
+                "has_music_sticker": True,
+                "is_music_burned_into_video": True,
+                "is_video_muted": False,
+                "did_user_mute_audio": False,
+                "force_play_video_audio": True,
+            },
+        )
+        self.assertEqual(
+            result["edits"]["media_audio_overlay_info"],
+            {
+                "audio_mix_burned_in": True,
+                "video_volume": 0.0,
+                "media_audio_overlays": [
+                    {
+                        "audio_asset_id": "asset-id",
+                        "audio_overlay_uuid": "overlay-id",
+                        "audio_volume": 1.0,
+                        "seek_time_ms": 40500,
+                        "start_at_time_ms": 0,
+                        "audio_duration_ms": 34000,
+                        "media_audio_overlay_type": "audio_track",
+                    }
+                ],
+            },
+        )
+
+    def test_video_upload_to_story_with_music_muxes_track_and_uploads_story(self):
+        client = self.build_client()
+        extra_data = {"share_to_facebook": "1"}
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [1500],
+            "title": "Story song",
+            "display_artist": "Story artist",
+            "uri": "https://example.com/track.m4a",
+        }
+        audio_segments = []
+        video_paths_seen = []
+
+        class FakeAudioClip:
+            def __init__(self, path):
+                self.path = path
+
+            def subclipped(self, start, end):
+                audio_segments.append((start, end))
+                return self
+
+            def close(self):
+                return None
+
+        class FakeVideoClip:
+            def __init__(self, path):
+                self.path = path
+                self.duration = 2.5
+
+            def with_audio(self, audio_clip):
+                self.audio_clip = audio_clip
+                return self
+
+            def write_videofile(self, path):
+                Path(path).write_bytes(b"video")
+
+            def close(self):
+                return None
+
+        fake_mp = types.ModuleType("moviepy")
+        fake_mp.VideoFileClip = FakeVideoClip
+        fake_mp.AudioFileClip = FakeAudioClip
+
+        def upload_side_effect(path, caption="", **kwargs):
+            video_paths_seen.append(Path(path))
+            self.assertTrue(Path(path).exists())
+            return "uploaded"
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "track.m4a"
+            audio_path.write_bytes(b"audio")
+            with mock.patch.dict("sys.modules", {"moviepy": fake_mp}):
+                with mock.patch.object(client, "track_download_by_url", return_value=audio_path) as download:
+                    with mock.patch.object(
+                        client,
+                        "video_upload_to_story",
+                        side_effect=upload_side_effect,
+                    ) as upload:
+                        result = client.video_upload_to_story_with_music(
+                            Path("input.mp4"),
+                            "caption",
+                            track,
+                            extra_data=extra_data,
+                        )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"share_to_facebook": "1"})
+        download.assert_called_once()
+        self.assertEqual(download.call_args.args[0], "https://example.com/track.m4a")
+        self.assertEqual(audio_segments, [(1.5, 4.0)])
+        self.assertEqual(len(video_paths_seen), 1)
+        upload.assert_called_once()
+        self.assertEqual(upload.call_args.args[:2], (video_paths_seen[0], "caption"))
+        upload_extra = upload.call_args.kwargs["extra_data"]
+        self.assertEqual(upload_extra["share_to_facebook"], "1")
+        self.assertEqual(upload_extra["music_params"]["audio_asset_start_time_in_ms"], 1500)
+        self.assertEqual(upload_extra["music_params"]["overlap_duration_in_ms"], 2500)
+        self.assertEqual(upload_extra["edits"]["media_audio_overlay_info"]["video_volume"], 0.0)
+
+    def test_photo_upload_to_story_with_music_renders_photo_story_video(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [0],
+            "title": "Photo song",
+            "display_artist": "Photo artist",
+            "progressive_download_url": "https://example.com/track.m4a",
+        }
+        audio_segments = []
+        image_durations = []
+        image_clips = []
+
+        class FakeAudioClip:
+            def __init__(self, path):
+                self.path = path
+
+            def subclipped(self, start, end):
+                audio_segments.append((start, end))
+                return self
+
+            def close(self):
+                return None
+
+        class FakeImageClip:
+            def __init__(self, path):
+                self.path = path
+                self.duration = None
+                self.fps = None
+                image_clips.append(self)
+
+            def with_duration(self, duration):
+                self.duration = duration
+                image_durations.append(duration)
+                return self
+
+            def with_audio(self, audio_clip):
+                self.audio_clip = audio_clip
+                return self
+
+            def write_videofile(self, path):
+                Path(path).write_bytes(b"video")
+
+            def close(self):
+                return None
+
+        fake_mp = types.ModuleType("moviepy")
+        fake_mp.ImageClip = FakeImageClip
+        fake_mp.AudioFileClip = FakeAudioClip
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audio_path = Path(tmpdir) / "track.m4a"
+            audio_path.write_bytes(b"audio")
+            with mock.patch.dict("sys.modules", {"moviepy": fake_mp}):
+                with mock.patch.object(client, "track_download_by_url", return_value=audio_path):
+                    with mock.patch.object(client, "video_upload_to_story", return_value="uploaded") as upload:
+                        result = client.photo_upload_to_story_with_music(
+                            Path("story.jpg"),
+                            "caption",
+                            track,
+                            duration=7,
+                        )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(image_durations, [7])
+        self.assertEqual(audio_segments, [(0.0, 7.0)])
+        self.assertEqual(image_clips[0].fps, 30)
+        self.assertEqual(upload.call_args.kwargs["extra_data"]["music_params"]["overlap_duration_in_ms"], 7000)
+        upload.assert_called_once()
+        self.assertEqual(upload.call_args.args[1], "caption")
+
     def test_photo_story_upload_falls_back_to_recent_story_when_configure_has_no_media(self):
         client = self.build_client()
         existing = self.build_story("10")

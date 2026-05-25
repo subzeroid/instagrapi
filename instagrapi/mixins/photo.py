@@ -502,6 +502,57 @@ class UploadPhotoMixin:
                 )
         raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
 
+    def photo_upload_to_story_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        thumbnail: Path = None,
+        mentions: List[StoryMention] = [],
+        locations: List[StoryLocation] = [],
+        links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
+        extra_data: Dict[str, object] = {},
+        duration: float = 15.0,
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: Optional[int] = None,
+        original_volume: float = 0.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_music_overlay_post_capture",
+        alacorn_session_id: str = "null",
+    ) -> Story:
+        """
+        Upload photo as a story with a selected music track.
+
+        Instagram story photos cannot carry a baked audio track by themselves,
+        so this helper renders the photo into a short video story first.
+        """
+        return self._upload_story_with_music(
+            path,
+            caption,
+            track,
+            thumbnail=thumbnail,
+            mentions=mentions,
+            locations=locations,
+            links=links,
+            hashtags=hashtags,
+            stickers=stickers,
+            medias=medias,
+            polls=polls,
+            extra_data=extra_data,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            original_volume=original_volume,
+            music_volume=music_volume,
+            product=product,
+            alacorn_session_id=alacorn_session_id,
+            is_photo=True,
+            duration=duration,
+        )
+
     def photo_upload_to_cutout_sticker(
         self,
         path: Path,
