@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from instagrapi.extractors import extract_media_v1
 from tests.helpers import *
 
@@ -274,6 +276,38 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertIsInstance(media, Media)
         self.assertEqual(media.pk, "1")
+
+    def test_photo_upload_sends_scheduled_publish_metadata(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+        schedule_at = 1779808917
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client, "photo_configure", return_value={"status": "ok", "media": media_payload}
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.photo_upload(Path("example.jpg"), "caption", schedule_at=schedule_at)
+
+        self.assertIsInstance(media, Media)
+        extra_data = configure.call_args.kwargs["extra_data"]
+        self.assertEqual(extra_data["publish_mode"], "scheduled")
+        self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": schedule_at})
+
+    def test_photo_upload_accepts_datetime_schedule_at(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+        schedule_at = datetime.fromtimestamp(1779808917, tz=timezone.utc)
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client, "photo_configure", return_value={"status": "ok", "media": media_payload}
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    client.photo_upload(Path("example.jpg"), "caption", schedule_at=schedule_at)
+
+        extra_data = configure.call_args.kwargs["extra_data"]
+        self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": 1779808917})
 
     def test_video_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
