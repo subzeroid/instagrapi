@@ -1,3 +1,4 @@
+from instagrapi.exceptions import MediaNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -87,6 +88,53 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
                 return info
         self.fail(f"Album resource usertags were not visible after {attempts} media_info_v1 attempts: {last_resources}")
 
+    def ensure_creator_account(self):
+        result = self.cl.private_request("accounts/current_user/?edit=true")
+        user = result.get("user") or {}
+        if user.get("account_type") == 3:
+            return
+        result = self.cl.private_request(
+            "business/account/convert_account/",
+            data=self.cl.with_default_data(
+                {
+                    "entry_point": "setting",
+                    "creator_destination_migration": "false",
+                    "to_account_type": "3",
+                    "category_id": "2347428775505624",
+                    "should_show_category": "1",
+                    "should_show_public_contacts": "0",
+                }
+            ),
+        )
+        self.assertEqual(result.get("status"), "ok")
+        result = self.cl.private_request("accounts/current_user/?edit=true")
+        user = result.get("user") or {}
+        self.assertEqual(user.get("account_type"), 3)
+
+    def assertScheduledMediaAccessible(self, media, schedule_at, caption_text, attempts=5, delay=3):
+        self.assertIsInstance(media, Media)
+        last_result = {}
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            result = self.cl.private_request(
+                "media/infos/",
+                params={"media_ids": media.id, "include_unpublished": "1"},
+            )
+            last_result = result
+            items = result.get("items") or []
+            if not items:
+                continue
+            payload = items[0]
+            metadata = payload.get("content_scheduling_metadata") or {}
+            self.assertEqual(str(payload.get("id")), str(media.id))
+            self.assertEqual(payload.get("product_type"), "feed")
+            self.assertEqual((payload.get("caption") or {}).get("text", ""), caption_text)
+            self.assertTrue(metadata.get("scheduled_content_id"))
+            self.assertEqual(metadata.get("scheduled_publish_time"), schedule_at)
+            return payload
+        self.fail(f"Scheduled media {media.id} was not accessible through media/infos: {last_result}")
+
     def test_photo_upload_without_location(self):
         path = self.copy_media_fixture("examples/kanada.jpg")
         self.assertIsInstance(path, Path)
@@ -113,6 +161,24 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             self.assertEqual(media.caption_text, caption_text)
             self.assertLocation(media.location)
             self.assertUploadedMediaAccessible(media, media_type=1, caption_text=caption_text)
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_photo_upload_scheduled(self):
+        self.ensure_creator_account()
+        path = self.copy_media_fixture("examples/kanada.jpg")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled photo {schedule_at}"
+            media = self.cl.photo_upload(path, caption_text, schedule_at=schedule_at)
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text)
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
