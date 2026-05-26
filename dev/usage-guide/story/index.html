@@ -919,6 +919,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#upload-story-with-music" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upload Story with Music
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-story-to-upload" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1187,6 +1198,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#upload-story-with-music" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upload Story with Music
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#build-story-to-upload" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1374,6 +1396,21 @@ If you have a different resolution, then you need to prepare a file or use the S
 <td>Story</td>
 <td>Upload video to story</td>
 </tr>
+<tr>
+<td>photo_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, duration: float = 15.0, extra_data: Dict = {})</td>
+<td>Story</td>
+<td>Upload photo to story as a short video with the selected music track muxed into it</td>
+</tr>
+<tr>
+<td>video_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {})</td>
+<td>Story</td>
+<td>Upload video to story with the selected music track muxed into it</td>
+</tr>
+<tr>
+<td>story_music_extra_data(track: Track or dict, extra_data: Dict = {})</td>
+<td>dict</td>
+<td>Build Story music configure fields for manual story upload <code>extra_data</code></td>
+</tr>
 </tbody>
 </table>
 <p>In <code>extra_data</code>, you can pass additional story settings, for example:</p>
@@ -1399,6 +1436,8 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li>Link stickers are supported through <code>StoryLink</code>; this is no longer the old Instagram "swipe up" flow.</li>
 <li>For story uploads, use a 9:16 asset or build one with <code>StoryBuilder</code>.</li>
 <li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
+<li>Story music helpers require the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg because they render a local MP4 before upload.</li>
+<li>Story music helpers add Story music metadata and bake the selected track into the uploaded media. They do not expose Instagram's native interactive lyrics/music sticker UI.</li>
 <li>Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.</li>
 </ul>
 <p>Examples:</p>
@@ -1421,6 +1460,29 @@ If you have a different resolution, then you need to prepare a file or use the S
     <span class="n">hashtags</span><span class="o">=</span><span class="p">[</span><span class="n">StoryHashtag</span><span class="p">(</span><span class="n">hashtag</span><span class="o">=</span><span class="n">hashtag</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.23</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.32</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.22</span><span class="p">)],</span>
     <span class="n">medias</span><span class="o">=</span><span class="p">[</span><span class="n">StoryMedia</span><span class="p">(</span><span class="n">media_pk</span><span class="o">=</span><span class="n">media_pk</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)],</span>
     <span class="n">polls</span><span class="o">=</span><span class="p">[</span><span class="n">StoryPoll</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">question</span> <span class="o">=</span> <span class="s2">&quot;Question&quot;</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Option 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Option 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Option 3&quot;</span><span class="p">])],</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="upload-story-with-music">Upload Story with Music</h2>
+<p>Story music upload works by rendering an MP4 locally and then publishing it with the normal story upload flow.</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">&quot;moviepy==2.2.1&quot;</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="n">track</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">search_music</span><span class="p">(</span><span class="s2">&quot;song name&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_story_with_music</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/story.mp4&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Credits @example&quot;</span><span class="p">,</span>
+    <span class="n">track</span><span class="p">,</span>
+    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/story-thumb.jpg&quot;</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_to_story_with_music</span><span class="p">(</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/story.jpg&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;Credits @example&quot;</span><span class="p">,</span>
+    <span class="n">track</span><span class="p">,</span>
+    <span class="n">duration</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
 <h2 id="build-story-to-upload">Build Story to Upload</h2>
