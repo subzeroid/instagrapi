@@ -262,6 +262,150 @@ class ClientStoryLocationStickerLiveTestCase(_helpers.ClientPrivateTestCase):
             self.cleanup_uploaded_story(story)
 
 
+class ClientStoryMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
+    photo_path = Path("examples/background.png")
+
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for story music upload live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def first_music_track(self):
+        tracks = self.cl.search_music("Runaway")
+        if not tracks:
+            self.skipTest("search_music did not return a usable track")
+        return tracks[0]
+
+    def make_silent_story_mp4(self, duration=4):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest("imageio_ffmpeg is required to generate a silent Story fixture")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+
+        try:
+            subprocess.run(
+                [
+                    imageio_ffmpeg.get_ffmpeg_exe(),
+                    "-y",
+                    "-f",
+                    "lavfi",
+                    "-i",
+                    f"color=c=black:s=720x1280:r=30:d={duration}",
+                    "-c:v",
+                    "libx264",
+                    "-pix_fmt",
+                    "yuv420p",
+                    str(path),
+                ],
+                check=True,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except (OSError, subprocess.CalledProcessError) as exc:
+            self.skipTest(f"Could not generate silent Story fixture: {exc}")
+        return path
+
+    def cleanup_uploaded_story(self, story):
+        if not story:
+            return
+        try:
+            self.assertTrue(self.cl.story_delete(story.id))
+        except Exception as exc:
+            print(f"Story music upload live cleanup story_delete failed: {exc.__class__.__name__} {exc}")
+
+    def uploaded_story_payload(self, story, attempts=8, delay=5):
+        last_items = []
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            result = self.cl.private_request(f"feed/user/{self.cl.user_id}/story/")
+            reel = result.get("reel") or {}
+            last_items = reel.get("items") or []
+            for item in last_items:
+                if str(item.get("pk")) == str(story.pk) or str(item.get("id")) == str(story.id):
+                    return item
+        self.fail(f"Uploaded story payload was not visible after {attempts} attempts: {last_items}")
+
+    def download_story_video(self, story):
+        info = self.assertUploadedStoryAccessible(story, media_type=2, attempts=8, delay=5)
+        self.assertTrue(info.video_url, "Uploaded story did not expose video_url")
+        video_path = self.cl.video_download_by_url(str(info.video_url), f"story-{story.pk}", tempfile.gettempdir())
+        self.addCleanup(lambda: Path(video_path).unlink(missing_ok=True))
+        return info, Path(video_path)
+
+    def assert_video_file_has_audio_stream(self, path):
+        try:
+            import imageio_ffmpeg
+        except ImportError:
+            self.skipTest("imageio_ffmpeg is required to inspect uploaded Story audio")
+        result = subprocess.run(
+            [imageio_ffmpeg.get_ffmpeg_exe(), "-hide_banner", "-i", str(path)],
+            check=False,
+            stderr=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        streams = result.stderr.decode("utf-8", errors="replace")
+        self.assertIn("Audio:", streams)
+
+    def assert_story_music_result(self, story, expected_duration):
+        info, downloaded_video = self.download_story_video(story)
+        self.assertGreater(info.video_duration, 0)
+        self.assertLess(abs(info.video_duration - expected_duration), 1.5)
+        payload = self.uploaded_story_payload(story)
+        self.assertEqual(payload.get("media_type"), 2)
+        self.assertTrue(payload.get("video_versions"), "Uploaded Story payload did not include video_versions")
+        self.assert_video_file_has_audio_stream(downloaded_video)
+        return payload
+
+    def test_video_upload_to_story_with_music_live(self):
+        path = self.make_silent_story_mp4(duration=4)
+        track = self.first_music_track()
+        story = None
+        try:
+            story = self.cl.video_upload_to_story_with_music(
+                path,
+                "Story video music live test",
+                track,
+                overlap_duration=4000,
+            )
+            self.assertIsInstance(story, Story)
+            self.assertEqual(story.media_type, 2)
+            self.assert_story_music_result(story, expected_duration=4)
+        finally:
+            self.cleanup_uploaded_story(story)
+
+    def test_photo_upload_to_story_with_music_live(self):
+        track = self.first_music_track()
+        story = None
+        try:
+            story = self.cl.photo_upload_to_story_with_music(
+                self.photo_path,
+                "Story photo music live test",
+                track,
+                duration=7,
+                overlap_duration=7000,
+            )
+            self.assertIsInstance(story, Story)
+            self.assertEqual(story.media_type, 2)
+            self.assert_story_music_result(story, expected_duration=7)
+        finally:
+            self.cleanup_uploaded_story(story)
+
+
 # class BloksTestCase(_helpers.ClientPrivateTestCase):
 #
 #     def test_bloks_change_password(self):

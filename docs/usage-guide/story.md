@@ -74,6 +74,9 @@ Common arguments:
 | ------------------------------------ | -------- | -------------
 | photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})  | Story  | Upload photo to story
 | video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}) | Story  | Upload video to story
+| photo_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, duration: float = 15.0, extra_data: Dict = {}) | Story | Upload photo to story as a short video with the selected music track muxed into it
+| video_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {}) | Story | Upload video to story with the selected music track muxed into it
+| story_music_extra_data(track: Track or dict, extra_data: Dict = {}) | dict | Build Story music configure fields for manual story upload `extra_data`
 
 In `extra_data`, you can pass additional story settings, for example:
 
@@ -87,6 +90,8 @@ Notes:
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
 * Android users should pass `thumbnail=...` for video stories or install the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
+* Story music helpers require the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg because they render a local MP4 before upload.
+* Story music helpers add Story music metadata and bake the selected track into the uploaded media. They do not expose Instagram's native interactive lyrics/music sticker UI.
 * Anonymous public story fetch is not guaranteed. If the public/web story path fails, reliable story retrieval usually requires an authenticated session.
 
 
@@ -112,6 +117,35 @@ cl.video_upload_to_story(
     hashtags=[StoryHashtag(hashtag=hashtag, x=0.23, y=0.32, width=0.5, height=0.22)],
     medias=[StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)],
     polls=[StoryPoll(x = 0.5, y = 0.5, width = 0.7, height = 0.5, question = "Question", options = ["Option 1", "Option 2", "Option 3"])],
+)
+```
+
+## Upload Story with Music
+
+Story music upload works by rendering an MP4 locally and then publishing it with the normal story upload flow.
+
+```bash
+pip install "instagrapi[video]"
+pip install --no-deps "moviepy==2.2.1"
+```
+
+``` python
+from pathlib import Path
+
+track = cl.search_music("song name")[0]
+
+cl.video_upload_to_story_with_music(
+    Path("/app/story.mp4"),
+    "Credits @example",
+    track,
+    thumbnail=Path("/app/story-thumb.jpg"),
+)
+
+cl.photo_upload_to_story_with_music(
+    Path("/app/story.jpg"),
+    "Credits @example",
+    track,
+    duration=7,
 )
 ```
 
