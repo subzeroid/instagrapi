@@ -4,40 +4,6 @@ from instagrapi.extractors import extract_media_v1
 from tests.helpers import *
 
 
-class MediaInfoRegressionTestCase(unittest.TestCase):
-    def _video_media(self, media_pk="3903542582802212941"):
-        return Media(
-            pk=media_pk,
-            id=f"{media_pk}_50838397751",
-            code="DYsK0wViWhN",
-            taken_at=datetime(2026, 1, 1),
-            media_type=2,
-            user=UserShort(
-                pk="50838397751",
-                username="example",
-                profile_pic_url="https://example.com/profile.jpg",
-            ),
-            like_count=0,
-            caption_text="",
-            usertags=[],
-            sponsor_tags=[],
-            video_url="https://example.com/video.mp4",
-        )
-
-    def test_media_info_can_skip_public_lookup(self):
-        client = Client()
-        client._medias_cache = {}
-        media = self._video_media()
-
-        with mock.patch.object(client, "media_info_gql", side_effect=AssertionError("public lookup")) as gql:
-            with mock.patch.object(client, "media_info_v1", return_value=media) as v1:
-                result = client.media_info(media.pk, use_public=False)
-
-        gql.assert_not_called()
-        v1.assert_called_once_with(media.pk)
-        self.assertEqual(result.pk, media.pk)
-
-
 class MediaInfoV2RegressionTestCase(unittest.TestCase):
     def _media_or_ad_payload(self):
         return {

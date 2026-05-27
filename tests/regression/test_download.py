@@ -42,16 +42,20 @@ class DownloadRegressionTestCase(unittest.TestCase):
             video_url="https://example.com/video.mp4",
         )
 
-    def test_video_download_skips_public_media_info_lookup(self):
+    def test_video_download_uses_private_media_info_lookup(self):
         client = Client()
         media = self._video_media()
         expected = Path("/tmp/example.mp4")
 
-        with mock.patch.object(client, "media_info", return_value=media) as media_info:
-            with mock.patch.object(client, "video_download_by_url", return_value=expected) as download_by_url:
-                result = client.video_download(media.pk, folder="/tmp", overwrite=False)
+        with mock.patch.object(
+            client, "media_info", side_effect=AssertionError("public-first media_info")
+        ) as media_info:
+            with mock.patch.object(client, "media_info_v1", return_value=media) as media_info_v1:
+                with mock.patch.object(client, "video_download_by_url", return_value=expected) as download_by_url:
+                    result = client.video_download(media.pk, folder="/tmp", overwrite=False)
 
-        media_info.assert_called_once_with(media.pk, use_public=False)
+        media_info.assert_not_called()
+        media_info_v1.assert_called_once_with(media.pk)
         download_by_url.assert_called_once_with(
             media.video_url,
             f"example_{media.pk}",

@@ -520,7 +520,7 @@ class MediaMixin:
             raise MediaNotFound(media_id=media_id, **(self.last_json or {}))
         return extract_media_v1(media)
 
-    def media_info(self, media_pk: str, use_cache: bool = True, use_public: bool = True) -> Media:
+    def media_info(self, media_pk: str, use_cache: bool = True) -> Media:
         """
         Get Media Information from PK
 
@@ -530,8 +530,6 @@ class MediaMixin:
             Unique identifier of the media
         use_cache: bool, optional
             Whether or not to use information from cache, default value is True
-        use_public: bool, optional
-            Whether or not to try Public GraphQL API before Private Mobile API, default value is True
 
         Returns
         -------
@@ -540,21 +538,18 @@ class MediaMixin:
         """
         media_pk = self.media_pk(media_pk)
         if not use_cache or media_pk not in self._medias_cache:
-            if use_public:
+            try:
                 try:
-                    try:
-                        media = self.media_info_gql(media_pk)
-                    except ClientLoginRequired as e:
-                        if not self.inject_sessionid_to_public():
-                            raise e
-                        media = self.media_info_gql(media_pk)  # retry
-                except Exception as e:
-                    if not isinstance(e, ClientError):
-                        self.logger.exception(e)  # Register unknown error
-                    # Restricted Video: This video is not available in your country.
-                    # Or private account
-                    media = self.media_info_v1(media_pk)
-            else:
+                    media = self.media_info_gql(media_pk)
+                except ClientLoginRequired as e:
+                    if not self.inject_sessionid_to_public():
+                        raise e
+                    media = self.media_info_gql(media_pk)  # retry
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)  # Register unknown error
+                # Restricted Video: This video is not available in your country.
+                # Or private account
                 media = self.media_info_v1(media_pk)
             self._medias_cache[media_pk] = media
         return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
