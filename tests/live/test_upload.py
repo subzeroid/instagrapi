@@ -89,27 +89,15 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         self.fail(f"Album resource usertags were not visible after {attempts} media_info_v1 attempts: {last_resources}")
 
     def ensure_creator_account(self):
-        result = self.cl.private_request("accounts/current_user/?edit=true")
-        user = result.get("user") or {}
-        if user.get("account_type") == 3:
+        account = self.cl.account_info()
+        if account.account_type == 3:
             return
-        result = self.cl.private_request(
-            "business/account/convert_account/",
-            data=self.cl.with_default_data(
-                {
-                    "entry_point": "setting",
-                    "creator_destination_migration": "false",
-                    "to_account_type": "3",
-                    "category_id": "2347428775505624",
-                    "should_show_category": "1",
-                    "should_show_public_contacts": "0",
-                }
-            ),
+        account = self.cl.account_convert_to_creator(
+            category_id="2347428775505624",
+            should_show_category=True,
+            should_show_public_contacts=False,
         )
-        self.assertEqual(result.get("status"), "ok")
-        result = self.cl.private_request("accounts/current_user/?edit=true")
-        user = result.get("user") or {}
-        self.assertEqual(user.get("account_type"), 3)
+        self.assertEqual(account.account_type, 3)
 
     def assertScheduledMediaAccessible(
         self, media, schedule_at, caption_text, product_type="feed", attempts=5, delay=3

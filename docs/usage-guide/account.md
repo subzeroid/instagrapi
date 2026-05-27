@@ -10,6 +10,9 @@ Viewing and managing your profile
 | account_change_picture(path: Path) | UserShort | Change profile picture |
 | account_set_private() | bool | Switch account to private mode |
 | account_set_public() | bool | Switch account to public mode |
+| account_convert_to_business(category_id: str \| int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False) | Account | Convert the current account to a business professional account |
+| account_convert_to_creator(category_id: str \| int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False) | Account | Convert the current account to a creator professional account |
+| account_convert_to_professional(to_account_type: int = 3, category_id: str \| int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False) | Account | Generic professional account conversion helper; `2` is business and `3` is creator |
 | account_security_info() | dict | Return account security settings, backup codes, trusted devices, and 2FA state |
 | set_external_url(external_url: str) | dict | Replace bio links with a single external URL |
 | remove_bio_links(link_ids: List[int]) | dict | Remove one or more bio links by link ID |
@@ -45,6 +48,9 @@ Account(pk=1903424587, username='example', ..., external_url='https://github.com
 
 >>> cl.account_set_biography("Python, APIs, and automation")
 True
+
+>>> cl.account_convert_to_creator(category_id="2347428775505624")
+Account(pk=1903424587, username='example', ..., account_type=3)
 
 >>> media_pk = cl.media_pk_from_url('https://www.instagram.com/p/BWnh360Fitr/')
 1560364774164147051
@@ -82,6 +88,8 @@ Notes:
 
 * `account_edit(**data)` only applies supported fields and preserves missing required profile fields from `account_info()`.
 * Use `account_set_biography()` when you want Instagram to re-process biography entities/markup explicitly.
+* Professional conversion uses Instagram's mobile conversion flow and may still be blocked by account-specific eligibility, category, contact, or Account Center requirements.
+* `account_convert_to_business()` sends `to_account_type=2`; `account_convert_to_creator()` sends `to_account_type=3`.
 * `send_password_reset()` starts Instagram's recovery flow by requesting a reset link or code. It does not set a new password by itself; continue with the link/code flow that Instagram sends to the account email or phone.
 * `account_security_info()` and `insights_*` style methods require an authenticated session and may depend on the account type or enabled security features.
 
