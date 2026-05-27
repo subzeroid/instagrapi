@@ -1148,6 +1148,21 @@
 <td>Switch account to public mode</td>
 </tr>
 <tr>
+<td>account_convert_to_business(category_id: str | int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False)</td>
+<td>Account</td>
+<td>Convert the current account to a business professional account</td>
+</tr>
+<tr>
+<td>account_convert_to_creator(category_id: str | int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False)</td>
+<td>Account</td>
+<td>Convert the current account to a creator professional account</td>
+</tr>
+<tr>
+<td>account_convert_to_professional(to_account_type: int = 3, category_id: str | int = "2347428775505624", should_show_category: bool = True, should_show_public_contacts: bool = False)</td>
+<td>Account</td>
+<td>Generic professional account conversion helper; <code>2</code> is business and <code>3</code> is creator</td>
+</tr>
+<tr>
 <td>account_security_info()</td>
 <td>dict</td>
 <td>Return account security settings, backup codes, trusted devices, and 2FA state</td>
@@ -1214,6 +1229,9 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">account_set_biography</span><span class="p">(</span><span class="s2">&quot;Python, APIs, and automation&quot;</span><span class="p">)</span>
 <span class="kc">True</span>
 
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">account_convert_to_creator</span><span class="p">(</span><span class="n">category_id</span><span class="o">=</span><span class="s2">&quot;2347428775505624&quot;</span><span class="p">)</span>
+<span class="n">Account</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="mi">1903424587</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="s1">&#39;example&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">account_type</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media_pk</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/BWnh360Fitr/&#39;</span><span class="p">)</span>
 <span class="mi">1560364774164147051</span>
 
@@ -1249,6 +1267,8 @@
 <ul>
 <li><code>account_edit(**data)</code> only applies supported fields and preserves missing required profile fields from <code>account_info()</code>.</li>
 <li>Use <code>account_set_biography()</code> when you want Instagram to re-process biography entities/markup explicitly.</li>
+<li>Professional conversion uses Instagram's mobile conversion flow and may still be blocked by account-specific eligibility, category, contact, or Account Center requirements.</li>
+<li><code>account_convert_to_business()</code> sends <code>to_account_type=2</code>; <code>account_convert_to_creator()</code> sends <code>to_account_type=3</code>.</li>
 <li><code>send_password_reset()</code> starts Instagram's recovery flow by requesting a reset link or code. It does not set a new password by itself; continue with the link/code flow that Instagram sends to the account email or phone.</li>
 <li><code>account_security_info()</code> and <code>insights_*</code> style methods require an authenticated session and may depend on the account type or enabled security features.</li>
 </ul>
