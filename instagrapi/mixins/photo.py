@@ -360,13 +360,17 @@ class UploadPhotoMixin:
         data = dict(extra_data or {})
         if schedule_at is None:
             return data
-        scheduled_publish_time = int(schedule_at.timestamp() if isinstance(schedule_at, datetime) else schedule_at)
+        scheduled_publish_time = UploadPhotoMixin._scheduled_publish_time(schedule_at)
         data["publish_mode"] = "scheduled"
         data["content_scheduling_metadata"] = json.dumps(
             {"scheduled_publish_time": scheduled_publish_time},
             separators=(",", ":"),
         )
         return data
+
+    @staticmethod
+    def _scheduled_publish_time(schedule_at: Union[int, datetime]) -> int:
+        return int(schedule_at.timestamp() if isinstance(schedule_at, datetime) else schedule_at)
 
     def photo_configure(
         self,

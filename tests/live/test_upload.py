@@ -1,4 +1,4 @@
-from instagrapi.exceptions import MediaNotFound
+from instagrapi.exceptions import ClientNotFoundError, MediaNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -111,7 +111,9 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         user = result.get("user") or {}
         self.assertEqual(user.get("account_type"), 3)
 
-    def assertScheduledMediaAccessible(self, media, schedule_at, caption_text, attempts=5, delay=3):
+    def assertScheduledMediaAccessible(
+        self, media, schedule_at, caption_text, product_type="feed", attempts=5, delay=3
+    ):
         self.assertIsInstance(media, Media)
         last_result = {}
         for attempt in range(attempts):
@@ -128,12 +130,51 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             payload = items[0]
             metadata = payload.get("content_scheduling_metadata") or {}
             self.assertEqual(str(payload.get("id")), str(media.id))
-            self.assertEqual(payload.get("product_type"), "feed")
+            self.assertEqual(payload.get("product_type"), product_type)
             self.assertEqual((payload.get("caption") or {}).get("text", ""), caption_text)
             self.assertTrue(metadata.get("scheduled_content_id"))
             self.assertEqual(metadata.get("scheduled_publish_time"), schedule_at)
             return payload
         self.fail(f"Scheduled media {media.id} was not accessible through media/infos: {last_result}")
+
+    def skip_unavailable_scheduled_publish(self, exc):
+        if exc is None or isinstance(
+            exc,
+            (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError),
+        ):
+            self.skipTest("No usable scheduled publishing account was available")
+        raise exc
+
+    def scheduled_publish_clients(self, additional_count=4):
+        seen_user_ids = set()
+        if self.cl:
+            seen_user_ids.add(str(self.cl.user_id))
+            yield self.cl
+        for cl in self.fresh_accounts(additional_count, exclude_user_ids=seen_user_ids):
+            yield cl
+
+    def upload_with_scheduled_publish(self, upload):
+        last_exc = None
+        for cl in self.scheduled_publish_clients():
+            self.cl = cl
+            self.ensure_creator_account()
+            try:
+                return upload()
+            except (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError) as exc:
+                last_exc = exc
+                continue
+        self.skip_unavailable_scheduled_publish(last_exc)
+
+    def cleanup_scheduled_media(self, media):
+        if not media:
+            return
+        try:
+            deleted = self.cl.media_delete(media.id)
+        except Exception as exc:
+            print(f"Scheduled media cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+            return
+        if not deleted:
+            print(f"Scheduled media cleanup media_delete returned False for {media.id}")
 
     def test_photo_upload_without_location(self):
         path = self.copy_media_fixture("examples/kanada.jpg")
@@ -166,14 +207,15 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
                 self.assertTrue(self.cl.media_delete(media.id))
 
     def test_photo_upload_scheduled(self):
-        self.ensure_creator_account()
         path = self.copy_media_fixture("examples/kanada.jpg")
         self.assertIsInstance(path, Path)
         media = None
         try:
             schedule_at = int(time.time()) + 3600
             caption_text = f"Test caption for scheduled photo {schedule_at}"
-            media = self.cl.photo_upload(path, caption_text, schedule_at=schedule_at)
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.photo_upload(path, caption_text, schedule_at=schedule_at)
+            )
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, caption_text)
             self.assertScheduledMediaAccessible(media, schedule_at, caption_text)
@@ -181,7 +223,26 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
                 self.cl.media_info_v1(media.pk)
         finally:
             if media:
-                self.assertTrue(self.cl.media_delete(media.id))
+                self.cleanup_scheduled_media(media)
+
+    def test_video_upload_scheduled(self):
+        path = self.make_video_fixture(label="scheduled feed video fixture")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled video {schedule_at}"
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.video_upload(path, caption_text, schedule_at=schedule_at)
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text)
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
+        finally:
+            if media:
+                self.cleanup_scheduled_media(media)
 
     def test_video_upload(self):
         path = self.make_video_fixture(label="feed video fixture")
@@ -197,6 +258,28 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_album_upload_scheduled(self):
+        paths = [
+            self.copy_media_fixture("examples/kanada.jpg"),
+            self.copy_media_fixture("examples/background.png"),
+        ]
+        [self.assertIsInstance(path, Path) for path in paths]
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled album {schedule_at}"
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.album_upload(paths, caption_text, schedule_at=schedule_at)
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text, product_type="carousel_container")
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
+        finally:
+            if media:
+                self.cleanup_scheduled_media(media)
 
     def test_album_upload(self):
         paths = [

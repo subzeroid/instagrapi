@@ -317,12 +317,13 @@ Upload medias to your feed. Common arguments:
 * `caption`  - Text for you post
 * `usertags` - List[Usertag] of mention users (see `Usertag` in [types.py](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/types.py))
 * `location` - Location (e.g. `Location(name='Test', lat=42.0, lng=42.0)`)
+* `schedule_at` - Unix timestamp in seconds or `datetime` for scheduled publishing on eligible professional accounts
 
 | Method                                                                                                                                 | Return  | Description
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})             | Media   | Upload photo (Support JPG files)
-| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})            | Media   | Upload video (Support MP4 files)
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})                      | Media   | Upload Album (Support JPG/MP4 files)
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)             | Media   | Upload photo (Support JPG files)
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)            | Media   | Upload video (Support MP4 files)
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
 | clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
@@ -332,10 +333,14 @@ Upload medias to your feed. Common arguments:
 | clip_music_extra_data(track: Track or dict, extra_data: Dict = {}) | dict | Build Reels music configure fields for manual `clip_upload(..., extra_data=...)`
 | clip_upload_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {}) | Media | Upload a Reel with music metadata without local audio muxing
 | clip_upload_as_reel_with_music(path: Path, caption: str, track: Track, extra_data: Dict = {}) | Media | Upload a Reel after locally muxing the track into the video with MoviePy
-| photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed photo with music metadata
-| album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}) | Media | Upload feed album/carousel with music metadata
+| photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}, schedule_at: int \| datetime = None) | Media | Upload feed photo with music metadata
+| album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}, schedule_at: int \| datetime = None) | Media | Upload feed album/carousel with music metadata
 
 For video uploads in Android environments, pass `thumbnail=...` to avoid automatic thumbnail generation, or install the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
+
+Scheduled publishing is available only where the Instagram app enables scheduled content, typically professional
+creator/business accounts. `schedule_at` works for feed photo, feed video, and album/carousel uploads. Reels, IGTV,
+Story, Direct, and cutout sticker upload helpers do not use this scheduled publishing flow.
 
 
 In `extra_data`, you can pass additional media settings, for example:
@@ -369,10 +374,17 @@ automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying
 ### Example:
 
 ``` python
+>>> import time
 >>> from instagrapi import Client
 
 >>> cl = Client()
 >>> cl.login(USERNAME, PASSWORD)
+
+>>> scheduled_photo = cl.photo_upload(
+...     "/app/image.jpg",
+...     "Scheduled photo",
+...     schedule_at=int(time.time()) + 3600,
+... )
 
 >>> if cl.clip_trial_eligible():
 ...     trial_reel = cl.clip_upload(
