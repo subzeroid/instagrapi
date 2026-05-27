@@ -309,6 +309,73 @@ class UploadRegressionTestCase(unittest.TestCase):
         extra_data = configure.call_args.kwargs["extra_data"]
         self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": 1779808917})
 
+    def test_video_upload_sends_scheduled_publish_metadata(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=2)
+        schedule_at = 1779808917
+
+        with mock.patch.object(
+            client,
+            "video_rupload",
+            return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+        ):
+            with mock.patch.object(
+                client, "video_configure", return_value={"status": "ok", "media": media_payload}
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.video_upload(Path("example.mp4"), "caption", schedule_at=schedule_at)
+
+        self.assertIsInstance(media, Media)
+        extra_data = configure.call_args.kwargs["extra_data"]
+        self.assertEqual(extra_data["publish_mode"], "scheduled")
+        self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": schedule_at})
+
+    def test_album_upload_sends_scheduled_publish_metadata(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=8)
+        media_payload["carousel_media"] = [self.build_media_payload(media_type=1)]
+        schedule_at = 1779808917
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client,
+                "album_configure",
+                return_value={"status": "ok", "media": media_payload},
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.album_upload([Path("one.jpg")], "caption", schedule_at=schedule_at)
+
+        self.assertIsInstance(media, Media)
+        extra_data = configure.call_args.kwargs["extra_data"]
+        self.assertEqual(extra_data["publish_mode"], "scheduled")
+        self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": schedule_at})
+
+    def test_album_upload_with_music_forwards_schedule_at_without_mutating_extra_data(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [12000],
+            "title": "Album song",
+            "display_artist": "Album artist",
+        }
+        extra_data = {"disable_comments": 1}
+        schedule_at = datetime.fromtimestamp(1779808917, tz=timezone.utc)
+
+        with mock.patch.object(client, "album_upload", return_value="uploaded") as album_upload:
+            result = client.album_upload_with_music(
+                [Path("one.jpg"), Path("two.jpg")],
+                "caption",
+                track,
+                extra_data=extra_data,
+                alacorn_session_id="alacorn-1",
+                schedule_at=schedule_at,
+            )
+
+        self.assertEqual(result, "uploaded")
+        self.assertEqual(extra_data, {"disable_comments": 1})
+        self.assertEqual(album_upload.call_args.kwargs["schedule_at"], schedule_at)
+
     def test_video_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 

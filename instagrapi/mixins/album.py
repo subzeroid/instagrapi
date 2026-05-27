@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
@@ -132,6 +133,7 @@ class UploadAlbumMixin:
         configure_exception=None,
         to_story=False,
         extra_data: Dict[str, str] = {},
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload album to feed
@@ -157,6 +159,8 @@ class UploadAlbumMixin:
             Currently not used, default is False
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the album should be published.
 
         Returns
         -------
@@ -165,6 +169,7 @@ class UploadAlbumMixin:
         """
         if not paths:
             raise AlbumUnknownFormat("Album upload requires at least one media path.")
+        extra_data = self._scheduled_extra_data(extra_data, schedule_at)
         children = []
         for path in paths:
             path = Path(path)
@@ -246,6 +251,7 @@ class UploadAlbumMixin:
         overlap_duration: int = 30000,
         browse_session_id: Optional[str] = None,
         alacorn_session_id: Optional[str] = None,
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload a feed album/carousel with attached music.
@@ -283,6 +289,8 @@ class UploadAlbumMixin:
         alacorn_session_id: str, optional
             Music browser session id returned by ``music_in_feed_audio_browser``.
             Fetched automatically when omitted.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the album should be published.
 
         Returns
         -------
@@ -307,6 +315,7 @@ class UploadAlbumMixin:
             configure_exception=configure_exception,
             to_story=to_story,
             extra_data=data,
+            schedule_at=schedule_at,
         )
 
     def album_configure(

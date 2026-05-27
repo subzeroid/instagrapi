@@ -2,6 +2,7 @@ import contextlib
 import random
 import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
@@ -436,6 +437,7 @@ class UploadVideoMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         extra_data: Dict[str, str] = {},
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload video and configure to feed
@@ -454,6 +456,8 @@ class UploadVideoMixin:
             Location tag for this upload, default is None
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the video should be published.
 
         Returns
         -------
@@ -463,6 +467,7 @@ class UploadVideoMixin:
         path = Path(path)
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
+        extra_data = self._scheduled_extra_data(extra_data, schedule_at)
         upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=False)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
