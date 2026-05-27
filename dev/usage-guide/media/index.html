@@ -2034,6 +2034,7 @@
 <li><code>caption</code>  - Text for you post</li>
 <li><code>usertags</code> - List[Usertag] of mention users (see <code>Usertag</code> in <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/types.py">types.py</a>)</li>
 <li><code>location</code> - Location (e.g. <code>Location(name='Test', lat=42.0, lng=42.0)</code>)</li>
+<li><code>schedule_at</code> - Unix timestamp in seconds or <code>datetime</code> for scheduled publishing on eligible professional accounts</li>
 </ul>
 <table>
 <thead>
@@ -2045,17 +2046,17 @@
 </thead>
 <tbody>
 <tr>
-<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
 <td>Media</td>
 <td>Upload photo (Support JPG files)</td>
 </tr>
 <tr>
-<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
 <td>Media</td>
 <td>Upload video (Support MP4 files)</td>
 </tr>
 <tr>
-<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {})</td>
+<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
 <td>Media</td>
 <td>Upload Album (Support JPG/MP4 files)</td>
 </tr>
@@ -2105,18 +2106,21 @@
 <td>Upload a Reel after locally muxing the track into the video with MoviePy</td>
 </tr>
 <tr>
-<td>photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {})</td>
+<td>photo_upload_with_music(path: Path, caption: str, track: Track or dict, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
 <td>Media</td>
 <td>Upload feed photo with music metadata</td>
 </tr>
 <tr>
-<td>album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {})</td>
+<td>album_upload_with_music(paths: List[Path], caption: str, track: Track or dict, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
 <td>Media</td>
 <td>Upload feed album/carousel with music metadata</td>
 </tr>
 </tbody>
 </table>
 <p>For video uploads in Android environments, pass <code>thumbnail=...</code> to avoid automatic thumbnail generation, or install the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</p>
+<p>Scheduled publishing is available only where the Instagram app enables scheduled content, typically professional
+creator/business accounts. <code>schedule_at</code> works for feed photo, feed video, and album/carousel uploads. Reels, IGTV,
+Story, Direct, and cutout sticker upload helpers do not use this scheduled publishing flow.</p>
 <p>In <code>extra_data</code>, you can pass additional media settings, for example:</p>
 <table>
 <thead>
@@ -2166,10 +2170,17 @@ instagrapi raises <code>ClientError</code> before uploading video bytes. The Ree
 automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> when replaying or testing a specific low-level payload.
 <code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
 <h3 id="example_2">Example:</h3>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">scheduled_photo</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="s2">&quot;Scheduled photo&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">schedule_at</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span> <span class="o">+</span> <span class="mi">3600</span><span class="p">,</span>
+<span class="o">...</span> <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_trial_eligible</span><span class="p">():</span>
 <span class="o">...</span>     <span class="n">trial_reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
