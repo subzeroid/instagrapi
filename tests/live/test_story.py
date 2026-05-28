@@ -69,6 +69,18 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             if story:
                 self.assertTrue(self.cl.story_delete(story.id))
 
+    def test_media_share_to_story(self):
+        media_pk = self.story_sticker_media_pk()
+        story = None
+        try:
+            story = self.cl.media_share_to_story(media_pk, caption="Test media share to story")
+            self.assertIsInstance(story, Story)
+            self.assertTrue(story)
+            self.assertUploadedStoryAccessible(story, media_type=1)
+        finally:
+            if story:
+                self.assertTrue(self.cl.story_delete(story.id))
+
     def test_upload_video_story(self):
         media_pk = self.story_sticker_media_pk()
         story = None

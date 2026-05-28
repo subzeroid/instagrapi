@@ -41,6 +41,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_oembed(url: str) | dict | Return short oEmbed-style media info by URL |
 | media_like(media_id: str) | bool | Like media |
 | media_unlike(media_id: str) | bool | Unlike media |
+| media_share_to_story(media_id: str, background: Path = None, caption: str = "") | Story | Share an existing post to your story as a feed media sticker |
 | media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None) | dict | Create a note attached to a media item |
 | media_note_delete(note_id: str, extra_data: Optional[Dict] = None) | bool | Delete a note attached to a media item |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
@@ -245,6 +246,11 @@ True
 True
 >>> cl.media_unlike(media_id)
 True
+
+>>> media_pk = cl.media_pk_from_url("https://www.instagram.com/p/CGgDsi7JQdS/")
+>>> story = cl.media_share_to_story(media_pk)
+>>> story.pk
+'3155832952940083788'
 
 ```
 

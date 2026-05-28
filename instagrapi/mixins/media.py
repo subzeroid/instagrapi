@@ -1,8 +1,10 @@
 import json
 import random
+import tempfile
 import time
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -25,7 +27,7 @@ from instagrapi.extractors import (
     extract_user_short,
 )
 from instagrapi.mixins.graphql import GQL_STUFF
-from instagrapi.types import Location, Media, Story, UserShort, Usertag
+from instagrapi.types import Location, Media, Story, StoryMedia, UserShort, Usertag
 from instagrapi.utils.auth import generate_jazoest
 from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.serialization import dumps, json_value
@@ -40,6 +42,19 @@ class MediaMixin:
     """
 
     _medias_cache = {}  # pk -> object
+
+    def _media_share_story_background(self) -> Path:
+        temp = tempfile.NamedTemporaryFile(prefix="instagrapi_story_share_", suffix=".jpg", delete=False)
+        temp.close()
+        path = Path(temp.name)
+        try:
+            from PIL import Image
+
+            Image.new("RGB", (720, 1280), (0, 0, 0)).save(path, format="JPEG", quality=95)
+        except Exception:
+            path.unlink(missing_ok=True)
+            raise
+        return path
 
     @staticmethod
     def _find_profile_timeline_payload(data):
@@ -335,6 +350,84 @@ class MediaMixin:
         if "_" in media_pk:
             media_pk, _ = media_id.split("_")
         return str(media_pk)
+
+    def media_share_to_story(
+        self,
+        media_id: str,
+        background: Path = None,
+        caption: str = "",
+        x: float = 0.5,
+        y: float = 0.4997396,
+        width: float = 0.8,
+        height: float = 0.60572916,
+        rotation: float = 0.0,
+        extra_data: Optional[Dict[str, str]] = None,
+    ) -> Story:
+        """
+        Share an existing feed media as a story.
+
+        Parameters
+        ----------
+        media_id: str
+            Media pk or full media id (``pk_userid``) to share
+        background: Path, optional
+            9:16 background image for the story. When omitted, a black 720x1280
+            image is generated temporarily.
+        caption: str, optional
+            Story caption
+        x: float, optional
+            Feed media sticker x position
+        y: float, optional
+            Feed media sticker y position
+        width: float, optional
+            Feed media sticker width
+        height: float, optional
+            Feed media sticker height
+        rotation: float, optional
+            Feed media sticker rotation
+        extra_data: Dict[str, str], optional
+            Additional story configure fields
+
+        Returns
+        -------
+        Story
+            An object of Story
+        """
+        assert self.user_id, "Login required"
+        media_id = str(media_id)
+        media_pk = self.media_pk(media_id)
+        media_owner_id = None
+        if "_" in media_id:
+            _, owner_id = media_id.split("_", 1)
+            media_owner_id = int(owner_id) if owner_id.isdigit() else None
+
+        generated_background = None
+        if background is None:
+            generated_background = self._media_share_story_background()
+            background = generated_background
+        else:
+            background = Path(background)
+
+        try:
+            return self.photo_upload_to_story(
+                background,
+                caption,
+                medias=[
+                    StoryMedia(
+                        media_pk=media_pk,
+                        user_id=media_owner_id,
+                        x=x,
+                        y=y,
+                        width=width,
+                        height=height,
+                        rotation=rotation,
+                    )
+                ],
+                extra_data=extra_data or {},
+            )
+        finally:
+            if generated_background:
+                generated_background.unlink(missing_ok=True)
 
     def media_code_from_pk(self, media_pk: str) -> str:
         """

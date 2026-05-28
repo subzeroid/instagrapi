@@ -115,6 +115,54 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         self.assertEqual(media.resources[1].usertags[0].y, 0.5)
 
 
+class MediaShareToStoryRegressionTestCase(unittest.TestCase):
+    def test_media_share_to_story_uses_existing_media_as_story_sticker(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "1"}
+        background = Path("background.jpg")
+        story = Story(
+            pk="10",
+            id="10_1",
+            code="story10",
+            taken_at=datetime.now(UTC()),
+            media_type=1,
+            product_type="story",
+            thumbnail_url="https://example.com/story.jpg",
+            user=UserShort(pk="1", username="example", profile_pic_url="https://example.com/profile.jpg"),
+            sponsor_tags=[],
+            mentions=[],
+            links=[],
+            hashtags=[],
+            locations=[],
+            stickers=[],
+        )
+        client.photo_upload_to_story = Mock(return_value=story)
+
+        result = client.media_share_to_story(
+            "123_456",
+            background=background,
+            caption="caption",
+            x=0.4,
+            y=0.45,
+            width=0.7,
+            height=0.55,
+        )
+
+        self.assertEqual(result, story)
+        client.photo_upload_to_story.assert_called_once()
+        args, kwargs = client.photo_upload_to_story.call_args
+        self.assertEqual(args[:2], (background, "caption"))
+        self.assertEqual(len(kwargs["medias"]), 1)
+        media_sticker = kwargs["medias"][0]
+        self.assertIsInstance(media_sticker, StoryMedia)
+        self.assertEqual(media_sticker.media_pk, 123)
+        self.assertEqual(media_sticker.user_id, 456)
+        self.assertEqual(media_sticker.x, 0.4)
+        self.assertEqual(media_sticker.y, 0.45)
+        self.assertEqual(media_sticker.width, 0.7)
+        self.assertEqual(media_sticker.height, 0.55)
+
+
 class CheckOffensiveCommentV2RegressionTestCase(unittest.TestCase):
     def _build_logged_in_client(self):
         client = Client()
