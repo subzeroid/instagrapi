@@ -86,8 +86,6 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
             self.assertUploadedStoryAccessible(story, media_type=1)
-            uploaded_story = self.uploaded_story_with_media(story, media_pk)
-            self.assertEqual(str(uploaded_story.id), str(story.id))
         finally:
             if story:
                 self.assertTrue(self.cl.story_delete(story.id))
@@ -100,6 +98,8 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
             self.assertUploadedStoryAccessible(story, media_type=1)
+            uploaded_story = self.uploaded_story_with_media(story, media_pk)
+            self.assertEqual(str(uploaded_story.id), str(story.id))
         finally:
             if story:
                 self.assertTrue(self.cl.story_delete(story.id))
