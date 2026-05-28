@@ -11,6 +11,7 @@ Pass hashtag names without the leading `#`, for example `pizza`. If a leading `#
 | hashtag_medias_recent(name: str, amount: int = 27) | List[Media] | Return recent posts for a hashtag |
 | hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Return reels/clips for a hashtag via private API |
 | hashtag_follow(hashtag: str, unfollow: bool = False) | bool | Follow a hashtag |
+| hashtag_following(amount: int = 0) | List[Hashtag] | Return hashtags followed by the authenticated account |
 | hashtag_unfollow(hashtag: str) | bool | Unfollow a hashtag |
 
 
@@ -147,6 +148,9 @@ QVFEUXpfM0RtaDdmMExPQ0k0UWRlaHFJa2RVdVlaX01LTzhkNF9Dd1N2UlhtVy1vSTZvMERfYW5XN205
 >>> cl.hashtag_follow("python")
 True
 
+>>> cl.hashtag_following(amount=1)
+[Hashtag(id='17841562401125985', name='python', media_count=12000000, profile_pic_url=None)]
+
 >>> cl.hashtag_unfollow("python")
 True
 ```
@@ -155,5 +159,6 @@ Notes:
 
 * Instagram's old public hashtag web page JSON (`?__a=1`) is no longer reliable and the `_a1` helpers were removed. Use the high-level hashtag methods or the authenticated private/mobile `_v1` helpers.
 * High-level `hashtag_info()`, `hashtag_medias_top()`, and `hashtag_medias_recent()` use the private/mobile helpers.
+* `hashtag_following()` returns the authenticated following-list hashtag preview. Instagram may limit how many followed hashtags are included.
 * For resumable pagination, use `hashtag_medias_v1_chunk()` and persist the encoded `max_id` cursor.
 * `hashtag_medias_v1_chunk()` accepts `top`, `recent`, or `clips` as `tab_key`.
