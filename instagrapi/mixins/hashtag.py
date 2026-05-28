@@ -322,6 +322,56 @@ class HashtagMixin:
         result = self.private_request(f"web/tags/{name}/{hashtag}/", domain="www.instagram.com", data=data)
         return result["status"] == "ok"
 
+    def hashtag_following(self, amount: int = 0) -> List[Hashtag]:
+        """
+        Get hashtags followed by the authenticated account
+
+        Parameters
+        ----------
+        amount: int, optional
+            Maximum number of hashtags to return. Value 0 returns all hashtags
+            returned by Instagram.
+
+        Returns
+        -------
+        List[Hashtag]
+            List of objects of Hashtag
+        """
+        assert self.user_id, "Login required"
+        result = self.private_graphql_following_list(
+            str(self.user_id),
+            self.rank_token,
+            priority="u=3, i",
+            skip_preview_hashtags=False,
+            skip_hashtag_count=False,
+        )
+        data = result.get("data") or {}
+        following = next(
+            (
+                value
+                for key, value in data.items()
+                if isinstance(value, dict) and "xdt_api__v1__friendships__following" in key
+            ),
+            {},
+        )
+        hashtags = []
+        for item in following.get("preview_hashtags") or []:
+            if not isinstance(item, dict):
+                continue
+            node = item.get("hashtag") or item.get("node") or item
+            if not isinstance(node, dict) or not node:
+                continue
+            node = dict(node)
+            node["id"] = node.get("id") or node.get("pk")
+            node["media_count"] = node.get("media_count") or node.get("post_count") or node.get("postCount")
+            node["profile_pic_url"] = node.get("profile_pic_url") or node.get("profilePictureUrl") or None
+            if not node.get("id") or not node.get("name"):
+                continue
+            hashtags.append(Hashtag(**node))
+        if amount:
+            hashtags = hashtags[:amount]
+        return hashtags
+
     def hashtag_unfollow(self, hashtag: str) -> bool:
         """
         Unfollow to hashtag

@@ -2059,6 +2059,8 @@ class UserMixin:
         order: str = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
+        skip_preview_hashtags: bool = True,
+        skip_hashtag_count: bool = True,
     ) -> dict:
         request_data = {
             "search_surface": "follow_list_page",
@@ -2068,7 +2070,7 @@ class UserMixin:
         variables = {
             "user_id": str(user_id),
             "skip_use_clickable_see_more": True,
-            "skip_preview_hashtags": True,
+            "skip_preview_hashtags": skip_preview_hashtags,
             "skip_should_limit_list_of_followers": True,
             "skip_pending_admins": True,
             "skip_more_groups_available": True,
@@ -2083,7 +2085,7 @@ class UserMixin:
             "include_unseen_count": True,
             "skip_has_more": True,
             "enable_groups": True,
-            "skip_hashtag_count": True,
+            "skip_hashtag_count": skip_hashtag_count,
         }
         if exclude_field_is_favorite is not None:
             variables["exclude_field_is_favorite"] = exclude_field_is_favorite

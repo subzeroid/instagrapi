@@ -67,3 +67,11 @@ class ClientHashtagTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(data["id"])
             self.assertTrue(data["code"])
             self.assertTrue(data["media_type"])
+
+    def test_hashtag_following(self):
+        hashtags = self.cl.hashtag_following(amount=1)
+        self.assertIsInstance(hashtags, list)
+        if hashtags:
+            self.assertIsInstance(hashtags[0], Hashtag)
+            self.assertTrue(hashtags[0].id)
+            self.assertTrue(hashtags[0].name)
