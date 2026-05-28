@@ -130,3 +130,28 @@ class AccountRegressionTestCase(unittest.TestCase):
                 "code": "123456",
             },
         )
+
+    def test_confirm_phone_number_posts_verify_sms_code_payload(self):
+        client = Client()
+        client.phone_id = "phone-id"
+        client.authorization_data = {"ds_user_id": "123"}
+        client.uuid = "uuid"
+        client.android_device_id = "android-id"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.confirm_phone_number("+15551234567", "123456", has_sms_consent=True)
+
+        self.assertEqual(result, {"status": "ok"})
+        private_request.assert_called_once_with(
+            "accounts/verify_sms_code/",
+            {
+                "_uuid": "uuid",
+                "device_id": "android-id",
+                "phone_id": "phone-id",
+                "_uid": "123",
+                "guid": "uuid",
+                "phone_number": "+15551234567",
+                "verification_code": "123456",
+                "has_sms_consent": "true",
+            },
+        )

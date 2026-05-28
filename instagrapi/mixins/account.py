@@ -437,3 +437,29 @@ class AccountMixin:
                 }
             ),
         )
+
+    def confirm_phone_number(self, phone_number: str, code: str, has_sms_consent: bool = False) -> dict:
+        """
+        Confirm new phone number by SMS code
+
+        Parameters
+        ----------
+        phone_number: str
+            Phone number
+        code: str
+            Confirmation code
+        has_sms_consent: bool, default False
+            Whether to include Instagram's SMS consent flag
+
+        Returns
+        -------
+        dict
+            Jsonified response from Instagram
+        """
+        data = {"phone_number": phone_number, "verification_code": code}
+        if has_sms_consent:
+            data["has_sms_consent"] = "true"
+        return self.private_request(
+            "accounts/verify_sms_code/",
+            self.with_extra_data(data),
+        )
