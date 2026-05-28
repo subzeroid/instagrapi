@@ -1560,6 +1560,11 @@
 <td>Unlike media</td>
 </tr>
 <tr>
+<td>media_share_to_story(media_id: str, background: Path = None, caption: str = "")</td>
+<td>Story</td>
+<td>Share an existing post to your story as a feed media sticker</td>
+</tr>
+<tr>
 <td>media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None)</td>
 <td>dict</td>
 <td>Create a note attached to a media item</td>
@@ -1932,6 +1937,11 @@
 <span class="kc">True</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_unlike</span><span class="p">(</span><span class="n">media_id</span><span class="p">)</span>
 <span class="kc">True</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">media_pk</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">&quot;https://www.instagram.com/p/CGgDsi7JQdS/&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">story</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_share_to_story</span><span class="p">(</span><span class="n">media_pk</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">story</span><span class="o">.</span><span class="n">pk</span>
+<span class="s1">&#39;3155832952940083788&#39;</span>
 </code></pre></div>
 <p>Notes:</p>
 <ul>

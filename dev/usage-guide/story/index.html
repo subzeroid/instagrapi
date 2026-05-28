@@ -1397,6 +1397,11 @@ If you have a different resolution, then you need to prepare a file or use the S
 <td>Upload video to story</td>
 </tr>
 <tr>
+<td>media_share_to_story(media_id: str, background: Path = None, caption: str = "")</td>
+<td>Story</td>
+<td>Share an existing post to your story with a generated or provided background</td>
+</tr>
+<tr>
 <td>photo_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, duration: float = 15.0, extra_data: Dict = {})</td>
 <td>Story</td>
 <td>Upload photo to story as a short video with the selected music track muxed into it</td>
@@ -1433,6 +1438,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <p>Notes:</p>
 <ul>
 <li><code>links</code>, <code>hashtags</code>, <code>locations</code>, <code>stickers</code>, <code>medias</code>, and <code>polls</code> are all part of the story sticker payload.</li>
+<li><code>media_share_to_story()</code> is a convenience wrapper for the feed media sticker flow. It uploads a generated black 9:16 background unless you pass your own <code>background</code>.</li>
 <li>Link stickers are supported through <code>StoryLink</code>; this is no longer the old Instagram "swipe up" flow.</li>
 <li>For story uploads, use a 9:16 asset or build one with <code>StoryBuilder</code>.</li>
 <li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
@@ -1461,6 +1467,8 @@ If you have a different resolution, then you need to prepare a file or use the S
     <span class="n">medias</span><span class="o">=</span><span class="p">[</span><span class="n">StoryMedia</span><span class="p">(</span><span class="n">media_pk</span><span class="o">=</span><span class="n">media_pk</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)],</span>
     <span class="n">polls</span><span class="o">=</span><span class="p">[</span><span class="n">StoryPoll</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">question</span> <span class="o">=</span> <span class="s2">&quot;Question&quot;</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Option 1&quot;</span><span class="p">,</span> <span class="s2">&quot;Option 2&quot;</span><span class="p">,</span> <span class="s2">&quot;Option 3&quot;</span><span class="p">])],</span>
 <span class="p">)</span>
+
+<span class="n">cl</span><span class="o">.</span><span class="n">media_share_to_story</span><span class="p">(</span><span class="n">media_pk</span><span class="p">,</span> <span class="n">caption</span><span class="o">=</span><span class="s2">&quot;Shared to story&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="upload-story-with-music">Upload Story with Music</h2>
 <p>Story music upload works by rendering an MP4 locally and then publishing it with the normal story upload flow.</p>
