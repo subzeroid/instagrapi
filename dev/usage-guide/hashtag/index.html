@@ -1144,6 +1144,11 @@
 <td>Follow a hashtag</td>
 </tr>
 <tr>
+<td>hashtag_following(amount: int = 0)</td>
+<td>List[Hashtag]</td>
+<td>Return hashtags followed by the authenticated account</td>
+</tr>
+<tr>
 <td>hashtag_unfollow(hashtag: str)</td>
 <td>bool</td>
 <td>Unfollow a hashtag</td>
@@ -1313,6 +1318,9 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_follow</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
 <span class="kc">True</span>
 
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_following</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">[</span><span class="n">Hashtag</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">&#39;17841562401125985&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="n">media_count</span><span class="o">=</span><span class="mi">12000000</span><span class="p">,</span> <span class="n">profile_pic_url</span><span class="o">=</span><span class="kc">None</span><span class="p">)]</span>
+
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_unfollow</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
 <span class="kc">True</span>
 </code></pre></div>
@@ -1320,6 +1328,7 @@
 <ul>
 <li>Instagram's old public hashtag web page JSON (<code>?__a=1</code>) is no longer reliable and the <code>_a1</code> helpers were removed. Use the high-level hashtag methods or the authenticated private/mobile <code>_v1</code> helpers.</li>
 <li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> use the private/mobile helpers.</li>
+<li><code>hashtag_following()</code> returns the authenticated following-list hashtag preview. Instagram may limit how many followed hashtags are included.</li>
 <li>For resumable pagination, use <code>hashtag_medias_v1_chunk()</code> and persist the encoded <code>max_id</code> cursor.</li>
 <li><code>hashtag_medias_v1_chunk()</code> accepts <code>top</code>, <code>recent</code>, or <code>clips</code> as <code>tab_key</code>.</li>
 </ul>
