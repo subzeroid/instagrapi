@@ -21,6 +21,8 @@ Viewing and managing your profile
 | change_password(old_password: str, new_password: str) | bool | Change account password |
 | send_confirm_email(email: str) | dict | Send a confirmation code to a new email address |
 | confirm_email(email: str, code: str) | dict | Confirm a new email address with the received code |
+| send_confirm_phone_number(phone_number: str) | dict | Send a confirmation code to a new phone number |
+| confirm_phone_number(phone_number: str, code: str, has_sms_consent: bool = False) | dict | Confirm a new phone number with the received SMS code |
 
 Example:
 
@@ -82,6 +84,9 @@ UserShort(pk=1903424587, username='example', ...)
     'robocall_after_max_sms': True},
     'status': 'ok'
 }
+
+>>> cl.confirm_phone_number("+5599999999", "123456")
+{'status': 'ok'}
 ```
 
 Notes:
