@@ -74,6 +74,7 @@ Common arguments:
 | ------------------------------------ | -------- | -------------
 | photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})  | Story  | Upload photo to story
 | video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}) | Story  | Upload video to story
+| media_share_to_story(media_id: str, background: Path = None, caption: str = "") | Story | Share an existing post to your story with a generated or provided background
 | photo_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, duration: float = 15.0, extra_data: Dict = {}) | Story | Upload photo to story as a short video with the selected music track muxed into it
 | video_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {}) | Story | Upload video to story with the selected music track muxed into it
 | story_music_extra_data(track: Track or dict, extra_data: Dict = {}) | dict | Build Story music configure fields for manual story upload `extra_data`
@@ -87,6 +88,7 @@ In `extra_data`, you can pass additional story settings, for example:
 Notes:
 
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
+* `media_share_to_story()` is a convenience wrapper for the feed media sticker flow. It uploads a generated black 9:16 background unless you pass your own `background`.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
 * For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
 * Android users should pass `thumbnail=...` for video stories or install the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
@@ -118,6 +120,8 @@ cl.video_upload_to_story(
     medias=[StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)],
     polls=[StoryPoll(x = 0.5, y = 0.5, width = 0.7, height = 0.5, question = "Question", options = ["Option 1", "Option 2", "Option 3"])],
 )
+
+cl.media_share_to_story(media_pk, caption="Shared to story")
 ```
 
 ## Upload Story with Music
