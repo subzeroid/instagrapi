@@ -1202,6 +1202,16 @@
 <td>dict</td>
 <td>Confirm a new email address with the received code</td>
 </tr>
+<tr>
+<td>send_confirm_phone_number(phone_number: str)</td>
+<td>dict</td>
+<td>Send a confirmation code to a new phone number</td>
+</tr>
+<tr>
+<td>confirm_phone_number(phone_number: str, code: str, has_sms_consent: bool = False)</td>
+<td>dict</td>
+<td>Confirm a new phone number with the received SMS code</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1262,6 +1272,9 @@
     <span class="s1">&#39;robocall_after_max_sms&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
     <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span>
 <span class="p">}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">confirm_phone_number</span><span class="p">(</span><span class="s2">&quot;+5599999999&quot;</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;ok&#39;</span><span class="p">}</span>
 </code></pre></div>
 <p>Notes:</p>
 <ul>
