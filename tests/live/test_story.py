@@ -17,6 +17,27 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             self.skipTest("instagram account did not return media for story sticker")
         return medias[0].pk
 
+    def uploaded_story_with_media(self, expected_story, media_pk, attempts=8, delay=5):
+        expected_media_pk = str(media_pk)
+        last_visible_story = None
+        last_stories = []
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            last_stories = self.cl.user_stories_v1(self.cl.user_id, amount=20)
+            for story in last_stories:
+                if str(story.pk) != str(expected_story.pk) and str(story.id) != str(expected_story.id):
+                    continue
+                last_visible_story = story
+                if any(str(media.media_pk) == expected_media_pk for media in story.medias):
+                    return story
+        if last_visible_story:
+            self.fail(
+                f"Uploaded story {expected_story.id} did not contain shared media "
+                f"{expected_media_pk}: {last_visible_story.medias}"
+            )
+        self.fail(f"Uploaded story {expected_story.id} was not visible in user stories: {last_stories}")
+
     def test_story_pk_from_url(self):
         story_pk = self.cl.story_pk_from_url("https://www.instagram.com/stories/instagram/2581281926631793076/")
         self.assertEqual(story_pk, 2581281926631793076)
@@ -65,6 +86,8 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
             self.assertIsInstance(story, Story)
             self.assertTrue(story)
             self.assertUploadedStoryAccessible(story, media_type=1)
+            uploaded_story = self.uploaded_story_with_media(story, media_pk)
+            self.assertEqual(str(uploaded_story.id), str(story.id))
         finally:
             if story:
                 self.assertTrue(self.cl.story_delete(story.id))
