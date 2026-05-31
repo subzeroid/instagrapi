@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from instagrapi.exceptions import ClipNotUpload
 from instagrapi.extractors import extract_media_v1
 from tests.helpers import *
 
@@ -982,6 +983,28 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(rupload_params["xsharing_user_ids"], "[]")
         self.assertEqual(rupload_params["upload_media_duration_ms"], "6023")
         self.assertEqual(rupload_params["session_id"], rupload_params["upload_id"])
+
+    def test_clip_upload_preserves_direct_upload_failure_response(self):
+        client = self.build_client()
+        failure = Mock(status_code=400, text='{"message":"media_needs_reupload","status":"fail"}')
+        failure.json.return_value = {"message": "media_needs_reupload", "status": "fail"}
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch.object(client.private, "post", return_value=failure):
+                with mock.patch("builtins.open", mock.mock_open(read_data=b"video-bytes")):
+                    with self.assertRaises(ClipNotUpload) as ctx:
+                        client.clip_upload(Path("example.mp4"), "caption")
+
+        exc = ctx.exception
+        self.assertIs(exc.response, failure)
+        self.assertEqual(exc.stage, "upload_settings")
+        self.assertEqual(exc.status_code, 400)
+        self.assertEqual(exc.error_response["message"], "media_needs_reupload")
+        self.assertIn("upload_settings", str(exc))
+        self.assertNotIn("response': None", str(exc))
 
     def test_clip_upload_trial_adds_trial_params_without_mutating_extra_data(self):
         client = self.build_client()

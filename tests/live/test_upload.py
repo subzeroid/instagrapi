@@ -1,4 +1,4 @@
-from instagrapi.exceptions import ClientNotFoundError, MediaNotFound
+from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -359,10 +359,36 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, caption_text)
             # self.assertLocation(media.location)
-            self.assertUploadedMediaAccessible(media, media_type=2, product_type="clips", caption_text=caption_text)
+            payload = self.assertUploadedMediaAccessible(
+                media,
+                media_type=2,
+                product_type="clips",
+                caption_text=caption_text,
+            )
+            self.assertTrue(payload.get("video_versions"))
+            self.assertEqual((payload.get("caption") or {}).get("text"), caption_text)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_clip_upload_direct_failure_reports_response_live(self):
+        path = self.make_video_fixture(label="clip upload failure fixture")
+        response = requests.Response()
+        response.status_code = 400
+        response.url = "https://i.instagram.com/upload_settings/test"
+        response._content = b'{"message":"media_needs_reupload","status":"fail"}'
+        response.request = requests.Request("POST", response.url).prepare()
+
+        with mock.patch.object(self.cl.private, "post", return_value=response):
+            with self.assertRaises(ClipNotUpload) as ctx:
+                self.cl.clip_upload(path, "Upload clip failure")
+
+        exc = ctx.exception
+        self.assertIs(exc.response, response)
+        self.assertEqual(exc.stage, "upload_settings")
+        self.assertEqual(exc.status_code, 400)
+        self.assertEqual(exc.error_response["message"], "media_needs_reupload")
+        self.assertNotIn("response': None", str(exc))
 
     def test_reel_upload_with_music(self):
         # media_type: 2 (video, not IGTV)
