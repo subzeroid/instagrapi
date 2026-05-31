@@ -64,6 +64,45 @@ class BloksMixin:
         data = self._bloks_payload(params, bloks_versioning_id=bloks_versioning_id)
         return self.private_request(f"bloks/apps/{app}/", data=data, with_signature=False)
 
+    def bloks_challenge_take_challenge(
+        self,
+        challenge_context: str = "",
+        choice: Optional[int] = None,
+        has_follow_up_screens: int = 0,
+        extra_data: Optional[Dict[str, Any]] = None,
+        bloks_versioning_id: str = "",
+    ) -> Dict:
+        """
+        Submit a challenge-navigation Bloks request.
+
+        Instagram may return ``challenge_context`` as an opaque string instead
+        of JSON. Pass it through unchanged; it is not decoded by the client.
+
+        Returns
+        -------
+        Dict
+            Raw Instagram response.
+        """
+        versioning_id = bloks_versioning_id or self.bloks_versioning_id
+        assert versioning_id, "Client.bloks_versioning_id is empty (hash is expected)"
+        data = {
+            "_uuid": self.uuid,
+            "has_follow_up_screens": str(has_follow_up_screens),
+            "bk_client_context": dumps({"bloks_version": versioning_id, "styles_id": "instagram"}),
+            "bloks_versioning_id": versioning_id,
+        }
+        if challenge_context is not None:
+            data["challenge_context"] = challenge_context
+        if choice is not None:
+            data["choice"] = str(choice)
+        if extra_data:
+            data.update(extra_data)
+        return self.private_request(
+            "bloks/apps/com.instagram.challenge.navigation.take_challenge/",
+            data=data,
+            with_signature=False,
+        )
+
     def bloks_fxcal_link_reels_share(
         self,
         flow: str = "ig_fb_reels_composer_rowshare",
@@ -625,26 +664,28 @@ class BloksMixin:
         result = self.private_request(f"bloks/apps/{action}/", self.with_default_data(data))
         return result["status"] == "ok"
 
-    def bloks_change_password(self, password: str, challenge_context: dict) -> bool:
+    def bloks_change_password(self, password: str, challenge_context: str) -> bool:
         """
         Change password for challenge
 
         Parameters
         ----------
-        passwrd: str
+        password: str
             New password
+        challenge_context: str
+            Challenge context returned by Instagram. The value may be opaque
+            and is sent back unchanged.
 
         Returns
         -------
         bool
         """
-        assert self.bloks_versioning_id, "Client.bloks_versioning_id is empty (hash is expected)"
         enc_password = self.password_encrypt(password)
-        data = {
-            "bk_client_context": dumps({"bloks_version": self.bloks_versioning_id, "styles_id": "instagram"}),
-            "challenge_context": challenge_context,
-            "bloks_versioning_id": self.bloks_versioning_id,
-            "enc_new_password1": enc_password,
-            "enc_new_password2": enc_password,
-        }
-        return self.bloks_action("com.instagram.challenge.navigation.take_challenge", data)
+        result = self.bloks_challenge_take_challenge(
+            challenge_context=challenge_context,
+            extra_data={
+                "enc_new_password1": enc_password,
+                "enc_new_password2": enc_password,
+            },
+        )
+        return result["status"] == "ok"

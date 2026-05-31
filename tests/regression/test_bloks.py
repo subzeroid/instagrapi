@@ -50,6 +50,56 @@ class BloksRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
 
+    def test_bloks_challenge_take_challenge_posts_unsigned_direct_payload(self):
+        client = self.build_client()
+        challenge_context = "Af4sGj7RsOARkOpaqueContext"
+        expected = {"status": "ok"}
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.bloks_challenge_take_challenge(
+                challenge_context=challenge_context,
+                choice=0,
+                extra_data={"is_bloks_web": False},
+            )
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "bloks/apps/com.instagram.challenge.navigation.take_challenge/",
+            data={
+                "_uuid": "uuid-1",
+                "has_follow_up_screens": "0",
+                "bk_client_context": dumps({"bloks_version": "bloks-version", "styles_id": "instagram"}),
+                "bloks_versioning_id": "bloks-version",
+                "challenge_context": challenge_context,
+                "choice": "0",
+                "is_bloks_web": False,
+            },
+            with_signature=False,
+        )
+
+    def test_bloks_change_password_preserves_opaque_challenge_context(self):
+        client = self.build_client()
+        challenge_context = "Af4sGj7RsOARkOpaqueContext"
+        client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:encrypted")
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.bloks_change_password("new-password", challenge_context)
+
+        self.assertTrue(result)
+        private_request.assert_called_once_with(
+            "bloks/apps/com.instagram.challenge.navigation.take_challenge/",
+            data={
+                "_uuid": "uuid-1",
+                "has_follow_up_screens": "0",
+                "bk_client_context": dumps({"bloks_version": "bloks-version", "styles_id": "instagram"}),
+                "bloks_versioning_id": "bloks-version",
+                "challenge_context": challenge_context,
+                "enc_new_password1": "#PWD_INSTAGRAM:4:1:encrypted",
+                "enc_new_password2": "#PWD_INSTAGRAM:4:1:encrypted",
+            },
+            with_signature=False,
+        )
+
     def test_bloks_fxcal_link_reels_share_uses_current_flow_payload(self):
         client = self.build_client()
         expected = {"status": "ok"}
