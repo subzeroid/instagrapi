@@ -37,6 +37,30 @@ class ClipMixin:
     Helpers for CLIP/Reel actions
     """
 
+    def _raise_clip_upload_error(self, response, stage: str) -> None:
+        self.last_response = response
+        status_code = getattr(response, "status_code", None)
+        response_text = getattr(response, "text", "") or ""
+        error_response = {}
+        try:
+            parsed = response.json()
+        except Exception:
+            parsed = None
+        if isinstance(parsed, dict):
+            error_response = parsed
+            self.last_json = parsed
+        else:
+            self.last_json = {}
+        details = response_text or error_response
+        raise ClipNotUpload(
+            f"Clip upload failed during {stage}: HTTP {status_code}: {details}",
+            response=response,
+            stage=stage,
+            status_code=status_code,
+            error_response=error_response,
+            response_text=response_text,
+        )
+
     def clip_pin(self, media_pk: str, revert: bool = False) -> bool:
         """
         Pin Reel to the Reels tab/profile Reels grid
@@ -477,7 +501,7 @@ class UploadClipMixin:
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise ClipNotUpload(response=self.last_response, **self.last_json)
+            self._raise_clip_upload_error(response, "upload_settings")
         rupload_params = {
             "provenance_metadata": json.dumps({"origin": ["EXTERNAL"]}),
             "upload_media_height": str(height),
@@ -511,7 +535,7 @@ class UploadClipMixin:
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise ClipNotUpload(response=self.last_response, **self.last_json)
+            self._raise_clip_upload_error(response, "rupload_init")
         headers = {
             "Offset": "0",
             "X-Entity-Name": upload_name,
@@ -527,7 +551,7 @@ class UploadClipMixin:
         )
         self.request_log(response)
         if response.status_code != 200:
-            raise ClipNotUpload(response=self.last_response, **self.last_json)
+            self._raise_clip_upload_error(response, "rupload_upload")
         # CONFIGURE
         # self.igtv_composer_session_id = self.generate_uuid()  #issue
         for attempt in range(50):

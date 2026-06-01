@@ -350,7 +350,9 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
                 last_exc = exc
                 print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
                 continue
-        raise last_exc or RuntimeError("No usable fresh account returned")
+        if last_exc:
+            raise RuntimeError(f"No usable fresh account returned: {last_exc}") from last_exc
+        raise RuntimeError("No usable fresh account returned")
 
     def fresh_accounts(self, count: int, exclude_user_ids=None):
         exclude_user_ids = {str(user_id) for user_id in (exclude_user_ids or set())}

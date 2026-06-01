@@ -1,3 +1,4 @@
+from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -87,6 +88,82 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
                 return info
         self.fail(f"Album resource usertags were not visible after {attempts} media_info_v1 attempts: {last_resources}")
 
+    def ensure_creator_account(self):
+        account = self.cl.account_info()
+        if account.account_type == 3:
+            return
+        account = self.cl.account_convert_to_creator(
+            category_id="2347428775505624",
+            should_show_category=True,
+            should_show_public_contacts=False,
+        )
+        self.assertEqual(account.account_type, 3)
+
+    def assertScheduledMediaAccessible(
+        self, media, schedule_at, caption_text, product_type="feed", attempts=5, delay=3
+    ):
+        self.assertIsInstance(media, Media)
+        last_result = {}
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            result = self.cl.private_request(
+                "media/infos/",
+                params={"media_ids": media.id, "include_unpublished": "1"},
+            )
+            last_result = result
+            items = result.get("items") or []
+            if not items:
+                continue
+            payload = items[0]
+            metadata = payload.get("content_scheduling_metadata") or {}
+            self.assertEqual(str(payload.get("id")), str(media.id))
+            self.assertEqual(payload.get("product_type"), product_type)
+            self.assertEqual((payload.get("caption") or {}).get("text", ""), caption_text)
+            self.assertTrue(metadata.get("scheduled_content_id"))
+            self.assertEqual(metadata.get("scheduled_publish_time"), schedule_at)
+            return payload
+        self.fail(f"Scheduled media {media.id} was not accessible through media/infos: {last_result}")
+
+    def skip_unavailable_scheduled_publish(self, exc):
+        if exc is None or isinstance(
+            exc,
+            (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError),
+        ):
+            self.skipTest("No usable scheduled publishing account was available")
+        raise exc
+
+    def scheduled_publish_clients(self, additional_count=4):
+        seen_user_ids = set()
+        if self.cl:
+            seen_user_ids.add(str(self.cl.user_id))
+            yield self.cl
+        for cl in self.fresh_accounts(additional_count, exclude_user_ids=seen_user_ids):
+            yield cl
+
+    def upload_with_scheduled_publish(self, upload):
+        last_exc = None
+        for cl in self.scheduled_publish_clients():
+            self.cl = cl
+            self.ensure_creator_account()
+            try:
+                return upload()
+            except (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError) as exc:
+                last_exc = exc
+                continue
+        self.skip_unavailable_scheduled_publish(last_exc)
+
+    def cleanup_scheduled_media(self, media):
+        if not media:
+            return
+        try:
+            deleted = self.cl.media_delete(media.id)
+        except Exception as exc:
+            print(f"Scheduled media cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+            return
+        if not deleted:
+            print(f"Scheduled media cleanup media_delete returned False for {media.id}")
+
     def test_photo_upload_without_location(self):
         path = self.copy_media_fixture("examples/kanada.jpg")
         self.assertIsInstance(path, Path)
@@ -117,6 +194,44 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
 
+    def test_photo_upload_scheduled(self):
+        path = self.copy_media_fixture("examples/kanada.jpg")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled photo {schedule_at}"
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.photo_upload(path, caption_text, schedule_at=schedule_at)
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text)
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
+        finally:
+            if media:
+                self.cleanup_scheduled_media(media)
+
+    def test_video_upload_scheduled(self):
+        path = self.make_video_fixture(label="scheduled feed video fixture")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled video {schedule_at}"
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.video_upload(path, caption_text, schedule_at=schedule_at)
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text)
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
+        finally:
+            if media:
+                self.cleanup_scheduled_media(media)
+
     def test_video_upload(self):
         path = self.make_video_fixture(label="feed video fixture")
         self.assertIsInstance(path, Path)
@@ -131,6 +246,28 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_album_upload_scheduled(self):
+        paths = [
+            self.copy_media_fixture("examples/kanada.jpg"),
+            self.copy_media_fixture("examples/background.png"),
+        ]
+        [self.assertIsInstance(path, Path) for path in paths]
+        media = None
+        try:
+            schedule_at = int(time.time()) + 3600
+            caption_text = f"Test caption for scheduled album {schedule_at}"
+            media = self.upload_with_scheduled_publish(
+                lambda: self.cl.album_upload(paths, caption_text, schedule_at=schedule_at)
+            )
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            self.assertScheduledMediaAccessible(media, schedule_at, caption_text, product_type="carousel_container")
+            with self.assertRaises(MediaNotFound):
+                self.cl.media_info_v1(media.pk)
+        finally:
+            if media:
+                self.cleanup_scheduled_media(media)
 
     def test_album_upload(self):
         paths = [
@@ -222,10 +359,36 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             self.assertIsInstance(media, Media)
             self.assertEqual(media.caption_text, caption_text)
             # self.assertLocation(media.location)
-            self.assertUploadedMediaAccessible(media, media_type=2, product_type="clips", caption_text=caption_text)
+            payload = self.assertUploadedMediaAccessible(
+                media,
+                media_type=2,
+                product_type="clips",
+                caption_text=caption_text,
+            )
+            self.assertTrue(payload.get("video_versions"))
+            self.assertEqual((payload.get("caption") or {}).get("text"), caption_text)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_clip_upload_direct_failure_reports_response_live(self):
+        path = self.make_video_fixture(label="clip upload failure fixture")
+        response = requests.Response()
+        response.status_code = 400
+        response.url = "https://i.instagram.com/upload_settings/test"
+        response._content = b'{"message":"media_needs_reupload","status":"fail"}'
+        response.request = requests.Request("POST", response.url).prepare()
+
+        with mock.patch.object(self.cl.private, "post", return_value=response):
+            with self.assertRaises(ClipNotUpload) as ctx:
+                self.cl.clip_upload(path, "Upload clip failure")
+
+        exc = ctx.exception
+        self.assertIs(exc.response, response)
+        self.assertEqual(exc.stage, "upload_settings")
+        self.assertEqual(exc.status_code, 400)
+        self.assertEqual(exc.error_response["message"], "media_needs_reupload")
+        self.assertNotIn("response': None", str(exc))
 
     def test_reel_upload_with_music(self):
         # media_type: 2 (video, not IGTV)

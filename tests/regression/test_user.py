@@ -133,6 +133,109 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.public_request_calls[0]["kwargs"], {})
         self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
 
+    def test_user_info_by_username_gql_normalizes_username(self):
+        class DummyClient(UserMixin):
+            response_body = None
+
+            def __init__(self):
+                self.public_request_calls = []
+
+            def public_request(self, url, headers=None, **kwargs):
+                self.public_request_calls.append({"url": url, "headers": headers, "kwargs": kwargs})
+                return json.dumps(self.response_body)
+
+        client = DummyClient()
+        client.response_body = self.build_web_profile_user()
+
+        user = client.user_info_by_username_gql(" @Example ")
+
+        self.assertEqual(user.username, "example")
+        self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
+
+    def test_user_info_by_username_v1_normalizes_username(self):
+        client = Client()
+        payload = {
+            "user": {
+                "pk": "123",
+                "username": "example",
+                "full_name": "Example",
+                "is_private": False,
+                "is_verified": False,
+                "profile_pic_url": "https://example.com/pic.jpg",
+                "media_count": 0,
+                "follower_count": 0,
+                "following_count": 0,
+                "is_business": False,
+            }
+        }
+
+        with mock.patch.object(client, "private_request", return_value=payload) as private_request:
+            user = client.user_info_by_username_v1(" @Example ")
+
+        self.assertEqual(user.username, "example")
+        private_request.assert_called_once_with("users/example/usernameinfo/")
+
+    def test_user_info_by_username_uses_normalized_cache_key(self):
+        client = Client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = User(
+            pk="123",
+            username="example",
+            full_name="Example",
+            is_private=False,
+            is_verified=False,
+            profile_pic_url="https://example.com/pic.jpg",
+            media_count=0,
+            follower_count=0,
+            following_count=0,
+            is_business=False,
+        )
+
+        with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as gql:
+            with mock.patch.object(client, "user_info", return_value=user):
+                client.user_info_by_username("@Example")
+                client.user_info_by_username(" example ")
+
+        gql.assert_called_once_with("example")
+        self.assertEqual(client._usernames_cache, {"example": "123"})
+
+    def test_user_info_by_username_v2_gql_normalizes_search_query(self):
+        client = Client()
+        with mock.patch.object(client, "_inject_sessionid_for_v2_gql"):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={
+                    "xdt_api__v1__fbsearch__non_profiled_serp": {"users": [{"username": "example", "pk": "123"}]}
+                },
+            ) as search:
+                with mock.patch.object(client, "user_info_v2_gql", return_value="user"):
+                    result = client.user_info_by_username_v2_gql(" @Example ")
+
+        self.assertEqual(result, "user")
+        search.assert_called_once_with("26347858941511777", {"hasQuery": True, "query": "example"})
+
+    def test_user_stream_by_username_v1_normalizes_endpoint(self):
+        client = Client()
+        with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
+            client.user_stream_by_username_v1(" @Example ")
+
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "users/example/usernameinfo_stream/")
+
+    def test_user_web_profile_info_v1_normalizes_username_param(self):
+        client = Client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"data": {"pk": "9", "username": "example"}},
+        ) as private_request:
+            user = client.user_web_profile_info_v1(" @Example ")
+
+        private_request.assert_called_once_with("users/web_profile_info/", params={"username": "example"})
+        self.assertEqual(user, {"pk": "9", "username": "example"})
+
     def test_user_info_by_username_suppresses_traceback_for_public_retry_error(self):
         client = Client()
         client._usernames_cache = {}
@@ -649,6 +752,84 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertTrue(query.call_args.kwargs["variables"]["skip_pending_admins"])
         self.assertEqual(query.call_args.kwargs["priority"], "u=3, i")
         self.assertEqual(query.call_args.kwargs["extra_headers"]["X-FB-RMD"], "state=URL_ELIGIBLE")
+
+    def test_user_followers_private_gql_chunk_extracts_users_and_cursor(self):
+        client = Client()
+        response = {
+            "data": {
+                "1$xdt_api__v1__friendships__followers(_request_data:$request_data,user_id:$user_id)": {
+                    "users": [
+                        {
+                            "id": "1",
+                            "username": "one",
+                            "full_name": "One",
+                            "profile_pic_url": "https://example.com/one.jpg",
+                            "is_private": False,
+                        },
+                        {
+                            "pk": "2",
+                            "username": "two",
+                            "full_name": "Two",
+                            "profile_pic_url": "https://example.com/two.jpg",
+                            "is_private": True,
+                        },
+                    ],
+                    "next_max_id": "25",
+                }
+            }
+        }
+        with mock.patch.object(client, "private_graphql_followers_list", return_value=response) as followers_list:
+            users, next_max_id = client.user_followers_private_gql_chunk(
+                "123",
+                max_amount=2,
+                max_id="10",
+                rank_token="rank",
+                order="date_followed_latest",
+            )
+
+        self.assertEqual([user.pk for user in users], ["1", "2"])
+        self.assertEqual([user.username for user in users], ["one", "two"])
+        self.assertEqual(next_max_id, "25")
+        followers_list.assert_called_once_with(
+            "123",
+            "rank",
+            max_id="10",
+            order="date_followed_latest",
+            priority="u=3, i",
+        )
+
+    def test_user_followers_private_gql_paginates_until_amount(self):
+        client = Client()
+        pages = [
+            {
+                "data": {
+                    "xdt_api__v1__friendships__followers": {
+                        "users": [
+                            {"id": "1", "username": "one"},
+                            {"id": "2", "username": "two"},
+                        ],
+                        "next_max_id": "25",
+                    }
+                }
+            },
+            {
+                "data": {
+                    "xdt_api__v1__friendships__followers": {
+                        "users": [
+                            {"id": "3", "username": "three"},
+                            {"id": "4", "username": "four"},
+                        ],
+                        "next_max_id": "50",
+                    }
+                }
+            },
+        ]
+        with mock.patch.object(client, "private_graphql_followers_list", side_effect=pages) as followers_list:
+            users = client.user_followers_private_gql("123", amount=3, rank_token="rank")
+
+        self.assertEqual([user.pk for user in users], ["1", "2", "3"])
+        self.assertEqual(followers_list.call_args_list[0].kwargs["max_id"], None)
+        self.assertEqual(followers_list.call_args_list[1].kwargs["max_id"], "25")
 
     def test_private_graphql_following_list_builds_query_wrapper(self):
         client = Client()

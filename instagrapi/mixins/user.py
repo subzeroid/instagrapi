@@ -8,6 +8,7 @@ from requests.exceptions import RequestException
 
 from instagrapi.exceptions import (
     ClientError,
+    ClientGraphqlError,
     ClientJSONDecodeError,
     ClientLoginRequired,
     ClientNotFoundError,
@@ -55,6 +56,10 @@ class UserMixin:
     _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
     _fb_dtsg = None
 
+    @staticmethod
+    def _normalize_username(username: str) -> str:
+        return str(username).strip().lstrip("@").strip().lower()
+
     def user_id_from_username(self, username: str) -> str:
         """
         Get full media id
@@ -73,7 +78,7 @@ class UserMixin:
         -------
         'example' -> 1903424587
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         return str(self.user_info_by_username(username).pk)
 
     def user_short_gql(self, user_id: str, use_cache: bool = True) -> UserShort:
@@ -206,7 +211,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         temporary_public_headers = {
             "Host": "www.instagram.com",
             "X-Requested-With": "XMLHttpRequest",
@@ -267,7 +272,7 @@ class UserMixin:
         """
         Resolve username via doc_id search, then fetch profile by user id.
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         self._inject_sessionid_for_v2_gql()
         data = self.public_doc_id_graphql_request("26347858941511777", {"hasQuery": True, "query": username})
         users = ((data or {}).get("xdt_api__v1__fbsearch__non_profiled_serp") or {}).get("users") or []
@@ -304,7 +309,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         try:
             result = self.private_request(f"users/{username}/usernameinfo/")
         except ClientNotFoundError as e:
@@ -331,7 +336,7 @@ class UserMixin:
         User
             An object of User type
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         if not use_cache or username not in self._usernames_cache:
             try:
                 try:
@@ -965,6 +970,119 @@ class UserMixin:
             List of objects of User type
         """
         users, _ = self.user_followers_v1_chunk(str(user_id), amount, order=order)
+        if amount:
+            users = users[:amount]
+        return users
+
+    @staticmethod
+    def _private_graphql_root(data: Dict, root_field_name: str) -> Dict:
+        payload = data.get("data") or data
+        if not isinstance(payload, dict):
+            return {}
+        root = payload.get(root_field_name)
+        if isinstance(root, dict):
+            return root
+        for key, value in payload.items():
+            if root_field_name in str(key) and isinstance(value, dict):
+                return value
+        return {}
+
+    def user_followers_private_gql_chunk(
+        self,
+        user_id: str,
+        max_amount: int = 0,
+        max_id: str = None,
+        rank_token: str = None,
+        order: FOLLOWERS_ORDER = None,
+        priority: str = "u=3, i",
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's followers information by Private GraphQL API and max_id.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of users to return from the fetched chunk, default is 0 - full chunk
+        max_id: str, optional
+            The cursor from which it is worth continuing to receive the list of followers
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: str, optional
+            Followers sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            List of users and next max_id cursor
+        """
+        user_id = str(user_id)
+        result = self.private_graphql_followers_list(
+            user_id,
+            rank_token or self.rank_token,
+            max_id=max_id,
+            order=order,
+            priority=priority,
+        )
+        followers = self._private_graphql_root(result, "xdt_api__v1__friendships__followers")
+        if not followers:
+            raise ClientGraphqlError("Missing private GraphQL followers payload")
+        users = []
+        for user in followers.get("users") or []:
+            users.append(extract_user_short(user))
+            if max_amount and len(users) >= max_amount:
+                break
+        return users, followers.get("next_max_id")
+
+    def user_followers_private_gql(
+        self,
+        user_id: str,
+        amount: int = 0,
+        rank_token: str = None,
+        order: FOLLOWERS_ORDER = None,
+        priority: str = "u=3, i",
+    ) -> List[UserShort]:
+        """
+        Get user's followers information by Private GraphQL API.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of users to return, default is 0 - Inf
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: str, optional
+            Followers sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of UserShort type
+        """
+        users = []
+        max_id = None
+        while True:
+            chunk_amount = max(amount - len(users), 0) if amount else 0
+            chunk, max_id = self.user_followers_private_gql_chunk(
+                user_id,
+                max_amount=chunk_amount,
+                max_id=max_id,
+                rank_token=rank_token,
+                order=order,
+                priority=priority,
+            )
+            users.extend(chunk)
+            if amount and len(users) >= amount:
+                break
+            if not max_id or not chunk:
+                break
         if amount:
             users = users[:amount]
         return users
@@ -1711,7 +1829,7 @@ class UserMixin:
         UserNotFound
             On 404 / unknown ClientError.
         """
-        username = str(username).lower()
+        username = self._normalize_username(username)
         data = {
             "is_prefetch": False,
             "entry_point": "profile",
@@ -1829,6 +1947,7 @@ class UserMixin:
         dict
             Merged user dict.
         """
+        username = self._normalize_username(username)
         resp = self.user_stream_by_username_v1(username)
         return self._user_stream_collector(resp, username=username)
 
@@ -1857,6 +1976,7 @@ class UserMixin:
         UserNotFound
             ``data`` is missing from the response or the request 404'd.
         """
+        username = self._normalize_username(username)
         try:
             result = self.private_request(
                 "users/web_profile_info/",
@@ -1939,6 +2059,8 @@ class UserMixin:
         order: str = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
+        skip_preview_hashtags: bool = True,
+        skip_hashtag_count: bool = True,
     ) -> dict:
         request_data = {
             "search_surface": "follow_list_page",
@@ -1948,7 +2070,7 @@ class UserMixin:
         variables = {
             "user_id": str(user_id),
             "skip_use_clickable_see_more": True,
-            "skip_preview_hashtags": True,
+            "skip_preview_hashtags": skip_preview_hashtags,
             "skip_should_limit_list_of_followers": True,
             "skip_pending_admins": True,
             "skip_more_groups_available": True,
@@ -1963,7 +2085,7 @@ class UserMixin:
             "include_unseen_count": True,
             "skip_has_more": True,
             "enable_groups": True,
-            "skip_hashtag_count": True,
+            "skip_hashtag_count": skip_hashtag_count,
         }
         if exclude_field_is_favorite is not None:
             variables["exclude_field_is_favorite"] = exclude_field_is_favorite

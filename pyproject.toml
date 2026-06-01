@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi"
-version = "2.7.10"
+version = "2.7.21"
 authors = [
     {name = "Mark Subzeroid", email = "143403577+subzeroid@users.noreply.github.com"}
 ]
@@ -98,7 +98,7 @@ test = [
     "pytest-xdist==3.8.0",
     "pytest==9.0.3",
     "python-dotenv>=0.10",
-    "ruff==0.15.13",
+    "ruff==0.15.15",
 ]
 
 [tool.setuptools]

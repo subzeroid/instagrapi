@@ -23,6 +23,47 @@ class _DownloadResponse:
 
 
 class DownloadRegressionTestCase(unittest.TestCase):
+    def _video_media(self, media_pk="3903542582802212941"):
+        return Media(
+            pk=media_pk,
+            id=f"{media_pk}_50838397751",
+            code="DYsK0wViWhN",
+            taken_at=datetime(2026, 1, 1),
+            media_type=2,
+            user=UserShort(
+                pk="50838397751",
+                username="example",
+                profile_pic_url="https://example.com/profile.jpg",
+            ),
+            like_count=0,
+            caption_text="",
+            usertags=[],
+            sponsor_tags=[],
+            video_url="https://example.com/video.mp4",
+        )
+
+    def test_video_download_uses_private_media_info_lookup(self):
+        client = Client()
+        media = self._video_media()
+        expected = Path("/tmp/example.mp4")
+
+        with mock.patch.object(
+            client, "media_info", side_effect=AssertionError("public-first media_info")
+        ) as media_info:
+            with mock.patch.object(client, "media_info_v1", return_value=media) as media_info_v1:
+                with mock.patch.object(client, "video_download_by_url", return_value=expected) as download_by_url:
+                    result = client.video_download(media.pk, folder="/tmp", overwrite=False)
+
+        media_info.assert_not_called()
+        media_info_v1.assert_called_once_with(media.pk)
+        download_by_url.assert_called_once_with(
+            media.video_url,
+            f"example_{media.pk}",
+            "/tmp",
+            overwrite=False,
+        )
+        self.assertEqual(result, expected)
+
     def test_photo_download_by_url_skips_existing_file_when_overwrite_disabled(self):
         client = Client()
         with tempfile.TemporaryDirectory() as tmpdir:

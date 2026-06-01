@@ -1,7 +1,10 @@
+import contextlib
 import random
+import tempfile
 import time
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
 from uuid import uuid4
 
@@ -25,11 +28,12 @@ from instagrapi.types import (
     StoryMention,
     StoryPoll,
     StorySticker,
+    Track,
     Usertag,
 )
 from instagrapi.utils.serialization import dumps
 from instagrapi.utils.timing import date_time_original
-from instagrapi.utils.video import analyze_video_for_upload
+from instagrapi.utils.video import MOVIEPY_2_INSTALL_MESSAGE, analyze_video_for_upload
 
 
 class DownloadVideoMixin:
@@ -56,7 +60,7 @@ class DownloadVideoMixin:
         Path
             Path for the file downloaded
         """
-        media = self.media_info(media_pk)
+        media = self.media_info_v1(media_pk)
         assert media.media_type == 2, "Must been video"
         filename = "{username}_{media_pk}".format(username=media.user.username, media_pk=media_pk)
         return self.video_download_by_url(media.video_url, filename, folder, overwrite=overwrite)
@@ -122,6 +126,216 @@ class UploadVideoMixin:
     """
     Helpers for downloading video
     """
+
+    def _story_music_track_url(self, track: Union[Track, Dict]) -> str:
+        track_url = (
+            self._track_value(track, "uri")
+            or self._track_value(track, "progressive_download_url")
+            or self._track_value(track, "fast_start_progressive_download_url")
+            or self._track_value(track, "reactive_audio_download_url")
+        )
+        assert track_url, (
+            "track.uri, track.progressive_download_url, "
+            "track.fast_start_progressive_download_url or track.reactive_audio_download_url is required"
+        )
+        return str(track_url)
+
+    def _render_story_video_with_music(
+        self,
+        path: Path,
+        track: Union[Track, Dict],
+        output_path: Path,
+        audio_asset_start_time: int,
+        is_photo: bool = False,
+        duration: Optional[float] = None,
+        music_volume: float = 1.0,
+    ) -> float:
+        try:
+            import moviepy as mp
+        except ImportError as exc:
+            raise RuntimeError(f"story upload with music requires MoviePy 2.2.1. {MOVIEPY_2_INSTALL_MESSAGE}") from exc
+
+        media_clip = None
+        media_with_audio = None
+        audio_clip = None
+        audio_segment = None
+        tmpaudio = self.track_download_by_url(
+            self._story_music_track_url(track),
+            "track",
+            output_path.parent,
+        )
+        try:
+            if is_photo:
+                media_clip = mp.ImageClip(str(path)).with_duration(float(duration or 15.0))
+                if hasattr(media_clip, "with_fps"):
+                    media_clip = media_clip.with_fps(30)
+                else:
+                    media_clip.fps = 30
+            else:
+                media_clip = mp.VideoFileClip(str(path))
+            media_duration = float(media_clip.duration)
+            audio_clip = mp.AudioFileClip(str(tmpaudio))
+            start = audio_asset_start_time / 1000
+            audio_segment = audio_clip.subclipped(start, start + media_duration)
+            if music_volume != 1.0 and hasattr(audio_segment, "with_volume_scaled"):
+                audio_segment = audio_segment.with_volume_scaled(music_volume)
+            media_with_audio = media_clip.with_audio(audio_segment)
+            media_with_audio.write_videofile(str(output_path))
+            return media_duration
+        finally:
+            closed = set()
+            for clip in (media_with_audio, media_clip, audio_segment, audio_clip):
+                if not clip or id(clip) in closed:
+                    continue
+                closed.add(id(clip))
+                with contextlib.suppress(AttributeError):
+                    clip.close()
+
+    def story_music_extra_data(
+        self,
+        track: Union[Track, Dict],
+        extra_data: Dict[str, object] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: int = 30000,
+        original_volume: float = 0.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_music_overlay_post_capture",
+        alacorn_session_id: str = "null",
+        audio_overlay_uuid: Optional[str] = None,
+    ) -> Dict[str, object]:
+        """
+        Build Story music metadata for story upload configure requests.
+
+        This helper only builds the Story metadata fields. Use
+        ``photo_upload_to_story_with_music`` or ``video_upload_to_story_with_music``
+        when the selected track also needs to be muxed into the uploaded media.
+        """
+        audio_asset_id = self._track_value(track, "audio_asset_id") or self._track_value(track, "id")
+        audio_cluster_id = self._track_value(track, "audio_cluster_id")
+        assert audio_asset_id, "track.audio_asset_id or track.id is required"
+        assert audio_cluster_id, "track.audio_cluster_id is required"
+        if audio_asset_start_time is None:
+            audio_asset_start_time = self._track_highlight_start(track)
+
+        audio_asset_id = str(audio_asset_id)
+        audio_cluster_id = str(audio_cluster_id)
+        artist_name = self._track_value(track, "display_artist") or ""
+        track_name = self._track_value(track, "title") or ""
+        audio_overlay_uuid = audio_overlay_uuid or str(uuid4())
+        data = dict(extra_data or {})
+        data["music_burnin_params"] = dumps(
+            {
+                "asset_fbid": audio_asset_id,
+                "offset_ms": int(audio_asset_start_time),
+            }
+        )
+        data["audio_muted"] = False
+        data["has_original_sound"] = "0" if original_volume == 0 else "1"
+        data["music_params"] = {
+            "audio_asset_id": audio_asset_id,
+            "audio_cluster_id": audio_cluster_id,
+            "audio_asset_start_time_in_ms": int(audio_asset_start_time),
+            "overlap_duration_in_ms": int(overlap_duration),
+            "product": product,
+            "song_name": track_name,
+            "artist_name": artist_name,
+            "alacorn_session_id": alacorn_session_id,
+        }
+        music_canonical_id = self._track_value(track, "music_canonical_id")
+        if music_canonical_id:
+            data["music_params"]["music_canonical_id"] = music_canonical_id
+        edits = dict(data.get("edits") or {})
+        edits["audio_state_edits"] = {
+            "has_music_sticker": True,
+            "is_music_burned_into_video": True,
+            "is_video_muted": False,
+            "did_user_mute_audio": False,
+            "force_play_video_audio": True,
+        }
+        media_audio_overlay_info = dict(edits.get("media_audio_overlay_info") or {})
+        media_audio_overlay_info.update(
+            {
+                "audio_mix_burned_in": True,
+                "video_volume": original_volume,
+                "media_audio_overlays": [
+                    {
+                        "audio_asset_id": audio_asset_id,
+                        "audio_overlay_uuid": audio_overlay_uuid,
+                        "audio_volume": music_volume,
+                        "seek_time_ms": int(audio_asset_start_time),
+                        "start_at_time_ms": 0,
+                        "audio_duration_ms": int(overlap_duration),
+                        "media_audio_overlay_type": "audio_track",
+                    }
+                ],
+            }
+        )
+        edits["media_audio_overlay_info"] = media_audio_overlay_info
+        data["edits"] = edits
+        return data
+
+    def _upload_story_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        thumbnail: Path = None,
+        mentions: List[StoryMention] = [],
+        locations: List[StoryLocation] = [],
+        links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
+        extra_data: Dict[str, object] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: Optional[int] = None,
+        original_volume: float = 0.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_music_overlay_post_capture",
+        alacorn_session_id: str = "null",
+        is_photo: bool = False,
+        duration: Optional[float] = None,
+    ) -> Story:
+        path = Path(path)
+        if thumbnail is not None:
+            thumbnail = Path(thumbnail)
+        if audio_asset_start_time is None:
+            audio_asset_start_time = self._track_highlight_start(track)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir) / "story-with-music.mp4"
+            media_duration = self._render_story_video_with_music(
+                path,
+                track,
+                output_path,
+                audio_asset_start_time=audio_asset_start_time,
+                is_photo=is_photo,
+                duration=duration,
+                music_volume=music_volume,
+            )
+            music_extra = self.story_music_extra_data(
+                track,
+                extra_data=extra_data,
+                audio_asset_start_time=audio_asset_start_time,
+                overlap_duration=overlap_duration or int(media_duration * 1000),
+                original_volume=original_volume,
+                music_volume=music_volume,
+                product=product,
+                alacorn_session_id=alacorn_session_id,
+            )
+            return self.video_upload_to_story(
+                output_path,
+                caption,
+                thumbnail=thumbnail,
+                mentions=mentions,
+                locations=locations,
+                links=links,
+                hashtags=hashtags,
+                stickers=stickers,
+                medias=medias,
+                polls=polls,
+                extra_data=music_extra,
+            )
 
     def video_rupload(
         self,
@@ -223,6 +437,7 @@ class UploadVideoMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         extra_data: Dict[str, str] = {},
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload video and configure to feed
@@ -241,6 +456,8 @@ class UploadVideoMixin:
             Location tag for this upload, default is None
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the video should be published.
 
         Returns
         -------
@@ -250,6 +467,7 @@ class UploadVideoMixin:
         path = Path(path)
         if thumbnail is not None:
             thumbnail = Path(thumbnail)
+        extra_data = self._scheduled_extra_data(extra_data, schedule_at)
         upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=False)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
@@ -480,6 +698,56 @@ class UploadVideoMixin:
                     story_kwargs,
                 )
         raise VideoConfigureStoryError(response=self.last_response, **self.last_json)
+
+    def video_upload_to_story_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        thumbnail: Path = None,
+        mentions: List[StoryMention] = [],
+        locations: List[StoryLocation] = [],
+        links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
+        extra_data: Dict[str, object] = {},
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: Optional[int] = None,
+        original_volume: float = 0.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_music_overlay_post_capture",
+        alacorn_session_id: str = "null",
+    ) -> Story:
+        """
+        Upload video as a story with a selected music track.
+
+        The helper locally muxes the selected track into the uploaded video and
+        adds Story music metadata to the configure request. It replaces the
+        uploaded video's audio with the selected track.
+        """
+        return self._upload_story_with_music(
+            path,
+            caption,
+            track,
+            thumbnail=thumbnail,
+            mentions=mentions,
+            locations=locations,
+            links=links,
+            hashtags=hashtags,
+            stickers=stickers,
+            medias=medias,
+            polls=polls,
+            extra_data=extra_data,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            original_volume=original_volume,
+            music_volume=music_volume,
+            product=product,
+            alacorn_session_id=alacorn_session_id,
+            is_photo=False,
+        )
 
     def video_configure_to_story(
         self,

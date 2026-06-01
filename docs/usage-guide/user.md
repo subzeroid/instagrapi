@@ -68,6 +68,8 @@ Low level methods:
 | user_followers_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's followers information by Public Graphql API                     |
 | user_followers_v1_chunk(user_id: str, max_amount: int = 0, max_id: str = "", order: str = None) | Tuple[List[UserShort], str] | Get user's followers information by Private Mobile API and max_id (cursor). Supports `date_followed_latest` and `date_followed_earliest` |
 | user_followers_v1(user_id: str, amount: int = 0, order: str = None)                 | List[UserShort]             | Get user's followers information by Private Mobile API. Supports `date_followed_latest` and `date_followed_earliest` |
+| user_followers_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: str = None) | Tuple[List[UserShort], str] | Get user's followers through the private mobile GraphQL `FollowersList` surface and max_id cursor |
+| user_followers_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: str = None) | List[UserShort] | Get user's followers through the private mobile GraphQL `FollowersList` surface |
 | user_following_v1(user_id: str, amount: int = 0)                                    | List[UserShort]             | Get user's following users information by Private Mobile API               |
 | user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")                   | Tuple[List[UserShort], str] | Get pending incoming follow requests by Private Mobile API and max_id      |
 | user_following_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's following information by Public Graphql API                     |
@@ -143,6 +145,12 @@ Raw private GraphQL helpers expose the same mobile `order` variable for callers 
 
 ``` python
 payload = cl.private_graphql_followers_list(cl.user_id, cl.rank_token, order="date_followed_latest")
+```
+
+Use `user_followers_private_gql()` when you want the current mobile GraphQL followers list parsed into `UserShort` objects:
+
+``` python
+followers = cl.user_followers_private_gql(cl.user_id, amount=50, order="date_followed_latest")
 ```
 
 Example: We go around the list of our followers and unfollow from them:

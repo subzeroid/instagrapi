@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional, Union
 
 from instagrapi.extractors import extract_account, extract_user_short
 from instagrapi.types import Account, UserShort
@@ -61,6 +61,102 @@ class AccountMixin:
         """
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
+
+    def account_convert_to_professional(
+        self,
+        to_account_type: int = 3,
+        category_id: Union[str, int] = "2347428775505624",
+        should_show_category: bool = True,
+        should_show_public_contacts: bool = False,
+        entry_point: str = "setting",
+        creator_destination_migration: bool = False,
+        extra_data: Optional[Dict] = None,
+    ) -> Account:
+        """
+        Convert the current account to a professional account.
+
+        Parameters
+        ----------
+        to_account_type: int, default 3
+            Instagram professional account type. ``2`` is business and ``3`` is creator.
+        category_id: str or int, default "2347428775505624"
+            Professional category id selected during conversion.
+        should_show_category: bool, default True
+            Whether to show the category on the profile.
+        should_show_public_contacts: bool, default False
+            Whether to show public contact buttons on the profile.
+        entry_point: str, default "setting"
+            Instagram entry point name sent with the conversion request.
+        creator_destination_migration: bool, default False
+            Preserve Instagram's creator migration flag for compatible request shape.
+        extra_data: Dict, optional
+            Additional fields to merge into the conversion payload.
+
+        Returns
+        -------
+        Account
+            Refreshed account info after the conversion request.
+        """
+        if to_account_type not in (2, 3):
+            raise ValueError("to_account_type must be 2 (business) or 3 (creator)")
+        data = {
+            "entry_point": entry_point,
+            "creator_destination_migration": self._account_bool_value(creator_destination_migration),
+            "to_account_type": str(to_account_type),
+            "category_id": str(category_id),
+            "should_show_category": self._account_bool_flag(should_show_category),
+            "should_show_public_contacts": self._account_bool_flag(should_show_public_contacts),
+        }
+        data.update(extra_data or {})
+        self.private_request(
+            "business/account/convert_account/",
+            data=self.with_default_data(data),
+        )
+        return self.account_info()
+
+    def account_convert_to_business(
+        self,
+        category_id: Union[str, int] = "2347428775505624",
+        should_show_category: bool = True,
+        should_show_public_contacts: bool = False,
+        **kwargs,
+    ) -> Account:
+        """
+        Convert the current account to a business professional account.
+        """
+        return self.account_convert_to_professional(
+            to_account_type=2,
+            category_id=category_id,
+            should_show_category=should_show_category,
+            should_show_public_contacts=should_show_public_contacts,
+            **kwargs,
+        )
+
+    def account_convert_to_creator(
+        self,
+        category_id: Union[str, int] = "2347428775505624",
+        should_show_category: bool = True,
+        should_show_public_contacts: bool = False,
+        **kwargs,
+    ) -> Account:
+        """
+        Convert the current account to a creator professional account.
+        """
+        return self.account_convert_to_professional(
+            to_account_type=3,
+            category_id=category_id,
+            should_show_category=should_show_category,
+            should_show_public_contacts=should_show_public_contacts,
+            **kwargs,
+        )
+
+    @staticmethod
+    def _account_bool_flag(value: bool) -> str:
+        return "1" if value else "0"
+
+    @staticmethod
+    def _account_bool_value(value: bool) -> str:
+        return "true" if value else "false"
 
     def change_password(
         self,
@@ -340,4 +436,30 @@ class AccountMixin:
                     "phone_number": phone_number,
                 }
             ),
+        )
+
+    def confirm_phone_number(self, phone_number: str, code: str, has_sms_consent: bool = False) -> dict:
+        """
+        Confirm new phone number by SMS code
+
+        Parameters
+        ----------
+        phone_number: str
+            Phone number
+        code: str
+            Confirmation code
+        has_sms_consent: bool, default False
+            Whether to include Instagram's SMS consent flag
+
+        Returns
+        -------
+        dict
+            Jsonified response from Instagram
+        """
+        data = {"phone_number": phone_number, "verification_code": code}
+        if has_sms_consent:
+            data["has_sms_consent"] = "true"
+        return self.private_request(
+            "accounts/verify_sms_code/",
+            self.with_extra_data(data),
         )

@@ -1,6 +1,7 @@
 import json
 import random
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse
@@ -224,6 +225,7 @@ class UploadPhotoMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         extra_data: Dict[str, str] = {},
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload photo and configure to feed
@@ -242,6 +244,8 @@ class UploadPhotoMixin:
             Location tag for this upload, default is None
         extra_data: Dict[str, str], optional
             Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the photo should be published.
 
         Returns
         -------
@@ -253,6 +257,7 @@ class UploadPhotoMixin:
         if path.suffix.lower() not in valid_extensions:
             raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
 
+        extra_data = self._scheduled_extra_data(extra_data, schedule_at)
         previous_media_ids = self._current_media_ids()
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
@@ -290,6 +295,7 @@ class UploadPhotoMixin:
         overlap_duration: int = 30000,
         browse_session_id: Optional[str] = None,
         alacorn_session_id: Optional[str] = None,
+        schedule_at: Optional[Union[int, datetime]] = None,
     ) -> Media:
         """
         Upload a feed photo with attached music.
@@ -320,6 +326,8 @@ class UploadPhotoMixin:
         alacorn_session_id: str, optional
             Music browser session id returned by ``music_in_feed_audio_browser``.
             Fetched automatically when omitted.
+        schedule_at: int or datetime, optional
+            Unix timestamp in seconds or datetime when the photo should be published.
 
         Returns
         -------
@@ -341,7 +349,28 @@ class UploadPhotoMixin:
             usertags=usertags,
             location=location,
             extra_data=data,
+            schedule_at=schedule_at,
         )
+
+    @staticmethod
+    def _scheduled_extra_data(
+        extra_data: Dict[str, str],
+        schedule_at: Optional[Union[int, datetime]],
+    ) -> Dict[str, str]:
+        data = dict(extra_data or {})
+        if schedule_at is None:
+            return data
+        scheduled_publish_time = UploadPhotoMixin._scheduled_publish_time(schedule_at)
+        data["publish_mode"] = "scheduled"
+        data["content_scheduling_metadata"] = json.dumps(
+            {"scheduled_publish_time": scheduled_publish_time},
+            separators=(",", ":"),
+        )
+        return data
+
+    @staticmethod
+    def _scheduled_publish_time(schedule_at: Union[int, datetime]) -> int:
+        return int(schedule_at.timestamp() if isinstance(schedule_at, datetime) else schedule_at)
 
     def photo_configure(
         self,
@@ -501,6 +530,57 @@ class UploadPhotoMixin:
                     story_kwargs,
                 )
         raise PhotoConfigureStoryError(response=self.last_response, **self.last_json)
+
+    def photo_upload_to_story_with_music(
+        self,
+        path: Path,
+        caption: str,
+        track: Union[Track, Dict],
+        thumbnail: Path = None,
+        mentions: List[StoryMention] = [],
+        locations: List[StoryLocation] = [],
+        links: List[StoryLink] = [],
+        hashtags: List[StoryHashtag] = [],
+        stickers: List[StorySticker] = [],
+        medias: List[StoryMedia] = [],
+        polls: List[StoryPoll] = [],
+        extra_data: Dict[str, object] = {},
+        duration: float = 15.0,
+        audio_asset_start_time: Optional[int] = None,
+        overlap_duration: Optional[int] = None,
+        original_volume: float = 0.0,
+        music_volume: float = 1.0,
+        product: str = "story_camera_music_overlay_post_capture",
+        alacorn_session_id: str = "null",
+    ) -> Story:
+        """
+        Upload photo as a story with a selected music track.
+
+        Instagram story photos cannot carry a baked audio track by themselves,
+        so this helper renders the photo into a short video story first.
+        """
+        return self._upload_story_with_music(
+            path,
+            caption,
+            track,
+            thumbnail=thumbnail,
+            mentions=mentions,
+            locations=locations,
+            links=links,
+            hashtags=hashtags,
+            stickers=stickers,
+            medias=medias,
+            polls=polls,
+            extra_data=extra_data,
+            audio_asset_start_time=audio_asset_start_time,
+            overlap_duration=overlap_duration,
+            original_volume=original_volume,
+            music_volume=music_volume,
+            product=product,
+            alacorn_session_id=alacorn_session_id,
+            is_photo=True,
+            duration=duration,
+        )
 
     def photo_upload_to_cutout_sticker(
         self,

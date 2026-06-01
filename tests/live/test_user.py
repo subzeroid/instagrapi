@@ -43,6 +43,12 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(followers, dict)
         self.assertGreater(len(followers.get("users", [])), 0)
 
+    def test_user_followers_private_gql(self):
+        user_id = self.user_id_from_username("instagram")
+        followers = self.cl.user_followers_private_gql(user_id, amount=5, order="date_followed_latest")
+        self.assertEqual(len(followers), 5)
+        self.assertIsInstance(followers[0], UserShort)
+
 
 class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_user_short_gql(self):
