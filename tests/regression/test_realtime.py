@@ -140,6 +140,53 @@ def test_client_exposes_stateful_realtime_ping_helper():
     assert client.realtime_ping()
 
 
+def test_realtime_client_iris_subscribe_publishes_inbox_sync_state():
+    client = _build_logged_in_client()
+    realtime = RealtimeClient(client, transport=mock.Mock())
+
+    with mock.patch.object(realtime, "publish_json") as publish_json:
+        realtime.iris_subscribe(seq_id=123, snapshot_at_ms=456)
+
+    publish_json.assert_called_once_with(
+        MQTToTTopics.IRIS_SUB,
+        {
+            "seq_id": 123,
+            "snapshot_at_ms": 456,
+            "snapshot_app_version": "428.0.0.47.67",
+        },
+    )
+
+
+def test_message_sync_dispatch_emits_direct_message_wrapper():
+    client = _build_logged_in_client()
+    realtime = RealtimeClient(client, transport=mock.Mock())
+    handler = mock.Mock()
+    realtime.on("message", handler)
+    payload = [
+        {
+            "event": "patch",
+            "seq_id": 123,
+            "data": [
+                {
+                    "op": "add",
+                    "path": "/direct_v2/threads/987/items/item-1",
+                    "value": json.dumps({"item_id": "item-1", "text": "hello", "user_id": "55"}),
+                }
+            ],
+        }
+    ]
+
+    realtime.dispatch_packet(MQTToTTopics.MESSAGE_SYNC, zlib.compress(json.dumps(payload).encode()))
+
+    handler.assert_called_once()
+    message = handler.call_args.args[0]["message"]
+    assert message["thread_id"] == "987"
+    assert message["path"] == "/direct_v2/threads/987/items/item-1"
+    assert message["op"] == "add"
+    assert message["text"] == "hello"
+    assert message["user_id"] == "55"
+
+
 def test_realtime_connect_preserves_handlers_registered_before_connect():
     client = _build_logged_in_client()
     transport = mock.Mock()

@@ -22,6 +22,7 @@ Use the Direct methods for sending messages, reactions, and media.
 | `on(event, handler)` | Register a handler for `receive`, `message`, or `realtime_sub` |
 | `graph_ql_subscribe(subscriptions)` | Publish raw GraphQL realtime subscriptions |
 | `skywalker_subscribe(subscriptions)` | Publish raw Skywalker subscriptions |
+| `iris_subscribe(seq_id, snapshot_at_ms)` | Publish Direct inbox sync state for message-sync events |
 | `publish_json(topic, data)` | Publish a JSON payload to a raw MQTToT topic |
 | `ping()` | Send a keepalive ping and wait for `PINGRESP` |
 | `read_once()` | Read and dispatch one packet |
@@ -62,7 +63,15 @@ def handle_direct_message(payload):
 
 
 cl.realtime_on("message", handle_direct_message)
+
+# Fetch the Direct inbox snapshot before subscribing to message-sync events.
+# Instagram uses these values as the Iris cursor for realtime Direct patches.
+cl.direct_threads(amount=1)
+seq_id = cl.last_json["seq_id"]
+snapshot_at_ms = cl.last_json["snapshot_at_ms"]
+
 rt = cl.realtime_connect()
+rt.iris_subscribe(seq_id=seq_id, snapshot_at_ms=snapshot_at_ms)
 
 try:
     # Optional keepalive check for smoke tests or long-running workers.

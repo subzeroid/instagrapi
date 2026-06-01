@@ -110,6 +110,16 @@ class RealtimeClient:
             subscriptions = [subscriptions]
         self.publish_json(MQTToTTopics.PUBSUB, {"sub": list(subscriptions)})
 
+    def iris_subscribe(self, seq_id: int, snapshot_at_ms: int, snapshot_app_version: str | None = None) -> None:
+        self.publish_json(
+            MQTToTTopics.IRIS_SUB,
+            {
+                "seq_id": seq_id,
+                "snapshot_at_ms": snapshot_at_ms,
+                "snapshot_app_version": snapshot_app_version or self.client.app_version,
+            },
+        )
+
     def publish_json(self, topic: str, data: Dict[str, Any]) -> None:
         self._packet_id += 1
         packet = write_publish_packet(
@@ -166,10 +176,60 @@ class RealtimeClient:
                 parsed = body
         self.emit("receive", {"topic": topic, "payload": parsed})
         if topic == MQTToTTopics.MESSAGE_SYNC:
-            self.emit("message", parsed)
+            self.dispatch_message_sync(parsed)
         if topic == MQTToTTopics.REALTIME_SUB:
             self.emit("realtime_sub", parsed)
         return parsed
+
+    def dispatch_message_sync(self, payload: Any) -> None:
+        if not isinstance(payload, list):
+            self.emit("message", payload)
+            return
+        for item in payload:
+            if not isinstance(item, dict):
+                self.emit("iris", item)
+                continue
+            patches = item.get("data")
+            if not isinstance(patches, list):
+                self.emit("iris", item)
+                continue
+            meta = {key: value for key, value in item.items() if key != "data"}
+            for patch in patches:
+                if not isinstance(patch, dict):
+                    self.emit("iris", {**meta, "data": patch})
+                    continue
+                path = patch.get("path")
+                raw_value = patch.get("value")
+                if not path or raw_value is None:
+                    self.emit("iris", {**meta, **patch})
+                    continue
+                try:
+                    value = json.loads(raw_value) if isinstance(raw_value, str) else raw_value
+                except json.JSONDecodeError:
+                    value = {"value": raw_value}
+                wrapper = {
+                    **meta,
+                    "message": {
+                        "path": path,
+                        "op": patch.get("op"),
+                        "thread_id": self.thread_id_from_message_sync_path(path),
+                        **(value if isinstance(value, dict) else {"value": value}),
+                    },
+                }
+                if path.startswith("/direct_v2/threads/"):
+                    self.emit("message", wrapper)
+                else:
+                    self.emit("thread_update", wrapper)
+
+    @staticmethod
+    def thread_id_from_message_sync_path(path: str) -> str | None:
+        prefix = "/direct_v2/threads/"
+        if path.startswith(prefix):
+            return path[len(prefix) :].split("/", 1)[0]
+        prefix = "/direct_v2/inbox/threads/"
+        if path.startswith(prefix):
+            return path[len(prefix) :].split("/", 1)[0]
+        return None
 
     def emit(self, event: str, payload: Any) -> None:
         for handler in self._handlers.get(event, []):
