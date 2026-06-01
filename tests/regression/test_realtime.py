@@ -7,6 +7,7 @@ from instagrapi.realtime import RealtimeClient
 from instagrapi.realtime.mqttot import (
     MQTToTConnection,
     MQTToTTopics,
+    SocketMQTToTTransport,
     decode_packet,
     read_thrift_object,
     write_connect_packet,
@@ -106,6 +107,16 @@ def test_realtime_client_builds_cookie_auth_connection_from_instagram_session():
     assert connection.app_specific_info["platform"] == "android"
 
 
+def test_realtime_client_default_transport_uses_client_proxy():
+    client = _build_logged_in_client()
+    client.proxy = "socks5://127.0.0.1:8888"
+
+    realtime = RealtimeClient(client)
+
+    assert isinstance(realtime.transport, SocketMQTToTTransport)
+    assert realtime.transport.proxy == "socks5://127.0.0.1:8888"
+
+
 def test_client_exposes_stateful_realtime_helpers():
     client = _build_logged_in_client()
     transport = mock.Mock()
@@ -155,6 +166,32 @@ def test_realtime_client_iris_subscribe_publishes_inbox_sync_state():
             "snapshot_app_version": "428.0.0.47.67",
         },
     )
+
+
+def test_realtime_client_iris_subscribe_uses_device_settings_app_version():
+    client = _build_logged_in_client()
+    del client.app_version
+    client.device_settings = {"app_version": "428.0.0.47.67"}
+    realtime = RealtimeClient(client, transport=mock.Mock())
+
+    with mock.patch.object(realtime, "publish_json") as publish_json:
+        realtime.iris_subscribe(seq_id=123, snapshot_at_ms=456)
+
+    assert publish_json.call_args.args[1]["snapshot_app_version"] == "428.0.0.47.67"
+
+
+def test_realtime_client_direct_subscribe_fetches_inbox_and_subscribes_to_iris():
+    client = _build_logged_in_client()
+    client.last_json = {"seq_id": 123, "snapshot_at_ms": 456}
+    client.direct_threads = mock.Mock(return_value=[])
+    realtime = RealtimeClient(client, transport=mock.Mock())
+
+    with mock.patch.object(realtime, "iris_subscribe") as iris_subscribe:
+        state = realtime.direct_subscribe()
+
+    client.direct_threads.assert_called_once_with(amount=1)
+    iris_subscribe.assert_called_once_with(seq_id=123, snapshot_at_ms=456)
+    assert state == {"seq_id": 123, "snapshot_at_ms": 456}
 
 
 def test_message_sync_dispatch_emits_direct_message_wrapper():

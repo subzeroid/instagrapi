@@ -21,7 +21,7 @@ class ClientRealtimeLiveTestCase(_helpers.ClientPrivateTestCase):
             self.skipTest(str(exc))
 
     def test_realtime_connect_and_ping_live(self):
-        transport = SocketMQTToTTransport(REALTIME_HOST, timeout=15)
+        transport = SocketMQTToTTransport(REALTIME_HOST, timeout=15, proxy=self.cl.proxy)
 
         try:
             realtime = self.cl.realtime_connect(transport=transport)
@@ -50,20 +50,17 @@ class ClientRealtimeLiveTestCase(_helpers.ClientPrivateTestCase):
 
         received_payloads = []
         message = None
-        transport = SocketMQTToTTransport(REALTIME_HOST, timeout=10)
+        transport = SocketMQTToTTransport(REALTIME_HOST, timeout=10, proxy=receiver.proxy)
         text = f"instagrapi realtime live {int(time.time())}"
 
         receiver.realtime_on("message", received_payloads.append)
         try:
-            receiver.direct_threads(amount=1)
-            seq_id = receiver.last_json.get("seq_id")
-            snapshot_at_ms = receiver.last_json.get("snapshot_at_ms")
-            if seq_id is None or snapshot_at_ms is None:
-                self.skipTest("Direct inbox did not return realtime sync state")
-
-            receiver.realtime_connect(transport=transport)
+            realtime = receiver.realtime_connect(transport=transport)
             self.assertTrue(receiver.realtime_ping())
-            receiver.realtime.iris_subscribe(seq_id=seq_id, snapshot_at_ms=snapshot_at_ms)
+            try:
+                realtime.direct_subscribe()
+            except RuntimeError as exc:
+                self.skipTest(str(exc))
 
             message = sender.direct_send(text, user_ids=[receiver.user_id])
             self.assertIsInstance(message, DirectMessage)

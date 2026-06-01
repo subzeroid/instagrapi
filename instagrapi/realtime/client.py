@@ -25,7 +25,7 @@ REALTIME_SUBSCRIBE_TOPICS = [88, 135, 149, 150, 133, 146]
 class RealtimeClient:
     def __init__(self, client, transport=None):
         self.client = client
-        self.transport = transport or SocketMQTToTTransport(REALTIME_HOST)
+        self.transport = transport or SocketMQTToTTransport(REALTIME_HOST, proxy=getattr(client, "proxy", None))
         self.connected = False
         self._handlers: Dict[str, List[Callable[[Any], None]]] = defaultdict(list)
         self._packet_id = 0
@@ -54,7 +54,7 @@ class RealtimeClient:
         device_id = self.client.phone_id
         assert device_id, "Client phone_id is required"
         user_agent = self.client.user_agent
-        app_version = getattr(self.client, "app_version", "")
+        app_version = self.client_app_version()
         capabilities = getattr(self.client, "capabilities", "3brTv10=")
         locale = getattr(self.client, "locale", "en_US")
         return MQTToTConnection(
@@ -116,9 +116,19 @@ class RealtimeClient:
             {
                 "seq_id": seq_id,
                 "snapshot_at_ms": snapshot_at_ms,
-                "snapshot_app_version": snapshot_app_version or self.client.app_version,
+                "snapshot_app_version": snapshot_app_version or self.client_app_version(),
             },
         )
+
+    def direct_subscribe(self, amount: int = 1) -> Dict[str, Any]:
+        self.client.direct_threads(amount=amount)
+        seq_id = self.client.last_json.get("seq_id")
+        snapshot_at_ms = self.client.last_json.get("snapshot_at_ms")
+        if seq_id is None or snapshot_at_ms is None:
+            raise RuntimeError("Direct inbox did not return realtime sync state")
+        state = {"seq_id": seq_id, "snapshot_at_ms": snapshot_at_ms}
+        self.iris_subscribe(**state)
+        return state
 
     def publish_json(self, topic: str, data: Dict[str, Any]) -> None:
         self._packet_id += 1
@@ -230,6 +240,10 @@ class RealtimeClient:
         if path.startswith(prefix):
             return path[len(prefix) :].split("/", 1)[0]
         return None
+
+    def client_app_version(self) -> str:
+        device_settings = getattr(self.client, "device_settings", None) or {}
+        return getattr(self.client, "app_version", None) or device_settings.get("app_version", "")
 
     def emit(self, event: str, payload: Any) -> None:
         for handler in self._handlers.get(event, []):

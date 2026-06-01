@@ -5,6 +5,9 @@ import struct
 import zlib
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
+from urllib.parse import unquote, urlsplit
+
+import socks
 
 
 class MQTToTTopics:
@@ -226,17 +229,58 @@ def read_thrift_object(data: bytes, descriptors: List[ThriftDescriptor]) -> Dict
 
 
 class SocketMQTToTTransport:
-    def __init__(self, host: str, port: int = 443, timeout: float = 30.0, tls_context: Optional[ssl.SSLContext] = None):
+    def __init__(
+        self,
+        host: str,
+        port: int = 443,
+        timeout: float = 30.0,
+        tls_context: Optional[ssl.SSLContext] = None,
+        proxy: Optional[str] = None,
+    ):
         self.host = host
         self.port = port
         self.timeout = timeout
         self.tls_context = tls_context or ssl.create_default_context()
+        self.proxy = proxy
         self.sock = None
 
     def connect(self) -> None:
-        raw = socket.create_connection((self.host, self.port), timeout=self.timeout)
+        raw = (
+            self._create_proxy_connection()
+            if self.proxy
+            else socket.create_connection((self.host, self.port), timeout=self.timeout)
+        )
         self.sock = self.tls_context.wrap_socket(raw, server_hostname=self.host)
         self.sock.settimeout(self.timeout)
+
+    def _create_proxy_connection(self):
+        proxy = self.proxy or ""
+        if "://" not in proxy:
+            proxy = f"http://{proxy}"
+        parsed = urlsplit(proxy)
+        proxy_types = {
+            "http": socks.HTTP,
+            "https": socks.HTTP,
+            "socks4": socks.SOCKS4,
+            "socks4a": socks.SOCKS4,
+            "socks5": socks.SOCKS5,
+            "socks5h": socks.SOCKS5,
+        }
+        proxy_type = proxy_types.get(parsed.scheme)
+        if proxy_type is None or not parsed.hostname or parsed.port is None:
+            raise ValueError(f"Unsupported realtime proxy URL: {self.proxy}")
+        raw = socks.socksocket()
+        raw.settimeout(self.timeout)
+        raw.set_proxy(
+            proxy_type,
+            parsed.hostname,
+            parsed.port,
+            rdns=parsed.scheme in {"socks4a", "socks5h"},
+            username=unquote(parsed.username) if parsed.username else None,
+            password=unquote(parsed.password) if parsed.password else None,
+        )
+        raw.connect((self.host, self.port))
+        return raw
 
     def send(self, packet: bytes) -> None:
         if self.sock is None:

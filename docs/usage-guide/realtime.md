@@ -64,14 +64,8 @@ def handle_direct_message(payload):
 
 cl.realtime_on("message", handle_direct_message)
 
-# Fetch the Direct inbox snapshot before subscribing to message-sync events.
-# Instagram uses these values as the Iris cursor for realtime Direct patches.
-cl.direct_threads(amount=1)
-seq_id = cl.last_json["seq_id"]
-snapshot_at_ms = cl.last_json["snapshot_at_ms"]
-
 rt = cl.realtime_connect()
-rt.iris_subscribe(seq_id=seq_id, snapshot_at_ms=snapshot_at_ms)
+rt.direct_subscribe()
 
 try:
     # Optional keepalive check for smoke tests or long-running workers.
