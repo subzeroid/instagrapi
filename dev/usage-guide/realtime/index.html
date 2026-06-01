@@ -1139,9 +1139,10 @@
 <p class="admonition-title">Warning</p>
 <p>Realtime MQTT support is experimental. Instagram can change this private transport without notice.</p>
 </div>
-<p>The realtime client opens Instagram's MQTToT connection for receiving live events after login.
+<p>The realtime client opens Instagram's MQTToT connection for live events after login.
 It is useful when you need callbacks for realtime payloads instead of polling HTTP endpoints.
-Use the Direct methods for sending messages, reactions, and media.</p>
+It can also publish lightweight Direct actions over MQTT. Use the regular Direct methods for media sends
+and complete thread management.</p>
 <table>
 <thead>
 <tr>
@@ -1204,6 +1205,30 @@ Use the Direct methods for sending messages, reactions, and media.</p>
 <td>Publish Direct inbox sync state for message-sync events</td>
 </tr>
 <tr>
+<td><code>direct_subscribe(amount=1)</code></td>
+<td>Fetch Direct inbox sync state and subscribe to message-sync events</td>
+</tr>
+<tr>
+<td><code>direct_send_text(thread_id, text, client_context=None)</code></td>
+<td>Publish a Direct text message over MQTT</td>
+</tr>
+<tr>
+<td><code>direct_send_reaction(thread_id, item_id, emoji="", ...)</code></td>
+<td>Publish a Direct reaction over MQTT</td>
+</tr>
+<tr>
+<td><code>direct_mark_seen(thread_id, item_id)</code></td>
+<td>Publish Direct seen state over MQTT</td>
+</tr>
+<tr>
+<td><code>direct_indicate_activity(thread_id, is_active=True, client_context=None)</code></td>
+<td>Publish Direct typing/activity state over MQTT</td>
+</tr>
+<tr>
+<td><code>send_foreground_state(...)</code></td>
+<td>Publish foreground state and optional topic changes</td>
+</tr>
+<tr>
 <td><code>publish_json(topic, data)</code></td>
 <td>Publish a JSON payload to a raw MQTToT topic</td>
 </tr>
@@ -1263,8 +1288,15 @@ Use the Direct methods for sending messages, reactions, and media.</p>
 <span class="k">finally</span><span class="p">:</span>
     <span class="n">cl</span><span class="o">.</span><span class="n">realtime_disconnect</span><span class="p">()</span>
 </code></pre></div>
-<p>Direct message sync is receive-only. Use the normal <code>direct_*</code> methods for replies, reactions, media, and other actions.
-The payload shape is private and can change server-side, so inspect the received dictionary before depending on nested keys.</p>
+<p>Send lightweight Direct actions over MQTT:</p>
+<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">direct_send_text</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="s2">&quot;Hello from MQTT&quot;</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">direct_send_reaction</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;❤️&quot;</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">direct_indicate_activity</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">is_active</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">direct_mark_seen</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">item_id</span><span class="p">)</span>
+</code></pre></div>
+<p>For photos, videos, voice, thread creation, request approval, and other full Direct operations, use the normal
+<code>direct_*</code> HTTP methods. The MQTT payload shape is private and can change server-side, so inspect received
+dictionaries before depending on nested keys.</p>
 <p>Subscribe to raw realtime topics:</p>
 <div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">graph_ql_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;graphql-subscription&gt;&quot;</span><span class="p">])</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">skywalker_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;skywalker-subscription&gt;&quot;</span><span class="p">])</span>
@@ -1275,6 +1307,10 @@ connection topics, so the Direct message example above does not need an extra ra
 <ul>
 <li><code>receive</code> is emitted for every decoded publish packet as <code>{"topic": topic, "payload": payload}</code>.</li>
 <li><code>message</code> is emitted for message-sync payloads.</li>
+<li><code>direct</code> is emitted for parsed Direct realtime payloads from message-sync or realtime-sub streams.</li>
+<li><code>typing</code>, <code>seen</code>, and <code>presence</code> are emitted for Direct realtime payloads that can be classified.</li>
+<li><code>send_response</code> is emitted for MQTT Direct command responses.</li>
+<li><code>iris_sub_response</code> is emitted for Iris subscription responses.</li>
 <li><code>realtime_sub</code> is emitted for realtime subscription payloads.</li>
 </ul>
 
