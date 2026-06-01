@@ -46,12 +46,48 @@ while True:
     cl.realtime_read_once()
 ```
 
+Receive Direct message sync payloads:
+
+``` python
+import json
+
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+
+def handle_direct_message(payload):
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+cl.realtime_on("message", handle_direct_message)
+rt = cl.realtime_connect()
+
+try:
+    # Optional keepalive check for smoke tests or long-running workers.
+    rt.ping()
+
+    while True:
+        cl.realtime_read_once()
+except KeyboardInterrupt:
+    pass
+finally:
+    cl.realtime_disconnect()
+```
+
+Direct message sync is receive-only. Use the normal `direct_*` methods for replies, reactions, media, and other actions.
+The payload shape is private and can change server-side, so inspect the received dictionary before depending on nested keys.
+
 Subscribe to raw realtime topics:
 
 ``` python
 rt.graph_ql_subscribe(["<graphql-subscription>"])
 rt.skywalker_subscribe(["<skywalker-subscription>"])
 ```
+
+Raw GraphQL and Skywalker subscription strings are advanced and unstable. Message sync is subscribed by the default
+connection topics, so the Direct message example above does not need an extra raw subscription.
 
 Events:
 
