@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/insight/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/realtime/">
       
       
-        <link rel="prev" href="../highlight/">
+        <link rel="prev" href="../direct/">
       
       
-        <link rel="next" href="../location/">
+        <link rel="next" href="../hashtag/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Insight - instagrapi Documentation</title>
+        <title>Realtime MQTT - instagrapi Documentation</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#insights" class="md-skip">
+        <a href="#realtime-mqtt" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Insight
+              Realtime MQTT
             
           </span>
         </div>
@@ -582,10 +582,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../realtime/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -601,6 +610,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -666,19 +676,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
         
   
   
@@ -694,7 +695,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1134,13 +1134,14 @@
   
 
 
-<h1 id="insights">Insights</h1>
-<p>Get business/professional account statistics. Common arguments:</p>
-<ul>
-<li><code>post_type</code> - Media type: "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO".</li>
-<li><code>time_frame</code> - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".</li>
-<li><code>data_ordering</code> - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".</li>
-</ul>
+<h1 id="realtime-mqtt">Realtime MQTT</h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Realtime MQTT support is experimental. Instagram can change this private transport without notice.</p>
+</div>
+<p>The realtime client opens Instagram's MQTToT connection for receiving live events after login.
+It is useful when you need callbacks for realtime payloads instead of polling HTTP endpoints.
+Use the Direct methods for sending messages, reactions, and media.</p>
 <table>
 <thead>
 <tr>
@@ -1151,39 +1152,130 @@
 </thead>
 <tbody>
 <tr>
-<td>insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2)</td>
-<td>List[Dict]</td>
-<td>Return feed media edges with insight stats and pagination</td>
+<td><code>realtime_connect(transport=None)</code></td>
+<td><code>RealtimeClient</code></td>
+<td>Create and connect the stateful realtime client</td>
 </tr>
 <tr>
-<td>insights_account()</td>
-<td>Dict</td>
-<td>Get account-level insights (activity, audience, content tabs)</td>
+<td><code>realtime_disconnect()</code></td>
+<td><code>None</code></td>
+<td>Disconnect the active realtime client</td>
 </tr>
 <tr>
-<td>insights_media(media_pk: int)</td>
-<td>Dict</td>
-<td>Get insights for a single media object</td>
+<td><code>realtime_on(event, handler)</code></td>
+<td><code>None</code></td>
+<td>Register an event handler on the active realtime client</td>
+</tr>
+<tr>
+<td><code>realtime_ping()</code></td>
+<td><code>bool</code></td>
+<td>Send a keepalive ping and wait for <code>PINGRESP</code></td>
+</tr>
+<tr>
+<td><code>realtime_read_once()</code></td>
+<td><code>Any</code></td>
+<td>Read one packet from the active realtime client</td>
 </tr>
 </tbody>
 </table>
-<p>Example:</p>
+<p><code>RealtimeClient</code> also exposes lower-level helpers:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on(event, handler)</code></td>
+<td>Register a handler for <code>receive</code>, <code>message</code>, or <code>realtime_sub</code></td>
+</tr>
+<tr>
+<td><code>graph_ql_subscribe(subscriptions)</code></td>
+<td>Publish raw GraphQL realtime subscriptions</td>
+</tr>
+<tr>
+<td><code>skywalker_subscribe(subscriptions)</code></td>
+<td>Publish raw Skywalker subscriptions</td>
+</tr>
+<tr>
+<td><code>iris_subscribe(seq_id, snapshot_at_ms)</code></td>
+<td>Publish Direct inbox sync state for message-sync events</td>
+</tr>
+<tr>
+<td><code>publish_json(topic, data)</code></td>
+<td>Publish a JSON payload to a raw MQTToT topic</td>
+</tr>
+<tr>
+<td><code>ping()</code></td>
+<td>Send a keepalive ping and wait for <code>PINGRESP</code></td>
+</tr>
+<tr>
+<td><code>read_once()</code></td>
+<td>Read and dispatch one packet</td>
+</tr>
+</tbody>
+</table>
+<p>Basic receive loop:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media_feed_all</span><span class="p">(</span><span class="s2">&quot;VIDEO&quot;</span><span class="p">,</span> <span class="s2">&quot;ONE_WEEK&quot;</span><span class="p">,</span> <span class="s2">&quot;LIKE_COUNT&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_account</span><span class="p">()</span>
 
-<span class="n">media_pk</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s1">&#39;https://www.instagram.com/p/CP5h-I1FuPr/&#39;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media</span><span class="p">(</span><span class="n">media_pk</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_receive</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;topic&quot;</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+
+
+<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">&quot;receive&quot;</span><span class="p">,</span> <span class="n">handle_receive</span><span class="p">)</span>
+<span class="n">rt</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">realtime_connect</span><span class="p">()</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">realtime_read_once</span><span class="p">()</span>
 </code></pre></div>
-<p>Notes:</p>
+<p>Receive Direct message sync payloads:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_direct_message</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+
+<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="n">handle_direct_message</span><span class="p">)</span>
+
+<span class="n">rt</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">realtime_connect</span><span class="p">()</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">direct_subscribe</span><span class="p">()</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="c1"># Optional keepalive check for smoke tests or long-running workers.</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">ping</span><span class="p">()</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">cl</span><span class="o">.</span><span class="n">realtime_read_once</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">realtime_disconnect</span><span class="p">()</span>
+</code></pre></div>
+<p>Direct message sync is receive-only. Use the normal <code>direct_*</code> methods for replies, reactions, media, and other actions.
+The payload shape is private and can change server-side, so inspect the received dictionary before depending on nested keys.</p>
+<p>Subscribe to raw realtime topics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">graph_ql_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;graphql-subscription&gt;&quot;</span><span class="p">])</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">skywalker_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;skywalker-subscription&gt;&quot;</span><span class="p">])</span>
+</code></pre></div>
+<p>Raw GraphQL and Skywalker subscription strings are advanced and unstable. Message sync is subscribed by the default
+connection topics, so the Direct message example above does not need an extra raw subscription.</p>
+<p>Events:</p>
 <ul>
-<li>These methods require an authenticated business/professional account. Personal accounts can raise <code>UserError</code>.</li>
-<li><code>insights_media_feed_all()</code> paginates internally and sleeps between pages; reduce <code>count</code> if you only need a small sample.</li>
-<li><code>insights_media()</code> raises <code>MediaError</code> when Instagram does not return insight data for the requested media.</li>
+<li><code>receive</code> is emitted for every decoded publish packet as <code>{"topic": topic, "payload": payload}</code>.</li>
+<li><code>message</code> is emitted for message-sync payloads.</li>
+<li><code>realtime_sub</code> is emitted for realtime subscription payloads.</li>
 </ul>
 
 
