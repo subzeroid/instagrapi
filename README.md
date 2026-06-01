@@ -158,7 +158,7 @@ same_place = cl.location_search_pk(place.pk)
 print(same_place.name, same_place.pk)
 ```
 
-### Work with Notes
+### Send and read Direct messages
 
 ```python
 from instagrapi import Client
@@ -166,11 +166,14 @@ from instagrapi import Client
 cl = Client()
 cl.login(USERNAME, PASSWORD)
 
-notes = cl.get_notes()
-print(cl.get_note_text_by_user(notes, "instagram"))
+target_id = cl.user_id_from_username("target_user")
+sent = cl.direct_send("Hello from instagrapi", user_ids=[target_id])
+print("sent", sent.id)
 
-note = cl.create_note("Hello from instagrapi", audience=0)
-cl.delete_note(note.id)
+threads = cl.direct_threads(amount=5)
+for thread in threads:
+    last_message = thread.messages[0] if thread.messages else None
+    print(thread.id, thread.thread_title, last_message.text if last_message else "")
 ```
 
 ### Receive Direct messages with Realtime MQTT
@@ -217,7 +220,7 @@ subscriptions and event details.
 * Uploads and downloads photos, videos, albums, IGTV, reels, and stories
 * Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
 * Supports story building with mentions, hashtags, link stickers, and media stickers
-* Includes helpers for current location search and notes flows
+* Includes helpers for current location search and Direct message workflows
 * Supports mobile follower sorting with `date_followed_latest` and `date_followed_earliest`
 * App-side discovery surfaces: `chaining`, `fetch_suggestion_details`, `discover_recommended_accounts_for_category_v1`, `user_stream_*`, `user_web_profile_info_v1`
 * v2 search SERPs: `fbsearch_accounts_v2`, `fbsearch_reels_v2`, `fbsearch_topsearch_v2`, `fbsearch_typehead`
