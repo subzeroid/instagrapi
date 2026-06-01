@@ -29,3 +29,8 @@ class RealtimeMixin:
         if not self.realtime:
             raise RuntimeError("Realtime client is not connected")
         return self.realtime.read_once()
+
+    def realtime_ping(self) -> bool:
+        if not self.realtime:
+            raise RuntimeError("Realtime client is not connected")
+        return self.realtime.ping()

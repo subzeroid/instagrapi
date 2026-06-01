@@ -205,6 +205,12 @@ def decode_packet(packet: bytes) -> DecodedMQTToTPacket:
             packet_id=packet_id,
             payload=body[pos:],
         )
+    if packet_type_id == 12:
+        return DecodedMQTToTPacket(packet_type="pingreq", payload=body)
+    if packet_type_id == 13:
+        return DecodedMQTToTPacket(packet_type="pingresp", payload=body)
+    if packet_type_id == 14:
+        return DecodedMQTToTPacket(packet_type="disconnect", payload=body)
     return DecodedMQTToTPacket(packet_type=str(packet_type_id), payload=body)
 
 

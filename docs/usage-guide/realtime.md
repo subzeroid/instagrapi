@@ -12,6 +12,7 @@ Use the Direct methods for sending messages, reactions, and media.
 | `realtime_connect(transport=None)` | `RealtimeClient` | Create and connect the stateful realtime client |
 | `realtime_disconnect()` | `None` | Disconnect the active realtime client |
 | `realtime_on(event, handler)` | `None` | Register an event handler on the active realtime client |
+| `realtime_ping()` | `bool` | Send a keepalive ping and wait for `PINGRESP` |
 | `realtime_read_once()` | `Any` | Read one packet from the active realtime client |
 
 `RealtimeClient` also exposes lower-level helpers:
@@ -22,6 +23,7 @@ Use the Direct methods for sending messages, reactions, and media.
 | `graph_ql_subscribe(subscriptions)` | Publish raw GraphQL realtime subscriptions |
 | `skywalker_subscribe(subscriptions)` | Publish raw Skywalker subscriptions |
 | `publish_json(topic, data)` | Publish a JSON payload to a raw MQTToT topic |
+| `ping()` | Send a keepalive ping and wait for `PINGRESP` |
 | `read_once()` | Read and dispatch one packet |
 
 Basic receive loop:

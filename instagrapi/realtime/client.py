@@ -13,6 +13,7 @@ from instagrapi.realtime.mqttot import (
     try_decompress_payload,
     write_connect_packet,
     write_disconnect_packet,
+    write_pingreq_packet,
     write_publish_packet,
 )
 
@@ -129,6 +130,21 @@ class RealtimeClient:
         if packet.qos == 1 and packet.packet_id is not None:
             self.transport.send(b"\x40\x02" + packet.packet_id.to_bytes(2, "big"))
         return payload
+
+    def ping(self, max_packets: int = 5) -> bool:
+        if not self.connected:
+            raise RuntimeError("Realtime client is not connected")
+        self.transport.send(write_pingreq_packet())
+        for _ in range(max_packets):
+            packet = decode_packet(self.transport.recv_packet())
+            if packet.packet_type == "pingresp":
+                return True
+            if packet.packet_type != "publish" or packet.topic is None:
+                return False
+            self.dispatch_packet(packet.topic, packet.payload)
+            if packet.qos == 1 and packet.packet_id is not None:
+                self.transport.send(b"\x40\x02" + packet.packet_id.to_bytes(2, "big"))
+        return False
 
     def dispatch_packet(self, topic: str, payload: bytes) -> Any:
         body = try_decompress_payload(payload)

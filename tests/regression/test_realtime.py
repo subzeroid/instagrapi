@@ -10,6 +10,7 @@ from instagrapi.realtime.mqttot import (
     decode_packet,
     read_thrift_object,
     write_connect_packet,
+    write_pingreq_packet,
     write_publish_packet,
 )
 
@@ -82,6 +83,13 @@ def test_publish_packet_round_trips_topic_and_zipped_payload():
     assert json.loads(zlib.decompress(decoded.payload)) == {"sub": ["1/graphqlsubscriptions/test/{}"]}
 
 
+def test_ping_response_packet_decodes_as_pingresp():
+    decoded = decode_packet(b"\xd0\x00")
+
+    assert decoded.packet_type == "pingresp"
+    assert decoded.payload == b""
+
+
 def test_realtime_client_builds_cookie_auth_connection_from_instagram_session():
     client = _build_logged_in_client()
     realtime = RealtimeClient(client)
@@ -108,6 +116,28 @@ def test_client_exposes_stateful_realtime_helpers():
 
     client.realtime_disconnect()
     transport.disconnect.assert_called_once()
+
+
+def test_realtime_client_ping_sends_keepalive_and_reads_pingresp():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    transport.recv_packet.return_value = b"\xd0\x00"
+    realtime = RealtimeClient(client, transport=transport)
+    realtime.connected = True
+
+    assert realtime.ping()
+
+    transport.send.assert_called_once_with(write_pingreq_packet())
+    transport.recv_packet.assert_called_once()
+
+
+def test_client_exposes_stateful_realtime_ping_helper():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    transport.recv_packet.return_value = b"\xd0\x00"
+    client.realtime_connect(transport=transport)
+
+    assert client.realtime_ping()
 
 
 def test_realtime_connect_preserves_handlers_registered_before_connect():
