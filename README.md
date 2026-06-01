@@ -173,6 +173,42 @@ note = cl.create_note("Hello from instagrapi", audience=0)
 cl.delete_note(note.id)
 ```
 
+### Receive Direct messages with Realtime MQTT
+
+Realtime MQTT support is experimental and receive-oriented. It opens Instagram's
+private MQTToT connection after login, emits live callbacks, and uses the same
+`Client.proxy` settings as HTTP requests. Use the regular `direct_*` methods for
+replies, reactions, media, and other actions.
+
+```python
+import json
+
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+
+def handle_direct_message(payload):
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+cl.realtime_on("message", handle_direct_message)
+
+rt = cl.realtime_connect()
+rt.direct_subscribe()
+
+try:
+    rt.ping()
+    while True:
+        rt.read_once()
+finally:
+    cl.realtime_disconnect()
+```
+
+See the full [Realtime MQTT guide](docs/usage-guide/realtime.md) for lower-level
+subscriptions and event details.
+
 ## Features
 
 * Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) and [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) flows where available
@@ -186,6 +222,7 @@ cl.delete_note(note.id)
 * App-side discovery surfaces: `chaining`, `fetch_suggestion_details`, `discover_recommended_accounts_for_category_v1`, `user_stream_*`, `user_web_profile_info_v1`
 * v2 search SERPs: `fbsearch_accounts_v2`, `fbsearch_reels_v2`, `fbsearch_topsearch_v2`, `fbsearch_typehead`
 * Alternative media-info path (`media_info_v2`) for ad-tagged / sponsored media that the canonical endpoint refuses
+* Experimental Realtime MQTT receive helpers for live events and Direct message sync
 
 Anonymous/public web paths are best treated as opportunistic rather than guaranteed. Instagram can change or restrict them independently of the library, so production-grade workflows should prefer authenticated sessions.
 

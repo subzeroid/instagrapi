@@ -36,6 +36,7 @@ from instagrapi.mixins.public import (
     PublicRequestMixin,
     TopSearchesPublicMixin,
 )
+from instagrapi.mixins.realtime import RealtimeMixin
 from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.signup import SignUpMixin
 from instagrapi.mixins.story import StoryMixin
@@ -94,6 +95,7 @@ class Client(
     MultipleAccountsMixin,
     NoteMixin,
     FundraiserMixin,
+    RealtimeMixin,
 ):
     proxy = None
 
