@@ -1,5 +1,6 @@
 import json
 import time
+import uuid
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List
 
@@ -7,6 +8,8 @@ from instagrapi.realtime.mqttot import (
     MQTToTConnection,
     MQTToTTopics,
     SocketMQTToTTransport,
+    ThriftDescriptor,
+    ThriftTypes,
     compress_payload,
     decode_packet,
     parse_json_payload,
@@ -15,6 +18,7 @@ from instagrapi.realtime.mqttot import (
     write_disconnect_packet,
     write_pingreq_packet,
     write_publish_packet,
+    write_thrift_object,
 )
 
 REALTIME_HOST = "edge-mqtt.facebook.com"
@@ -130,11 +134,110 @@ class RealtimeClient:
         self.iris_subscribe(**state)
         return state
 
+    def direct_send_text(self, thread_id: int | str, text: str, client_context: str | None = None) -> Dict[str, Any]:
+        return self._publish_direct_command(
+            "send_item",
+            thread_id,
+            {"item_type": "text", "text": text},
+            client_context=client_context or self.new_client_context(),
+        )
+
+    def direct_send_reaction(
+        self,
+        thread_id: int | str,
+        item_id: str,
+        emoji: str = "",
+        reaction_type: str = "like",
+        reaction_status: str = "created",
+        target_item_type: str = "text",
+        client_context: str | None = None,
+    ) -> Dict[str, Any]:
+        return self._publish_direct_command(
+            "send_item",
+            thread_id,
+            {
+                "item_type": "reaction",
+                "item_id": item_id,
+                "node_type": "item",
+                "reaction_type": reaction_type,
+                "reaction_status": reaction_status,
+                "target_item_type": target_item_type,
+                "emoji": emoji,
+            },
+            client_context=client_context or self.new_client_context(),
+        )
+
+    def direct_mark_seen(self, thread_id: int | str, item_id: str) -> Dict[str, Any]:
+        return self._publish_direct_command("mark_seen", thread_id, {"item_id": item_id})
+
+    def direct_indicate_activity(
+        self,
+        thread_id: int | str,
+        is_active: bool = True,
+        client_context: str | None = None,
+    ) -> Dict[str, Any]:
+        return self._publish_direct_command(
+            "indicate_activity",
+            thread_id,
+            {"activity_status": "1" if is_active else "0"},
+            client_context=client_context or self.new_client_context(),
+        )
+
+    def send_foreground_state(
+        self,
+        in_foreground_app: bool | None = None,
+        in_foreground_device: bool | None = None,
+        keep_alive_timeout: int | None = None,
+        subscribe_topics: List[str] | None = None,
+        subscribe_generic_topics: List[str] | None = None,
+        unsubscribe_topics: List[str] | None = None,
+        unsubscribe_generic_topics: List[str] | None = None,
+        request_id: int | None = None,
+    ) -> Dict[str, Any]:
+        state = {
+            "inForegroundApp": in_foreground_app,
+            "inForegroundDevice": in_foreground_device,
+            "keepAliveTimeout": keep_alive_timeout,
+            "subscribeTopics": subscribe_topics,
+            "subscribeGenericTopics": subscribe_generic_topics,
+            "unsubscribeTopics": unsubscribe_topics,
+            "unsubscribeGenericTopics": unsubscribe_generic_topics,
+            "requestId": request_id,
+        }
+        state = {key: value for key, value in state.items() if value is not None}
+        self._publish_bytes(
+            MQTToTTopics.FOREGROUND_STATE,
+            compress_payload(b"\x00" + write_thrift_object(state, self.foreground_state_descriptors())),
+        )
+        return state
+
+    def _publish_direct_command(
+        self,
+        action: str,
+        thread_id: int | str,
+        data: Dict[str, Any],
+        client_context: str | None = None,
+    ) -> Dict[str, Any]:
+        payload = {"action": action, "thread_id": str(thread_id), **data}
+        if client_context:
+            payload["client_context"] = client_context
+        self._publish_bytes(
+            MQTToTTopics.SEND_MESSAGE,
+            compress_payload(json.dumps(payload, separators=(",", ":")).encode()),
+        )
+        state = {"thread_id": str(thread_id), "action": action}
+        if client_context:
+            state["client_context"] = client_context
+        return state
+
     def publish_json(self, topic: str, data: Dict[str, Any]) -> None:
+        self._publish_bytes(topic, compress_payload(json.dumps(data, separators=(",", ":")).encode()))
+
+    def _publish_bytes(self, topic: str, payload: bytes) -> None:
         self._packet_id += 1
         packet = write_publish_packet(
             topic,
-            compress_payload(json.dumps(data, separators=(",", ":")).encode()),
+            payload,
             qos=1,
             packet_id=self._packet_id,
         )
@@ -185,10 +288,14 @@ class RealtimeClient:
             except (UnicodeDecodeError, json.JSONDecodeError):
                 parsed = body
         self.emit("receive", {"topic": topic, "payload": parsed})
+        if topic == MQTToTTopics.SEND_MESSAGE_RESPONSE:
+            self.emit("send_response", parsed)
+        if topic == MQTToTTopics.IRIS_SUB_RESPONSE:
+            self.emit("iris_sub_response", parsed)
         if topic == MQTToTTopics.MESSAGE_SYNC:
             self.dispatch_message_sync(parsed)
         if topic == MQTToTTopics.REALTIME_SUB:
-            self.emit("realtime_sub", parsed)
+            self.dispatch_realtime_sub(parsed)
         return parsed
 
     def dispatch_message_sync(self, payload: Any) -> None:
@@ -230,6 +337,76 @@ class RealtimeClient:
                     self.emit("message", wrapper)
                 else:
                     self.emit("thread_update", wrapper)
+                self.dispatch_direct_realtime_event({"path": path, "op": patch.get("op"), "value": value})
+
+    def dispatch_realtime_sub(self, payload: Any) -> None:
+        self.emit("realtime_sub", payload)
+        if not isinstance(payload, dict):
+            return
+        message = payload.get("message")
+        if isinstance(message, str):
+            try:
+                self.dispatch_direct_realtime_payload(json.loads(message))
+            except json.JSONDecodeError:
+                return
+            return
+        if not isinstance(message, dict):
+            return
+        if message.get("topic") != "direct":
+            return
+        direct_payload = message.get("json") or message.get("payload")
+        if isinstance(direct_payload, str):
+            try:
+                direct_payload = json.loads(direct_payload)
+            except json.JSONDecodeError:
+                direct_payload = {"value": direct_payload}
+        self.dispatch_direct_realtime_payload(direct_payload)
+
+    def dispatch_direct_realtime_payload(self, payload: Any) -> None:
+        if not isinstance(payload, dict):
+            self.dispatch_direct_realtime_event({"value": payload})
+            return
+        data = payload.get("data")
+        if not isinstance(data, list):
+            self.dispatch_direct_realtime_event(payload)
+            return
+        meta = {key: value for key, value in payload.items() if key != "data"}
+        for item in data:
+            if isinstance(item, dict):
+                self.dispatch_direct_realtime_event({**meta, **item})
+            else:
+                self.dispatch_direct_realtime_event({**meta, "value": item})
+
+    def dispatch_direct_realtime_event(self, event: Dict[str, Any]) -> None:
+        event = dict(event)
+        value = event.get("value")
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                pass
+        event["value"] = value
+        path = event.get("path")
+        if path and "thread_id" not in event:
+            event["thread_id"] = self.thread_id_from_message_sync_path(path)
+        self.emit("direct", event)
+        kind = self.direct_realtime_event_kind(event)
+        if kind:
+            self.emit(kind, event)
+
+    @staticmethod
+    def direct_realtime_event_kind(event: Dict[str, Any]) -> str | None:
+        path = str(event.get("path") or "").lower()
+        action = str(event.get("action") or "").lower()
+        value = event.get("value")
+        value_text = json.dumps(value, sort_keys=True).lower() if isinstance(value, dict) else str(value).lower()
+        if "activity_status" in value_text or "activity_indicator" in path or "typing" in path:
+            return "typing"
+        if "presence" in path or "is_active" in value_text or "last_active" in value_text:
+            return "presence"
+        if action == "mark_seen" or "/seen" in path or "seen_" in path or "read" in path or "seen" in value_text:
+            return "seen"
+        return None
 
     @staticmethod
     def thread_id_from_message_sync_path(path: str) -> str | None:
@@ -244,6 +421,23 @@ class RealtimeClient:
     def client_app_version(self) -> str:
         device_settings = getattr(self.client, "device_settings", None) or {}
         return getattr(self.client, "app_version", None) or device_settings.get("app_version", "")
+
+    @staticmethod
+    def foreground_state_descriptors() -> List[ThriftDescriptor]:
+        return [
+            ThriftDescriptor("inForegroundApp", 1, ThriftTypes.BOOLEAN),
+            ThriftDescriptor("inForegroundDevice", 2, ThriftTypes.BOOLEAN),
+            ThriftDescriptor("keepAliveTimeout", 3, ThriftTypes.INT_32),
+            ThriftDescriptor("subscribeTopics", 4, ThriftTypes.LIST_BINARY),
+            ThriftDescriptor("subscribeGenericTopics", 5, ThriftTypes.LIST_BINARY),
+            ThriftDescriptor("unsubscribeTopics", 6, ThriftTypes.LIST_BINARY),
+            ThriftDescriptor("unsubscribeGenericTopics", 7, ThriftTypes.LIST_BINARY),
+            ThriftDescriptor("requestId", 8, ThriftTypes.INT_64),
+        ]
+
+    @staticmethod
+    def new_client_context() -> str:
+        return str(uuid.uuid4())
 
     def emit(self, event: str, payload: Any) -> None:
         for handler in self._handlers.get(event, []):

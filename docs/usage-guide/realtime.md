@@ -3,9 +3,10 @@
 !!! warning
     Realtime MQTT support is experimental. Instagram can change this private transport without notice.
 
-The realtime client opens Instagram's MQTToT connection for receiving live events after login.
+The realtime client opens Instagram's MQTToT connection for live events after login.
 It is useful when you need callbacks for realtime payloads instead of polling HTTP endpoints.
-Use the Direct methods for sending messages, reactions, and media.
+It can also publish lightweight Direct actions over MQTT. Use the regular Direct methods for media sends
+and complete thread management.
 
 | Method | Return | Description |
 | --- | --- | --- |
@@ -23,6 +24,12 @@ Use the Direct methods for sending messages, reactions, and media.
 | `graph_ql_subscribe(subscriptions)` | Publish raw GraphQL realtime subscriptions |
 | `skywalker_subscribe(subscriptions)` | Publish raw Skywalker subscriptions |
 | `iris_subscribe(seq_id, snapshot_at_ms)` | Publish Direct inbox sync state for message-sync events |
+| `direct_subscribe(amount=1)` | Fetch Direct inbox sync state and subscribe to message-sync events |
+| `direct_send_text(thread_id, text, client_context=None)` | Publish a Direct text message over MQTT |
+| `direct_send_reaction(thread_id, item_id, emoji="", ...)` | Publish a Direct reaction over MQTT |
+| `direct_mark_seen(thread_id, item_id)` | Publish Direct seen state over MQTT |
+| `direct_indicate_activity(thread_id, is_active=True, client_context=None)` | Publish Direct typing/activity state over MQTT |
+| `send_foreground_state(...)` | Publish foreground state and optional topic changes |
 | `publish_json(topic, data)` | Publish a JSON payload to a raw MQTToT topic |
 | `ping()` | Send a keepalive ping and wait for `PINGRESP` |
 | `read_once()` | Read and dispatch one packet |
@@ -79,8 +86,18 @@ finally:
     cl.realtime_disconnect()
 ```
 
-Direct message sync is receive-only. Use the normal `direct_*` methods for replies, reactions, media, and other actions.
-The payload shape is private and can change server-side, so inspect the received dictionary before depending on nested keys.
+Send lightweight Direct actions over MQTT:
+
+``` python
+rt.direct_send_text(thread_id, "Hello from MQTT")
+rt.direct_send_reaction(thread_id, item_id, emoji="❤️")
+rt.direct_indicate_activity(thread_id, is_active=True)
+rt.direct_mark_seen(thread_id, item_id)
+```
+
+For photos, videos, voice, thread creation, request approval, and other full Direct operations, use the normal
+`direct_*` HTTP methods. The MQTT payload shape is private and can change server-side, so inspect received
+dictionaries before depending on nested keys.
 
 Subscribe to raw realtime topics:
 
@@ -96,4 +113,8 @@ Events:
 
 * `receive` is emitted for every decoded publish packet as `{"topic": topic, "payload": payload}`.
 * `message` is emitted for message-sync payloads.
+* `direct` is emitted for parsed Direct realtime payloads from message-sync or realtime-sub streams.
+* `typing`, `seen`, and `presence` are emitted for Direct realtime payloads that can be classified.
+* `send_response` is emitted for MQTT Direct command responses.
+* `iris_sub_response` is emitted for Iris subscription responses.
 * `realtime_sub` is emitted for realtime subscription payloads.

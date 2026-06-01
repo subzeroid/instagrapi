@@ -194,6 +194,114 @@ def test_realtime_client_direct_subscribe_fetches_inbox_and_subscribes_to_iris()
     assert state == {"seq_id": 123, "snapshot_at_ms": 456}
 
 
+def test_realtime_client_direct_send_text_publishes_mqtt_direct_command():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    realtime = RealtimeClient(client, transport=transport)
+
+    state = realtime.direct_send_text("thread-1", "hello", client_context="ctx-1")
+
+    packet = decode_packet(transport.send.call_args.args[0])
+    payload = json.loads(zlib.decompress(packet.payload))
+    assert packet.topic == MQTToTTopics.SEND_MESSAGE
+    assert payload == {
+        "action": "send_item",
+        "thread_id": "thread-1",
+        "client_context": "ctx-1",
+        "item_type": "text",
+        "text": "hello",
+    }
+    assert state == {"thread_id": "thread-1", "client_context": "ctx-1", "action": "send_item"}
+
+
+def test_realtime_client_direct_send_reaction_publishes_mqtt_direct_command():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    realtime = RealtimeClient(client, transport=transport)
+
+    realtime.direct_send_reaction("thread-1", "item-1", emoji="🔥", client_context="ctx-1")
+
+    packet = decode_packet(transport.send.call_args.args[0])
+    payload = json.loads(zlib.decompress(packet.payload))
+    assert packet.topic == MQTToTTopics.SEND_MESSAGE
+    assert payload == {
+        "action": "send_item",
+        "thread_id": "thread-1",
+        "client_context": "ctx-1",
+        "item_type": "reaction",
+        "item_id": "item-1",
+        "node_type": "item",
+        "reaction_type": "like",
+        "reaction_status": "created",
+        "target_item_type": "text",
+        "emoji": "🔥",
+    }
+
+
+def test_realtime_client_direct_indicate_activity_publishes_typing_command():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    realtime = RealtimeClient(client, transport=transport)
+
+    realtime.direct_indicate_activity("thread-1", is_active=False, client_context="ctx-1")
+
+    packet = decode_packet(transport.send.call_args.args[0])
+    payload = json.loads(zlib.decompress(packet.payload))
+    assert packet.topic == MQTToTTopics.SEND_MESSAGE
+    assert payload == {
+        "action": "indicate_activity",
+        "thread_id": "thread-1",
+        "client_context": "ctx-1",
+        "activity_status": "0",
+    }
+
+
+def test_realtime_client_direct_mark_seen_publishes_seen_command():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    realtime = RealtimeClient(client, transport=transport)
+
+    realtime.direct_mark_seen("thread-1", "item-1")
+
+    packet = decode_packet(transport.send.call_args.args[0])
+    payload = json.loads(zlib.decompress(packet.payload))
+    assert packet.topic == MQTToTTopics.SEND_MESSAGE
+    assert payload == {
+        "action": "mark_seen",
+        "thread_id": "thread-1",
+        "item_id": "item-1",
+    }
+
+
+def test_realtime_client_send_foreground_state_publishes_thrift_state():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    realtime = RealtimeClient(client, transport=transport)
+
+    realtime.send_foreground_state(keep_alive_timeout=60, subscribe_topics=["146"], request_id=99)
+
+    packet = decode_packet(transport.send.call_args.args[0])
+    payload = zlib.decompress(packet.payload)
+    assert packet.topic == MQTToTTopics.FOREGROUND_STATE
+    assert payload[0] == 0
+    state = read_thrift_object(payload[1:], realtime.foreground_state_descriptors())
+    assert state["keepAliveTimeout"] == 60
+    assert state["subscribeTopics"] == ["146"]
+    assert state["requestId"] == 99
+
+
+def test_realtime_client_dispatches_send_message_response_event():
+    client = _build_logged_in_client()
+    realtime = RealtimeClient(client, transport=mock.Mock())
+    handler = mock.Mock()
+    realtime.on("send_response", handler)
+    payload = {"status": "ok", "client_context": "ctx-1"}
+
+    realtime.dispatch_packet(MQTToTTopics.SEND_MESSAGE_RESPONSE, zlib.compress(json.dumps(payload).encode()))
+
+    handler.assert_called_once_with(payload)
+
+
 def test_message_sync_dispatch_emits_direct_message_wrapper():
     client = _build_logged_in_client()
     realtime = RealtimeClient(client, transport=mock.Mock())
@@ -222,6 +330,69 @@ def test_message_sync_dispatch_emits_direct_message_wrapper():
     assert message["op"] == "add"
     assert message["text"] == "hello"
     assert message["user_id"] == "55"
+
+
+def test_realtime_sub_dispatch_emits_direct_and_typing_events():
+    client = _build_logged_in_client()
+    realtime = RealtimeClient(client, transport=mock.Mock())
+    direct_handler = mock.Mock()
+    typing_handler = mock.Mock()
+    realtime.on("direct", direct_handler)
+    realtime.on("typing", typing_handler)
+    direct_payload = {
+        "message": {
+            "topic": "direct",
+            "json": {
+                "data": [
+                    {
+                        "path": "/direct_v2/threads/987/activity_indicator_id",
+                        "value": json.dumps({"activity_status": "1", "sender_id": "55"}),
+                    }
+                ]
+            },
+        }
+    }
+
+    realtime.dispatch_packet(MQTToTTopics.REALTIME_SUB, zlib.compress(json.dumps(direct_payload).encode()))
+
+    direct_handler.assert_called_once()
+    typing_handler.assert_called_once()
+    event = typing_handler.call_args.args[0]
+    assert event["thread_id"] == "987"
+    assert event["value"]["activity_status"] == "1"
+    assert event["value"]["sender_id"] == "55"
+
+
+def test_realtime_sub_dispatch_emits_seen_and_presence_events():
+    client = _build_logged_in_client()
+    realtime = RealtimeClient(client, transport=mock.Mock())
+    seen_handler = mock.Mock()
+    presence_handler = mock.Mock()
+    realtime.on("seen", seen_handler)
+    realtime.on("presence", presence_handler)
+    direct_payload = {
+        "message": json.dumps(
+            {
+                "data": [
+                    {
+                        "path": "/direct_v2/threads/987/seen_state",
+                        "value": json.dumps({"item_id": "item-1", "user_id": "55"}),
+                    },
+                    {
+                        "path": "/direct_v2/threads/987/presence",
+                        "value": json.dumps({"is_active": True, "user_id": "55"}),
+                    },
+                ]
+            }
+        )
+    }
+
+    realtime.dispatch_packet(MQTToTTopics.REALTIME_SUB, zlib.compress(json.dumps(direct_payload).encode()))
+
+    seen_handler.assert_called_once()
+    presence_handler.assert_called_once()
+    assert seen_handler.call_args.args[0]["thread_id"] == "987"
+    assert presence_handler.call_args.args[0]["value"]["is_active"] is True
 
 
 def test_realtime_connect_preserves_handlers_registered_before_connect():

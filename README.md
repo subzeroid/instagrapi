@@ -176,12 +176,14 @@ for thread in threads:
     print(thread.id, thread.thread_title, last_message.text if last_message else "")
 ```
 
-### Receive Direct messages with Realtime MQTT
+### Work with Direct messages over Realtime MQTT
 
-Realtime MQTT support is experimental and receive-oriented. It opens Instagram's
-private MQTToT connection after login, emits live callbacks, and uses the same
-`Client.proxy` settings as HTTP requests. Use the regular `direct_*` methods for
-replies, reactions, media, and other actions.
+Realtime MQTT support is experimental. It opens Instagram's private MQTToT
+connection after login, emits live callbacks, and uses the same `Client.proxy`
+settings as HTTP requests. The realtime client can receive Direct message sync
+events and publish lightweight Direct actions such as text, reactions, typing,
+and seen state. Use the regular `direct_*` methods for media sends and full
+thread management.
 
 ```python
 import json
@@ -203,6 +205,7 @@ rt.direct_subscribe()
 
 try:
     rt.ping()
+    rt.direct_send_text(THREAD_ID, "Hello from MQTT")
     while True:
         rt.read_once()
 finally:
