@@ -1143,6 +1143,8 @@
 It is useful when you need callbacks for realtime payloads instead of polling HTTP endpoints.
 It can also publish lightweight Direct actions over MQTT. Use the regular Direct methods for media sends
 and complete thread management.</p>
+<p>FBNS push notifications use a separate <code>mqtt-mini.facebook.com</code> device-auth connection. Use FBNS when you need
+Instagram push payloads, for example Direct message notification callbacks.</p>
 <table>
 <thead>
 <tr>
@@ -1176,6 +1178,31 @@ and complete thread management.</p>
 <td><code>realtime_read_once()</code></td>
 <td><code>Any</code></td>
 <td>Read one packet from the active realtime client</td>
+</tr>
+<tr>
+<td><code>fbns_connect(transport=None, auth=None, register=True)</code></td>
+<td><code>FbnsClient</code></td>
+<td>Create, connect, and register the stateful FBNS client</td>
+</tr>
+<tr>
+<td><code>fbns_disconnect()</code></td>
+<td><code>None</code></td>
+<td>Disconnect the active FBNS client</td>
+</tr>
+<tr>
+<td><code>fbns_on(event, handler)</code></td>
+<td><code>None</code></td>
+<td>Register an event handler on the active FBNS client</td>
+</tr>
+<tr>
+<td><code>fbns_ping()</code></td>
+<td><code>bool</code></td>
+<td>Send an FBNS keepalive ping and wait for <code>PINGRESP</code></td>
+</tr>
+<tr>
+<td><code>fbns_read_once()</code></td>
+<td><code>Any</code></td>
+<td>Read one packet from the active FBNS client</td>
 </tr>
 </tbody>
 </table>
@@ -1297,6 +1324,34 @@ and complete thread management.</p>
 <p>For photos, videos, voice, thread creation, request approval, and other full Direct operations, use the normal
 <code>direct_*</code> HTTP methods. The MQTT payload shape is private and can change server-side, so inspect received
 dictionaries before depending on nested keys.</p>
+<p>Receive FBNS push notifications:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">handle_push</span><span class="p">(</span><span class="n">payload</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+
+<span class="n">cl</span><span class="o">.</span><span class="n">fbns_on</span><span class="p">(</span><span class="s2">&quot;push&quot;</span><span class="p">,</span> <span class="n">handle_push</span><span class="p">)</span>
+<span class="n">fbns</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbns_connect</span><span class="p">()</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">fbns</span><span class="o">.</span><span class="n">ping</span><span class="p">()</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">cl</span><span class="o">.</span><span class="n">fbns_read_once</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">fbns_disconnect</span><span class="p">()</span>
+</code></pre></div>
+<p><code>fbns_connect()</code> registers the FBNS token with Instagram's private push register endpoint. The device-auth state
+returned by the broker is stored in <code>settings["fbns_auth"]</code>, so <code>dump_settings()</code> can persist it with the normal
+session data.</p>
 <p>Subscribe to raw realtime topics:</p>
 <div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">graph_ql_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;graphql-subscription&gt;&quot;</span><span class="p">])</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">skywalker_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;skywalker-subscription&gt;&quot;</span><span class="p">])</span>
@@ -1312,6 +1367,9 @@ connection topics, so the Direct message example above does not need an extra ra
 <li><code>send_response</code> is emitted for MQTT Direct command responses.</li>
 <li><code>iris_sub_response</code> is emitted for Iris subscription responses.</li>
 <li><code>realtime_sub</code> is emitted for realtime subscription payloads.</li>
+<li><code>push</code> is emitted for parsed FBNS <code>fbpushnotif</code> payloads.</li>
+<li>FBNS also emits the notification <code>collapse_key</code> as an event name when present, for example <code>direct_v2_message</code>.</li>
+<li>FBNS emits <code>reg_response</code>, <code>registered</code>, <code>logging</code>, and <code>pp</code> for registration and lower-level broker payloads.</li>
 </ul>
 
 
