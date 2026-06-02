@@ -215,6 +215,36 @@ finally:
 See the full [Realtime MQTT guide](docs/usage-guide/realtime.md) for lower-level
 subscriptions and event details.
 
+### Receive Direct push notifications over FBNS
+
+FBNS uses Instagram's separate push MQTT connection and registers an Android
+push token for the logged-in session. It is useful when you need push payloads
+such as Direct notification callbacks.
+
+```python
+import json
+
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+
+def handle_push(payload):
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+cl.fbns_on("push", handle_push)
+fbns = cl.fbns_connect()
+
+try:
+    fbns.ping()
+    while True:
+        cl.fbns_read_once()
+finally:
+    cl.fbns_disconnect()
+```
+
 ## Features
 
 * Uses [Web API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) and [Mobile API](https://subzeroid.github.io/instagrapi/usage-guide/fundamentals.html) flows where available

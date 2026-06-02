@@ -8,6 +8,9 @@ It is useful when you need callbacks for realtime payloads instead of polling HT
 It can also publish lightweight Direct actions over MQTT. Use the regular Direct methods for media sends
 and complete thread management.
 
+FBNS push notifications use a separate `mqtt-mini.facebook.com` device-auth connection. Use FBNS when you need
+Instagram push payloads, for example Direct message notification callbacks.
+
 | Method | Return | Description |
 | --- | --- | --- |
 | `realtime_connect(transport=None)` | `RealtimeClient` | Create and connect the stateful realtime client |
@@ -15,6 +18,11 @@ and complete thread management.
 | `realtime_on(event, handler)` | `None` | Register an event handler on the active realtime client |
 | `realtime_ping()` | `bool` | Send a keepalive ping and wait for `PINGRESP` |
 | `realtime_read_once()` | `Any` | Read one packet from the active realtime client |
+| `fbns_connect(transport=None, auth=None, register=True)` | `FbnsClient` | Create, connect, and register the stateful FBNS client |
+| `fbns_disconnect()` | `None` | Disconnect the active FBNS client |
+| `fbns_on(event, handler)` | `None` | Register an event handler on the active FBNS client |
+| `fbns_ping()` | `bool` | Send an FBNS keepalive ping and wait for `PINGRESP` |
+| `fbns_read_once()` | `Any` | Read one packet from the active FBNS client |
 
 `RealtimeClient` also exposes lower-level helpers:
 
@@ -99,6 +107,38 @@ For photos, videos, voice, thread creation, request approval, and other full Dir
 `direct_*` HTTP methods. The MQTT payload shape is private and can change server-side, so inspect received
 dictionaries before depending on nested keys.
 
+Receive FBNS push notifications:
+
+``` python
+import json
+
+from instagrapi import Client
+
+cl = Client()
+cl.login(USERNAME, PASSWORD)
+
+
+def handle_push(payload):
+    print(json.dumps(payload, indent=2, ensure_ascii=False))
+
+
+cl.fbns_on("push", handle_push)
+fbns = cl.fbns_connect()
+
+try:
+    fbns.ping()
+    while True:
+        cl.fbns_read_once()
+except KeyboardInterrupt:
+    pass
+finally:
+    cl.fbns_disconnect()
+```
+
+`fbns_connect()` registers the FBNS token with Instagram's private push register endpoint. The device-auth state
+returned by the broker is stored in `settings["fbns_auth"]`, so `dump_settings()` can persist it with the normal
+session data.
+
 Subscribe to raw realtime topics:
 
 ``` python
@@ -118,3 +158,6 @@ Events:
 * `send_response` is emitted for MQTT Direct command responses.
 * `iris_sub_response` is emitted for Iris subscription responses.
 * `realtime_sub` is emitted for realtime subscription payloads.
+* `push` is emitted for parsed FBNS `fbpushnotif` payloads.
+* FBNS also emits the notification `collapse_key` as an event name when present, for example `direct_v2_message`.
+* FBNS emits `reg_response`, `registered`, `logging`, and `pp` for registration and lower-level broker payloads.
