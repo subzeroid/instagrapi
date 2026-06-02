@@ -903,7 +903,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Dict
             Current session settings as a Dict
         """
-        return {
+        settings = {
             "uuids": {
                 "phone_id": self.phone_id,
                 "uuid": self.uuid,
@@ -938,6 +938,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "public_transport_impersonate": self.public_transport_impersonate,
             "tls_verify": self.tls_verify,
         }
+        if self.settings.get("fbns_auth"):
+            settings["fbns_auth"] = self.settings["fbns_auth"]
+        return settings
 
     def set_settings(self, settings: Dict) -> bool:
         """
