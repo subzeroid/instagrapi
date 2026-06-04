@@ -1,3 +1,4 @@
+from instagrapi.exceptions import DirectMessageRequestsDisabled
 from tests.helpers import *
 
 
@@ -76,6 +77,18 @@ class HardeningRegressionTestCase(unittest.TestCase):
         response.raise_for_status.side_effect = error
         return response
 
+    def _make_json_response(self, json_body, status_code=200):
+        response = Mock()
+        response.status_code = status_code
+        response.content = json.dumps(json_body).encode()
+        response.headers = {}
+        response.url = "https://i.instagram.com/api/v1/test/"
+        response.text = response.content.decode("utf-8")
+        response.request = Mock(method="POST")
+        response.json.return_value = json_body
+        response.raise_for_status.return_value = None
+        return response
+
     def _build_private_client(self):
         client = Client()
         client.authorization_data = {"ds_user_id": "1"}
@@ -113,6 +126,40 @@ class HardeningRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client.private, "get", return_value=response):
             with self.assertRaises(ClientNotFoundError):
                 client._send_private_request("nonexistent/")
+
+    def test_send_private_request_promotes_direct_message_requests_disabled_http_error(self):
+        client = self._build_private_client()
+        payload = {
+            "message": "You can't message this account unless they follow you.",
+            "status": "fail",
+        }
+        response = self._make_http_error_response(
+            400,
+            content=json.dumps(payload).encode(),
+            json_body=payload,
+        )
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(DirectMessageRequestsDisabled) as cm:
+                client._send_private_request("direct_v2/threads/broadcast/text/", data={"text": "hi"})
+
+        self.assertEqual(cm.exception.message, payload["message"])
+        self.assertEqual(cm.exception.status, "fail")
+
+    def test_send_private_request_promotes_direct_message_requests_disabled_status_fail(self):
+        client = self._build_private_client()
+        payload = {
+            "message": "This account can't receive your message because they don't allow new message requests from everyone.",
+            "status": "fail",
+        }
+        response = self._make_json_response(payload)
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(DirectMessageRequestsDisabled) as cm:
+                client._send_private_request("direct_v2/threads/broadcast/text/", data={"text": "hi"})
+
+        self.assertEqual(cm.exception.message, payload["message"])
+        self.assertEqual(cm.exception.status, "fail")
 
     # --- hashtag chunk: skip malformed nodes ---
 

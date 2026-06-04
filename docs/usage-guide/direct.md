@@ -54,6 +54,17 @@ Notes:
 * Disappearing direct photos and videos with `item_type == "raven_media"` are exposed through `message.visual_media`.
 * Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via `dump_settings()/load_settings()` are more reliable than browser-only `sessionid` reuse.
 
+Handling disabled message requests:
+
+``` python
+from instagrapi.exceptions import DirectMessageRequestsDisabled
+
+try:
+    cl.direct_send("Hello", user_ids=[user_id])
+except DirectMessageRequestsDisabled:
+    print("The recipient does not accept new Direct message requests.")
+```
+
 Example of basic actions:
 
 ``` python
