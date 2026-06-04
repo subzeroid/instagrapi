@@ -125,6 +125,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Comment`](usage-guide/comment.md) - Comments to Media
   * [`Highlight`](usage-guide/highlight.md) - Highlights
   * [`Notes`](usage-guide/notes.md) - Notes
+  * [`Realtime MQTT`](usage-guide/realtime.md) - Direct sync, lightweight Direct MQTT actions, and FBNS push callbacks
   * [`Pydroid and ffmpeg`](usage-guide/pydroid.md) - Android/Pydroid video upload setup
   * [`Termux`](usage-guide/termux.md) - Termux install notes and optional video helpers
   * [`Public Transport`](usage-guide/public-transport.md) - Optional curl transport for public web requests

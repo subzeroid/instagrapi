@@ -33,6 +33,7 @@ use an internal fallback chain and choose the best currently working path for th
   * [`Comment`](comment.md) - Comments to Media
   * [`Highlight`](highlight.md) - Highlights
   * [`Notes`](notes.md) - Direct Notes
+  * [`Realtime MQTT`](realtime.md) - Direct sync, lightweight Direct MQTT actions, and FBNS push callbacks
   * [`Pydroid and ffmpeg`](pydroid.md) - Android/Pydroid video upload setup
   * [`Termux`](termux.md) - Termux install notes and optional video helpers
   * [`Story`](story.md) - Story
