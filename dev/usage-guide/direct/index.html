@@ -1349,6 +1349,14 @@
 <li>Disappearing direct photos and videos with <code>item_type == "raven_media"</code> are exposed through <code>message.visual_media</code>.</li>
 <li>Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via <code>dump_settings()/load_settings()</code> are more reliable than browser-only <code>sessionid</code> reuse.</li>
 </ul>
+<p>Handling disabled message requests:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectMessageRequestsDisabled</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">direct_send</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="n">user_ids</span><span class="o">=</span><span class="p">[</span><span class="n">user_id</span><span class="p">])</span>
+<span class="k">except</span> <span class="n">DirectMessageRequestsDisabled</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The recipient does not accept new Direct message requests.&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>Example of basic actions:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
