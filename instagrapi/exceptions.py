@@ -227,6 +227,10 @@ class DirectMessageNotFound(NotFoundError, DirectError):
     pass
 
 
+class DirectMessageRequestsDisabled(DirectError):
+    """Raised when recipient privacy settings reject a new Direct message request."""
+
+
 class VideoTooLongException(PrivateError):
     pass
 

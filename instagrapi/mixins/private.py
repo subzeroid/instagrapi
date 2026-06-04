@@ -21,6 +21,7 @@ from instagrapi.exceptions import (
     ClientRequestTimeout,
     ClientThrottledError,
     ClientUnauthorizedError,
+    DirectMessageRequestsDisabled,
     FeedbackRequired,
     InvalidMediaId,
     InvalidTargetUser,
@@ -40,6 +41,21 @@ from instagrapi.utils.auth import generate_signature
 from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.serialization import dumps
 from instagrapi.utils.timing import random_delay
+
+_DIRECT_MESSAGE_REQUESTS_DISABLED_MARKERS = (
+    "can't message this account unless they follow you",
+    "can't receive your message because they don't allow new message requests",
+    "doesn't allow new message requests",
+    "don't allow new message requests",
+    "does not allow new message requests",
+)
+
+
+def _is_direct_message_requests_disabled(endpoint: str, message: str) -> bool:
+    if not endpoint or not message or "direct_v2/" not in endpoint:
+        return False
+    normalized = str(message).casefold().replace("’", "'")
+    return any(marker in normalized for marker in _DIRECT_MESSAGE_REQUESTS_DISABLED_MARKERS)
 
 
 def manual_input_code(self, username: str, choice=None):
@@ -476,6 +492,8 @@ class PrivateRequestMixin:
                     if not last_json["message"]:
                         last_json["message"] = "Two-factor authentication required"
                     raise TwoFactorRequired(**last_json)
+                elif _is_direct_message_requests_disabled(endpoint, message):
+                    raise DirectMessageRequestsDisabled(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
                     raise VideoTooLongException(e, response=e.response, **last_json)
                 elif "Not authorized to view user" in message:
@@ -532,6 +550,9 @@ class PrivateRequestMixin:
         except requests.ConnectionError as e:
             raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
         if last_json.get("status") == "fail":
+            message = last_json.get("message", "")
+            if _is_direct_message_requests_disabled(endpoint, message):
+                raise DirectMessageRequestsDisabled(response=response, **last_json)
             raise ClientError(response=response, **last_json)
         elif "error_title" in last_json:
             """Example: {
