@@ -1682,7 +1682,8 @@ class DirectMixin:
     def direct_media_share(
         self,
         media_id: str,
-        user_ids: List[int],
+        user_ids: List[int] = [],
+        thread_ids: List[int] = [],
         send_attribute: SEND_ATTRIBUTES_MEDIA = "feed_timeline",
         media_type: str = "photo",
     ) -> DirectMessage:
@@ -1694,7 +1695,9 @@ class DirectMixin:
         media_id: str
             Unique Media ID
         user_ids: List[int]
-            List of unique identifier of Users id
+            List of unique identifier of Users id (recipients)
+        thread_ids: List[int]
+            List of unique identifier of Direct thread id
         send_attribute: str, optional
             Sending option. Default is "feed_timeline"
         media_type: str, optional
@@ -1707,11 +1710,13 @@ class DirectMixin:
         """
         assert self.user_id, "Login required"
         token = self.generate_mutation_token()
-        media_id = self.media_id(media_id)
         user_ids = _direct_id_list(user_ids)
-        recipient_users = dumps([[int(uid) for uid in user_ids]])
+        thread_ids = _direct_id_list(thread_ids)
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
+        media_id = self.media_id(media_id)
         kwargs = {
-            "recipient_users": recipient_users,
             "action": "send_item",
             "is_shh_mode": "0",
             "send_attribution": send_attribute,
@@ -1728,6 +1733,10 @@ class DirectMixin:
             "is_ae_dual_send": "false",
             "offline_threading_id": token,
         }
+        if user_ids:
+            kwargs["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
+        if thread_ids:
+            kwargs["thread_ids"] = dumps([int(tid) for tid in thread_ids])
         if send_attribute in ["feed_contextual_chain", "feed_short_url"]:
             kwargs["inventory_source"] = "recommended_explore_grid_cover_model"
         if send_attribute == "feed_timeline":

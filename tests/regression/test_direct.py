@@ -378,6 +378,40 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         data = private.call_args.kwargs["data"]
         self.assertEqual(json.loads(data["recipient_users"]), [[42]])
 
+    def test_direct_media_share_posts_thread_ids(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with (
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch.object(client, "media_id", return_value="123_1"),
+            mock.patch.object(
+                client, "private_request", return_value=self.direct_payload() | {"status": "ok"}
+            ) as private,
+        ):
+            client.direct_media_share("123", thread_ids=[340282366841710300949128149448121770626])
+
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/media_share/",
+            params={"media_type": "photo"},
+            data=mock.ANY,
+            with_signature=False,
+        )
+        data = private.call_args.kwargs["data"]
+        self.assertNotIn("recipient_users", data)
+        self.assertEqual(json.loads(data["thread_ids"]), [340282366841710300949128149448121770626])
+        self.assertEqual(data["client_context"], "mutation-token")
+        self.assertEqual(data["media_id"], "123_1")
+
+    def test_direct_media_share_rejects_user_ids_and_thread_ids_together(self):
+        client = self.build_client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-device"
+
+        with self.assertRaises(AssertionError):
+            client.direct_media_share("123", user_ids=[42], thread_ids=[123])
+
     def test_direct_send_reaction_posts_reaction_payload(self):
         client = self.build_client()
         client.uuid = "uuid-1"

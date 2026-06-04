@@ -409,6 +409,49 @@ class ClientDirectThreadLiveTestCase(_helpers.ClientPrivateTestCase):
                 except Exception as exc:
                     logger.warning("Direct thread cleanup failed: %s", exc)
 
+    def test_direct_media_share_to_group_thread_live(self):
+        title = f"instagrapi-media-share-{int(time.time())}"
+        thread_id = None
+        dm = None
+
+        try:
+            thread_id = self.cl.direct_thread_create(
+                [int(client.user_id) for client in self.recipient_clients],
+                title=title,
+            )
+            self.assertTrue(thread_id)
+
+            instagram = self.user_id_from_username("instagram")
+            media = next(media for media in self.cl.user_medias(instagram, amount=5) if media.id)
+            media_type = "video" if media.media_type == 2 else "photo"
+
+            dm = self.cl.direct_media_share(media.id, thread_ids=[thread_id], media_type=media_type)
+            self.assertIsInstance(dm, DirectMessage)
+            self.assertTrue(dm.id)
+            self.assertEqual(str(dm.thread_id), str(thread_id))
+
+            shared = None
+            for _ in range(6):
+                try:
+                    shared = self.cl.direct_message(thread_id, dm.id, amount=10)
+                except DirectMessageNotFound:
+                    time.sleep(2)
+                    continue
+                if shared.media_share or shared.xma_share or shared.raw_xma:
+                    break
+                time.sleep(2)
+
+            self.assertIsNotNone(shared)
+            self.assertTrue(shared.media_share or shared.xma_share or shared.raw_xma)
+        finally:
+            if thread_id:
+                try:
+                    if dm and dm.id:
+                        self.cl.direct_message_unsend(thread_id, dm.id)
+                    self.cl.direct_thread_hide(thread_id)
+                except Exception as exc:
+                    logger.warning("Direct media share group cleanup failed: %s", exc)
+
 
 class ClientDirectMessageTypesTestCase(_helpers.ClientPrivateTestCase):
     """Test that DirectMessage and DirectThread fields use structured Pydantic models instead of raw dictionaries"""
