@@ -1149,12 +1149,20 @@ class UserMixin:
             return {user.pk: user for user in users}
         users = self._users_followers.get(user_id, {})
         if not use_cache or not users or (amount and len(users) < amount):
-            try:
-                users = self.user_followers_gql(user_id, amount)
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
-                users = self.user_followers_v1(user_id, amount)
+            if self._has_private_auth():
+                try:
+                    users = self.user_followers_v1(user_id, amount)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    users = self.user_followers_gql(user_id, amount)
+            else:
+                try:
+                    users = self.user_followers_gql(user_id, amount)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    users = self.user_followers_v1(user_id, amount)
             self._users_followers[user_id] = {user.pk: user for user in users}
         followers = self._users_followers[user_id]
         if amount and len(followers) > amount:
