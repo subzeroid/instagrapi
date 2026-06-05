@@ -533,6 +533,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#selfie-and-manual-review-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selfie and manual review challenges
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1219,6 +1230,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#selfie-and-manual-review-challenges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selfie and manual review challenges
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1284,6 +1306,9 @@
 <li>Current <code>master</code> raises a clearer <code>ChallengeRequired</code> for <code>/auth_platform/?apc=...</code> flows. That path is not yet supported automatically and still requires manual verification.</li>
 <li>For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.</li>
 </ul>
+<h2 id="selfie-and-manual-review-challenges">Selfie and manual review challenges</h2>
+<p><code>ChallengeSelfieCaptcha</code> and selfie/manual-review style flows are account review decisions by Instagram. <code>instagrapi</code> does not provide a generic bypass for these challenges. When they appear repeatedly during signup or login, stop the automated flow, keep the same account/device/proxy context, and resolve the account manually in the official app if possible.</p>
+<p>For bug reports, include sanitized <code>client.last_json</code>, the exception class, and the flow that triggered it. Do not share cookies, session IDs, phone numbers, email addresses, passwords, or verification codes.</p>
 <p>For example, you can get the code through the IMAP of Gmail:</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_code_from_email</span><span class="p">(</span><span class="n">username</span><span class="p">):</span>
     <span class="n">mail</span> <span class="o">=</span> <span class="n">imaplib</span><span class="o">.</span><span class="n">IMAP4_SSL</span><span class="p">(</span><span class="s2">&quot;imap.gmail.com&quot;</span><span class="p">)</span>

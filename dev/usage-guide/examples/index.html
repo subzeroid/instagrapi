@@ -1163,6 +1163,10 @@
 <td>Login, list recent media for a username, and download photos/videos/albums.</td>
 </tr>
 <tr>
+<td><a href="https://github.com/subzeroid/instagrapi/blob/master/examples/monitor_user_content.py"><code>monitor_user_content.py</code></a></td>
+<td>Poll a small set of users for new posts and stories using a saved session.</td>
+</tr>
+<tr>
 <td><a href="https://github.com/subzeroid/instagrapi/blob/master/examples/upload_media.py"><code>upload_media.py</code></a></td>
 <td>Upload a feed photo, feed video, Reel, or Trial Reel.</td>
 </tr>
@@ -1184,6 +1188,7 @@
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
 <span class="nv">IG_PUBLIC_TRANSPORT</span><span class="o">=</span>curl<span class="w"> </span>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
 python<span class="w"> </span>examples/download_user_media.py<span class="w"> </span>instagram<span class="w"> </span>--amount<span class="w"> </span><span class="m">5</span><span class="w"> </span>--folder<span class="w"> </span>./downloads
+python<span class="w"> </span>examples/monitor_user_content.py<span class="w"> </span>instagram<span class="w"> </span>--stories<span class="w"> </span>--interval<span class="w"> </span><span class="m">900</span>
 python<span class="w"> </span>examples/upload_media.py<span class="w"> </span>reel<span class="w"> </span>./reel.mp4<span class="w"> </span>--thumbnail<span class="w"> </span>./thumb.jpg<span class="w"> </span>--caption<span class="w"> </span><span class="s2">&quot;Reel&quot;</span>
 python<span class="w"> </span>examples/upload_story.py<span class="w"> </span>photo<span class="w"> </span>./story.jpg<span class="w"> </span>--caption<span class="w"> </span><span class="s2">&quot;Story&quot;</span>
 python<span class="w"> </span>examples/direct_message.py<span class="w"> </span>--user-ids<span class="w"> </span><span class="m">123456789</span><span class="w"> </span>--text<span class="w"> </span><span class="s2">&quot;Hello&quot;</span>

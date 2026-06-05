@@ -1186,6 +1186,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#automation-warnings-and-suspicious-login-screens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automation Warnings and Suspicious Login Screens
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-only-monitoring-workloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read-Only Monitoring Workloads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#common-anti-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1434,6 +1456,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#automation-warnings-and-suspicious-login-screens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automation Warnings and Suspicious Login Screens
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#read-only-monitoring-workloads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Read-Only Monitoring Workloads
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#common-anti-patterns" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1555,12 +1599,15 @@ between requests. The delays should be random and not too long.</p>
 <h2 id="handle-rate-limits-and-anti-abuse-responses-explicitly">Handle Rate Limits and Anti-Abuse Responses Explicitly</h2>
 <p>Instagram uses several different responses for throttling, suspicious behavior, or temporary restrictions. Treat them differently instead of retrying every error the same way.</p>
 <h3 id="clientthrottlederror-http-429"><code>ClientThrottledError</code> / HTTP 429</h3>
-<p>This usually means the current IP or request pattern is too aggressive for that path right now.</p>
+<p>This usually means the current IP or request pattern is too aggressive for that path right now.
+Public web endpoints can hit this independently from private mobile endpoints; a <code>429</code> on a public GraphQL/web path does not necessarily mean the logged-in mobile session is broken.</p>
 <p>Recommended response:</p>
 <ul>
 <li>stop the current burst of requests</li>
 <li>back off before retrying</li>
 <li>reduce concurrency for that account</li>
+<li>prefer authenticated/private helpers when a public web helper repeatedly fails</li>
+<li>try the optional <code>public_transport="curl"</code> path only for public web endpoints, and treat it as a transport option, not a rate-limit bypass</li>
 <li>if the same account keeps hitting <code>429</code>, pause it or move it to a cleaner proxy/IP</li>
 </ul>
 <h3 id="pleasewaitfewminutes"><code>PleaseWaitFewMinutes</code></h3>
@@ -1606,6 +1653,26 @@ between requests. The delays should be random and not too long.</p>
 <li>Track errors per account, per proxy, and per action type so you can see which variable is actually causing trouble.</li>
 <li>Retry transport errors differently from account restrictions. A timeout may be retried; a challenge or feedback block needs cooldown and investigation.</li>
 </ul>
+<h2 id="automation-warnings-and-suspicious-login-screens">Automation Warnings and Suspicious Login Screens</h2>
+<p>Instagram can show in-app warning screens or suspicious-login prompts even when the account is not fully challenged. These are usually trust signals tied to the account, device/session, proxy/IP history, and action pattern. They are not reliable to "bypass" generically from the library.</p>
+<p>Recommended response:</p>
+<ul>
+<li>stop the affected workflow and inspect the account in the official app</li>
+<li>keep the same saved settings, device identifiers, locale, country, and proxy while investigating</li>
+<li>avoid repeated fresh password logins, aggressive proxy rotation, or replaying the same failed action</li>
+<li>capture sanitized diagnostics: method name, endpoint if visible, exception class, <code>client.last_json</code>, status code, and whether the same account works in the official app</li>
+<li>open an issue only when the same payload is reproducible; without <code>last_json</code>, the project cannot safely add a named exception</li>
+</ul>
+<h2 id="read-only-monitoring-workloads">Read-Only Monitoring Workloads</h2>
+<p>For small jobs that only check whether selected users posted new media or stories, keep the workflow boring:</p>
+<ul>
+<li>reuse one saved session with <code>dump_settings()</code> / <code>load_settings()</code></li>
+<li>poll a small target set with a moderate interval, for example several minutes rather than seconds</li>
+<li>store the last seen media/story ids locally and compare new responses against that state</li>
+<li>keep this account separate from write-heavy actions such as follows, likes, comments, uploads, and Direct messages</li>
+<li>expect public/web paths to be opportunistic; reliable private-account story access requires that the logged-in account has permission to view the target</li>
+</ul>
+<p>See <a href="https://github.com/subzeroid/instagrapi/blob/master/examples/monitor_user_content.py"><code>examples/monitor_user_content.py</code></a> for a minimal state-file based polling example.</p>
 <h2 id="common-anti-patterns">Common Anti-Patterns</h2>
 <p>These patterns often create support issues that are not library bugs:</p>
 <ul>
