@@ -1555,6 +1555,7 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <p>Tip:</p>
 <ul>
 <li><code>user_info()</code>, <code>user_info_by_username()</code>, <code>user_id_from_username()</code>, and <code>username_from_user_id()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
+<li><code>user_followers()</code> and <code>user_following()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
 </ul>
 
 
