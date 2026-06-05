@@ -99,6 +99,53 @@ class ClientFollowersLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(first_ids.isdisjoint(next_ids), f"Duplicate followers across pages: {first_ids & next_ids}")
 
 
+class ClientFollowingLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for following live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+    def test_user_following_uses_private_api_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        with mock.patch.object(
+            self.cl,
+            "user_following_gql",
+            side_effect=AssertionError("authorized user_following should not call public GraphQL first"),
+        ) as public_lookup:
+            following = self.cl.user_following(user_id, use_cache=False, amount=10)
+
+        self.assertTrue(len(following) == 10)
+        self.assertIsInstance(list(following.values())[0], UserShort)
+        public_lookup.assert_not_called()
+
+    def test_user_following_v1_chunk_paginates_two_pages(self):
+        user_id = self.user_id_from_username("instagram")
+
+        first_page, max_id = self.cl.user_following_v1_chunk(user_id, max_amount=10)
+        self.assertEqual(len(first_page), 10)
+        self.assertTrue(max_id)
+        self.assertIsInstance(first_page[0], UserShort)
+
+        next_page, _ = self.cl.user_following_v1_chunk(user_id, max_amount=10, max_id=max_id)
+        self.assertEqual(len(next_page), 10)
+        self.assertIsInstance(next_page[0], UserShort)
+
+        first_ids = {user.pk for user in first_page}
+        next_ids = {user.pk for user in next_page}
+        self.assertTrue(first_ids.isdisjoint(next_ids), f"Duplicate following across pages: {first_ids & next_ids}")
+
+
 class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_user_short_gql(self):
         user = self.cl.user_short_gql("25025320", use_cache=False)
