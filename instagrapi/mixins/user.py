@@ -838,15 +838,20 @@ class UserMixin:
         user_id = str(user_id)
         users = self._users_following.get(user_id, {})
         if not use_cache or not users or (amount and len(users) < amount):
-            # Temporary: Instagram Required Login for GQL request
-            # You can inject sessionid from private to public session
-            # try:
-            #     users = self.user_following_gql(user_id, amount)
-            # except Exception as e:
-            #     if not isinstance(e, ClientError):
-            #         self.logger.exception(e)
-            #     users = self.user_following_v1(user_id, amount)
-            users = self.user_following_v1(user_id, amount)
+            if self._has_private_auth():
+                try:
+                    users = self.user_following_v1(user_id, amount)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    users = self.user_following_gql(user_id, amount)
+            else:
+                try:
+                    users = self.user_following_gql(user_id, amount)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    users = self.user_following_v1(user_id, amount)
             self._users_following[user_id] = {user.pk: user for user in users}
         following = self._users_following[user_id]
         if amount and len(following) > amount:

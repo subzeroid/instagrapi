@@ -569,6 +569,54 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         private_lookup.assert_not_called()
         self.assertEqual(list(followers), ["456"])
 
+    def test_authorized_user_following_uses_private_before_public(self):
+        client = self.build_private_client()
+        following_user = UserShort(pk="456", username="following")
+
+        with mock.patch.object(client, "user_following_v1", return_value=[following_user]) as private_lookup:
+            with mock.patch.object(
+                client,
+                "user_following_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                following = client.user_following("123", use_cache=False, amount=1)
+
+        private_lookup.assert_called_once_with("123", 1)
+        public_lookup.assert_not_called()
+        self.assertEqual(list(following), ["456"])
+
+    def test_authorized_user_following_falls_back_to_public(self):
+        client = self.build_private_client()
+        following_user = UserShort(pk="456", username="following")
+
+        with mock.patch.object(
+            client,
+            "user_following_v1",
+            side_effect=ClientError("private lookup failed"),
+        ) as private_lookup:
+            with mock.patch.object(client, "user_following_gql", return_value=[following_user]) as public_lookup:
+                following = client.user_following("123", use_cache=False, amount=1)
+
+        private_lookup.assert_called_once_with("123", 1)
+        public_lookup.assert_called_once_with("123", 1)
+        self.assertEqual(list(following), ["456"])
+
+    def test_unauthorized_user_following_keeps_public_first(self):
+        client = Client()
+        following_user = UserShort(pk="456", username="following")
+
+        with mock.patch.object(client, "user_following_gql", return_value=[following_user]) as public_lookup:
+            with mock.patch.object(
+                client,
+                "user_following_v1",
+                side_effect=AssertionError("unauthorized lookup should use public API first"),
+            ) as private_lookup:
+                following = client.user_following("123", use_cache=False, amount=1)
+
+        public_lookup.assert_called_once_with("123", 1)
+        private_lookup.assert_not_called()
+        self.assertEqual(list(following), ["456"])
+
     def test_user_following_v1_chunk_omits_empty_max_id_on_first_page(self):
         client = self.build_private_client()
 
