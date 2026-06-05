@@ -70,6 +70,47 @@ class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(hasattr(media, field))
 
 
+class ClientUserMediasPaginationLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for user media pagination live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+    def assertMediaPage(self, medias, amount):
+        self.assertGreater(len(medias), 0)
+        self.assertLessEqual(len(medias), amount)
+        media = medias[0]
+        self.assertIsInstance(media, Media)
+        for field in REQUIRED_MEDIA_FIELDS:
+            self.assertTrue(hasattr(media, field))
+
+    def assertNoDuplicateMediasAcrossPages(self, first_page, next_page):
+        first_ids = {media.pk for media in first_page}
+        next_ids = {media.pk for media in next_page}
+        self.assertTrue(first_ids.isdisjoint(next_ids), f"Duplicate medias across pages: {first_ids & next_ids}")
+
+    def test_user_medias_paginated_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        first_page, end_cursor = self.cl.user_medias_paginated(user_id, amount=2)
+        self.assertMediaPage(first_page, 2)
+        self.assertTrue(end_cursor)
+
+        next_page, _ = self.cl.user_medias_paginated(user_id, amount=2, end_cursor=end_cursor)
+        self.assertMediaPage(next_page, 2)
+        self.assertNoDuplicateMediasAcrossPages(first_page, next_page)
+
+
 class ClientUsertagPaginationLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
