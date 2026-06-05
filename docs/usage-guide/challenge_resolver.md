@@ -55,6 +55,12 @@ Notes:
 * Current `master` raises a clearer `ChallengeRequired` for `/auth_platform/?apc=...` flows. That path is not yet supported automatically and still requires manual verification.
 * For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.
 
+## Selfie and manual review challenges
+
+`ChallengeSelfieCaptcha` and selfie/manual-review style flows are account review decisions by Instagram. `instagrapi` does not provide a generic bypass for these challenges. When they appear repeatedly during signup or login, stop the automated flow, keep the same account/device/proxy context, and resolve the account manually in the official app if possible.
+
+For bug reports, include sanitized `client.last_json`, the exception class, and the flow that triggered it. Do not share cookies, session IDs, phone numbers, email addresses, passwords, or verification codes.
+
 For example, you can get the code through the IMAP of Gmail:
 
 ``` python

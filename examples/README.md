@@ -34,6 +34,7 @@ export IG_PUBLIC_TRANSPORT_IMPERSONATE="chrome136"
 | [`session_login.py`](session_login.py) | Minimal session persistence and `sessionid` login sample. |
 | [`public_lookup.py`](public_lookup.py) | Public profile lookup with optional `public_transport="curl"`. |
 | [`download_user_media.py`](download_user_media.py) | Login, list recent media for a username, and download photos/videos/albums. |
+| [`monitor_user_content.py`](monitor_user_content.py) | Poll a small set of users for new posts and stories using a saved session. |
 | [`upload_media.py`](upload_media.py) | Upload a feed photo, feed video, Reel, or Trial Reel. |
 | [`upload_story.py`](upload_story.py) | Upload a photo or video story, optionally with a link sticker. |
 | [`direct_message.py`](direct_message.py) | Send a Direct text message to user IDs or thread IDs. |
@@ -53,6 +54,7 @@ IG_PUBLIC_TRANSPORT=curl python examples/public_lookup.py instagram
 
 ```bash
 python examples/download_user_media.py instagram --amount 5 --folder ./downloads
+python examples/monitor_user_content.py instagram --stories --interval 900
 ```
 
 ## Upload media
