@@ -211,6 +211,37 @@ class ClientStoryTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(self.cl.story_seen([story.pk]))
 
 
+class ClientUserStoriesLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for user stories live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+    def test_user_stories_uses_private_api_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        with mock.patch.object(
+            self.cl,
+            "user_stories_gql",
+            side_effect=AssertionError("authorized user_stories should not call public GraphQL first"),
+        ) as public_lookup:
+            stories = self.cl.user_stories(user_id, amount=1)
+
+        self.assertGreater(len(stories), 0)
+        self.assertIsInstance(stories[0], Story)
+        public_lookup.assert_not_called()
+
+
 class ClientStoryLocationStickerLiveTestCase(_helpers.ClientPrivateTestCase):
     photo_path = Path("examples/background.png")
 
