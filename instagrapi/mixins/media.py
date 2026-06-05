@@ -1166,27 +1166,36 @@ class MediaMixin:
             A tuple containing a list of medias and the next end_cursor value
         """
 
-        class EndCursorIsV1(Exception):
-            pass
-
-        try:
-            if end_cursor and "_" in end_cursor:
-                # end_cursor is a v1 next_max_id, so we need to use v1 API
-                raise EndCursorIsV1
+        def public_lookup():
             try:
-                medias, end_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+                medias, next_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
             except ClientLoginRequired as e:
                 if not self.inject_sessionid_to_public():
                     raise e
-                medias, end_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
-        except PrivateError as e:
-            raise e
-        except Exception as e:
-            if isinstance(e, EndCursorIsV1):
-                pass
-            elif not isinstance(e, ClientError):
-                self.logger.exception(e)
-            medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+                medias, next_cursor = self.user_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+            return medias, next_cursor
+
+        end_cursor_is_v1 = bool(end_cursor and "_" in end_cursor)
+        if self._has_private_auth() or end_cursor_is_v1:
+            try:
+                medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+            except PrivateError as e:
+                raise e
+            except Exception as e:
+                if end_cursor_is_v1:
+                    raise e
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                medias, end_cursor = public_lookup()
+        else:
+            try:
+                medias, end_cursor = public_lookup()
+            except PrivateError as e:
+                raise e
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                medias, end_cursor = self.user_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
         return medias, end_cursor
 
     def user_medias_chunk(self, user_id: str, end_cursor: str = "") -> Tuple[List[Media], str]:
@@ -1246,22 +1255,37 @@ class MediaMixin:
         amount = int(amount)
         user_id = int(user_id)
         sleep = int(sleep)
-        try:
+
+        def public_lookup():
             try:
                 medias = self.user_medias_gql(user_id, amount, sleep)
             except ClientLoginRequired as e:
                 if not self.inject_sessionid_to_public():
                     raise e
                 medias = self.user_medias_gql(user_id, amount, sleep)  # retry
-        except PrivateError as e:
-            raise e
-        except Exception as e:
-            if not isinstance(e, ClientError):
-                self.logger.exception(e)
-            # User may been private, attempt via Private API
-            # (You can check is_private, but there may be other reasons,
-            #  it is better to try through a Private API)
-            medias = self.user_medias_v1(user_id, amount)
+            return medias
+
+        if self._has_private_auth():
+            try:
+                medias = self.user_medias_v1(user_id, amount)
+            except PrivateError as e:
+                raise e
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                medias = public_lookup()
+        else:
+            try:
+                medias = public_lookup()
+            except PrivateError as e:
+                raise e
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                # User may been private, attempt via Private API
+                # (You can check is_private, but there may be other reasons,
+                #  it is better to try through a Private API)
+                medias = self.user_medias_v1(user_id, amount)
         return medias
 
     def user_clips_paginated_v1(self, user_id: str, amount: int = 50, end_cursor: str = "") -> Tuple[List[Media], str]:
