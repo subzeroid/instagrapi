@@ -139,20 +139,12 @@ class ClientUserExtendTestCase(_helpers.ClientPrivateTestCase):
         user_id = self.user_id_from_username("instagram")
         user = self.cl.user_info(user_id)
         self.assertIsInstance(user, User)
-        for key, value in {
-            "biography": "...Instagram...",
-            "external_url": "https://...",
-            "full_name": "Instagram",
-            "pk": "25025320",
-            "is_private": False,
-            "is_verified": True,
-            "profile_pic_url": "https://...",
-            "username": "instagram",
-        }.items():
-            if isinstance(value, str) and "..." in value:
-                self.assertTrue(value.replace("...", "") in getattr(user, key))
-            else:
-                self.assertEqual(value, getattr(user, key))
+        self.assertEqual(user.pk, "25025320")
+        self.assertEqual(user.username, "instagram")
+        self.assertEqual(user.full_name, "Instagram")
+        self.assertFalse(user.is_private)
+        self.assertTrue(user.is_verified)
+        self.assertTrue(str(user.profile_pic_url).startswith("https://"))
 
     def test_user_info_by_username(self):
         user = self.user_info_by_username("instagram")

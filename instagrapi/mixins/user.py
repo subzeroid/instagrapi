@@ -60,6 +60,25 @@ class UserMixin:
     def _normalize_username(username: str) -> str:
         return str(username).strip().lstrip("@").strip().lower()
 
+    def _has_private_auth(self) -> bool:
+        return bool(getattr(self, "authorization", "") or getattr(self, "sessionid", ""))
+
+    def _user_info_by_username_public(self, username: str) -> User:
+        try:
+            return self.user_info_by_username_gql(username)
+        except ClientLoginRequired as e:
+            if not self.inject_sessionid_to_public():
+                raise e
+            return self.user_info_by_username_gql(username)
+
+    def _user_info_public(self, user_id: str) -> User:
+        try:
+            return self.user_info_gql(user_id)
+        except ClientLoginRequired as e:
+            if not self.inject_sessionid_to_public():
+                raise e
+            return self.user_info_gql(user_id)
+
     def user_id_from_username(self, username: str) -> str:
         """
         Get full media id
@@ -191,11 +210,15 @@ class UserMixin:
         1903424587 -> 'example'
         """
         user_id = str(user_id)
+        if self._has_private_auth():
+            try:
+                return self.user_info_v1(user_id).username
+            except ClientError:
+                return self.username_from_user_id_gql(user_id)
         try:
-            username = self.username_from_user_id_gql(user_id)
+            return self.username_from_user_id_gql(user_id)
         except ClientError:
-            username = self.user_info_v1(user_id).username
-        return username
+            return self.user_info_v1(user_id).username
 
     def user_info_by_username_gql(self, username: str) -> User:
         """
@@ -338,22 +361,25 @@ class UserMixin:
         """
         username = self._normalize_username(username)
         if not use_cache or username not in self._usernames_cache:
-            try:
+            if self._has_private_auth():
                 try:
-                    user = self.user_info_by_username_gql(username)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_by_username_gql(username)  # retry
-            except Exception as e:
-                if isinstance(e, RequestException):
-                    self.logger.warning(
-                        "Public user lookup failed, falling back to private API: %s",
-                        e,
-                    )
-                elif not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
-                user = self.user_info_by_username_v1(username)
+                    user = self.user_info_by_username_v1(username)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    user = self._user_info_by_username_public(username)
+            else:
+                try:
+                    user = self._user_info_by_username_public(username)
+                except Exception as e:
+                    if isinstance(e, RequestException):
+                        self.logger.warning(
+                            "Public user lookup failed, falling back to private API: %s",
+                            e,
+                        )
+                    elif not isinstance(e, ClientError):
+                        self.logger.exception(e)  # Register unknown error
+                    user = self.user_info_by_username_v1(username)
             self._users_cache[user.pk] = user
             self._usernames_cache[user.username] = user.pk
         return self.user_info(self._usernames_cache[username])
@@ -463,17 +489,20 @@ class UserMixin:
         """
         user_id = str(user_id)
         if not use_cache or user_id not in self._users_cache:
-            try:
+            if self._has_private_auth():
                 try:
-                    user = self.user_info_gql(user_id)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    user = self.user_info_gql(user_id)  # retry
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
-                user = self.user_info_v1(user_id)
+                    user = self.user_info_v1(user_id)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    user = self._user_info_public(user_id)
+            else:
+                try:
+                    user = self._user_info_public(user_id)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)
+                    user = self.user_info_v1(user_id)
             self._users_cache[user_id] = user
             self._usernames_cache[user.username] = user.pk
         return deepcopy(self._users_cache[user_id])  # return copy of cache (dict changes protection)

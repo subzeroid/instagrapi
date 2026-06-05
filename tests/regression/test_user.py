@@ -36,6 +36,23 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         user.update(overrides)
         return {"data": {"user": user}}
 
+    @staticmethod
+    def build_user(**overrides):
+        user = {
+            "pk": "123",
+            "username": "example",
+            "full_name": "Example",
+            "is_private": False,
+            "is_verified": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+            "media_count": 0,
+            "follower_count": 0,
+            "following_count": 0,
+            "is_business": False,
+        }
+        user.update(overrides)
+        return User(**user)
+
     def test_user_short_gql_falls_back_to_web_profile_graphql(self):
         client = Client()
         web_user = {
@@ -199,6 +216,147 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         gql.assert_called_once_with("example")
         self.assertEqual(client._usernames_cache, {"example": "123"})
+
+    def test_authorized_user_info_by_username_uses_private_before_public(self):
+        client = self.build_private_client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
+            with mock.patch.object(
+                client,
+                "user_info_by_username_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                result = client.user_info_by_username("Example", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        private_lookup.assert_called_once_with("example")
+        public_lookup.assert_not_called()
+
+    def test_authorized_user_id_from_username_uses_private_lookup(self):
+        client = self.build_private_client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
+            with mock.patch.object(
+                client,
+                "user_info_by_username_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                user_id = client.user_id_from_username("Example")
+
+        self.assertEqual(user_id, "123")
+        private_lookup.assert_called_once_with("example")
+        public_lookup.assert_not_called()
+
+    def test_cookie_session_user_info_by_username_uses_private_before_public(self):
+        client = Client()
+        client.private.cookies.set("sessionid", "1" * 40)
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
+            with mock.patch.object(
+                client,
+                "user_info_by_username_gql",
+                side_effect=AssertionError("cookie session lookup should use private API first"),
+            ) as public_lookup:
+                result = client.user_info_by_username("Example", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        private_lookup.assert_called_once_with("example")
+        public_lookup.assert_not_called()
+
+    def test_authorized_user_info_by_username_falls_back_to_public(self):
+        client = self.build_private_client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(
+            client,
+            "user_info_by_username_v1",
+            side_effect=ClientError("private lookup failed"),
+        ) as private_lookup:
+            with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as public_lookup:
+                result = client.user_info_by_username("Example", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        private_lookup.assert_called_once_with("example")
+        public_lookup.assert_called_once_with("example")
+
+    def test_authorized_user_info_uses_private_before_public(self):
+        client = self.build_private_client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_v1", return_value=user) as private_lookup:
+            with mock.patch.object(
+                client,
+                "user_info_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                result = client.user_info("123", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        private_lookup.assert_called_once_with("123")
+        public_lookup.assert_not_called()
+
+    def test_authorized_user_info_falls_back_to_public(self):
+        client = self.build_private_client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(
+            client, "user_info_v1", side_effect=ClientError("private lookup failed")
+        ) as private_lookup:
+            with mock.patch.object(client, "user_info_gql", return_value=user) as public_lookup:
+                result = client.user_info("123", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        private_lookup.assert_called_once_with("123")
+        public_lookup.assert_called_once_with("123")
+
+    def test_authorized_username_from_user_id_uses_private_lookup(self):
+        client = self.build_private_client()
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_v1", return_value=user) as private_lookup:
+            with mock.patch.object(
+                client,
+                "username_from_user_id_gql",
+                side_effect=ClientGraphqlError("public lookup should not run first"),
+            ) as public_lookup:
+                username = client.username_from_user_id("123")
+
+        self.assertEqual(username, "example")
+        private_lookup.assert_called_once_with("123")
+        public_lookup.assert_not_called()
+
+    def test_unauthorized_user_info_by_username_keeps_public_first(self):
+        client = Client()
+        client._usernames_cache = {}
+        client._users_cache = {}
+        user = self.build_user()
+
+        with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as public_lookup:
+            with mock.patch.object(
+                client,
+                "user_info_by_username_v1",
+                side_effect=AssertionError("unauthorized lookup should use public API first"),
+            ) as private_lookup:
+                result = client.user_info_by_username("Example", use_cache=False)
+
+        self.assertEqual(result.pk, "123")
+        public_lookup.assert_called_once_with("example")
+        private_lookup.assert_not_called()
 
     def test_user_info_by_username_v2_gql_normalizes_search_query(self):
         client = Client()
