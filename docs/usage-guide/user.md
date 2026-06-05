@@ -167,4 +167,4 @@ for user_id in followers.keys():
 
 Tip:
 
-* `user_info_by_username()` and other high-level user helpers may internally fall back between web/public and private paths depending on what Instagram currently accepts for the session.
+* `user_info()`, `user_info_by_username()`, `user_id_from_username()`, and `username_from_user_id()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
