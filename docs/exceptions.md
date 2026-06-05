@@ -114,6 +114,7 @@
 | DirectError              | PrivateError   | Base Direct Exception
 | DirectThreadNotFound     | DirectError    | Raises when thread not found
 | DirectMessageNotFound    | DirectError    | Raises when message in thread not found
+| DirectMessageRequestsDisabled | DirectError | Raises when recipient privacy settings reject a new Direct message request
 
 ## Photo Exceptions
 

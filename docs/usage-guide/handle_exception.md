@@ -9,7 +9,7 @@ from instagrapi.exceptions import (
     BadPassword, ReloginAttemptExceeded, ChallengeRequired,
     SelectContactPointRecoveryForm, RecaptchaChallengeForm,
     FeedbackRequired, PleaseWaitFewMinutes, LoginRequired,
-    ClientThrottledError,
+    ClientThrottledError, DirectMessageRequestsDisabled,
 )
 from instagrapi.utils import json_value
 
@@ -49,6 +49,8 @@ def handle_exception(client: Client, e: Exception):
         logger.warning("HTTP 429 from Instagram, back off and review proxy/account pressure")
     elif isinstance(e, PleaseWaitFewMinutes):
         logger.warning("Please wait before retrying: %s", e)
+    elif isinstance(e, DirectMessageRequestsDisabled):
+        logger.warning("Recipient does not accept new Direct message requests: %s", e)
     raise e
 
 cl = Client()

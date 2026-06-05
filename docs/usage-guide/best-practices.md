@@ -78,12 +78,15 @@ Instagram uses several different responses for throttling, suspicious behavior, 
 ### `ClientThrottledError` / HTTP 429
 
 This usually means the current IP or request pattern is too aggressive for that path right now.
+Public web endpoints can hit this independently from private mobile endpoints; a `429` on a public GraphQL/web path does not necessarily mean the logged-in mobile session is broken.
 
 Recommended response:
 
 * stop the current burst of requests
 * back off before retrying
 * reduce concurrency for that account
+* prefer authenticated/private helpers when a public web helper repeatedly fails
+* try the optional `public_transport="curl"` path only for public web endpoints, and treat it as a transport option, not a rate-limit bypass
 * if the same account keeps hitting `429`, pause it or move it to a cleaner proxy/IP
 
 ### `PleaseWaitFewMinutes`
@@ -136,6 +139,30 @@ Recommended response:
 * Freeze accounts that hit repeated anti-abuse responses instead of hammering them harder.
 * Track errors per account, per proxy, and per action type so you can see which variable is actually causing trouble.
 * Retry transport errors differently from account restrictions. A timeout may be retried; a challenge or feedback block needs cooldown and investigation.
+
+## Automation Warnings and Suspicious Login Screens
+
+Instagram can show in-app warning screens or suspicious-login prompts even when the account is not fully challenged. These are usually trust signals tied to the account, device/session, proxy/IP history, and action pattern. They are not reliable to "bypass" generically from the library.
+
+Recommended response:
+
+* stop the affected workflow and inspect the account in the official app
+* keep the same saved settings, device identifiers, locale, country, and proxy while investigating
+* avoid repeated fresh password logins, aggressive proxy rotation, or replaying the same failed action
+* capture sanitized diagnostics: method name, endpoint if visible, exception class, `client.last_json`, status code, and whether the same account works in the official app
+* open an issue only when the same payload is reproducible; without `last_json`, the project cannot safely add a named exception
+
+## Read-Only Monitoring Workloads
+
+For small jobs that only check whether selected users posted new media or stories, keep the workflow boring:
+
+* reuse one saved session with `dump_settings()` / `load_settings()`
+* poll a small target set with a moderate interval, for example several minutes rather than seconds
+* store the last seen media/story ids locally and compare new responses against that state
+* keep this account separate from write-heavy actions such as follows, likes, comments, uploads, and Direct messages
+* expect public/web paths to be opportunistic; reliable private-account story access requires that the logged-in account has permission to view the target
+
+See [`examples/monitor_user_content.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/monitor_user_content.py) for a minimal state-file based polling example.
 
 ## Common Anti-Patterns
 
