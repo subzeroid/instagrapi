@@ -6,6 +6,15 @@ class ClientMediaTestCase(_helpers.ClientPrivateTestCase):
     def test_media_id(self):
         self.assertEqual(self.cl.media_id(3258619191829745894), "3258619191829745894_25025320")
 
+    def test_media_info(self):
+        media = self.cl.media_info(3258619191829745894)
+        self.assertIsInstance(media, Media)
+        self.assertEqual(str(media.pk), "3258619191829745894")
+        self.assertEqual(media.id, "3258619191829745894_25025320")
+        self.assertEqual(media.user.pk, "25025320")
+        self.assertEqual(media.user.username, "instagram")
+        self.assertTrue(str(media.thumbnail_url).startswith("https://"))
+
     def test_media_pk(self):
         self.assertEqual(self.cl.media_pk("2154602296692269830_25025320"), "2154602296692269830")
 

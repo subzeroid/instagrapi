@@ -556,6 +556,14 @@ class MediaMixin:
             ).dict()
         return extract_media_gql(data["shortcode_media"])
 
+    def _media_info_public(self, media_pk: str) -> Media:
+        try:
+            return self.media_info_gql(media_pk)
+        except ClientLoginRequired as e:
+            if not self.inject_sessionid_to_public():
+                raise e
+            return self.media_info_gql(media_pk)
+
     def media_info_v1(self, media_pk: str) -> Media:
         """
         Get Media from PK by Private Mobile API
@@ -631,19 +639,22 @@ class MediaMixin:
         """
         media_pk = self.media_pk(media_pk)
         if not use_cache or media_pk not in self._medias_cache:
-            try:
+            if self._has_private_auth():
                 try:
-                    media = self.media_info_gql(media_pk)
-                except ClientLoginRequired as e:
-                    if not self.inject_sessionid_to_public():
-                        raise e
-                    media = self.media_info_gql(media_pk)  # retry
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)  # Register unknown error
-                # Restricted Video: This video is not available in your country.
-                # Or private account
-                media = self.media_info_v1(media_pk)
+                    media = self.media_info_v1(media_pk)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)  # Register unknown error
+                    media = self._media_info_public(media_pk)
+            else:
+                try:
+                    media = self._media_info_public(media_pk)
+                except Exception as e:
+                    if not isinstance(e, ClientError):
+                        self.logger.exception(e)  # Register unknown error
+                    # Restricted Video: This video is not available in your country.
+                    # Or private account
+                    media = self.media_info_v1(media_pk)
             self._medias_cache[media_pk] = media
         return deepcopy(self._medias_cache[media_pk])  # return copy of cache (dict changes protection)
 
