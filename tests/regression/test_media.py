@@ -202,6 +202,131 @@ class MediaInfoPrivateFirstRegressionTestCase(unittest.TestCase):
         private_lookup.assert_not_called()
 
 
+class UsertagMediasPrivateFirstRegressionTestCase(unittest.TestCase):
+    def build_private_client(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "1"}
+        return client
+
+    def build_media(self, pk="123"):
+        return Media(
+            pk=pk,
+            id=f"{pk}_456",
+            code="abc",
+            taken_at=datetime.now(UTC()),
+            media_type=1,
+            user=UserShort(pk="456", username="example", profile_pic_url="https://example.com/profile.jpg"),
+            like_count=0,
+            caption_text="",
+            usertags=[],
+            sponsor_tags=[],
+        )
+
+    def test_authorized_usertag_medias_paginated_uses_private_before_public(self):
+        client = self.build_private_client()
+        page = [self.build_media()]
+
+        with mock.patch.object(client, "usertag_medias_paginated_v1", return_value=(page, "cursor")) as private_lookup:
+            with mock.patch.object(
+                client,
+                "usertag_medias_paginated_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                medias, end_cursor = client.usertag_medias_paginated("456", amount=2)
+
+        self.assertEqual(medias, page)
+        self.assertEqual(end_cursor, "cursor")
+        private_lookup.assert_called_once_with(456, 2, end_cursor="")
+        public_lookup.assert_not_called()
+
+    def test_authorized_usertag_medias_paginated_falls_back_to_public(self):
+        client = self.build_private_client()
+        page = [self.build_media()]
+
+        with mock.patch.object(
+            client,
+            "usertag_medias_paginated_v1",
+            side_effect=ClientError("private lookup failed"),
+        ) as private_lookup:
+            with mock.patch.object(
+                client, "usertag_medias_paginated_gql", return_value=(page, "web-cursor")
+            ) as public_lookup:
+                medias, end_cursor = client.usertag_medias_paginated("456", amount=2)
+
+        self.assertEqual(medias, page)
+        self.assertEqual(end_cursor, "web-cursor")
+        private_lookup.assert_called_once_with(456, 2, end_cursor="")
+        public_lookup.assert_called_once_with(456, 2, end_cursor="")
+
+    def test_unauthorized_usertag_medias_paginated_keeps_public_first(self):
+        client = Client()
+        page = [self.build_media()]
+
+        with mock.patch.object(
+            client, "usertag_medias_paginated_gql", return_value=(page, "web-cursor")
+        ) as public_lookup:
+            with mock.patch.object(
+                client,
+                "usertag_medias_paginated_v1",
+                side_effect=AssertionError("unauthorized lookup should use public API first"),
+            ) as private_lookup:
+                medias, end_cursor = client.usertag_medias_paginated("456", amount=2)
+
+        self.assertEqual(medias, page)
+        self.assertEqual(end_cursor, "web-cursor")
+        public_lookup.assert_called_once_with(456, 2, end_cursor="")
+        private_lookup.assert_not_called()
+
+    def test_authorized_usertag_medias_uses_private_before_public(self):
+        client = self.build_private_client()
+        medias = [self.build_media()]
+
+        with mock.patch.object(client, "usertag_medias_v1", return_value=medias) as private_lookup:
+            with mock.patch.object(
+                client,
+                "usertag_medias_gql",
+                side_effect=AssertionError("authorized lookup should use private API first"),
+            ) as public_lookup:
+                result = client.usertag_medias("456", amount=2)
+
+        self.assertEqual(result, medias)
+        private_lookup.assert_called_once_with(456, 2)
+        public_lookup.assert_not_called()
+
+    def test_cookie_session_usertag_medias_uses_private_before_public(self):
+        client = Client()
+        client.private.cookies.set("sessionid", "1" * 40)
+        medias = [self.build_media()]
+
+        with mock.patch.object(client, "usertag_medias_v1", return_value=medias) as private_lookup:
+            with mock.patch.object(
+                client,
+                "usertag_medias_gql",
+                side_effect=AssertionError("cookie session lookup should use private API first"),
+            ) as public_lookup:
+                result = client.usertag_medias("456", amount=2)
+
+        self.assertEqual(result, medias)
+        private_lookup.assert_called_once_with(456, 2)
+        public_lookup.assert_not_called()
+
+    def test_unauthorized_usertag_medias_keeps_public_first(self):
+        client = Client()
+        medias = [self.build_media()]
+
+        with mock.patch.object(client, "usertag_medias_gql", return_value=medias) as public_lookup:
+            with mock.patch.object(
+                client,
+                "usertag_medias_v1",
+                side_effect=AssertionError("unauthorized lookup should use public API first"),
+            ) as private_lookup:
+                result = client.usertag_medias("456", amount=2)
+
+        self.assertEqual(result, medias)
+        public_lookup.assert_called_once_with(456, 2)
+        private_lookup.assert_not_called()
+
+
 class MediaShareToStoryRegressionTestCase(unittest.TestCase):
     def test_media_share_to_story_uses_existing_media_as_story_sticker(self):
         client = Client()

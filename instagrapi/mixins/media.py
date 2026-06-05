@@ -1718,10 +1718,18 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
-        try:
-            medias, end_cursor = self.usertag_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
-        except ClientError:
-            medias, end_cursor = self.usertag_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+        if self._has_private_auth():
+            try:
+                medias, end_cursor = self.usertag_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                medias, end_cursor = self.usertag_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+        else:
+            try:
+                medias, end_cursor = self.usertag_medias_paginated_gql(user_id, amount, end_cursor=end_cursor)
+            except ClientError:
+                medias, end_cursor = self.usertag_medias_paginated_v1(user_id, amount, end_cursor=end_cursor)
         return medias, end_cursor
 
     def usertag_medias(self, user_id: str, amount: int = 0) -> List[Media]:
@@ -1741,10 +1749,18 @@ class MediaMixin:
         """
         amount = int(amount)
         user_id = int(user_id)
-        try:
-            medias = self.usertag_medias_gql(user_id, amount)
-        except ClientError:
-            medias = self.usertag_medias_v1(user_id, amount)
+        if self._has_private_auth():
+            try:
+                medias = self.usertag_medias_v1(user_id, amount)
+            except Exception as e:
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                medias = self.usertag_medias_gql(user_id, amount)
+        else:
+            try:
+                medias = self.usertag_medias_gql(user_id, amount)
+            except ClientError:
+                medias = self.usertag_medias_v1(user_id, amount)
         return medias
 
     def media_configure_to_cutout_sticker(
