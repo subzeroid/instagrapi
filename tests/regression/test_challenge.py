@@ -79,6 +79,27 @@ class ChallengeRegressionTestCase(unittest.TestCase):
 
         self.assertIn("UFAC web bloks checkpoint", str(cm.exception))
 
+    def test_challenge_resolve_simple_bloks_redirect_step_raises_clear_manual_error(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "message": "challenge_required",
+            "status": "ok",
+            "step_name": "STEP_NAME",
+            "flow_render_type": 3,
+            "bloks_action": "com.bloks.www.ig.challenge.redirect.async",
+            "challenge_context": "opaque-context",
+            "challenge_type_enum_str": "SUSPICIOUS_LOGIN",
+        }
+
+        with self.assertRaises(ChallengeRequired) as cm:
+            client.challenge_resolve_simple("challenge/test/")
+
+        self.assertIn("Bloks redirect checkpoint", str(cm.exception))
+        self.assertIn("official Instagram app", str(cm.exception))
+        self.assertEqual(cm.exception.step_name, "STEP_NAME")
+        self.assertEqual(cm.exception.bloks_action, "com.bloks.www.ig.challenge.redirect.async")
+
     def test_challenge_resolve_uses_default_context_when_missing(self):
         client = Client()
         client.uuid = "uuid-1"
