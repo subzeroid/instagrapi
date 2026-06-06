@@ -1504,6 +1504,7 @@
 </tbody>
 </table>
 <p><code>login_by_sessionid()</code> only works when Instagram accepts that <code>sessionid</code> for the private mobile API. A browser/web <code>sessionid</code> can be rejected with <code>login_required</code> or invalidated server-side; for long-lived automation, prefer <code>login()</code> once, then <code>dump_settings()</code> and reuse the saved settings.</p>
+<p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
 <p>You can pass settings to the Client (and save cookies), it has the following format:</p>
 <div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
    <span class="s2">&quot;uuids&quot;</span><span class="p">:</span> <span class="p">{</span>
