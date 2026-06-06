@@ -77,6 +77,8 @@ print(cl.user_info(cl.user_id))
 
 `login_by_sessionid()` only works when Instagram accepts that `sessionid` for the private mobile API. A browser/web `sessionid` can be rejected with `login_required` or invalidated server-side; for long-lived automation, prefer `login()` once, then `dump_settings()` and reuse the saved settings.
 
+When `login_by_sessionid()` needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.
+
 You can pass settings to the Client (and save cookies), it has the following format:
 
 ```python

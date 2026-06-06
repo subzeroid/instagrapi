@@ -403,20 +403,39 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
         client.bloks_two_step_verification_verify_code.assert_not_called()
 
-    def test_login_by_sessionid_falls_back_to_user_short_gql(self):
+    def test_login_by_sessionid_falls_back_to_private_stream_before_public(self):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"
         client.user_info_v1 = Mock(side_effect=PrivateError("boom"))
+        client.user_stream_by_id_flat = Mock(return_value={"pk": "1234567890123456789", "username": "example"})
+        client.user_short_gql = Mock(
+            side_effect=AssertionError("sessionid login should use private fallback before public")
+        )
+
+        result = client.login_by_sessionid(sessionid)
+
+        self.assertTrue(result)
+        client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
+        client.user_stream_by_id_flat.assert_called_once_with("1234567890123456789012345678901")
+        client.user_short_gql.assert_not_called()
+        self.assertEqual(client.username, "example")
+        self.assertEqual(client.authorization_data["sessionid"], sessionid)
+        self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
+
+    def test_login_by_sessionid_falls_back_to_public_after_private_stream_failure(self):
+        client = Client()
+        sessionid = "1234567890123456789012345678901%3Atoken"
+        client.user_info_v1 = Mock(side_effect=PrivateError("boom"))
+        client.user_stream_by_id_flat = Mock(side_effect=PrivateError("stream failed"))
         client.user_short_gql = Mock(return_value=UserShort(pk="1234567890123456789", username="example"))
 
         result = client.login_by_sessionid(sessionid)
 
         self.assertTrue(result)
         client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
+        client.user_stream_by_id_flat.assert_called_once_with("1234567890123456789012345678901")
         client.user_short_gql.assert_called_once_with(1234567890123456789012345678901)
         self.assertEqual(client.username, "example")
-        self.assertEqual(client.authorization_data["sessionid"], sessionid)
-        self.assertEqual(client.cookie_dict["ds_user_id"], "1234567890123456789")
 
     def test_login_by_sessionid_uses_user_info_v1_when_available(self):
         client = Client()
@@ -469,17 +488,21 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.private.headers.get("IG-INTENDED-USER-ID"), "1234567890123456789")
         self.assertEqual(client.private.headers.get("Authorization"), client.authorization)
 
-    def test_login_by_sessionid_falls_back_to_user_short_gql_on_validation_error(self):
+    def test_login_by_sessionid_falls_back_to_private_stream_on_validation_error(self):
         client = Client()
         sessionid = "1234567890123456789012345678901%3Atoken"
         client.user_info_v1 = Mock(side_effect=ValidationError.from_exception_data("User", []))
-        client.user_short_gql = Mock(return_value=UserShort(pk="1234567890123456789", username="example"))
+        client.user_stream_by_id_flat = Mock(return_value={"pk_id": "1234567890123456789", "username": "example"})
+        client.user_short_gql = Mock(
+            side_effect=AssertionError("sessionid login should use private fallback before public")
+        )
 
         result = client.login_by_sessionid(sessionid)
 
         self.assertTrue(result)
         client.user_info_v1.assert_called_once_with(1234567890123456789012345678901)
-        client.user_short_gql.assert_called_once_with(1234567890123456789012345678901)
+        client.user_stream_by_id_flat.assert_called_once_with("1234567890123456789012345678901")
+        client.user_short_gql.assert_not_called()
         self.assertEqual(client.username, "example")
 
     def test_login_by_sessionid_rejects_invalid_sessionid(self):

@@ -1916,6 +1916,18 @@ class UserMixin:
         }
         try:
             return self.private_request(f"users/{user_id}/info_stream/", data=data)
+        except ClientJSONDecodeError:
+            response_text = getattr(getattr(self, "last_response", None), "text", "") or ""
+            for line in response_text.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    return json.loads(line)
+                except JSONDecodeError:
+                    break
+            logger.exception("Unable to parse streamed user response for user_id %r", user_id)
+            raise UserNotFound("User not found")
         except (ClientNotFoundError, ClientError) as e:
             logger.exception(
                 "Client error user_stream_by_id_v1, exception: %r, user_id %r",
@@ -1934,6 +1946,8 @@ class UserMixin:
         (defensive behaviour matching observed IG quirks).
         """
         data = {}
+        if isinstance(resp.get("user"), dict):
+            data.update(resp["user"])
         for urow in resp.get("stream_rows", []):
             data.update(urow.get("user", {}))
         if data:

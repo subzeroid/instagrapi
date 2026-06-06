@@ -856,6 +856,25 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             with self.assertRaises(UserNotFound):
                 client.user_stream_by_id_v1("123")
 
+    def test_user_stream_by_id_v1_parses_first_json_line_from_stream_response(self):
+        from instagrapi.exceptions import ClientJSONDecodeError
+
+        client = Client()
+        client.last_json = {}
+
+        def private_request(*args, **kwargs):
+            client.last_response = Mock(
+                text='{"user":{"pk":123,"username":"example"},"status":"ok"}\n{"stream_tail":true}\n',
+                status_code=200,
+            )
+            raise ClientJSONDecodeError("stream response")
+
+        with mock.patch.object(client, "private_request", side_effect=private_request):
+            result = client.user_stream_by_id_v1("123")
+
+        self.assertEqual(result["user"]["username"], "example")
+        self.assertEqual(result["status"], "ok")
+
     def test_user_stream_by_username_v1_sends_expected_endpoint(self):
         client = Client()
         with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
@@ -880,6 +899,16 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user["full_name"], "Alice Example")
         self.assertEqual(user["pk"], "9")
         self.assertEqual(user["pk_id"], "9")
+
+    def test_user_stream_by_id_flat_accepts_top_level_user_payload(self):
+        client = Client()
+        envelope = {"user": {"pk": "9", "username": "alice"}}
+
+        with mock.patch.object(client, "user_stream_by_id_v1", return_value=envelope):
+            user = client.user_stream_by_id_flat("9")
+
+        self.assertEqual(user["pk"], "9")
+        self.assertEqual(user["username"], "alice")
 
     def test_user_stream_by_username_flat_falls_back_when_empty(self):
         client = Client()
