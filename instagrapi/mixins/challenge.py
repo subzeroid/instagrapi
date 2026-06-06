@@ -488,6 +488,14 @@ class ChallengeResolveMixin:
             if self.last_json.get("step_name") == step_name:
                 raise ChallengeError(f"submit_phone challenge did not advance after phone submission: {self.last_json}")
             return self.challenge_resolve_simple(challenge_url)
+        elif self.last_json.get("bloks_action") == "com.bloks.www.ig.challenge.redirect.async":
+            raise ChallengeRequired(
+                "Manual verification required via Instagram Bloks redirect checkpoint. "
+                "Please confirm the login in the official Instagram app or web flow on a trusted device, "
+                "then retry with the same saved client settings, device identifiers, and proxy/IP. "
+                "This challenge flow is not currently resolved automatically by instagrapi.",
+                **{key: value for key, value in self.last_json.items() if key != "message"},
+            )
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"

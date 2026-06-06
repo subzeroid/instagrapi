@@ -128,7 +128,7 @@ This means Instagram wants an additional verification step. Some flows can be au
 Recommended response:
 
 * call `challenge_resolve(...)` only if you have working handlers for codes/password changes
-* if you hit `/auth_platform/` or UFAC web flows, expect manual handling
+* if you hit `/auth_platform/`, UFAC web flows, or Bloks redirect checkpoints, expect manual handling in the official Instagram app or web flow
 * do not rotate identity aggressively in the middle of a challenge
 
 ### Practical Rules

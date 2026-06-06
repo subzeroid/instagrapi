@@ -53,6 +53,7 @@ Notes:
 * Phone-only signup is supported with `signup(username, password, email="", phone_number="+15551234567")`. If both `email` and `phone_number` are provided, instagrapi keeps the email signup flow and uses the phone number only for signup challenges.
 * `signup(...)` uses Instagram's legacy account-create flow. On modern Instagram app versions this flow is often rejected with `SignupSpamError` / `feedback_required` because the official app uses additional signup checks that instagrapi does not currently generate. Treat this as a platform rejection, not as a malformed SMS/email code.
 * Current `master` raises a clearer `ChallengeRequired` for `/auth_platform/?apc=...` flows. That path is not yet supported automatically and still requires manual verification.
+* Bloks redirect checkpoints such as `bloks_action="com.bloks.www.ig.challenge.redirect.async"` or placeholder `step_name="STEP_NAME"` require manual confirmation in the official Instagram app or web flow on a trusted device; instagrapi raises `ChallengeRequired` with the sanitized challenge context instead of treating this as a legacy step.
 * For long-running automation, persist client settings around challenge handling so you can retry without rebuilding the entire device/session state.
 
 ## Selfie and manual review challenges
