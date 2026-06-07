@@ -98,6 +98,29 @@ class ClipMixin:
         """
         return self.clip_pin(media_pk, True)
 
+    def clip_change_cover(self, media_pk: str, cover_path: Path) -> bool:
+        """
+        Change cover image for a published Reel
+
+        Parameters
+        ----------
+        media_pk: str
+            PK for the Reel
+        cover_path: Path
+            Path to the new cover image
+
+        Returns
+        -------
+        bool
+        A boolean value
+        """
+        upload_id, _, _ = self.photo_rupload(Path(cover_path))
+        result = self.private_request(
+            "media/configure_to_clips_cover_image/",
+            data={"upload_id": str(upload_id), "clips_media_id": str(media_pk)},
+        )
+        return bool(result.get("success")) or result.get("status") == "ok"
+
 
 class DownloadClipMixin:
     """

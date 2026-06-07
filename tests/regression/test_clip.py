@@ -64,3 +64,20 @@ class ClipPinRegressionTestCase(unittest.TestCase):
             "users/unpin_timeline_media/",
             data={"post_id": "3894040329476845448", "profile_grid": "clips"},
         )
+
+    def test_clip_change_cover_uploads_photo_and_configures_reel_cover(self):
+        client = Client()
+        with mock.patch.object(client, "photo_rupload", return_value=("1778346423000", 720, 1280)) as photo_rupload:
+            with mock.patch.object(
+                client,
+                "private_request",
+                return_value={"success": True, "status": "ok"},
+            ) as private_request:
+                result = client.clip_change_cover("3914574283211484216", Path("cover.jpg"))
+
+        self.assertTrue(result)
+        photo_rupload.assert_called_once_with(Path("cover.jpg"))
+        private_request.assert_called_once_with(
+            "media/configure_to_clips_cover_image/",
+            data={"upload_id": "1778346423000", "clips_media_id": "3914574283211484216"},
+        )
