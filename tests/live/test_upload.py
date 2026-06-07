@@ -753,3 +753,16 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertEqual(extra_data["xpost_surface"], "IG_REELS_COMPOSER")
         self.assertEqual(extra_data["no_token_crosspost"], "1")
         self.assertTrue(extra_data["attempt_id"])
+
+    def test_clip_share_to_fb_destination_live(self):
+        config = self.cl.clip_share_to_fb_config()
+        self.assertEqual(config.get("status"), "ok")
+        try:
+            destination = self.cl.clip_share_to_fb_destination(config=config)
+        except ClientError as exc:
+            self.skipTest(f"No confirmed Facebook Reel destination available: {exc}")
+
+        self.assertTrue(destination["destination_id"])
+        self.assertIn(destination["destination_type"], {"USER", "PAGE"})
+        if destination.get("destination_audience_type"):
+            self.assertIsInstance(destination["destination_audience_type"], str)
