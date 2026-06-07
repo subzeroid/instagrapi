@@ -104,6 +104,60 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertFalse(device_status["hw_av1_dec"])
         self.assertEqual(result, expected)
 
+    def test_clip_share_to_fb_destination_normalizes_current_reel_destination_fields(self):
+        client = self.build_client()
+
+        result = client.clip_share_to_fb_destination(
+            config={
+                "enabled": True,
+                "is_account_linked": True,
+                "share_to_fb_destination_id": "fb-destination-id",
+                "share_to_fb_destination_type": "page",
+                "share_to_fb_destination_audience_type": "PUBLIC",
+                "reels_cross_app_share_fb_validation_check_bypass": True,
+                "status": "ok",
+            }
+        )
+
+        self.assertEqual(
+            result,
+            {
+                "destination_id": "fb-destination-id",
+                "destination_type": "PAGE",
+                "destination_audience_type": "PUBLIC",
+                "validation_check_bypass": True,
+            },
+        )
+
+    def test_clip_share_to_fb_destination_rejects_unavailable_config_without_destination(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.clip_share_to_fb_destination(
+                config={
+                    "share_to_fb_unavailable": True,
+                    "status": "ok",
+                }
+            )
+
+        self.assertIn("unavailable", str(ctx.exception))
+
+    def test_clip_share_to_fb_destination_does_not_use_account_id_as_destination(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.clip_share_to_fb_destination(
+                config={
+                    "enabled": True,
+                    "is_account_linked": True,
+                    "account_id": "account-center-or-linking-id",
+                    "posting_type": "USER",
+                    "status": "ok",
+                }
+            )
+
+        self.assertIn("no destination", str(ctx.exception))
+
     def test_clip_share_to_fb_extra_data_builds_current_reel_crosspost_payload(self):
         client = self.build_client()
         config = {
