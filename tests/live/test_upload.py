@@ -1,3 +1,5 @@
+import io
+
 from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
@@ -68,6 +70,26 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         self.assertIsInstance(location, Location)
         self.assertTrue(location.pk)
         self.assertTrue(location.name)
+
+    def make_cover_fixture(self, color):
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest("Pillow is required to generate a cover fixture")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        Image.new("RGB", (720, 1280), color).save(path, quality=95)
+        return path
+
+    def thumbnail_average_rgb(self, url):
+        response = requests.get(str(url), timeout=20)
+        response.raise_for_status()
+        from PIL import Image
+
+        with Image.open(io.BytesIO(response.content)) as image:
+            return image.convert("RGB").resize((1, 1)).getpixel((0, 0))
 
     def assertAlbumResourceUsertagsAccessible(self, media, expected_usertags, attempts=8, delay=5):
         last_resources = []
@@ -367,6 +389,32 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             )
             self.assertTrue(payload.get("video_versions"))
             self.assertEqual((payload.get("caption") or {}).get("text"), caption_text)
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_clip_change_cover_live(self):
+        path = self.make_video_fixture(label="clip cover fixture")
+        cover_a = self.make_cover_fixture((220, 20, 20))
+        cover_b = self.make_cover_fixture((20, 220, 20))
+        media = None
+        try:
+            media = self.cl.clip_upload(path, "Clip cover live test", thumbnail=cover_a)
+            before = self.thumbnail_average_rgb(self.cl.media_info_v1(media.pk).thumbnail_url)
+            self.assertGreater(before[0], before[1])
+            self.assertGreater(before[0], before[2])
+
+            self.assertTrue(self.cl.clip_change_cover(media.pk, cover_b))
+
+            last_rgb = None
+            for attempt in range(12):
+                if attempt:
+                    time.sleep(5)
+                last_rgb = self.thumbnail_average_rgb(self.cl.media_info_v1(media.pk).thumbnail_url)
+                if last_rgb[1] > last_rgb[0] and last_rgb[1] > last_rgb[2]:
+                    break
+            else:
+                self.fail(f"Reel cover thumbnail did not change to the new cover: last rgb={last_rgb}")
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))

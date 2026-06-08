@@ -55,6 +55,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_template_v1(media_id: str) | dict | Fetch a clip template payload for a Reel/clip media |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
 | clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
+| clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel |
 | media_create_livestream(title: str = "Instagram Live") | dict | Create a new livestream and return stream metadata |
 | media_start_livestream(broadcast_id: str) | dict | Start an existing livestream |
 | media_end_livestream(broadcast_id: str) | dict | End an existing livestream |
@@ -334,6 +335,7 @@ Upload medias to your feed. Common arguments:
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
 | clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination
+| clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
@@ -376,6 +378,7 @@ Facebook Reel sharing requires a Facebook account/page linked in the Instagram a
 
 ``` python
 >>> import time
+>>> from pathlib import Path
 >>> from instagrapi import Client
 
 >>> cl = Client()
@@ -411,6 +414,13 @@ Facebook Reel sharing requires a Facebook account/page linked in the Instagram a
 ...     "Cross-posting with explicit Facebook destination",
 ...     extra_data=fb_extra,
 ... )
+
+>>> reel = cl.clip_upload(
+...     "/app/reel.mp4",
+...     "Reel with an updated cover",
+...     thumbnail=Path("/app/cover-a.jpg"),
+... )
+>>> cl.clip_change_cover(reel.pk, Path("/app/cover-b.jpg"))
 
 >>> media = cl.photo_upload(
     "/app/image.jpg",
