@@ -1658,6 +1658,11 @@
 <td>Unpin Reel from the Reels tab/profile Reels grid</td>
 </tr>
 <tr>
+<td>clip_change_cover(media_pk: str, cover_path: Path)</td>
+<td>bool</td>
+<td>Change the cover image for a published Reel</td>
+</tr>
+<tr>
 <td>media_create_livestream(title: str = "Instagram Live")</td>
 <td>dict</td>
 <td>Create a new livestream and return stream metadata</td>
@@ -2111,6 +2116,11 @@
 <td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts. Set <code>share_to_facebook=True</code> to cross-post to a linked Facebook destination</td>
 </tr>
 <tr>
+<td>clip_change_cover(media_pk: str, cover_path: Path)</td>
+<td>bool</td>
+<td>Change the cover image for a published Reel</td>
+</tr>
+<tr>
 <td>clip_trial_eligible()</td>
 <td>bool</td>
 <td>Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes</td>
@@ -2208,6 +2218,7 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
@@ -2243,6 +2254,13 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <span class="o">...</span>     <span class="s2">&quot;Cross-posting with explicit Facebook destination&quot;</span><span class="p">,</span>
 <span class="o">...</span>     <span class="n">extra_data</span><span class="o">=</span><span class="n">fb_extra</span><span class="p">,</span>
 <span class="o">...</span> <span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="s2">&quot;Reel with an updated cover&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/cover-a.jpg&quot;</span><span class="p">),</span>
+<span class="o">...</span> <span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_change_cover</span><span class="p">(</span><span class="n">reel</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/cover-b.jpg&quot;</span><span class="p">))</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
