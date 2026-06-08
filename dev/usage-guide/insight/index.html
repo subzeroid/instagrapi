@@ -1184,6 +1184,7 @@
 <li>These methods require an authenticated business/professional account. Personal accounts can raise <code>UserError</code>.</li>
 <li><code>insights_media_feed_all()</code> paginates internally and sleeps between pages; reduce <code>count</code> if you only need a small sample.</li>
 <li><code>insights_media()</code> raises <code>MediaError</code> when Instagram does not return insight data for the requested media.</li>
+<li>If Instagram returns media metadata without <code>inline_insights_node</code>, <code>insights_media()</code> raises <code>MediaError</code> instead of returning partial counts with null insight metrics.</li>
 </ul>
 
 
