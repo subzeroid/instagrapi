@@ -339,6 +339,8 @@ Upload medias to your feed. Common arguments:
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
+| clip_share_to_fb_unified_config() | dict | Get the Android cross-posting unified config used by the Reel composer
+| clip_share_to_fb_unified_destination(config: Dict = None) | dict | Resolve confirmed Reel Facebook destination fields from the unified cross-posting config
 | clip_share_to_fb_destination(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Resolve confirmed Reel Facebook destination fields without treating Account Center linking ids as publish destinations
 | clip_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: str = None) | dict | Build modern Reel Facebook cross-post configure fields for manual `extra_data`
 | clip_music_extra_data(track: Track or dict, extra_data: Dict = {}) | dict | Build Reels music configure fields for manual `clip_upload(..., extra_data=...)`
@@ -371,7 +373,7 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 
 Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields such as `share_to_fb_destination_id`, `share_to_fb_destination_type`, `no_token_crosspost`, and `attempt_id`.
 
-`clip_share_to_fb_config()` calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return `share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. Use `clip_share_to_fb_destination()` when a config or captured app response already contains confirmed destination fields; it normalizes `destination_id`, `destination_type`, optional audience, and validation bypass values. For accounts where the app can cross-post manually but the preflight response has no destination, pass `fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`. If neither the preflight/config data nor the caller provides a destination, instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
+`clip_share_to_fb_config()` calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return `share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. When `clip_upload(..., share_to_facebook=True)` has no manual destination override, instagrapi now falls back to Android's `CrosspostingUnifiedConfigsQuery` via `clip_share_to_fb_unified_config()` and uses `clip_share_to_fb_unified_destination()` only if that response contains confirmed Reel-to-Facebook destination fields. Use `clip_share_to_fb_destination()` when a config or captured app response already contains confirmed destination fields; it normalizes `destination_id`, `destination_type`, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass `fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
 `bloks_fxcal_link_reels_share()` exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks `fbid`, auth, and linking values as linking context, not as `fb_destination_id`; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as `share_to_fb_destination_id`. See [#2556](https://github.com/subzeroid/instagrapi/issues/2556) for tracking automatic destination discovery.
 
 ### Example:
@@ -400,6 +402,12 @@ Facebook Reel sharing requires a Facebook account/page linked in the Instagram a
 >>> reel = cl.clip_upload(
 ...     "/app/reel.mp4",
 ...     "Cross-posting this Reel to Facebook",
+...     share_to_facebook=True,
+... )
+
+>>> reel = cl.clip_upload(
+...     "/app/reel.mp4",
+...     "Cross-posting with explicit Facebook destination",
 ...     share_to_facebook=True,
 ...     fb_destination_id="FACEBOOK_DESTINATION_ID",
 ...     fb_destination_type="USER",

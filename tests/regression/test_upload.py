@@ -104,6 +104,47 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertFalse(device_status["hw_av1_dec"])
         self.assertEqual(result, expected)
 
+    def test_clip_share_to_fb_unified_config_requests_android_cxp_query(self):
+        client = self.build_client()
+        expected = {"status": "ok", "data": {"xcxp_unified_crossposting_configs_root": {}}}
+
+        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+            result = client.clip_share_to_fb_unified_config()
+
+        graphql_request.assert_called_once()
+        kwargs = graphql_request.call_args.kwargs
+        self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
+        self.assertEqual(kwargs["root_field_name"], "xcxp_unified_crossposting_configs_root")
+        self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
+        self.assertEqual(kwargs["priority"], "u=3, i")
+        self.assertEqual(kwargs["extra_headers"], {"X-FB-RMD": "state=URL_ELIGIBLE"})
+        self.assertEqual(
+            kwargs["variables"],
+            {
+                "configs_request": {
+                    "source_app": "IG",
+                    "crosspost_app_surface_list": [
+                        {
+                            "source_surface": "STORY",
+                            "destination_app": "FB",
+                            "destination_surface": "STORY",
+                        },
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                        },
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                        },
+                    ],
+                }
+            },
+        )
+        self.assertEqual(result, expected)
+
     def test_clip_share_to_fb_destination_normalizes_current_reel_destination_fields(self):
         client = self.build_client()
 
@@ -157,6 +198,86 @@ class UploadRegressionTestCase(unittest.TestCase):
             )
 
         self.assertIn("no destination", str(ctx.exception))
+
+    def test_clip_share_to_fb_destination_falls_back_to_unified_reels_fb_destination(self):
+        client = self.build_client()
+        unified_config = {
+            "data": {
+                "1$xcxp_unified_crossposting_configs_root(configs_request:$configs_request)": {
+                    "configs": [
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                            "destination": {
+                                "destination_id": "feed-destination-id",
+                                "destination_type": "USER",
+                            },
+                        },
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                            "destination": {
+                                "destination_id": "reels-destination-id",
+                                "destination_type": "page",
+                                "destination_audience_type": "PUBLIC",
+                            },
+                            "cross_app_share_fb_validation_check_bypass": True,
+                        },
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_config",
+                return_value={"share_to_fb_unavailable": True, "status": "ok"},
+            ) as share_to_fb_config,
+            mock.patch.object(client, "clip_share_to_fb_unified_config", return_value=unified_config) as unified,
+        ):
+            result = client.clip_share_to_fb_destination()
+
+        share_to_fb_config.assert_called_once()
+        unified.assert_called_once()
+        self.assertEqual(
+            result,
+            {
+                "destination_id": "reels-destination-id",
+                "destination_type": "PAGE",
+                "destination_audience_type": "PUBLIC",
+                "validation_check_bypass": True,
+            },
+        )
+
+    def test_clip_share_to_fb_unified_destination_ignores_generic_account_center_ids(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.clip_share_to_fb_unified_destination(
+                config={
+                    "data": {
+                        "xcxp_unified_crossposting_configs_root": {
+                            "configs": [
+                                {
+                                    "source_surface": "REELS",
+                                    "destination_app": "FB",
+                                    "destination_surface": "REELS",
+                                    "account_id": "account-center-id",
+                                    "fbid": "facebook-linking-id",
+                                    "posting_type": "USER",
+                                }
+                            ]
+                        }
+                    },
+                    "status": "ok",
+                }
+            )
+
+        self.assertIn("no confirmed Reel Facebook destination", str(ctx.exception))
 
     def test_clip_share_to_fb_extra_data_builds_current_reel_crosspost_payload(self):
         client = self.build_client()

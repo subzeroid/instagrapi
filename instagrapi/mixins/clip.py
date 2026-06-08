@@ -32,6 +32,28 @@ def _make_tmp_path(suffix: str) -> str:
     return path
 
 
+CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID = "216179630714134719310007237117"
+CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME = "CrosspostingUnifiedConfigsQuery"
+CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD = "xcxp_unified_crossposting_configs_root"
+CLIP_FB_CROSSPOSTING_SURFACES = [
+    {
+        "source_surface": "STORY",
+        "destination_app": "FB",
+        "destination_surface": "STORY",
+    },
+    {
+        "source_surface": "FEED",
+        "destination_app": "FB",
+        "destination_surface": "FEED",
+    },
+    {
+        "source_surface": "REELS",
+        "destination_app": "FB",
+        "destination_surface": "REELS",
+    },
+]
+
+
 class ClipMixin:
     """
     Helpers for CLIP/Reel actions
@@ -244,6 +266,112 @@ class UploadClipMixin:
             params={"device_status": json.dumps(device_status)},
         )
 
+    def clip_share_to_fb_unified_config(
+        self,
+        crosspost_app_surface_list: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict:
+        """
+        Get the Android cross-posting unified config used by the Reel composer.
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the private GraphQL call
+        """
+        variables = {
+            "configs_request": {
+                "source_app": "IG",
+                "crosspost_app_surface_list": crosspost_app_surface_list or CLIP_FB_CROSSPOSTING_SURFACES,
+            }
+        }
+        return self.private_graphql_query_request(
+            friendly_name=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME,
+            root_field_name=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
+            variables=variables,
+            client_doc_id=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID,
+            priority="u=3, i",
+            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+        )
+
+    def _clip_share_to_fb_unified_root(self, config: Dict[str, object]) -> object:
+        data = (config or {}).get("data")
+        if isinstance(data, dict):
+            root = data.get(CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD)
+            if root is not None:
+                return root
+            for key, value in data.items():
+                if CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD in str(key):
+                    return value
+        return config or {}
+
+    def _clip_share_to_fb_iter_dicts(self, value):
+        if isinstance(value, dict):
+            yield value
+            for child in value.values():
+                yield from self._clip_share_to_fb_iter_dicts(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from self._clip_share_to_fb_iter_dicts(child)
+
+    def _clip_share_to_fb_candidate_value(self, config: Dict[str, object], keys) -> object:
+        for key in keys:
+            value = config.get(key)
+            if value not in (None, ""):
+                return value
+        return None
+
+    def _clip_share_to_fb_reels_fb_candidate(self, config: Dict[str, object]) -> bool:
+        source_surface = str(config.get("source_surface") or "").upper()
+        destination_surface = str(config.get("destination_surface") or "").upper()
+        destination_app = str(config.get("destination_app") or "").upper()
+        if source_surface and source_surface not in {"REELS", "CLIPS"}:
+            return False
+        if destination_surface and destination_surface not in {"REELS", "CLIPS"}:
+            return False
+        if destination_app and destination_app not in {"FB", "FACEBOOK"}:
+            return False
+        return bool(source_surface or destination_surface or destination_app)
+
+    def _clip_share_to_fb_unified_destination_candidates(self, config: Dict[str, object]):
+        for candidate in self._clip_share_to_fb_iter_dicts(self._clip_share_to_fb_unified_root(config)):
+            if not self._clip_share_to_fb_reels_fb_candidate(candidate):
+                continue
+            merged = dict(candidate)
+            for key in (
+                "destination",
+                "fb_destination",
+                "reels_destination",
+                "crosspost_destination",
+                "crossposting_destination",
+                "xpost_destination",
+            ):
+                nested = candidate.get(key)
+                if isinstance(nested, dict):
+                    merged.update(nested)
+            yield merged
+
+    def clip_share_to_fb_unified_destination(self, config: Optional[Dict[str, object]] = None) -> Dict[str, object]:
+        """
+        Resolve a confirmed Reel Facebook destination from unified config.
+
+        Parameters
+        ----------
+        config: Dict[str, object], optional
+            Response from :meth:`clip_share_to_fb_unified_config`.
+
+        Returns
+        -------
+        Dict[str, object]
+            Normalized destination fields.
+        """
+        unified_config = config if config is not None else self.clip_share_to_fb_unified_config()
+        for candidate in self._clip_share_to_fb_unified_destination_candidates(unified_config or {}):
+            try:
+                return self.clip_share_to_fb_destination(config=candidate, use_unified_config=False)
+            except ClientError:
+                continue
+        raise ClientError("Facebook Reel sharing unified config has no confirmed Reel Facebook destination")
+
     def clip_share_to_fb_destination(
         self,
         config: Optional[Dict[str, object]] = None,
@@ -251,6 +379,7 @@ class UploadClipMixin:
         destination_type: Optional[str] = None,
         destination_audience_type: Optional[str] = None,
         validation_check_bypass: Optional[bool] = None,
+        use_unified_config: bool = True,
     ) -> Dict[str, object]:
         """
         Resolve the Facebook Reel sharing destination from confirmed fields.
@@ -274,6 +403,9 @@ class UploadClipMixin:
             Explicit Facebook Reels audience type, e.g. ``PUBLIC``.
         validation_check_bypass: bool, optional
             Explicit validation bypass flag. Overrides config values.
+        use_unified_config: bool, optional
+            When config is omitted, fall back to the Android cross-posting
+            unified config if the lightweight Reel preflight has no destination.
 
         Returns
         -------
@@ -284,23 +416,37 @@ class UploadClipMixin:
         if fb_config.get("enabled") is False or fb_config.get("is_account_linked") is False:
             raise ClientError("Facebook Reel sharing is not enabled or no Facebook account is linked")
 
-        destination_id = (
-            destination_id
-            or fb_config.get("share_to_fb_destination_id")
-            or fb_config.get("reels_destination_id")
-            or fb_config.get("destination_id")
+        explicit_destination = bool(destination_id or destination_type)
+        destination_id = destination_id or self._clip_share_to_fb_candidate_value(
+            fb_config,
+            (
+                "share_to_fb_destination_id",
+                "reels_destination_id",
+                "crosspost_destination_id",
+                "crossposting_destination_id",
+                "xpost_destination_id",
+                "destination_id",
+            ),
         )
-        destination_type = (
-            destination_type
-            or fb_config.get("share_to_fb_destination_type")
-            or fb_config.get("destination_type")
-            or fb_config.get("posting_type")
+        destination_type = destination_type or self._clip_share_to_fb_candidate_value(
+            fb_config,
+            (
+                "share_to_fb_destination_type",
+                "crosspost_destination_type",
+                "crossposting_destination_type",
+                "xpost_destination_type",
+                "destination_type",
+                "posting_type",
+            ),
         )
-        destination_audience_type = (
-            destination_audience_type
-            or fb_config.get("share_to_fb_destination_audience_type")
-            or fb_config.get("reels_destination_audience_type")
-            or fb_config.get("audience_type")
+        destination_audience_type = destination_audience_type or self._clip_share_to_fb_candidate_value(
+            fb_config,
+            (
+                "share_to_fb_destination_audience_type",
+                "reels_destination_audience_type",
+                "destination_audience_type",
+                "audience_type",
+            ),
         )
         if validation_check_bypass is None:
             validation_check_bypass = fb_config.get(
@@ -309,6 +455,11 @@ class UploadClipMixin:
             )
 
         has_destination = bool(destination_id and destination_type)
+        if not has_destination and use_unified_config and config is None and not explicit_destination:
+            try:
+                return self.clip_share_to_fb_unified_destination()
+            except ClientError:
+                pass
         if fb_config.get("share_to_fb_unavailable") and not has_destination:
             raise ClientError(
                 "Facebook Reel sharing is unavailable from the Reel preflight response. "
