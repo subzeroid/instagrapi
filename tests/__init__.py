@@ -16,6 +16,7 @@ from tests.live.test_direct import (
 )
 from tests.live.test_hashtag import ClientHashtagTestCase
 from tests.live.test_highlight import ClientHighlightTestCase
+from tests.live.test_insights import ClientInsightsLiveTestCase
 from tests.live.test_location import ClientLocationTestCase
 from tests.live.test_media import (
     ClientCompareExtractTestCase,
@@ -53,6 +54,7 @@ from tests.regression.test_extractors import (
 )
 from tests.regression.test_fbsearch import FbSearchRegressionTestCase
 from tests.regression.test_hardening import HardeningRegressionTestCase
+from tests.regression.test_insights import InsightsRegressionTestCase
 from tests.regression.test_location import LocationMixinRegressionTestCase
 from tests.regression.test_media import (
     CheckOffensiveCommentV2RegressionTestCase,

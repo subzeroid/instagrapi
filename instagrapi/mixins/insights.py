@@ -208,6 +208,21 @@ class InsightsMixin:
                 "ads/graphql/",
                 self.with_query_params(data, query_params),
             )
-            return result["data"]["instagram_post_by_igid"]
+            media = json_value(result, "data", "instagram_post_by_igid", default=None)
+            if not media:
+                raise MediaError(
+                    "Instagram did not return insight data for media",
+                    media_pk=media_pk,
+                    **(self.last_json or {}),
+                )
+            if not media.get("inline_insights_node"):
+                raise MediaError(
+                    "Instagram returned media metadata without inline insights data",
+                    media_pk=media_pk,
+                    **(self.last_json or {}),
+                )
+            return media
+        except MediaError:
+            raise
         except ClientError as e:
-            raise MediaError(e.message, media_pk=media_pk, **self.last_json)
+            raise MediaError(e.message, media_pk=media_pk, **(self.last_json or {}))
