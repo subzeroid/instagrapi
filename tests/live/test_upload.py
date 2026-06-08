@@ -814,3 +814,32 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertIn(destination["destination_type"], {"USER", "PAGE"})
         if destination.get("destination_audience_type"):
             self.assertIsInstance(destination["destination_audience_type"], str)
+
+    def test_clip_share_to_fb_unified_config_live(self):
+        config = self.cl.clip_share_to_fb_unified_config()
+
+        self.assertEqual(config.get("status"), "ok")
+        self.assertIsInstance(config.get("data"), dict)
+
+    def test_clip_upload_share_to_facebook_live(self):
+        try:
+            destination = self.cl.clip_share_to_fb_destination()
+        except ClientError as exc:
+            self.skipTest(f"No confirmed Facebook Reel destination available: {exc}")
+
+        self.assertTrue(destination["destination_id"])
+        self.assertIn(destination["destination_type"], {"USER", "PAGE"})
+        path = self.make_video_fixture(label="Facebook Reel crosspost fixture")
+        media = None
+        try:
+            caption_text = "Facebook Reel crosspost live test"
+            media = self.cl.clip_upload(path, caption_text, share_to_facebook=True)
+            self.assertUploadedMediaAccessible(
+                media,
+                media_type=2,
+                product_type="clips",
+                caption_text=caption_text,
+            )
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
