@@ -78,6 +78,15 @@ class ClientCommentExtendTestCase(_helpers.ClientPrivateTestCase):
                     return item
         self.fail(f"Comment {comment_pk} was not readable after {attempts} attempts: {last_error}")
 
+    def assertCommentPreflightAllows(self, media_id, text):
+        result = self.cl.media_check_offensive_comment_v2(media_id, text)
+        self.assertIsInstance(result, dict)
+        self.assertIn("is_offensive", result)
+        self.assertFalse(result["is_offensive"])
+        if "status" in result:
+            self.assertEqual(result["status"], "ok")
+        return result
+
     def test_media_comment(self):
         text = "Test text [%s]" % datetime.now().strftime("%s")
         now = datetime.now(tz=UTC())
@@ -87,6 +96,7 @@ class ClientCommentExtendTestCase(_helpers.ClientPrivateTestCase):
         self.addCleanup(self.cleanup_media, media.id)
         self.assertUploadedMediaAccessible(media, media_type=1, caption_text=caption_text)
         media_id = media.id
+        self.assertCommentPreflightAllows(media_id, text)
         comment = self.cl.media_comment(media_id, text)
         self.addCleanup(self.cleanup_comment, media_id, comment.pk)
         self.assertIsInstance(comment, Comment)

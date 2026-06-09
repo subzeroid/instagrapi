@@ -4,11 +4,14 @@ import os
 import os.path
 import random
 import shutil
+import signal
 import subprocess
 import tempfile
+import threading
 import time
 import types
 import unittest
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from json.decoder import JSONDecodeError
 from pathlib import Path
@@ -96,6 +99,34 @@ COMMENT_REPLIES_LIVE_FIXTURES = [
     ("3735285994514812478_640806256", "18052801016557024"),
     ("3735285994514812478_640806256", "17944918626046204"),
 ]
+
+
+class FreshAccountLoginTimeout(RuntimeError):
+    pass
+
+
+@contextmanager
+def fresh_account_login_timeout():
+    seconds = float(os.getenv("INSTAGRAPI_TEST_LOGIN_TIMEOUT", "30"))
+    if seconds <= 0 or not hasattr(signal, "SIGALRM") or threading.current_thread() is not threading.main_thread():
+        yield
+        return
+
+    def raise_timeout(signum, frame):
+        raise FreshAccountLoginTimeout(f"Fresh account login timed out after {seconds:g}s")
+
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_timer = signal.getitimer(signal.ITIMER_REAL)
+    signal.signal(signal.SIGALRM, raise_timeout)
+    signal.setitimer(signal.ITIMER_REAL, seconds)
+    try:
+        yield
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+        if previous_timer[0] > 0:
+            signal.setitimer(signal.ITIMER_REAL, *previous_timer)
+
 
 REQUIRED_MEDIA_FIELDS = [
     "pk",
@@ -191,7 +222,8 @@ def client_from_test_account(acc):
         cl.totp_seed = totp_seed
         cl.totp_code = totp_code
         login_kwargs["verification_code"] = totp_code
-    cl.login(**login_kwargs)
+    with fresh_account_login_timeout():
+        cl.login(**login_kwargs)
     cl._user_id = acc.get("user_id")
     return cl
 
