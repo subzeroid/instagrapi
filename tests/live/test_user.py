@@ -1,3 +1,8 @@
+import multiprocessing
+import os
+import queue
+import traceback
+
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -48,6 +53,63 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         followers = self.cl.user_followers_private_gql(user_id, amount=5, order="date_followed_latest")
         self.assertEqual(len(followers), 5)
         self.assertIsInstance(followers[0], UserShort)
+
+
+def _run_business_email_live(result_queue):
+    if not TEST_ACCOUNTS_URL:
+        result_queue.put({"status": "skip", "reason": "TEST_ACCOUNTS_URL is required for business email live tests"})
+        return
+    try:
+        cl = fresh_test_account(count=3, attempts=3, timeout=30)
+        user = cl.user_info_by_username_v1("toyota")
+        raw_user = cl.last_json.get("user") or {}
+        raw_email = raw_user.get("public_email") or raw_user.get("business_email")
+        if not raw_email:
+            result_queue.put({"status": "skip", "reason": "toyota profile did not return a public email"})
+            return
+        result_queue.put(
+            {
+                "status": "ok",
+                "username": user.username,
+                "is_business": user.is_business,
+                "raw_email": raw_email,
+                "public_email": user.public_email,
+            }
+        )
+    except Exception:
+        result_queue.put({"status": "error", "traceback": traceback.format_exc()})
+
+
+class ClientBusinessEmailLiveTestCase(unittest.TestCase):
+    def run_business_email_worker(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for business email live tests")
+        ctx = multiprocessing.get_context("spawn")
+        result_queue = ctx.Queue()
+        process = ctx.Process(target=_run_business_email_live, args=(result_queue,))
+        process.start()
+        timeout = int(os.getenv("INSTAGRAPI_BUSINESS_EMAIL_LIVE_TIMEOUT", "120"))
+        process.join(timeout)
+        if process.is_alive():
+            process.terminate()
+            process.join(10)
+            self.skipTest(f"Business email live workflow timed out after {timeout} seconds")
+        try:
+            return result_queue.get(timeout=5)
+        except queue.Empty:
+            if process.exitcode:
+                self.fail(f"Business email live workflow exited with code {process.exitcode}")
+            self.fail("Business email live workflow did not return a result")
+
+    def test_user_info_by_username_v1_maps_public_business_email_live(self):
+        result = self.run_business_email_worker()
+        if result["status"] == "skip":
+            self.skipTest(result["reason"])
+        if result["status"] == "error":
+            self.fail(result["traceback"])
+        self.assertEqual(result["username"], "toyota")
+        self.assertTrue(result["is_business"])
+        self.assertEqual(result["public_email"], result["raw_email"])
 
 
 class ClientFollowersLiveTestCase(_helpers.ClientPrivateTestCase):
