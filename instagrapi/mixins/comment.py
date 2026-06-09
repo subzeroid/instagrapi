@@ -442,6 +442,7 @@ class CommentMixin:
         """
         assert self.user_id, "Login required"
         media_id = self.media_id(media_id)
+        idempotence_token = self.generate_uuid()
         data = {
             "delivery_class": "organic",
             "feed_position": str(random.randint(0, 6)),
@@ -455,7 +456,10 @@ class CommentMixin:
             "floating_context_items": "[]",
             "media_pct_watched": "0",
             "user_breadcrumb": self.gen_user_breadcrumb(len(text)),
-            "idempotence_token": self.generate_uuid(),
+            "idempotence_token": idempotence_token,
+            "comment_creation_key": idempotence_token,
+            "include_e2ee_mentioned_user_list": "true",
+            "include_media_code": "true",
             "comment_text": text,
         }
         if replied_to_comment_id:
