@@ -169,9 +169,13 @@ class SignUpMixin:
                 response = value["registration_response"]
                 if isinstance(response, str):
                     try:
-                        return json.loads(response)
+                        parsed = json.loads(response)
                     except json.JSONDecodeError:
                         return None
+                    # Only a dict is usable downstream (state["registration_response"]
+                    # is read with .get("created_user")); a JSON array/scalar from an
+                    # error payload must not flow through as a truthy non-dict.
+                    return parsed if isinstance(parsed, dict) else None
                 if isinstance(response, dict):
                     return response
             if value.get("account_created") is not None and "created_user" in value:
@@ -307,6 +311,10 @@ class SignUpMixin:
         }
 
     def _caa_password(self, password: str) -> str:
+        # Version 0 (plaintext envelope) is intentional here: the current Android
+        # CAA registration flow sends ``encrypted_password`` as ``#PWD_INSTAGRAM:0:``,
+        # not the ``:4:`` sealed-box used by login/legacy signup. Verified against a
+        # current Android app capture. Do not "fix" this to ``password_encrypt``.
         return f"#PWD_INSTAGRAM:0:{int(time.time())}:{password}"
 
     def _caa_reg_info_value(self, state: Dict, key: str, default: Any = None) -> Any:
@@ -499,7 +507,8 @@ class SignUpMixin:
             code = self.challenge_code_handler(username, CHOICE_EMAIL)
             if code:
                 break
-            if wait_seconds:
+            # Skip the backoff after the final attempt: no further poll follows it.
+            if wait_seconds and attempt < attempts - 1:
                 time.sleep(wait_seconds * (attempt + 1))
         if not code:
             raise ClientError("email confirmation code is required for CAA signup")

@@ -95,7 +95,6 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
         client.bloks_versioning_id = "bloks-version"
         client.waterfall_id = "waterfall-id"
         client.wait_seconds = 0
-        client.password_encrypt = mock.Mock(return_value="#PWD_INSTAGRAM:4:1:encrypted")
         client.challenge_code_handler = mock.Mock(return_value="123456")
         registration_response = {
             "account_created": True,

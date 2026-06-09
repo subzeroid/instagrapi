@@ -53,6 +53,27 @@ class BloksRegressionTestCase(unittest.TestCase):
             domain="b.i.instagram.com",
         )
 
+    def test_bloks_async_action_does_not_leak_friendly_name_onto_session(self):
+        client = self.build_client()
+        client.request_timeout = 0
+        response = mock.Mock(status_code=200)
+        response.headers = {}
+        response.json.return_value = {"status": "ok"}
+        response.raise_for_status.return_value = None
+        client.private.post = mock.Mock(return_value=response)
+
+        client.bloks_async_action("com.example.action", {"server_params": {"flow": "example_flow"}})
+
+        # The friendly name is sent per-request...
+        sent_headers = client.private.post.call_args.kwargs["headers"]
+        self.assertEqual(
+            sent_headers["X-FB-Friendly-Name"],
+            "IgApi: bloks/async_action/com.example.action/",
+        )
+        # ...but must not stick to the persistent session headers, where it would
+        # leak onto every later unrelated private request.
+        self.assertNotIn("X-FB-Friendly-Name", client.private.headers)
+
     def test_bloks_app_posts_unsigned_bloks_payload(self):
         client = self.build_client()
         params = {"server_params": {"flow": "example_flow"}}

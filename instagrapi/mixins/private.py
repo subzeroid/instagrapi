@@ -384,10 +384,13 @@ class PrivateRequestMixin:
         self.last_response = None
         self.last_json = last_json = {}  # for Sentry context in traceback
         self.private.headers.update(self.base_headers)
-        if headers:
-            self.private.headers.update(headers)
+        # Per-request overrides (caller headers such as X-FB-Friendly-Name, and the
+        # Host override used for domain routing) must not be merged into the
+        # persistent session headers: doing so leaks e.g. a Bloks async-action
+        # friendly name onto every later unrelated request. Send them per-request.
+        request_headers = dict(headers) if headers else {}
         if domain:
-            self.private.headers["Host"] = domain
+            request_headers["Host"] = domain
         if not login:
             time.sleep(self.request_timeout)
         # if self.user_id and login:
@@ -410,10 +413,21 @@ class PrivateRequestMixin:
                     data = generate_signature(dumps(data))
                     if extra_sig:
                         data += "&".join(extra_sig)
-                response = self.private.post(api_url, data=data, params=params, proxies=self.private.proxies)
+                response = self.private.post(
+                    api_url,
+                    data=data,
+                    params=params,
+                    headers=request_headers or None,
+                    proxies=self.private.proxies,
+                )
             else:  # GET
                 self.private.headers.pop("Content-Type", None)
-                response = self.private.get(api_url, params=params, proxies=self.private.proxies)
+                response = self.private.get(
+                    api_url,
+                    params=params,
+                    headers=request_headers or None,
+                    proxies=self.private.proxies,
+                )
             self.logger.debug(
                 "private_request %s: %s (%s)",
                 response.status_code,
