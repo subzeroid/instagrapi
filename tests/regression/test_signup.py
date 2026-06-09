@@ -75,16 +75,17 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
                             "instagrapi.mixins.signup.extract_user_short",
                             return_value="created-user",
                         ):
-                            result = client.signup(
-                                username="example",
-                                password="password",
-                                email="",
-                                phone_number="+15551234567",
-                                full_name="Example User",
-                                year=2000,
-                                month=5,
-                                day=12,
-                            )
+                            with self.assertWarnsRegex(RuntimeWarning, "legacy account-create flow"):
+                                result = client.signup(
+                                    username="example",
+                                    password="password",
+                                    email="",
+                                    phone_number="+15551234567",
+                                    full_name="Example User",
+                                    year=2000,
+                                    month=5,
+                                    day=12,
+                                )
 
         self.assertEqual(result, "created-user")
         check_email.assert_not_called()
@@ -101,6 +102,33 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
             phone_number="+15551234567",
             phone_code="123456",
         )
+
+    def test_signup_warns_about_legacy_flow(self):
+        client = Client()
+        client.wait_seconds = 0
+        client.challenge_code_handler = mock.Mock(return_value="123456")
+        client.send_signup_sms_code = mock.Mock(return_value={"status": "ok"})
+
+        with mock.patch.object(client, "get_signup_config", return_value={}):
+            with mock.patch.object(client, "check_phone_number", return_value={"status": "ok"}):
+                with mock.patch.object(
+                    client,
+                    "accounts_create",
+                    return_value={"created_user": {"pk": "1", "username": "example"}},
+                ):
+                    with mock.patch(
+                        "instagrapi.mixins.signup.extract_user_short",
+                        return_value="created-user",
+                    ):
+                        with self.assertWarnsRegex(RuntimeWarning, "legacy account-create flow"):
+                            result = client.signup(
+                                username="example",
+                                password="password",
+                                email="",
+                                phone_number="+15551234567",
+                            )
+
+        self.assertEqual(result, "created-user")
 
     def test_accounts_create_primary_signup_omits_secondary_account_flag(self):
         client = Client()
@@ -373,12 +401,13 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
                                         "instagrapi.mixins.signup.extract_user_short",
                                         return_value="created-user",
                                     ):
-                                        result = client.signup(
-                                            "example",
-                                            "password",
-                                            "example@example.com",
-                                            "+15551234567",
-                                        )
+                                        with self.assertWarnsRegex(RuntimeWarning, "legacy account-create flow"):
+                                            result = client.signup(
+                                                "example",
+                                                "password",
+                                                "example@example.com",
+                                                "+15551234567",
+                                            )
 
         self.assertEqual(result, "created-user")
         challenge_flow.assert_called_once_with(
