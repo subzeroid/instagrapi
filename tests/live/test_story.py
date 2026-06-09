@@ -1,3 +1,9 @@
+import multiprocessing
+import os
+import queue
+import traceback
+from urllib.parse import parse_qs, urlparse
+
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -326,6 +332,126 @@ class ClientStoryLocationStickerLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(info.locations[0].location.name)
         finally:
             self.cleanup_uploaded_story(story)
+
+
+def _run_photo_story_interactive_metadata_live(result_queue):
+    if not TEST_ACCOUNTS_URL:
+        result_queue.put({"status": "skip", "reason": "TEST_ACCOUNTS_URL is required for story metadata live tests"})
+        return
+
+    cl = None
+    story = None
+    try:
+        cl = fresh_test_account(count=3, attempts=3, timeout=30)
+        account = cl.account_info()
+        user = UserShort(
+            pk=account.pk,
+            username=account.username,
+            full_name=account.full_name,
+            profile_pic_url=account.profile_pic_url,
+            is_private=account.is_private,
+        )
+        locations = cl.location_search(lat=59.939095, lng=30.315868)
+        if not locations:
+            result_queue.put({"status": "skip", "reason": "location_search returned no locations"})
+            return
+        hashtag = cl.hashtag_info("instagram")
+        existing_story_ids = {item.id for item in cl.user_stories_v1(cl.user_id, amount=20)}
+
+        story = cl.photo_upload_to_story(
+            Path("examples/background.png"),
+            "Story interactive metadata live test",
+            mentions=[StoryMention(user=user, x=0.5, y=0.35, width=0.5, height=0.1)],
+            links=[StoryLink(webUri="https://github.com/subzeroid/instagrapi")],
+            hashtags=[StoryHashtag(hashtag=hashtag, x=0.5, y=0.45, width=0.4, height=0.1)],
+            locations=[StoryLocation(location=locations[0], x=0.5, y=0.55, width=0.5, height=0.1)],
+        )
+
+        uploaded_story = None
+        for attempt in range(8):
+            if attempt:
+                time.sleep(3)
+            for candidate in cl.user_stories_v1(cl.user_id, amount=20):
+                if candidate.id == story.id or candidate.id not in existing_story_ids:
+                    uploaded_story = candidate
+                    break
+            if uploaded_story and (
+                uploaded_story.mentions
+                and uploaded_story.links
+                and uploaded_story.hashtags
+                and uploaded_story.locations
+            ):
+                break
+
+        result_queue.put(
+            {
+                "status": "ok",
+                "story_id": story.id,
+                "uploaded_story_id": uploaded_story.id if uploaded_story else None,
+                "mention_users": [mention.user.username for mention in uploaded_story.mentions]
+                if uploaded_story
+                else [],
+                "link_urls": [str(link.webUri) for link in uploaded_story.links] if uploaded_story else [],
+                "hashtag_names": [item.hashtag.name for item in uploaded_story.hashtags] if uploaded_story else [],
+                "location_names": [item.location.name for item in uploaded_story.locations] if uploaded_story else [],
+            }
+        )
+    except Exception:
+        result_queue.put({"status": "error", "traceback": traceback.format_exc()})
+    finally:
+        if cl and story:
+            try:
+                cl.story_delete(story.id)
+            except Exception as exc:
+                print(f"Story metadata live cleanup story_delete failed: {exc.__class__.__name__} {exc}")
+
+
+def _is_instagrapi_github_link(url):
+    parsed = urlparse(url)
+    if parsed.netloc == "github.com" and parsed.path == "/subzeroid/instagrapi":
+        return True
+    target_urls = parse_qs(parsed.query).get("u") or []
+    for target_url in target_urls:
+        target = urlparse(target_url)
+        if target.netloc == "github.com" and target.path == "/subzeroid/instagrapi":
+            return True
+    return False
+
+
+class ClientStoryInteractiveMetadataLiveTestCase(unittest.TestCase):
+    def run_story_metadata_worker(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for story metadata live tests")
+        ctx = multiprocessing.get_context("spawn")
+        result_queue = ctx.Queue()
+        process = ctx.Process(target=_run_photo_story_interactive_metadata_live, args=(result_queue,))
+        process.start()
+        timeout = int(os.getenv("INSTAGRAPI_STORY_METADATA_LIVE_TIMEOUT", "180"))
+        process.join(timeout)
+        if process.is_alive():
+            process.terminate()
+            process.join(10)
+            self.skipTest(f"Story metadata live workflow timed out after {timeout} seconds")
+        try:
+            return result_queue.get(timeout=5)
+        except queue.Empty:
+            if process.exitcode:
+                self.fail(f"Story metadata live workflow exited with code {process.exitcode}")
+            self.fail("Story metadata live workflow did not return a result")
+
+    def test_photo_story_interactive_metadata_round_trips_live(self):
+        result = self.run_story_metadata_worker()
+        if result["status"] == "skip":
+            self.skipTest(result["reason"])
+        if result["status"] == "error":
+            self.fail(result["traceback"])
+        self.assertEqual(result["story_id"], result["uploaded_story_id"])
+        self.assertTrue(result["mention_users"])
+        self.assertTrue(result["link_urls"])
+        self.assertTrue(result["hashtag_names"])
+        self.assertTrue(result["location_names"])
+        self.assertIn("instagram", result["hashtag_names"])
+        self.assertTrue(any(_is_instagrapi_github_link(url) for url in result["link_urls"]))
 
 
 class ClientStoryMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):

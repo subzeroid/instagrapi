@@ -98,6 +98,42 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
         self.assertEqual(configure_args[0], "media/configure_to_story/")
         self.assert_story_location_model(configure_args[1])
 
+    def test_photo_story_interactive_metadata_builds_tap_models(self):
+        client = self.build_client()
+        location = self.build_location()
+        user = UserShort(pk="2", username="artist", full_name="Artist", profile_pic_url=None)
+        hashtag = Hashtag(id="1", name="event")
+
+        with mock.patch.object(client, "location_complete", return_value=location):
+            with mock.patch.object(client, "private_request") as private_request:
+                private_request.side_effect = [
+                    {"status": "ok"},
+                    {"status": "ok"},
+                ]
+                client.photo_configure_to_story(
+                    upload_id="1",
+                    width=720,
+                    height=1280,
+                    caption="",
+                    mentions=[StoryMention(user=user, x=0.2, y=0.3, width=0.4, height=0.1)],
+                    links=[StoryLink(webUri="https://example.com")],
+                    hashtags=[StoryHashtag(hashtag=hashtag, x=0.3, y=0.4, width=0.4, height=0.1)],
+                    locations=[StoryLocation(location=location, x=0.4, y=0.5, width=0.4, height=0.1)],
+                )
+
+        configure_args, _ = private_request.call_args_list[1]
+        data = configure_args[1]
+        tap_models = json.loads(data["tap_models"])
+        self.assertEqual(
+            [model["type"] for model in tap_models],
+            ["mention", "hashtag", "location", "story_link"],
+        )
+        self.assertEqual(
+            data["story_sticker_ids"],
+            "hashtag_sticker,location_sticker,link_sticker_default",
+        )
+        self.assertIn("reel_mentions", data)
+
     def test_video_story_location_uses_external_location_id_tap_model(self):
         client = self.build_client()
         location = self.build_location()
