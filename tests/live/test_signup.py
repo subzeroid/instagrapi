@@ -15,7 +15,7 @@ class SignUpTestCase(unittest.TestCase):
         )
         return result.stdout.strip()
 
-    def signup_email(self, username):
+    def _get_signup_email_address(self, username):
         email = os.environ.get("IG_SIGNUP_EMAIL")
         if email:
             return email
@@ -45,7 +45,7 @@ class SignUpTestCase(unittest.TestCase):
     def test_email_signup_live(self):
         cl = Client()
         username = gen_password()
-        email = self.signup_email(username)
+        email = self._get_signup_email_address(username)
         password = gen_password(12)
         phone_number = self.signup_phone_number()
         full_name = f"John {username}"
@@ -75,7 +75,7 @@ class SignUpTestCase(unittest.TestCase):
     def test_email_signup_caa_live(self):
         cl = Client()
         username = gen_password()
-        email = self.signup_email(username)
+        email = self._get_signup_email_address(username)
         password = gen_password(12)
         full_name = f"John {username}"
         cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(

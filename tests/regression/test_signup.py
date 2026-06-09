@@ -579,13 +579,13 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
 
 
 class SignupLiveHelperRegressionTestCase(unittest.TestCase):
-    def test_signup_email_command_receives_username_context(self):
+    def test_get_signup_email_address_command_receives_username_context(self):
         case = SignUpTestCase("test_email_signup_live")
         completed = subprocess.CompletedProcess(args="email-command", returncode=0, stdout="fresh@example.test\n")
 
         with mock.patch.dict(os.environ, {"IG_SIGNUP_EMAIL_COMMAND": "email-command"}, clear=True):
             with mock.patch("tests.live.test_signup.subprocess.run", return_value=completed) as run:
-                email = case.signup_email("freshuser")
+                email = case._get_signup_email_address("freshuser")
 
         self.assertEqual(email, "fresh@example.test")
         self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_USERNAME"], "freshuser")
@@ -609,12 +609,12 @@ class SignupLiveHelperRegressionTestCase(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_USERNAME"], "freshuser")
         self.assertEqual(run.call_args.kwargs["env"]["IG_SIGNUP_EMAIL"], "fresh@example.test")
 
-    def test_signup_email_skips_without_static_email_or_command(self):
+    def test_get_signup_email_address_skips_without_static_email_or_command(self):
         case = SignUpTestCase("test_email_signup_live")
 
         with mock.patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(unittest.SkipTest):
-                case.signup_email("freshuser")
+                case._get_signup_email_address("freshuser")
 
     def test_signup_phone_number_prefers_signup_specific_env(self):
         case = SignUpTestCase("test_phone_signup_live")
