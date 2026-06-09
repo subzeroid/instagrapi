@@ -68,6 +68,24 @@ class ClientHashtagTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(data["code"])
             self.assertTrue(data["media_type"])
 
+    def test_hashtag_medias_recent_v1_chunk_paginates_live(self):
+        medias, max_id = self.cl.hashtag_medias_v1_chunk("instagram", max_amount=12, tab_key="recent")
+        self.assertGreater(len(medias), 0)
+        self.assertIsInstance(medias[0], Media)
+        if not max_id:
+            self.skipTest("instagram hashtag did not return next_max_id")
+
+        next_medias, next_max_id = self.cl.hashtag_medias_v1_chunk(
+            "instagram",
+            max_amount=12,
+            tab_key="recent",
+            max_id=max_id,
+        )
+
+        self.assertGreater(len(next_medias), 0)
+        self.assertNotEqual(max_id, next_max_id)
+        self.assertTrue({media.pk for media in medias}.isdisjoint({media.pk for media in next_medias}))
+
     def test_hashtag_following(self):
         hashtags = self.cl.hashtag_following(amount=1)
         self.assertIsInstance(hashtags, list)
