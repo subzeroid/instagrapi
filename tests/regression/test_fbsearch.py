@@ -128,6 +128,28 @@ class FbSearchRegressionTestCase(unittest.TestCase):
 
         self.assertEqual([hashtag.name for hashtag in hashtags], ["python"])
 
+    def test_search_hashtags_accepts_numeric_private_id(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={
+                "results": [
+                    {
+                        "id": 17843915557058484,
+                        "name": "restaurant",
+                        "media_count": 65043150,
+                        "profile_pic_url": None,
+                    }
+                ]
+            },
+        ):
+            hashtags = client.search_hashtags("restaurant")
+
+        self.assertEqual(hashtags[0].id, "17843915557058484")
+        self.assertEqual(hashtags[0].name, "restaurant")
+        self.assertEqual(hashtags[0].media_count, 65043150)
+
     def test_search_music_skips_non_track_items(self):
         client = self._build_client()
         with mock.patch.object(

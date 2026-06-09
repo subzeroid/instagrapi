@@ -159,44 +159,107 @@ class BaseClientMixin:
         return True
 
 
+def build_test_accounts_url(count=None):
+    parts = urlsplit(TEST_ACCOUNTS_URL)
+    query = dict(parse_qsl(parts.query, keep_blank_values=True))
+    if count is None:
+        query["count"] = "5"
+    else:
+        query["count"] = str(count)
+    return urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            parts.path,
+            urlencode(query),
+            parts.fragment,
+        )
+    )
+
+
+def client_from_test_account(acc):
+    settings = dict(acc["client_settings"])
+    totp_seed = settings.pop("totp_seed", None)
+    cl = Client(settings=settings, proxy=os.getenv("IG_PROXY") or acc["proxy"])
+    login_kwargs = {
+        "username": acc["username"],
+        "password": acc["password"],
+        "relogin": True,
+    }
+    if totp_seed:
+        totp_code = cl.totp_generate_code(totp_seed)
+        cl.totp_seed = totp_seed
+        cl.totp_code = totp_code
+        login_kwargs["verification_code"] = totp_code
+    cl.login(**login_kwargs)
+    cl._user_id = acc.get("user_id")
+    return cl
+
+
+def fetch_test_accounts(count=None, timeout=None):
+    test_accounts_url = build_test_accounts_url(count=count)
+    print("TEST_ACCOUNTS_URL: configured")
+    request_kwargs = {"verify": False}
+    if timeout is not None:
+        request_kwargs["timeout"] = timeout
+    try:
+        resp = requests.get(test_accounts_url, **request_kwargs)
+    except requests.RequestException as exc:
+        raise RuntimeError(f"Could not fetch TEST_ACCOUNTS_URL: {exc.__class__.__name__}") from None
+    print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
+    if not 200 <= resp.status_code < 300:
+        raise RuntimeError(f"TEST_ACCOUNTS_URL returned HTTP {resp.status_code}")
+    return resp.json()
+
+
+def fresh_test_account(count=5, attempts=5, timeout=None):
+    last_exc = None
+    for attempt, acc in enumerate(fetch_test_accounts(count=count, timeout=timeout)[:attempts], start=1):
+        print(f"Fresh account attempt {attempt}: %(username)r" % acc)
+        try:
+            return client_from_test_account(acc)
+        except Exception as exc:
+            last_exc = exc
+            print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
+            continue
+    if last_exc:
+        raise RuntimeError(f"No usable fresh account returned: {last_exc}") from last_exc
+    raise RuntimeError("No usable fresh account returned")
+
+
+def fresh_test_accounts(count: int, exclude_user_ids=None, timeout=None):
+    exclude_user_ids = {str(user_id) for user_id in (exclude_user_ids or set())}
+    request_count = count + len(exclude_user_ids) + 3
+    accounts = []
+    seen_user_ids = set(exclude_user_ids)
+    last_exc = None
+    for attempt, acc in enumerate(fetch_test_accounts(count=request_count, timeout=timeout), start=1):
+        print(f"Fresh account attempt {attempt}: %(username)r" % acc)
+        try:
+            cl = client_from_test_account(acc)
+        except Exception as exc:
+            last_exc = exc
+            print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
+            continue
+        user_id = str(cl.user_id)
+        if user_id in seen_user_ids:
+            continue
+        seen_user_ids.add(user_id)
+        accounts.append(cl)
+        if len(accounts) == count:
+            return accounts
+    raise RuntimeError(f"Could not get {count} usable fresh accounts" + (f": {last_exc}" if last_exc else ""))
+
+
 class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
     cl = None
     _username_cache = {}
 
     def build_test_accounts_url(self, count=None):
-        parts = urlsplit(TEST_ACCOUNTS_URL)
-        query = dict(parse_qsl(parts.query, keep_blank_values=True))
-        if count is None:
-            query["count"] = "5"
-        else:
-            query["count"] = str(count)
-        return urlunsplit(
-            (
-                parts.scheme,
-                parts.netloc,
-                parts.path,
-                urlencode(query),
-                parts.fragment,
-            )
-        )
+        return build_test_accounts_url(count=count)
 
     def client_from_test_account(self, acc):
-        settings = dict(acc["client_settings"])
-        totp_seed = settings.pop("totp_seed", None)
-        cl = Client(settings=settings, proxy=os.getenv("IG_PROXY") or acc["proxy"])
-        login_kwargs = {
-            "username": acc["username"],
-            "password": acc["password"],
-            "relogin": True,
-        }
-        if totp_seed:
-            totp_code = cl.totp_generate_code(totp_seed)
-            cl.totp_seed = totp_seed
-            cl.totp_code = totp_code
-            login_kwargs["verification_code"] = totp_code
-        cl.login(**login_kwargs)
-        cl._user_id = acc.get("user_id")
-        return cl
+        return client_from_test_account(acc)
 
     def user_info_by_username(self, username):
         return self.cl.user_info_by_username_v1(username)
@@ -332,60 +395,10 @@ class ClientPrivateTestCase(BaseClientMixin, unittest.TestCase):
             self.cl = self.fresh_account()
 
     def fresh_account(self):
-        test_accounts_url = self.build_test_accounts_url()
-        print("TEST_ACCOUNTS_URL: configured")
-        try:
-            resp = requests.get(test_accounts_url, verify=False)
-        except requests.RequestException as exc:
-            raise RuntimeError(f"Could not fetch TEST_ACCOUNTS_URL: {exc.__class__.__name__}") from None
-        print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
-        if not 200 <= resp.status_code < 300:
-            raise RuntimeError(f"TEST_ACCOUNTS_URL returned HTTP {resp.status_code}")
-        last_exc = None
-        for attempt, acc in enumerate(resp.json()[:5], start=1):
-            print(f"Fresh account attempt {attempt}: %(username)r" % acc)
-            try:
-                return self.client_from_test_account(acc)
-            except Exception as exc:
-                last_exc = exc
-                print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
-                continue
-        if last_exc:
-            raise RuntimeError(f"No usable fresh account returned: {last_exc}") from last_exc
-        raise RuntimeError("No usable fresh account returned")
+        return fresh_test_account()
 
     def fresh_accounts(self, count: int, exclude_user_ids=None):
-        exclude_user_ids = {str(user_id) for user_id in (exclude_user_ids or set())}
-        request_count = count + len(exclude_user_ids) + 3
-        test_accounts_url = self.build_test_accounts_url(count=request_count)
-        print("TEST_ACCOUNTS_URL: configured")
-        try:
-            resp = requests.get(test_accounts_url, verify=False)
-        except requests.RequestException as exc:
-            raise RuntimeError(f"Could not fetch TEST_ACCOUNTS_URL: {exc.__class__.__name__}") from None
-        print("TEST_ACCOUNTS_URL response code: ", resp.status_code)
-        if not 200 <= resp.status_code < 300:
-            raise RuntimeError(f"TEST_ACCOUNTS_URL returned HTTP {resp.status_code}")
-
-        accounts = []
-        seen_user_ids = set(exclude_user_ids)
-        last_exc = None
-        for attempt, acc in enumerate(resp.json(), start=1):
-            print(f"Fresh account attempt {attempt}: %(username)r" % acc)
-            try:
-                cl = self.client_from_test_account(acc)
-            except Exception as exc:
-                last_exc = exc
-                print(f"Fresh account attempt {attempt} failed for {acc['username']}: {exc.__class__.__name__} {exc}")
-                continue
-            user_id = str(cl.user_id)
-            if user_id in seen_user_ids:
-                continue
-            seen_user_ids.add(user_id)
-            accounts.append(cl)
-            if len(accounts) == count:
-                return accounts
-        raise RuntimeError(f"Could not get {count} usable fresh accounts" + (f": {last_exc}" if last_exc else ""))
+        return fresh_test_accounts(count, exclude_user_ids=exclude_user_ids)
 
     def __init__(self, *args, **kwargs):
         if TEST_ACCOUNTS_URL:
