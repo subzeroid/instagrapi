@@ -1333,8 +1333,12 @@
  <span class="s1">&#39;has_liked&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
  <span class="s1">&#39;like_count&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_check_offensive_comment</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="s2">&quot;Some draft text&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">preflight</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_check_offensive_comment_v2</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="s2">&quot;Some draft text&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">preflight</span><span class="p">[</span><span class="s2">&quot;is_offensive&quot;</span><span class="p">]</span>
 <span class="kc">False</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">preflight</span><span class="p">[</span><span class="s2">&quot;is_offensive&quot;</span><span class="p">]:</span>
+<span class="o">...</span>     <span class="n">cl</span><span class="o">.</span><span class="n">media_comment</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="s2">&quot;Some draft text&quot;</span><span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">comment_like</span><span class="p">(</span><span class="mi">17926777897585108</span><span class="p">)</span>
 <span class="kc">True</span>
@@ -1350,6 +1354,7 @@
 <li><code>media_comments()</code> fetches both regular and headload comment pages until <code>amount</code> is reached.</li>
 <li><code>media_comments_chunk()</code> is the better choice when you want to store and resume the server cursor manually.</li>
 <li><code>media_comment_replies()</code> fetches <code>inline_child_comments</code> for a parent comment and paginates with the returned child cursor.</li>
+<li><code>media_check_offensive_comment_v2()</code> can be used as an explicit lightweight preflight before <code>media_comment()</code>. <code>media_comment()</code> does not run extra preflight requests automatically, so callers can choose the request volume and handle the raw response.</li>
 <li><code>comment_pin()</code> / <code>comment_unpin()</code> only work on media owned by the authenticated account.</li>
 <li>Reply creation is supported through <code>replied_to_comment_id</code>; reply retrieval is supported through <code>media_comment_replies()</code>.</li>
 <li>Comment creation is a write action and can still trigger Instagram spam or trust checks. Reuse saved sessions, keep volume low on new accounts, and stop when Instagram returns feedback/challenge responses.</li>
