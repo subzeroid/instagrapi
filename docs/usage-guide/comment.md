@@ -106,8 +106,12 @@ QVFEbHpIWmpFc3BNUkgzUFVuOGZOQlhDQ1hHeWlVWHlJSnBhb2FHbFB3YlJtNThnOUlrd01JUWdKRmRw
  'has_liked': False,
  'like_count': 0}
 
->>> cl.media_check_offensive_comment(media_id, "Some draft text")
+>>> preflight = cl.media_check_offensive_comment_v2(media_id, "Some draft text")
+>>> preflight["is_offensive"]
 False
+
+>>> if not preflight["is_offensive"]:
+...     cl.media_comment(media_id, "Some draft text")
 
 >>> cl.comment_like(17926777897585108)
 True
@@ -124,6 +128,7 @@ Notes:
 * `media_comments()` fetches both regular and headload comment pages until `amount` is reached.
 * `media_comments_chunk()` is the better choice when you want to store and resume the server cursor manually.
 * `media_comment_replies()` fetches `inline_child_comments` for a parent comment and paginates with the returned child cursor.
+* `media_check_offensive_comment_v2()` can be used as an explicit lightweight preflight before `media_comment()`. `media_comment()` does not run extra preflight requests automatically, so callers can choose the request volume and handle the raw response.
 * `comment_pin()` / `comment_unpin()` only work on media owned by the authenticated account.
 * Reply creation is supported through `replied_to_comment_id`; reply retrieval is supported through `media_comment_replies()`.
 * Comment creation is a write action and can still trigger Instagram spam or trust checks. Reuse saved sessions, keep volume low on new accounts, and stop when Instagram returns feedback/challenge responses.

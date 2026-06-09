@@ -3,6 +3,15 @@ from tests.helpers import *
 
 
 class LiveAccountHelperRegressionTestCase(unittest.TestCase):
+    def _account_payload(self, username="fresh.account"):
+        return {
+            "client_settings": {},
+            "username": username,
+            "password": "password",
+            "proxy": "",
+            "user_id": "123",
+        }
+
     def test_build_test_accounts_url_overrides_existing_default_count(self):
         case = object.__new__(helper_module.ClientPrivateTestCase)
         with mock.patch.object(
@@ -45,3 +54,28 @@ class LiveAccountHelperRegressionTestCase(unittest.TestCase):
 
         self.assertIs(result, clients)
         fresh_test_accounts.assert_called_once_with(1, exclude_user_ids=exclude_user_ids)
+
+    @unittest.skipUnless(hasattr(signal, "SIGALRM"), "SIGALRM is required for login timeout guard")
+    def test_client_from_test_account_times_out_hung_login(self):
+        client = Mock()
+        client.login.side_effect = lambda **kwargs: time.sleep(1)
+
+        with mock.patch.dict(helper_module.os.environ, {"INSTAGRAPI_TEST_LOGIN_TIMEOUT": "0.01", "IG_PROXY": ""}):
+            with mock.patch.object(helper_module, "Client", return_value=client):
+                with self.assertRaises(helper_module.FreshAccountLoginTimeout):
+                    helper_module.client_from_test_account(self._account_payload())
+
+    def test_fresh_test_account_tries_next_account_after_login_timeout(self):
+        accounts = [self._account_payload("first.account"), self._account_payload("second.account")]
+        client = object()
+
+        with mock.patch.object(helper_module, "fetch_test_accounts", return_value=accounts):
+            with mock.patch.object(
+                helper_module,
+                "client_from_test_account",
+                side_effect=[helper_module.FreshAccountLoginTimeout("timeout"), client],
+            ) as client_from_test_account:
+                result = helper_module.fresh_test_account(count=2, attempts=2)
+
+        self.assertIs(result, client)
+        self.assertEqual(client_from_test_account.call_count, 2)
