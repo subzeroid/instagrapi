@@ -1,6 +1,7 @@
 import random
 import secrets
 import time
+import warnings
 from typing import Optional
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -21,6 +22,10 @@ from instagrapi.mixins.challenge import ChallengeChoice
 from instagrapi.types import UserShort
 
 CHOICE_EMAIL = 1
+LEGACY_SIGNUP_WARNING = (
+    "signup() uses Instagram's legacy account-create flow and should be treated as experimental. "
+    "Modern Instagram signup often requires additional official-app device trust checks that instagrapi does not currently generate."
+)
 
 
 class SignUpMixin:
@@ -61,6 +66,7 @@ class SignUpMixin:
     ) -> UserShort:
         if not (email or phone_number):
             raise ClientError("Use email or phone_number for signup")
+        warnings.warn(LEGACY_SIGNUP_WARNING, RuntimeWarning, stacklevel=2)
 
         self.get_signup_config()
         kwargs = {
