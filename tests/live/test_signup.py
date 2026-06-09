@@ -15,7 +15,7 @@ class SignUpTestCase(unittest.TestCase):
         )
         return result.stdout.strip()
 
-    def signup_email(self, username):
+    def _get_signup_email_address(self, username):
         email = os.environ.get("IG_SIGNUP_EMAIL")
         if email:
             return email
@@ -45,7 +45,7 @@ class SignUpTestCase(unittest.TestCase):
     def test_email_signup_live(self):
         cl = Client()
         username = gen_password()
-        email = self.signup_email(username)
+        email = self._get_signup_email_address(username)
         password = gen_password(12)
         phone_number = self.signup_phone_number()
         full_name = f"John {username}"
@@ -66,6 +66,34 @@ class SignUpTestCase(unittest.TestCase):
             year=random.randint(1980, 1990),
             month=random.randint(1, 12),
             day=random.randint(1, 30),
+        )
+        self.assertIsInstance(user, UserShort)
+        for key, val in {"username": username, "full_name": full_name}.items():
+            self.assertEqual(getattr(user, key), val)
+        self.assertTrue(user.profile_pic_url.startswith("https://"))
+
+    def test_email_signup_caa_live(self):
+        cl = Client()
+        username = gen_password()
+        email = self._get_signup_email_address(username)
+        password = gen_password(12)
+        full_name = f"John {username}"
+        cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(
+            "IG_SIGNUP_EMAIL_CODE",
+            "IG_SIGNUP_EMAIL_CODE_COMMAND",
+            {
+                "IG_SIGNUP_USERNAME": username,
+                "IG_SIGNUP_EMAIL": email,
+            },
+        )
+        user = cl.signup_caa_email(
+            username,
+            password,
+            email,
+            full_name,
+            year=random.randint(1980, 1990),
+            month=random.randint(1, 12),
+            day=random.randint(1, 28),
         )
         self.assertIsInstance(user, UserShort)
         for key, val in {"username": username, "full_name": full_name}.items():

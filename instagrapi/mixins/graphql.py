@@ -31,6 +31,7 @@ from instagrapi.utils.timing import random_delay
 
 GRAPHQL_API_URL = "https://www.instagram.com/api/graphql"
 PRIVATE_GRAPHQL_QUERY_URL = "https://i.instagram.com/graphql/query"
+PRIVATE_GRAPHQL_WWW_DOMAIN = "b.i.instagram.com"
 
 GQL_STUFF = {
     "av": "17841464591314721",
@@ -272,6 +273,50 @@ class PrivateGraphQLRequestMixin:
         finally:
             self.last_response_ts = time.time()
 
+    def _raise_graphql_http_error(self, exc, response):
+        """Map a failed private GraphQL HTTP response to a typed exception.
+
+        Shared by ``private_graphql_query_request`` and ``private_graphql_www_request``
+        so both surface ``LoginRequired`` / ``ChallengeRequired`` / ``FeedbackRequired``
+        / ``RateLimitError`` and status-coded errors instead of a generic ``ClientError``.
+        Always raises.
+        """
+        last_json = {}
+        try:
+            body_json = response.json()
+            if isinstance(body_json, dict):
+                self.last_json = body_json
+                last_json = body_json
+        except Exception:
+            last_json = {}
+        message = (last_json.get("message") or "").lower()
+        error_type = last_json.get("error_type")
+        if message == "login_required":
+            raise LoginRequired(exc, response=response, **last_json)
+        if message == "challenge_required":
+            raise ChallengeRequired(**last_json)
+        if message == "feedback_required":
+            raise FeedbackRequired(exc, response=response, **last_json)
+        if error_type == "rate_limit_error":
+            raise RateLimitError(exc, response=response, **last_json)
+        if message == "user_blocked":
+            raise SentryBlock(exc, response=response, **last_json)
+        if "not authorized to view user" in message:
+            raise PrivateAccount(exc, response=response, **last_json)
+        if "unable to fetch followers" in message or "error generating user info response" in message:
+            raise UserNotFound(exc, response=response, **last_json)
+        if getattr(response, "status_code", None) == 404 and getattr(response, "content", None) == b"Not Found":
+            raise ChallengeRequired(**last_json)
+        status_code = getattr(response, "status_code", None)
+        exc_cls = {
+            400: ClientBadRequestError,
+            401: ClientUnauthorizedError,
+            403: ClientForbiddenError,
+            404: ClientNotFoundError,
+            429: ClientThrottledError,
+        }.get(status_code, ClientError)
+        raise exc_cls(exc, response=response, **last_json)
+
     def private_graphql_request(self, data: Dict, headers: Optional[Dict] = None, domain: Optional[str] = None) -> Dict:
         self.last_response = None
         self.last_json = {}
@@ -303,6 +348,69 @@ class PrivateGraphQLRequestMixin:
             )
         except requests.HTTPError as exc:
             raise ClientError(exc, response=exc.response)
+        except requests.ConnectionError as exc:
+            raise ClientConnectionError("{} {}".format(exc.__class__.__name__, str(exc)))
+        if self.last_json.get("errors"):
+            raise ClientGraphqlError(self.last_json.get("errors"))
+        if self.last_json.get("status") == "fail":
+            raise ClientError(response=response, **self.last_json)
+        return self.last_json
+
+    def private_graphql_www_request(
+        self,
+        friendly_name: str,
+        variables: Optional[Dict] = None,
+        client_doc_id: Optional[str] = None,
+        domain: str = PRIVATE_GRAPHQL_WWW_DOMAIN,
+        extra_headers: Optional[Dict] = None,
+    ) -> Dict:
+        data = {
+            "method": "post",
+            "pretty": "false",
+            "format": "json",
+            "server_timestamps": "true",
+            "locale": "user",
+            "purpose": "fetch",
+            "fb_api_req_friendly_name": friendly_name,
+            "enable_canonical_naming": "true",
+            "enable_canonical_variable_overrides": "true",
+            "enable_canonical_naming_ambiguous_type_prefixing": "true",
+            "variables": json.dumps(variables or {}, separators=(",", ":")),
+        }
+        if client_doc_id:
+            data["client_doc_id"] = str(client_doc_id)
+        headers = {
+            "X-FB-Friendly-Name": friendly_name,
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        }
+        if client_doc_id:
+            headers["X-Client-Doc-Id"] = str(client_doc_id)
+        if extra_headers:
+            headers.update(extra_headers)
+        merged = dict(self.base_headers)
+        merged.update(headers)
+        merged["Host"] = domain
+        if self.authorization:
+            merged.setdefault("Authorization", self.authorization)
+        if self.request_timeout:
+            time.sleep(self.request_timeout)
+        url = f"https://{domain}/graphql_www"
+        response = None
+        try:
+            self.private_requests_count += 1
+            response = self.private.post(url, data=data, headers=merged, proxies=self.private.proxies)
+            self.request_log(response)
+            self.last_response = response
+            response.raise_for_status()
+            self.last_json = self._json_from_graphql_response(response)
+        except JSONDecodeError as exc:
+            url = response.url if response else url
+            raise ClientJSONDecodeError(
+                "JSONDecodeError {0!s} while opening {1!s}".format(exc, url),
+                response=response,
+            )
+        except requests.HTTPError as exc:
+            self._raise_graphql_http_error(exc, response)
         except requests.ConnectionError as exc:
             raise ClientConnectionError("{} {}".format(exc.__class__.__name__, str(exc)))
         if self.last_json.get("errors"):
@@ -360,50 +468,7 @@ class PrivateGraphQLRequestMixin:
         try:
             response.raise_for_status()
         except requests.HTTPError as e:
-            try:
-                body_json = response.json()
-                if isinstance(body_json, dict):
-                    self.last_json = body_json
-                    last_json = body_json
-                else:
-                    last_json = {}
-            except Exception:
-                last_json = {}
-            message = ""
-            error_type = None
-            if isinstance(last_json, dict):
-                message = (last_json.get("message") or "").lower()
-                error_type = last_json.get("error_type")
-            if message == "login_required":
-                raise LoginRequired(e, response=response, **last_json)
-            if message == "challenge_required":
-                raise ChallengeRequired(**last_json)
-            if message == "feedback_required":
-                raise FeedbackRequired(e, response=response, **last_json)
-            if error_type == "rate_limit_error":
-                raise RateLimitError(e, response=response, **last_json)
-            if message == "user_blocked":
-                raise SentryBlock(e, response=response, **last_json)
-            if "not authorized to view user" in message:
-                raise PrivateAccount(e, response=response, **last_json)
-            if "unable to fetch followers" in message or "error generating user info response" in message:
-                raise UserNotFound(e, response=response, **last_json)
-            if getattr(response, "status_code", None) == 404 and getattr(response, "content", None) == b"Not Found":
-                raise ChallengeRequired(**last_json)
-            status_code = getattr(response, "status_code", None)
-            if status_code == 400:
-                exc = ClientBadRequestError
-            elif status_code == 401:
-                exc = ClientUnauthorizedError
-            elif status_code == 403:
-                exc = ClientForbiddenError
-            elif status_code == 404:
-                exc = ClientNotFoundError
-            elif status_code == 429:
-                exc = ClientThrottledError
-            else:
-                exc = ClientError
-            raise exc(e, response=response, **last_json)
+            self._raise_graphql_http_error(e, response)
         try:
             body = response.json()
         except JSONDecodeError:
