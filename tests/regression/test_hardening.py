@@ -161,6 +161,28 @@ class HardeningRegressionTestCase(unittest.TestCase):
         self.assertEqual(cm.exception.message, payload["message"])
         self.assertEqual(cm.exception.status, "fail")
 
+    def test_private_request_retries_chunked_encoding_error_once(self):
+        client = self._build_private_client()
+        client.request_timeout = 0
+        response = self._make_json_response({"status": "ok"})
+
+        with mock.patch.object(
+            client.private,
+            "post",
+            side_effect=[
+                requests.exceptions.ChunkedEncodingError(
+                    "Connection broken: IncompleteRead(207264 bytes read, 168584 more expected)"
+                ),
+                response,
+            ],
+        ) as private_post:
+            with mock.patch("instagrapi.mixins.private.time.sleep") as sleep:
+                result = client.private_request("test/", data={"_uuid": client.uuid}, with_signature=False)
+
+        self.assertEqual(result, {"status": "ok"})
+        self.assertEqual(private_post.call_count, 2)
+        self.assertEqual(sleep.call_args_list.count(mock.call(2)), 1)
+
     # --- hashtag chunk: skip malformed nodes ---
 
     def test_hashtag_medias_top_v1_chunk_skips_malformed_nodes(self):
