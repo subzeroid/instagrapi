@@ -1,3 +1,4 @@
+from instagrapi.extractors import extract_user_v1
 from tests.helpers import *
 
 
@@ -73,6 +74,28 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(user.username, "instagram")
         fallback.assert_called_once_with("25025320")
+
+    def test_extract_user_v1_maps_business_contact_fields(self):
+        payload = {
+            "pk": "123",
+            "username": "business",
+            "full_name": "Business",
+            "is_private": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+            "is_verified": False,
+            "media_count": 0,
+            "follower_count": 0,
+            "following_count": 0,
+            "is_business": True,
+            "business_email": "public@example.com",
+            "business_phone_number": "+15551234567",
+            "external_url": "",
+        }
+
+        user = extract_user_v1(payload)
+
+        self.assertEqual(user.public_email, "public@example.com")
+        self.assertEqual(user.contact_phone_number, "+15551234567")
 
     def test_user_short_gql_uses_web_profile_doc_id_without_legacy_query_hash(self):
         client = Client()

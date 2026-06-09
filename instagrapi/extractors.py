@@ -249,6 +249,8 @@ def extract_user_v1(data):
     """For Private API"""
     data["broadcast_channel"] = extract_broadcast_channel(data)
     data["external_url"] = data.get("external_url") or None
+    data["public_email"] = data.get("public_email") or data.get("business_email")
+    data["contact_phone_number"] = data.get("contact_phone_number") or data.get("business_phone_number")
     versions = data.get("hd_profile_pic_versions")
     pic_hd = versions[-1] if versions else data.get("hd_profile_pic_url_info", {})
     data["profile_pic_url_hd"] = pic_hd.get("url")
