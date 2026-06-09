@@ -31,6 +31,7 @@ from instagrapi.utils.timing import random_delay
 
 GRAPHQL_API_URL = "https://www.instagram.com/api/graphql"
 PRIVATE_GRAPHQL_QUERY_URL = "https://i.instagram.com/graphql/query"
+PRIVATE_GRAPHQL_WWW_DOMAIN = "b.i.instagram.com"
 
 GQL_STUFF = {
     "av": "17841464591314721",
@@ -291,6 +292,69 @@ class PrivateGraphQLRequestMixin:
         try:
             self.private_requests_count += 1
             response = self.private.post(url, data=data, proxies=self.private.proxies)
+            self.request_log(response)
+            self.last_response = response
+            response.raise_for_status()
+            self.last_json = self._json_from_graphql_response(response)
+        except JSONDecodeError as exc:
+            url = response.url if response else url
+            raise ClientJSONDecodeError(
+                "JSONDecodeError {0!s} while opening {1!s}".format(exc, url),
+                response=response,
+            )
+        except requests.HTTPError as exc:
+            raise ClientError(exc, response=exc.response)
+        except requests.ConnectionError as exc:
+            raise ClientConnectionError("{} {}".format(exc.__class__.__name__, str(exc)))
+        if self.last_json.get("errors"):
+            raise ClientGraphqlError(self.last_json.get("errors"))
+        if self.last_json.get("status") == "fail":
+            raise ClientError(response=response, **self.last_json)
+        return self.last_json
+
+    def private_graphql_www_request(
+        self,
+        friendly_name: str,
+        variables: Optional[Dict] = None,
+        client_doc_id: Optional[str] = None,
+        domain: str = PRIVATE_GRAPHQL_WWW_DOMAIN,
+        extra_headers: Optional[Dict] = None,
+    ) -> Dict:
+        data = {
+            "method": "post",
+            "pretty": "false",
+            "format": "json",
+            "server_timestamps": "true",
+            "locale": "user",
+            "purpose": "fetch",
+            "fb_api_req_friendly_name": friendly_name,
+            "enable_canonical_naming": "true",
+            "enable_canonical_variable_overrides": "true",
+            "enable_canonical_naming_ambiguous_type_prefixing": "true",
+            "variables": json.dumps(variables or {}, separators=(",", ":")),
+        }
+        if client_doc_id:
+            data["client_doc_id"] = str(client_doc_id)
+        headers = {
+            "X-FB-Friendly-Name": friendly_name,
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        }
+        if client_doc_id:
+            headers["X-Client-Doc-Id"] = str(client_doc_id)
+        if extra_headers:
+            headers.update(extra_headers)
+        merged = dict(self.base_headers)
+        merged.update(headers)
+        merged["Host"] = domain
+        if self.authorization:
+            merged.setdefault("Authorization", self.authorization)
+        if self.request_timeout:
+            time.sleep(self.request_timeout)
+        url = f"https://{domain}/graphql_www"
+        response = None
+        try:
+            self.private_requests_count += 1
+            response = self.private.post(url, data=data, headers=merged, proxies=self.private.proxies)
             self.request_log(response)
             self.last_response = response
             response.raise_for_status()

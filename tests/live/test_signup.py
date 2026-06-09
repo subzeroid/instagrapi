@@ -72,6 +72,34 @@ class SignUpTestCase(unittest.TestCase):
             self.assertEqual(getattr(user, key), val)
         self.assertTrue(user.profile_pic_url.startswith("https://"))
 
+    def test_email_signup_caa_live(self):
+        cl = Client()
+        username = gen_password()
+        email = self.signup_email(username)
+        password = gen_password(12)
+        full_name = f"John {username}"
+        cl.challenge_code_handler = lambda username, choice: self.signup_code_handler(
+            "IG_SIGNUP_EMAIL_CODE",
+            "IG_SIGNUP_EMAIL_CODE_COMMAND",
+            {
+                "IG_SIGNUP_USERNAME": username,
+                "IG_SIGNUP_EMAIL": email,
+            },
+        )
+        user = cl.signup_caa_email(
+            username,
+            password,
+            email,
+            full_name,
+            year=random.randint(1980, 1990),
+            month=random.randint(1, 12),
+            day=random.randint(1, 28),
+        )
+        self.assertIsInstance(user, UserShort)
+        for key, val in {"username": username, "full_name": full_name}.items():
+            self.assertEqual(getattr(user, key), val)
+        self.assertTrue(user.profile_pic_url.startswith("https://"))
+
     def test_phone_signup_live(self):
         phone_number = self.signup_phone_number()
         if not phone_number:

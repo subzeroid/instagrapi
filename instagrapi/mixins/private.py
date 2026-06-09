@@ -386,6 +386,8 @@ class PrivateRequestMixin:
         self.private.headers.update(self.base_headers)
         if headers:
             self.private.headers.update(headers)
+        if domain:
+            self.private.headers["Host"] = domain
         if not login:
             time.sleep(self.request_timeout)
         # if self.user_id and login:

@@ -262,3 +262,33 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(result["data"]["timeline"]["items"][0]["media"]["id"], "1")
         self.assertEqual(result["data"]["timeline"]["items"][0]["media"]["code"], "abc")
+
+    def test_private_graphql_www_request_posts_to_app_graphql_www_endpoint(self):
+        client = Client()
+        client.request_timeout = 0
+        variables = {"params": {"app_id": "com.example.app"}}
+        response = Mock()
+        response.url = "https://b.i.instagram.com/graphql_www"
+        response.json.return_value = {"data": {"ok": True}}
+        response.raise_for_status.return_value = None
+
+        with mock.patch.object(client, "request_log") as request_log:
+            with mock.patch.object(client.private, "post", return_value=response) as post:
+                result = client.private_graphql_www_request(
+                    "IGBloksAppRootQuery-com.example.app",
+                    variables,
+                    client_doc_id="doc-id",
+                )
+
+        self.assertEqual(result, {"data": {"ok": True}})
+        data = post.call_args.kwargs["data"]
+        self.assertEqual(post.call_args.args, ("https://b.i.instagram.com/graphql_www",))
+        self.assertEqual(data["purpose"], "fetch")
+        self.assertEqual(data["fb_api_req_friendly_name"], "IGBloksAppRootQuery-com.example.app")
+        self.assertEqual(data["client_doc_id"], "doc-id")
+        self.assertEqual(json.loads(data["variables"]), variables)
+        self.assertEqual(post.call_args.kwargs["headers"]["X-FB-Friendly-Name"], "IGBloksAppRootQuery-com.example.app")
+        self.assertEqual(post.call_args.kwargs["headers"]["X-Client-Doc-Id"], "doc-id")
+        self.assertEqual(post.call_args.kwargs["headers"]["Host"], "b.i.instagram.com")
+        self.assertEqual(post.call_args.kwargs["proxies"], client.private.proxies)
+        request_log.assert_called_once_with(response)
