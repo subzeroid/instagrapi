@@ -83,11 +83,11 @@ class SignUpMixin:
                 return json.loads(token)
             except json.JSONDecodeError:
                 return token[1:-1]
-        if token == "true":
+        if token == "true":  # nosec B105
             return True
-        if token == "false":
+        if token == "false":  # nosec B105
             return False
-        if token == "null":
+        if token == "null":  # nosec B105
             return None
         try:
             return int(token)
@@ -98,12 +98,12 @@ class SignUpMixin:
         root = []
         stack = [root]
         for token in CAA_REG_VM_TOKEN_RE.findall(value):
-            if token == "(":
+            if token == "(":  # nosec B105
                 child = []
                 stack[-1].append(child)
                 stack.append(child)
                 continue
-            if token == ")":
+            if token == ")":  # nosec B105
                 if len(stack) > 1:
                     stack.pop()
                 continue
@@ -242,7 +242,7 @@ class SignUpMixin:
             "contactpoint_type": "email" if email else None,
             "confirmation_code": None,
             "birthday": None,
-            "encrypted_password": None,
+            "encrypted_password": None,  # nosec B105
             "username": None,
             "username_prefill": None,
             "device_id": device_id,
@@ -277,8 +277,8 @@ class SignUpMixin:
             "device_id": state["device_id"],
             "family_device_id": state["family_device_id"],
             "machine_id": state.get("machine_id", ""),
-            "lois_settings": {"lois_token": ""},
-            "cloud_trust_token": None,
+            "lois_settings": {"lois_token": ""},  # nosec B105
+            "cloud_trust_token": None,  # nosec B105
             "zero_balance_state": "",
             "network_bssid": None,
             "qe_device_id": state["qe_device_id"],
@@ -603,7 +603,7 @@ class SignUpMixin:
                 "force_sessionless_nux_experience": 0,
                 "ig_partially_created_account_user_id": 0,
                 "ck_id": "",
-                "no_contact_perm_email_oauth_token": "",
+                "no_contact_perm_email_oauth_token": "",  # nosec B105
                 "encrypted_msisdn": "",
             },
             server_params={

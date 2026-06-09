@@ -107,7 +107,7 @@ class BloksMixin:
             "bk_context": {
                 "is_flipper_enabled": False,
                 "theme_params": [],
-                "debug_tooling_metadata_token": None,
+                "debug_tooling_metadata_token": None,  # nosec B105
             },
         }
         return self.private_graphql_www_request(
