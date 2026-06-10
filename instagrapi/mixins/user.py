@@ -1848,6 +1848,47 @@ class UserMixin:
             params=params,
         )
 
+    def user_suggested_profiles(self, user_id: str, expand_suggestion: bool = False) -> dict:
+        """
+        Get suggested profiles ("Suggested for you") for a target user_id.
+
+        Convenience wrapper over :meth:`chaining` and
+        :meth:`fetch_suggestion_details`. By default it returns the raw
+        ``chaining`` payload; with ``expand_suggestion=True`` it feeds the
+        chained pks back into ``fetch_suggestion_details`` and returns the
+        social-context-rich payload instead.
+
+        Parameters
+        ----------
+        user_id: str
+            Target user pk whose suggested profiles to fetch.
+        expand_suggestion: bool, optional
+            When ``True``, return the expanded ``fetch_suggestion_details``
+            payload. Falls back to the ``chaining`` payload when the target
+            has no chained users. Defaults to ``False``.
+
+        Returns
+        -------
+        dict
+            Raw ``discover/chaining/`` response, or the
+            ``discover/fetch_suggestion_details/`` response when
+            ``expand_suggestion`` is ``True`` and chained users exist
+            (currently keyed by ``items`` in app responses).
+
+        Raises
+        ------
+        InvalidTargetUser
+            Instagram refused chaining for this target ("Not eligible
+            for chaining."). Common on locked-down / private accounts.
+        """
+        chained = self.chaining(user_id)
+        if not expand_suggestion:
+            return chained
+        chained_ids = ",".join(str(user["pk"]) for user in chained.get("users", []) if user.get("pk"))
+        if not chained_ids:
+            return chained
+        return self.fetch_suggestion_details(user_id, chained_ids)
+
     def user_stream_by_username_v1(self, username: str) -> dict:
         """
         Get the streamed profile envelope by username.

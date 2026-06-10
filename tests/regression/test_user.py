@@ -852,6 +852,42 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_user_suggested_profiles_returns_chaining_payload_by_default(self):
+        client = Client()
+        chained = {"users": [{"pk": "9", "username": "a"}, {"pk": "10", "username": "b"}]}
+
+        with mock.patch.object(client, "chaining", return_value=chained) as chaining:
+            with mock.patch.object(client, "fetch_suggestion_details") as fetch_details:
+                result = client.user_suggested_profiles("123")
+
+        self.assertEqual(result, chained)
+        chaining.assert_called_once_with("123")
+        fetch_details.assert_not_called()
+
+    def test_user_suggested_profiles_expands_suggestion_details(self):
+        client = Client()
+        chained = {"users": [{"pk": "9"}, {"pk": "10"}]}
+        expanded = {"items": [{"user": {"pk": "9"}, "social_context": "Followed by you"}]}
+
+        with mock.patch.object(client, "chaining", return_value=chained) as chaining:
+            with mock.patch.object(client, "fetch_suggestion_details", return_value=expanded) as fetch_details:
+                result = client.user_suggested_profiles("123", expand_suggestion=True)
+
+        self.assertEqual(result, expanded)
+        chaining.assert_called_once_with("123")
+        fetch_details.assert_called_once_with("123", "9,10")
+
+    def test_user_suggested_profiles_expand_without_users_returns_chaining(self):
+        client = Client()
+        chained = {"users": []}
+
+        with mock.patch.object(client, "chaining", return_value=chained):
+            with mock.patch.object(client, "fetch_suggestion_details") as fetch_details:
+                result = client.user_suggested_profiles("123", expand_suggestion=True)
+
+        self.assertEqual(result, chained)
+        fetch_details.assert_not_called()
+
     def test_user_stream_by_id_v1_sends_expected_endpoint_and_data(self):
         client = Client()
         with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
