@@ -57,6 +57,73 @@ class HashtagRegressionTestCase(unittest.TestCase):
         self.assertEqual(request_data["tab"], "recent")
         self.assertEqual(request_data["media_recency_filter"], "top_recent_posts")
 
+    def test_hashtag_medias_v1_chunk_reads_top_level_section_layout_items(self):
+        client = Client()
+
+        def media(pk):
+            return {
+                "pk": pk,
+                "id": f"{pk}_2",
+                "code": f"code-{pk}",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": f"https://example.com/{pk}.jpg",
+                            "width": 100,
+                            "height": 100,
+                        }
+                    ]
+                },
+            }
+
+        client.private_request = Mock(
+            return_value={
+                "sections": [
+                    {
+                        "layout_type": "one_by_two_left",
+                        "feed_type": "clips",
+                        "layout_content": {
+                            "one_by_two_item": {
+                                "clips": {
+                                    "items": [
+                                        {"media": media("1")},
+                                        {"media": media("2")},
+                                    ]
+                                }
+                            },
+                            "fill_items": [
+                                {"media": media("3")},
+                                {"media": media("4")},
+                            ],
+                        },
+                    },
+                    {
+                        "layout_type": "media_grid",
+                        "feed_type": "media",
+                        "layout_content": {
+                            "medias": [
+                                {"media": media("5")},
+                            ]
+                        },
+                    },
+                ],
+                "more_available": False,
+                "next_max_id": None,
+            }
+        )
+
+        medias, next_max_id = client.hashtag_medias_v1_chunk("example", 0, "top")
+
+        self.assertEqual([media.pk for media in medias], ["1", "2", "3", "4", "5"])
+        self.assertIsNone(next_max_id)
+
     def test_hashtag_following_fetches_current_account_hashtags(self):
         client = Client()
         client.authorization_data = {"ds_user_id": "123"}
