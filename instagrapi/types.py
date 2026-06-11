@@ -415,7 +415,7 @@ class ClipsMetadata(TypesBaseModel):
     disable_use_in_clips_client_cache: bool = False
     external_media_info: Optional[dict] = None
     is_fan_club_promo_video: bool = False
-    is_shared_to_fb: bool = False
+    is_shared_to_fb: Optional[bool] = None
     mashup_info: Optional[ClipsMashupInfo] = None
     merchandising_pill_info: Optional[dict] = None
     music_canonical_id: str
