@@ -954,8 +954,11 @@ class UserMixin:
         unique_set = set()
         users = []
         while True:
+            count = MAX_USER_COUNT
+            if max_amount:
+                count = min(max_amount - len(users), MAX_USER_COUNT)
             params = {
-                "count": max_amount or MAX_USER_COUNT,
+                "count": count,
                 "rank_token": self.rank_token,
                 "search_surface": "follow_list_page",
                 "query": "",
@@ -1157,6 +1160,8 @@ class UserMixin:
             if self._has_private_auth():
                 try:
                     users = self.user_followers_v1(user_id, amount)
+                    if self.last_json.get("should_limit_list_of_followers") and (not amount or len(users) < amount):
+                        users = self.user_followers_gql(user_id, amount)
                 except Exception as e:
                     if not isinstance(e, ClientError):
                         self.logger.exception(e)
