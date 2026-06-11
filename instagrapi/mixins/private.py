@@ -458,7 +458,7 @@ class PrivateRequestMixin:
         except requests.HTTPError as e:
             try:
                 self.last_json = last_json = response.json()
-            except JSONDecodeError:
+            except ValueError:
                 pass
             message = last_json.get("message", "")
             if "Please wait a few minutes" in message:
