@@ -1,4 +1,5 @@
 from instagrapi.extractors import extract_user_short, extract_user_v1
+from instagrapi.mixins.user import MAX_USER_COUNT
 from tests.helpers import *
 
 
@@ -541,6 +542,53 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         params = private_request.call_args.kwargs["params"]
         self.assertEqual(params["order"], "date_followed_latest")
+
+    def test_user_followers_v1_chunk_caps_count_to_max_user_count(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_followers_v1_chunk("123", max_amount=MAX_USER_COUNT + 1)
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(params["count"], MAX_USER_COUNT)
+
+    def test_authorized_user_followers_falls_back_when_private_list_is_limited(self):
+        client = self.build_private_client()
+        private_user = UserShort(pk="private", username="private")
+        public_user = UserShort(pk="public", username="public")
+
+        def private_lookup(user_id, amount):
+            client.last_json = {"should_limit_list_of_followers": True}
+            return [private_user]
+
+        with mock.patch.object(client, "user_followers_v1", side_effect=private_lookup) as private_lookup_mock:
+            with mock.patch.object(client, "user_followers_gql", return_value=[public_user]) as public_lookup:
+                followers = client.user_followers("123", use_cache=False, amount=2)
+
+        private_lookup_mock.assert_called_once_with("123", 2)
+        public_lookup.assert_called_once_with("123", 2)
+        self.assertEqual(list(followers), ["public"])
+
+    def test_authorized_user_followers_default_amount_falls_back_when_private_list_is_limited(self):
+        client = self.build_private_client()
+        private_user = UserShort(pk="private", username="private")
+        public_user = UserShort(pk="public", username="public")
+
+        def private_lookup(user_id, amount):
+            client.last_json = {"should_limit_list_of_followers": True}
+            return [private_user]
+
+        with mock.patch.object(client, "user_followers_v1", side_effect=private_lookup) as private_lookup_mock:
+            with mock.patch.object(client, "user_followers_gql", return_value=[public_user]) as public_lookup:
+                followers = client.user_followers("123", use_cache=False)
+
+        private_lookup_mock.assert_called_once_with("123", 0)
+        public_lookup.assert_called_once_with("123", 0)
+        self.assertEqual(list(followers), ["public"])
 
     def test_user_followers_with_order_uses_private_api_without_cache(self):
         client = self.build_private_client()
