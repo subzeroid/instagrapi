@@ -25,6 +25,23 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
             },
         }
 
+    def _clips_metadata_payload(self, **overrides):
+        payload = {
+            "clips_creation_entry_point": "clips",
+            "achievements_info": {"num_earned_achievements": None, "show_achievements": False},
+            "additional_audio_info": {
+                "additional_audio_username": None,
+                "audio_reattribution_info": {"should_allow_restore": False},
+            },
+            "audio_ranking_info": {"best_audio_cluster_id": ""},
+            "audio_type": "original_sounds",
+            "branded_content_tag_info": {"can_add_tag": True},
+            "content_appreciation_info": {"enabled": False},
+            "music_canonical_id": "",
+        }
+        payload.update(overrides)
+        return payload
+
     def test_media_info_v2_strips_userid_suffix(self):
         client = Client()
         with mock.patch.object(
@@ -113,6 +130,30 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         self.assertEqual(media.resources[0].usertags[0].x, 0.25)
         self.assertEqual(media.resources[1].usertags[0].user.pk, "200")
         self.assertEqual(media.resources[1].usertags[0].y, 0.5)
+
+    def test_extract_media_v1_does_not_default_missing_clips_shared_to_fb_to_false(self):
+        payload = self._media_or_ad_payload()
+        payload["media_type"] = 2
+        payload["product_type"] = "clips"
+        payload["clips_metadata"] = self._clips_metadata_payload()
+
+        media = extract_media_v1(payload)
+
+        self.assertIsNone(media.clips_metadata.is_shared_to_fb)
+        self.assertIsNone(media.model_dump()["clips_metadata"]["is_shared_to_fb"])
+
+    def test_extract_media_v1_preserves_clips_shared_to_fb_when_present(self):
+        for value in (False, True):
+            with self.subTest(value=value):
+                payload = self._media_or_ad_payload()
+                payload["media_type"] = 2
+                payload["product_type"] = "clips"
+                payload["clips_metadata"] = self._clips_metadata_payload(is_shared_to_fb=value)
+
+                media = extract_media_v1(payload)
+
+                self.assertIs(media.clips_metadata.is_shared_to_fb, value)
+                self.assertIs(media.model_dump()["clips_metadata"]["is_shared_to_fb"], value)
 
 
 class MediaInfoPrivateFirstRegressionTestCase(unittest.TestCase):
