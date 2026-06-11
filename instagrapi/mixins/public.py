@@ -318,7 +318,7 @@ class PublicRequestMixin:
             return response.text
 
         except JSONDecodeError as e:
-            if "/login/" in response.url:
+            if "/login/" in response.url or "/challenge/" in response.url:
                 raise ClientLoginRequired(e, response=response)
 
             self.public_request_logger.error(

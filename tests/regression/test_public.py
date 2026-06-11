@@ -1,4 +1,5 @@
-from instagrapi.exceptions import ClientForbiddenError, ClientNotFoundError
+from instagrapi.exceptions import ClientForbiddenError, ClientLoginRequired, ClientNotFoundError
+from instagrapi.mixins.public import JSONDecodeError as PublicJSONDecodeError
 from tests.helpers import *
 
 
@@ -67,6 +68,23 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(kwargs["headers"]["Referer"], "https://www.instagram.com/p/C_BM2yAN4Rm/")
         self.assertFalse(kwargs["update_headers"])
         self.assertTrue(kwargs["return_json"])
+
+    def test_public_request_maps_challenge_redirect_html_to_login_required(self):
+        client = Client()
+        client.request_timeout = 0
+        client.last_response_ts = 0
+        response = Mock()
+        response.headers = {"Content-Length": "0"}
+        response.raw.tell.return_value = 0
+        response.status_code = 200
+        response.url = "https://www.instagram.com/challenge/?next=/graphql/query/"
+        response.text = '<!DOCTYPE html><html lang="en" class="no-js logged-in client-root"></html>'
+        response.raise_for_status.return_value = None
+        response.json.side_effect = PublicJSONDecodeError("bad", response.text, 0)
+
+        with mock.patch.object(client.public, "get", return_value=response):
+            with self.assertRaises(ClientLoginRequired):
+                client._send_public_request("https://www.instagram.com/graphql/query/", return_json=True)
 
     def test_public_graphql_request_raises_client_graphql_error_when_data_missing(self):
         client = Client()
