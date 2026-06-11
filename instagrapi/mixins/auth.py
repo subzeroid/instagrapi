@@ -1153,7 +1153,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             if matched and not override_app_version:
                 apply_settings(matched)
             else:
-                if override_app_version or not app_version:
+                has_complete_app_profile = all(self.device_settings.get(key) for key in app_keys)
+                if override_app_version or not app_version or not has_complete_app_profile:
                     apply_settings(default_settings())
 
         if override_app_version:
