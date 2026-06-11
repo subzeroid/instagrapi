@@ -142,6 +142,18 @@ class ClientFollowersLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(list(followers.values())[0], UserShort)
         public_lookup.assert_not_called()
 
+    def test_user_followers_v1_preserves_extended_user_short_fields_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        followers = self.cl.user_followers_v1(user_id, amount=5)
+
+        self.assertEqual(len(followers), 5)
+        follower = followers[0]
+        self.assertIsInstance(follower, UserShort)
+        self.assertIsInstance(follower.is_verified, bool)
+        self.assertIsInstance(follower.latest_reel_media, int)
+        self.assertIsInstance(follower.has_anonymous_profile_picture, bool)
+
     def test_user_followers_gql_chunk_paginates_two_pages(self):
         user_id = self.user_id_from_username("instagram")
 

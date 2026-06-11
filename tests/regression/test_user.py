@@ -1,4 +1,4 @@
-from instagrapi.extractors import extract_user_v1
+from instagrapi.extractors import extract_user_short, extract_user_v1
 from tests.helpers import *
 
 
@@ -96,6 +96,26 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(user.public_email, "public@example.com")
         self.assertEqual(user.contact_phone_number, "+15551234567")
+
+    def test_extract_user_short_preserves_follower_payload_fields(self):
+        payload = {
+            "pk": 123,
+            "id": "123",
+            "username": "follower",
+            "full_name": "Follower",
+            "is_private": False,
+            "is_verified": True,
+            "latest_reel_media": 1710000123,
+            "has_anonymous_profile_picture": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+        }
+
+        user = extract_user_short(payload)
+
+        self.assertEqual(user.pk, "123")
+        self.assertTrue(user.is_verified)
+        self.assertEqual(user.latest_reel_media, 1710000123)
+        self.assertFalse(user.has_anonymous_profile_picture)
 
     def test_user_short_gql_uses_web_profile_doc_id_without_legacy_query_hash(self):
         client = Client()

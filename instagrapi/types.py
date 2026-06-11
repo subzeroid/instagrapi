@@ -144,7 +144,9 @@ class UserShort(TypesBaseModel):
     profile_pic_url: Optional[HttpUrl] = None
     profile_pic_url_hd: Optional[HttpUrl] = None
     is_private: Optional[bool] = None
-    # is_verified: bool  # not found in hashtag_medias_v1
+    is_verified: Optional[bool] = None
+    latest_reel_media: Optional[int] = None
+    has_anonymous_profile_picture: Optional[bool] = None
     # stories: List = [] # not found in fbsearch_suggested_profiles
 
 
