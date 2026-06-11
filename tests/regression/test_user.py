@@ -721,6 +721,19 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         params = private_request.call_args.kwargs["params"]
         self.assertNotIn("max_id", params)
 
+    def test_user_following_v1_chunk_caps_count_to_max_user_count(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": [], "next_max_id": None},
+        ) as private_request:
+            client.user_following_v1_chunk("123", max_amount=MAX_USER_COUNT + 1)
+
+        params = private_request.call_args.kwargs["params"]
+        self.assertEqual(params["count"], MAX_USER_COUNT)
+
     def test_user_follow_requests_chunk_fetches_pending_users(self):
         client = self.build_private_client()
 
