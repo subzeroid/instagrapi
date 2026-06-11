@@ -211,6 +211,24 @@ class PublicRegressionTestCase(unittest.TestCase):
 
 
 class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
+    def test_send_private_request_ignores_non_json_body_on_http_error(self):
+        client = Client()
+        client.request_timeout = 0
+        client.authorization_data = {"ds_user_id": "1"}
+        response = Mock()
+        response.status_code = 404
+        response.content = b"<html>not json</html>"
+        response.headers = {}
+        response.url = "https://i.instagram.com/api/v1/nonexistent/"
+        response.text = response.content.decode("utf-8")
+        response.request = Mock(method="GET")
+        response.json.side_effect = ValueError("bad json")
+        response.raise_for_status.side_effect = requests.HTTPError(response=response)
+
+        with mock.patch.object(client.private, "get", return_value=response):
+            with self.assertRaises(ClientNotFoundError):
+                client._send_private_request("nonexistent/")
+
     def test_private_graphql_request_posts_to_app_graphql_endpoint(self):
         client = Client()
         client.request_timeout = 0

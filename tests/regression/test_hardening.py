@@ -127,6 +127,17 @@ class HardeningRegressionTestCase(unittest.TestCase):
             with self.assertRaises(ClientNotFoundError):
                 client._send_private_request("nonexistent/")
 
+    def test_send_private_request_ignores_non_json_body_on_http_error(self):
+        from instagrapi.exceptions import ClientNotFoundError
+
+        client = self._build_private_client()
+        response = self._make_http_error_response(404, content=b"<html>not json</html>")
+        response.json.side_effect = ValueError("bad json")
+
+        with mock.patch.object(client.private, "get", return_value=response):
+            with self.assertRaises(ClientNotFoundError):
+                client._send_private_request("nonexistent/")
+
     def test_send_private_request_promotes_direct_message_requests_disabled_http_error(self):
         client = self._build_private_client()
         payload = {
