@@ -1,5 +1,9 @@
 from instagrapi.extractors import extract_user_short, extract_user_v1
-from instagrapi.mixins.user import MAX_USER_COUNT
+from instagrapi.mixins.user import (
+    MAX_USER_COUNT,
+    USER_INFO_BY_USERNAME_V2_DOC_ID,
+    USER_INFO_V2_DOC_ID,
+)
 from tests.helpers import *
 
 
@@ -416,7 +420,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
                     result = client.user_info_by_username_v2_gql(" @Example ")
 
         self.assertEqual(result, "user")
-        search.assert_called_once_with("26347858941511777", {"hasQuery": True, "query": "example"})
+        search.assert_called_once_with(USER_INFO_BY_USERNAME_V2_DOC_ID, {"hasQuery": True, "query": "example"})
 
     def test_user_stream_by_username_v1_normalizes_endpoint(self):
         client = Client()
@@ -1106,7 +1110,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         inject.assert_called_once_with()
         gql.assert_called_once()
-        self.assertEqual(gql.call_args.args[0], "25980296051578533")
+        self.assertEqual(gql.call_args.args[0], USER_INFO_V2_DOC_ID)
         self.assertEqual(gql.call_args.args[1]["id"], "25025320")
         self.assertEqual(user.pk, "25025320")
 
@@ -1124,7 +1128,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
                     result = client.user_info_by_username_v2_gql("Example")
 
         self.assertEqual(result, "user")
-        search.assert_called_once_with("26347858941511777", {"hasQuery": True, "query": "example"})
+        search.assert_called_once_with(USER_INFO_BY_USERNAME_V2_DOC_ID, {"hasQuery": True, "query": "example"})
         profile.assert_called_once_with("123")
 
     def test_user_about_v1_calls_bloks_action_and_extracts_last_json(self):
