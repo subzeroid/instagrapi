@@ -253,6 +253,64 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_clip_share_to_fb_unified_destination_tries_android_surface_variants(self):
+        client = self.build_client()
+        default_config = {
+            "data": {
+                "xcxp_unified_crossposting_configs_root": {
+                    "configs": [],
+                }
+            },
+            "status": "ok",
+        }
+        reels_only_config = {
+            "data": {
+                "xcxp_unified_crossposting_configs_root": {
+                    "configs": [
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                            "destination": {
+                                "destination_id": "reels-destination-id",
+                                "destination_type": "USER",
+                            },
+                        },
+                    ],
+                }
+            },
+            "status": "ok",
+        }
+
+        with mock.patch.object(
+            client,
+            "clip_share_to_fb_unified_config",
+            side_effect=[default_config, reels_only_config],
+        ) as unified:
+            result = client.clip_share_to_fb_unified_destination()
+
+        self.assertEqual(
+            result,
+            {
+                "destination_id": "reels-destination-id",
+                "destination_type": "USER",
+            },
+        )
+        self.assertEqual(unified.call_count, 2)
+        self.assertEqual(unified.call_args_list[0].kwargs, {})
+        self.assertEqual(
+            unified.call_args_list[1].kwargs,
+            {
+                "crosspost_app_surface_list": [
+                    {
+                        "source_surface": "REELS",
+                        "destination_app": "FB",
+                        "destination_surface": "REELS",
+                    }
+                ]
+            },
+        )
+
     def test_clip_share_to_fb_unified_destination_ignores_generic_account_center_ids(self):
         client = self.build_client()
 
