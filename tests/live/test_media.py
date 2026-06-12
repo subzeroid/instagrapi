@@ -1,3 +1,5 @@
+from instagrapi.extractors import extract_media_gql
+from instagrapi.mixins.media import MEDIA_INFO_DOC_ID
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -254,6 +256,34 @@ class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(user_v1.pop("profile_pic_url").startswith("https://"))
         self.assertTrue(user_gql.pop("profile_pic_url").startswith("https://"))
         self.assertDictEqual(user_v1, user_gql)
+
+
+class ClientMediaCountAliasLiveTestCase(unittest.TestCase):
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for media count alias live tests")
+        try:
+            self.cl = _helpers.fresh_test_account(count=20, attempts=20)
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def test_extract_media_gql_normalizes_live_video_count_aliases(self):
+        code = "C_BM2yAN4Rm"
+        result = self.cl.public_doc_id_graphql_request(
+            MEDIA_INFO_DOC_ID,
+            {"shortcode": code},
+            referer=f"https://www.instagram.com/p/{code}/",
+        )
+        payload = result.get("xdt_shortcode_media") or result.get("shortcode_media")
+        self.assertTrue(payload, f"public doc_id media payload was empty: {result}")
+        self.assertIn(payload.get("__typename"), {"GraphVideo", "XDTGraphVideo"})
+        self.assertIn("video_view_count", payload)
+        self.assertIn("video_play_count", payload)
+
+        media = extract_media_gql(payload)
+
+        self.assertEqual(media.view_count, payload["video_view_count"])
+        self.assertEqual(media.play_count, payload["video_play_count"])
 
 
 class ClientExtractTestCase(_helpers.ClientPrivateTestCase):
