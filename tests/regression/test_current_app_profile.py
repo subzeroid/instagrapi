@@ -143,3 +143,29 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
             client.bloks_versioning_id,
             "7189b949425f9bf80ea8bd880cf5a3080b292d9b1c4b38a18d112f7c4b71e7a8",
         )
+
+    def test_legacy_saved_app_without_bloks_hash_is_not_overridden_by_default(self):
+        client = Client(
+            {
+                "device_settings": {
+                    "app_version": "269.0.0.19.301",
+                    "version_code": "301484483",
+                },
+            }
+        )
+
+        self.assertEqual(client.device_settings["app_version"], "269.0.0.19.301")
+        self.assertEqual(client.device_settings["version_code"], "301484483")
+        self.assertIsNone(client.bloks_versioning_id)
+
+    def test_explicit_set_device_preserves_unknown_incomplete_app_profile(self):
+        client = Client()
+        device = {
+            "app_version": "431.0.0.47.82",
+            "version_code": "979332773",
+        }
+
+        client.set_device(device)
+
+        self.assertEqual(client.device_settings["app_version"], "431.0.0.47.82")
+        self.assertEqual(client.device_settings["version_code"], "979332773")

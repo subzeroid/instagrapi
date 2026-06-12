@@ -636,7 +636,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
 
         self.set_timezone_offset(timezone_offset, timezone_name=timezone_name or None)
         self.set_push_disabled(push_disabled)
-        self.set_device(self.settings.get("device_settings"))
+        self.set_device(self.settings.get("device_settings"), hydrate_app_profile=True)
         self.set_user_agent(self.settings.get("user_agent"))
         self.set_uuids(self.settings.get("uuids") or {})
         self.set_locale(locale)
@@ -1072,7 +1072,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             )
         return True
 
-    def set_device(self, device: Dict = None, reset: bool = False) -> bool:
+    def set_device(self, device: Dict = None, reset: bool = False, hydrate_app_profile: bool = False) -> bool:
         """
         Helper to set a device for login
 
@@ -1080,6 +1080,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         ----------
         device: Dict, optional
             Dict of device settings, default is None
+        hydrate_app_profile: bool, optional
+            Hydrate incomplete app profile fields from the current default app when loading saved settings
 
         Returns
         -------
@@ -1093,13 +1095,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         if self.settings:
             uuids = self.settings.get("uuids") or {}
             seed = uuids.get("uuid")
-        self.set_app(seed=seed)
+        self.set_app(seed=seed, hydrate_incomplete_profile=hydrate_app_profile)
         self.set_user_agent()
         if reset:
             self.set_uuids({})
         return True
 
-    def set_app(self, app: Union[str, Dict] = None, seed: str = None) -> bool:
+    def set_app(self, app: Union[str, Dict] = None, seed: str = None, hydrate_incomplete_profile: bool = False) -> bool:
         """
         Helper to set app version settings
 
@@ -1109,6 +1111,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             App version string or settings dict
         seed: str, optional
             Seed used for stable app selection
+        hydrate_incomplete_profile: bool, optional
+            Hydrate incomplete app profile fields from the current default app
 
         Returns
         -------
@@ -1139,6 +1143,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         def default_settings() -> Dict:
             return config.APP_SETTINGS.get(config.DEFAULT_APP_VERSION) or pick_by_seed()
 
+        def is_current_or_newer_app_version(value: Any) -> bool:
+            try:
+                version = tuple(int(part) for part in str(value).split("."))
+                default_version = tuple(int(part) for part in config.DEFAULT_APP_VERSION.split("."))
+            except (TypeError, ValueError):
+                return False
+            return version >= default_version
+
         if app:
             if isinstance(app, str):
                 matched = config.APP_SETTINGS.get(app)
@@ -1154,7 +1166,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 apply_settings(matched)
             else:
                 has_complete_app_profile = all(self.device_settings.get(key) for key in app_keys)
-                if override_app_version or not app_version or not has_complete_app_profile:
+                should_hydrate_incomplete_profile = (
+                    hydrate_incomplete_profile
+                    and not has_complete_app_profile
+                    and is_current_or_newer_app_version(app_version)
+                )
+                if override_app_version or not app_version or should_hydrate_incomplete_profile:
                     apply_settings(default_settings())
 
         if override_app_version:
