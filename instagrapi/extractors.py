@@ -79,7 +79,8 @@ def extract_media_v1(data):
     media["like_count"] = media.get("like_count", 0)
     media["has_liked"] = media.get("has_liked", False)
     media["sponsor_tags"] = [tag["sponsor"] for tag in media.get("sponsor_tags") or []]
-    media["play_count"] = media.get("play_count", 0)
+    media["view_count"] = media.get("view_count", media.get("video_view_count", 0))
+    media["play_count"] = media.get("play_count", media.get("video_play_count", 0))
     media["coauthor_producers"] = media.get("coauthor_producers", [])
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),

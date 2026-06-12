@@ -42,6 +42,22 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         payload.update(overrides)
         return payload
 
+    def test_extract_media_v1_normalizes_video_view_count(self):
+        payload = self._media_or_ad_payload()
+        payload.update(
+            {
+                "media_type": 2,
+                "product_type": "clips",
+                "video_view_count": 1234,
+                "video_play_count": 5678,
+            }
+        )
+
+        media = extract_media_v1(payload)
+
+        self.assertEqual(media.view_count, 1234)
+        self.assertEqual(media.play_count, 5678)
+
     def test_media_info_v2_strips_userid_suffix(self):
         client = Client()
         with mock.patch.object(
