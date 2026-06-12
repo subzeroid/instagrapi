@@ -886,11 +886,19 @@ class UploadClipMixin:
             video = VideoFileClip(str(path))
             audio_clip = AudioFileClip(str(tmpaudio))
             # set the start time of the audio and create the actual media
+            video_duration = float(video.duration)
             start = highlight_start_time / 1000
-            end = highlight_start_time / 1000 + video.duration
+            end = start + video_duration
+            audio_duration = getattr(audio_clip, "duration", None)
+            if audio_duration:
+                audio_duration = float(audio_duration)
+                if end > audio_duration:
+                    start = max(0.0, audio_duration - video_duration)
+                    end = audio_duration
             audio_clip = audio_clip.subclipped(start, end)
             video = video.with_audio(audio_clip)
-            video_duration = video.duration
+            audio_asset_start_time = int(start * 1000)
+            overlap_duration = int((end - start) * 1000)
             # save the media in tmp folder
             tmpvideo = Path(_make_tmp_path(".mp4"))
             video.write_videofile(str(tmpvideo))
@@ -898,8 +906,8 @@ class UploadClipMixin:
             data = self.clip_music_extra_data(
                 track,
                 extra_data=extra_data,
-                audio_asset_start_time=highlight_start_time,
-                overlap_duration=int(video_duration * 1000),
+                audio_asset_start_time=audio_asset_start_time,
+                overlap_duration=overlap_duration,
                 original_volume=0.0,
             )
             return self.clip_upload(tmpvideo, caption, extra_data=data)
