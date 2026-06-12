@@ -61,6 +61,8 @@ class ClientNoteLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(note.id)
             self.assertEqual(note.audience, 0)
             self.assertEqual(note.note_style, 1)
+            notes = self.cl.get_notes()
+            self.assertIn(str(note.id), {str(item.id) for item in notes})
         finally:
             if note:
                 try:
