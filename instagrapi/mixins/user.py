@@ -1339,7 +1339,8 @@ class UserMixin:
         result = self.private_request(f"friendships/create/{user_id}/", data)
         if self.user_id in self._users_following:
             self._users_following.pop(self.user_id)  # reset
-        return result["friendship_status"]["following"] is True
+        friendship_status = result["friendship_status"]
+        return friendship_status.get("following") is True or friendship_status.get("outgoing_request") is True
 
     def user_unfollow(self, user_id: str) -> bool:
         """

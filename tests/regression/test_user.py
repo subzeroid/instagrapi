@@ -853,6 +853,16 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["include_follow_friction_check"], "1")
         self.assertEqual(data["container_module"], "profile")
 
+    def test_user_follow_returns_true_for_pending_private_follow_request(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"friendship_status": {"following": False, "outgoing_request": True}},
+        ):
+            self.assertTrue(client.user_follow("42"))
+
     def test_user_unfollow_posts_current_action_context(self):
         client = self.build_private_client()
         client.android_device_id = "android-device"

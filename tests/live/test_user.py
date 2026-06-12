@@ -398,6 +398,21 @@ class ClientUserExtendTestCase(_helpers.ClientPrivateTestCase):
 
 
 class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for follow request live tests")
+        try:
+            self.cl = self.fresh_account()
+        except Exception as exc:
+            self.skipTest(str(exc))
+
     def wait_for_pending_user_ids(self, client, expected_user_ids, timeout=30):
         expected_user_ids = {str(user_id) for user_id in expected_user_ids}
         deadline = time.time() + timeout
@@ -447,9 +462,31 @@ class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
         except Exception as exc:
             print(f"Follow request live cleanup account_set_public failed: {exc.__class__.__name__} {exc}")
 
+    def test_user_follow_private_account_returns_true_for_pending_request_live(self):
+        target = self.cl
+        try:
+            requester = self.fresh_accounts(1, exclude_user_ids={target.user_id})[0]
+        except Exception as exc:
+            self.skipTest(str(exc))
+
+        try:
+            self.assertTrue(target.account_set_private())
+
+            self.assertTrue(requester.user_follow(target.user_id))
+            self.wait_for_friendship(
+                requester,
+                target.user_id,
+                lambda relationship: relationship.following is False and relationship.outgoing_request is True,
+            )
+        finally:
+            self.cleanup_follow_request_live_clients(target, [requester])
+
     def test_follow_request_helpers_live(self):
         target = self.cl
-        requesters = self.fresh_accounts(4, exclude_user_ids={target.user_id})
+        try:
+            requesters = self.fresh_accounts(4, exclude_user_ids={target.user_id})
+        except Exception as exc:
+            self.skipTest(str(exc))
         single_approve, single_decline, batch_approve, batch_decline = requesters
         requester_ids = [str(requester.user_id) for requester in requesters]
 
@@ -457,7 +494,7 @@ class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(target.account_set_private())
 
             for requester in requesters:
-                requester.user_follow(target.user_id)
+                self.assertTrue(requester.user_follow(target.user_id))
 
             pending = self.wait_for_pending_user_ids(target, requester_ids)
             pending_ids = {user.pk for user in pending}

@@ -14,7 +14,7 @@ View a list of a user's medias, following and followers
 | user_info_by_username(username: str)          | User                  | Get user info by username                                    |
 | user_about_v1(user_id: str)                   | About                 | Get "About this account" info                                |
 | user_guides_v1(user_id: int)                  | List[Guide]           | Get user's guides                                            |
-| user_follow(user_id: str)                     | bool                  | Follow user                                                  |
+| user_follow(user_id: str)                     | bool                  | Follow user, or request to follow a private user             |
 | user_unfollow(user_id: str)                   | bool                  | Unfollow user                                                |
 | user_follow_requests(amount: int = 0)         | List[UserShort]       | Get pending incoming follow requests                         |
 | user_follow_request_approve(user_id: str)     | bool                  | Approve a pending incoming follow request                    |
@@ -85,6 +85,8 @@ Low level methods:
 
 The batch follow request helpers call the single-user approve/decline endpoints for
 each `user_id`; they do not implement an auto-approval policy.
+
+`user_follow()` returns `True` when Instagram reports either an immediate follow or an outgoing follow request for a private account. Use `user_friendship_v1()` when you need to distinguish `following` from `outgoing_request`.
 
 Example:
 
