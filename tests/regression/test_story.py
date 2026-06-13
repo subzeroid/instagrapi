@@ -64,3 +64,34 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "user_stories_gql", side_effect=ClientNotFoundError("missing")):
             with self.assertRaises(UserNotFound):
                 client.user_stories("123")
+
+    def test_users_stories_gql_populates_user_short_stories(self):
+        client = Client()
+        story_payload = {
+            "id": "1234567890",
+            "owner": {
+                "id": "123",
+                "username": "alice",
+                "full_name": "Alice",
+                "profile_pic_url": "https://example.com/alice.jpg",
+                "is_private": False,
+            },
+            "display_url": "https://example.com/story.jpg",
+            "taken_at_timestamp": 1_700_000_000,
+            "is_video": False,
+            "tappable_objects": [],
+            "edge_media_to_sponsor_user": {"edges": []},
+        }
+
+        with mock.patch.object(client, "inject_sessionid_to_public", return_value=True):
+            with mock.patch.object(
+                client,
+                "public_graphql_request",
+                return_value={"reels_media": [{"owner": story_payload["owner"], "items": [story_payload]}]},
+            ):
+                users = client.users_stories_gql(["123"])
+
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0].pk, "123")
+        self.assertEqual(len(users[0].stories), 1)
+        self.assertEqual(users[0].stories[0].id, "1234567890_123")
