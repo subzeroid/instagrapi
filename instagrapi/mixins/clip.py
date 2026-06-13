@@ -94,6 +94,30 @@ class ClipMixin:
             response_text=response_text,
         )
 
+    def clip_mashup_info(self, media_pk: str) -> Dict:
+        """
+        Fetch Reel remix/reuse availability metadata.
+
+        Parameters
+        ----------
+        media_pk: str
+            PK for the Reel
+
+        Returns
+        -------
+        Dict
+            A dictionary of response from the call
+        """
+        assert self.user_id, "Login required"
+        return self.private_request(
+            "clips/get_mashup_info_for_media/",
+            data={
+                "media_id": str(media_pk),
+                "_uid": str(self.user_id),
+                "_uuid": self.uuid,
+            },
+        )
+
     def clip_pin(self, media_pk: str, revert: bool = False) -> bool:
         """
         Pin Reel to the Reels tab/profile Reels grid
