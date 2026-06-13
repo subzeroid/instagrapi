@@ -1909,6 +1909,16 @@
 <td>Raises when get unknown message (new message from instagram)</td>
 </tr>
 <tr>
+<td>AccountEditError</td>
+<td>PrivateError</td>
+<td>Raises when <code>accounts/edit_profile/</code> returns an account edit failure</td>
+</tr>
+<tr>
+<td>AccountContactPointRequired</td>
+<td>AccountEditError</td>
+<td>Raises when profile editing requires an email or confirmed phone number</td>
+</tr>
+<tr>
 <td>BadCredentials</td>
 <td>PrivateError</td>
 <td>The login and password pair for your account have not been passed</td>
