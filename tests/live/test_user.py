@@ -3,6 +3,7 @@ import os
 import queue
 import traceback
 
+from instagrapi import types as ig_types
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -239,15 +240,14 @@ class ClientAddressBookLiveTestCase(unittest.TestCase):
 
     def test_address_book_link_returns_suggestions_payload_live(self):
         contacts = [
-            {
-                "phone_numbers": [{"phone_number": "+15555550123"}],
-                "email_addresses": [],
-                "first_name": "Test",
-                "last_name": "Contact",
-            }
+            ig_types.AddressBookContact(
+                phone_numbers=[ig_types.AddressBookPhone(phone_number="+15555550123")],
+                first_name="Test",
+                last_name="Contact",
+            )
         ]
         self.addCleanup(self.cl.address_book_unlink)
-        result = self.cl.address_book_link(contacts)
+        result = self.cl.address_book_link(contacts, include=["extra_display_name", "thumbnails"])
 
         self.assertIsInstance(result, dict)
         self.assertEqual(result.get("status"), "ok")
