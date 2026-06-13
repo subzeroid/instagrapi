@@ -983,6 +983,60 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(result, chained)
         fetch_details.assert_not_called()
 
+    def test_address_book_link_posts_contacts_payload(self):
+        client = Client()
+        client.uuid = "uuid"
+        client.authorization_data = {"ds_user_id": "123"}
+        contacts = [
+            {
+                "phone_numbers": [{"phone_number": "+15555550123"}],
+                "email_addresses": [],
+                "first_name": "Test",
+                "last_name": "Contact",
+            }
+        ]
+        expected = {"users": []}
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.address_book_link(contacts)
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "address_book/link/",
+            data={
+                "contacts": json.dumps(contacts, separators=(",", ":")),
+                "_uuid": "uuid",
+                "_uid": "123",
+            },
+            params={"include": "extra_display_name,thumbnails"},
+        )
+
+    def test_address_book_link_allows_empty_include(self):
+        client = Client()
+        client.uuid = "uuid"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            client.address_book_link([], include="")
+
+        private_request.assert_called_once_with(
+            "address_book/link/",
+            data={"contacts": "[]", "_uuid": "uuid"},
+            params=None,
+        )
+
+    def test_address_book_unlink_posts_uuid(self):
+        client = Client()
+        client.uuid = "uuid"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.address_book_unlink()
+
+        self.assertEqual(result, {"status": "ok"})
+        private_request.assert_called_once_with(
+            "address_book/unlink/",
+            data={"_uuid": "uuid"},
+        )
+
     def test_user_stream_by_id_v1_sends_expected_endpoint_and_data(self):
         client = Client()
         with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:

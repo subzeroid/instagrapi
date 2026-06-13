@@ -220,6 +220,39 @@ class ClientFollowingLiveTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(first_ids.isdisjoint(next_ids), f"Duplicate following across pages: {first_ids & next_ids}")
 
 
+class ClientAddressBookLiveTestCase(unittest.TestCase):
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for address book live tests")
+        last_exc = None
+        for acc in _helpers.fetch_test_accounts(count=20, timeout=30):
+            try:
+                settings = dict(acc["client_settings"])
+                settings.pop("totp_seed", None)
+                self.cl = Client(settings=settings, proxy=os.getenv("IG_PROXY") or acc.get("proxy"))
+                self.cl._user_id = acc.get("user_id")
+                self.cl.account_info()
+                return
+            except Exception as exc:
+                last_exc = exc
+        self.skipTest(f"No usable saved-session account returned: {last_exc}")
+
+    def test_address_book_link_returns_suggestions_payload_live(self):
+        contacts = [
+            {
+                "phone_numbers": [{"phone_number": "+15555550123"}],
+                "email_addresses": [],
+                "first_name": "Test",
+                "last_name": "Contact",
+            }
+        ]
+        self.addCleanup(self.cl.address_book_unlink)
+        result = self.cl.address_book_link(contacts)
+
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result.get("status"), "ok")
+
+
 class ClientGraphQLQueryLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_user_short_gql(self):
         user = self.cl.user_short_gql("25025320", use_cache=False)
