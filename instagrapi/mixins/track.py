@@ -252,6 +252,29 @@ class TrackMixin:
         )
         return bool(result.get("success")) or result.get("status") == "ok"
 
+    def music_bookmarked(self, max_id: str = "") -> Dict:
+        """
+        Retrieve bookmarked music tracks.
+
+        Parameters
+        ----------
+        max_id: str, optional
+            Pagination cursor.
+
+        Returns
+        -------
+        Dict
+            Raw response from ``music/playlist/bookmarked/``.
+        """
+        data = {"_uuid": self.uuid}
+        if max_id:
+            data["max_id"] = max_id
+        return self.private_request(
+            "music/playlist/bookmarked/",
+            data=data,
+            with_signature=False,
+        )
+
     def music_clips_audio_browser(
         self,
         product: str = "story_camera_clips_v2",
