@@ -123,6 +123,42 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         )
         resolve_simple.assert_called_once_with("/challenge/12345/nonce-code/")
 
+    def test_challenge_resolve_normalizes_prefixed_api_challenge_path(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-1"
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {"api_path": "/api/challenge/12345/nonce-code/"},
+            "status": "fail",
+        }
+
+        with mock.patch.object(client, "_send_private_request") as send_request:
+            with mock.patch.object(client, "challenge_resolve_simple", return_value=True) as resolve_simple:
+                result = client.challenge_resolve(last_json)
+
+        self.assertTrue(result)
+        self.assertEqual(send_request.call_args.args[0], "challenge/12345/nonce-code/")
+        resolve_simple.assert_called_once_with("/challenge/12345/nonce-code/")
+
+    def test_challenge_resolve_normalizes_prefixed_api_v1_challenge_path(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.android_device_id = "android-1"
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {"api_path": "/api/v1/challenge/12345/nonce-code/"},
+            "status": "fail",
+        }
+
+        with mock.patch.object(client, "_send_private_request") as send_request:
+            with mock.patch.object(client, "challenge_resolve_simple", return_value=True) as resolve_simple:
+                result = client.challenge_resolve(last_json)
+
+        self.assertTrue(result)
+        self.assertEqual(send_request.call_args.args[0], "challenge/12345/nonce-code/")
+        resolve_simple.assert_called_once_with("/challenge/12345/nonce-code/")
+
     def test_challenge_resolve_falls_back_to_contact_form(self):
         client = Client()
         client.last_json = {"message": "challenge_required", "status": "fail"}
