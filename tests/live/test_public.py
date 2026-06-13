@@ -44,6 +44,17 @@ class ClientPublicTestCase(_helpers.ClientPrivateTestCase):
         self.assertTrue(m.thumbnail_url)
         self.assertTrue(m.video_url)
 
+    def test_media_info_gql_xdt_sidecar_children_live(self):
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/Cu59OMFPQde/")
+        m = self.cl.media_info_gql(media_pk)
+
+        self.assertIsInstance(m, Media)
+        self.assertEqual(m.pk, "3150818670205011806")
+        self.assertEqual(m.code, "Cu59OMFPQde")
+        self.assertEqual(m.media_type, 8)
+        self.assertGreaterEqual(len(m.resources), 1)
+        self.assertTrue(all(resource.media_type in {1, 2} for resource in m.resources))
+
 
 class ClientClipMashupInfoLiveTestCase(unittest.TestCase):
     def live_client(self):
