@@ -42,6 +42,14 @@ class ChallengeResolveMixin:
     Helpers for resolving login challenge
     """
 
+    @staticmethod
+    def _normalize_challenge_api_path(api_path: str) -> str:
+        if api_path.startswith("/api/v1/"):
+            return api_path[len("/api/v1") :]
+        if api_path.startswith("/api/"):
+            return api_path[len("/api") :]
+        return api_path
+
     def challenge_code_or_raised(self, choice: ChallengeChoice, wait_seconds: int = 5, attempts: int = 24) -> str:
         error_context = dict(self.last_json)
         error_context.pop("message", None)
@@ -72,7 +80,7 @@ class ChallengeResolveMixin:
             A boolean value
         """
         # START GET REQUEST to challenge_url
-        challenge_url = last_json["challenge"]["api_path"]
+        challenge_url = self._normalize_challenge_api_path(last_json["challenge"]["api_path"])
         if challenge_url.startswith("/auth_platform/"):
             last_json["message"] = (
                 "Manual verification required via Instagram auth platform flow. "
@@ -100,7 +108,7 @@ class ChallengeResolveMixin:
             # not enough values to unpack (expected 2, got 1)
             params = {}
         try:
-            self._send_private_request(challenge_url[1:], params=params)
+            self._send_private_request(challenge_url.lstrip("/"), params=params)
         except ChallengeRequired:
             assert self.last_json["message"] == "challenge_required", self.last_json
             return self.challenge_resolve_contact_form(challenge_url)
