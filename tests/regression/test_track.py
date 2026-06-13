@@ -93,6 +93,33 @@ class TrackMixinRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
 
+    def test_music_bookmarked_posts_empty_payload_by_default(self):
+        client = Client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(client, "private_request", return_value={"items": [], "status": "ok"}) as private:
+            result = client.music_bookmarked()
+
+        self.assertEqual(result, {"items": [], "status": "ok"})
+        private.assert_called_once_with(
+            "music/playlist/bookmarked/",
+            data={"_uuid": "uuid-1"},
+            with_signature=False,
+        )
+
+    def test_music_bookmarked_forwards_max_id(self):
+        client = Client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(client, "private_request", return_value={"items": [], "status": "ok"}) as private:
+            client.music_bookmarked(max_id="cursor-1")
+
+        private.assert_called_once_with(
+            "music/playlist/bookmarked/",
+            data={"_uuid": "uuid-1", "max_id": "cursor-1"},
+            with_signature=False,
+        )
+
     def test_music_clips_audio_browser_posts_browse_session(self):
         client = Client()
         client.uuid = "uuid-1"

@@ -17,6 +17,7 @@ Viewing and downloading tracks
 | music_clips_audio_browser(product: str = "story_camera_clips_v2", browse_session_id: str = None) | dict | Browse music candidates for the Reels/Clips camera |
 | music_verify_original_audio_title(original_audio_name: str) | bool | Validate an original audio title for Reels publishing |
 | music_bookmark(original_audio_id: str, surface_requested_from: str = "audio_aggregation_page") | bool | Bookmark an original audio track |
+| music_bookmarked(max_id: str = "") | dict | Retrieve bookmarked music tracks |
 
 ### Example:
 
