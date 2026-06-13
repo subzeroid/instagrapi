@@ -1309,7 +1309,7 @@
 <td>Suggested profiles ("Suggested for you") for a profile. Wraps <code>chaining</code> and, with <code>expand_suggestion=True</code>, returns the raw <code>fetch_suggestion_details</code> payload (<code>items</code> in current app responses)</td>
 </tr>
 <tr>
-<td>address_book_link(contacts: List[dict], include: str = "extra_display_name,thumbnails")</td>
+<td>address_book_link(contacts: List[AddressBookContact | dict], include: Sequence[str] | str = ("extra_display_name", "thumbnails"))</td>
 <td>dict</td>
 <td>Upload/link address book contacts and return Instagram's raw contact-based suggestions response</td>
 </tr>
