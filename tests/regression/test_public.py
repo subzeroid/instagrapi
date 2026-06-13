@@ -203,6 +203,61 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(media.view_count, 7694)
         self.assertFalse(media.has_liked)
 
+    def test_media_info_gql_normalizes_xdt_sidecar_children(self):
+        client = Client()
+        child_payload = {
+            "__typename": "XDTGraphImage",
+            "id": "3150818668564738953",
+            "shortcode": "Cu59OMFPQde",
+            "display_url": "https://example.com/child.jpg",
+            "edge_media_to_tagged_user": {"edges": []},
+        }
+        media_payload = {
+            "__typename": "XDTGraphSidecar",
+            "id": "3150818670205011806",
+            "shortcode": "Cu59OMFPQde",
+            "taken_at_timestamp": 1690160400,
+            "owner": {
+                "id": "1903424587",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+                "is_private": False,
+            },
+            "display_resources": [
+                {
+                    "src": "https://example.com/thumbnail.jpg",
+                    "config_width": 360,
+                    "config_height": 640,
+                }
+            ],
+            "is_video": False,
+            "edge_media_preview_comment": {"count": 3, "edges": []},
+            "edge_media_preview_like": {"count": -1, "edges": []},
+            "edge_media_to_caption": {"edges": [{"node": {"text": "caption"}}]},
+            "edge_media_to_tagged_user": {"edges": []},
+            "edge_media_to_sponsor_user": {"edges": []},
+            "edge_sidecar_to_children": {"edges": [{"node": child_payload}]},
+            "viewer_has_liked": False,
+        }
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=ClientForbiddenError("blocked", response=Mock(status_code=403)),
+        ):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={"xdt_shortcode_media": media_payload},
+            ):
+                media = client.media_info_gql("3150818670205011806")
+
+        self.assertEqual(media.media_type, 8)
+        self.assertEqual(media.pk, "3150818670205011806")
+        self.assertEqual(len(media.resources), 1)
+        self.assertEqual(media.resources[0].media_type, 1)
+        self.assertEqual(str(media.resources[0].thumbnail_url), "https://example.com/child.jpg")
+
     def test_public_head_defaults_to_no_redirect_follow(self):
         client = Client()
         before = client.public_requests_count
