@@ -1309,6 +1309,16 @@
 <td>Suggested profiles ("Suggested for you") for a profile. Wraps <code>chaining</code> and, with <code>expand_suggestion=True</code>, returns the raw <code>fetch_suggestion_details</code> payload (<code>items</code> in current app responses)</td>
 </tr>
 <tr>
+<td>address_book_link(contacts: List[dict], include: str = "extra_display_name,thumbnails")</td>
+<td>dict</td>
+<td>Upload/link address book contacts and return Instagram's raw contact-based suggestions response</td>
+</tr>
+<tr>
+<td>address_book_unlink()</td>
+<td>dict</td>
+<td>Disconnect the uploaded address book from the current account</td>
+</tr>
+<tr>
 <td>chaining(user_id: str)</td>
 <td>dict</td>
 <td>Suggested users for a profile (<code>discover/chaining/</code>) — same surface as the app's "Suggested for you" carousel</td>
