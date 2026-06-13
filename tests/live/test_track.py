@@ -1,3 +1,4 @@
+from instagrapi.exceptions import TrackNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -32,3 +33,9 @@ class ClientTrackLiveTestCase(_helpers.ClientPrivateTestCase):
 
         search = self.cl.music_search_v2("love")
         self.assertEqual(search.get("status"), "ok")
+
+    def test_track_info_by_canonical_id_missing_live(self):
+        with self.assertRaises(TrackNotFound) as cm:
+            self.cl.track_info_by_canonical_id("0")
+
+        self.assertEqual(cm.exception.music_canonical_id, "0")

@@ -1,3 +1,4 @@
+from instagrapi.exceptions import TrackNotFound
 from tests.helpers import *
 
 
@@ -153,6 +154,29 @@ class TrackMixinRegressionTestCase(unittest.TestCase):
             "music/verify_original_audio_title/",
             data={"original_audio_name": "Original Audio", "_uuid": "uuid-1"},
             with_signature=False,
+        )
+
+    def test_track_info_by_canonical_id_raises_track_not_found_when_music_asset_missing(self):
+        client = Client()
+        client.uuid = "uuid-1"
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"metadata": {"music_info": {"music_asset_info": None}}, "status": "ok"},
+        ) as private_request:
+            with self.assertRaises(TrackNotFound) as cm:
+                client.track_info_by_canonical_id("18159860503036324")
+
+        self.assertEqual(cm.exception.music_canonical_id, "18159860503036324")
+        private_request.assert_called_once_with(
+            "clips/music/",
+            {
+                "tab_type": "clips",
+                "referrer_media_id": "",
+                "_uuid": "uuid-1",
+                "music_canonical_id": "18159860503036324",
+            },
         )
 
     def test_track_stream_info_by_id_sends_expected_endpoint_and_payload(self):
