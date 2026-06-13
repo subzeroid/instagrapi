@@ -20,6 +20,31 @@ class ClipPinRegressionTestCase(unittest.TestCase):
         self.assertEqual(device_status["chip_vendor"], "others")
         self.assertFalse(device_status["hw_av1_dec"])
 
+    def test_clip_mashup_info_posts_media_id_and_identity(self):
+        client = Client()
+        client.private.cookies.set("ds_user_id", "29060001803")
+        client.uuid = "uuid"
+        expected = {
+            "mashup_info": {
+                "is_reuse_allowed": True,
+                "mashups_allowed": True,
+            },
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.clip_mashup_info("3894040329476845448")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "clips/get_mashup_info_for_media/",
+            data={
+                "media_id": "3894040329476845448",
+                "_uid": "29060001803",
+                "_uuid": "uuid",
+            },
+        )
+
     def test_clip_pin_uses_reels_grid_payload(self):
         client = Client()
         with mock.patch.object(

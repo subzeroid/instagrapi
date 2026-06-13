@@ -53,6 +53,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pin(media_pk: str) | bool | Pin media to profile |
 | media_unpin(media_pk: str) | bool | Unpin media from profile |
 | media_template_v1(media_id: str) | dict | Fetch a clip template payload for a Reel/clip media |
+| clip_mashup_info(media_pk: str) | dict | Fetch Reel remix/reuse availability metadata |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
 | clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel |

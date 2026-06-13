@@ -43,3 +43,27 @@ class ClientPublicTestCase(_helpers.ClientPrivateTestCase):
         self.assertGreaterEqual(m.like_count, -1)
         self.assertTrue(m.thumbnail_url)
         self.assertTrue(m.video_url)
+
+
+class ClientClipMashupInfoLiveTestCase(unittest.TestCase):
+    def live_client(self):
+        if not _helpers.TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for clip mashup info live tests")
+        last_error = None
+        for account in _helpers.fetch_test_accounts(count=20):
+            try:
+                return _helpers.client_from_test_account(account)
+            except Exception as exc:
+                last_error = f"{type(exc).__name__}: {str(exc)[:120]}"
+        self.skipTest(f"Could not login with any test account: {last_error}")
+
+    def test_clip_mashup_info_live(self):
+        cl = self.live_client()
+        media_pk = cl.media_pk_from_url("https://www.instagram.com/p/C_BM2yAN4Rm/")
+        result = cl.clip_mashup_info(media_pk)
+
+        self.assertEqual(result.get("status"), "ok")
+        mashup_info = result.get("mashup_info")
+        self.assertIsInstance(mashup_info, dict)
+        self.assertIn("is_reuse_allowed", mashup_info)
+        self.assertIn("mashups_allowed", mashup_info)
