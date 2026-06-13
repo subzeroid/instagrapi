@@ -10,6 +10,8 @@ from requests.packages.urllib3.util.retry import Retry
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    AccountContactPointRequired,
+    AccountEditError,
     BadPassword,
     ChallengeRequired,
     ClientBadRequestError,
@@ -50,6 +52,30 @@ _DIRECT_MESSAGE_REQUESTS_DISABLED_MARKERS = (
     "don't allow new message requests",
     "does not allow new message requests",
 )
+
+_ACCOUNT_CONTACT_POINT_REQUIRED_MARKERS = ("need an email or confirmed phone number",)
+
+
+def _private_message_text(message) -> str:
+    if isinstance(message, dict):
+        errors = message.get("errors")
+        if isinstance(errors, (list, tuple)):
+            return " ".join(str(error) for error in errors)
+        return " ".join(str(value) for value in message.values())
+    if isinstance(message, (list, tuple)):
+        return " ".join(str(item) for item in message)
+    return str(message or "")
+
+
+def _is_account_contact_point_required(endpoint: str, message) -> bool:
+    if not endpoint or "accounts/edit_profile" not in endpoint:
+        return False
+    normalized = _private_message_text(message).casefold()
+    return any(marker in normalized for marker in _ACCOUNT_CONTACT_POINT_REQUIRED_MARKERS)
+
+
+def _is_account_edit_error(endpoint: str) -> bool:
+    return bool(endpoint and "accounts/edit_profile" in endpoint)
 
 
 def _is_direct_message_requests_disabled(endpoint: str, message: str) -> bool:
@@ -509,6 +535,10 @@ class PrivateRequestMixin:
                     if not last_json["message"]:
                         last_json["message"] = "Two-factor authentication required"
                     raise TwoFactorRequired(**last_json)
+                elif _is_account_contact_point_required(endpoint, message):
+                    raise AccountContactPointRequired(e, response=e.response, **last_json)
+                elif _is_account_edit_error(endpoint):
+                    raise AccountEditError(e, response=e.response, **last_json)
                 elif _is_direct_message_requests_disabled(endpoint, message):
                     raise DirectMessageRequestsDisabled(e, response=e.response, **last_json)
                 elif "VideoTooLongException" in message:
@@ -570,6 +600,10 @@ class PrivateRequestMixin:
             raise ClientConnectionError("{e.__class__.__name__} {e}".format(e=e))
         if last_json.get("status") == "fail":
             message = last_json.get("message", "")
+            if _is_account_contact_point_required(endpoint, message):
+                raise AccountContactPointRequired(response=response, **last_json)
+            if _is_account_edit_error(endpoint):
+                raise AccountEditError(response=response, **last_json)
             if _is_direct_message_requests_disabled(endpoint, message):
                 raise DirectMessageRequestsDisabled(response=response, **last_json)
             raise ClientError(response=response, **last_json)
