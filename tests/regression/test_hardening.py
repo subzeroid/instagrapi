@@ -1,4 +1,4 @@
-from instagrapi.exceptions import DirectMessageRequestsDisabled
+from instagrapi.exceptions import AccountContactPointRequired, AccountEditError, DirectMessageRequestsDisabled
 from tests.helpers import *
 
 
@@ -153,6 +153,59 @@ class HardeningRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client.private, "post", return_value=response):
             with self.assertRaises(DirectMessageRequestsDisabled) as cm:
                 client._send_private_request("direct_v2/threads/broadcast/text/", data={"text": "hi"})
+
+        self.assertEqual(cm.exception.message, payload["message"])
+        self.assertEqual(cm.exception.status, "fail")
+
+    def test_send_private_request_promotes_account_edit_contact_point_required_http_error(self):
+        client = self._build_private_client()
+        payload = {
+            "message": {"errors": ["You need an email or confirmed phone number."]},
+            "status": "fail",
+        }
+        response = self._make_http_error_response(
+            400,
+            content=json.dumps(payload).encode(),
+            json_body=payload,
+        )
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(AccountContactPointRequired) as cm:
+                client._send_private_request("accounts/edit_profile/", data={"external_url": ""})
+
+        self.assertEqual(cm.exception.message, payload["message"])
+        self.assertEqual(cm.exception.status, "fail")
+
+    def test_send_private_request_promotes_account_edit_contact_point_required_status_fail(self):
+        client = self._build_private_client()
+        payload = {
+            "message": {"errors": ["You need an email or confirmed phone number."]},
+            "status": "fail",
+        }
+        response = self._make_json_response(payload)
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(AccountContactPointRequired) as cm:
+                client._send_private_request("accounts/edit_profile/", data={"external_url": ""})
+
+        self.assertEqual(cm.exception.message, payload["message"])
+        self.assertEqual(cm.exception.status, "fail")
+
+    def test_send_private_request_promotes_account_edit_unknown_server_error(self):
+        client = self._build_private_client()
+        payload = {
+            "message": "Unknown Server Error.",
+            "status": "fail",
+        }
+        response = self._make_http_error_response(
+            400,
+            content=json.dumps(payload).encode(),
+            json_body=payload,
+        )
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(AccountEditError) as cm:
+                client._send_private_request("accounts/edit_profile/", data={"external_url": ""})
 
         self.assertEqual(cm.exception.message, payload["message"])
         self.assertEqual(cm.exception.status, "fail")
