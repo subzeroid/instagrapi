@@ -1,3 +1,4 @@
+from instagrapi import types as ig_types
 from instagrapi.extractors import extract_user_short, extract_user_v1
 from instagrapi.mixins.user import (
     MAX_USER_COUNT,
@@ -1022,6 +1023,36 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "address_book/link/",
             data={"contacts": "[]", "_uuid": "uuid"},
             params=None,
+        )
+
+    def test_address_book_link_accepts_typed_contacts_and_include_list(self):
+        client = Client()
+        client.uuid = "uuid"
+        contact = ig_types.AddressBookContact(
+            phone_numbers=[ig_types.AddressBookPhone(phone_number="+15555550123")],
+            email_addresses=[ig_types.AddressBookEmail(email_address="test@example.com")],
+            first_name="Test",
+            last_name="Contact",
+        )
+        expected_contacts = [
+            {
+                "phone_numbers": [{"phone_number": "+15555550123"}],
+                "email_addresses": [{"email_address": "test@example.com"}],
+                "first_name": "Test",
+                "last_name": "Contact",
+            }
+        ]
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            client.address_book_link([contact], include=["extra_display_name", "thumbnails"])
+
+        private_request.assert_called_once_with(
+            "address_book/link/",
+            data={
+                "contacts": json.dumps(expected_contacts, separators=(",", ":")),
+                "_uuid": "uuid",
+            },
+            params={"include": "extra_display_name,thumbnails"},
         )
 
     def test_address_book_unlink_posts_uuid(self):
