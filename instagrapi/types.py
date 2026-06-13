@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 from pydantic import (
     BaseModel,
     ConfigDict,
+    Field,
     FilePath,
     HttpUrl,
     ValidationError,
@@ -104,6 +105,21 @@ class About(TypesBaseModel):
     country: Optional[str] = ""
     date: Optional[str] = ""
     former_usernames: Optional[str] = ""
+
+
+class AddressBookPhone(TypesBaseModel):
+    phone_number: str
+
+
+class AddressBookEmail(TypesBaseModel):
+    email_address: str
+
+
+class AddressBookContact(TypesBaseModel):
+    phone_numbers: List[AddressBookPhone] = Field(default_factory=list)
+    email_addresses: List[AddressBookEmail] = Field(default_factory=list)
+    first_name: str = ""
+    last_name: str = ""
 
 
 class Account(TypesBaseModel):

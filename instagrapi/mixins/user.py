@@ -2,7 +2,7 @@ import json
 import logging
 from copy import deepcopy
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List, Sequence, Tuple, Union
 
 from requests.exceptions import RequestException
 
@@ -24,7 +24,7 @@ from instagrapi.extractors import (
     extract_user_short,
     extract_user_v1,
 )
-from instagrapi.types import About, Guide, Relationship, RelationshipShort, User, UserShort
+from instagrapi.types import About, AddressBookContact, Guide, Relationship, RelationshipShort, User, UserShort
 from instagrapi.utils.serialization import dumps, json_value
 
 MAX_USER_COUNT = 200
@@ -33,6 +33,7 @@ FOLLOWERS_ORDERS = ("date_followed_latest", "date_followed_earliest")
 USER_WEB_PROFILE_DOC_ID = "26762473490008061"
 USER_INFO_V2_DOC_ID = "25980296051578533"
 USER_INFO_BY_USERNAME_V2_DOC_ID = "26347858941511777"
+ADDRESS_BOOK_DEFAULT_INCLUDE = ("extra_display_name", "thumbnails")
 
 logger = logging.getLogger(__name__)
 
@@ -1902,19 +1903,37 @@ class UserMixin:
             return chained
         return self.fetch_suggestion_details(user_id, chained_ids)
 
-    def address_book_link(self, contacts: List[dict], include: str = "extra_display_name,thumbnails") -> dict:
+    @staticmethod
+    def _serialize_address_book_contacts(contacts: List[Union[AddressBookContact, dict]]) -> List[dict]:
+        return [
+            contact.model_dump(exclude_none=True) if isinstance(contact, AddressBookContact) else contact
+            for contact in contacts
+        ]
+
+    @staticmethod
+    def _serialize_address_book_include(include: Union[str, Sequence[str]]) -> str:
+        if isinstance(include, str):
+            return include
+        return ",".join(str(field) for field in include)
+
+    def address_book_link(
+        self,
+        contacts: List[Union[AddressBookContact, dict]],
+        include: Union[str, Sequence[str]] = ADDRESS_BOOK_DEFAULT_INCLUDE,
+    ) -> dict:
         """
         Upload/link address book contacts and return Instagram's raw suggestions response.
 
         Parameters
         ----------
-        contacts: List[dict]
-            Address book contacts in Instagram's mobile payload shape, for example
+        contacts: List[AddressBookContact | dict]
+            Address book contacts as typed objects, or raw dictionaries in
+            Instagram's mobile payload shape, for example
             ``{"phone_numbers": [{"phone_number": "+15555550123"}],
             "email_addresses": [], "first_name": "Test", "last_name": "Contact"}``.
-        include: str, optional
+        include: Sequence[str] | str, optional
             Optional response fields requested from Instagram. Defaults to
-            ``"extra_display_name,thumbnails"``.
+            ``("extra_display_name", "thumbnails")``.
 
         Returns
         -------
@@ -1922,8 +1941,9 @@ class UserMixin:
             Raw ``address_book/link/`` response, usually containing suggested users
             when Instagram matches uploaded contacts.
         """
+        include_value = self._serialize_address_book_include(include)
         data = {
-            "contacts": json.dumps(contacts, separators=(",", ":")),
+            "contacts": json.dumps(self._serialize_address_book_contacts(contacts), separators=(",", ":")),
             "_uuid": self.uuid,
         }
         if self.user_id:
@@ -1931,7 +1951,7 @@ class UserMixin:
         return self.private_request(
             "address_book/link/",
             data=data,
-            params={"include": include} if include else None,
+            params={"include": include_value} if include_value else None,
         )
 
     def address_book_unlink(self) -> dict:
