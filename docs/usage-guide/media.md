@@ -331,9 +331,9 @@ Upload medias to your feed. Common arguments:
 
 | Method                                                                                                                                 | Return  | Description
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)             | Media   | Upload photo (Support JPG files)
-| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)            | Media   | Upload video (Support MP4 files)
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None)                      | Media   | Upload Album (Support JPG/MP4 files)
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)             | Media   | Upload photo (Support JPG files)
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)            | Media   | Upload video (Support MP4 files)
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
 | clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel
@@ -364,7 +364,7 @@ In `extra_data`, you can pass additional media settings, for example:
 | custom_accessibility_caption  | String | [Set alternative text](https://github.com/subzeroid/instagrapi/issues/351) `{"custom_accessibility_caption": "ALT TEXT HERE"}`
 | like_and_view_counts_disabled | Int    | [Disable like and view counts](https://github.com/subzeroid/instagrapi/issues/382) `{"like_and_view_counts_disabled": 1}`
 | disable_comments              | Int    | Disable comments `{"disable_comments": 1}`
-| invite_coauthor_user_id       | Int    | Add a coauthor to the post `{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}`. You also need to add this user to `usertags`
+| invite_coauthor_user_ids      | List   | Low-level coauthor invite field. Prefer `coauthor_user_ids=[...]` on `photo_upload`, `video_upload`, or `album_upload`
 
 Trial Reels are available only for accounts where Instagram has enabled the feature. Use `clip_trial_eligible()` as a
 lightweight preflight if you process multiple accounts and want to avoid uploading video bytes for accounts where the
