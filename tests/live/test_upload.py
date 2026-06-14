@@ -1,6 +1,6 @@
 import io
 
-from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound
+from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound, PhotoConfigureError, PhotoNotUpload
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -43,6 +43,92 @@ class _ClipMusicMetadataAssertionsMixin:
             self.assertEqual(str(asset_info.get("audio_asset_id")), str(expected_asset_id))
         if expected_cluster_id:
             self.assertEqual(str(asset_info.get("audio_cluster_id")), str(expected_cluster_id))
+
+
+class ClientUploadCoauthorTestCase(unittest.TestCase):
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for coauthor upload live tests")
+
+    def copy_media_fixture(self, source):
+        source = Path(source)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=source.suffix) as tmp:
+            path = Path(tmp.name)
+        shutil.copyfile(source, path)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        return path
+
+    def uploaded_media_payload(self, client, media, attempts=5, delay=3):
+        last_error = None
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            try:
+                result = client.private_request(f"media/{media.pk}/info/")
+                items = result.get("items") or []
+                self.assertTrue(items, "media info did not return items")
+                return items[0]
+            except Exception as exc:
+                last_error = exc
+        self.fail(f"Uploaded media {media.id} was not accessible after {attempts} media_info attempts: {last_error}")
+
+    def assertUploadedMediaAccessible(self, client, media, media_type=None, caption_text=None):
+        self.assertIsInstance(media, Media)
+        payload = self.uploaded_media_payload(client, media)
+        self.assertEqual(str(payload.get("pk")), str(media.pk))
+        self.assertEqual(str(payload.get("id")), str(media.id))
+        if media_type is not None:
+            self.assertEqual(payload.get("media_type"), media_type)
+        if caption_text is not None:
+            self.assertEqual((payload.get("caption") or {}).get("text", ""), caption_text)
+        return payload
+
+    def test_photo_upload_with_coauthor_user_ids(self):
+        path = self.copy_media_fixture("examples/kanada.jpg")
+        self.assertIsInstance(path, Path)
+        try:
+            accounts = _helpers.fetch_test_accounts(count=50, timeout=30)
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+        coauthor_user_ids = [str(account.get("user_id")) for account in accounts if account.get("user_id")]
+        if len(coauthor_user_ids) < 2:
+            self.skipTest("At least two TEST_ACCOUNTS_URL accounts with user_id are required")
+
+        login_failures = {}
+        upload_failures = {}
+        for account in accounts:
+            try:
+                uploader = _helpers.client_from_test_account(account)
+            except Exception as exc:
+                login_failures[exc.__class__.__name__] = login_failures.get(exc.__class__.__name__, 0) + 1
+                continue
+
+            uploader_id = str(uploader.user_id or uploader.account_info().pk)
+            coauthor_user_id = next((user_id for user_id in coauthor_user_ids if user_id != uploader_id), None)
+            if not coauthor_user_id:
+                continue
+
+            media = None
+            try:
+                caption_text = f"Test caption for coauthor photo {int(time.time())}"
+                media = uploader.photo_upload(path, caption_text, coauthor_user_ids=[coauthor_user_id])
+                self.assertIsInstance(media, Media)
+                self.assertEqual(media.caption_text, caption_text)
+                self.assertUploadedMediaAccessible(uploader, media, media_type=1, caption_text=caption_text)
+                return
+            except PhotoConfigureError:
+                raise
+            except PhotoNotUpload as exc:
+                upload_failures[exc.__class__.__name__] = upload_failures.get(exc.__class__.__name__, 0) + 1
+                continue
+            finally:
+                if media:
+                    self.assertTrue(uploader.media_delete(media.id))
+
+        self.skipTest(
+            "No upload-capable test account was available "
+            f"(login_failures={login_failures}, upload_failures={upload_failures})"
+        )
 
 
 class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPrivateTestCase):
