@@ -79,7 +79,7 @@ class FbSearchMixin:
             "include_friendship_status": "true",
         }
         result = self.private_request("fbsearch/accounts_recs/", params=params)
-        return result["users"]
+        return [extract_user_short(item) for item in result["users"]]
 
     def web_search_topsearch_hashtags(self, query: str) -> List[Hashtag]:
         result = self.web_search_topsearch(query)
