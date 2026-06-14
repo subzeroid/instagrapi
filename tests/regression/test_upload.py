@@ -1794,6 +1794,62 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertTrue(closed["value"])
 
+    def _assert_crop_thumbnail_closes_images(self, module):
+        source_image = None
+        cropped_image = None
+
+        class FakeImage:
+            def __init__(self, size=(1780, 1000)):
+                self.size = size
+                self.closed = False
+                self.saved = False
+                self.crop_box = None
+                self.crop_result = None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                self.close()
+
+            def crop(self, box):
+                self.crop_box = box
+                return self.crop_result
+
+            def save(self, fp):
+                self.saved = True
+
+            def close(self):
+                self.closed = True
+
+        source_image = FakeImage()
+        cropped_image = FakeImage()
+        source_image.crop_result = cropped_image
+
+        with mock.patch.object(module.Image, "open", return_value=source_image) as image_open:
+            with mock.patch("builtins.open", mock.mock_open()) as output_open:
+                result = module.crop_thumbnail(Path("thumb.jpg"))
+
+        self.assertTrue(result)
+        image_open.assert_called_once_with("thumb.jpg")
+        output_open.assert_called_once_with(Path("thumb.jpg"), "wb")
+        expected_box = (609.1011235955056, 0, 1170.8988764044943, 1000)
+        for actual, expected in zip(source_image.crop_box, expected_box):
+            self.assertAlmostEqual(actual, expected)
+        self.assertTrue(source_image.closed)
+        self.assertTrue(cropped_image.saved)
+        self.assertTrue(cropped_image.closed)
+
+    def test_clip_crop_thumbnail_closes_source_and_cropped_images(self):
+        import instagrapi.mixins.clip as clip_mixin
+
+        self._assert_crop_thumbnail_closes_images(clip_mixin)
+
+    def test_igtv_crop_thumbnail_closes_source_and_cropped_images(self):
+        import instagrapi.mixins.igtv as igtv_mixin
+
+        self._assert_crop_thumbnail_closes_images(igtv_mixin)
+
     def test_video_story_sticker_ids_include_all_stickers(self):
         client = self.build_client()
 

@@ -301,13 +301,15 @@ def crop_thumbnail(path: Path) -> bool:
     bool
         A boolean value
     """
-    im = Image.open(str(path))
-    width, height = im.size
-    offset = (height / 1.78) / 2
-    center = width / 2
-    # Crop the center of the image
-    im = im.crop((center - offset, 0, center + offset, height))
-    with open(path, "w") as fp:
-        im.save(fp)
-        im.close()
+    with Image.open(str(path)) as im:
+        width, height = im.size
+        offset = (height / 1.78) / 2
+        center = width / 2
+        # Crop the center of the image
+        cropped = im.crop((center - offset, 0, center + offset, height))
+        try:
+            with open(path, "wb") as fp:
+                cropped.save(fp)
+        finally:
+            cropped.close()
     return True
