@@ -610,6 +610,90 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(extra_data, {"disable_comments": 1})
         self.assertEqual(album_upload.call_args.kwargs["schedule_at"], schedule_at)
 
+    def test_photo_upload_adds_coauthor_user_ids_without_mutating_extra_data(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+        extra_data = {"disable_comments": 1}
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client,
+                "photo_configure",
+                return_value={"status": "ok", "media": media_payload},
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.photo_upload(
+                        Path("example.jpg"),
+                        "caption",
+                        extra_data=extra_data,
+                        coauthor_user_ids=[123, "456"],
+                    )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(extra_data, {"disable_comments": 1})
+        configure_extra = configure.call_args.kwargs["extra_data"]
+        self.assertEqual(configure_extra["disable_comments"], 1)
+        self.assertEqual(configure_extra["invite_coauthor_user_ids"], ["123", "456"])
+
+    def test_video_upload_adds_coauthor_user_ids(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=2)
+
+        with mock.patch.object(
+            client,
+            "video_rupload",
+            return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+        ):
+            with mock.patch.object(
+                client,
+                "video_configure",
+                return_value={"status": "ok", "media": media_payload},
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.video_upload(
+                        Path("example.mp4"),
+                        "caption",
+                        coauthor_user_ids=["123", "456"],
+                    )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(configure.call_args.kwargs["extra_data"]["invite_coauthor_user_ids"], ["123", "456"])
+
+    def test_album_upload_adds_coauthor_user_ids(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=8)
+        media_payload["carousel_media"] = [self.build_media_payload(media_type=1)]
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(
+                client,
+                "album_configure",
+                return_value={"status": "ok", "media": media_payload},
+            ) as configure:
+                with mock.patch("time.sleep"):
+                    media = client.album_upload(
+                        [Path("one.jpg")],
+                        "caption",
+                        coauthor_user_ids=["123", "456"],
+                    )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(configure.call_args.kwargs["extra_data"]["invite_coauthor_user_ids"], ["123", "456"])
+
+    def test_coauthor_user_ids_rejects_conflicting_extra_data_key(self):
+        client = self.build_client()
+
+        with self.assertRaises(ValueError) as ctx:
+            client.photo_upload(
+                Path("example.jpg"),
+                "caption",
+                extra_data={"invite_coauthor_user_ids": ["789"]},
+                coauthor_user_ids=["123"],
+            )
+
+        self.assertIn("coauthor_user_ids", str(ctx.exception))
+        self.assertIn("invite_coauthor_user_ids", str(ctx.exception))
+
     def test_video_upload_raises_clear_error_when_configure_has_no_media(self):
         client = self.build_client()
 
