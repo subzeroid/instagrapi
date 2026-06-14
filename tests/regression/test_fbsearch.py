@@ -150,6 +150,37 @@ class FbSearchRegressionTestCase(unittest.TestCase):
         self.assertEqual(hashtags[0].name, "restaurant")
         self.assertEqual(hashtags[0].media_count, 65043150)
 
+    def test_fbsearch_suggested_profiles_extracts_user_short_without_stories(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={
+                "users": [
+                    {
+                        "pk": "123",
+                        "username": "alice",
+                        "full_name": "Alice",
+                        "profile_pic_url": "https://example.com/alice.jpg",
+                        "is_private": False,
+                        "has_anonymous_profile_picture": False,
+                    }
+                ]
+            },
+        ) as private_request:
+            users = client.fbsearch_suggested_profiles("999")
+
+        private_request.assert_called_once_with(
+            "fbsearch/accounts_recs/",
+            params={
+                "target_user_id": "999",
+                "include_friendship_status": "true",
+            },
+        )
+        self.assertIsInstance(users[0], UserShort)
+        self.assertEqual(users[0].pk, "123")
+        self.assertEqual(users[0].stories, [])
+
     def test_search_music_skips_non_track_items(self):
         client = self._build_client()
         with mock.patch.object(
