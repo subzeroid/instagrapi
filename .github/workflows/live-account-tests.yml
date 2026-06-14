@@ -15,6 +15,7 @@ on:
           - direct
           - signup
           - timeline
+          - fbsearch
           - story-location
           - location
           - usertag
@@ -81,6 +82,10 @@ jobs:
       - name: Run timeline test
         if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
         run: pytest -sv tests/live/test_timeline.py::ClientTimelineLiveTestCase
+
+      - name: Run fbsearch test
+        if: github.event.inputs.test_target == 'fbsearch' || github.event.inputs.test_target == 'all'
+        run: pytest -sv tests/live/test_fbsearch.py::ClientFbSearchLiveTestCase
 
       - name: Run story location sticker live test
         if: github.event.inputs.test_target == 'story-location' || github.event.inputs.test_target == 'all'
