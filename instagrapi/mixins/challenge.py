@@ -20,6 +20,7 @@ from instagrapi.exceptions import (
 )
 
 WAIT_SECONDS = 5
+BLOKS_REDIRECT_ACTION = "com.bloks.www.ig.challenge.redirect.async"
 
 
 class ChallengeChoice(Enum):
@@ -69,6 +70,73 @@ class ChallengeResolveMixin:
             "Challenge code was not provided before the retry window expired.",
             **error_context,
         )
+
+    def _challenge_error_context(self) -> Dict:
+        return {key: value for key, value in self.last_json.items() if key != "message"}
+
+    def _raise_bloks_redirect_required(self) -> None:
+        raise ChallengeRequired(
+            "Manual verification required via Instagram Bloks redirect checkpoint. "
+            "Please confirm the login in the official Instagram app or web flow on a trusted device, "
+            "then retry with the same saved client settings, device identifiers, and proxy/IP.",
+            **self._challenge_error_context(),
+        )
+
+    def _challenge_resolve_change_password(self) -> bool:
+        challenge_context = self.last_json.get("challenge_context")
+        if not challenge_context:
+            raise ChallengeRequired(
+                "Password change required, but Instagram did not return a challenge context. "
+                "Complete the flow manually.",
+                **self._challenge_error_context(),
+            )
+        wait_seconds = 5
+        pwd = None
+        for attempt in range(24):
+            pwd = self.change_password_handler(self.username)
+            if pwd:
+                break
+            time.sleep(wait_seconds)
+        if not pwd:
+            raise ChallengeRequired(
+                "Password change required. Provide a new password via "
+                "change_password_handler or complete the flow manually.",
+                **self._challenge_error_context(),
+            )
+        self.logger.info(
+            "New password (%d chars) entered for %s (%d attempts by %d seconds)",
+            len(pwd),
+            self.username,
+            attempt,
+            wait_seconds,
+        )
+        return self.bloks_change_password(pwd, challenge_context)
+
+    def challenge_bloks_redirect_dismiss(self) -> bool:
+        """
+        Acknowledge a pending Bloks redirect checkpoint after manual approval.
+
+        Call this after approving the login in the official Instagram app while
+        keeping the same client instance/settings alive.
+        """
+        if self.last_json.get("bloks_action") != BLOKS_REDIRECT_ACTION or not self.last_json.get("challenge_context"):
+            raise ChallengeRequired(
+                "No pending Bloks redirect challenge context found. "
+                "Retry the original login/request first, then approve it in the official app.",
+                **self._challenge_error_context(),
+            )
+        result = self.bloks_challenge_take_challenge(
+            challenge_context=self.last_json["challenge_context"],
+        )
+        if isinstance(result, dict):
+            self.last_json = result
+        if self.last_json.get("status") != "ok":
+            self._raise_bloks_redirect_required()
+        if self.last_json.get("action") == "close" or self.last_json.get("type") == "CHALLENGE_REDIRECTION":
+            return True
+        if self.last_json.get("bloks_action") == BLOKS_REDIRECT_ACTION:
+            self._raise_bloks_redirect_required()
+        return True
 
     def challenge_resolve(self, last_json: Dict) -> bool:
         """
@@ -496,14 +564,27 @@ class ChallengeResolveMixin:
             if self.last_json.get("step_name") == step_name:
                 raise ChallengeError(f"submit_phone challenge did not advance after phone submission: {self.last_json}")
             return self.challenge_resolve_simple(challenge_url)
-        elif self.last_json.get("bloks_action") == "com.bloks.www.ig.challenge.redirect.async":
-            raise ChallengeRequired(
-                "Manual verification required via Instagram Bloks redirect checkpoint. "
-                "Please confirm the login in the official Instagram app or web flow on a trusted device, "
-                "then retry with the same saved client settings, device identifiers, and proxy/IP. "
-                "This challenge flow is not currently resolved automatically by instagrapi.",
-                **{key: value for key, value in self.last_json.items() if key != "message"},
+        elif self.last_json.get("bloks_action") == BLOKS_REDIRECT_ACTION:
+            if self.last_json.get("challenge_type_enum_str") == "PASSWORD_RESET":
+                return self._challenge_resolve_change_password()
+            challenge_context = self.last_json.get("challenge_context")
+            if not challenge_context:
+                self._raise_bloks_redirect_required()
+            result = self.bloks_challenge_take_challenge(
+                challenge_context=challenge_context,
+                choice=0,
             )
+            if isinstance(result, dict):
+                self.last_json = result
+            if self.last_json.get("status") != "ok":
+                self._raise_bloks_redirect_required()
+            if self.last_json.get("action") == "close" or self.last_json.get("type") == "CHALLENGE_REDIRECTION":
+                return True
+            if self.last_json.get("bloks_action") == BLOKS_REDIRECT_ACTION:
+                self._raise_bloks_redirect_required()
+            if self.last_json.get("step_name"):
+                return self.challenge_resolve_simple(challenge_url)
+            return True
         elif step_name == "":
             assert self.last_json.get("action", "") == "close"
             assert self.last_json.get("status", "") == "ok"
@@ -519,27 +600,7 @@ class ChallengeResolveMixin:
             #      "challenge_type_enum": "PASSWORD_RESET"}',
             #  'challenge_type_enum_str': 'PASSWORD_RESET',
             #  'status': 'ok'}
-            wait_seconds = 5
-            pwd = None
-            for attempt in range(24):
-                pwd = self.change_password_handler(self.username)
-                if pwd:
-                    break
-                time.sleep(wait_seconds)
-            if not pwd:
-                raise ChallengeRequired(
-                    "Password change required. Provide a new password via "
-                    "change_password_handler or complete the flow manually.",
-                    **{key: value for key, value in self.last_json.items() if key != "message"},
-                )
-            self.logger.info(
-                "New password (%d chars) entered for %s (%d attempts by %d seconds)",
-                len(pwd),
-                self.username,
-                attempt,
-                wait_seconds,
-            )
-            return self.bloks_change_password(pwd, self.last_json["challenge_context"])
+            return self._challenge_resolve_change_password()
         elif step_name == "ufac_www_bloks":
             raise ChallengeRequired(
                 "Manual verification required via Instagram UFAC web bloks checkpoint. "
