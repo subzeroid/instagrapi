@@ -37,7 +37,7 @@ class CollectionMixin:
                 total_items.append(extract_collection(item))
             if not result.get("more_available"):
                 return total_items
-            next_max_id = result.get("next_max_id", "")
+            next_max_id = result.get("next_max_id", "") or result.get("max_id", "")
         return total_items
 
     def collection_pk_by_name(self, name: str) -> int:
@@ -121,7 +121,7 @@ class CollectionMixin:
             params["max_id"] = max_id
         result = self.private_request(private_request_endpoint, params=params)
         items = [extract_media_v1(m.get("media", m)) for m in result["items"]]
-        return items, result.get("next_max_id", "")
+        return items, result.get("next_max_id", "") or result.get("max_id", "")
 
     def collection_medias_v1(self, collection_pk: str, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
