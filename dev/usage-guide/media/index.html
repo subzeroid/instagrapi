@@ -2096,17 +2096,17 @@
 </thead>
 <tbody>
 <tr>
-<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
+<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
 <td>Media</td>
 <td>Upload photo (Support JPG files)</td>
 </tr>
 <tr>
-<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
+<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
 <td>Media</td>
 <td>Upload video (Support MP4 files)</td>
 </tr>
 <tr>
-<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None)</td>
+<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
 <td>Media</td>
 <td>Upload Album (Support JPG/MP4 files)</td>
 </tr>
@@ -2217,9 +2217,9 @@ Story, Direct, and cutout sticker upload helpers do not use this scheduled publi
 <td>Disable comments <code>{"disable_comments": 1}</code></td>
 </tr>
 <tr>
-<td>invite_coauthor_user_id</td>
-<td>Int</td>
-<td>Add a coauthor to the post <code>{"invite_coauthor_user_id": "USER ID OF COAUTHOR HERE"}</code>. You also need to add this user to <code>usertags</code></td>
+<td>invite_coauthor_user_ids</td>
+<td>List</td>
+<td>Low-level coauthor invite field. Prefer <code>coauthor_user_ids=[...]</code> on <code>photo_upload</code>, <code>video_upload</code>, or <code>album_upload</code></td>
 </tr>
 </tbody>
 </table>
