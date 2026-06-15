@@ -2,6 +2,26 @@ from tests.helpers import *
 
 
 class ClipPinRegressionTestCase(unittest.TestCase):
+    def test_clip_seen_posts_write_seen_state_payload(self):
+        client = Client()
+        client.private.cookies.set("ds_user_id", "29060001803")
+        client.uuid = "uuid"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.clip_seen(
+                ["3917361171492779700_25025320", "3917361171492779701"],
+                blend_media_ids=["3917361171492779702_25025320"],
+            )
+
+        self.assertTrue(result)
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "clips/write_seen_state/")
+        payload = private_request.call_args.kwargs["data"]
+        self.assertEqual(json.loads(payload["impressions"]), ["3917361171492779700", "3917361171492779701"])
+        self.assertEqual(json.loads(payload["blend_impressions"]), ["3917361171492779702"])
+        self.assertEqual(payload["_uid"], "29060001803")
+        self.assertEqual(payload["_uuid"], "uuid")
+
     def test_clip_info_for_creation_sends_device_status(self):
         client = Client()
         expected = {"status": "ok", "trial_config": {"is_enabled": True}}

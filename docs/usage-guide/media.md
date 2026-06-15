@@ -54,6 +54,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_unpin(media_pk: str) | bool | Unpin media from profile |
 | media_template_v1(media_id: str) | dict | Fetch a clip template payload for a Reel/clip media |
 | clip_mashup_info(media_pk: str) | dict | Fetch Reel remix/reuse availability metadata |
+| clip_seen(media_ids: List[str], blend_media_ids: List[str] = None) | bool | Mark Reels/Clips as seen through the Clips seen-state endpoint |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
 | clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel |
@@ -67,6 +68,10 @@ In terms of Instagram, this is called Media, usually users call it publications 
 Media notes are separate from Direct inbox Notes. Use `media_note_create()` and
 `media_note_delete()` for the note surface attached to a post or Reel; use the
 [Notes guide](notes.md) for Direct inbox Notes.
+
+Use `clip_seen()` for Reels/Clips. `media_seen()` keeps the older story/reel-tray
+seen payload. Instagram still decides whether a seen-state event is counted in
+view analytics.
 
 Low level methods:
 

@@ -297,6 +297,32 @@ class ClientMediaCountAliasLiveTestCase(unittest.TestCase):
         self.assertEqual(media.play_count, captured_payload["video_play_count"])
 
 
+class ClientClipSeenLiveTestCase(unittest.TestCase):
+    def live_client(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for clip seen live tests")
+        last_error = None
+        for account in _helpers.fetch_test_accounts(count=20, timeout=30):
+            try:
+                cl = _helpers.client_from_test_account(account)
+                cl.request_timeout = 0
+                return cl
+            except Exception as exc:
+                last_error = f"{type(exc).__name__}: {str(exc)[:120]}"
+        self.skipTest(f"Could not login with any test account: {last_error}")
+
+    def test_clip_seen_live(self):
+        cl = self.live_client()
+        try:
+            medias = cl.user_clips_v1("25025320", amount=3)
+        except Exception as exc:
+            self.skipTest(f"Could not fetch public Instagram clips: {type(exc).__name__}: {str(exc)[:120]}")
+        if not medias:
+            self.skipTest("Public Instagram clips feed returned no media")
+
+        self.assertTrue(cl.clip_seen([medias[0].id]))
+
+
 class ClientExtractTestCase(_helpers.ClientPrivateTestCase):
     def test_extract_media_photo(self):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
