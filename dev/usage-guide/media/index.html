@@ -2123,9 +2123,9 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <td>Upload IGTV (Support MP4 files)</td>
 </tr>
 <tr>
-<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False)</td>
+<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int | str] = None)</td>
 <td>Media</td>
-<td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts. Set <code>share_to_facebook=True</code> to cross-post to a linked Facebook destination</td>
+<td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts. Set <code>share_to_facebook=True</code> to cross-post to a linked Facebook destination. Pass Reel topic <code>fit_id</code> values with <code>topics=[...]</code></td>
 </tr>
 <tr>
 <td>clip_change_cover(media_pk: str, cover_path: Path)</td>
@@ -2141,6 +2141,11 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <td>clip_info_for_creation()</td>
 <td>dict</td>
 <td>Get Reel creation preflight configuration from the mobile API</td>
+</tr>
+<tr>
+<td>clip_interest_topics()</td>
+<td>List[dict]</td>
+<td>Get Reel topic catalog items with <code>name</code> and <code>fit_id</code> values for <code>clip_upload(..., topics=...)</code></td>
 </tr>
 <tr>
 <td>clip_share_to_fb_config()</td>
@@ -2235,6 +2240,7 @@ lightweight preflight if you process multiple accounts and want to avoid uploadi
 Reel composer does not report Trial Reels enabled. Instagram can still reject Trial Reel publishing later during
 configure, so keep upload-side error handling for backend eligibility decisions. When <code>trial=True</code>, <code>clip_upload</code> sends
 <code>trial_params={"graduation_strategy": "manual"}</code> by default and disables feed preview for the upload.</p>
+<p>Reel topics use Instagram's interest topic <code>fit_id</code> values. Call <code>clip_interest_topics()</code> to get the current catalog, then pass selected ids with <code>clip_upload(..., topics=[topic["fit_id"]])</code>; instagrapi sends them as the Android <code>interest_topics</code> configure field.</p>
 <p>Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer use only <code>{"share_to_facebook": 1}</code> for Reels; they also send destination and cross-posting fields such as <code>share_to_fb_destination_id</code>, <code>share_to_fb_destination_type</code>, <code>no_token_crosspost</code>, and <code>attempt_id</code>.</p>
 <p><code>clip_share_to_fb_config()</code> calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return <code>share_to_fb_unavailable=True</code> even when the Instagram app can cross-post manually. When <code>clip_upload(..., share_to_facebook=True)</code> has no manual destination override, instagrapi now falls back to Android's <code>CrosspostingUnifiedConfigsQuery</code> via <code>clip_share_to_fb_unified_config()</code> and uses <code>clip_share_to_fb_unified_destination()</code> only if that response contains confirmed Reel-to-Facebook destination fields. Use <code>clip_share_to_fb_destination()</code> when a config or captured app response already contains confirmed destination fields; it normalizes <code>destination_id</code>, <code>destination_type</code>, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass <code>fb_destination_id</code> and <code>fb_destination_type="USER"</code> or <code>"PAGE"</code> to <code>clip_upload(...)</code>, or build <code>extra_data</code> manually with <code>clip_share_to_fb_extra_data(...)</code>. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises <code>ClientError</code> before uploading video bytes. The Reel cross-post <code>attempt_id</code> is generated automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> when replaying or testing a specific low-level payload.
 <code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
@@ -2258,6 +2264,14 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <span class="o">...</span>         <span class="s2">&quot;Trying a new Reel format&quot;</span><span class="p">,</span>
 <span class="o">...</span>         <span class="n">trial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="o">...</span>     <span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">topics</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_interest_topics</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">technology_topic</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">topic</span> <span class="k">for</span> <span class="n">topic</span> <span class="ow">in</span> <span class="n">topics</span> <span class="k">if</span> <span class="n">topic</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Technology&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="s2">&quot;Reel with a topic&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">topics</span><span class="o">=</span><span class="p">[</span><span class="n">technology_topic</span><span class="p">[</span><span class="s2">&quot;fit_id&quot;</span><span class="p">]],</span>
+<span class="o">...</span> <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">reel</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
 <span class="o">...</span>     <span class="s2">&quot;/app/reel.mp4&quot;</span><span class="p">,</span>
