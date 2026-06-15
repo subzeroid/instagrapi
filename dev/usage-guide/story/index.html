@@ -1337,6 +1337,11 @@
 <td>bool</td>
 <td>Unlike a story</td>
 </tr>
+<tr>
+<td>story_poll_vote(story_id: str, poll_id: str, vote: int)</td>
+<td>bool</td>
+<td>Vote in a story poll by option index</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1358,6 +1363,10 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">archived</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">archive_stories</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="n">story</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">archived</span><span class="p">]</span>
 <span class="p">[</span><span class="s1">&#39;3155832952940083788&#39;</span><span class="p">]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">story</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_stories</span><span class="p">(</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">story_poll_vote</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">story</span><span class="o">.</span><span class="n">polls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># vote for the first option</span>
+<span class="kc">True</span>
 </code></pre></div>
 <h2 id="story-archive">Story Archive</h2>
 <p><code>archive_story_days()</code> returns <code>StoryArchiveDay</code> objects for the logged-in account's story archive. Use <code>archive_stories()</code> when you need the story media items from those archive days.</p>
@@ -1476,7 +1485,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 </ul>
 <p>Examples:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoryMention</span><span class="p">,</span> <span class="n">StoryMedia</span><span class="p">,</span> <span class="n">StoryLink</span><span class="p">,</span> <span class="n">StoryHashtag</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">StoryMention</span><span class="p">,</span> <span class="n">StoryMedia</span><span class="p">,</span> <span class="n">StoryLink</span><span class="p">,</span> <span class="n">StoryHashtag</span><span class="p">,</span> <span class="n">StoryPoll</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
