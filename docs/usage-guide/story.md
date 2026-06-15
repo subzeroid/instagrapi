@@ -14,6 +14,7 @@
 | archive_stories(amount: int = 0)                                        | List[Story]     | Get your archived stories
 | story_like(story_id: str, revert: bool = False)                        | bool            | Like a story
 | story_unlike(story_id: str)                                            | bool            | Unlike a story
+| story_poll_vote(story_id: str, poll_id: str, vote: int)                | bool            | Vote in a story poll by option index
 
 Example:
 
@@ -36,6 +37,10 @@ PosixPath('/app/191260083_2908005872746895_8988438451809588865_n.jpg')
 >>> archived = cl.archive_stories(amount=5)
 >>> [story.pk for story in archived]
 ['3155832952940083788']
+
+>>> story = cl.user_stories(USER_ID, amount=1)[0]
+>>> cl.story_poll_vote(story.id, story.polls[0].id, 0)  # vote for the first option
+True
 ```
 
 ## Story Archive
@@ -101,7 +106,7 @@ Examples:
 
 ``` python
 from instagrapi import Client
-from instagrapi.types import StoryMention, StoryMedia, StoryLink, StoryHashtag
+from instagrapi.types import StoryMention, StoryMedia, StoryLink, StoryHashtag, StoryPoll
 
 cl = Client()
 cl.login(USERNAME, PASSWORD)

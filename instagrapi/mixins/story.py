@@ -557,6 +557,39 @@ class StoryMixin:
         """
         return self.story_like(story_id, revert=True)
 
+    def story_poll_vote(self, story_id: str, poll_id: str, vote: int) -> bool:
+        """
+        Vote in a story poll
+
+        Parameters
+        ----------
+        story_id: str
+            Unique identifier of a Story
+        poll_id: str
+            Unique identifier of a story poll sticker
+        vote: int
+            Poll option index, starting from 0
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        if not isinstance(vote, int) or vote < 0:
+            raise ValueError("vote must be a non-negative option index")
+        media_id = self.media_id(story_id)
+        data = {
+            "_uid": str(self.user_id),
+            "_csrftoken": self.token,
+            "vote": str(vote),
+        }
+        result = self.private_request(
+            f"media/{media_id}/{poll_id}/story_poll_vote/",
+            self.with_action_data(data),
+        )
+        return result["status"] == "ok"
+
     def sticker_tray(self) -> dict:
         """
         Getting a sticker tray from Instagram
