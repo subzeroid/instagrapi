@@ -1330,8 +1330,18 @@ class UserMixin:
         """
         assert self.user_id, "Login required"
         user_id = str(user_id)
-        if user_id in self._users_following.get(self.user_id, []):
+        current_user_id = str(self.user_id)
+        following_cache = self._users_following.get(current_user_id)
+        if user_id in (following_cache or {}):
             self.logger.debug("User %s already followed", user_id)
+            return False
+        try:
+            relationship = self.user_friendship_v1(user_id)
+        except Exception as e:
+            logger.debug("Unable to pre-check friendship for %s before follow: %r", user_id, e)
+            relationship = None
+        if relationship and (relationship.following or relationship.outgoing_request):
+            self.logger.debug("User %s already followed or requested", user_id)
             return False
         data = self.with_action_data(
             {
@@ -1342,10 +1352,11 @@ class UserMixin:
             }
         )
         result = self.private_request(f"friendships/create/{user_id}/", data)
-        if self.user_id in self._users_following:
-            self._users_following.pop(self.user_id)  # reset
         friendship_status = result["friendship_status"]
-        return friendship_status.get("following") is True or friendship_status.get("outgoing_request") is True
+        followed = friendship_status.get("following") is True or friendship_status.get("outgoing_request") is True
+        if followed and following_cache is not None:
+            following_cache[user_id] = self._userhorts_cache.get(user_id) or UserShort(pk=user_id)
+        return followed
 
     def user_unfollow(self, user_id: str) -> bool:
         """

@@ -868,6 +868,45 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         ):
             self.assertTrue(client.user_follow("42"))
 
+    def test_user_follow_skips_create_when_friendship_already_following(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "user_friendship_v1",
+            return_value=mock.Mock(following=True, outgoing_request=False),
+        ) as friendship:
+            with mock.patch.object(
+                client,
+                "private_request",
+                side_effect=AssertionError("already-following users should not receive create requests"),
+            ) as private_request:
+                self.assertFalse(client.user_follow("42"))
+
+        friendship.assert_called_once_with("42")
+        private_request.assert_not_called()
+
+    def test_user_follow_updates_existing_following_cache_after_success(self):
+        client = self.build_private_client()
+        client._users_following = {str(client.user_id): {}}
+
+        with mock.patch.object(
+            client,
+            "user_friendship_v1",
+            return_value=mock.Mock(following=False, outgoing_request=False),
+        ):
+            with mock.patch.object(
+                client,
+                "private_request",
+                return_value={"friendship_status": {"following": True}},
+            ) as private_request:
+                self.assertTrue(client.user_follow("42"))
+                self.assertFalse(client.user_follow("42"))
+
+        private_request.assert_called_once()
+        self.assertIn("42", client._users_following[str(client.user_id)])
+        self.assertIsInstance(client._users_following[str(client.user_id)]["42"], UserShort)
+
     def test_user_unfollow_posts_current_action_context(self):
         client = self.build_private_client()
         client.android_device_id = "android-device"

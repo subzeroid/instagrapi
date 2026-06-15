@@ -88,7 +88,7 @@ Low level methods:
 The batch follow request helpers call the single-user approve/decline endpoints for
 each `user_id`; they do not implement an auto-approval policy.
 
-`user_follow()` returns `True` when Instagram reports either an immediate follow or an outgoing follow request for a private account. Use `user_friendship_v1()` when you need to distinguish `following` from `outgoing_request`.
+`user_follow()` returns `True` only when it sends a new follow action and Instagram reports either an immediate follow or a new outgoing follow request for a private account. It returns `False` when the current account already follows the target or already has a pending outgoing follow request. Use `user_friendship_v1()` when you need to distinguish `following` from `outgoing_request`.
 
 Example:
 

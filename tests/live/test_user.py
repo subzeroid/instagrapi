@@ -430,6 +430,58 @@ class ClientUserExtendTestCase(_helpers.ClientPrivateTestCase):
     #     self.cl.create_note("Hello from Instagrapi!", 0)
 
 
+def _client_from_reusable_test_account(acc):
+    settings = dict(acc["client_settings"])
+    settings.pop("totp_seed", None)
+    client = Client(
+        settings=settings,
+        proxy=os.getenv("IG_PROXY") or acc["proxy"],
+        override_app_version=True,
+    )
+    client._user_id = acc.get("user_id")
+    client.account_info()
+    return client
+
+
+def _fresh_reusable_user_clients(count=20):
+    clients = []
+    seen_user_ids = set()
+    for acc in _helpers.fetch_test_accounts(count=count, timeout=30):
+        try:
+            client = _client_from_reusable_test_account(acc)
+        except Exception:
+            continue
+        if client.user_id in seen_user_ids:
+            continue
+        seen_user_ids.add(client.user_id)
+        clients.append(client)
+        if len(clients) >= 2:
+            return clients
+    return clients
+
+
+class ClientUserFollowActionLiveTestCase(unittest.TestCase):
+    def test_user_follow_returns_false_for_existing_follow_live(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for follow action live tests")
+        clients = _fresh_reusable_user_clients()
+        if len(clients) < 2:
+            self.skipTest("At least two reusable TEST_ACCOUNTS_URL sessions are required")
+        requester, target = clients[:2]
+        target_id = str(target.user_id)
+        try:
+            try:
+                requester.user_unfollow(target_id)
+            except Exception:
+                pass
+            self.assertTrue(requester.user_follow(target_id))
+            relationship = requester.user_friendship_v1(target_id)
+            self.assertTrue(relationship.following or relationship.outgoing_request)
+            self.assertFalse(requester.user_follow(target_id))
+        finally:
+            requester.user_unfollow(target_id)
+
+
 class ClientFollowRequestLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
