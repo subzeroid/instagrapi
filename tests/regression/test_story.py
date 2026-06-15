@@ -95,3 +95,69 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(users[0].pk, "123")
         self.assertEqual(len(users[0].stories), 1)
         self.assertEqual(users[0].stories[0].id, "1234567890_123")
+
+    def test_extract_story_v1_reads_poll_stickers(self):
+        story = extract_story_v1(
+            {
+                "pk": "1",
+                "id": "1_2",
+                "code": "abc",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": "https://example.com/thumbnail.jpg",
+                            "width": 720,
+                            "height": 1280,
+                        }
+                    ]
+                },
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "story_polls": [
+                    {
+                        "x": 0.5,
+                        "y": 0.5,
+                        "z": 0,
+                        "width": 0.7,
+                        "height": 0.3,
+                        "rotation": 0.0,
+                        "poll_sticker": {
+                            "poll_id": "17895695668004550",
+                            "question": "Pick one",
+                            "viewer_can_vote": True,
+                            "finished": False,
+                            "tallies": [
+                                {"text": "Yes", "count": 1},
+                                {"text": "No", "count": 0},
+                            ],
+                        },
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(len(story.polls), 1)
+        self.assertEqual(story.polls[0].id, "17895695668004550")
+        self.assertEqual(story.polls[0].question, "Pick one")
+        self.assertEqual(story.polls[0].options, ["Yes", "No"])
+        self.assertTrue(story.polls[0].viewer_can_vote)
+
+    def test_story_poll_vote_posts_vote_to_poll_endpoint(self):
+        client = self.build_private_client()
+        client._user_id = "1"
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.story_poll_vote("1234567890_1", "17895695668004550", 1)
+
+        self.assertTrue(result)
+        private_request.assert_called_once()
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/1234567890_1/17895695668004550/story_poll_vote/")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["vote"], "1")
+        self.assertEqual(data["radio_type"], "wifi-none")

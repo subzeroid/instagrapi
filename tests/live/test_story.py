@@ -4,6 +4,7 @@ import queue
 import traceback
 from urllib.parse import parse_qs, urlparse
 
+from instagrapi.types import StoryPoll
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -452,6 +453,146 @@ class ClientStoryInteractiveMetadataLiveTestCase(unittest.TestCase):
         self.assertTrue(result["location_names"])
         self.assertIn("instagram", result["hashtag_names"])
         self.assertTrue(any(_is_instagrapi_github_link(url) for url in result["link_urls"]))
+
+
+def _client_from_reusable_test_account(acc):
+    settings = dict(acc["client_settings"])
+    settings.pop("totp_seed", None)
+    client = Client(
+        settings=settings,
+        proxy=os.getenv("IG_PROXY") or acc["proxy"],
+        override_app_version=True,
+    )
+    client._user_id = acc.get("user_id")
+    client.account_info()
+    return client
+
+
+def _fresh_reusable_story_clients(count=10):
+    clients = []
+    seen_user_ids = set()
+    for acc in fetch_test_accounts(count=count, timeout=30):
+        try:
+            client = _client_from_reusable_test_account(acc)
+        except Exception as exc:
+            print(f"Reusable story account skipped: {exc.__class__.__name__} {exc}")
+            continue
+        if client.user_id in seen_user_ids:
+            continue
+        seen_user_ids.add(client.user_id)
+        clients.append(client)
+        if len(clients) >= 2:
+            return clients
+    return clients
+
+
+def _story_payload_for_viewer(client, user_id, story, attempts=12, delay=5):
+    last_item_ids = []
+    for attempt in range(attempts):
+        if attempt:
+            time.sleep(delay)
+        result = client.private_request(f"feed/user/{user_id}/story/")
+        items = (result.get("reel") or {}).get("items") or []
+        last_item_ids = [item.get("id") for item in items[:5]]
+        for item in items:
+            if str(item.get("id")) == str(story.id) or str(item.get("pk")) == str(story.pk):
+                return item
+    raise RuntimeError(f"Story payload was not visible after {attempts} attempts: {last_item_ids}")
+
+
+def _first_poll_sticker(item):
+    story_polls = item.get("story_polls") or []
+    if not story_polls:
+        raise RuntimeError("Story payload did not include story_polls")
+    return story_polls[0].get("poll_sticker") or story_polls[0]
+
+
+def _run_story_poll_vote_live(result_queue):
+    if not TEST_ACCOUNTS_URL:
+        result_queue.put({"status": "skip", "reason": "TEST_ACCOUNTS_URL is required for story poll vote live tests"})
+        return
+
+    author = None
+    story = None
+    try:
+        clients = _fresh_reusable_story_clients()
+        if len(clients) < 2:
+            result_queue.put(
+                {"status": "skip", "reason": "At least two reusable TEST_ACCOUNTS_URL sessions are required"}
+            )
+            return
+        author, voter = clients[:2]
+        story = author.photo_upload_to_story(
+            Path("examples/background.png"),
+            "Story poll vote live test",
+            polls=[
+                StoryPoll(
+                    x=0.5,
+                    y=0.5,
+                    width=0.7,
+                    height=0.3,
+                    question="Poll vote live?",
+                    options=["Yes", "No"],
+                )
+            ],
+        )
+        author_item = _story_payload_for_viewer(author, author.user_id, story)
+        author_poll = _first_poll_sticker(author_item)
+        poll_id = author_poll.get("poll_id") or author_poll.get("id")
+        voter_before = _first_poll_sticker(_story_payload_for_viewer(voter, author.user_id, story))
+        voted = voter.story_poll_vote(story.id, poll_id, 0)
+        voter_after = _first_poll_sticker(_story_payload_for_viewer(voter, author.user_id, story))
+        result_queue.put(
+            {
+                "status": "ok",
+                "story_id": story.id,
+                "poll_id": poll_id,
+                "voted": voted,
+                "viewer_vote_before": voter_before.get("viewer_vote"),
+                "viewer_vote_after": voter_after.get("viewer_vote"),
+                "tallies_after": voter_after.get("tallies") or [],
+            }
+        )
+    except Exception:
+        result_queue.put({"status": "error", "traceback": traceback.format_exc()})
+    finally:
+        if author and story:
+            try:
+                author.story_delete(story.id)
+            except Exception as exc:
+                print(f"Story poll vote live cleanup story_delete failed: {exc.__class__.__name__} {exc}")
+
+
+class ClientStoryPollVoteLiveTestCase(unittest.TestCase):
+    def test_story_poll_vote_live(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for story poll vote live tests")
+        ctx = multiprocessing.get_context("spawn")
+        result_queue = ctx.Queue()
+        process = ctx.Process(target=_run_story_poll_vote_live, args=(result_queue,))
+        process.start()
+        timeout = int(os.getenv("INSTAGRAPI_STORY_POLL_VOTE_LIVE_TIMEOUT", "240"))
+        process.join(timeout)
+        if process.is_alive():
+            process.terminate()
+            process.join(10)
+            self.skipTest(f"Story poll vote live workflow timed out after {timeout} seconds")
+        try:
+            result = result_queue.get(timeout=5)
+        except queue.Empty:
+            if process.exitcode:
+                self.fail(f"Story poll vote live workflow exited with code {process.exitcode}")
+            self.fail("Story poll vote live workflow did not return a result")
+        if result["status"] == "skip":
+            self.skipTest(result["reason"])
+        if result["status"] == "error":
+            self.fail(result["traceback"])
+        self.assertTrue(result["story_id"])
+        self.assertTrue(result["poll_id"])
+        self.assertTrue(result["voted"])
+        self.assertIsNone(result["viewer_vote_before"])
+        self.assertEqual(result["viewer_vote_after"], 0)
+        self.assertGreaterEqual(result["tallies_after"][0]["count"], 1)
 
 
 class ClientStoryMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):

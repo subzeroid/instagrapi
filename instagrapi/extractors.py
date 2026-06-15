@@ -31,6 +31,7 @@ from .types import (
     StoryLocation,
     StoryMedia,
     StoryMention,
+    StoryPoll,
     Track,
     User,
     UserShort,
@@ -551,6 +552,35 @@ def extract_story_v1(data):
     story["locations"] = [StoryLocation(**location) for location in story.get("story_locations", [])]
     story["hashtags"] = [StoryHashtag(**hashtag) for hashtag in story.get("story_hashtags", [])]
     story["stickers"] = data.get("story_link_stickers") or []
+    story["polls"] = []
+    for poll in story.get("story_polls") or []:
+        poll_sticker = poll.get("poll_sticker") or poll
+        tallies = poll_sticker.get("tallies") or []
+        options = [item.get("text") for item in tallies if item.get("text") is not None]
+        story["polls"].append(
+            StoryPoll(
+                id=poll_sticker.get("poll_id") or poll_sticker.get("id"),
+                type=poll.get("type") or poll_sticker.get("type") or "poll",
+                x=poll.get("x", poll_sticker.get("x", 0.5)),
+                y=poll.get("y", poll_sticker.get("y", 0.5)),
+                z=poll.get("z", poll_sticker.get("z", 0)),
+                width=poll.get("width", poll_sticker.get("width", 0.0)),
+                height=poll.get("height", poll_sticker.get("height", 0.0)),
+                rotation=poll.get("rotation", poll_sticker.get("rotation", 0.0)),
+                is_multi_option=poll_sticker.get(
+                    "is_multi_option",
+                    poll_sticker.get("is_multi_option_poll", True),
+                ),
+                is_shared_result=poll_sticker.get("is_shared_result", False),
+                viewer_can_vote=poll_sticker.get("viewer_can_vote", True),
+                finished=poll_sticker.get("finished", False),
+                color=poll_sticker.get("color", "black"),
+                poll_type=poll_sticker.get("poll_type", ""),
+                question=poll_sticker.get("question", ""),
+                options=options or poll_sticker.get("options") or [],
+                extra=poll_sticker,
+            )
+        )
     feed_medias = []
     story_feed_medias = data.get("story_feed_media") or []
     for feed_media in story_feed_medias:
