@@ -476,7 +476,7 @@ class PublicRequestMixin:
             "Accept-Language": "en-US,en;q=0.8",
             "Referer": referer or "https://www.instagram.com/",
             "User-Agent": (
-                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+                "Instagram 273.0.0.16.70 (iPhone15,2; iOS 17_5_1; en_US; en-US; scale=3.00; 1290x2796; 470085518)"
             ),
         }
         csrftoken = self.public.cookies.get("csrftoken")

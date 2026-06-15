@@ -8,6 +8,8 @@ from instagrapi.types import Comment
 from instagrapi.utils.auth import generate_jazoest
 from instagrapi.utils.serialization import dumps
 
+MEDIA_COMMENTS_DOC_ID = "6974885689225067"
+
 
 class CommentMixin:
     """
@@ -102,8 +104,8 @@ class CommentMixin:
             A list of objects of Comment
         """
         media_pk = str(self.media_pk(media_pk))
+        shortcode = self.media_code_from_pk(media_pk)
         comments = []
-        doc_id = "6974885689225067"
         variables = {
             "after": end_cursor or None,
             "before": None,
@@ -112,15 +114,12 @@ class CommentMixin:
             "media_id": media_pk,
             "sort_order": "popular",
         }
-        data = {
-            "variables": dumps(variables),
-            "doc_id": doc_id,
-            "fb_dtsg": self.fb_dtsg,
-            "jazoest": generate_jazoest(self.phone_id),
-            **GQL_STUFF,
-        }
-        resp = self.graphql_request(data=data)
-        if data := resp["data"]:
+        data = self.public_doc_id_graphql_request(
+            MEDIA_COMMENTS_DOC_ID,
+            variables,
+            referer=f"https://www.instagram.com/p/{shortcode}/",
+        )
+        if data:
             key = None
             for key in data.keys():
                 if "comments" in key:
@@ -129,7 +128,7 @@ class CommentMixin:
             for edge in item.get("edges", []):
                 comments.append(edge["node"])
             page_info = item.get("page_info", {})
-            end_cursor = page_info.get("end_cursor") if page_info.get("has_next_page") else None
+            end_cursor = str(page_info.get("end_cursor") or "") if page_info.get("has_next_page") else ""
             return comments, end_cursor
         return [], ""
 
@@ -154,6 +153,18 @@ class CommentMixin:
         if amount:
             comments = comments[:amount]
         return comments
+
+    def media_comments_public_gql_chunk(self, code: str, end_cursor: str = "") -> Tuple[List[dict], str]:
+        """
+        Get one public GraphQL comments page by media shortcode.
+        """
+        return self.media_comments_gql_chunk(self.media_pk_from_code(code), end_cursor=end_cursor)
+
+    def media_comments_public_gql(self, code: str, amount: int = 50, max_requests: int = 0) -> List[dict]:
+        """
+        Get public GraphQL comments by media shortcode.
+        """
+        return self.media_comments_gql(self.media_pk_from_code(code), amount=amount, max_requests=max_requests)
 
     def media_stream_comments_v1_chunk(
         self, media_id: str, min_id: str = "", max_id: str = ""

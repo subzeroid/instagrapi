@@ -79,27 +79,40 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
 
     def test_media_comments_gql_chunk_posts_doc_id_query(self):
         client = Client()
-        client._fb_dtsg = "token"
         with mock.patch.object(
             client,
-            "graphql_request",
+            "public_doc_id_graphql_request",
             return_value={
-                "data": {
-                    "xdt_media_comments": {
-                        "edges": [{"node": {"pk": "101", "text": "hello"}}],
-                        "page_info": {"has_next_page": True, "end_cursor": "cursor-2"},
-                    }
+                "xdt_media_comments": {
+                    "edges": [{"node": {"pk": "101", "text": "hello"}}],
+                    "page_info": {"has_next_page": True, "end_cursor": "cursor-2"},
                 }
             },
-        ) as graphql_request:
-            comments, cursor = client.media_comments_gql_chunk("123", end_cursor="cursor-1")
+        ) as doc_id_request:
+            comments, cursor = client.media_comments_gql_chunk("3441088131388376166", end_cursor="cursor-1")
 
         self.assertEqual(comments, [{"pk": "101", "text": "hello"}])
         self.assertEqual(cursor, "cursor-2")
-        data = graphql_request.call_args.kwargs["data"]
-        self.assertEqual(data["doc_id"], "6974885689225067")
-        self.assertIn('"media_id":"123"', data["variables"])
-        self.assertIn('"after":"cursor-1"', data["variables"])
+        doc_id_request.assert_called_once_with(
+            "6974885689225067",
+            {
+                "after": "cursor-1",
+                "before": None,
+                "first": 50,
+                "last": None,
+                "media_id": "3441088131388376166",
+                "sort_order": "popular",
+            },
+            referer="https://www.instagram.com/p/C_BM2yAN4Rm/",
+        )
+
+    def test_media_comments_public_gql_uses_shortcode_without_manual_graphql_params(self):
+        client = Client()
+        with mock.patch.object(client, "media_comments_gql", return_value=[{"pk": "101"}]) as comments_gql:
+            comments = client.media_comments_public_gql("C_BM2yAN4Rm", amount=12, max_requests=2)
+
+        self.assertEqual(comments, [{"pk": "101"}])
+        comments_gql.assert_called_once_with("3441088131388376166", amount=12, max_requests=2)
 
     def test_media_comments_threaded_gql_chunk_posts_parent_comment_id(self):
         client = Client()
