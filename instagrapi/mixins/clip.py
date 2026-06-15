@@ -118,6 +118,36 @@ class ClipMixin:
             },
         )
 
+    def clip_seen(self, media_ids: List[str], blend_media_ids: Optional[List[str]] = None) -> bool:
+        """
+        Mark Clips/Reels as seen using Instagram's Clips seen-state endpoint.
+
+        Parameters
+        ----------
+        media_ids: List[str]
+            Clip/Reel media ids or pks.
+        blend_media_ids: List[str], optional
+            Clip/Reel media ids or pks seen from Blend surfaces.
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_pks = [self.media_pk(media_id) for media_id in media_ids]
+        blend_media_pks = [self.media_pk(media_id) for media_id in (blend_media_ids or [])]
+        result = self.private_request(
+            "clips/write_seen_state/",
+            data={
+                "impressions": json.dumps(media_pks, separators=(",", ":")),
+                "_uid": str(self.user_id),
+                "_uuid": self.uuid,
+                "blend_impressions": json.dumps(blend_media_pks, separators=(",", ":")),
+            },
+        )
+        return result.get("status") == "ok"
+
     def clip_pin(self, media_pk: str, revert: bool = False) -> bool:
         """
         Pin Reel to the Reels tab/profile Reels grid
