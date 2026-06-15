@@ -1503,7 +1503,7 @@
 </table>
 <p>The batch follow request helpers call the single-user approve/decline endpoints for
 each <code>user_id</code>; they do not implement an auto-approval policy.</p>
-<p><code>user_follow()</code> returns <code>True</code> when Instagram reports either an immediate follow or an outgoing follow request for a private account. Use <code>user_friendship_v1()</code> when you need to distinguish <code>following</code> from <code>outgoing_request</code>.</p>
+<p><code>user_follow()</code> returns <code>True</code> only when it sends a new follow action and Instagram reports either an immediate follow or a new outgoing follow request for a private account. It returns <code>False</code> when the current account already follows the target or already has a pending outgoing follow request. Use <code>user_friendship_v1()</code> when you need to distinguish <code>following</code> from <code>outgoing_request</code>.</p>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="n">dict_keys</span><span class="p">([</span><span class="mi">5563084402</span><span class="p">,</span> <span class="mi">43848984510</span><span class="p">,</span> <span class="mi">1498977320</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span>
