@@ -221,6 +221,18 @@ def extract_user_short(data):
     """Extract User Short info"""
     data["pk"] = data.get("id", data.get("pk", None))
     assert data["pk"], f'User without pk "{data}"'
+    if "latest_reel_media" not in data and "1llatest_reel_media" in data:
+        data["latest_reel_media"] = data.get("1llatest_reel_media")
+    friendship_status = data.get("friendship_status")
+    if isinstance(friendship_status, dict):
+        friendship_status.setdefault("user_id", str(data["pk"]))
+        friendship_status.setdefault("following", False)
+        friendship_status.setdefault("incoming_request", False)
+        friendship_status.setdefault("is_bestie", False)
+        friendship_status.setdefault("is_feed_favorite", False)
+        friendship_status.setdefault("is_private", False)
+        friendship_status.setdefault("is_restricted", False)
+        friendship_status.setdefault("outgoing_request", False)
     return UserShort(**data)
 
 
