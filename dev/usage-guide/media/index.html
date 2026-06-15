@@ -2003,12 +2003,12 @@
 <tr>
 <td>photo_download(media_pk: int, folder: Path, overwrite: bool = True)</td>
 <td>Path</td>
-<td>Download photo (path to photo with best resoluton)</td>
+<td>Download photo (path to photo with best resolution)</td>
 </tr>
 <tr>
 <td>photo_download_by_url(url: str, filename: str, folder: Path, overwrite: bool = True)</td>
 <td>Path</td>
-<td>Download photo by URL (path to photo with best resoluton)</td>
+<td>Download photo by URL (path to photo with best resolution)</td>
 </tr>
 <tr>
 <td>video_download(media_pk: int, folder: Path, overwrite: bool = True)</td>
@@ -2052,6 +2052,9 @@
 </tr>
 </tbody>
 </table>
+<p><code>photo_download()</code> resolves photo metadata through the public/web media-info path first so it can use the largest
+display resource Instagram exposes for the post, then falls back to private/mobile metadata when the public web
+endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <h3 id="example_1">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
