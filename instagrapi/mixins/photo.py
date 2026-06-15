@@ -142,7 +142,7 @@ class DownloadPhotoMixin:
 
 class UploadPhotoMixin:
     """
-    Helpers for downloading photo
+    Helpers for uploading photo
     """
 
     def photo_rupload(
