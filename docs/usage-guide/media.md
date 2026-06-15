@@ -65,13 +65,9 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_get_livestream_comments(broadcast_id: str) | dict | Get livestream comments |
 | media_get_livestream_viewers(broadcast_id: str) | dict | Get livestream viewers |
 
-Media notes are separate from Direct inbox Notes. Use `media_note_create()` and
-`media_note_delete()` for the note surface attached to a post or Reel; use the
-[Notes guide](notes.md) for Direct inbox Notes.
+Media notes are separate from Direct inbox Notes. Use `media_note_create()` and `media_note_delete()` for the note surface attached to a post or Reel; use the [Notes guide](notes.md) for Direct inbox Notes.
 
-Use `clip_seen()` for Reels/Clips. `media_seen()` keeps the older story/reel-tray
-seen payload. Instagram still decides whether a seen-state event is counted in
-view analytics.
+Use `clip_seen()` for Reels/Clips. `media_seen()` keeps the older story/reel-tray seen payload. Instagram still decides whether a seen-state event is counted in view analytics.
 
 Low level methods:
 
