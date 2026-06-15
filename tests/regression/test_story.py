@@ -161,3 +161,101 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["_uid"], "1")
         self.assertEqual(data["vote"], "1")
         self.assertEqual(data["radio_type"], "wifi-none")
+
+    def test_story_likers_chunk_filters_liked_viewers_and_deduplicates_users(self):
+        client = self.build_private_client()
+        responses = [
+            {
+                "viewers": [
+                    {
+                        "has_liked": True,
+                        "user": {
+                            "pk": "10",
+                            "username": "liked_1",
+                            "profile_pic_url": "https://example.com/liked_1.jpg",
+                        },
+                    },
+                    {
+                        "has_liked": False,
+                        "user": {
+                            "pk": "20",
+                            "username": "viewer_only",
+                            "profile_pic_url": "https://example.com/viewer_only.jpg",
+                        },
+                    },
+                ],
+                "next_max_id": "page-2",
+            },
+            {
+                "viewers": [
+                    {
+                        "has_liked": True,
+                        "user": {
+                            "pk": "10",
+                            "username": "liked_1_duplicate",
+                            "profile_pic_url": "https://example.com/liked_1_duplicate.jpg",
+                        },
+                    },
+                    {
+                        "has_liked": True,
+                        "user": {
+                            "pk": "30",
+                            "username": "liked_2",
+                            "profile_pic_url": "https://example.com/liked_2.jpg",
+                        },
+                    },
+                ],
+            },
+        ]
+
+        with mock.patch.object(client, "private_request", side_effect=responses) as private_request:
+            likers, max_id = client.story_likers_chunk("1234567890_1")
+
+        self.assertEqual([liker.pk for liker in likers], ["10", "30"])
+        self.assertEqual([liker.username for liker in likers], ["liked_1", "liked_2"])
+        self.assertIsNone(max_id)
+        self.assertEqual(private_request.call_args_list[0].args[0], "media/1234567890/list_reel_media_viewer/")
+        self.assertIn("supported_capabilities_new", private_request.call_args_list[0].kwargs["params"])
+        self.assertEqual(private_request.call_args_list[1].kwargs["params"]["max_id"], "page-2")
+
+    def test_story_likers_limits_amount(self):
+        client = self.build_private_client()
+        responses = [
+            {
+                "viewers": [
+                    {
+                        "has_liked": True,
+                        "user": {
+                            "pk": "10",
+                            "username": "liked_1",
+                            "profile_pic_url": "https://example.com/liked_1.jpg",
+                        },
+                    },
+                    {
+                        "has_liked": True,
+                        "user": {
+                            "pk": "20",
+                            "username": "liked_2",
+                            "profile_pic_url": "https://example.com/liked_2.jpg",
+                        },
+                    },
+                ],
+            }
+        ]
+
+        with mock.patch.object(client, "private_request", side_effect=responses):
+            likers = client.story_likers("1234567890_1", amount=1)
+
+        self.assertEqual([liker.pk for liker in likers], ["10"])
+
+    def test_story_likers_handles_viewer_payload_without_viewers(self):
+        client = self.build_private_client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"status": "ok", "user_count": 0, "total_viewer_count": 0},
+        ):
+            likers = client.story_likers("1234567890_1")
+
+        self.assertEqual(likers, [])
