@@ -340,10 +340,11 @@ Upload medias to your feed. Common arguments:
 | video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)            | Media   | Upload video (Support MP4 files)
 | album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
-| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int \| str] = None) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination. Pass Reel topic `fit_id` values with `topics=[...]`
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
+| clip_interest_topics() | List[dict] | Get Reel topic catalog items with `name` and `fit_id` values for `clip_upload(..., topics=...)`
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
 | clip_share_to_fb_unified_config() | dict | Get the Android cross-posting unified config used by the Reel composer
 | clip_share_to_fb_unified_destination(config: Dict = None) | dict | Resolve confirmed Reel Facebook destination fields from the unified cross-posting config
@@ -377,6 +378,8 @@ Reel composer does not report Trial Reels enabled. Instagram can still reject Tr
 configure, so keep upload-side error handling for backend eligibility decisions. When `trial=True`, `clip_upload` sends
 `trial_params={"graduation_strategy": "manual"}` by default and disables feed preview for the upload.
 
+Reel topics use Instagram's interest topic `fit_id` values. Call `clip_interest_topics()` to get the current catalog, then pass selected ids with `clip_upload(..., topics=[topic["fit_id"]])`; instagrapi sends them as the Android `interest_topics` configure field.
+
 Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields such as `share_to_fb_destination_id`, `share_to_fb_destination_type`, `no_token_crosspost`, and `attempt_id`.
 
 `clip_share_to_fb_config()` calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return `share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. When `clip_upload(..., share_to_facebook=True)` has no manual destination override, instagrapi now falls back to Android's `CrosspostingUnifiedConfigsQuery` via `clip_share_to_fb_unified_config()` and uses `clip_share_to_fb_unified_destination()` only if that response contains confirmed Reel-to-Facebook destination fields. Use `clip_share_to_fb_destination()` when a config or captured app response already contains confirmed destination fields; it normalizes `destination_id`, `destination_type`, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass `fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
@@ -404,6 +407,14 @@ Facebook Reel sharing requires a Facebook account/page linked in the Instagram a
 ...         "Trying a new Reel format",
 ...         trial=True,
 ...     )
+
+>>> topics = cl.clip_interest_topics()
+>>> technology_topic = next(topic for topic in topics if topic["name"] == "Technology")
+>>> reel = cl.clip_upload(
+...     "/app/reel.mp4",
+...     "Reel with a topic",
+...     topics=[technology_topic["fit_id"]],
+... )
 
 >>> reel = cl.clip_upload(
 ...     "/app/reel.mp4",

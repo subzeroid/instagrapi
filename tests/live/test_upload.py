@@ -479,6 +479,31 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
 
+    def test_clip_upload_with_topics(self):
+        path = self.make_video_fixture(label="clip topics fixture")
+        self.assertIsInstance(path, Path)
+        topics = self.cl.clip_interest_topics()
+        if not topics:
+            self.skipTest("Instagram did not return Reel topics")
+        topic = next((item for item in topics if item.get("name") == "Technology"), topics[0])
+        topic_id = str(topic["fit_id"])
+        media = None
+        try:
+            caption_text = f"Upload clip with topic {int(time.time())}"
+            media = self.cl.clip_upload(path, caption_text, topics=[topic_id])
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            payload = self.assertUploadedMediaAccessible(
+                media,
+                media_type=2,
+                product_type="clips",
+                caption_text=caption_text,
+            )
+            self.assertTrue(payload.get("video_versions"))
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
     def test_clip_change_cover_live(self):
         path = self.make_video_fixture(label="clip cover fixture")
         cover_a = self.make_cover_fixture((220, 20, 20))
