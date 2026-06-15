@@ -287,6 +287,14 @@ class PrivateRequestMixin:
             headers.update({"X-IG-WWW-Claim": self.ig_www_claim})
         return headers
 
+    def private_headers(self, headers=None):
+        request_headers = dict(self.base_headers)
+        if headers:
+            request_headers.update(headers)
+        if self.authorization and not any(key.lower() == "authorization" for key in request_headers):
+            request_headers["Authorization"] = self.authorization
+        return request_headers
+
     def set_country(self, country: str = "US"):
         """Set you country code (ISO 3166-1/3166-2)
 

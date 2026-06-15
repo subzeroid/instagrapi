@@ -104,6 +104,25 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertFalse(device_status["hw_av1_dec"])
         self.assertEqual(result, expected)
 
+    def test_clip_interest_topics_requests_reel_topic_catalog(self):
+        client = self.build_client()
+        expected = {
+            "sub_interests": [
+                {"name": "Technology", "fit_id": 607271032992452},
+            ],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.clip_interest_topics()
+
+        private_request.assert_called_once_with(
+            "interest_nux/list_all/",
+            params={"caller": "INTEREST_NUX"},
+            with_signature=False,
+        )
+        self.assertEqual(result, expected["sub_interests"])
+
     def test_clip_share_to_fb_unified_config_requests_android_cxp_query(self):
         client = self.build_client()
         expected = {"status": "ok", "data": {"xcxp_unified_crossposting_configs_root": {}}}
@@ -144,6 +163,31 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
         self.assertEqual(result, expected)
+
+    def test_photo_rupload_sends_private_auth_headers(self):
+        client = self.build_client()
+        client.authorization_data = {
+            "ds_user_id": "1",
+            "sessionid": "1:session",
+            "should_use_header_over_cookies": True,
+        }
+        response = Mock(status_code=200)
+        opened = Mock()
+        opened.__enter__ = Mock(return_value=Mock(size=(720, 720)))
+        opened.__exit__ = Mock(return_value=False)
+
+        with mock.patch("instagrapi.mixins.photo.prepare_image", return_value=(b"photo-bytes", (720, 720))):
+            with mock.patch("instagrapi.mixins.photo.Image.open", return_value=opened):
+                with mock.patch("random.randint", return_value=1234567890):
+                    with mock.patch.object(client.private, "post", return_value=response) as private_post:
+                        upload_id, width, height = client.photo_rupload(Path("image.jpg"), upload_id="upload-id")
+
+        self.assertEqual((upload_id, width, height), ("upload-id", 720, 720))
+        headers = private_post.call_args.kwargs["headers"]
+        self.assertEqual(headers["Authorization"], client.authorization)
+        self.assertEqual(headers["IG-U-DS-USER-ID"], "1")
+        self.assertEqual(headers["X-Entity-Length"], "11")
+        self.assertEqual(headers["X-Entity-Name"], "upload-id_0_1234567890")
 
     def test_clip_share_to_fb_destination_normalizes_current_reel_destination_fields(self):
         client = self.build_client()
@@ -1226,6 +1270,11 @@ class UploadRegressionTestCase(unittest.TestCase):
     def test_clip_upload_uses_current_reels_rupload_shape(self):
         client = self.build_client()
         client.last_json = {"media": self.build_media_payload()}
+        client.authorization_data = {
+            "ds_user_id": "1",
+            "sessionid": "1:session",
+            "should_use_header_over_cookies": True,
+        }
         ok_response = Mock(status_code=200)
 
         with mock.patch(
@@ -1255,6 +1304,8 @@ class UploadRegressionTestCase(unittest.TestCase):
             r"https://i\.instagram\.com/upload_settings/[0-9a-f-]{36}$",
         )
         settings_headers = upload_settings_call.kwargs["headers"]
+        self.assertEqual(settings_headers["Authorization"], client.authorization)
+        self.assertEqual(settings_headers["IG-U-DS-USER-ID"], "1")
         self.assertEqual(settings_headers["Content-Type"], "application/json")
         self.assertEqual(settings_headers["X-Entity-Name"], "upload_settings")
         self.assertEqual(settings_headers["X-Entity-Type"], "application/json")
@@ -1285,6 +1336,8 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertTrue(private_get.call_args.args[0].endswith(upload_name))
 
         headers = video_upload_call.kwargs["headers"]
+        self.assertEqual(headers["Authorization"], client.authorization)
+        self.assertEqual(headers["IG-U-DS-USER-ID"], "1")
         self.assertEqual(headers["Content-Type"], "application/octet-stream")
         self.assertEqual(headers["X-Entity-Type"], "video/mp4")
         self.assertEqual(headers["X-Entity-Length"], "11")
@@ -1405,6 +1458,40 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "custom_field": "1",
             },
         )
+
+    def test_clip_upload_topics_adds_interest_topics_without_mutating_extra_data(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+        extra_data = {"disable_comments": "1"}
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch.object(client.private, "get", return_value=ok_response):
+                with mock.patch.object(
+                    client.private,
+                    "post",
+                    side_effect=[ok_response, ok_response],
+                ):
+                    with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}) as clip_configure:
+                        with mock.patch(
+                            "builtins.open",
+                            mock.mock_open(read_data=b"video-bytes"),
+                        ):
+                            with mock.patch("time.sleep"):
+                                client.clip_upload(
+                                    Path("example.mp4"),
+                                    "caption",
+                                    topics=[123, "456"],
+                                    extra_data=extra_data,
+                                )
+
+        self.assertEqual(extra_data, {"disable_comments": "1"})
+        configure_extra = clip_configure.call_args.kwargs["extra_data"]
+        self.assertEqual(configure_extra["disable_comments"], "1")
+        self.assertEqual(configure_extra["interest_topics"], ["123", "456"])
 
     def test_clip_upload_share_to_facebook_adds_crosspost_params_before_upload(self):
         client = self.build_client()

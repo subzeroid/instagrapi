@@ -206,17 +206,19 @@ class UploadPhotoMixin:
         else:
             photo_data, photo_size = prepare_image(str(path), max_side=1080)
         photo_len = str(len(photo_data))
-        headers = {
-            "Accept-Encoding": "gzip",
-            "X-Instagram-Rupload-Params": json.dumps(rupload_params),
-            "X_FB_PHOTO_WATERFALL_ID": waterfall_id,
-            "X-Entity-Type": image_type,
-            "Offset": "0",
-            "X-Entity-Name": upload_name,
-            "X-Entity-Length": photo_len,
-            "Content-Type": "application/octet-stream",
-            "Content-Length": photo_len,
-        }
+        headers = self.private_headers(
+            {
+                "Accept-Encoding": "gzip",
+                "X-Instagram-Rupload-Params": json.dumps(rupload_params),
+                "X_FB_PHOTO_WATERFALL_ID": waterfall_id,
+                "X-Entity-Type": image_type,
+                "Offset": "0",
+                "X-Entity-Name": upload_name,
+                "X-Entity-Length": photo_len,
+                "Content-Type": "application/octet-stream",
+                "Content-Length": photo_len,
+            }
+        )
         response = self.private.post(
             "https://{domain}/rupload_igphoto/{name}".format(domain=config.API_DOMAIN, name=upload_name),
             data=photo_data,
