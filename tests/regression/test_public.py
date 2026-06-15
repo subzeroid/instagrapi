@@ -66,6 +66,7 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(kwargs["data"]["variables"], '{"shortcode":"C_BM2yAN4Rm"}')
         self.assertEqual(kwargs["data"]["server_timestamps"], "true")
         self.assertEqual(kwargs["headers"]["Referer"], "https://www.instagram.com/p/C_BM2yAN4Rm/")
+        self.assertIn("Instagram 273.0.0.16.70", kwargs["headers"]["User-Agent"])
         self.assertFalse(kwargs["update_headers"])
         self.assertTrue(kwargs["return_json"])
 
