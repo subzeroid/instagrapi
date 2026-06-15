@@ -511,6 +511,50 @@ class StoryMixin:
             viewers = viewers[:amount]
         return viewers
 
+    def story_likers_chunk(self, story_pk: int, max_amount: int = 0, max_id: str = "") -> tuple[list[UserShort], str]:
+        unique_set: set[str] = set()
+        likers: list[UserShort] = []
+        story_pk = self.media_pk(story_pk)
+        params = {"supported_capabilities_new": json.dumps(config.SUPPORTED_CAPABILITIES)}
+
+        while True:
+            if max_id:
+                params["max_id"] = max_id
+            result = self.private_request(f"media/{story_pk}/list_reel_media_viewer/", params=params)
+            for item in result.get("viewers") or []:
+                if not item.get("has_liked"):
+                    continue
+                liker = extract_user_short(item["user"])
+                if liker.pk in unique_set:
+                    continue
+                unique_set.add(liker.pk)
+                likers.append(liker)
+
+            max_id = result.get("next_max_id")
+            if not max_id or (max_amount and len(likers) >= max_amount):
+                break
+        return likers, max_id
+
+    def story_likers(self, story_pk: int, amount: int = 0) -> List[UserShort]:
+        """
+        List of story likers (Private API)
+
+        Parameters
+        ----------
+        story_pk: int
+        amount: int, optional
+            Maximum number of story likers
+
+        Returns
+        -------
+        List[UserShort]
+            A list of objects of UserShort
+        """
+        likers, _ = self.story_likers_chunk(story_pk, amount)
+        if amount:
+            likers = likers[:amount]
+        return likers
+
     def story_like(self, story_id: str, revert: bool = False) -> bool:
         """
         Like a story

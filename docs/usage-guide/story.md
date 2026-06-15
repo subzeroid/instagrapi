@@ -10,6 +10,7 @@
 | story_download(story_pk: int, filename: str = "", folder: Path = "")   | Path            | Download story media by media_type
 | story_download_by_url(url: str, filename: str = "", folder: Path = "") | Path            | Download story media using URL to file (mp4 or jpg)
 | story_viewers(story_pk: int, amount: int = 20)                         | List[UserShort] | List of story viewers (via Private API)
+| story_likers(story_pk: int, amount: int = 0)                           | List[UserShort] | List of story likers (via Private API)
 | archive_story_days(amount: int = 0, include_memories: bool = True)      | List[StoryArchiveDay] | Get your story archive day shells
 | archive_stories(amount: int = 0)                                        | List[Story]     | Get your archived stories
 | story_like(story_id: str, revert: bool = False)                        | bool            | Like a story

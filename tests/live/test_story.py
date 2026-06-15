@@ -595,6 +595,88 @@ class ClientStoryPollVoteLiveTestCase(unittest.TestCase):
         self.assertGreaterEqual(result["tallies_after"][0]["count"], 1)
 
 
+def _story_likers_until_contains(client, story_pk, expected_user_id, attempts=12, delay=5):
+    last_liker_ids = []
+    for attempt in range(attempts):
+        if attempt:
+            time.sleep(delay)
+        likers = client.story_likers(story_pk, amount=20)
+        last_liker_ids = [str(liker.pk) for liker in likers]
+        if str(expected_user_id) in last_liker_ids:
+            return likers
+    raise RuntimeError(f"Story likers did not include {expected_user_id} after {attempts} attempts: {last_liker_ids}")
+
+
+def _run_story_likers_live(result_queue):
+    if not TEST_ACCOUNTS_URL:
+        result_queue.put({"status": "skip", "reason": "TEST_ACCOUNTS_URL is required for story likers live tests"})
+        return
+
+    author = None
+    story = None
+    try:
+        clients = _fresh_reusable_story_clients()
+        if len(clients) < 2:
+            result_queue.put(
+                {"status": "skip", "reason": "At least two reusable TEST_ACCOUNTS_URL sessions are required"}
+            )
+            return
+        author, liker = clients[:2]
+        story = author.photo_upload_to_story(Path("examples/background.png"), "Story likers live test")
+        _story_payload_for_viewer(liker, author.user_id, story)
+        seen = liker.story_seen([story.pk])
+        liked = liker.story_like(story.id)
+        likers = _story_likers_until_contains(author, story.pk, liker.user_id)
+        result_queue.put(
+            {
+                "status": "ok",
+                "story_id": story.id,
+                "seen": seen,
+                "liked": liked,
+                "liker_user_id": str(liker.user_id),
+                "liker_ids": [str(user.pk) for user in likers],
+            }
+        )
+    except Exception:
+        result_queue.put({"status": "error", "traceback": traceback.format_exc()})
+    finally:
+        if author and story:
+            try:
+                author.story_delete(story.id)
+            except Exception as exc:
+                print(f"Story likers live cleanup story_delete failed: {exc.__class__.__name__} {exc}")
+
+
+class ClientStoryLikersLiveTestCase(unittest.TestCase):
+    def test_story_likers_live(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for story likers live tests")
+        ctx = multiprocessing.get_context("spawn")
+        result_queue = ctx.Queue()
+        process = ctx.Process(target=_run_story_likers_live, args=(result_queue,))
+        process.start()
+        timeout = int(os.getenv("INSTAGRAPI_STORY_LIKERS_LIVE_TIMEOUT", "240"))
+        process.join(timeout)
+        if process.is_alive():
+            process.terminate()
+            process.join(10)
+            self.skipTest(f"Story likers live workflow timed out after {timeout} seconds")
+        try:
+            result = result_queue.get(timeout=5)
+        except queue.Empty:
+            if process.exitcode:
+                self.fail(f"Story likers live workflow exited with code {process.exitcode}")
+            self.fail("Story likers live workflow did not return a result")
+        if result["status"] == "skip":
+            self.skipTest(result["reason"])
+        if result["status"] == "error":
+            self.fail(result["traceback"])
+        self.assertTrue(result["story_id"])
+        self.assertTrue(result["seen"])
+        self.assertTrue(result["liked"])
+        self.assertIn(result["liker_user_id"], result["liker_ids"])
+
+
 class ClientStoryMusicUploadLiveTestCase(_helpers.ClientPrivateTestCase):
     photo_path = Path("examples/background.png")
 
