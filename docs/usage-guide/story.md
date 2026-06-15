@@ -13,7 +13,7 @@
 | story_likers(story_pk: int, amount: int = 0)                           | List[UserShort] | List of story likers (via Private API)
 | archive_story_days(amount: int = 0, include_memories: bool = True)      | List[StoryArchiveDay] | Get your story archive day shells
 | archive_stories(amount: int = 0)                                        | List[Story]     | Get your archived stories
-| story_like(story_id: str, revert: bool = False)                        | bool            | Like a story
+| story_like(story_id: str, revert: bool = False, mark_seen: bool = True) | bool            | Like a story
 | story_unlike(story_id: str)                                            | bool            | Unlike a story
 | story_poll_vote(story_id: str, poll_id: str, vote: int)                | bool            | Vote in a story poll by option index
 

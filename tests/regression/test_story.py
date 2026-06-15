@@ -259,3 +259,39 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
             likers = client.story_likers("1234567890_1")
 
         self.assertEqual(likers, [])
+
+    def test_story_like_marks_story_seen_before_liking(self):
+        client = self.build_private_client()
+        client._user_id = "1"
+
+        with mock.patch.object(client, "story_seen", return_value=True) as story_seen:
+            with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+                result = client.story_like("1234567890_1")
+
+        self.assertTrue(result)
+        story_seen.assert_called_once_with(["1234567890"])
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "story_interactions/send_story_like")
+
+    def test_story_like_can_skip_mark_seen(self):
+        client = self.build_private_client()
+        client._user_id = "1"
+
+        with mock.patch.object(client, "story_seen", return_value=True) as story_seen:
+            with mock.patch.object(client, "private_request", return_value={"status": "ok"}):
+                result = client.story_like("1234567890_1", mark_seen=False)
+
+        self.assertTrue(result)
+        story_seen.assert_not_called()
+
+    def test_story_unlike_does_not_mark_story_seen(self):
+        client = self.build_private_client()
+        client._user_id = "1"
+
+        with mock.patch.object(client, "story_seen", return_value=True) as story_seen:
+            with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+                result = client.story_unlike("1234567890_1")
+
+        self.assertTrue(result)
+        story_seen.assert_not_called()
+        self.assertEqual(private_request.call_args.args[0], "story_interactions/unsend_story_like")

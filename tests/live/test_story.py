@@ -624,14 +624,12 @@ def _run_story_likers_live(result_queue):
         author, liker = clients[:2]
         story = author.photo_upload_to_story(Path("examples/background.png"), "Story likers live test")
         _story_payload_for_viewer(liker, author.user_id, story)
-        seen = liker.story_seen([story.pk])
         liked = liker.story_like(story.id)
         likers = _story_likers_until_contains(author, story.pk, liker.user_id)
         result_queue.put(
             {
                 "status": "ok",
                 "story_id": story.id,
-                "seen": seen,
                 "liked": liked,
                 "liker_user_id": str(liker.user_id),
                 "liker_ids": [str(user.pk) for user in likers],
@@ -672,7 +670,6 @@ class ClientStoryLikersLiveTestCase(unittest.TestCase):
         if result["status"] == "error":
             self.fail(result["traceback"])
         self.assertTrue(result["story_id"])
-        self.assertTrue(result["seen"])
         self.assertTrue(result["liked"])
         self.assertIn(result["liker_user_id"], result["liker_ids"])
 
