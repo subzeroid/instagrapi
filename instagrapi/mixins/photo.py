@@ -11,6 +11,7 @@ import requests
 
 from instagrapi import config
 from instagrapi.exceptions import (
+    ClientError,
     PhotoConfigureError,
     PhotoConfigureStoryError,
     PhotoNotUpload,
@@ -45,7 +46,16 @@ class DownloadPhotoMixin:
     Helpers for downloading photo
     """
 
-    def photo_download(self, media_pk: int, folder: Path = "", overwrite: bool = True) -> Path:
+    def _photo_download_media_info(self, media_pk: str) -> Media:
+        try:
+            media = self.media_info_gql(media_pk)
+        except ClientError:
+            media = None
+        if media and media.media_type == 1 and media.thumbnail_url:
+            return media
+        return self.media_info(media_pk)
+
+    def photo_download(self, media_pk: Union[int, str], folder: Path = "", overwrite: bool = True) -> Path:
         """
         Download photo using media pk
 
@@ -65,10 +75,13 @@ class DownloadPhotoMixin:
         Path
             Path for the file downloaded
         """
-        media = self.media_info(media_pk)
+        media_pk_str = self.media_pk(str(media_pk))
+        media = self._photo_download_media_info(media_pk_str)
         assert media.media_type == 1, "Must been photo"
-        filename = "{username}_{media_pk}".format(username=media.user.username, media_pk=media_pk)
-        return self.photo_download_by_url(media.thumbnail_url, filename, folder, overwrite=overwrite)
+        if not media.thumbnail_url:
+            raise Exception("Photo thumbnail URL is empty")
+        filename = "{username}_{media_pk}".format(username=media.user.username, media_pk=media_pk_str)
+        return self.photo_download_by_url(str(media.thumbnail_url), filename, folder, overwrite=overwrite)
 
     def photo_download_by_url(
         self,
