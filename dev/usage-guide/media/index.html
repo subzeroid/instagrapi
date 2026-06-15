@@ -1653,6 +1653,11 @@
 <td>Fetch Reel remix/reuse availability metadata</td>
 </tr>
 <tr>
+<td>clip_seen(media_ids: List[str], blend_media_ids: List[str] = None)</td>
+<td>bool</td>
+<td>Mark Reels/Clips as seen through the Clips seen-state endpoint</td>
+</tr>
+<tr>
 <td>clip_pin(media_pk: str)</td>
 <td>bool</td>
 <td>Pin Reel to the Reels tab/profile Reels grid</td>
@@ -1702,6 +1707,9 @@
 <p>Media notes are separate from Direct inbox Notes. Use <code>media_note_create()</code> and
 <code>media_note_delete()</code> for the note surface attached to a post or Reel; use the
 <a href="../notes/">Notes guide</a> for Direct inbox Notes.</p>
+<p>Use <code>clip_seen()</code> for Reels/Clips. <code>media_seen()</code> keeps the older story/reel-tray
+seen payload. Instagram still decides whether a seen-state event is counted in
+view analytics.</p>
 <p>Low level methods:</p>
 <table>
 <thead>
