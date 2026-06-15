@@ -90,6 +90,8 @@ each `user_id`; they do not implement an auto-approval policy.
 
 `user_follow()` returns `True` only when it sends a new follow action and Instagram reports either an immediate follow or a new outgoing follow request for a private account. It returns `False` when the current account already follows the target or already has a pending outgoing follow request. Use `user_friendship_v1()` when you need to distinguish `following` from `outgoing_request`.
 
+`UserShort` objects returned from private GraphQL follow-list payloads preserve selected v2-only fields when Instagram sends them: `friendship_status`, `profile_pic_id`, `fbid_v2`, `interop_messaging_user_fbid`, `strong_id__`, and raw `account_badges`. The legacy `latest_reel_media` property is also populated from Instagram's current `1llatest_reel_media` key.
+
 Example:
 
 ``` python

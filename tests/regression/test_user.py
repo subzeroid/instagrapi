@@ -123,6 +123,45 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user.latest_reel_media, 1710000123)
         self.assertFalse(user.has_anonymous_profile_picture)
 
+    def test_extract_user_short_preserves_private_graphql_v2_fields(self):
+        payload = {
+            "id": "123",
+            "strong_id__": "123",
+            "username": "follower",
+            "full_name": "Follower",
+            "is_private": False,
+            "is_verified": True,
+            "1llatest_reel_media": 1710000123,
+            "account_badges": [{"badge_type": "example"}],
+            "fbid_v2": 17841400000000000,
+            "friendship_status": {
+                "following": True,
+                "incoming_request": False,
+                "is_bestie": False,
+                "is_feed_favorite": True,
+                "is_private": False,
+                "is_restricted": False,
+                "outgoing_request": False,
+            },
+            "has_anonymous_profile_picture": False,
+            "interop_messaging_user_fbid": 117943452927407,
+            "profile_pic_id": "3725434617063385984_123",
+            "profile_pic_url": "https://example.com/pic.jpg",
+        }
+
+        user = extract_user_short(payload)
+
+        self.assertEqual(user.pk, "123")
+        self.assertEqual(user.latest_reel_media, 1710000123)
+        self.assertEqual(user.profile_pic_id, "3725434617063385984_123")
+        self.assertEqual(user.fbid_v2, "17841400000000000")
+        self.assertEqual(user.interop_messaging_user_fbid, "117943452927407")
+        self.assertEqual(user.strong_id__, "123")
+        self.assertEqual(user.account_badges, [{"badge_type": "example"}])
+        self.assertEqual(user.friendship_status.user_id, "123")
+        self.assertTrue(user.friendship_status.following)
+        self.assertTrue(user.friendship_status.is_feed_favorite)
+
     def test_user_short_gql_uses_web_profile_doc_id_without_legacy_query_hash(self):
         client = Client()
         web_user = {

@@ -4,6 +4,7 @@ import queue
 import traceback
 
 from instagrapi import types as ig_types
+from instagrapi.extractors import extract_user_short
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -54,6 +55,34 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         followers = self.cl.user_followers_private_gql(user_id, amount=5, order="date_followed_latest")
         self.assertEqual(len(followers), 5)
         self.assertIsInstance(followers[0], UserShort)
+
+
+class ClientPrivateGraphQLV2UserFieldsLiveTestCase(unittest.TestCase):
+    def test_user_followers_private_gql_preserves_v2_user_fields(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for private GraphQL v2 user field live tests")
+        cl = fresh_test_account(count=5, attempts=5, timeout=30)
+        user_id = cl.user_id_from_username("instagram")
+        result = cl.private_graphql_followers_list(user_id, cl.rank_token, order="date_followed_latest")
+        data = result.get("data") or {}
+        followers = next(
+            (value for key, value in data.items() if "xdt_api__v1__friendships__followers" in key),
+            {},
+        )
+        raw_user = next((user for user in followers.get("users", []) if user.get("friendship_status")), None)
+        if raw_user is None:
+            self.skipTest("private GraphQL followers payload did not include friendship_status")
+
+        rich_user = extract_user_short(dict(raw_user))
+
+        self.assertIsInstance(rich_user, UserShort)
+        self.assertIsNotNone(rich_user.latest_reel_media)
+        self.assertIsInstance(rich_user.account_badges, list)
+        self.assertIsInstance(rich_user.friendship_status, ig_types.RelationshipShort)
+        for field in ("profile_pic_id", "fbid_v2", "interop_messaging_user_fbid", "strong_id__"):
+            raw_value = raw_user.get(field)
+            if raw_value is not None:
+                self.assertEqual(getattr(rich_user, field), str(raw_value))
 
 
 def _run_business_email_live(result_queue):
