@@ -75,11 +75,12 @@ Common arguments:
 * `stickers` - Add stickers to story
 * `medias` - Reshared feed media stickers
 * `polls` - Add polls to story
+* `resize_mode` - Story media sizing mode: `"fill"` keeps the current crop/fill behavior, `"fit"` renders the full source media on a Story canvas without cropping
 
 | Method                               | Return   | Description
 | ------------------------------------ | -------- | -------------
-| photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})  | Story  | Upload photo to story
-| video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}) | Story  | Upload video to story
+| photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill")  | Story  | Upload photo to story
+| video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill") | Story  | Upload video to story
 | media_share_to_story(media_id: str, background: Path = None, caption: str = "") | Story | Share an existing post to your story with a generated or provided background
 | photo_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, duration: float = 15.0, extra_data: Dict = {}) | Story | Upload photo to story as a short video with the selected music track muxed into it
 | video_upload_to_story_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {}) | Story | Upload video to story with the selected music track muxed into it
@@ -96,7 +97,7 @@ Notes:
 * `links`, `hashtags`, `locations`, `stickers`, `medias`, and `polls` are all part of the story sticker payload.
 * `media_share_to_story()` is a convenience wrapper for the feed media sticker flow. It uploads a generated black 9:16 background unless you pass your own `background`.
 * Link stickers are supported through `StoryLink`; this is no longer the old Instagram "swipe up" flow.
-* For story uploads, use a 9:16 asset or build one with `StoryBuilder`.
+* For story uploads, use a 9:16 asset, pass `resize_mode="fit"` to keep the full source media visible on a Story canvas, or build one manually with `StoryBuilder`.
 * Android users should pass `thumbnail=...` for video stories or install the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg. See [Pydroid and ffmpeg](pydroid.md) and [Termux](termux.md).
 * Story music helpers require the optional video dependencies, MoviePy `2.2.1`, and executable ffmpeg because they render a local MP4 before upload.
 * Story music helpers add Story music metadata and bake the selected track into the uploaded media. They do not expose Instagram's native interactive lyrics/music sticker UI.
@@ -128,6 +129,13 @@ cl.video_upload_to_story(
 )
 
 cl.media_share_to_story(media_pk, caption="Shared to story")
+```
+
+Fit a landscape photo or video into a Story without cropping:
+
+``` python
+cl.photo_upload_to_story(Path("/app/landscape.jpg"), resize_mode="fit")
+cl.video_upload_to_story(Path("/app/landscape.mp4"), resize_mode="fit")
 ```
 
 ## Upload Story with Music
@@ -174,6 +182,7 @@ MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi keeps `Pillow>=12
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |
 | StoryBuilder.build_clip(clip: moviepy.Clip, max_duration: int = 0) | StoryBuild | Build CompositeVideoClip with background and mentioned users. Return MP4 file and mentions with coordinates |
 | StoryBuilder.video(max_duration: int = 0)            | StoryBuild | Call build_clip(VideoClip, max_duration) |
+| StoryBuilder.video_fit(max_duration: int = 0)        | StoryBuild | Build a 720x1280 Story video canvas that fits the full source video without cropping |
 | StoryBuilder.photo(max_duration: int = 0)            | StoryBuild | Call build_clip(ImageClip, max_duration) |
 
 Example:
