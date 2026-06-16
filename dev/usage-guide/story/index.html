@@ -1418,6 +1418,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li><code>stickers</code> - Add stickers to story</li>
 <li><code>medias</code> - Reshared feed media stickers</li>
 <li><code>polls</code> - Add polls to story</li>
+<li><code>resize_mode</code> - Story media sizing mode: <code>"fill"</code> keeps the current crop/fill behavior, <code>"fit"</code> renders the full source media on a Story canvas without cropping</li>
 </ul>
 <table>
 <thead>
@@ -1429,12 +1430,12 @@ If you have a different resolution, then you need to prepare a file or use the S
 </thead>
 <tbody>
 <tr>
-<td>photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})</td>
+<td>photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill")</td>
 <td>Story</td>
 <td>Upload photo to story</td>
 </tr>
 <tr>
-<td>video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {})</td>
+<td>video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill")</td>
 <td>Story</td>
 <td>Upload video to story</td>
 </tr>
@@ -1482,7 +1483,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li><code>links</code>, <code>hashtags</code>, <code>locations</code>, <code>stickers</code>, <code>medias</code>, and <code>polls</code> are all part of the story sticker payload.</li>
 <li><code>media_share_to_story()</code> is a convenience wrapper for the feed media sticker flow. It uploads a generated black 9:16 background unless you pass your own <code>background</code>.</li>
 <li>Link stickers are supported through <code>StoryLink</code>; this is no longer the old Instagram "swipe up" flow.</li>
-<li>For story uploads, use a 9:16 asset or build one with <code>StoryBuilder</code>.</li>
+<li>For story uploads, use a 9:16 asset, pass <code>resize_mode="fit"</code> to keep the full source media visible on a Story canvas, or build one manually with <code>StoryBuilder</code>.</li>
 <li>Android users should pass <code>thumbnail=...</code> for video stories or install the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg. See <a href="../pydroid/">Pydroid and ffmpeg</a> and <a href="../termux/">Termux</a>.</li>
 <li>Story music helpers require the optional video dependencies, MoviePy <code>2.2.1</code>, and executable ffmpeg because they render a local MP4 before upload.</li>
 <li>Story music helpers add Story music metadata and bake the selected track into the uploaded media. They do not expose Instagram's native interactive lyrics/music sticker UI.</li>
@@ -1511,6 +1512,10 @@ If you have a different resolution, then you need to prepare a file or use the S
 <span class="p">)</span>
 
 <span class="n">cl</span><span class="o">.</span><span class="n">media_share_to_story</span><span class="p">(</span><span class="n">media_pk</span><span class="p">,</span> <span class="n">caption</span><span class="o">=</span><span class="s2">&quot;Shared to story&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Fit a landscape photo or video into a Story without cropping:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_to_story</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/landscape.jpg&quot;</span><span class="p">),</span> <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_story</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;/app/landscape.mp4&quot;</span><span class="p">),</span> <span class="n">resize_mode</span><span class="o">=</span><span class="s2">&quot;fit&quot;</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="upload-story-with-music">Upload Story with Music</h2>
 <p>Story music upload works by rendering an MP4 locally and then publishing it with the normal story upload flow.</p>
@@ -1559,6 +1564,11 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <td>StoryBuilder.video(max_duration: int = 0)</td>
 <td>StoryBuild</td>
 <td>Call build_clip(VideoClip, max_duration)</td>
+</tr>
+<tr>
+<td>StoryBuilder.video_fit(max_duration: int = 0)</td>
+<td>StoryBuild</td>
+<td>Build a 720x1280 Story video canvas that fits the full source video without cropping</td>
 </tr>
 <tr>
 <td>StoryBuilder.photo(max_duration: int = 0)</td>
