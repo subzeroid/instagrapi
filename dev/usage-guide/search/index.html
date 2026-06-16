@@ -1271,6 +1271,11 @@
 <td><code>List[dict]</code></td>
 <td>Typeahead user suggestions, flattened from the <code>stream_rows</code> envelope returned by <code>fbsearch/typeahead_stream/</code>.</td>
 </tr>
+<tr>
+<td><code>media_search(query: str, amount: int = 27)</code></td>
+<td><code>List[Media]</code></td>
+<td>Typed media search from the private Top blended fbsearch SERP, including media-grid cursor pagination.</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1287,6 +1292,9 @@
 
 <span class="c1"># Typeahead — flat list of user dicts</span>
 <span class="n">users</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_typehead</span><span class="p">(</span><span class="s2">&quot;py&quot;</span><span class="p">)</span>
+
+<span class="c1"># Top media — typed Media objects</span>
+<span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="other-search-helpers">Other search helpers</h2>
 <table>

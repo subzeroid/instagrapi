@@ -1162,6 +1162,11 @@
 <td>Return recent posts for a hashtag</td>
 </tr>
 <tr>
+<td>hashtag_medias_paginated(name: str, amount: int = 27, tab_key: str = "recent", end_cursor: str = None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Return one hashtag media page plus the next cursor; authenticated sessions use private/mobile pagination first</td>
+</tr>
+<tr>
 <td>hashtag_medias_reels_v1(name: str, amount: int = 27)</td>
 <td>List[Media]</td>
 <td>Return reels/clips for a hashtag via private API</td>
@@ -1302,6 +1307,16 @@
 <td>Get information about a hashtag by Private Mobile API</td>
 </tr>
 <tr>
+<td>hashtag_medias_paginated_gql(name: str, amount: int = 27, end_cursor: str = None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one recent hashtag media page by Public GraphQL API</td>
+</tr>
+<tr>
+<td>hashtag_medias_paginated_v1(name: str, amount: int = 27, tab_key: str = "top|recent|clips", end_cursor: str = None)</td>
+<td>Tuple[List[Media], str]</td>
+<td>Get one hashtag media page by Private Mobile API</td>
+</tr>
+<tr>
 <td>hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top|recent", max_id: str = None)</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API</td>
@@ -1329,7 +1344,10 @@
 </tbody>
 </table>
 <p>Example for <a href="https://github.com/subzeroid/instagrapi/issues/79">Request for loading every next time new posts from hashtag</a>:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_v1_chunk</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">max_amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_paginated</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">next_medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_paginated</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">,</span> <span class="n">end_cursor</span><span class="o">=</span><span class="n">cursor</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">hashtag_medias_v1_chunk</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">max_amount</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s1">&#39;recent&#39;</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">medias</span><span class="p">)</span>
 <span class="mi">32</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">cursor</span>
@@ -1357,7 +1375,7 @@
 <li>Instagram's old public hashtag web page JSON (<code>?__a=1</code>) is no longer reliable and the <code>_a1</code> helpers were removed. Use the high-level hashtag methods or the authenticated private/mobile <code>_v1</code> helpers.</li>
 <li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> use the private/mobile helpers.</li>
 <li><code>hashtag_following()</code> returns the authenticated following-list hashtag preview. Instagram may limit how many followed hashtags are included.</li>
-<li>For resumable pagination, use <code>hashtag_medias_v1_chunk()</code> and persist the encoded <code>max_id</code> cursor.</li>
+<li>For resumable pagination, prefer <code>hashtag_medias_paginated()</code> and persist the returned cursor. Use <code>hashtag_medias_v1_chunk()</code> only when you need the low-level private/mobile helper.</li>
 <li><code>hashtag_medias_v1_chunk()</code> accepts <code>top</code>, <code>recent</code>, or <code>clips</code> as <code>tab_key</code>.</li>
 </ul>
 
