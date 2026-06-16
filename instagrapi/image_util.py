@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import tempfile
+from typing import Union
 
 try:
     from PIL import Image
@@ -138,6 +139,41 @@ def prepare_image(img, max_size=(1080, 1350), aspect_ratios=(4.0 / 5.0, 90.0 / 4
     b = io.BytesIO()
     im.save(b, "JPEG")
     return b.getvalue(), im.size
+
+
+def prepare_story_image_fit(
+    img,
+    max_size=(1080, 1920),
+    background_color: Union[str, tuple] = "black",
+    save_path=None,
+):
+    """
+    Prepare an image for a Story without cropping the source media.
+    """
+    if is_remote(img):
+        res = requests.get(img, timeout=5)
+        source_image = Image.open(io.BytesIO(res.content))
+    else:
+        source_image = Image.open(img)
+
+    im = source_image
+    try:
+        if im.mode != "RGBA":
+            im = im.convert("RGBA")
+        im.thumbnail(max_size, Image.Resampling.LANCZOS)
+        canvas = Image.new("RGB", max_size, background_color)
+        left = int((max_size[0] - im.size[0]) / 2)
+        top = int((max_size[1] - im.size[1]) / 2)
+        canvas.paste(im, (left, top), im)
+        if save_path:
+            canvas.save(save_path)
+        b = io.BytesIO()
+        canvas.save(b, "JPEG")
+        return b.getvalue(), canvas.size
+    finally:
+        if im is not source_image:
+            im.close()
+        source_image.close()
 
 
 def prepare_video(

@@ -1,3 +1,4 @@
+import contextlib
 import os
 import tempfile
 from pathlib import Path
@@ -56,6 +57,13 @@ class StoryBuilder:
 
     width = 720
     height = 1280
+
+    @staticmethod
+    def _fit_size(source_size, canvas_size):
+        source_width, source_height = source_size
+        canvas_width, canvas_height = canvas_size
+        scale = min(canvas_width / float(source_width), canvas_height / float(source_height))
+        return int(source_width * scale), int(source_height * scale)
 
     def __init__(
         self,
@@ -252,6 +260,52 @@ class StoryBuilder:
         build = self.build_main(clip, max_duration, font, fontsize, color, link)
         clip.close()
         return build
+
+    def video_fit(
+        self,
+        max_duration: int = 0,
+        background_color=(0, 0, 0),
+    ):
+        """
+        Build a Story video canvas that fits the full source video without cropping.
+        """
+        CompositeVideoClip, _, _, VideoFileClip, _ = _import_moviepy_for_story()
+        source_clip = None
+        work_clip = None
+        resized_clip = None
+        positioned_clip = None
+        canvas_clip = None
+        try:
+            source_clip = VideoFileClip(str(self.path), has_mask=True)
+            duration = float(source_clip.duration or max_duration or 0)
+            if max_duration and duration > max_duration:
+                duration = float(max_duration)
+                work_clip = source_clip.subclipped(0, duration)
+            else:
+                work_clip = source_clip
+            fit_width, fit_height = self._fit_size(work_clip.size, (self.width, self.height))
+            clip_left = int((self.width - fit_width) / 2)
+            clip_top = int((self.height - fit_height) / 2)
+            resized_clip = work_clip.resized(new_size=(fit_width, fit_height))
+            positioned_clip = resized_clip.with_position((clip_left, clip_top))
+            canvas_clip = CompositeVideoClip(
+                [positioned_clip],
+                size=(self.width, self.height),
+                bg_color=background_color,
+            ).with_duration(duration)
+            fps = getattr(source_clip, "fps", None) or 24
+            canvas_clip = canvas_clip.with_fps(fps)
+            destination = _make_tmp_path(".mp4")
+            canvas_clip.write_videofile(destination, codec="libx264", audio=True, audio_codec="aac")
+            return StoryBuild(mentions=[], path=destination, paths=[], stickers=[])
+        finally:
+            closed = set()
+            for clip in (canvas_clip, positioned_clip, resized_clip, work_clip, source_clip):
+                if not clip or id(clip) in closed:
+                    continue
+                closed.add(id(clip))
+                with contextlib.suppress(AttributeError):
+                    clip.close()
 
     def photo(
         self,

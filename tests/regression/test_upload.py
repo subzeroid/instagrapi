@@ -1,7 +1,11 @@
+import io
 from datetime import datetime, timezone
+
+from PIL import Image
 
 from instagrapi.exceptions import ClipNotUpload
 from instagrapi.extractors import extract_media_v1
+from instagrapi.types import StoryBuild
 from tests.helpers import *
 
 
@@ -188,6 +192,33 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(headers["IG-U-DS-USER-ID"], "1")
         self.assertEqual(headers["X-Entity-Length"], "11")
         self.assertEqual(headers["X-Entity-Name"], "upload-id_0_1234567890")
+
+    def test_photo_story_fit_resize_letterboxes_without_cropping(self):
+        client = self.build_client()
+        ok_response = Mock(status_code=200)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "wide.jpg"
+            image = Image.new("RGB", (1280, 720), "green")
+            image.paste("red", (0, 0, 320, 720))
+            image.paste("blue", (960, 0, 1280, 720))
+            image.save(path)
+
+            with mock.patch.object(client.private, "post", return_value=ok_response) as private_post:
+                upload_id, width, height = client.photo_rupload(
+                    path,
+                    upload_id="upload-id",
+                    for_story=True,
+                    resize_mode="fit",
+                )
+
+        self.assertEqual((upload_id, width, height), ("upload-id", 1080, 1920))
+        uploaded = private_post.call_args.kwargs["data"]
+        with Image.open(io.BytesIO(uploaded)) as prepared:
+            self.assertEqual(prepared.size, (1080, 1920))
+            self.assertEqual(prepared.getpixel((10, 960)), (254, 0, 0))
+            self.assertEqual(prepared.getpixel((1070, 960)), (0, 0, 254))
+            self.assertEqual(prepared.getpixel((540, 100)), (0, 0, 0))
 
     def test_clip_share_to_fb_destination_normalizes_current_reel_destination_fields(self):
         client = self.build_client()
@@ -1561,6 +1592,32 @@ class UploadRegressionTestCase(unittest.TestCase):
                         result = client.video_upload_to_story(Path("story.mp4"))
 
         self.assertEqual(result.id, uploaded.id)
+
+    def test_video_story_fit_resize_renders_canvas_before_upload(self):
+        client = self.build_client()
+        existing = self.build_story("20", media_type=2)
+        uploaded = self.build_story("21", media_type=2)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            fitted = Path(tmpdir) / "fitted.mp4"
+            fitted.touch()
+            rendered = StoryBuild(path=str(fitted), mentions=[], paths=[], stickers=[])
+            with mock.patch("instagrapi.mixins.video.StoryBuilder") as story_builder:
+                story_builder.return_value.video_fit.return_value = rendered
+                with mock.patch.object(
+                    client,
+                    "video_rupload",
+                    return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+                ) as video_rupload:
+                    with mock.patch.object(client, "video_configure_to_story", return_value={"status": "ok"}):
+                        with mock.patch.object(client, "user_stories", side_effect=[[existing], [uploaded, existing]]):
+                            with mock.patch("time.sleep"):
+                                result = client.video_upload_to_story(Path("wide.mp4"), resize_mode="fit")
+
+        self.assertEqual(result.id, uploaded.id)
+        story_builder.assert_called_once_with(Path("wide.mp4"))
+        story_builder.return_value.video_fit.assert_called_once()
+        video_rupload.assert_called_once_with(Path(rendered.path), None, to_story=True)
 
     def test_video_direct_upload_raises_clear_error_when_configure_has_no_message(self):
         client = self.build_client()
