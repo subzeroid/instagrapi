@@ -3,10 +3,11 @@ import json
 import warnings
 from typing import List, Tuple
 
-from instagrapi.exceptions import HashtagNotFound, WrongCursorError
+from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound, PrivateError, WrongCursorError
 from instagrapi.extractors import (
     extract_hashtag_gql,
     extract_hashtag_v1,
+    extract_media_gql,
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
@@ -185,6 +186,140 @@ class HashtagMixin:
         if not result["more_available"]:
             next_max_id = None  # stop
         return medias, next_max_id
+
+    def _is_hashtag_v1_cursor(self, cursor: str) -> bool:
+        if not cursor:
+            return False
+        try:
+            value = json.loads(base64.b64decode(cursor))
+        except Exception:
+            return False
+        return isinstance(value, list) and len(value) == 2
+
+    def hashtag_medias_paginated_gql(
+        self, name: str, amount: int = 27, end_cursor: str = None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a page of medias for a hashtag by Public GraphQL API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to return, default is 27
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        name = self._normalize_hashtag_name(name)
+        amount = int(amount)
+        variables = {"tag_name": name, "show_ranked": False, "first": amount}
+        if end_cursor:
+            variables["after"] = end_cursor
+        data = self.public_graphql_request(variables, query_hash="f92f56d47dc7a55b606908374b43a314")
+        if not data.get("hashtag"):
+            raise HashtagNotFound(name=name, **data)
+        media_edge = data["hashtag"].get("edge_hashtag_to_media") or {}
+        page_info = media_edge.get("page_info") or {}
+        next_cursor = page_info.get("end_cursor") if page_info.get("has_next_page") else None
+        medias = []
+        for edge in media_edge.get("edges") or []:
+            try:
+                medias.append(extract_media_gql(edge["node"]))
+            except (KeyError, AttributeError, TypeError) as exc:
+                self.logger.warning("Skipping malformed hashtag GraphQL node: %s", exc)
+        if amount:
+            medias = medias[:amount]
+        return medias, next_cursor
+
+    def hashtag_medias_paginated_v1(
+        self, name: str, amount: int = 27, tab_key: str = "recent", end_cursor: str = None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a page of medias for a hashtag by Private Mobile API
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to return, default is 27
+        tab_key: str, optional
+            Tab key: "top", "recent" or "clips", default is "recent"
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        name = self._normalize_hashtag_name(name)
+        amount = int(amount)
+        return self.hashtag_medias_v1_chunk(name, max_amount=amount, tab_key=tab_key, max_id=end_cursor)
+
+    def hashtag_medias_paginated(
+        self, name: str, amount: int = 27, tab_key: str = "recent", end_cursor: str = None
+    ) -> Tuple[List[Media], str]:
+        """
+        Get a page of medias for a hashtag
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to return, default is 27
+        tab_key: str, optional
+            Tab key: "top", "recent" or "clips", default is "recent". Public GraphQL only supports "recent".
+        end_cursor: str, optional
+            Cursor value to start at, obtained from previous call to this method
+
+        Returns
+        -------
+        Tuple[List[Media], str]
+            A tuple containing a list of medias and the next end_cursor value
+        """
+        name = self._normalize_hashtag_name(name)
+        amount = int(amount)
+        end_cursor_is_v1 = self._is_hashtag_v1_cursor(end_cursor)
+        private_required = tab_key != "recent" or end_cursor_is_v1
+
+        def public_lookup():
+            try:
+                return self.hashtag_medias_paginated_gql(name, amount=amount, end_cursor=end_cursor)
+            except ClientLoginRequired as e:
+                if not self.inject_sessionid_to_public():
+                    raise e
+                return self.hashtag_medias_paginated_gql(name, amount=amount, end_cursor=end_cursor)
+
+        def private_lookup():
+            return self.hashtag_medias_paginated_v1(name, amount=amount, tab_key=tab_key, end_cursor=end_cursor)
+
+        if self._has_private_auth() or private_required:
+            try:
+                return private_lookup()
+            except PrivateError:
+                raise
+            except Exception as e:
+                if private_required:
+                    raise e
+                if not isinstance(e, ClientError):
+                    self.logger.exception(e)
+                return public_lookup()
+        try:
+            return public_lookup()
+        except PrivateError:
+            raise
+        except Exception as e:
+            if not isinstance(e, ClientError):
+                self.logger.exception(e)
+            return private_lookup()
 
     def hashtag_medias_v1(self, name: str, amount: int = 27, tab_key: str = "") -> List[Media]:
         """
