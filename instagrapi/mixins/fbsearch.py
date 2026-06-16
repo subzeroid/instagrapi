@@ -3,13 +3,34 @@ from typing import Dict, List, Optional, Tuple, Union
 from instagrapi.extractors import (
     extract_hashtag_v1,
     extract_location,
+    extract_media_v1,
     extract_track,
     extract_user_short,
 )
-from instagrapi.types import Hashtag, Location, Track, UserShort
+from instagrapi.types import Hashtag, Location, Media, Track, UserShort
 
 
 class FbSearchMixin:
+    def _fbsearch_media_grid_nodes(self, media_grid: dict):
+        for section in media_grid.get("sections") or []:
+            layout_content = section.get("layout_content") or {}
+            one_by_two_item = layout_content.get("one_by_two_item") or {}
+            if isinstance(one_by_two_item, dict):
+                media = one_by_two_item.get("media")
+                if isinstance(media, dict):
+                    yield media
+                clips = one_by_two_item.get("clips") or {}
+                if isinstance(clips, dict):
+                    for item in clips.get("items") or []:
+                        media = item.get("media") if isinstance(item, dict) else None
+                        if isinstance(media, dict):
+                            yield media
+            for key in ("fill_items", "medias"):
+                for item in layout_content.get(key) or []:
+                    media = item.get("media") if isinstance(item, dict) else None
+                    if isinstance(media, dict):
+                        yield media
+
     def fbsearch_places(self, query: str, lat: float = 40.74, lng: float = -73.94) -> List[Location]:
         params = {
             "search_surface": "places_search_page",
@@ -297,6 +318,55 @@ class FbSearchMixin:
         if reels_max_id:
             params["reels_max_id"] = reels_max_id
         return self.private_request("fbsearch/top_serp/", params=params)
+
+    def media_search(self, query: str, amount: int = 27) -> List[Media]:
+        """
+        Search top media by keyword via the private fbsearch SERP.
+
+        Parameters
+        ----------
+        query: str
+            Search query.
+        amount: int, optional
+            Maximum number of media to return, default is 27.
+
+        Returns
+        -------
+        List[Media]
+            List of media results.
+        """
+        medias: List[Media] = []
+        next_max_id = None
+        reels_max_id = None
+        rank_token = None
+        while True:
+            kwargs: Dict[str, str] = {}
+            if next_max_id:
+                kwargs["next_max_id"] = next_max_id
+            if reels_max_id:
+                kwargs["reels_max_id"] = reels_max_id
+            if rank_token:
+                kwargs["rank_token"] = rank_token
+            result = self.fbsearch_topsearch_v2(query, **kwargs)
+            media_grid = result.get("media_grid") or {}
+            for node in self._fbsearch_media_grid_nodes(media_grid):
+                if amount and len(medias) >= amount:
+                    break
+                try:
+                    medias.append(extract_media_v1(node))
+                except (KeyError, AttributeError, TypeError) as exc:
+                    self.logger.warning("Skipping malformed fbsearch media node: %s", exc)
+                    continue
+            if amount and len(medias) >= amount:
+                break
+            next_max_id = media_grid.get("next_max_id") or result.get("next_max_id")
+            if not media_grid.get("has_more") or not next_max_id:
+                break
+            reels_max_id = media_grid.get("reels_max_id") or result.get("reels_max_id")
+            rank_token = media_grid.get("rank_token") or result.get("rank_token")
+        if amount:
+            medias = medias[:amount]
+        return medias
 
     def fbsearch_typehead(self, query: str) -> List[dict]:
         """
