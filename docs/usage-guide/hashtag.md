@@ -9,6 +9,7 @@ Pass hashtag names without the leading `#`, for example `pizza`. If a leading `#
 | hashtag_info(name: str) | Hashtag | Return hashtag info (`id`, `name`, `media_count`, `profile_pic_url`) |
 | hashtag_medias_top(name: str, amount: int = 9) | List[Media] | Return top posts for a hashtag |
 | hashtag_medias_recent(name: str, amount: int = 27) | List[Media] | Return recent posts for a hashtag |
+| hashtag_medias_paginated(name: str, amount: int = 27, tab_key: str = "recent", end_cursor: str = None) | Tuple[List[Media], str] | Return one hashtag media page plus the next cursor; authenticated sessions use private/mobile pagination first |
 | hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Return reels/clips for a hashtag via private API |
 | hashtag_follow(hashtag: str, unfollow: bool = False) | bool | Follow a hashtag |
 | hashtag_following(amount: int = 0) | List[Hashtag] | Return hashtags followed by the authenticated account |
@@ -122,6 +123,8 @@ Low level methods:
 | ---------------------------------------------- | ------- | --------------------------------------------
 | hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
 | hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
+| hashtag_medias_paginated_gql(name: str, amount: int = 27, end_cursor: str = None) | Tuple[List[Media], str] | Get one recent hashtag media page by Public GraphQL API
+| hashtag_medias_paginated_v1(name: str, amount: int = 27, tab_key: str = "top\|recent\|clips", end_cursor: str = None) | Tuple[List[Media], str] | Get one hashtag media page by Private Mobile API
 | hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
 | hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
 | hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
@@ -131,6 +134,9 @@ Low level methods:
 Example for [Request for loading every next time new posts from hashtag](https://github.com/subzeroid/instagrapi/issues/79):
 
 ``` python
+>>> medias, cursor = cl.hashtag_medias_paginated('test', amount=32, tab_key='recent')
+>>> next_medias, cursor = cl.hashtag_medias_paginated('test', amount=32, tab_key='recent', end_cursor=cursor)
+
 >>> medias, cursor = cl.hashtag_medias_v1_chunk('test', max_amount=32, tab_key='recent')
 >>> len(medias)
 32
@@ -160,5 +166,5 @@ Notes:
 * Instagram's old public hashtag web page JSON (`?__a=1`) is no longer reliable and the `_a1` helpers were removed. Use the high-level hashtag methods or the authenticated private/mobile `_v1` helpers.
 * High-level `hashtag_info()`, `hashtag_medias_top()`, and `hashtag_medias_recent()` use the private/mobile helpers.
 * `hashtag_following()` returns the authenticated following-list hashtag preview. Instagram may limit how many followed hashtags are included.
-* For resumable pagination, use `hashtag_medias_v1_chunk()` and persist the encoded `max_id` cursor.
+* For resumable pagination, prefer `hashtag_medias_paginated()` and persist the returned cursor. Use `hashtag_medias_v1_chunk()` only when you need the low-level private/mobile helper.
 * `hashtag_medias_v1_chunk()` accepts `top`, `recent`, or `clips` as `tab_key`.

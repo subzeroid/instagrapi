@@ -15,6 +15,7 @@ The `*_v2` methods hit the same `fbsearch/<tab>_serp/` endpoints the official In
 | `fbsearch_keyword_typeahead(query: str, timezone_offset: int = 0, count: int = 30)` | `dict` | Raw keyword/typeahead suggestions via `fbsearch/keyword_typeahead/`. |
 | `fbsearch_typeahead_stream(query: str, timezone_offset: int = 0, count: int = 30)` | `dict` | Raw streaming typeahead payload via `fbsearch/typeahead_stream/`. |
 | `fbsearch_typehead(query: str)` | `List[dict]` | Typeahead user suggestions, flattened from the `stream_rows` envelope returned by `fbsearch/typeahead_stream/`. |
+| `media_search(query: str, amount: int = 27)` | `List[Media]` | Typed media search from the private Top blended fbsearch SERP, including media-grid cursor pagination. |
 
 Example:
 
@@ -32,6 +33,9 @@ page2 = cl.fbsearch_reels_v2("python", reels_max_id=page1["reels_max_id"])
 
 # Typeahead — flat list of user dicts
 users = cl.fbsearch_typehead("py")
+
+# Top media — typed Media objects
+medias = cl.media_search("python", amount=3)
 ```
 
 ## Other search helpers
