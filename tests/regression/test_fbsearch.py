@@ -76,6 +76,137 @@ class FbSearchRegressionTestCase(unittest.TestCase):
         self.assertEqual(params["next_max_id"], "cursor-1")
         self.assertEqual(params["reels_max_id"], "cursor-2")
 
+    def test_media_search_extracts_media_grid_and_paginates(self):
+        client = self._build_client()
+
+        def media(pk):
+            return {
+                "pk": pk,
+                "id": f"{pk}_2",
+                "code": f"code-{pk}",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": f"https://example.com/{pk}.jpg",
+                            "width": 100,
+                            "height": 100,
+                        }
+                    ]
+                },
+                "caption": {"text": "space"},
+            }
+
+        with mock.patch.object(
+            client,
+            "fbsearch_topsearch_v2",
+            side_effect=[
+                {
+                    "media_grid": {
+                        "sections": [
+                            {
+                                "layout_content": {
+                                    "fill_items": [
+                                        {"media": media("1")},
+                                        {"media": media("2")},
+                                    ]
+                                }
+                            }
+                        ],
+                        "has_more": True,
+                        "next_max_id": "next-page",
+                        "reels_max_id": "next-reels",
+                        "rank_token": "next-rank",
+                    }
+                },
+                {
+                    "media_grid": {
+                        "sections": [
+                            {
+                                "layout_content": {
+                                    "fill_items": [
+                                        {"media": media("3")},
+                                    ]
+                                }
+                            }
+                        ],
+                        "has_more": False,
+                    }
+                },
+            ],
+        ) as topsearch:
+            medias = client.media_search("space", amount=3)
+
+        self.assertEqual([media.pk for media in medias], ["1", "2", "3"])
+        self.assertTrue(all(isinstance(media, Media) for media in medias))
+        self.assertEqual(topsearch.call_args_list[0].kwargs, {})
+        self.assertEqual(
+            topsearch.call_args_list[1].kwargs,
+            {
+                "next_max_id": "next-page",
+                "reels_max_id": "next-reels",
+                "rank_token": "next-rank",
+            },
+        )
+
+    def test_media_search_stops_at_amount_without_next_page(self):
+        client = self._build_client()
+
+        def media(pk):
+            return {
+                "pk": pk,
+                "id": f"{pk}_2",
+                "code": f"code-{pk}",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": f"https://example.com/{pk}.jpg",
+                            "width": 100,
+                            "height": 100,
+                        }
+                    ]
+                },
+                "caption": {"text": "space"},
+            }
+
+        with mock.patch.object(
+            client,
+            "fbsearch_topsearch_v2",
+            return_value={
+                "media_grid": {
+                    "sections": [
+                        {
+                            "layout_content": {
+                                "fill_items": [
+                                    {"media": media("1")},
+                                    {"media": media("2")},
+                                ]
+                            }
+                        }
+                    ],
+                    "has_more": True,
+                    "next_max_id": "next-page",
+                }
+            },
+        ) as topsearch:
+            medias = client.media_search("space", amount=1)
+
+        self.assertEqual([media.pk for media in medias], ["1"])
+        topsearch.assert_called_once_with("space")
+
     def test_fbsearch_typehead_flattens_stream_rows(self):
         client = self._build_client()
         with mock.patch.object(
