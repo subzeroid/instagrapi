@@ -1,15 +1,10 @@
+from typing import Literal
+
 MUTE_ALL_ITEMS = ("cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour")
 SETTING_VALUE_ITEMS = ("off", "following_only", "everyone")
 
-try:
-    from typing import Literal
-
-    MUTE_ALL = Literal[MUTE_ALL_ITEMS]
-    SETTING_VALUE = Literal[SETTING_VALUE_ITEMS]
-except ImportError:
-    # python <= 3.8
-    MUTE_ALL = str
-    SETTING_VALUE = str
+MUTE_ALL = Literal["cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour"]
+SETTING_VALUE = Literal["off", "following_only", "everyone"]
 
 
 class NotificationMixin:

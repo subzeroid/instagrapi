@@ -4,7 +4,7 @@ import secrets
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Literal, Optional, Tuple
 
 from instagrapi.exceptions import (
     ClientError,
@@ -50,20 +50,17 @@ def _direct_id_list(ids) -> List[int]:
     return [int(item) for item in ids]
 
 
-try:
-    from typing import Literal
-
-    SELECTED_FILTER = Literal[SELECTED_FILTERS]
-    SEARCH_MODE = Literal[SEARCH_MODES]
-    SEND_ATTRIBUTE = Literal[SEND_ATTRIBUTES]
-    SEND_ATTRIBUTE_MEDIA = Literal[SEND_ATTRIBUTES_MEDIA]
-    BOX = Literal[BOXES]
-except ImportError:
-    # python <= 3.8
-    SELECTED_FILTER = str
-    SEARCH_MODE = str
-    SEND_ATTRIBUTE = str
-    BOX = str
+SELECTED_FILTER = Literal["flagged", "unread"]
+SEARCH_MODE = Literal["raven", "universal"]
+SEND_ATTRIBUTE = Literal["message_button", "inbox_search"]
+SEND_ATTRIBUTE_MEDIA = Literal[
+    "feed_timeline",
+    "feed_contextual_chain",
+    "feed_short_url",
+    "feed_contextual_self_profile",
+    "feed_contextual_profile",
+]
+BOX = Literal["general", "primary"]
 
 
 class DirectMixin:
@@ -158,9 +155,8 @@ class DirectMixin:
             "push_disabled": self._bool_to_ig_string(self.push_disabled),
         }
         if selected_filter:
-            assert selected_filter in SELECTED_FILTERS, (
-                f'Unsupported selected_filter="{selected_filter}" {SELECTED_FILTERS}'
-            )
+            if selected_filter not in SELECTED_FILTERS:
+                raise ValueError(f"selected_filter must be one of {SELECTED_FILTERS}")
             params.update({"selected_filter": selected_filter})
         if box:
             assert box in BOXES, f'Unsupported box="{box}" {BOXES}'

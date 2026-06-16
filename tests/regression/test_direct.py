@@ -144,6 +144,16 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(params["push_disabled"], "false")
         self.assertFalse(client.get_settings()["push_disabled"])
 
+    def test_direct_threads_chunk_rejects_unsupported_selected_filter(self):
+        client = self.build_client()
+
+        with self.assertRaises(ValueError) as ctx:
+            client.direct_threads_chunk(selected_filter="archived")
+
+        self.assertIn("selected_filter", str(ctx.exception))
+        self.assertIn("flagged", str(ctx.exception))
+        self.assertIn("unread", str(ctx.exception))
+
     def test_direct_search_sends_current_ranked_recipient_limits(self):
         client = self.build_client()
 

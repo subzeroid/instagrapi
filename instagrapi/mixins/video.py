@@ -28,6 +28,7 @@ from instagrapi.types import (
     StoryMedia,
     StoryMention,
     StoryPoll,
+    StoryResizeMode,
     StorySticker,
     Track,
     Usertag,
@@ -617,7 +618,7 @@ class UploadVideoMixin:
         medias: List[StoryMedia] = [],
         polls: List[StoryPoll] = [],
         extra_data: Dict[str, str] = {},
-        resize_mode: str = "fill",
+        resize_mode: StoryResizeMode = "fill",
     ) -> Story:
         """
         Upload video as a story and configure it

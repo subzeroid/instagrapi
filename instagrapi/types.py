@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -14,6 +14,9 @@ from pydantic import (
 
 class TypesBaseModel(BaseModel):
     model_config = ConfigDict(coerce_numbers_to_str=True)  # (jarrodnorwell) fixed city_id issue
+
+
+StoryResizeMode = Literal["fill", "fit"]
 
 
 def validate_external_url(cls, v):

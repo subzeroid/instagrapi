@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils.serialization import json_value
@@ -27,15 +27,27 @@ DATA_ORDERS = (
 )
 EMPTY_GRAPHQL_QUERY_PARAM = ""  # Instagram GraphQL uses this as an empty access_token placeholder.
 
-try:
-    from typing import Literal
-
-    POST_TYPE = Literal[POST_TYPES]
-    TIME_FRAME = Literal[TIME_FRAMES]
-    DATA_ORDERING = Literal[DATA_ORDERS]
-except ImportError:
-    # python <= 3.8
-    POST_TYPE = TIME_FRAME = DATA_ORDERING = str
+POST_TYPE = Literal["ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO"]
+TIME_FRAME = Literal[
+    "ONE_WEEK",
+    "ONE_MONTH",
+    "THREE_MONTHS",
+    "SIX_MONTHS",
+    "ONE_YEAR",
+    "TWO_YEARS",
+]
+DATA_ORDERING = Literal[
+    "REACH_COUNT",
+    "LIKE_COUNT",
+    "FOLLOW",
+    "SHARE_COUNT",
+    "BIO_LINK_CLICK",
+    "COMMENT_COUNT",
+    "IMPRESSION_COUNT",
+    "PROFILE_VIEW",
+    "VIDEO_VIEW_COUNT",
+    "SAVE_COUNT",
+]
 
 
 class InsightsMixin:
