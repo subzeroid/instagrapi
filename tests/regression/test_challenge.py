@@ -79,6 +79,24 @@ class ChallengeRegressionTestCase(unittest.TestCase):
 
         self.assertIn("UFAC web bloks checkpoint", str(cm.exception))
 
+    def test_challenge_resolve_simple_delta_acknowledge_approved_posts_ack_choice(self):
+        client = Client()
+        client.username = "example"
+        client.last_json = {
+            "step_name": "delta_acknowledge_approved",
+            "flow_render_type": 3,
+            "bloks_action": "com.instagram.challenge.navigation.take_challenge",
+            "challenge_context": ('{"step_name":"delta_acknowledge_approved","challenge_type_enum":"GENERIC_PHISHED"}'),
+            "challenge_type_enum_str": "GENERIC_PHISHED",
+            "status": "ok",
+        }
+        client._send_private_request = Mock()
+
+        result = client.challenge_resolve_simple("/challenge/test/")
+
+        self.assertTrue(result)
+        client._send_private_request.assert_called_once_with("/challenge/test/", {"choice": "0"})
+
     def test_challenge_resolve_simple_bloks_redirect_step_acknowledges_context(self):
         client = Client()
         client.username = "example"
