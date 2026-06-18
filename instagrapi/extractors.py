@@ -381,7 +381,7 @@ def extract_direct_thread(data):
         data["inviter"] = extract_user_short(inviter)
     else:
         data["inviter"] = None
-    data["left_users"] = data.get("left_users", [])
+    data["left_users"] = [extract_user_short(u) for u in data.get("left_users", [])]
     data.setdefault("is_close_friend_thread", False)
     data["last_activity_at"] = _direct_timestamp_from_microseconds(data["last_activity_at"])
 
