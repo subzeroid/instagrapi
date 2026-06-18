@@ -143,7 +143,7 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         if not TEST_ACCOUNTS_URL:
             self.skipTest("TEST_ACCOUNTS_URL is required for upload live tests")
         try:
-            self.cl = self.fresh_account()
+            self.cl = _helpers.fresh_test_account(count=50, attempts=20, timeout=30)
         except RuntimeError as exc:
             self.skipTest(str(exc))
 
@@ -195,6 +195,26 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             else:
                 return info
         self.fail(f"Album resource usertags were not visible after {attempts} media_info_v1 attempts: {last_resources}")
+
+    def assertPhotoUsertagsAccessible(self, media, expected_usertags, attempts=8, delay=5):
+        last_tags = []
+        for attempt in range(attempts):
+            if attempt:
+                time.sleep(delay)
+            info = self.cl.media_info_v1(media.pk)
+            last_tags = info.usertags
+            if len(last_tags) < len(expected_usertags):
+                continue
+            for actual_tag, expected_tag in zip(last_tags, expected_usertags):
+                if (
+                    str(actual_tag.user.pk) != str(expected_tag.user.pk)
+                    or actual_tag.x != expected_tag.x
+                    or actual_tag.y != expected_tag.y
+                ):
+                    break
+            else:
+                return info
+        self.fail(f"Photo usertags were not visible after {attempts} media_info_v1 attempts: {last_tags}")
 
     def ensure_creator_account(self):
         account = self.cl.account_info()
@@ -298,6 +318,23 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             self.assertEqual(media.caption_text, caption_text)
             self.assertLocation(media.location)
             self.assertUploadedMediaAccessible(media, media_type=1, caption_text=caption_text)
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_photo_upload_with_usertags_visible_after_media_info(self):
+        path = self.copy_media_fixture("examples/kanada.jpg")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            instagram = self.user_short(self.user_info_by_username("instagram"))
+            usertag = Usertag(user=instagram, x=0.5, y=0.5)
+            caption_text = "Test caption for photo usertags"
+            media = self.cl.photo_upload(path, caption_text, usertags=[usertag])
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            info = self.assertPhotoUsertagsAccessible(media, [usertag])
+            self.assertEqual(info.caption_text, caption_text)
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))

@@ -586,6 +586,48 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertIsInstance(media, Media)
         self.assertEqual(media.pk, "1")
 
+    def test_photo_upload_applies_usertags_with_media_edit_when_configure_ignores_them(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+        tagged_payload = self.build_media_payload(media_type=1)
+        tagged_payload["usertags"] = {
+            "in": [
+                {
+                    "user": {
+                        "pk": "25025320",
+                        "username": "instagram",
+                        "profile_pic_url": "https://example.com/instagram.jpg",
+                    },
+                    "position": [0.5, 0.5],
+                }
+            ]
+        }
+        usertag = Usertag(
+            user=UserShort(
+                pk="25025320",
+                username="instagram",
+                profile_pic_url="https://example.com/instagram.jpg",
+            ),
+            x=0.5,
+            y=0.5,
+        )
+
+        with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)):
+            with mock.patch.object(client, "photo_configure", return_value={"status": "ok", "media": media_payload}):
+                with mock.patch.object(
+                    client,
+                    "media_edit",
+                    return_value={"status": "ok", "media": tagged_payload},
+                ) as media_edit:
+                    with mock.patch("time.sleep"):
+                        media = client.photo_upload(Path("example.jpg"), "caption", usertags=[usertag])
+
+        media_edit.assert_called_once_with(media_payload["id"], "caption", usertags=[usertag], location=None)
+        self.assertEqual(len(media.usertags), 1)
+        self.assertEqual(media.usertags[0].user.pk, "25025320")
+        self.assertEqual(media.usertags[0].x, 0.5)
+        self.assertEqual(media.usertags[0].y, 0.5)
+
     def test_photo_upload_sends_scheduled_publish_metadata(self):
         client = self.build_client()
         media_payload = self.build_media_payload(media_type=1)

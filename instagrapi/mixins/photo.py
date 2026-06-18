@@ -307,13 +307,52 @@ class UploadPhotoMixin:
             )
             if configured:
                 self.expose()
-                return self._extract_configured_media_or_recent(
+                media = self._extract_configured_media_or_recent(
                     configured,
                     PhotoConfigureError,
                     "Photo upload",
                     previous_media_ids,
                 )
+                return self._photo_upload_apply_usertags_if_needed(
+                    media,
+                    caption,
+                    usertags,
+                    location,
+                    can_edit=extra_data.get("publish_mode") != "scheduled",
+                )
         raise PhotoConfigureError(response=self.last_response, **self.last_json)
+
+    @staticmethod
+    def _media_contains_usertags(media: Media, usertags: List[Usertag]) -> bool:
+        if not usertags:
+            return True
+        existing = {(str(tag.user.pk), tag.x, tag.y) for tag in media.usertags}
+        requested = {(str(tag.user.pk), tag.x, tag.y) for tag in usertags}
+        return requested.issubset(existing)
+
+    def _photo_upload_apply_usertags_if_needed(
+        self,
+        media: Media,
+        caption: str,
+        usertags: List[Usertag],
+        location: Location = None,
+        can_edit: bool = True,
+    ) -> Media:
+        if not can_edit or self._media_contains_usertags(media, usertags):
+            return media
+        try:
+            edited = self.media_edit(media.id, caption, usertags=usertags, location=location)
+        except Exception as e:
+            self.logger.debug("Unable to apply photo usertags with media_edit: %s", e)
+            return media
+        updated = self._extract_configured_media(edited)
+        if updated is not None:
+            return updated
+        try:
+            return self.media_info_v1(media.pk)
+        except Exception as e:
+            self.logger.debug("Unable to refresh photo after media_edit usertags: %s", e)
+            return media
 
     def photo_upload_with_music(
         self,
