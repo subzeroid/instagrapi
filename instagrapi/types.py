@@ -489,6 +489,27 @@ class ClipsMusicAttributionInfo(TypesBaseModel):
     audio_id: Optional[str] = None
 
 
+class MediaInlineComment(TypesBaseModel):
+    pk: str
+    text: str
+    user: UserShort
+    created_at_utc: datetime
+    has_liked: Optional[bool] = None
+    like_count: Optional[int] = None
+    replied_to_comment_id: Optional[str] = None
+    did_report_as_spam: Optional[bool] = None
+    is_restricted_pending: Optional[bool] = None
+    replies_count: Optional[int] = 0
+    replies: List["MediaInlineComment"] = []
+
+
+class MediaCommentsPreview(TypesBaseModel):
+    count: Optional[int] = 0
+    has_next_page: Optional[bool] = False
+    end_cursor: Optional[str] = None
+    comments: List[MediaInlineComment] = []
+
+
 class Media(TypesBaseModel):
     pk: Union[str, int]
     id: str
@@ -516,6 +537,8 @@ class Media(TypesBaseModel):
     is_affiliate: Optional[bool] = False
     dash_info: Optional[MediaDashInfo] = None
     clips_music_attribution_info: Optional[ClipsMusicAttributionInfo] = None
+    comments_preview: Optional[MediaCommentsPreview] = None
+    hoisted_comments: List[MediaInlineComment] = []
     caption_text: str
     accessibility_caption: Optional[str] = None
     usertags: List[Usertag]

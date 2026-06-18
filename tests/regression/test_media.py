@@ -1,6 +1,6 @@
 import json
 
-from instagrapi.extractors import extract_media_v1
+from instagrapi.extractors import extract_media_gql, extract_media_v1
 from tests.helpers import *
 
 
@@ -236,6 +236,77 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
 
                 self.assertIs(media.clips_metadata.is_shared_to_fb, value)
                 self.assertIs(media.model_dump()["clips_metadata"]["is_shared_to_fb"], value)
+
+    def test_extract_media_gql_preserves_inline_comment_preview(self):
+        def comment_node(comment_id, text, user_id, username):
+            return {
+                "id": comment_id,
+                "text": text,
+                "created_at": 1710000000,
+                "did_report_as_spam": False,
+                "owner": {
+                    "id": user_id,
+                    "username": username,
+                    "profile_pic_url": f"https://example.com/{username}.jpg",
+                    "is_verified": False,
+                },
+                "viewer_has_liked": False,
+                "edge_liked_by": {"count": 2},
+                "is_restricted_pending": False,
+                "edge_threaded_comments": {"count": 0, "page_info": {"has_next_page": False}, "edges": []},
+            }
+
+        parent = comment_node("c1", "parent", "10", "parent_user")
+        reply = comment_node("r1", "reply", "11", "reply_user")
+        parent["edge_threaded_comments"] = {
+            "count": 1,
+            "page_info": {"has_next_page": False, "end_cursor": None},
+            "edges": [{"node": reply}],
+        }
+        hoisted = comment_node("h1", "hoisted", "12", "hoisted_user")
+        payload = {
+            "__typename": "GraphImage",
+            "id": "1",
+            "shortcode": "abc",
+            "taken_at_timestamp": 1710000000,
+            "owner": {
+                "id": "2",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "display_resources": [],
+            "edge_media_to_comment": {"count": 1},
+            "edge_media_preview_like": {"count": 0},
+            "edge_media_to_caption": {"edges": []},
+            "edge_media_to_tagged_user": {"edges": []},
+            "edge_sidecar_to_children": {"edges": []},
+            "edge_media_to_sponsor_user": {"edges": []},
+            "edge_media_to_parent_comment": {
+                "count": 1,
+                "page_info": {"has_next_page": True, "end_cursor": "cursor"},
+                "edges": [{"node": parent}],
+            },
+            "edge_media_to_hoisted_comment": {"edges": [{"node": hoisted}]},
+        }
+
+        media = extract_media_gql(payload)
+
+        self.assertEqual(media.comments_preview.count, 1)
+        self.assertTrue(media.comments_preview.has_next_page)
+        self.assertEqual(media.comments_preview.end_cursor, "cursor")
+        comment = media.comments_preview.comments[0]
+        self.assertEqual(comment.pk, "c1")
+        self.assertEqual(comment.text, "parent")
+        self.assertEqual(comment.user.pk, "10")
+        self.assertEqual(comment.user.username, "parent_user")
+        self.assertEqual(comment.like_count, 2)
+        self.assertFalse(comment.has_liked)
+        self.assertFalse(comment.is_restricted_pending)
+        self.assertEqual(comment.replies_count, 1)
+        self.assertEqual(comment.replies[0].pk, "r1")
+        self.assertEqual(comment.replies[0].replied_to_comment_id, "c1")
+        self.assertEqual(media.hoisted_comments[0].pk, "h1")
+        self.assertEqual(media.hoisted_comments[0].text, "hoisted")
 
 
 class MediaInfoPrivateFirstRegressionTestCase(unittest.TestCase):

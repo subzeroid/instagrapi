@@ -179,8 +179,45 @@ def extract_media_gql(data):
             extract_user_short(edge["node"]["sponsor"])
             for edge in media.get("edge_media_to_sponsor_user", {}).get("edges", [])
         ],
+        comments_preview=extract_media_comments_preview_gql(
+            media.get("edge_media_to_parent_comment") or media.get("edge_media_preview_comment")
+        ),
+        hoisted_comments=[
+            extract_media_inline_comment_gql(edge["node"])
+            for edge in media.get("edge_media_to_hoisted_comment", {}).get("edges", [])
+        ],
         **media,
     )
+
+
+def extract_media_comments_preview_gql(data):
+    if not data:
+        return None
+    page_info = data.get("page_info") or {}
+    return {
+        "count": data.get("count", 0),
+        "has_next_page": page_info.get("has_next_page", False),
+        "end_cursor": page_info.get("end_cursor"),
+        "comments": [extract_media_inline_comment_gql(edge["node"]) for edge in data.get("edges", [])],
+    }
+
+
+def extract_media_inline_comment_gql(data, replied_to_comment_id=None):
+    comment = deepcopy(data)
+    comment["pk"] = str(comment.get("id"))
+    comment["user"] = extract_user_short(comment.get("owner"))
+    comment["created_at_utc"] = comment.get("created_at")
+    comment["has_liked"] = comment.get("has_liked", comment.get("viewer_has_liked"))
+    comment["like_count"] = json_value(comment, "edge_liked_by", "count")
+    if replied_to_comment_id is not None:
+        comment["replied_to_comment_id"] = str(replied_to_comment_id)
+    threaded_comments = comment.get("edge_threaded_comments") or {}
+    comment["replies_count"] = threaded_comments.get("count", 0)
+    comment["replies"] = [
+        extract_media_inline_comment_gql(edge["node"], replied_to_comment_id=comment["pk"])
+        for edge in threaded_comments.get("edges", [])
+    ]
+    return comment
 
 
 def extract_resource_v1(data):
