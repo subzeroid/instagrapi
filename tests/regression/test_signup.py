@@ -176,6 +176,57 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
         self.assertEqual(email_new_call.kwargs["server_params"]["cp_funnel"], 0)
         self.assertEqual(email_new_call.kwargs["server_params"]["prefetch_on_field"], 1)
 
+    def test_signup_caa_email_reports_bloks_rejection_message(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.phone_id = "family-device-id"
+        client.android_device_id = "android-id"
+        client.mid = "machine-id"
+        client.bloks_versioning_id = "bloks-version"
+        client.waterfall_id = "waterfall-id"
+        client.wait_seconds = 0
+        client.challenge_code_handler = mock.Mock(return_value="123456")
+        rejection_text = "We're sorry, but something went wrong. Please try again."
+        graphql_responses = [
+            self.caa_response(reg_context=f"ctx-gql-{index}", email_token=f"email-token-{index}") for index in range(8)
+        ]
+        graphql_responses.append(
+            {
+                "data": {
+                    "1$bloks_action(bk_context:$bk_context,params:$params)": {
+                        "action": {
+                            "action_bundle": {
+                                "bloks_bundle_action": json.dumps(
+                                    {"layout": {"bloks_payload": {"data": [{"data": {"initial": rejection_text}}]}}}
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
+        async_responses = [
+            self.caa_response(reg_context=f"ctx-async-{index}", email_token=f"email-token-async-{index}")
+            for index in range(4)
+        ]
+
+        with mock.patch.object(client, "caa_reg_graphql", side_effect=graphql_responses):
+            with mock.patch.object(client, "caa_reg_async_action", side_effect=async_responses):
+                with self.assertRaisesRegex(
+                    ClientError,
+                    "CAA signup was rejected by Instagram: "
+                    r"We're sorry, but something went wrong\. Please try again\.",
+                ):
+                    client.signup_caa_email(
+                        username="example",
+                        password="password",
+                        email="addr@example.com",
+                        full_name="Example User",
+                        year=1995,
+                        month=6,
+                        day=9,
+                    )
+
     def test_check_username_posts_uuid_payload(self):
         client = Client()
         client.uuid = "uuid"
