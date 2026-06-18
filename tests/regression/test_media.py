@@ -147,6 +147,28 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         self.assertEqual(media.resources[1].usertags[0].user.pk, "200")
         self.assertEqual(media.resources[1].usertags[0].y, 0.5)
 
+    def test_extract_media_v1_preserves_coauthor_producers(self):
+        payload = self._media_or_ad_payload()
+        payload["coauthor_producers"] = [
+            {
+                "id": "100",
+                "username": "collab_user",
+                "full_name": "Collab User",
+                "profile_pic_url": "https://example.com/collab.jpg",
+                "is_private": False,
+                "is_verified": True,
+            }
+        ]
+
+        media = extract_media_v1(payload)
+
+        self.assertEqual(len(media.coauthor_producers), 1)
+        coauthor = media.coauthor_producers[0]
+        self.assertIsInstance(coauthor, UserShort)
+        self.assertEqual(coauthor.pk, "100")
+        self.assertEqual(coauthor.username, "collab_user")
+        self.assertTrue(coauthor.is_verified)
+
     def test_extract_media_v1_does_not_default_missing_clips_shared_to_fb_to_false(self):
         payload = self._media_or_ad_payload()
         payload["media_type"] = 2

@@ -489,6 +489,7 @@ class Media(TypesBaseModel):
     caption_text: str
     accessibility_caption: Optional[str] = None
     usertags: List[Usertag]
+    coauthor_producers: List[UserShort] = []
     sponsor_tags: List[UserShort]
     video_url: Optional[HttpUrl] = None  # for Video and IGTV
     view_count: Optional[int] = 0  # for Video and IGTV
