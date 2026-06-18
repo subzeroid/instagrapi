@@ -1,7 +1,9 @@
 /*.mp4
 /*.jpg
+/*.m4a
 # emacs
 *~
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -136,3 +138,7 @@ dmypy.json
 # PyCharm
 .idea
 *.iml
+
+# VSCode
+.vscode
+ig_settings.json
