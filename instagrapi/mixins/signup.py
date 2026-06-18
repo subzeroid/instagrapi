@@ -40,6 +40,21 @@ CAA_REG_FLOW_INFO = {"flow_name": "new_to_family_ig_default", "flow_type": "ntf"
 CAA_REG_OFFLINE_EXPERIMENT_GROUP = "caa_iteration_v3_perf_ig_4"
 CAA_REG_LAYERED_HOMEPAGE_EXPERIMENT_GROUP = "Deploy: Not in Experiment"
 CAA_REG_VM_TOKEN_RE = re.compile(r'\(|\)|"(?:\\.|[^"\\])*"|[^\s()]+')
+CAA_REG_REJECTION_MESSAGE_KEYWORDS = (
+    "sorry",
+    "went wrong",
+    "try again",
+    "not eligible",
+    "unavailable",
+    "too many",
+    "invalid",
+    "error",
+    "problem",
+)
+CAA_REG_GENERIC_REJECTION_RE = re.compile(
+    r"(?:We(?:'|\\'|’)re|We are) sorry, but something went wrong\. Please try again\.",
+    re.IGNORECASE,
+)
 
 
 class SignUpMixin:
@@ -76,6 +91,40 @@ class SignUpMixin:
                 yield from self._caa_string_values(item)
         elif isinstance(value, str):
             yield value
+
+    def _caa_clean_rejection_message(self, value: str) -> Optional[str]:
+        text = re.sub(r"\s+", " ", value.strip())
+        if not text:
+            return None
+        generic_match = CAA_REG_GENERIC_REJECTION_RE.search(text)
+        if generic_match:
+            return generic_match.group(0).replace("\\'", "'")
+        if len(text) > 300 or text.startswith(("{", "[", "(")):
+            return None
+        lower = text.lower()
+        if not any(keyword in lower for keyword in CAA_REG_REJECTION_MESSAGE_KEYWORDS):
+            return None
+        if any(marker in lower for marker in ("bk.action", "bloks", "optimistic vf", "tr62rb")):
+            return None
+        return text
+
+    def _caa_extract_rejection_message(self, response: Any) -> Optional[str]:
+        payloads = [response]
+        seen_payloads = set()
+        for payload in payloads:
+            payload_id = id(payload)
+            if payload_id in seen_payloads:
+                continue
+            seen_payloads.add(payload_id)
+            for value in self._caa_string_values(payload):
+                message = self._caa_clean_rejection_message(value)
+                if message:
+                    return message
+                if "bloks_bundle_action" in value or "bloks_payload" in value or "registration_response" in value:
+                    for decoded in self._caa_json_objects_from_string(value):
+                        if isinstance(decoded, (dict, list)):
+                            payloads.append(decoded)
+        return None
 
     def _caa_parse_vm_atom(self, token: str) -> Any:
         if token.startswith('"') and token.endswith('"'):
@@ -616,6 +665,9 @@ class SignUpMixin:
         self._caa_update_state(state, response)
         registration_response = state.get("registration_response")
         if not registration_response or not registration_response.get("created_user"):
+            rejection_message = self._caa_extract_rejection_message(response)
+            if rejection_message:
+                raise ClientError(f"CAA signup was rejected by Instagram: {rejection_message}")
             raise ClientError("CAA signup did not return created_user")
         if registration_response.get("account_created") is False:
             raise ClientError(f"CAA signup did not create an account: {registration_response}")
