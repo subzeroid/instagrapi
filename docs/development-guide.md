@@ -101,6 +101,8 @@ Setuptools is used to package the library through `pyproject.toml`.
 
 * `[project].dependencies` lists runtime dependencies imported by the library.
 * `[project.optional-dependencies].test` lists tools needed for tests, linting, docs, and local development.
+* Runtime dependency lower bounds should stay at the currently tested/security-patched version, with an upper bound before the next major release.
+* Android-specific pins are allowed when the mobile Python ecosystem needs an exact wheel-compatible version, for example the Termux pydantic-core wheel constraint.
 
 Publishing is handled by the tag-based `publish.yml` workflow. Pushes and pull requests run the package workflow first;
 maintainers cut a version tag only after the checks are green.
