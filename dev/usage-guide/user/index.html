@@ -1159,6 +1159,16 @@
 <td>Get dict of following users (amount=0 - fetch all)</td>
 </tr>
 <tr>
+<td>iter_user_followers_v1(user_id: str, amount: int = 0, page_size: int = 200, order: str = None)</td>
+<td>Iterator[UserShort]</td>
+<td>Stream followers from the private/mobile API without building a full dict</td>
+</tr>
+<tr>
+<td>iter_user_following_v1(user_id: str, amount: int = 0, page_size: int = 200)</td>
+<td>Iterator[UserShort]</td>
+<td>Stream following users from the private/mobile API without building a full dict</td>
+</tr>
+<tr>
 <td>search_followers(user_id: str, query: str)</td>
 <td>List[UserShort]</td>
 <td>Search by followers</td>
@@ -1435,6 +1445,11 @@
 <td>Get user's followers information by Private Mobile API. Supports <code>date_followed_latest</code> and <code>date_followed_earliest</code></td>
 </tr>
 <tr>
+<td>iter_user_followers_v1(user_id: str, amount: int = 0, page_size: int = 200, order: str = None)</td>
+<td>Iterator[UserShort]</td>
+<td>Stream followers page by page through <code>user_followers_v1_chunk()</code></td>
+</tr>
+<tr>
 <td>user_followers_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: str = None)</td>
 <td>Tuple[List[UserShort], str]</td>
 <td>Get user's followers through the private mobile GraphQL <code>FollowersList</code> surface and max_id cursor</td>
@@ -1448,6 +1463,11 @@
 <td>user_following_v1(user_id: str, amount: int = 0)</td>
 <td>List[UserShort]</td>
 <td>Get user's following users information by Private Mobile API</td>
+</tr>
+<tr>
+<td>iter_user_following_v1(user_id: str, amount: int = 0, page_size: int = 200)</td>
+<td>Iterator[UserShort]</td>
+<td>Stream following users page by page through <code>user_following_v1_chunk()</code></td>
 </tr>
 <tr>
 <td>user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")</td>
@@ -1554,6 +1574,13 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <div class="highlight"><pre><span></span><code><span class="n">latest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
 <span class="n">earliest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_earliest&quot;</span><span class="p">)</span>
 </code></pre></div>
+<p>Streaming followers/following:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">follower</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">follower</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">follower</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_user_following_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+</code></pre></div>
 <p>Raw private GraphQL helpers expose the same mobile <code>order</code> variable for callers that need the <code>FollowersList</code>/<code>FollowingList</code> payload directly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">private_graphql_followers_list</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">cl</span><span class="o">.</span><span class="n">rank_token</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -1589,6 +1616,7 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <ul>
 <li><code>user_info()</code>, <code>user_info_by_username()</code>, <code>user_id_from_username()</code>, and <code>username_from_user_id()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
 <li><code>user_followers()</code> and <code>user_following()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
+<li>Use <code>iter_user_followers_v1()</code> and <code>iter_user_following_v1()</code> when you need to process large follow lists incrementally instead of keeping the full result in memory.</li>
 </ul>
 
 

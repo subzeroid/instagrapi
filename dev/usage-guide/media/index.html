@@ -1528,6 +1528,11 @@
 <td>Get user feed media</td>
 </tr>
 <tr>
+<td>iter_user_medias(user_id: str, amount: int = 0, page_size: int = 0)</td>
+<td>Iterator[Media]</td>
+<td>Stream user feed media page by page without building a full list</td>
+</tr>
+<tr>
 <td>user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "")</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get one page of user media and next cursor</td>
@@ -1969,6 +1974,12 @@
 <span class="p">[</span><span class="s1">&#39;2019-06-05&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2019-03-23&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-11-15&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-16&#39;</span><span class="p">]</span>
 <span class="p">[</span><span class="s1">&#39;2018-10-16&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-11&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-10-09&#39;</span><span class="p">,</span> <span class="s1">&#39;2018-08-02&#39;</span><span class="p">]</span>
 
+<span class="c1"># Stream user media without storing every fetched page</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="k">for</span> <span class="n">media</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">iter_user_medias</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">25</span><span class="p">):</span>
+<span class="o">...</span>     <span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">media</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+<span class="o">...</span>
+
 <span class="c1"># Resume tagged-media fetches from a stored cursor</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="n">tagged</span><span class="p">,</span> <span class="n">end_cursor</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">usertag_medias_paginated</span><span class="p">(</span><span class="mi">1903424587</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="n">end_cursor</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -1989,6 +2000,7 @@
 <ul>
 <li><code>media_info()</code> uses private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then falls back to public/web lookup. Without authorization, it keeps public/web-first behavior. Explicit <code>media_info_gql()</code> still calls the public/web path directly.</li>
 <li><code>user_medias()</code> and <code>user_medias_paginated()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
+<li>Use <code>iter_user_medias()</code> for large profile media scans when you want each <code>Media</code> as soon as its page is fetched. Set <code>page_size</code> to control request size; leave it as <code>0</code> to keep the endpoint default.</li>
 <li><code>usertag_medias()</code> and <code>usertag_medias_paginated()</code> use private/mobile lookup first when the client has authorization data or a saved <code>sessionid</code>, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit <code>_gql</code> methods still call the public/web path directly.</li>
 <li>For Reels where Instagram hides like/view counts, the public GraphQL path can expose play/view counts but not hidden like totals; <code>like_count</code> can be <code>-1</code>.</li>
 <li>Extended media metadata from Instagram payloads is available on <code>Media</code> when returned by the source API, including caption edit state, dimensions, audio presence, hidden count state, viewer save/reshare state, paid partnership/affiliate flags, DASH video info, clips music attribution, and inline comment previews.</li>

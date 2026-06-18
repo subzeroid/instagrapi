@@ -1167,6 +1167,11 @@
 <td>Return one hashtag media page plus the next cursor; authenticated sessions use private/mobile pagination first</td>
 </tr>
 <tr>
+<td>iter_hashtag_medias(name: str, amount: int = 0, page_size: int = 27, tab_key: str = "recent")</td>
+<td>Iterator[Media]</td>
+<td>Stream hashtag media page by page without building a full list</td>
+</tr>
+<tr>
 <td>hashtag_medias_reels_v1(name: str, amount: int = 27)</td>
 <td>List[Media]</td>
 <td>Return reels/clips for a hashtag via private API</td>
@@ -1286,6 +1291,10 @@
    <span class="s1">&#39;thumbnail_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://instagram.fhel3-1.fna.fbcdn.net/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg?tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=104&amp;_nc_ohc=45NguRpEtZQAX83VSGE&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=c8c087ecfba444d9d85f7bd059f42a2a&amp;oe=60C5C3C2&amp;_nc_sid=4f375e&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.fhel3-1.fna.fbcdn.net&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;net&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/v/t51.2885-15/e35/185727252_524026898594344_9165723485744355754_n.jpg&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="s1">&#39;tp=1&amp;_nc_ht=instagram.fhel3-1.fna.fbcdn.net&amp;_nc_cat=104&amp;_nc_ohc=45NguRpEtZQAX83VSGE&amp;edm=AP_V10EBAAAA&amp;ccb=7-4&amp;oh=c8c087ecfba444d9d85f7bd059f42a2a&amp;oe=60C5C3C2&amp;_nc_sid=4f375e&#39;</span><span class="p">),</span>
    <span class="s1">&#39;media_type&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]}</span>
 </code></pre></div>
+<p>Stream hashtag media without storing every fetched page:</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">media</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_hashtag_medias</span><span class="p">(</span><span class="s2">&quot;downhill&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span> <span class="n">tab_key</span><span class="o">=</span><span class="s2">&quot;recent&quot;</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">media</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+</code></pre></div>
 <p>Low level methods:</p>
 <table>
 <thead>
@@ -1315,6 +1324,11 @@
 <td>hashtag_medias_paginated_v1(name: str, amount: int = 27, tab_key: str = "top|recent|clips", end_cursor: str = None)</td>
 <td>Tuple[List[Media], str]</td>
 <td>Get one hashtag media page by Private Mobile API</td>
+</tr>
+<tr>
+<td>iter_hashtag_medias(name: str, amount: int = 0, page_size: int = 27, tab_key: str = "recent")</td>
+<td>Iterator[Media]</td>
+<td>Stream hashtag medias page by page through <code>hashtag_medias_paginated()</code></td>
 </tr>
 <tr>
 <td>hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top|recent", max_id: str = None)</td>
@@ -1376,6 +1390,7 @@
 <li>High-level <code>hashtag_info()</code>, <code>hashtag_medias_top()</code>, and <code>hashtag_medias_recent()</code> use the private/mobile helpers.</li>
 <li><code>hashtag_following()</code> returns the authenticated following-list hashtag preview. Instagram may limit how many followed hashtags are included.</li>
 <li>For resumable pagination, prefer <code>hashtag_medias_paginated()</code> and persist the returned cursor. Use <code>hashtag_medias_v1_chunk()</code> only when you need the low-level private/mobile helper.</li>
+<li>Use <code>iter_hashtag_medias()</code> when you want to process large hashtag result sets incrementally. It uses the same pagination path as <code>hashtag_medias_paginated()</code>.</li>
 <li><code>hashtag_medias_v1_chunk()</code> accepts <code>top</code>, <code>recent</code>, or <code>clips</code> as <code>tab_key</code>.</li>
 </ul>
 
