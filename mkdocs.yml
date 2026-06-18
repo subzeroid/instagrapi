@@ -12,6 +12,7 @@ nav:
     - Fundamentals: usage-guide/fundamentals.md
     - Interactions: usage-guide/interactions.md
     - TOTP: usage-guide/totp.md
+    - Types: usage-guide/types.md
     - Challenge Resolver: usage-guide/challenge_resolver.md
     - Handle Exceptions: usage-guide/handle_exception.md
     - Collection: usage-guide/collection.md

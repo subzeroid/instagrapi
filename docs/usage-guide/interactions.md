@@ -3,6 +3,7 @@
 `instagrapi` provides various types of `Interactions` that can be used to control how the program will interact with the `Instagram`:
 
 * [`Media`](media.md) - Media (Photo, Video, Album, IGTV, Reels or Story)
+* [Types](types.md) - Field reference for public `instagrapi.types` models
 * [`Resource`](media.md) - Part of Media (for albums)
 * [`MediaOembed`](media.md) - Short version of Media
 * [`Account`](account.md) - Full private info for your account (e.g. email, phone_number)
