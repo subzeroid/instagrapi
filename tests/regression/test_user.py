@@ -600,6 +600,59 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         params = private_request.call_args.kwargs["params"]
         self.assertEqual(params["count"], MAX_USER_COUNT)
 
+    def test_iter_user_followers_v1_streams_chunks_and_respects_amount(self):
+        client = self.build_private_client()
+        users = [
+            UserShort(pk="1", username="one"),
+            UserShort(pk="2", username="two"),
+            UserShort(pk="3", username="three"),
+            UserShort(pk="4", username="four"),
+        ]
+
+        with mock.patch.object(
+            client,
+            "user_followers_v1_chunk",
+            side_effect=[(users[:2], "cursor-1"), (users[2:], "cursor-2")],
+        ) as chunk:
+            result = list(
+                client.iter_user_followers_v1(
+                    "123",
+                    amount=3,
+                    page_size=2,
+                    order="date_followed_latest",
+                )
+            )
+
+        self.assertEqual([user.pk for user in result], ["1", "2", "3"])
+        self.assertEqual(
+            chunk.call_args_list[0].kwargs, {"max_amount": 2, "max_id": "", "order": "date_followed_latest"}
+        )
+        self.assertEqual(
+            chunk.call_args_list[1].kwargs,
+            {"max_amount": 1, "max_id": "cursor-1", "order": "date_followed_latest"},
+        )
+        self.assertEqual(chunk.call_count, 2)
+
+    def test_iter_user_following_v1_streams_chunks_and_respects_amount(self):
+        client = self.build_private_client()
+        users = [
+            UserShort(pk="1", username="one"),
+            UserShort(pk="2", username="two"),
+            UserShort(pk="3", username="three"),
+        ]
+
+        with mock.patch.object(
+            client,
+            "user_following_v1_chunk",
+            side_effect=[(users[:2], "cursor-1"), (users[2:], "")],
+        ) as chunk:
+            result = list(client.iter_user_following_v1("123", amount=3, page_size=2))
+
+        self.assertEqual([user.pk for user in result], ["1", "2", "3"])
+        self.assertEqual(chunk.call_args_list[0].kwargs, {"max_amount": 2, "max_id": ""})
+        self.assertEqual(chunk.call_args_list[1].kwargs, {"max_amount": 1, "max_id": "cursor-1"})
+        self.assertEqual(chunk.call_count, 2)
+
     def test_authorized_user_followers_falls_back_when_private_list_is_limited(self):
         client = self.build_private_client()
         private_user = UserShort(pk="private", username="private")

@@ -2,7 +2,7 @@ import json
 import logging
 from copy import deepcopy
 from json.decoder import JSONDecodeError
-from typing import Dict, List, Literal, Sequence, Tuple, Union
+from typing import Dict, Iterator, List, Literal, Sequence, Tuple, Union
 
 from requests.exceptions import RequestException
 
@@ -25,6 +25,7 @@ from instagrapi.extractors import (
     extract_user_v1,
 )
 from instagrapi.types import About, AddressBookContact, Guide, Relationship, RelationshipShort, User, UserShort
+from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps, json_value
 
 MAX_USER_COUNT = 200
@@ -819,6 +820,36 @@ class UserMixin:
             users = users[:amount]
         return users
 
+    def iter_user_following_v1(
+        self,
+        user_id: str,
+        amount: int = 0,
+        page_size: int = MAX_USER_COUNT,
+    ) -> Iterator[UserShort]:
+        """
+        Iterate over user's following users by Private Mobile API.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of users to yield, default is 0 - Inf
+        page_size: int, optional
+            Maximum number of users to fetch per page, default is 200
+
+        Returns
+        -------
+        Iterator[UserShort]
+            Iterator of UserShort objects
+        """
+        user_id = str(user_id)
+
+        def fetch_page(max_id: str, max_amount: int) -> Tuple[List[UserShort], str]:
+            return self.user_following_v1_chunk(user_id, max_amount=max_amount, max_id=max_id)
+
+        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor="")
+
     def user_following(self, user_id: str, use_cache: bool = True, amount: int = 0) -> Dict[str, UserShort]:
         """
         Get user's following information
@@ -1012,6 +1043,46 @@ class UserMixin:
         if amount:
             users = users[:amount]
         return users
+
+    def iter_user_followers_v1(
+        self,
+        user_id: str,
+        amount: int = 0,
+        page_size: int = MAX_USER_COUNT,
+        order: FOLLOWERS_ORDER = None,
+    ) -> Iterator[UserShort]:
+        """
+        Iterate over user's followers by Private Mobile API.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of users to yield, default is 0 - Inf
+        page_size: int, optional
+            Maximum number of users to fetch per page, default is 200
+        order: str, optional
+            Followers sort order: date_followed_latest or date_followed_earliest
+
+        Returns
+        -------
+        Iterator[UserShort]
+            Iterator of UserShort objects
+        """
+        user_id = str(user_id)
+
+        def fetch_page(max_id: str, max_amount: int) -> Tuple[List[UserShort], str]:
+            if order:
+                return self.user_followers_v1_chunk(
+                    user_id,
+                    max_amount=max_amount,
+                    max_id=max_id,
+                    order=order,
+                )
+            return self.user_followers_v1_chunk(user_id, max_amount=max_amount, max_id=max_id)
+
+        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor="")
 
     @staticmethod
     def _private_graphql_root(data: Dict, root_field_name: str) -> Dict:

@@ -630,6 +630,26 @@ class UserMediasPrivateFirstRegressionTestCase(unittest.TestCase):
         private_lookup.assert_called_once_with("456", 2, end_cursor="123_456")
         public_lookup.assert_not_called()
 
+    def test_iter_user_medias_streams_paginated_pages_and_respects_amount(self):
+        client = self.build_private_client()
+        medias = [self.build_media(pk=str(i)) for i in range(1, 5)]
+
+        with mock.patch.object(
+            client,
+            "user_medias_paginated",
+            side_effect=[(medias[:2], "cursor-1"), (medias[2:], "cursor-2")],
+        ) as paginated:
+            result = list(client.iter_user_medias("456", amount=3, page_size=2))
+
+        self.assertEqual([media.pk for media in result], ["1", "2", "3"])
+        paginated.assert_has_calls(
+            [
+                mock.call("456", amount=2, end_cursor=""),
+                mock.call("456", amount=1, end_cursor="cursor-1"),
+            ]
+        )
+        self.assertEqual(paginated.call_count, 2)
+
     def test_authorized_user_medias_uses_private_before_public(self):
         client = self.build_private_client()
         medias = [self.build_media()]

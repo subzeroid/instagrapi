@@ -5,7 +5,7 @@ import time
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from instagrapi.exceptions import (
@@ -30,6 +30,7 @@ from instagrapi.mixins.graphql import GQL_STUFF
 from instagrapi.types import Location, Media, Story, StoryMedia, UserShort, Usertag
 from instagrapi.utils.auth import generate_jazoest
 from instagrapi.utils.ids import InstagramIdCodec
+from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps, json_value
 
 MEDIA_INFO_DOC_ID = "8845758582119845"
@@ -1203,6 +1204,30 @@ class MediaMixin:
         Compatibility alias for aiograpi's original chunk naming.
         """
         return self.user_medias_paginated(user_id, amount=0, end_cursor=end_cursor)
+
+    def iter_user_medias(self, user_id: str, amount: int = 0, page_size: int = 0) -> Iterator[Media]:
+        """
+        Iterate over a user's media.
+
+        Parameters
+        ----------
+        user_id: str
+        amount: int, optional
+            Maximum number of media to yield, default is 0 (all medias)
+        page_size: int, optional
+            Maximum number of media to fetch per page. Default value 0 keeps the endpoint default.
+
+        Returns
+        -------
+        Iterator[Media]
+            Iterator of Media objects
+        """
+        user_id = str(user_id)
+
+        def fetch_page(end_cursor: str, page_amount: int) -> Tuple[List[Media], str]:
+            return self.user_medias_paginated(user_id, amount=page_amount, end_cursor=end_cursor)
+
+        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor="")
 
     def user_pinned_medias(self, user_id) -> List[Media]:
         """

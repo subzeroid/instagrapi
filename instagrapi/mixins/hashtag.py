@@ -1,7 +1,7 @@
 import base64
 import json
 import warnings
-from typing import List, Tuple
+from typing import Iterator, List, Tuple
 
 from instagrapi.exceptions import ClientError, ClientLoginRequired, HashtagNotFound, PrivateError, WrongCursorError
 from instagrapi.extractors import (
@@ -11,6 +11,7 @@ from instagrapi.extractors import (
     extract_media_v1,
 )
 from instagrapi.types import Hashtag, Media
+from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps
 
 
@@ -320,6 +321,39 @@ class HashtagMixin:
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
             return private_lookup()
+
+    def iter_hashtag_medias(
+        self,
+        name: str,
+        amount: int = 0,
+        page_size: int = 27,
+        tab_key: str = "recent",
+    ) -> Iterator[Media]:
+        """
+        Iterate over medias for a hashtag.
+
+        Parameters
+        ----------
+        name: str
+            Name of the hashtag
+        amount: int, optional
+            Maximum number of media to yield, default is 0 (all medias)
+        page_size: int, optional
+            Maximum number of media to fetch per page, default is 27
+        tab_key: str, optional
+            Tab key: "top", "recent" or "clips", default is "recent". Public GraphQL only supports "recent".
+
+        Returns
+        -------
+        Iterator[Media]
+            Iterator of Media objects
+        """
+        name = self._normalize_hashtag_name(name)
+
+        def fetch_page(end_cursor: str, page_amount: int) -> Tuple[List[Media], str]:
+            return self.hashtag_medias_paginated(name, amount=page_amount, tab_key=tab_key, end_cursor=end_cursor)
+
+        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor=None)
 
     def hashtag_medias_v1(self, name: str, amount: int = 27, tab_key: str = "") -> List[Media]:
         """
