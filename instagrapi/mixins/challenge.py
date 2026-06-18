@@ -492,7 +492,7 @@ class ChallengeResolveMixin:
             A boolean value
         """
         step_name = self.last_json.get("step_name", "")
-        if step_name == "delta_login_review" or step_name == "scraping_warning":
+        if step_name in ("delta_login_review", "delta_acknowledge_approved", "scraping_warning"):
             # IT WAS ME (by GEO)
             self._send_private_request(challenge_url, {"choice": "0"})
             return True
