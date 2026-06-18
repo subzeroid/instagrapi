@@ -209,6 +209,40 @@ class HashtagRegressionTestCase(unittest.TestCase):
         self.assertEqual(medias, ["m1"])
         self.assertEqual(end_cursor, "next-page")
 
+    def test_iter_hashtag_medias_streams_paginated_pages_and_respects_amount(self):
+        client = Client()
+        medias = [
+            Media(
+                pk=str(i),
+                id=f"{i}_1",
+                code=f"code-{i}",
+                taken_at=datetime.now(UTC()),
+                media_type=1,
+                user=UserShort(pk="1", username="example"),
+                like_count=0,
+                caption_text="",
+                usertags=[],
+                sponsor_tags=[],
+            )
+            for i in range(1, 5)
+        ]
+
+        with mock.patch.object(
+            client,
+            "hashtag_medias_paginated",
+            side_effect=[(medias[:2], "cursor-1"), (medias[2:], "cursor-2")],
+        ) as paginated:
+            result = list(client.iter_hashtag_medias("python", amount=3, page_size=2, tab_key="recent"))
+
+        self.assertEqual([media.pk for media in result], ["1", "2", "3"])
+        paginated.assert_has_calls(
+            [
+                mock.call("python", amount=2, tab_key="recent", end_cursor=None),
+                mock.call("python", amount=1, tab_key="recent", end_cursor="cursor-1"),
+            ]
+        )
+        self.assertEqual(paginated.call_count, 2)
+
     def test_hashtag_following_fetches_current_account_hashtags(self):
         client = Client()
         client.authorization_data = {"ds_user_id": "123"}

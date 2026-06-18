@@ -8,6 +8,8 @@ View a list of a user's medias, following and followers
 |-----------------------------------------------|-----------------------|--------------------------------------------------------------|
 | user_followers(user_id: str, amount: int = 0, order: str = None) | Dict\[int, UserShort] | Get dict of followers users (amount=0 - fetch all followers). Use `order="date_followed_latest"` or `order="date_followed_earliest"` for mobile follower sorting |
 | user_following(user_id: str, amount: int = 0) | Dict\[int, UserShort] | Get dict of following users (amount=0 - fetch all)           |
+| iter_user_followers_v1(user_id: str, amount: int = 0, page_size: int = 200, order: str = None) | Iterator[UserShort] | Stream followers from the private/mobile API without building a full dict |
+| iter_user_following_v1(user_id: str, amount: int = 0, page_size: int = 200) | Iterator[UserShort] | Stream following users from the private/mobile API without building a full dict |
 | search_followers(user_id: str, query: str)    | List[UserShort]       | Search by followers                                          |
 | search_following(user_id: str, query: str)    | List[UserShort]       | Search by following                                          |
 | user_info(user_id: str)                       | User                  | Get user info                                                |
@@ -71,9 +73,11 @@ Low level methods:
 | user_followers_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's followers information by Public Graphql API                     |
 | user_followers_v1_chunk(user_id: str, max_amount: int = 0, max_id: str = "", order: str = None) | Tuple[List[UserShort], str] | Get user's followers information by Private Mobile API and max_id (cursor). Supports `date_followed_latest` and `date_followed_earliest` |
 | user_followers_v1(user_id: str, amount: int = 0, order: str = None)                 | List[UserShort]             | Get user's followers information by Private Mobile API. Supports `date_followed_latest` and `date_followed_earliest` |
+| iter_user_followers_v1(user_id: str, amount: int = 0, page_size: int = 200, order: str = None) | Iterator[UserShort] | Stream followers page by page through `user_followers_v1_chunk()` |
 | user_followers_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: str = None) | Tuple[List[UserShort], str] | Get user's followers through the private mobile GraphQL `FollowersList` surface and max_id cursor |
 | user_followers_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: str = None) | List[UserShort] | Get user's followers through the private mobile GraphQL `FollowersList` surface |
 | user_following_v1(user_id: str, amount: int = 0)                                    | List[UserShort]             | Get user's following users information by Private Mobile API               |
+| iter_user_following_v1(user_id: str, amount: int = 0, page_size: int = 200)         | Iterator[UserShort]          | Stream following users page by page through `user_following_v1_chunk()` |
 | user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")                   | Tuple[List[UserShort], str] | Get pending incoming follow requests by Private Mobile API and max_id      |
 | user_following_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's following information by Public Graphql API                     |
 | search_followers_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by followers by Private Mobile API                                  |
@@ -148,6 +152,16 @@ latest_followers = cl.user_followers(cl.user_id, amount=50, order="date_followed
 earliest_followers = cl.user_followers_v1(cl.user_id, amount=50, order="date_followed_earliest")
 ```
 
+Streaming followers/following:
+
+``` python
+for follower in cl.iter_user_followers_v1(cl.user_id, amount=1000, page_size=100, order="date_followed_latest"):
+    print(follower.pk, follower.username)
+
+for user in cl.iter_user_following_v1(cl.user_id, amount=1000, page_size=100):
+    print(user.pk, user.username)
+```
+
 Raw private GraphQL helpers expose the same mobile `order` variable for callers that need the `FollowersList`/`FollowingList` payload directly:
 
 ``` python
@@ -195,3 +209,4 @@ Tip:
 
 * `user_info()`, `user_info_by_username()`, `user_id_from_username()`, and `username_from_user_id()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * `user_followers()` and `user_following()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
+* Use `iter_user_followers_v1()` and `iter_user_following_v1()` when you need to process large follow lists incrementally instead of keeping the full result in memory.

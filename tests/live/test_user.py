@@ -85,6 +85,66 @@ class ClientPrivateGraphQLV2UserFieldsLiveTestCase(unittest.TestCase):
                 self.assertEqual(getattr(rich_user, field), str(raw_value))
 
 
+class ClientIteratorLiveTestCase(unittest.TestCase):
+    _client = None
+    _username_cache = {}
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for iterator live tests")
+        if self.__class__._client is None:
+            self.__class__._client = self._live_client()
+        self.cl = self.__class__._client
+
+    def _live_client(self):
+        last_exc = None
+        for acc in _helpers.fetch_test_accounts(count=20, timeout=30):
+            try:
+                settings = dict(acc["client_settings"])
+                settings.pop("totp_seed", None)
+                cl = Client(settings=settings, proxy=os.getenv("IG_PROXY") or acc.get("proxy"))
+                cl._user_id = acc.get("user_id")
+                cl.account_info()
+                return cl
+            except Exception as exc:
+                last_exc = exc
+        self.skipTest(f"No usable saved-session account returned: {last_exc}")
+
+    def user_id_from_username(self, username):
+        info = self._username_cache.get(username)
+        if not info:
+            info = self.cl.user_info_by_username_v1(username)
+            self._username_cache[username] = info
+        return str(info.pk)
+
+    def test_iter_user_followers_v1_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        followers = list(self.cl.iter_user_followers_v1(user_id, amount=5, page_size=2))
+
+        self.assertEqual(len(followers), 5)
+        self.assertIsInstance(followers[0], UserShort)
+        self.assertEqual(len({user.pk for user in followers}), len(followers))
+
+    def test_iter_user_following_v1_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        following = list(self.cl.iter_user_following_v1(user_id, amount=5, page_size=2))
+
+        self.assertEqual(len(following), 5)
+        self.assertIsInstance(following[0], UserShort)
+        self.assertEqual(len({user.pk for user in following}), len(following))
+
+    def test_iter_user_medias_live(self):
+        user_id = self.user_id_from_username("instagram")
+
+        medias = list(self.cl.iter_user_medias(user_id, amount=4, page_size=2))
+
+        self.assertEqual(len(medias), 4)
+        self.assertIsInstance(medias[0], Media)
+        self.assertEqual(len({media.pk for media in medias}), len(medias))
+
+
 def _run_business_email_live(result_queue):
     if not TEST_ACCOUNTS_URL:
         result_queue.put({"status": "skip", "reason": "TEST_ACCOUNTS_URL is required for business email live tests"})

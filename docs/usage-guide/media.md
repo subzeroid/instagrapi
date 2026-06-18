@@ -29,6 +29,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pk_from_code(code: str) | str | Return media PK from shortcode |
 | media_pk_from_url(url: str) | str | Return media PK from media URL; also handles `share/p/...` redirect URLs |
 | user_medias(user_id: str, amount: int = 0) | List\[Media] | Get user feed media |
+| iter_user_medias(user_id: str, amount: int = 0, page_size: int = 0) | Iterator\[Media] | Stream user feed media page by page without building a full list |
 | user_medias_paginated(user_id: str, amount: int = 0, end_cursor: str = "") | Tuple[List\[Media], str] | Get one page of user media and next cursor |
 | user_medias_chunk(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one page of user media |
 | user_clips(user_id: str, amount: int = 0) | List\[Media] | Get clips/reels by user |
@@ -239,6 +240,12 @@ True
 ['2019-06-05', '2019-03-23', '2019-03-23', '2018-11-15', '2018-10-16']
 ['2018-10-16', '2018-10-11', '2018-10-09', '2018-10-09', '2018-08-02']
 
+# Stream user media without storing every fetched page
+
+>>> for media in client.iter_user_medias(1903424587, amount=100, page_size=25):
+...     print(media.pk, media.code)
+...
+
 # Resume tagged-media fetches from a stored cursor
 
 >>> tagged, end_cursor = client.usertag_medias_paginated(1903424587, 12, end_cursor="")
@@ -261,6 +268,7 @@ Notes:
 
 * `media_info()` uses private/mobile lookup first when the client has authorization data or a saved `sessionid`, then falls back to public/web lookup. Without authorization, it keeps public/web-first behavior. Explicit `media_info_gql()` still calls the public/web path directly.
 * `user_medias()` and `user_medias_paginated()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
+* Use `iter_user_medias()` for large profile media scans when you want each `Media` as soon as its page is fetched. Set `page_size` to control request size; leave it as `0` to keep the endpoint default.
 * `usertag_medias()` and `usertag_medias_paginated()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * For Reels where Instagram hides like/view counts, the public GraphQL path can expose play/view counts but not hidden like totals; `like_count` can be `-1`.
 * Extended media metadata from Instagram payloads is available on `Media` when returned by the source API, including caption edit state, dimensions, audio presence, hidden count state, viewer save/reshare state, paid partnership/affiliate flags, DASH video info, clips music attribution, and inline comment previews.
