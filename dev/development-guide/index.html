@@ -1411,6 +1411,8 @@ live in <code>tests/live/</code>.</p>
 <ul>
 <li><code>[project].dependencies</code> lists runtime dependencies imported by the library.</li>
 <li><code>[project.optional-dependencies].test</code> lists tools needed for tests, linting, docs, and local development.</li>
+<li>Runtime dependency lower bounds should stay at the currently tested/security-patched version, with an upper bound before the next major release.</li>
+<li>Android-specific pins are allowed when the mobile Python ecosystem needs an exact wheel-compatible version, for example the Termux pydantic-core wheel constraint.</li>
 </ul>
 <p>Publishing is handled by the tag-based <code>publish.yml</code> workflow. Pushes and pull requests run the package workflow first;
 maintainers cut a version tag only after the checks are green.</p>
