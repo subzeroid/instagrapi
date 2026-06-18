@@ -111,6 +111,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
 * [Usage Guide](usage-guide/fundamentals.md)
 * [Runnable Examples](usage-guide/examples.md)
 * [Interactions](usage-guide/interactions.md)
+  * [Types](usage-guide/types.md) - Field reference for public `instagrapi.types` models
   * [`Media`](usage-guide/media.md) - Publication (also called post): Photo, Video, Album, IGTV and Reels
   * [`Resource`](usage-guide/media.md) - Part of Media (for albums)
   * [`MediaOembed`](usage-guide/media.md) - Short version of Media
