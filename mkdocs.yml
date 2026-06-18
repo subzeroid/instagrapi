@@ -1,6 +1,7 @@
 site_name: instagrapi Documentation
-repo_url: https://github.com/adw0rd/instagrapi/
-repo_name: adw0rd/instagrapi
+repo_url: https://github.com/subzeroid/instagrapi/
+site_url: https://subzeroid.github.io/instagrapi/
+repo_name: subzeroid/instagrapi
 edit_uri: edit/main/docs/
 docs_dir: docs
 nav:
@@ -9,6 +10,7 @@ nav:
   - Usage Guide:
     - Fundamentals: usage-guide/fundamentals.md
     - Interactions: usage-guide/interactions.md
+    - Handle Exceptions: usage-guide/handle_exception.md
     - Collection: usage-guide/collection.md
     - Comment: usage-guide/comment.md
     - Direct: usage-guide/direct.md
@@ -17,8 +19,10 @@ nav:
     - Location: usage-guide/location.md
     - Media: usage-guide/media.md
     - Story: usage-guide/story.md
+    - Track: usage-guide/track.md
     - User: usage-guide/user.md
     - Account: usage-guide/account.md
+  - Best Practices: best-practices.md
   - Development Guide: development-guide.md
   - Exceptions: exceptions.md
 theme: material

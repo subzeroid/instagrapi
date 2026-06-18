@@ -10,6 +10,7 @@ Viewing location info and medias by location
 | location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
 | location_medias_top(location_pk: int, amount: int = 9)     | List[Media]    | Return Top posts by Location
 | location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
+| fbsearch_places(query: str, lat: float = 40.74, lng: float = -73.94) | List[Location] | >Search places via Facebook Search (40.74/-73.94 - New York, default GEO)
 
 
 Example:
@@ -122,4 +123,95 @@ Example:
  'video_duration': 0.0,
  'title': '',
  'resources': []}
+
 ```
+
+Facebook Search:
+``` python
+>>> place = cl.fbsearch_places('Perch')[2]
+>>> place.dict()
+{
+ 'pk': 3824034,
+ 'name': 'Perch',
+ 'phone': '',
+ 'website': '',
+ 'category': '',
+ 'hours': {},
+ 'address': None,
+ 'city': None,
+ 'zip': None,
+ 'lng': -118.25135,
+ 'lat': 34.04882,
+ 'external_id': 207298912632228,
+ 'external_id_source': 'facebook_places'
+}
+
+>>> cl.location_info(place.pk).dict()
+{
+ 'pk': 3824034,
+ 'name': 'Perch',
+ 'phone': '(213) 802-1770',
+ 'website': 'http://www.perchla.com',
+ 'category': '',
+ 'hours': {},
+ 'address': '448 S Hill St',
+ 'city': 'Los Angeles, California',
+ 'zip': '90013',
+ 'lng': -118.25135,
+ 'lat': 34.04882,
+ 'external_id': None,
+ 'external_id_source': None
+}
+```
+
+``` python
+>>> place = cl.fbsearch_places("Villa Sirot", 46.7032028502, 4.3093986902)[0]
+>>> place.dict()
+{'pk': 1001956449,
+ 'name': 'Villa Sirot',
+ 'phone': '',
+ 'website': '',
+ 'category': '',
+ 'hours': {},
+ 'address': None,
+ 'city': None,
+ 'zip': None,
+ 'lng': 4.3093986902426,
+ 'lat': 46.703202850229,
+ 'external_id': 165573396905197,
+ 'external_id_source': 'facebook_places'}
+
+>>> cl.location_info(place.pk).dict()
+{'pk': 1001956449,
+ 'name': 'Villa Sirot',
+ 'phone': '',
+ 'website': None,
+ 'category': 'Local Business',
+ 'hours': {'status': '',
+  'current_status': '',
+  'hours_today': '',
+  'schedule': []},
+ 'address': None,
+ 'city': None,
+ 'zip': None,
+ 'lng': None,
+ 'lat': None,
+ 'external_id': 165573396905197,
+ 'external_id_source': None}
+
+```
+
+Low level methods:
+
+| Method                                         | Return  | Description
+| ---------------------------------------------- | ------- | --------------------------------------------
+| location_info_a1(location_pk: int) | Location | Get a location using location pk (Public Web API)
+| location_info_v1(location_pk: int) | Location | Get a location using location pk (Private Mobile API)
+| location_medias_a1_chunk(location_pk: int, max_amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts\|edge_location_to_media", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias and end_cursor (Public Web API)
+| location_medias_a1(location_pk: int, amount: int = 24, sleep: float = 0.5, tab_key: str = "edge_location_to_top_posts\|edge_location_to_media") | List[Media] | Get medias for a location (Public Web API)
+| location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: str = "ranked\|recent", max_id: str = None) | Tuple[List[Media], str] Get chunk of medias for a location and max_id (cursor) by Private Mobile API
+| location_medias_v1(location_pk: int, amount: int = 63, tab_key: str = "ranked\|recent") | List[Media] | Get medias for a location (Private Mobile API)
+| location_medias_top_a1(location_pk: int, amount: int = 9, sleep: float = 0.5) | List[Media] | Get top medias for a location (Public Web API)
+| location_medias_top_v1(location_pk: int, amount: int = 21) | List[Media] | Get top medias for a location (Private Mobile API)
+| location_medias_recent_a1(location_pk: int, amount: int = 24, sleep: float = 0.5) | List[Media] | Get recent medias for a location (Public Web API)
+| location_medias_recent_v1(location_pk: int, amount: int = 63) | List[Media] | Get recent medias for a location (Private Mobile API)

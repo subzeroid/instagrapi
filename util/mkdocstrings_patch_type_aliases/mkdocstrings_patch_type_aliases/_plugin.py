@@ -27,24 +27,32 @@ def regex_replace(look_for: Pattern, replace_with: str) -> ReplaceFunc:
 REPLACE_FUNCS = [
     # Possible: Python flattens nested unions, so need special handling for normal and nested.
     regex_replace(
-        re.compile(r"Union\[([][\w, ]+, ([][\w, ]+)), instagrapi\._interaction\._Sentinel]"),
-        r"Possible[Union[\1]]"
+        re.compile(
+            r"Union\[([][\w, ]+, ([][\w, ]+)), instagrapi\._interaction\._Sentinel]"
+        ),
+        r"Possible[Union[\1]]",
     ),
     regex_replace(
         re.compile(r"Union\[([][\w, ]+), instagrapi\._interaction\._Sentinel]"),
-        r"Possible[\1]"
+        r"Possible[\1]",
     ),
     # StaticOrDynamicValue: Handling for simple and generic types
     regex_replace(
-        re.compile(r"Union\[(\w+), Callable\[\[Mapping\[str, Union\[bool, str]]], \w+]]"),
-        r"StaticOrDynamicValue[\1]"
+        re.compile(
+            r"Union\[(\w+), Callable\[\[Mapping\[str, Union\[bool, str]]], \w+]]"
+        ),
+        r"StaticOrDynamicValue[\1]",
     ),
     regex_replace(
-        re.compile(r"Union\[([][\w]+), Callable\[\[Mapping\[str, Union\[bool, str]]], [][\w]+]]"),
-        r"StaticOrDynamicValue[\1]]"
+        re.compile(
+            r"Union\[([][\w]+), Callable\[\[Mapping\[str, Union\[bool, str]]], [][\w]+]]"
+        ),
+        r"StaticOrDynamicValue[\1]]",
     ),
     simple_replace("Callable[[Mapping[str, Union[bool, str]]], bool]", "ShouldAsk"),
-    simple_replace("Callable[[str, Mapping[str, Union[bool, str]]], Optional[str]]", "Validator"),
+    simple_replace(
+        "Callable[[str, Mapping[str, Union[bool, str]]], Optional[str]]", "Validator"
+    ),
     simple_replace("Union[Echo, Acknowledge, Question]", "Interaction"),
     simple_replace("Mapping[str, Union[bool, str]]", "Answers"),
     # Wrapped with square brackets to not replace value in type alias table
@@ -57,7 +65,8 @@ REPLACE_FUNCS = [
         """&lt;</span><span class="n">_Sentinel</span><span class="o">.</span>"""
         """<span class="n">A</span><span class="p">:</span> <span class="mi">0</span>"""
         """<span class="o">&gt;""",
-        """<span class="n">_Sentinel</span>"""),
+        """<span class="n">_Sentinel</span>""",
+    ),
 ]
 
 

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import random
 import time
@@ -9,6 +10,7 @@ from instagrapi import config
 from instagrapi.exceptions import ClientError, IGTVConfigureError, IGTVNotUpload
 from instagrapi.extractors import extract_media_v1
 from instagrapi.types import Location, Media, Usertag
+from instagrapi.utils import date_time_original
 
 try:
     from PIL import Image
@@ -74,6 +76,7 @@ class UploadIGTVMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
+        extra_data: Dict[str, str] = {},
     ) -> Media:
         """
         Upload IGTV to Instagram
@@ -94,6 +97,8 @@ class UploadIGTVMixin:
             Location tag for this upload, default is none
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -162,7 +167,7 @@ class UploadIGTVMixin:
             raise IGTVNotUpload(response=self.last_response, **self.last_json)
         # CONFIGURE
         self.igtv_composer_session_id = self.generate_uuid()
-        for attempt in range(20):
+        for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure IGTV: {path}")
             time.sleep(configure_timeout)
             try:
@@ -176,6 +181,7 @@ class UploadIGTVMixin:
                     caption,
                     usertags,
                     location,
+                    extra_data=extra_data,
                 )
             except ClientError as e:
                 if "Transcode not finished yet" in str(e):
@@ -183,7 +189,7 @@ class UploadIGTVMixin:
                     Response 202 status:
                     {"message": "Transcode not finished yet.", "status": "fail"}
                     """
-                    time.sleep(10)
+                    time.sleep(configure_timeout)
                     continue
                 raise e
             else:
@@ -204,6 +210,7 @@ class UploadIGTVMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
+        extra_data: Dict[str, str] = {},
     ) -> Dict:
         """
         Post Configure IGTV (send caption, thumbnail and more to Instagram)
@@ -228,6 +235,8 @@ class UploadIGTVMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        extra_data: Dict[str, str], optional
+            Dict of extra data, if you need to add your params, like {"share_to_facebook": 1}.
 
         Returns
         -------
@@ -241,14 +250,14 @@ class UploadIGTVMixin:
         data = {
             "igtv_ads_toggled_on": "0",
             "filter_type": "0",
-            "timezone_offset": "10800",
+            "timezone_offset": str(self.timezone_offset),
             "media_folder": "ScreenRecorder",
             "location": self.location_build(location),
             "source_type": "4",
             "title": title,
             "caption": caption,
             "usertags": json.dumps({"in": usertags}),
-            "date_time_original": time.strftime("%Y%m%dT%H%M%S.000Z", time.localtime()),
+            "date_time_original": date_time_original(time.localtime()),
             "igtv_share_preview_to_feed": "1",
             "upload_id": upload_id,
             "igtv_composer_session_id": self.igtv_composer_session_id,
@@ -258,6 +267,7 @@ class UploadIGTVMixin:
             "extra": {"source_width": width, "source_height": height},
             "audio_muted": False,
             "poster_frame_index": 70,
+            **extra_data,
         }
         return self.private_request(
             "media/configure_to_igtv/?video=1",
@@ -287,14 +297,16 @@ def analyze_video(path: Path, thumbnail: Path = None) -> tuple:
     except ImportError:
         raise Exception("Please install moviepy>=1.0.3 and retry")
 
-    print(f'Analizing IGTV file "{path}"')
-    video = mp.VideoFileClip(str(path))
-    width, height = video.size
-    if not thumbnail:
-        thumbnail = f"{path}.jpg"
-        print(f'Generating thumbnail "{thumbnail}"...')
-        video.save_frame(thumbnail, t=(video.duration / 2))
-        crop_thumbnail(thumbnail)
+    print(f'Analyzing IGTV file "{path}"')
+    with contextlib.ExitStack() as stack:
+        video = mp.VideoFileClip(str(path))
+        width, height = video.size
+        if not thumbnail:
+            thumbnail = f"{path}.jpg"
+            print(f'Generating thumbnail "{thumbnail}"...')
+            video.save_frame(thumbnail, t=(video.duration / 2))
+            crop_thumbnail(thumbnail)
+        stack.enter_context(contextlib.closing(video))
     return thumbnail, width, height, video.duration
 
 
