@@ -214,6 +214,8 @@ class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
             "is_affiliate",
             "dash_info",
             "clips_music_attribution_info",
+            "comments_preview",
+            "hoisted_comments",
         ):
             v1.pop(key)
             gql.pop(key)
