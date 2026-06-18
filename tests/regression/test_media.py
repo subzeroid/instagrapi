@@ -169,6 +169,50 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         self.assertEqual(coauthor.username, "collab_user")
         self.assertTrue(coauthor.is_verified)
 
+    def test_extract_media_v1_preserves_extended_media_fields(self):
+        payload = self._media_or_ad_payload()
+        payload.update(
+            {
+                "caption_is_edited": True,
+                "dimensions": {"height": 1916, "width": 1080},
+                "has_audio": True,
+                "like_and_view_counts_disabled": True,
+                "viewer_can_reshare": True,
+                "viewer_has_saved": True,
+                "is_paid_partnership": True,
+                "is_affiliate": True,
+                "dash_info": {
+                    "is_dash_eligible": False,
+                    "video_dash_manifest": None,
+                    "number_of_qualities": 0,
+                },
+                "clips_music_attribution_info": {
+                    "artist_name": "example",
+                    "song_name": "Original audio",
+                    "uses_original_audio": True,
+                    "should_mute_audio": False,
+                    "should_mute_audio_reason": "",
+                    "audio_id": "1192260532058807",
+                },
+            }
+        )
+
+        media = extract_media_v1(payload)
+
+        self.assertTrue(media.caption_is_edited)
+        self.assertEqual(media.dimensions.height, 1916)
+        self.assertEqual(media.dimensions.width, 1080)
+        self.assertTrue(media.has_audio)
+        self.assertTrue(media.like_and_view_counts_disabled)
+        self.assertTrue(media.viewer_can_reshare)
+        self.assertTrue(media.viewer_has_saved)
+        self.assertTrue(media.is_paid_partnership)
+        self.assertTrue(media.is_affiliate)
+        self.assertFalse(media.dash_info.is_dash_eligible)
+        self.assertEqual(media.dash_info.number_of_qualities, 0)
+        self.assertEqual(media.clips_music_attribution_info.artist_name, "example")
+        self.assertTrue(media.clips_music_attribution_info.uses_original_audio)
+
     def test_extract_media_v1_does_not_default_missing_clips_shared_to_fb_to_false(self):
         payload = self._media_or_ad_payload()
         payload["media_type"] = 2

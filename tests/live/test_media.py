@@ -203,6 +203,20 @@ class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
         self.assertLocation(v1.pop("location"), gql.pop("location"))
         v1.pop("has_liked")
         gql.pop("has_liked")
+        for key in (
+            "caption_is_edited",
+            "dimensions",
+            "has_audio",
+            "like_and_view_counts_disabled",
+            "viewer_can_reshare",
+            "viewer_has_saved",
+            "is_paid_partnership",
+            "is_affiliate",
+            "dash_info",
+            "clips_music_attribution_info",
+        ):
+            v1.pop(key)
+            gql.pop(key)
         self.assertDictEqual(v1, gql)
 
     def media_info(self, media_pk):

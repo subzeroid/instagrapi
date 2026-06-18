@@ -469,6 +469,26 @@ class ClipsMetadata(TypesBaseModel):
     viewer_interaction_settings: Optional[dict] = None
 
 
+class MediaDimensions(TypesBaseModel):
+    height: Optional[int] = None
+    width: Optional[int] = None
+
+
+class MediaDashInfo(TypesBaseModel):
+    is_dash_eligible: Optional[bool] = False
+    video_dash_manifest: Optional[str] = None
+    number_of_qualities: Optional[int] = 0
+
+
+class ClipsMusicAttributionInfo(TypesBaseModel):
+    artist_name: Optional[str] = None
+    song_name: Optional[str] = None
+    uses_original_audio: Optional[bool] = None
+    should_mute_audio: Optional[bool] = None
+    should_mute_audio_reason: Optional[str] = None
+    audio_id: Optional[str] = None
+
+
 class Media(TypesBaseModel):
     pk: Union[str, int]
     id: str
@@ -486,6 +506,16 @@ class Media(TypesBaseModel):
     like_count: int
     play_count: Optional[int] = None
     has_liked: Optional[bool] = None
+    caption_is_edited: Optional[bool] = False
+    dimensions: Optional[MediaDimensions] = None
+    has_audio: Optional[bool] = False
+    like_and_view_counts_disabled: Optional[bool] = False
+    viewer_can_reshare: Optional[bool] = False
+    viewer_has_saved: Optional[bool] = False
+    is_paid_partnership: Optional[bool] = False
+    is_affiliate: Optional[bool] = False
+    dash_info: Optional[MediaDashInfo] = None
+    clips_music_attribution_info: Optional[ClipsMusicAttributionInfo] = None
     caption_text: str
     accessibility_caption: Optional[str] = None
     usertags: List[Usertag]
