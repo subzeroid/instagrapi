@@ -39,7 +39,7 @@ jobs:
       IG_SIGNUP_SMS_CODE_COMMAND: ${{ secrets.IG_SIGNUP_SMS_CODE_COMMAND }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - uses: actions/setup-python@v6
         with:
