@@ -4,6 +4,38 @@ from typing import Dict, List
 from instagrapi.exceptions import ClientError, MediaError, UserError
 from instagrapi.utils import json_value
 
+POST_TYPES = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
+TIME_FRAMES = (
+    "ONE_WEEK",
+    "ONE_MONTH",
+    "THREE_MONTHS",
+    "SIX_MONTHS",
+    "ONE_YEAR",
+    "TWO_YEARS",
+)
+DATA_ORDERS = (
+    "REACH_COUNT",
+    "LIKE_COUNT",
+    "FOLLOW",
+    "SHARE_COUNT",
+    "BIO_LINK_CLICK",
+    "COMMENT_COUNT",
+    "IMPRESSION_COUNT",
+    "PROFILE_VIEW",
+    "VIDEO_VIEW_COUNT",
+    "SAVE_COUNT",
+)
+
+try:
+    from typing import Literal
+
+    POST_TYPE = Literal[POST_TYPES]
+    TIME_FRAME = Literal[TIME_FRAMES]
+    DATA_ORDERING = Literal[DATA_ORDERS]
+except ImportError:
+    # python <= 3.8
+    POST_TYPE = TIME_FRAME = DATA_ORDERING = str
+
 
 class InsightsMixin:
     """
@@ -12,9 +44,9 @@ class InsightsMixin:
 
     def insights_media_feed_all(
         self,
-        post_type: str = "ALL",
-        time_frame: str = "TWO_YEARS",
-        data_ordering: str = "REACH_COUNT",
+        post_type: POST_TYPE = "ALL",
+        time_frame: TIME_FRAME = "TWO_YEARS",
+        data_ordering: DATA_ORDERING = "REACH_COUNT",
         count: int = 0,
         sleep: int = 2,
     ) -> List[Dict]:
@@ -25,13 +57,10 @@ class InsightsMixin:
         ----------
         post_type: str, optional
             Types of posts, default is "ALL"
-            Options: ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
         time_frame: str, optional
             Time frame to pull media insights, default is "TWO_YEARS"
-            Options: ("ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS")
         data_ordering: str, optional
             Ordering strategy for the data, default is "REACH_COUNT"
-            Options: ("REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT"...)
         count: int, optional
             Max media count for retrieving, default is 0
         sleep: int, optional
@@ -42,19 +71,16 @@ class InsightsMixin:
         List[Dict]
             List of dictionaries of response from the call
         """
+        assert (
+            post_type in POST_TYPES
+        ), f'Unsupported post_type="{post_type}" {POST_TYPES}'
+        assert (
+            time_frame in TIME_FRAMES
+        ), f'Unsupported time_frame="{time_frame}" {TIME_FRAMES}'
+        assert (
+            data_ordering in DATA_ORDERS
+        ), f'Unsupported data_ordering="{data_ordering}" {DATA_ORDERS}'
         assert self.user_id, "Login required"
-        supported_post_types = ("ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO")
-        supported_time_frames = (
-            "ONE_WEEK",
-            "ONE_MONTH",
-            "THREE_MONTHS",
-            "SIX_MONTHS",
-            "ONE_YEAR",
-            "TWO_YEARS",
-        )
-        assert post_type in supported_post_types, "Unsupported post type"
-        assert time_frame in supported_time_frames, "Unsupported time frame"
-
         medias = []
         cursor = None
         data = {
@@ -79,7 +105,6 @@ class InsightsMixin:
         while True:
             if cursor:
                 query_params["cursor"] = cursor
-
             result = self.private_request(
                 "ads/graphql/",
                 self.with_query_params(data, query_params),
@@ -92,10 +117,14 @@ class InsightsMixin:
                 default=None,
             ):
                 raise UserError("Account is not business account", **self.last_json)
-
-            stats = result["data"]["shadow_instagram_user"]["business_manager"][
-                "top_posts_unit"
-            ]["top_posts"]
+            stats = json_value(
+                result,
+                "data",
+                "shadow_instagram_user",
+                "business_manager",
+                "top_posts_unit",
+                "top_posts",
+            )
             cursor = stats["page_info"]["end_cursor"]
             medias.extend(stats["edges"])
             if not stats["page_info"]["has_next_page"]:
