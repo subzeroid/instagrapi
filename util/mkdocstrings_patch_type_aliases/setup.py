@@ -1,7 +1,6 @@
 # type: ignore
 import setuptools
 
-
 setuptools.setup(
     name="mkdocstrings_patch_type_aliases",
     version="0.1.alpha1",
@@ -16,5 +15,5 @@ setuptools.setup(
         "mkdocs.plugins": [
             "mkdocstrings_patch_type_aliases = mkdocstrings_patch_type_aliases:PatchTypeAliases",
         ]
-    }
+    },
 )

@@ -9,9 +9,34 @@ class ClientError(Exception):
             self.message = str(args.pop(0))
         for key in list(kwargs.keys()):
             setattr(self, key, kwargs.pop(key))
+        if not self.message:
+            self.message = "{title} ({body})".format(
+                title=getattr(self, "reason", "Unknown"),
+                body=getattr(self, "error_type", vars(self)),
+            )
         super().__init__(self.message, *args, **kwargs)
         if self.response:
             self.code = self.response.status_code
+
+
+class ClientUnknownError(ClientError):
+    pass
+
+
+class WrongCursorError(ClientError):
+    message = "You specified a non-existent cursor"
+
+
+class ClientStatusFail(ClientError):
+    pass
+
+
+class ClientErrorWithTitle(ClientError):
+    pass
+
+
+class ResetPasswordError(ClientError):
+    pass
 
 
 class GenericRequestError(ClientError):
@@ -32,6 +57,10 @@ class ClientConnectionError(ClientError):
 
 class ClientBadRequestError(ClientError):
     """Raised due to a HTTP 400 response"""
+
+
+class ClientUnauthorizedError(ClientError):
+    """Raised due to a HTTP 401 response"""
 
 
 class ClientForbiddenError(ClientError):
@@ -66,6 +95,10 @@ class PrivateError(ClientError):
     """For Private API and last_json logic"""
 
 
+class NotFoundError(PrivateError):
+    reason = "Not found"
+
+
 class FeedbackRequired(PrivateError):
     pass
 
@@ -79,6 +112,14 @@ class ChallengeRedirection(ChallengeError):
 
 
 class ChallengeRequired(ChallengeError):
+    pass
+
+
+class ChallengeSelfieCaptcha(ChallengeError):
+    pass
+
+
+class ChallengeUnknownStep(ChallengeError):
     pass
 
 
@@ -118,7 +159,15 @@ class RateLimitError(PrivateError):
     pass
 
 
+class ProxyAddressIsBlocked(PrivateError):
+    """Instagram has blocked your IP address, use a quality proxy provider (not free, not shared)"""
+
+
 class BadPassword(PrivateError):
+    pass
+
+
+class BadCredentials(PrivateError):
     pass
 
 
@@ -130,11 +179,19 @@ class UnknownError(PrivateError):
     pass
 
 
+class TrackNotFound(NotFoundError):
+    pass
+
+
 class MediaError(PrivateError):
     pass
 
 
-class MediaNotFound(MediaError):
+class MediaNotFound(NotFoundError, MediaError):
+    pass
+
+
+class StoryNotFound(NotFoundError, MediaError):
     pass
 
 
@@ -142,7 +199,7 @@ class UserError(PrivateError):
     pass
 
 
-class UserNotFound(UserError):
+class UserNotFound(NotFoundError, UserError):
     pass
 
 
@@ -150,23 +207,19 @@ class CollectionError(PrivateError):
     pass
 
 
-class CollectionNotFound(CollectionError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Collection \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
-        )
+class CollectionNotFound(NotFoundError, CollectionError):
+    pass
 
 
 class DirectError(PrivateError):
     pass
 
 
-class DirectThreadNotFound(DirectError):
+class DirectThreadNotFound(NotFoundError, DirectError):
     pass
 
 
-class DirectMessageNotFound(DirectError):
+class DirectMessageNotFound(NotFoundError, DirectError):
     pass
 
 
@@ -210,7 +263,6 @@ class IGTVConfigureError(IGTVNotUpload):
     pass
 
 
-
 class ClipNotUpload(PrivateError):
     pass
 
@@ -231,32 +283,45 @@ class AlbumConfigureError(PrivateError):
     pass
 
 
-class StoryNotFound(MediaNotFound):
-    pass
-
-
 class HashtagError(PrivateError):
     pass
 
 
-class HashtagNotFound(HashtagError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Hashtag \"{kwargs.get('name')}\" not found",
-            *args, **kwargs
-        )
+class HashtagNotFound(NotFoundError, HashtagError):
+    pass
 
 
 class LocationError(PrivateError):
     pass
 
 
-class LocationNotFound(LocationError):
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            f"Location \"{kwargs.get('location_pk')}\" not found",
-            *args, **kwargs
-        )
+class LocationNotFound(NotFoundError, LocationError):
+    pass
+
 
 class TwoFactorRequired(PrivateError):
     pass
+
+
+class HighlightNotFound(NotFoundError, PrivateError):
+    pass
+
+
+class NoteNotFound(NotFoundError):
+    reason = "Not found"
+
+
+class PrivateAccount(PrivateError):
+    """This Account is Private"""
+
+
+class InvalidTargetUser(PrivateError):
+    """Invalid target user"""
+
+
+class InvalidMediaId(PrivateError):
+    """Invalid media_id"""
+
+
+class MediaUnavailable(PrivateError):
+    """Media is unavailable"""
