@@ -1,5 +1,55 @@
 from instagrapi.exceptions import DirectMessageNotFound
+from instagrapi.extractors import extract_direct_thread
 from tests.helpers import *
+
+
+def direct_thread_with_left_user_payload():
+    return {
+        "thread_v2_id": "17898572618026348",
+        "thread_id": "340282366841510300949128268610842297468",
+        "items": [],
+        "users": [
+            {
+                "pk": "123",
+                "username": "member",
+                "full_name": "Member",
+                "profile_pic_url": "https://example.com/member.jpg",
+                "is_private": False,
+                "is_verified": False,
+            }
+        ],
+        "left_users": [
+            {
+                "pk": "456",
+                "username": "left_user",
+                "full_name": "Left User",
+                "profile_pic_url": "https://example.com/left.jpg",
+                "is_private": False,
+                "is_verified": False,
+                "friendship_status": {
+                    "following": False,
+                    "followed_by": False,
+                    "is_private": False,
+                },
+            }
+        ],
+        "admin_user_ids": [],
+        "last_activity_at": 1761953663000000,
+        "muted": False,
+        "named": False,
+        "canonical": True,
+        "pending": False,
+        "archived": False,
+        "thread_type": "private",
+        "thread_title": "Thread",
+        "folder": 0,
+        "vc_muted": False,
+        "is_group": False,
+        "mentions_muted": False,
+        "approval_required_for_new_members": False,
+        "input_mode": 0,
+        "last_seen_at": {},
+    }
 
 
 class DirectMixinRegressionTestCase(unittest.TestCase):
@@ -76,6 +126,16 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             result = client.direct_thread_create([42, 43])
 
         self.assertEqual(result, "3402823668417104")
+
+    def test_extract_direct_thread_normalizes_left_user_friendship_status(self):
+        thread = extract_direct_thread(direct_thread_with_left_user_payload())
+
+        self.assertEqual(len(thread.left_users), 1)
+        left_user = thread.left_users[0]
+        self.assertEqual(left_user.pk, "456")
+        self.assertEqual(left_user.friendship_status.user_id, "456")
+        self.assertFalse(left_user.friendship_status.incoming_request)
+        self.assertFalse(left_user.friendship_status.outgoing_request)
 
     def test_direct_message_returns_matching_message_by_id(self):
         client = self.build_client()
