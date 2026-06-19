@@ -1255,7 +1255,7 @@
 <td>Get note text by username</td>
 </tr>
 <tr>
-<td>create_note(text: str, audience: int = 0)</td>
+<td>create_note(text: str, audience: Literal[0, 1] = 0)</td>
 <td>Note</td>
 <td>Post a new Note</td>
 </tr>
@@ -1265,7 +1265,7 @@
 <td>Retrieve music candidates for Notes</td>
 </tr>
 <tr>
-<td>create_music_note(track: Track | Dict, text: str = "", audience: int = 0, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None)</td>
+<td>create_music_note(track: Track | Dict, text: str = "", audience: Literal[0, 1] = 0, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None)</td>
 <td>Note</td>
 <td>Post a new Note with music</td>
 </tr>
@@ -1342,7 +1342,7 @@ and pass it to <code>create_music_note()</code>:</p>
 <ul>
 <li><code>note_id</code> - ID of the Note object</li>
 <li><code>text</code> - Content of the Note</li>
-<li><code>audience</code> - Who can see the note <strong>(0 = Followers you follow back, 1 = Close Friends only)</strong></li>
+<li><code>audience</code> - Who can see the note. Exposed as <code>NoteAudience = Literal[0, 1]</code> <strong>(0 = Followers you follow back, 1 = Close Friends only)</strong></li>
 <li><code>username</code> - Username used to search in an existing <code>notes</code> list</li>
 <li><code>track</code> - Track object or raw track dict from <code>notes_music_browser()</code></li>
 </ul>

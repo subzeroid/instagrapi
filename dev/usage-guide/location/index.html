@@ -1422,12 +1422,12 @@
 <td>Get a location using location pk (Private Mobile API)</td>
 </tr>
 <tr>
-<td>location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: str = "ranked|recent", max_id: str = None)</td>
+<td>location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: Literal["ranked", "recent"] = "ranked", max_id: str = None)</td>
 <td>Tuple[List[Media], str] Get chunk of medias for a location and max_id (cursor) by Private Mobile API</td>
 <td></td>
 </tr>
 <tr>
-<td>location_medias_v1(location_pk: int, amount: int = 63, tab_key: str = "ranked|recent")</td>
+<td>location_medias_v1(location_pk: int, amount: int = 63, tab_key: Literal["ranked", "recent"] = "ranked")</td>
 <td>List[Media]</td>
 <td>Get medias for a location (Private Mobile API), paginating with the server cursor until <code>amount</code> is reached or the cursor is exhausted</td>
 </tr>

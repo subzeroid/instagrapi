@@ -1446,7 +1446,7 @@ If you have a different resolution, then you need to prepare a file or use the S
 <li><code>stickers</code> - Add stickers to story</li>
 <li><code>medias</code> - Reshared feed media stickers</li>
 <li><code>polls</code> - Add polls to story</li>
-<li><code>resize_mode</code> - Story media sizing mode: <code>"fill"</code> keeps the current crop/fill behavior, <code>"fit"</code> renders the full source media on a Story canvas without cropping</li>
+<li><code>resize_mode</code> - Story media sizing mode. Exposed as <code>StoryResizeMode = Literal["fill", "fit"]</code>; <code>"fill"</code> keeps the current crop/fill behavior, <code>"fit"</code> renders the full source media on a Story canvas without cropping</li>
 </ul>
 <table>
 <thead>
@@ -1458,12 +1458,12 @@ If you have a different resolution, then you need to prepare a file or use the S
 </thead>
 <tbody>
 <tr>
-<td>photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill")</td>
+<td>photo_upload_to_story(path: Path, caption: str = "", upload_id: str = "", mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: StoryResizeMode = "fill")</td>
 <td>Story</td>
 <td>Upload photo to story</td>
 </tr>
 <tr>
-<td>video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: str = "fill")</td>
+<td>video_upload_to_story(path: Path, caption: str = "", thumbnail: Path = None, mentions: List[StoryMention] = [], locations: List[StoryLocation] = [], links: List[StoryLink] = [], hashtags: List[StoryHashtag] = [], stickers: List[StorySticker] = [], medias: List[StoryMedia] = [], polls: List[StoryPoll] = [], extra_data: Dict[str, str] = {}, resize_mode: StoryResizeMode = "fill")</td>
 <td>Story</td>
 <td>Upload video to story</td>
 </tr>

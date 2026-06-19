@@ -1173,7 +1173,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)</code> <br> Note: <code>selected_filter</code> = <code>""</code>, <code>"flagged"</code> or <code>"unread"</code>; <code>box</code> = <code>""</code>, <code>"primary"</code> or <code>"general"</code></td>
+<td><code>direct_threads(amount: int = 20, selected_filter: Optional[Literal["flagged", "unread"]] = None, box: Optional[Literal["primary", "general"]] = None, thread_message_limit: Optional[int] = None)</code> <br> Note: omit <code>selected_filter</code> / <code>box</code> or pass <code>None</code> for the default inbox</td>
 <td>List[DirectThread]</td>
 <td>Get all threads from inbox</td>
 </tr>
