@@ -1,5 +1,6 @@
 import io
 from datetime import datetime, timezone
+from typing import Literal, Union, get_args, get_origin, get_type_hints
 
 from PIL import Image
 
@@ -69,6 +70,20 @@ class UploadRegressionTestCase(unittest.TestCase):
                 ]
             }
         return payload
+
+    def assert_fb_destination_type_literal(self, method_name, parameter_name):
+        hints = get_type_hints(getattr(Client, method_name))
+        annotation = hints[parameter_name]
+        self.assertIs(get_origin(annotation), Union)
+        self.assertIn(type(None), get_args(annotation))
+        literal_args = [arg for arg in get_args(annotation) if get_origin(arg) is Literal]
+        self.assertEqual(1, len(literal_args))
+        self.assertEqual(("USER", "PAGE"), get_args(literal_args[0]))
+
+    def test_clip_share_to_fb_destination_type_annotations_are_literal(self):
+        self.assert_fb_destination_type_literal("clip_share_to_fb_destination", "destination_type")
+        self.assert_fb_destination_type_literal("clip_share_to_fb_extra_data", "destination_type")
+        self.assert_fb_destination_type_literal("clip_upload", "fb_destination_type")
 
     def build_story(self, story_pk="10", media_type=1):
         return Story(
@@ -1565,6 +1580,54 @@ class UploadRegressionTestCase(unittest.TestCase):
         configure_extra = clip_configure.call_args.kwargs["extra_data"]
         self.assertEqual(configure_extra["disable_comments"], "1")
         self.assertEqual(configure_extra["interest_topics"], ["123", "456"])
+
+    def test_clip_upload_show_preview_in_feed_false_sends_feed_show_zero(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+
+        with mock.patch(
+            "instagrapi.mixins.clip.analyze_video",
+            return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+        ):
+            with mock.patch.object(client.private, "get", return_value=ok_response):
+                with mock.patch.object(
+                    client.private,
+                    "post",
+                    side_effect=[ok_response, ok_response],
+                ):
+                    with mock.patch.object(client, "clip_configure", return_value={"status": "ok"}) as clip_configure:
+                        with mock.patch(
+                            "builtins.open",
+                            mock.mock_open(read_data=b"video-bytes"),
+                        ):
+                            with mock.patch("time.sleep"):
+                                client.clip_upload(
+                                    Path("example.mp4"),
+                                    "caption",
+                                    show_preview_in_feed=False,
+                                )
+
+        self.assertEqual(clip_configure.call_args.args[8], "0")
+
+    def test_clip_configure_show_preview_in_feed_false_sends_feed_show_zero(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "photo_rupload", return_value=None):
+            with mock.patch.object(client, "location_build", return_value=None):
+                with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+                    client.clip_configure(
+                        "upload-id",
+                        Path("/tmp/thumb.jpg"),
+                        720,
+                        1280,
+                        6023,
+                        "caption",
+                        show_preview_in_feed=False,
+                    )
+
+        payload = private_request.call_args.args[1]
+        self.assertEqual(payload["clips_share_preview_to_feed"], "0")
 
     def test_clip_upload_share_to_facebook_adds_crosspost_params_before_upload(self):
         client = self.build_client()
