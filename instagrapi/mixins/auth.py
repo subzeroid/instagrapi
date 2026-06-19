@@ -8,7 +8,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Literal, Union
+from typing import Any, Dict, Iterable, List, Literal, Optional, Union
 from uuid import uuid4
 
 import requests
@@ -1020,7 +1020,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         session_retry_total: int = None,
         session_retry_backoff_factor: Union[int, float] = None,
         session_retry_statuses: list = None,
-        public_transport: str = None,
+        public_transport: Optional[Literal["requests", "curl"]] = None,
         public_transport_impersonate: str = None,
     ) -> bool:
         if request_timeout is not None:

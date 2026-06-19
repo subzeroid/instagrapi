@@ -132,10 +132,10 @@ Low level methods:
 | hashtag_info_gql(name: str, amount: int = 12, end_cursor: str = None) | Hashtag | Get information about a hashtag by Public Graphql API
 | hashtag_info_v1(name: str) | Hashtag | Get information about a hashtag by Private Mobile API
 | hashtag_medias_paginated_gql(name: str, amount: int = 27, end_cursor: str = None) | Tuple[List[Media], str] | Get one recent hashtag media page by Public GraphQL API
-| hashtag_medias_paginated_v1(name: str, amount: int = 27, tab_key: str = "top\|recent\|clips", end_cursor: str = None) | Tuple[List[Media], str] | Get one hashtag media page by Private Mobile API
+| hashtag_medias_paginated_v1(name: str, amount: int = 27, tab_key: Literal["top", "recent", "clips"] = "recent", end_cursor: str = None) | Tuple[List[Media], str] | Get one hashtag media page by Private Mobile API
 | iter_hashtag_medias(name: str, amount: int = 0, page_size: int = 27, tab_key: str = "recent") | Iterator[Media] | Stream hashtag medias page by page through `hashtag_medias_paginated()`
-| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: str = "top\|recent", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
-| hashtag_medias_v1(name: str, amount: int = 27, tab_key: str = "top\|recent") | List[Media] | Get medias for a hashtag by Private Mobile API
+| hashtag_medias_v1_chunk(name: str, max_amount: int = 27, tab_key: Literal["top", "recent", "clips"] = "top", max_id: str = None) | Tuple[List[Media], str] | Get chunk of medias for a hashtag and max_id (cursor) by Private Mobile API
+| hashtag_medias_v1(name: str, amount: int = 27, tab_key: Literal["top", "recent", "clips"] = "top") | List[Media] | Get medias for a hashtag by Private Mobile API
 | hashtag_medias_top_v1(name: str, amount: int = 9) | List[Media] | Get top medias for a hashtag by Private Mobile API
 | hashtag_medias_recent_v1(name: str, amount: int = 27) | List[Media] | Get recent medias for a hashtag by Private Mobile API
 | hashtag_medias_reels_v1(name: str, amount: int = 27) | List[Media] | Get recent clips (reels) for a hashtag by Private Mobile API

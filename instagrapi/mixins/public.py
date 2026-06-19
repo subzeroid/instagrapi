@@ -3,7 +3,7 @@ import logging
 import shutil
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 try:
     from simplejson.errors import JSONDecodeError
@@ -29,6 +29,8 @@ from instagrapi.exceptions import (
 )
 from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.timing import random_delay
+
+PublicTransport = Literal["requests", "curl"]
 
 
 class PublicRequestMixin:
@@ -123,14 +125,14 @@ class PublicRequestMixin:
         super().__init__(*args, **kwargs)
 
     @classmethod
-    def _normalize_public_transport(cls, public_transport: str) -> str:
+    def _normalize_public_transport(cls, public_transport: Optional[PublicTransport]) -> PublicTransport:
         public_transport = public_transport or "requests"
         if public_transport not in {"requests", "curl"}:
             raise ValueError("public_transport must be 'requests' or 'curl'")
         return public_transport
 
     @classmethod
-    def _default_public_user_agent(cls, public_transport: str, impersonate: str) -> str:
+    def _default_public_user_agent(cls, public_transport: PublicTransport, impersonate: str) -> str:
         if public_transport == "curl":
             return cls.public_curl_user_agents.get(impersonate, cls.public_curl_user_agents["chrome136"])
         return cls.public_user_agent
