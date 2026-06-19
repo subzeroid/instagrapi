@@ -68,11 +68,11 @@ class InsightsMixin:
 
         Parameters
         ----------
-        post_type: str, optional
+        post_type: POST_TYPE, optional
             Types of posts, default is "ALL"
-        time_frame: str, optional
+        time_frame: TIME_FRAME, optional
             Time frame to pull media insights, default is "TWO_YEARS"
-        data_ordering: str, optional
+        data_ordering: DATA_ORDERING, optional
             Ordering strategy for the data, default is "REACH_COUNT"
         count: int, optional
             Max media count for retrieving, default is 0
