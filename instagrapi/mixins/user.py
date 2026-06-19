@@ -35,11 +35,13 @@ USER_WEB_PROFILE_DOC_ID = "26762473490008061"
 USER_INFO_V2_DOC_ID = "25980296051578533"
 USER_INFO_BY_USERNAME_V2_DOC_ID = "26347858941511777"
 ADDRESS_BOOK_DEFAULT_INCLUDE = ("extra_display_name", "thumbnails")
+USER_REPORT_REASONS = {"spam": ("ig_report_account", "ig_its_inappropriate", "ig_spam_v3")}
 
 logger = logging.getLogger(__name__)
 
 INFO_FROM_MODULE = Literal["self_profile", "feed_timeline", "reel_feed_timeline"]
 FOLLOWERS_ORDER = Literal["date_followed_latest", "date_followed_earliest"]
+USER_REPORT_REASON = Literal["spam"]
 
 
 class UserMixin:
@@ -1510,6 +1512,68 @@ class UserMixin:
         assert result.get("status", "") == "ok"
 
         return result.get("friendship_status", {}).get("blocking") is False
+
+    def user_report(self, user_id: str, reason: USER_REPORT_REASON = "spam") -> bool:
+        """
+        Report a User
+
+        Parameters
+        ----------
+        user_id: str
+            User ID of an Instagram account
+        reason: str, optional
+            Report reason. Currently supports ``"spam"``.
+
+        Returns
+        -------
+        bool
+            True if Instagram returns the report confirmation state
+        """
+        user_id = str(user_id)
+        if reason not in USER_REPORT_REASONS:
+            raise ValueError(
+                f'Unsupported user report reason "{reason}". Supported reasons: {tuple(USER_REPORT_REASONS)}'
+            )
+
+        result = self.private_request(
+            "reports/get_frx_prompt/",
+            data={
+                "_uuid": self.uuid,
+                "container_module": "profile",
+                "entry_point": "1",
+                "frx_prompt_request_type": "1",
+                "is_dark_mode": "false",
+                "location": "2",
+                "nua_action": "",
+                "object_id": user_id,
+                "object_type": "5",
+            },
+            with_signature=False,
+        )
+        response = result.get("response", result)
+        context = response.get("context")
+        if not context:
+            raise ClientError("Instagram report flow did not return an initial context", **result)
+
+        for tag in USER_REPORT_REASONS[reason]:
+            result = self.private_request(
+                "reports/get_frx_prompt/",
+                data={
+                    "_uuid": self.uuid,
+                    "context": context,
+                    "frx_prompt_request_type": "2",
+                    "is_dark_mode": "false",
+                    "nua_action": "",
+                    "selected_tag_types": dumps([tag]),
+                },
+                with_signature=False,
+            )
+            response = result.get("response", result)
+            context = response.get("context")
+            if not context:
+                raise ClientError(f'Instagram report flow did not return context after tag "{tag}"', **result)
+
+        return bool(response.get("follow_up_actions"))
 
     def user_remove_follower(self, user_id: str) -> bool:
         """
