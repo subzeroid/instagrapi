@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/totp/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/notification/">
       
       
-        <link rel="prev" href="../interactions/">
+        <link rel="prev" href="../media/">
       
       
-        <link rel="next" href="../types/">
+        <link rel="next" href="../notes/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>TOTP - instagrapi Documentation</title>
+        <title>Notification - instagrapi Documentation</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#totp" class="md-skip">
+        <a href="#notification" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              TOTP
+              Notification
             
           </span>
         </div>
@@ -414,37 +414,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    TOTP
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../totp/" class="md-nav__link">
         
   
   
@@ -460,37 +433,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#bloks-two-factor-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Bloks two-factor flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -836,10 +778,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../notification/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -855,6 +806,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -1220,25 +1172,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#bloks-two-factor-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Bloks two-factor flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1257,8 +1190,8 @@
   
 
 
-<h1 id="totp">TOTP</h1>
-<p>TOTP setup and code generation</p>
+<h1 id="notification">Notification</h1>
+<p>Manage notification settings for the authenticated account.</p>
 <table>
 <thead>
 <tr>
@@ -1269,86 +1202,86 @@
 </thead>
 <tbody>
 <tr>
-<td>totp_generate_seed()</td>
-<td>str</td>
-<td>Generate 2FA TOTP seed</td>
-</tr>
-<tr>
-<td>totp_enable(verification_code: str)</td>
-<td>List[str]</td>
-<td>Enable TOTP 2FA and return backup codes</td>
-</tr>
-<tr>
-<td>totp_disable()</td>
+<td>notification_settings(content_type: NotificationContentType, setting_value: str)</td>
 <td>bool</td>
-<td>Disable TOTP 2FA</td>
+<td>Low-level notification setting helper</td>
 </tr>
 <tr>
-<td>totp_generate_code(seed: str)</td>
-<td>str</td>
-<td>Generate a current 2FA TOTP code from a seed</td>
+<td>notification_disable()</td>
+<td>bool</td>
+<td>Disable all supported account notifications</td>
+</tr>
+<tr>
+<td>notification_mute_all(setting_value: MUTE_ALL = "8_hour")</td>
+<td>bool</td>
+<td>Mute all notifications for a fixed period</td>
+</tr>
+<tr>
+<td>notification_likes(setting_value: SETTING_VALUE = "off")</td>
+<td>bool</td>
+<td>Manage likes notifications</td>
+</tr>
+<tr>
+<td>notification_comments(setting_value: SETTING_VALUE = "off")</td>
+<td>bool</td>
+<td>Manage comment notifications</td>
+</tr>
+<tr>
+<td>notification_direct_share_activity(setting_value: SETTING_VALUE = "off")</td>
+<td>bool</td>
+<td>Manage Direct share activity notifications</td>
+</tr>
+<tr>
+<td>notification_login(setting_value: SETTING_VALUE = "off")</td>
+<td>bool</td>
+<td>Manage login notifications</td>
 </tr>
 </tbody>
 </table>
+<p><code>NotificationContentType</code> is a <code>Literal</code> covering the known helper-backed
+notification categories:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins.notification</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotificationContentType</span>
+</code></pre></div>
+<p>Available values are:</p>
+<div class="highlight"><pre><span></span><code><span class="s2">&quot;mute_all&quot;</span>
+<span class="s2">&quot;likes&quot;</span>
+<span class="s2">&quot;like_and_comment_on_photo_user_tagged&quot;</span>
+<span class="s2">&quot;user_tagged&quot;</span>
+<span class="s2">&quot;comments&quot;</span>
+<span class="s2">&quot;comment_likes&quot;</span>
+<span class="s2">&quot;first_post&quot;</span>
+<span class="s2">&quot;new_follower&quot;</span>
+<span class="s2">&quot;follow_request_accepted&quot;</span>
+<span class="s2">&quot;connection_notification&quot;</span>
+<span class="s2">&quot;tagged_in_bio&quot;</span>
+<span class="s2">&quot;pending_direct_share&quot;</span>
+<span class="s2">&quot;direct_share_activity&quot;</span>
+<span class="s2">&quot;direct_group_requests&quot;</span>
+<span class="s2">&quot;video_call&quot;</span>
+<span class="s2">&quot;rooms&quot;</span>
+<span class="s2">&quot;live_broadcast&quot;</span>
+<span class="s2">&quot;felix_upload_result&quot;</span>
+<span class="s2">&quot;view_count&quot;</span>
+<span class="s2">&quot;fundraiser_creator&quot;</span>
+<span class="s2">&quot;fundraiser_supporter&quot;</span>
+<span class="s2">&quot;notification_reminders&quot;</span>
+<span class="s2">&quot;announcements&quot;</span>
+<span class="s2">&quot;report_updated&quot;</span>
+<span class="s2">&quot;login_notification&quot;</span>
+</code></pre></div>
+<p><code>SETTING_VALUE = Literal["off", "following_only", "everyone"]</code> is used by
+the per-category helpers. <code>MUTE_ALL = Literal["cancel", "15_minutes",
+"1_hour", "2_hour", "4_hour", "8_hour"]</code> is used by <code>notification_mute_all()</code>.</p>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">seed</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_generate_seed</span><span class="p">()</span>
-<span class="s2">&quot;67EIYPWCIJDTTVX632NEODKEU2PY5BIW&quot;</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">code</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_generate_code</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
-<span class="s2">&quot;123456&quot;</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_enable</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-<span class="p">[</span><span class="s2">&quot;1234 5678&quot;</span><span class="p">,</span> <span class="s2">&quot;1234 5678&quot;</span><span class="p">,</span> <span class="s2">&quot;1234 5678&quot;</span><span class="p">,</span> <span class="s2">&quot;1234 5678&quot;</span><span class="p">,</span> <span class="s2">&quot;1234 5678&quot;</span><span class="p">]</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_disable</span><span class="p">()</span>
-<span class="kc">True</span>
-</code></pre></div>
-<p>Notes:</p>
-<ul>
-<li><code>totp_generate_seed()</code> gives you the secret key you would normally scan into an authenticator app.</li>
-<li><code>totp_generate_code()</code> is a local helper and can be used anywhere you already have the TOTP seed.</li>
-<li>Save the backup codes returned by <code>totp_enable()</code> immediately. Instagram does not guarantee that you can fetch the same codes again later.</li>
-</ul>
-<h2 id="bloks-two-factor-flow">Bloks two-factor flow</h2>
-<p>Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy <code>accounts/two_factor_login/</code> endpoint can reject a valid code with <code>Invalid Parameters</code>.</p>
-<p><code>Client.login(..., verification_code="123456")</code> still uses the legacy mobile endpoint first. If Instagram returns a <code>two_step_verification_context</code>, instagrapi automatically retries through the Bloks two-factor flow. If the legacy login response does not expose that context, instagrapi can make a current CAA/Bloks login request to recover the context and continue the same Bloks verification path. When Instagram still does not return enough state, the exception explains that the account needs manual app verification or a fresh current-app login response.</p>
-<p>8-digit backup codes can be passed through the same <code>verification_code</code> parameter:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">,</span> <span class="n">verification_code</span><span class="o">=</span><span class="s2">&quot;12345678&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>When the code is 8 digits and Instagram exposes <code>two_step_verification_context</code>, instagrapi selects the Bloks <code>backup_codes</code> challenge instead of sending the code to the legacy TOTP/SMS endpoint.</p>
-<p>The low-level helpers remain available when you need to inspect or drive the flow manually:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 
-<span class="c1"># The context comes from Instagram&#39;s login challenge response.</span>
-<span class="n">context</span> <span class="o">=</span> <span class="s2">&quot;&lt;two_step_verification_context&gt;&quot;</span>
-
-<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_entrypoint</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_method_picker</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_select_method</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">selected_method</span><span class="o">=</span><span class="s2">&quot;totp&quot;</span><span class="p">)</span>
-
-<span class="n">code</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">totp_generate_code</span><span class="p">(</span><span class="s2">&quot;&lt;totp seed&gt;&quot;</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;totp&quot;</span><span class="p">)</span>
-<span class="n">login_payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_extract_login_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">bloks_apply_login_response</span><span class="p">(</span><span class="n">login_payload</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_comments</span><span class="p">(</span><span class="s2">&quot;following_only&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_settings</span><span class="p">(</span><span class="s2">&quot;likes&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_mute_all</span><span class="p">(</span><span class="s2">&quot;1_hour&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>For SMS, select and verify the <code>sms</code> challenge instead:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_select_method</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">selected_method</span><span class="o">=</span><span class="s2">&quot;sms&quot;</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;123456&quot;</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;sms&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p>For backup codes, select <code>backup_codes</code>, open the backup-code entry screen, then verify the 8-digit code:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_select_method</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">selected_method</span><span class="o">=</span><span class="s2">&quot;backup_codes&quot;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_enter_backup_code</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">bloks_two_step_verification_verify_code</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="s2">&quot;12345678&quot;</span><span class="p">,</span> <span class="n">challenge</span><span class="o">=</span><span class="s2">&quot;backup_codes&quot;</span><span class="p">)</span>
-</code></pre></div>
-<p><code>bloks_caa_login_send_request(...)</code> is also available as a low-level helper for inspecting the CAA/Bloks login response manually. <code>bloks_extract_two_step_verification_context(...)</code> extracts the context from that response when Instagram returns the current Bloks redirect action.</p>
-<p><code>bloks_extract_login_response(...)</code> returns decoded <code>login_response</code>, response <code>headers</code>, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns <code>{}</code> when the response is an intermediate UI state or an error. <code>bloks_apply_login_response(...)</code> can then copy the returned authorization data and cookies into the current client session.</p>
-<p>Automatic fallback can only run after Instagram exposes <code>two_step_verification_context</code> to the client or to the CAA/Bloks login response. A <code>BadPassword</code> response with a known-good password can still be account-risk handling before Instagram exposes that context, so treat it as a signal to inspect proxy/IP, device consistency, and the raw login response.</p>
 
 
 
