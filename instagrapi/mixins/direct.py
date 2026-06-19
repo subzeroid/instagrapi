@@ -1680,7 +1680,7 @@ class DirectMixin:
         media_id: str,
         user_ids: List[int] = [],
         thread_ids: List[int] = [],
-        send_attribute: SEND_ATTRIBUTES_MEDIA = "feed_timeline",
+        send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline",
         media_type: str = "photo",
     ) -> DirectMessage:
         """
@@ -1694,7 +1694,7 @@ class DirectMixin:
             List of unique identifier of Users id (recipients)
         thread_ids: List[int]
             List of unique identifier of Direct thread id
-        send_attribute: str, optional
+        send_attribute: SEND_ATTRIBUTE_MEDIA, optional
             Sending option. Default is "feed_timeline"
         media_type: str, optional
             Type of the shared media. Default is "photo", also can be "video"
