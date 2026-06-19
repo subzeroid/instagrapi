@@ -3,7 +3,7 @@ from inspect import signature
 from typing import get_args
 
 from instagrapi.mixins.account import ProfessionalAccountType
-from instagrapi.mixins.direct import BOX, SELECTED_FILTER, DirectMixin
+from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA, DirectMixin
 from instagrapi.mixins.hashtag import HashtagTab
 from instagrapi.mixins.location import LocationTab
 from instagrapi.mixins.note import NoteAudience
@@ -38,6 +38,13 @@ EXPECTED_NOTIFICATION_CONTENT_TYPES = {
     "report_updated",
     "login_notification",
 }
+EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES = {
+    "feed_timeline",
+    "feed_contextual_chain",
+    "feed_short_url",
+    "feed_contextual_self_profile",
+    "feed_contextual_profile",
+}
 
 
 class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
@@ -48,6 +55,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(LocationTab)), {"ranked", "recent"})
         self.assertEqual(set(get_args(NotificationContentType)), EXPECTED_NOTIFICATION_CONTENT_TYPES)
         self.assertEqual(set(get_args(PublicTransport)), {"requests", "curl"})
+        self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
     def test_direct_thread_filter_literals_remain_optional(self):
@@ -61,3 +69,8 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         direct_threads_chunk = signature(DirectMixin.direct_threads_chunk)
         self.assertIsNone(direct_threads_chunk.parameters["selected_filter"].default)
         self.assertIsNone(direct_threads_chunk.parameters["box"].default)
+
+    def test_direct_media_share_uses_public_send_attribute_literal(self):
+        direct_media_share = signature(DirectMixin.direct_media_share)
+
+        self.assertEqual(direct_media_share.parameters["send_attribute"].annotation, SEND_ATTRIBUTE_MEDIA)
