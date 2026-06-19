@@ -2,7 +2,7 @@
 
 | Method                                                                    | Return                  | Description
 | ------------------------------------------------------------------------- | ----------------------- | ----------------------------------
-| `direct_threads(amount: int = 20, selected_filter: str = "", box: str = "", thread_message_limit: Optional[int] = None)` <br> Note: `selected_filter` = `""`, `"flagged"` or `"unread"`; `box` = `""`, `"primary"` or `"general"` | List[DirectThread] | Get all threads from inbox
+| `direct_threads(amount: int = 20, selected_filter: Optional[Literal["flagged", "unread"]] = None, box: Optional[Literal["primary", "general"]] = None, thread_message_limit: Optional[int] = None)` <br> Note: omit `selected_filter` / `box` or pass `None` for the default inbox | List[DirectThread] | Get all threads from inbox
 | direct_pending_inbox(amount: int = 20)                                    | List[DirectThread]      | Get all threads from pending inbox
 | direct_requests(amount: int = 20)                                         | List[DirectThread]      | Get message request threads (pending inbox / invitations)
 | direct_pending_requests_preview(pending_inbox_filters: Optional[List[str]] = None) | Dict             | Get lightweight pending request counters

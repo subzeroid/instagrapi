@@ -215,7 +215,7 @@ Low level methods:
 | Method                                         | Return  | Description
 | ---------------------------------------------- | ------- | --------------------------------------------
 | location_info_v1(location_pk: int) | Location | Get a location using location pk (Private Mobile API)
-| location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: str = "ranked\|recent", max_id: str = None) | Tuple[List[Media], str] Get chunk of medias for a location and max_id (cursor) by Private Mobile API
-| location_medias_v1(location_pk: int, amount: int = 63, tab_key: str = "ranked\|recent") | List[Media] | Get medias for a location (Private Mobile API), paginating with the server cursor until `amount` is reached or the cursor is exhausted
+| location_medias_v1_chunk(location_pk: int, max_amount: int = 63, tab_key: Literal["ranked", "recent"] = "ranked", max_id: str = None) | Tuple[List[Media], str] Get chunk of medias for a location and max_id (cursor) by Private Mobile API
+| location_medias_v1(location_pk: int, amount: int = 63, tab_key: Literal["ranked", "recent"] = "ranked") | List[Media] | Get medias for a location (Private Mobile API), paginating with the server cursor until `amount` is reached or the cursor is exhausted
 | location_medias_top_v1(location_pk: int, amount: int = 21) | List[Media] | Get top medias for a location (Private Mobile API)
 | location_medias_recent_v1(location_pk: int, amount: int = 63) | List[Media] | Get recent medias for a location (Private Mobile API), paginating past the first chunk when the endpoint returns `next_max_id`

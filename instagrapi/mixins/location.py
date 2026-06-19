@@ -1,12 +1,13 @@
 import base64
 import json
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 from instagrapi.exceptions import LocationNotFound, WrongCursorError
 from instagrapi.extractors import extract_guide_v1, extract_location, extract_media_v1
 from instagrapi.types import Guide, Location, Media
 
 tab_keys_v1 = ("ranked", "recent")
+LocationTab = Literal["ranked", "recent"]
 
 
 class LocationMixin:
@@ -215,7 +216,7 @@ class LocationMixin:
         self,
         location_pk: int,
         max_amount: int = 63,
-        tab_key: str = "",
+        tab_key: LocationTab = "ranked",
         max_id: str = None,
     ) -> Tuple[List[Media], str]:
         """
@@ -228,7 +229,7 @@ class LocationMixin:
         max_amount: int, optional
             Maximum number of media to return, default is 27
         tab_key: str, optional
-            Tab Key, default value is ""
+            Tab key: "ranked" or "recent", default is "ranked"
         max_id: str
             Max ID, default value is None
 
@@ -270,7 +271,7 @@ class LocationMixin:
                 medias.append(media)
         return medias, next_max_id
 
-    def location_medias_v1(self, location_pk: int, amount: int = 63, tab_key: str = "") -> List[Media]:
+    def location_medias_v1(self, location_pk: int, amount: int = 63, tab_key: LocationTab = "ranked") -> List[Media]:
         """
         Get medias for a location by Private Mobile API
 
@@ -281,7 +282,7 @@ class LocationMixin:
         amount: int, optional
             Maximum number of media to return, default is 63
         tab_key: str, optional
-            Tab Key, default value is ""
+            Tab key: "ranked" or "recent", default is "ranked"
 
         Returns
         -------

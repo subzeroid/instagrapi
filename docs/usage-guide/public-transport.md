@@ -8,6 +8,8 @@
 The default public web transport is `requests`. It has the smallest dependency footprint and keeps the existing
 transport-level retry behavior.
 
+The public transport option is exposed as `PublicTransport = Literal["requests", "curl"]`.
+
 For public web endpoints that are sensitive to browser TLS fingerprints, you can install the optional curl transport:
 
 ```bash

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 from instagrapi.exceptions import ClientGraphqlError
 from instagrapi.types import Note, Track, UserShort
@@ -10,6 +10,8 @@ INBOX_TRAY_FRIENDLY_NAME = "InboxTrayRequest"
 INBOX_TRAY_ROOT_FIELD = "xdt_get_inbox_tray_items"
 CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID = "3510400299951610199199089856"
 CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME = "CreateInboxTrayItemRequest"
+
+NoteAudience = Literal[0, 1]
 
 
 class NoteMixin:
@@ -221,7 +223,7 @@ class NoteMixin:
         assert result.get("status", "") == "ok", "Failed to retrieve Notes music"
         return result
 
-    def create_note(self, text: str, audience: int = 0) -> Note:
+    def create_note(self, text: str, audience: NoteAudience = 0) -> Note:
         """
         Create personal Note
 
@@ -229,7 +231,7 @@ class NoteMixin:
         ----------
         text: str
             Content of the Note
-        audience: optional
+        audience: Literal[0, 1], optional
             Audience to see Note, deafult 0 (Followers you follow back).
             Best Friends - 1
 
@@ -255,7 +257,7 @@ class NoteMixin:
         self,
         track: Union[Track, Dict],
         text: str = "",
-        audience: int = 0,
+        audience: NoteAudience = 0,
         start_time: Optional[int] = None,
         duration: int = 30000,
         browse_session_id: Optional[str] = None,
@@ -270,7 +272,7 @@ class NoteMixin:
             Track from ``notes_music_browser()`` or a compatible dict.
         text: str, optional
             Content of the Note.
-        audience: int, optional
+        audience: Literal[0, 1], optional
             Audience to see Note, default 0 (Followers you follow back).
             Best Friends - 1.
         start_time: int, optional
