@@ -554,7 +554,7 @@ class Media(TypesBaseModel):
 
 class MediaXma(TypesBaseModel):
     # media_type: int
-    video_url: HttpUrl  # for Video and IGTV
+    video_url: str  # XMA target_url; can be http(s) or an Instagram deep link (instagram://)
     title: Optional[str] = ""
     preview_url: Optional[str] = None
     preview_url_mime_type: Optional[str] = None
