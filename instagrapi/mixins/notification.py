@@ -5,6 +5,33 @@ SETTING_VALUE_ITEMS = ("off", "following_only", "everyone")
 
 MUTE_ALL = Literal["cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour"]
 SETTING_VALUE = Literal["off", "following_only", "everyone"]
+NotificationContentType = Literal[
+    "mute_all",
+    "likes",
+    "like_and_comment_on_photo_user_tagged",
+    "user_tagged",
+    "comments",
+    "comment_likes",
+    "first_post",
+    "new_follower",
+    "follow_request_accepted",
+    "connection_notification",
+    "tagged_in_bio",
+    "pending_direct_share",
+    "direct_share_activity",
+    "direct_group_requests",
+    "video_call",
+    "rooms",
+    "live_broadcast",
+    "felix_upload_result",
+    "view_count",
+    "fundraiser_creator",
+    "fundraiser_supporter",
+    "notification_reminders",
+    "announcements",
+    "report_updated",
+    "login_notification",
+]
 
 
 class NotificationMixin:
@@ -12,7 +39,7 @@ class NotificationMixin:
     Helpers for notification settings
     """
 
-    def notification_settings(self, content_type: str, setting_value: str) -> bool:
+    def notification_settings(self, content_type: NotificationContentType, setting_value: str) -> bool:
         data = {
             "content_type": content_type,
             "setting_value": setting_value,
