@@ -4479,7 +4479,7 @@
 <span class="normal">572</span>
 <span class="normal">573</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MediaXma</span><span class="p">(</span><span class="n">TypesBaseModel</span><span class="p">):</span>
     <span class="c1"># media_type: int</span>
-    <span class="n">video_url</span><span class="p">:</span> <span class="n">HttpUrl</span>  <span class="c1"># for Video and IGTV</span>
+    <span class="n">video_url</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># XMA target_url; can be http(s) or an Instagram deep link (instagram://)</span>
     <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">preview_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">preview_url_mime_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
