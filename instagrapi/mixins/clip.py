@@ -4,7 +4,7 @@ import os
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 from uuid import uuid4
 
 from instagrapi import config
@@ -63,6 +63,13 @@ CLIP_FB_CROSSPOSTING_SURFACE_FALLBACKS = [
         CLIP_FB_FEED_CROSSPOSTING_SURFACE,
     ],
 ]
+FbDestinationType = Literal["USER", "PAGE"]
+
+
+def _clip_feed_show_value(show_preview_in_feed: bool, feed_show: Optional[str] = None) -> str:
+    if feed_show is not None:
+        return str(feed_show)
+    return "1" if show_preview_in_feed else "0"
 
 
 class ClipMixin:
@@ -463,7 +470,7 @@ class UploadClipMixin:
         self,
         config: Optional[Dict[str, object]] = None,
         destination_id: Optional[str] = None,
-        destination_type: Optional[str] = None,
+        destination_type: Optional[FbDestinationType] = None,
         destination_audience_type: Optional[str] = None,
         validation_check_bypass: Optional[bool] = None,
         use_unified_config: bool = True,
@@ -483,7 +490,7 @@ class UploadClipMixin:
             :meth:`clip_share_to_fb_config`.
         destination_id: str, optional
             Explicit Facebook destination id. Overrides config values.
-        destination_type: str, optional
+        destination_type: Literal["USER", "PAGE"], optional
             Explicit Facebook destination type, ``USER`` or ``PAGE``.
             Overrides config values.
         destination_audience_type: str, optional
@@ -515,7 +522,7 @@ class UploadClipMixin:
                 "destination_id",
             ),
         )
-        destination_type = destination_type or self._clip_share_to_fb_candidate_value(
+        destination_type_value = destination_type or self._clip_share_to_fb_candidate_value(
             fb_config,
             (
                 "share_to_fb_destination_type",
@@ -526,6 +533,7 @@ class UploadClipMixin:
                 "posting_type",
             ),
         )
+        destination_type_text = str(destination_type_value) if destination_type_value is not None else None
         destination_audience_type = destination_audience_type or self._clip_share_to_fb_candidate_value(
             fb_config,
             (
@@ -541,7 +549,7 @@ class UploadClipMixin:
                 fb_config.get("cross_app_share_fb_validation_check_bypass"),
             )
 
-        has_destination = bool(destination_id and destination_type)
+        has_destination = bool(destination_id and destination_type_text)
         if not has_destination and use_unified_config and config is None and not explicit_destination:
             try:
                 return self.clip_share_to_fb_unified_destination()
@@ -558,12 +566,12 @@ class UploadClipMixin:
                 "Facebook Reel sharing configuration has no destination. "
                 "Link a Facebook account/page in the Instagram app or pass destination_id."
             )
-        if not destination_type:
+        if not destination_type_text:
             raise ClientError(
                 "Facebook Reel sharing configuration has no destination type. Pass destination_type as USER or PAGE."
             )
-        destination_type = str(destination_type).upper()
-        if destination_type not in {"USER", "PAGE"}:
+        destination_type_text = destination_type_text.upper()
+        if destination_type_text not in {"USER", "PAGE"}:
             raise ClientError(
                 "Facebook Reel sharing destination type must be USER or PAGE. "
                 "Do not pass reels_cross_app_share_type here."
@@ -571,7 +579,7 @@ class UploadClipMixin:
 
         destination = {
             "destination_id": str(destination_id),
-            "destination_type": destination_type,
+            "destination_type": destination_type_text,
         }
         if destination_audience_type:
             destination["destination_audience_type"] = str(destination_audience_type)
@@ -583,7 +591,7 @@ class UploadClipMixin:
         self,
         config: Optional[Dict[str, object]] = None,
         destination_id: Optional[str] = None,
-        destination_type: Optional[str] = None,
+        destination_type: Optional[FbDestinationType] = None,
         destination_audience_type: Optional[str] = None,
         xpost_surface: str = "IG_REELS_COMPOSER",
         validation_check_bypass: Optional[bool] = None,
@@ -604,7 +612,7 @@ class UploadClipMixin:
             app/draft configs can also contain destination fields.
         destination_id: str, optional
             Facebook destination id. Overrides config values.
-        destination_type: str, optional
+        destination_type: Literal["USER", "PAGE"], optional
             Facebook destination type/posting type, ``USER`` or ``PAGE``.
             Overrides config values.
         destination_audience_type: str, optional
@@ -654,17 +662,18 @@ class UploadClipMixin:
         usertags: List[Usertag] = [],
         location: Location = None,
         configure_timeout: int = 10,
-        feed_show: str = "1",
+        feed_show: Optional[str] = None,
         extra_data: Dict[str, object] = {},
         trial: bool = False,
         trial_graduation_strategy: str = "manual",
         share_to_facebook: bool = False,
         fb_destination_id: Optional[str] = None,
-        fb_destination_type: Optional[str] = None,
+        fb_destination_type: Optional[FbDestinationType] = None,
         fb_destination_audience_type: Optional[str] = None,
         fb_xpost_surface: str = "IG_REELS_COMPOSER",
         fb_validation_check_bypass: Optional[bool] = None,
         topics: Optional[List[Union[str, int]]] = None,
+        show_preview_in_feed: bool = True,
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -684,9 +693,9 @@ class UploadClipMixin:
             Location tag for this upload, default is none
         configure_timeout: int
             Timeout between attempt to configure media (set caption, etc), default is 10
-        feed_show: str
-            Show Reel preview in feed/profile grid, default is "1".
-            Forced to "0" for Trial Reels.
+        feed_show: str, optional
+            Low-level value for the feed/profile grid preview flag.
+            Overrides show_preview_in_feed when provided.
         extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params,
             like {"disable_comments": 1}.
@@ -698,7 +707,7 @@ class UploadClipMixin:
             Share this Reel to a linked Facebook account/page, default is False.
         fb_destination_id: str, optional
             Facebook destination id used when share_to_facebook is True.
-        fb_destination_type: str, optional
+        fb_destination_type: Literal["USER", "PAGE"], optional
             Facebook destination type used when share_to_facebook is True,
             ``USER`` or ``PAGE``.
         fb_destination_audience_type: str, optional
@@ -709,6 +718,9 @@ class UploadClipMixin:
             Override the validation bypass value from share_to_fb_config.
         topics: List[str or int], optional
             Reel topic ids to send as Instagram's ``interest_topics`` configure field.
+        show_preview_in_feed: bool, optional
+            Show Reel preview in feed/profile grid, default is True.
+            Sent to Instagram as ``"1"`` or ``"0"``.
 
         Returns
         -------
@@ -723,6 +735,7 @@ class UploadClipMixin:
         with open(path, "rb") as fp:
             clip_data = fp.read()
             clip_len = str(len(clip_data))
+        feed_show = _clip_feed_show_value(show_preview_in_feed, feed_show)
         configure_extra_data = dict(extra_data or {})
         if share_to_facebook:
             fb_extra_data = self.clip_share_to_fb_extra_data(
@@ -1109,8 +1122,9 @@ class UploadClipMixin:
         caption: str,
         usertags: List[Usertag] = [],
         location: Location = None,
-        feed_show: str = "1",
+        feed_show: Optional[str] = None,
         extra_data: Dict[str, object] = {},
+        show_preview_in_feed: bool = True,
     ) -> Dict:
         """
         Post Configure CLIP (send caption, thumbnail and more to Instagram)
@@ -1133,14 +1147,21 @@ class UploadClipMixin:
             List of users to be tagged on this upload, default is empty list.
         location: Location, optional
             Location tag for this upload, default is None
+        feed_show: str, optional
+            Low-level value for the feed/profile grid preview flag.
+            Overrides show_preview_in_feed when provided.
         extra_data: Dict[str, object], optional
             Dict of extra data, if you need to add your params, like {"disable_comments": 1}.
+        show_preview_in_feed: bool, optional
+            Show Reel preview in feed/profile grid, default is True.
+            Sent to Instagram as ``"1"`` or ``"0"``.
 
         Returns
         -------
         Dict
             A dictionary of response from the call
         """
+        feed_show = _clip_feed_show_value(show_preview_in_feed, feed_show)
         self.photo_rupload(Path(thumbnail), upload_id, for_story=True)
         usertags = [{"user_id": tag.user.pk, "position": [tag.x, tag.y]} for tag in usertags]
         data = {

@@ -62,6 +62,7 @@ jobs:
         if: github.event.inputs.test_target == 'upload' || github.event.inputs.test_target == 'all'
         run: |
           pytest -sv \
+            tests/live/test_upload.py::ClienUploadTestCase::test_clip_upload_show_preview_in_feed_false_live \
             tests/live/test_upload.py::ClientFeedMusicUploadLiveTestCase \
             tests/live/test_upload.py::ClientTrialReelUploadLiveTestCase \
             tests/live/test_upload.py::ClientFacebookReelCrosspostLiveTestCase
