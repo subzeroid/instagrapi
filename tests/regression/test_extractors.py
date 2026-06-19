@@ -79,6 +79,29 @@ class DirectExtractorRegressionTestCase(unittest.TestCase):
         self.assertEqual(str(message.generic_xma[0].video_url), "https://example.com/first")
         self.assertEqual(str(message.generic_xma[1].video_url), "https://example.com/second")
 
+    def test_generic_xma_accepts_instagram_deep_link_target_url(self):
+        message = extract_direct_message(
+            {
+                "item_id": "1",
+                "user_id": "2",
+                "timestamp": 1761953663000000,
+                "item_type": "generic_xma",
+                "text": "",
+                "generic_xma": [
+                    {
+                        "target_url": "instagram://direct-notes?user_id=123456789&is_self_note=0",
+                        "title_text": "Direct note",
+                    },
+                ],
+            }
+        )
+
+        self.assertIsNotNone(message.generic_xma)
+        self.assertEqual(
+            message.generic_xma[0].video_url,
+            "instagram://direct-notes?user_id=123456789&is_self_note=0",
+        )
+
     def test_xma_clip_without_target_url_keeps_raw_payload(self):
         message = extract_direct_message(
             {
