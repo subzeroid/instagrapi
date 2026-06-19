@@ -57,6 +57,20 @@ class ClientUserTestCase(_helpers.ClientPrivateTestCase):
         self.assertIsInstance(followers[0], UserShort)
 
 
+class ClientUserReportLiveTestCase(unittest.TestCase):
+    def test_user_report_spam_live(self):
+        if os.getenv("IG_USER_REPORT_LIVE") != "1":
+            self.skipTest("Set IG_USER_REPORT_LIVE=1 to run the destructive user report live test")
+        target_user_id = os.getenv("IG_USER_REPORT_TARGET_ID")
+        if not target_user_id:
+            self.skipTest("IG_USER_REPORT_TARGET_ID is required for the user report live test")
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for user report live tests")
+        cl = fresh_test_account(count=5, attempts=5, timeout=30)
+
+        self.assertTrue(cl.user_report(target_user_id))
+
+
 class ClientPrivateGraphQLV2UserFieldsLiveTestCase(unittest.TestCase):
     def test_user_followers_private_gql_preserves_v2_user_fields(self):
         if not TEST_ACCOUNTS_URL:

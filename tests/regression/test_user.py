@@ -1199,6 +1199,64 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             data={"_uuid": "uuid"},
         )
 
+    def test_user_report_spam_replays_live_frx_prompt_sequence(self):
+        client = Client()
+        client.uuid = "uuid"
+        responses = [
+            {"response": {"context": "context-0", "report_tags": [{"tag_type": "ig_report_account"}]}},
+            {"response": {"context": "context-1", "report_tags": [{"tag_type": "ig_its_inappropriate"}]}},
+            {"response": {"context": "context-2", "report_tags": [{"tag_type": "ig_spam_v3"}]}},
+            {
+                "response": {
+                    "context": "context-3",
+                    "follow_up_actions": [{"action_type": 2}],
+                    "subtitle": {"text": "Thanks for your feedback"},
+                }
+            },
+        ]
+
+        with mock.patch.object(client, "private_request", side_effect=responses) as private_request:
+            result = client.user_report("16147964785")
+
+        self.assertTrue(result)
+        self.assertEqual(private_request.call_count, 4)
+        first_call = private_request.call_args_list[0]
+        self.assertEqual(first_call.args[0], "reports/get_frx_prompt/")
+        self.assertFalse(first_call.kwargs["with_signature"])
+        self.assertEqual(
+            first_call.kwargs["data"],
+            {
+                "_uuid": "uuid",
+                "container_module": "profile",
+                "entry_point": "1",
+                "frx_prompt_request_type": "1",
+                "is_dark_mode": "false",
+                "location": "2",
+                "nua_action": "",
+                "object_id": "16147964785",
+                "object_type": "5",
+            },
+        )
+
+        expected_contexts = ["context-0", "context-1", "context-2"]
+        expected_tags = ["ig_report_account", "ig_its_inappropriate", "ig_spam_v3"]
+        for call, context, tag in zip(private_request.call_args_list[1:], expected_contexts, expected_tags):
+            self.assertEqual(call.args[0], "reports/get_frx_prompt/")
+            self.assertFalse(call.kwargs["with_signature"])
+            self.assertEqual(call.kwargs["data"]["context"], context)
+            self.assertEqual(call.kwargs["data"]["frx_prompt_request_type"], "2")
+            self.assertEqual(json.loads(call.kwargs["data"]["selected_tag_types"]), [tag])
+            self.assertEqual(call.kwargs["data"]["is_dark_mode"], "false")
+
+    def test_user_report_rejects_unknown_reason_before_request(self):
+        client = Client()
+
+        with mock.patch.object(client, "private_request") as private_request:
+            with self.assertRaisesRegex(ValueError, 'Unsupported user report reason "copyright"'):
+                client.user_report("123", reason="copyright")
+
+        private_request.assert_not_called()
+
     def test_user_stream_by_id_v1_sends_expected_endpoint_and_data(self):
         client = Client()
         with mock.patch.object(client, "private_request", return_value={"stream_rows": []}) as private_request:
