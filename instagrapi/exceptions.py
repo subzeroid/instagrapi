@@ -116,7 +116,19 @@ class ChallengeRedirection(ChallengeError):
 
 
 class ChallengeRequired(ChallengeError):
-    pass
+    def __init__(self, *args, **kwargs):
+        raw_message = kwargs.get("message")
+        if not args and raw_message == "challenge_required":
+            kwargs["raw_message"] = raw_message
+            kwargs["message"] = (
+                "Instagram requires additional verification for this account/session. "
+                "Open the official Instagram app or web flow on a trusted device, "
+                "complete the checkpoint there, then retry with the same saved client settings, "
+                "device identifiers, and proxy/IP. Automatic challenge resolution is only available "
+                "for supported code/password-reset flows; Bloks redirect checkpoints usually require "
+                "manual approval."
+            )
+        super().__init__(*args, **kwargs)
 
 
 class ChallengeSelfieCaptcha(ChallengeError):

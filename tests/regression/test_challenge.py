@@ -3,6 +3,18 @@ from tests.helpers import *
 
 
 class ChallengeRegressionTestCase(unittest.TestCase):
+    def test_challenge_required_default_message_explains_manual_verification(self):
+        error = ChallengeRequired(
+            message="challenge_required",
+            challenge={"api_path": "/challenge/12345/nonce-code/"},
+            status="fail",
+        )
+
+        self.assertEqual(error.raw_message, "challenge_required")
+        self.assertIn("Instagram requires additional verification", str(error))
+        self.assertIn("official Instagram app or web", str(error))
+        self.assertIn("saved client settings", str(error))
+
     def test_auth_platform_challenge_raises_clear_manual_verification_error(self):
         client = Client()
         last_json = {
