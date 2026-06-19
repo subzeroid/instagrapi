@@ -516,6 +516,26 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
 
+    def test_clip_upload_show_preview_in_feed_false_live(self):
+        path = self.make_video_fixture(label="clip hidden preview fixture")
+        self.assertIsInstance(path, Path)
+        media = None
+        try:
+            caption_text = f"Upload clip hidden preview {int(time.time())}"
+            media = self.cl.clip_upload(path, caption_text, show_preview_in_feed=False)
+            self.assertIsInstance(media, Media)
+            self.assertEqual(media.caption_text, caption_text)
+            payload = self.assertUploadedMediaAccessible(
+                media,
+                media_type=2,
+                product_type="clips",
+                caption_text=caption_text,
+            )
+            self.assertTrue(payload.get("video_versions"))
+        finally:
+            if media:
+                self.assertTrue(self.cl.media_delete(media.id))
+
     def test_clip_upload_with_topics(self):
         path = self.make_video_fixture(label="clip topics fixture")
         self.assertIsInstance(path, Path)
