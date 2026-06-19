@@ -65,7 +65,7 @@
 | ------------------------------ | -------------- |------------------------------------------------------------ |
 | ChallengeError                 | PrivateError   | Base Challenge Exception (received from Instagram)
 | ChallengeRedirection           | ChallengeError | Raises when get type=CHALLENGE_REDIRECTION
-| ChallengeRequired              | ChallengeError | Raises when Instagram requires additional verification; raw `message=challenge_required` responses get a manual-verification message
+| ChallengeRequired              | ChallengeError | Raises when Instagram requires additional verification; raw `message=challenge_required` responses get a payload-specific recovery message
 | ChallengeSelfieCaptcha         | ChallengeError | Raises when get step=selfie_captcha
 | ChallengeUnknownStep           | ChallengeError | Occurs when challenge is unknown
 | SelectContactPointRecoveryForm | ChallengeError | Raises when get challengeType=SelectContactPointRecoveryForm

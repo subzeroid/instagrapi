@@ -3,7 +3,7 @@ from tests.helpers import *
 
 
 class ChallengeRegressionTestCase(unittest.TestCase):
-    def test_challenge_required_default_message_explains_manual_verification(self):
+    def test_challenge_required_legacy_challenge_message_explains_handlers(self):
         error = ChallengeRequired(
             message="challenge_required",
             challenge={"api_path": "/challenge/12345/nonce-code/"},
@@ -11,9 +11,54 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         )
 
         self.assertEqual(error.raw_message, "challenge_required")
-        self.assertIn("Instagram requires additional verification", str(error))
-        self.assertIn("official Instagram app or web", str(error))
+        self.assertIn("legacy challenge flow", str(error))
+        self.assertIn("challenge_code_handler", str(error))
         self.assertIn("saved client settings", str(error))
+
+    def test_challenge_required_auth_platform_message_explains_manual_flow(self):
+        error = ChallengeRequired(
+            message="challenge_required",
+            challenge={"api_path": "/auth_platform/?apc=test-token"},
+            status="fail",
+        )
+
+        self.assertIn("auth platform flow", str(error))
+        self.assertIn("official Instagram app or web", str(error))
+        self.assertIn("not supported automatically", str(error))
+
+    def test_challenge_required_bloks_redirect_message_explains_acknowledgement(self):
+        error = ChallengeRequired(
+            message="challenge_required",
+            step_name="STEP_NAME",
+            bloks_action="com.bloks.www.ig.challenge.redirect.async",
+            challenge_context="opaque-context",
+            challenge_type_enum_str="SUSPICIOUS_LOGIN",
+            status="ok",
+        )
+
+        self.assertIn("Bloks redirect checkpoint", str(error))
+        self.assertIn("challenge_bloks_redirect_dismiss()", str(error))
+        self.assertIn("trusted device", str(error))
+
+    def test_challenge_required_unknown_step_message_names_step(self):
+        error = ChallengeRequired(
+            message="challenge_required",
+            step_name="verify_email",
+            status="ok",
+        )
+
+        self.assertIn("challenge step `verify_email`", str(error))
+        self.assertIn("challenge_code_handler", str(error))
+
+    def test_challenge_required_preserves_explicit_message(self):
+        error = ChallengeRequired(
+            "Challenge code required.",
+            message="challenge_required",
+            status="fail",
+        )
+
+        self.assertEqual(str(error), "Challenge code required.")
+        self.assertEqual(error.raw_message, "challenge_required")
 
     def test_auth_platform_challenge_raises_clear_manual_verification_error(self):
         client = Client()
