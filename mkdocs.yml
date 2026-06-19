@@ -24,6 +24,7 @@ nav:
     - Insight: usage-guide/insight.md
     - Location: usage-guide/location.md
     - Media: usage-guide/media.md
+    - Notification: usage-guide/notification.md
     - Notes: usage-guide/notes.md
     - Pydroid and ffmpeg: usage-guide/pydroid.md
     - Public Transport: usage-guide/public-transport.md

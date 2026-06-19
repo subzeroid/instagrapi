@@ -252,6 +252,7 @@ finally:
 * Includes email/SMS-based [challenge resolver](https://subzeroid.github.io/instagrapi/usage-guide/challenge_resolver.html) hooks
 * Uploads and downloads photos, videos, albums, IGTV, reels, and stories
 * Works with users, media, comments, locations, hashtags, collections, notes, direct messages, and insights
+* Exposes account notification setting helpers with typed notification categories
 * Supports story building with mentions, hashtags, link stickers, and media stickers
 * Includes helpers for current location search and Direct message workflows
 * Supports mobile follower sorting with `date_followed_latest` and `date_followed_earliest`

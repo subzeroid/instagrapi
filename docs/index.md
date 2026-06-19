@@ -115,6 +115,7 @@ To learn more about the various ways `instagrapi` can be used, read the [Usage G
   * [`Media`](usage-guide/media.md) - Publication (also called post): Photo, Video, Album, IGTV and Reels
   * [`Resource`](usage-guide/media.md) - Part of Media (for albums)
   * [`MediaOembed`](usage-guide/media.md) - Short version of Media
+  * [`Notification`](usage-guide/notification.md) - Account notification settings
   * [`Account`](usage-guide/account.md) - Full private info for your account (e.g. email, phone_number)
   * [`TOTP`](usage-guide/totp.md) - 2FA TOTP helpers, code generation, and Bloks verification fallback/helpers
   * [`User`](usage-guide/user.md) - Full public user data
