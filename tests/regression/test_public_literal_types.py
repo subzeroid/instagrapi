@@ -3,6 +3,7 @@ from inspect import signature
 from pathlib import Path
 from typing import Optional, get_args
 
+from instagrapi.mixins import notification as notification_mixins
 from instagrapi.mixins.account import ProfessionalAccountType
 from instagrapi.mixins.clip import UploadClipMixin
 from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA, DirectMediaType, DirectMixin
@@ -10,7 +11,7 @@ from instagrapi.mixins.hashtag import HashtagTab
 from instagrapi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME, InsightsMixin
 from instagrapi.mixins.location import LocationTab
 from instagrapi.mixins.note import NoteAudience
-from instagrapi.mixins.notification import NotificationContentType
+from instagrapi.mixins.notification import MUTE_ALL, SETTING_VALUE, NotificationContentType, NotificationMixin
 from instagrapi.mixins.public import PublicTransport
 from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
 from instagrapi.mixins.user import FOLLOWERS_ORDER, UserBlockSurface, UserMixin
@@ -43,6 +44,17 @@ EXPECTED_NOTIFICATION_CONTENT_TYPES = {
     "report_updated",
     "login_notification",
 }
+EXPECTED_NOTIFICATION_SETTING_VALUES = {
+    "off",
+    "following_only",
+    "everyone",
+    "cancel",
+    "15_minutes",
+    "1_hour",
+    "2_hour",
+    "4_hour",
+    "8_hour",
+}
 EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES = {
     "feed_timeline",
     "feed_contextual_chain",
@@ -57,6 +69,17 @@ EXPECTED_MUSIC_PRODUCTS = {
 }
 
 
+def literal_values(alias):
+    values = set()
+    for arg in get_args(alias):
+        nested_args = get_args(arg)
+        if nested_args:
+            values.update(nested_args)
+        else:
+            values.add(arg)
+    return values
+
+
 class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
     def test_public_literal_aliases_expose_supported_values(self):
         self.assertEqual(set(get_args(ProfessionalAccountType)), {2, 3})
@@ -64,6 +87,11 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(HashtagTab)), {"top", "recent", "clips"})
         self.assertEqual(set(get_args(LocationTab)), {"ranked", "recent"})
         self.assertEqual(set(get_args(NotificationContentType)), EXPECTED_NOTIFICATION_CONTENT_TYPES)
+        self.assertEqual(set(get_args(SETTING_VALUE)), {"off", "following_only", "everyone"})
+        self.assertEqual(set(get_args(MUTE_ALL)), {"cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour"})
+        notification_setting_value = getattr(notification_mixins, "NotificationSettingValue", None)
+        self.assertIsNotNone(notification_setting_value)
+        self.assertEqual(literal_values(notification_setting_value), EXPECTED_NOTIFICATION_SETTING_VALUES)
         self.assertEqual(set(get_args(PublicTransport)), {"requests", "curl"})
         self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
         self.assertEqual(set(get_args(DirectMediaType)), {"photo", "video"})
@@ -107,6 +135,29 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
             "`direct_media_share(media_type=...)` |",
             docs,
         )
+
+    def test_notification_settings_uses_public_setting_value_literal(self):
+        notification_setting_value = getattr(notification_mixins, "NotificationSettingValue", None)
+        self.assertIsNotNone(notification_setting_value)
+
+        notification_settings = signature(NotificationMixin.notification_settings)
+
+        self.assertEqual(notification_settings.parameters["setting_value"].annotation, notification_setting_value)
+
+    def test_notification_usage_guide_documents_public_setting_value_literal(self):
+        docs = Path("docs/usage-guide/notification.md").read_text()
+
+        self.assertIn(
+            "notification_settings(content_type: NotificationContentType, setting_value: NotificationSettingValue)",
+            docs,
+        )
+        self.assertIn('SETTING_VALUE = Literal["off", "following_only", "everyone"]', docs)
+        self.assertIn(
+            'MUTE_ALL = Literal["cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour"]',
+            docs,
+        )
+        self.assertIn("NotificationSettingValue = Union[SETTING_VALUE, MUTE_ALL]", docs)
+        self.assertNotIn("setting_value: str", docs)
 
     def test_user_block_methods_use_public_surface_literal(self):
         user_block = signature(UserMixin.user_block)
