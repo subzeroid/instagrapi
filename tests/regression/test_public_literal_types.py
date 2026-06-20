@@ -1,7 +1,7 @@
 import unittest
 from inspect import signature
 from pathlib import Path
-from typing import get_args
+from typing import Optional, get_args
 
 from instagrapi.mixins.account import ProfessionalAccountType
 from instagrapi.mixins.clip import UploadClipMixin
@@ -13,7 +13,7 @@ from instagrapi.mixins.note import NoteAudience
 from instagrapi.mixins.notification import NotificationContentType
 from instagrapi.mixins.public import PublicTransport
 from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
-from instagrapi.mixins.user import UserBlockSurface, UserMixin
+from instagrapi.mixins.user import FOLLOWERS_ORDER, UserBlockSurface, UserMixin
 from instagrapi.types import StoryResizeMode
 
 EXPECTED_NOTIFICATION_CONTENT_TYPES = {
@@ -68,6 +68,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
         self.assertEqual(set(get_args(DirectMediaType)), {"photo", "video"})
         self.assertEqual(set(get_args(MUSIC_PRODUCT)), EXPECTED_MUSIC_PRODUCTS)
+        self.assertEqual(set(get_args(FOLLOWERS_ORDER)), {"date_followed_latest", "date_followed_earliest"})
         self.assertEqual(set(get_args(UserBlockSurface)), {"profile", "direct_thread_info"})
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
@@ -114,6 +115,23 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(user_block.parameters["surface"].annotation, UserBlockSurface)
         self.assertEqual(user_unblock.parameters["surface"].annotation, UserBlockSurface)
 
+    def test_user_followers_order_methods_use_optional_public_literal(self):
+        for method_name in (
+            "user_followers",
+            "user_followers_v1",
+            "iter_user_followers_v1",
+            "user_followers_v1_chunk",
+            "user_followers_private_gql",
+            "user_followers_private_gql_chunk",
+            "private_graphql_followers_list",
+            "private_graphql_following_list",
+        ):
+            with self.subTest(method_name=method_name):
+                method = signature(getattr(UserMixin, method_name))
+
+                self.assertEqual(method.parameters["order"].annotation, Optional[FOLLOWERS_ORDER])
+                self.assertIsNone(method.parameters["order"].default)
+
     def test_user_usage_guide_documents_block_surface_literal(self):
         docs = Path("docs/usage-guide/user.md").read_text()
 
@@ -126,6 +144,32 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
             "`user_unblock(surface=...)` |",
             docs,
         )
+
+    def test_user_usage_guide_documents_followers_order_literal(self):
+        docs = Path("docs/usage-guide/user.md").read_text()
+
+        self.assertIn('FOLLOWERS_ORDER = Literal["date_followed_latest", "date_followed_earliest"]', docs)
+        self.assertIn(
+            "user_followers(user_id: str, amount: int = 0, order: Optional[FOLLOWERS_ORDER] = None)",
+            docs,
+        )
+        self.assertIn(
+            'user_followers_v1_chunk(user_id: str, max_amount: int = 0, max_id: str = "", '
+            "order: Optional[FOLLOWERS_ORDER] = None)",
+            docs,
+        )
+        self.assertIn(
+            "private_graphql_followers_list(user_id: str, rank_token: str, ..., "
+            "order: Optional[FOLLOWERS_ORDER] = None)",
+            docs,
+        )
+        self.assertIn(
+            '| `FOLLOWERS_ORDER` | `"date_followed_latest"`, `"date_followed_earliest"` | '
+            "`user_followers(order=...)`, `user_followers_v1(order=...)`, "
+            "`iter_user_followers_v1(order=...)` |",
+            docs,
+        )
+        self.assertNotIn("order: str = None", docs)
 
     def test_insights_media_feed_all_uses_public_literal_aliases(self):
         insights_media_feed_all = signature(InsightsMixin.insights_media_feed_all)
