@@ -594,6 +594,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -610,6 +628,36 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#option-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option types
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1172,6 +1220,25 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#option-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option types
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1321,7 +1388,7 @@
 <td>Update a group thread title</td>
 </tr>
 <tr>
-<td>direct_media_share(media_id: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline")</td>
+<td>direct_media_share(media_id: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline", media_type: DirectMediaType = "photo")</td>
 <td>DirectMessage</td>
 <td>Share a media to users or existing threads</td>
 </tr>
@@ -1389,6 +1456,24 @@
 <td>video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {})</td>
 <td>DirectMessage</td>
 <td>Upload video to direct thread as a story and configure it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="option-types">Option types</h3>
+<p>Direct media type is exposed as <code>DirectMediaType = Literal["photo", "video"]</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Values</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DirectMediaType</code></td>
+<td><code>"photo"</code>, <code>"video"</code></td>
+<td><code>direct_send_file(content_type=...)</code>, <code>direct_media_share(media_type=...)</code></td>
 </tr>
 </tbody>
 </table>
