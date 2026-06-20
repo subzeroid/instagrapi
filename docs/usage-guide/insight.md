@@ -6,9 +6,11 @@ Get business/professional account statistics. Common arguments:
 * `time_frame` - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".
 * `data_ordering` - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".
 
+These arguments are exposed as `POST_TYPE`, `TIME_FRAME`, and `DATA_ORDERING` Literal aliases.
+
 | Method | Return | Description |
 | --- | --- | --- |
-| insights_media_feed_all(post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT", count: int = 0, sleep: int = 2) | List[Dict] | Return feed media edges with insight stats and pagination |
+| insights_media_feed_all(post_type: POST_TYPE = "ALL", time_frame: TIME_FRAME = "TWO_YEARS", data_ordering: DATA_ORDERING = "REACH_COUNT", count: int = 0, sleep: int = 2) | List[Dict] | Return feed media edges with insight stats and pagination |
 | insights_account() | Dict | Get account-level insights (activity, audience, content tabs) |
 | insights_media(media_pk: int) | Dict | Get insights for a single media object |
 
