@@ -2340,12 +2340,12 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <td>Build modern Reel Facebook cross-post configure fields for manual <code>extra_data</code></td>
 </tr>
 <tr>
-<td>clip_music_extra_data(track: Track or dict, extra_data: Dict = {})</td>
+<td>clip_music_extra_data(track: Track or dict, product: MUSIC_PRODUCT = "story_camera_clips_v2", extra_data: Dict = {})</td>
 <td>dict</td>
 <td>Build Reels music configure fields for manual <code>clip_upload(..., extra_data=...)</code></td>
 </tr>
 <tr>
-<td>clip_upload_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, extra_data: Dict = {})</td>
+<td>clip_upload_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, product: MUSIC_PRODUCT = "story_camera_clips_v2", extra_data: Dict = {})</td>
 <td>Media</td>
 <td>Upload a Reel with music metadata without local audio muxing</td>
 </tr>

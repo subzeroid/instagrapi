@@ -1299,27 +1299,27 @@
 <td>Browse music candidates for feed photo and carousel uploads</td>
 </tr>
 <tr>
-<td>music_trending(product: str = "feed_post")</td>
+<td>music_trending(product: MUSIC_PRODUCT = "feed_post")</td>
 <td>dict</td>
 <td>Browse trending music candidates</td>
 </tr>
 <tr>
-<td>music_top_trends(product: str = "music_in_feed", page_size: int = 15)</td>
+<td>music_top_trends(product: MUSIC_PRODUCT = "music_in_feed", page_size: int = 15)</td>
 <td>dict</td>
 <td>Browse top trending music candidates</td>
 </tr>
 <tr>
-<td>music_search_v2(query: str, product: str = "music_in_feed", from_typeahead: bool = False, search_session_id: str = None, browse_session_id: str = None)</td>
+<td>music_search_v2(query: str, product: MUSIC_PRODUCT = "music_in_feed", from_typeahead: bool = False, search_session_id: str = None, browse_session_id: str = None)</td>
 <td>dict</td>
 <td>Search music through the current app endpoint</td>
 </tr>
 <tr>
-<td>music_keyword_search(query: str, product: str = "music_in_feed", num_keywords: int = 3, search_session_id: str = "", browse_session_id: str = None)</td>
+<td>music_keyword_search(query: str, product: MUSIC_PRODUCT = "music_in_feed", num_keywords: int = 3, search_session_id: str = "", browse_session_id: str = None)</td>
 <td>dict</td>
 <td>Search music keyword suggestions</td>
 </tr>
 <tr>
-<td>music_clips_audio_browser(product: str = "story_camera_clips_v2", browse_session_id: str = None)</td>
+<td>music_clips_audio_browser(product: MUSIC_PRODUCT = "story_camera_clips_v2", browse_session_id: str = None)</td>
 <td>dict</td>
 <td>Browse music candidates for the Reels/Clips camera</td>
 </tr>
