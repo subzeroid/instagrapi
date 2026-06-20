@@ -26,7 +26,7 @@
 | direct_thread_add_users(thread_id: int, user_ids: List[int])              | bool                    | Add users to a group thread
 | direct_thread_hide(thread_id: int)                                        | bool                    | Delete (called "hide")
 | direct_thread_update_title(thread_id: int, title: str)                    | bool                    | Update a group thread title
-| direct_media_share(media_id: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline") | DirectMessage | Share a media to users or existing threads
+| direct_media_share(media_id: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline", media_type: DirectMediaType = "photo") | DirectMessage | Share a media to users or existing threads
 | direct_story_share(story_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage       | Share a story to list of users
 | direct_profile_share(user_id: str, user_ids: List[int], thread_ids: List[int]) | DirectMessage      | Share a user profile to list of users
 | direct_thread_mark_unread(thread_id: int)                                 | bool                    | Mark a thread as unread
@@ -44,6 +44,7 @@
 Notes:
 
 * For `direct_send()`, `direct_media_share()`, `direct_send_photo()`, `direct_send_video()`, and `direct_send_voice()`, pass exactly one of `user_ids` or `thread_ids`.
+* Direct media type values are exposed as `DirectMediaType = Literal["photo", "video"]` for low-level `direct_send_file(content_type=...)` and `direct_media_share(media_type=...)`.
 * Direct recipient arguments accept either one id (`user_ids=123`) or a list of ids (`user_ids=[123]`).
 * Direct message requests / invitations are exposed as `direct_requests()`; `direct_pending_inbox()` remains as the older name.
 * `direct_pending_requests_preview()` is the lightweight Android-app preview for request counters; use `direct_requests()` when you need the actual threads.

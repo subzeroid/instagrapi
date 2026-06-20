@@ -5,7 +5,7 @@ from typing import get_args
 
 from instagrapi.mixins.account import ProfessionalAccountType
 from instagrapi.mixins.clip import UploadClipMixin
-from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA, DirectMixin
+from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA, DirectMediaType, DirectMixin
 from instagrapi.mixins.hashtag import HashtagTab
 from instagrapi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME, InsightsMixin
 from instagrapi.mixins.location import LocationTab
@@ -65,6 +65,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(NotificationContentType)), EXPECTED_NOTIFICATION_CONTENT_TYPES)
         self.assertEqual(set(get_args(PublicTransport)), {"requests", "curl"})
         self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
+        self.assertEqual(set(get_args(DirectMediaType)), {"photo", "video"})
         self.assertEqual(set(get_args(MUSIC_PRODUCT)), EXPECTED_MUSIC_PRODUCTS)
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
@@ -84,6 +85,19 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         direct_media_share = signature(DirectMixin.direct_media_share)
 
         self.assertEqual(direct_media_share.parameters["send_attribute"].annotation, SEND_ATTRIBUTE_MEDIA)
+
+    def test_direct_media_methods_use_public_media_type_literal(self):
+        direct_send_file = signature(DirectMixin.direct_send_file)
+        direct_media_share = signature(DirectMixin.direct_media_share)
+
+        self.assertEqual(direct_send_file.parameters["content_type"].annotation, DirectMediaType)
+        self.assertEqual(direct_media_share.parameters["media_type"].annotation, DirectMediaType)
+
+    def test_direct_usage_guide_documents_public_media_type_literal(self):
+        docs = Path("docs/usage-guide/direct.md").read_text()
+
+        self.assertIn('media_type: DirectMediaType = "photo"', docs)
+        self.assertIn('DirectMediaType = Literal["photo", "video"]', docs)
 
     def test_insights_media_feed_all_uses_public_literal_aliases(self):
         insights_media_feed_all = signature(InsightsMixin.insights_media_feed_all)

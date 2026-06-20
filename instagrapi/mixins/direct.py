@@ -60,6 +60,7 @@ SEND_ATTRIBUTE_MEDIA = Literal[
     "feed_contextual_self_profile",
     "feed_contextual_profile",
 ]
+DirectMediaType = Literal["photo", "video"]
 BOX = Literal["general", "primary"]
 
 
@@ -1136,7 +1137,7 @@ class DirectMixin:
         path: Path,
         user_ids: List[int] = [],
         thread_ids: List[int] = [],
-        content_type: str = "photo",
+        content_type: DirectMediaType = "photo",
     ) -> DirectMessage:
         """
         Send a direct file to list of users or threads
@@ -1681,7 +1682,7 @@ class DirectMixin:
         user_ids: List[int] = [],
         thread_ids: List[int] = [],
         send_attribute: SEND_ATTRIBUTE_MEDIA = "feed_timeline",
-        media_type: str = "photo",
+        media_type: DirectMediaType = "photo",
     ) -> DirectMessage:
         """
         Share a media to list of users
