@@ -15,7 +15,7 @@ from instagrapi.mixins.note import NoteAudience, NoteMixin
 from instagrapi.mixins.notification import MUTE_ALL, SETTING_VALUE, NotificationContentType, NotificationMixin
 from instagrapi.mixins.public import PublicTransport
 from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
-from instagrapi.mixins.user import FOLLOWERS_ORDER, UserBlockSurface, UserMixin
+from instagrapi.mixins.user import FOLLOWERS_ORDER, USER_REPORT_REASON, UserBlockSurface, UserMixin
 from instagrapi.types import StoryResizeMode
 
 EXPECTED_NOTIFICATION_CONTENT_TYPES = {
@@ -101,6 +101,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(DirectMediaType)), {"photo", "video"})
         self.assertEqual(set(get_args(MUSIC_PRODUCT)), EXPECTED_MUSIC_PRODUCTS)
         self.assertEqual(set(get_args(FOLLOWERS_ORDER)), {"date_followed_latest", "date_followed_earliest"})
+        self.assertEqual(set(get_args(USER_REPORT_REASON)), {"spam"})
         self.assertEqual(set(get_args(UserBlockSurface)), {"profile", "direct_thread_info"})
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
@@ -212,6 +213,12 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
                 self.assertEqual(method.parameters["order"].annotation, Optional[FOLLOWERS_ORDER])
                 self.assertIsNone(method.parameters["order"].default)
 
+    def test_user_report_uses_public_reason_literal(self):
+        user_report = signature(UserMixin.user_report)
+
+        self.assertEqual(user_report.parameters["reason"].annotation, USER_REPORT_REASON)
+        self.assertEqual(user_report.parameters["reason"].default, "spam")
+
     def test_user_usage_guide_documents_block_surface_literal(self):
         docs = Path("docs/usage-guide/user.md").read_text()
 
@@ -250,6 +257,14 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
             docs,
         )
         self.assertNotIn("order: str = None", docs)
+
+    def test_user_usage_guide_documents_report_reason_literal(self):
+        docs = Path("docs/usage-guide/user.md").read_text()
+
+        self.assertIn('USER_REPORT_REASON = Literal["spam"]', docs)
+        self.assertIn('user_report(user_id: str, reason: USER_REPORT_REASON = "spam")', docs)
+        self.assertIn('| `USER_REPORT_REASON` | `"spam"` | `user_report(reason=...)` |', docs)
+        self.assertNotIn('user_report(user_id: str, reason: str = "spam")', docs)
 
     def test_insights_media_feed_all_uses_public_literal_aliases(self):
         insights_media_feed_all = signature(InsightsMixin.insights_media_feed_all)

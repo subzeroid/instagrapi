@@ -28,7 +28,7 @@ View a list of a user's medias, following and followers
 | user_id_from_username(username: str)          | int                   | Get user_id by username                                      |
 | username_from_user_id(user_id: str)           | str                   | Get username by user_id                                      |
 | user_remove_follower(user_id: str)            | bool                  | Remove your follower                                         |
-| user_report(user_id: str, reason: str = "spam") | bool                | Report a user account. Currently supports the live-verified spam report flow |
+| user_report(user_id: str, reason: USER_REPORT_REASON = "spam") | bool | Report a user account. Currently supports the live-verified spam report flow |
 | mute_posts_from_follow(user_id: str)          | bool                  | Mute posts from following user                               |
 | unmute_posts_from_follow(user_id: str)        | bool                  | Unmute posts from following user                             |
 | mute_stories_from_follow(user_id: str)        | bool                  | Mute stories from following user                             |
@@ -57,10 +57,13 @@ Pass `None` to keep Instagram's default follower order.
 
 User block surfaces are exposed as `UserBlockSurface = Literal["profile", "direct_thread_info"]`.
 
+User report reasons are exposed as `USER_REPORT_REASON = Literal["spam"]`.
+
 | Type | Values | Used by |
 |------|--------|---------|
 | `FOLLOWERS_ORDER` | `"date_followed_latest"`, `"date_followed_earliest"` | `user_followers(order=...)`, `user_followers_v1(order=...)`, `iter_user_followers_v1(order=...)` |
 | `UserBlockSurface` | `"profile"`, `"direct_thread_info"` | `user_block(surface=...)`, `user_unblock(surface=...)` |
+| `USER_REPORT_REASON` | `"spam"` | `user_report(reason=...)` |
 
 Lookup helpers:
 
@@ -111,7 +114,7 @@ each `user_id`; they do not implement an auto-approval policy.
 
 `UserShort` objects returned from private GraphQL follow-list payloads preserve selected v2-only fields when Instagram sends them: `friendship_status`, `profile_pic_id`, `fbid_v2`, `interop_messaging_user_fbid`, `strong_id__`, and raw `account_badges`. The legacy `latest_reel_media` property is also populated from Instagram's current `1llatest_reel_media` key.
 
-`user_report(user_id, reason="spam")` follows Instagram's current mobile FRX report flow for account spam reports and submits the report. This is a real account action; use it only for accounts you actually intend to report. Unsupported reasons raise `ValueError` until their FRX tag paths are captured and tested.
+`user_report(user_id, reason="spam")` follows Instagram's current mobile FRX report flow for account spam reports and submits the report. `reason` uses `USER_REPORT_REASON` and currently supports `"spam"`. This is a real account action; use it only for accounts you actually intend to report. Unsupported reasons raise `ValueError` until their FRX tag paths are captured and tested.
 
 Example:
 
