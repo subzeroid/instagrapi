@@ -97,7 +97,13 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         docs = Path("docs/usage-guide/direct.md").read_text()
 
         self.assertIn('media_type: DirectMediaType = "photo"', docs)
+        self.assertIn("### Option types", docs)
         self.assertIn('DirectMediaType = Literal["photo", "video"]', docs)
+        self.assertIn(
+            '| `DirectMediaType` | `"photo"`, `"video"` | `direct_send_file(content_type=...)`, '
+            "`direct_media_share(media_type=...)` |",
+            docs,
+        )
 
     def test_insights_media_feed_all_uses_public_literal_aliases(self):
         insights_media_feed_all = signature(InsightsMixin.insights_media_feed_all)
