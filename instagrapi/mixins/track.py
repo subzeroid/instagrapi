@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Literal, Optional, Union
 from urllib.parse import urlparse
 
 import requests
@@ -8,6 +8,8 @@ from instagrapi.exceptions import ClientError, TrackNotFound
 from instagrapi.extractors import extract_track
 from instagrapi.types import Track
 from instagrapi.utils.serialization import json_value
+
+MUSIC_PRODUCT = Literal["feed_post", "music_in_feed", "story_camera_clips_v2"]
 
 
 class TrackMixin:
@@ -86,13 +88,13 @@ class TrackMixin:
             with_signature=False,
         )
 
-    def music_trending(self, product: str = "feed_post") -> Dict:
+    def music_trending(self, product: MUSIC_PRODUCT = "feed_post") -> Dict:
         """
         Retrieve trending music candidates.
 
         Parameters
         ----------
-        product: str, optional
+        product: MUSIC_PRODUCT, optional
             Music product surface. The Android app uses ``feed_post`` for the
             successful current feed-post path.
 
@@ -107,13 +109,13 @@ class TrackMixin:
             with_signature=False,
         )
 
-    def music_top_trends(self, product: str = "music_in_feed", page_size: int = 15) -> Dict:
+    def music_top_trends(self, product: MUSIC_PRODUCT = "music_in_feed", page_size: int = 15) -> Dict:
         """
         Retrieve top trending music candidates.
 
         Parameters
         ----------
-        product: str, optional
+        product: MUSIC_PRODUCT, optional
             Music product surface.
         page_size: int, optional
             Number of trend rows requested.
@@ -136,7 +138,7 @@ class TrackMixin:
     def music_search_v2(
         self,
         query: str,
-        product: str = "music_in_feed",
+        product: MUSIC_PRODUCT = "music_in_feed",
         from_typeahead: bool = False,
         search_session_id: Optional[str] = None,
         browse_session_id: Optional[str] = None,
@@ -148,7 +150,7 @@ class TrackMixin:
         ----------
         query: str
             Search query.
-        product: str, optional
+        product: MUSIC_PRODUCT, optional
             Music product surface.
         from_typeahead: bool, optional
             Whether the query came from a typeahead suggestion.
@@ -182,7 +184,7 @@ class TrackMixin:
     def music_keyword_search(
         self,
         query: str,
-        product: str = "music_in_feed",
+        product: MUSIC_PRODUCT = "music_in_feed",
         num_keywords: int = 3,
         search_session_id: str = "",
         browse_session_id: Optional[str] = None,
@@ -194,7 +196,7 @@ class TrackMixin:
         ----------
         query: str
             Search query.
-        product: str, optional
+        product: MUSIC_PRODUCT, optional
             Music product surface.
         num_keywords: int, optional
             Number of keyword suggestions requested.
@@ -277,7 +279,7 @@ class TrackMixin:
 
     def music_clips_audio_browser(
         self,
-        product: str = "story_camera_clips_v2",
+        product: MUSIC_PRODUCT = "story_camera_clips_v2",
         browse_session_id: Optional[str] = None,
     ) -> Dict:
         """
@@ -285,7 +287,7 @@ class TrackMixin:
 
         Parameters
         ----------
-        product: str, optional
+        product: MUSIC_PRODUCT, optional
             Music product surface.
         browse_session_id: str, optional
             Browse session id. Generated when omitted.

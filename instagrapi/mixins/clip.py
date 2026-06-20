@@ -9,6 +9,7 @@ from uuid import uuid4
 
 from instagrapi import config
 from instagrapi.exceptions import ClientError, ClipConfigureError, ClipNotUpload
+from instagrapi.mixins.track import MUSIC_PRODUCT
 from instagrapi.types import Location, Media, Track, Usertag
 from instagrapi.utils.timing import date_time_original
 from instagrapi.utils.video import MOVIEPY_2_INSTALL_MESSAGE, analyze_video_for_upload
@@ -1021,7 +1022,7 @@ class UploadClipMixin:
         overlap_duration: int = 30000,
         original_volume: float = 1.0,
         music_volume: float = 1.0,
-        product: str = "story_camera_clips_v2",
+        product: MUSIC_PRODUCT = "story_camera_clips_v2",
         alacorn_session_id: str = "null",
     ) -> Dict[str, object]:
         """
@@ -1082,7 +1083,7 @@ class UploadClipMixin:
         overlap_duration: int = 30000,
         original_volume: float = 1.0,
         music_volume: float = 1.0,
-        product: str = "story_camera_clips_v2",
+        product: MUSIC_PRODUCT = "story_camera_clips_v2",
         alacorn_session_id: str = "null",
         **kwargs,
     ) -> Media:
