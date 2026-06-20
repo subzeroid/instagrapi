@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 INFO_FROM_MODULE = Literal["self_profile", "feed_timeline", "reel_feed_timeline"]
 FOLLOWERS_ORDER = Literal["date_followed_latest", "date_followed_earliest"]
 USER_REPORT_REASON = Literal["spam"]
+UserBlockSurface = Literal["profile", "direct_thread_info"]
 
 
 class UserMixin:
@@ -1452,7 +1453,7 @@ class UserMixin:
             self._users_following[self.user_id].pop(user_id, None)
         return result["friendship_status"]["following"] is False
 
-    def user_block(self, user_id: str, surface: str = "profile") -> bool:
+    def user_block(self, user_id: str, surface: UserBlockSurface = "profile") -> bool:
         """
         Block a User
 
@@ -1460,8 +1461,9 @@ class UserMixin:
         ----------
         user_id: str
             User ID of an Instagram account
-        surface: str, (optional)
-            Surface of block (deafult "profile", also can be "direct_thread_info")
+        surface: UserBlockSurface, optional
+            Surface used by Instagram for the block action, default "profile"; use
+            "direct_thread_info" from Direct thread info.
 
         Returns
         -------
@@ -1483,7 +1485,7 @@ class UserMixin:
 
         return result.get("friendship_status", {}).get("blocking") is True
 
-    def user_unblock(self, user_id: str, surface: str = "profile") -> bool:
+    def user_unblock(self, user_id: str, surface: UserBlockSurface = "profile") -> bool:
         """
         Unlock a User
 
@@ -1491,8 +1493,9 @@ class UserMixin:
         ----------
         user_id: str
             User ID of an Instagram account
-        surface: str, (optional)
-            Surface of block (deafult "profile", also can be "direct_thread_info")
+        surface: UserBlockSurface, optional
+            Surface used by Instagram for the unblock action, default "profile"; use
+            "direct_thread_info" from Direct thread info.
 
         Returns
         -------
