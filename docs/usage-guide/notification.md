@@ -4,7 +4,7 @@ Manage notification settings for the authenticated account.
 
 | Method | Return | Description |
 | --- | --- | --- |
-| notification_settings(content_type: NotificationContentType, setting_value: str) | bool | Low-level notification setting helper |
+| notification_settings(content_type: NotificationContentType, setting_value: NotificationSettingValue) | bool | Low-level notification setting helper |
 | notification_disable() | bool | Disable all supported account notifications |
 | notification_mute_all(setting_value: MUTE_ALL = "8_hour") | bool | Mute all notifications for a fixed period |
 | notification_likes(setting_value: SETTING_VALUE = "off") | bool | Manage likes notifications |
@@ -49,9 +49,18 @@ Available values are:
 "login_notification"
 ```
 
-`SETTING_VALUE = Literal["off", "following_only", "everyone"]` is used by
-the per-category helpers. `MUTE_ALL = Literal["cancel", "15_minutes",
-"1_hour", "2_hour", "4_hour", "8_hour"]` is used by `notification_mute_all()`.
+Option values are exposed as public aliases:
+
+```python
+SETTING_VALUE = Literal["off", "following_only", "everyone"]
+MUTE_ALL = Literal["cancel", "15_minutes", "1_hour", "2_hour", "4_hour", "8_hour"]
+NotificationSettingValue = Union[SETTING_VALUE, MUTE_ALL]
+```
+
+`SETTING_VALUE` is used by the per-category helpers. `MUTE_ALL` is used by
+`notification_mute_all()`. `NotificationSettingValue` is used by the low-level
+`notification_settings(...)` helper because it can send either a regular
+notification value or a mute-all duration depending on `content_type`.
 
 Example:
 
