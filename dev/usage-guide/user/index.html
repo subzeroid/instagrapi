@@ -1014,6 +1014,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1030,6 +1048,36 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#option-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option types
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1172,6 +1220,25 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#option-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option types
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1263,6 +1330,16 @@
 <td>user_unfollow(user_id: str)</td>
 <td>bool</td>
 <td>Unfollow user</td>
+</tr>
+<tr>
+<td>user_block(user_id: str, surface: UserBlockSurface = "profile")</td>
+<td>bool</td>
+<td>Block a user from a profile or Direct thread surface</td>
+</tr>
+<tr>
+<td>user_unblock(user_id: str, surface: UserBlockSurface = "profile")</td>
+<td>bool</td>
+<td>Unblock a user from a profile or Direct thread surface</td>
 </tr>
 <tr>
 <td>user_follow_requests(amount: int = 0)</td>
@@ -1408,6 +1485,24 @@
 <td>user_related_profiles_gql(user_id: str)</td>
 <td>List[UserShort]</td>
 <td>Related profiles via public GraphQL <code>edge_chaining</code> (legacy <code>query_hash</code>, gated by IG — prefer <code>chaining</code> for reliability)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="option-types">Option types</h3>
+<p>User block surfaces are exposed as <code>UserBlockSurface = Literal["profile", "direct_thread_info"]</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Values</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UserBlockSurface</code></td>
+<td><code>"profile"</code>, <code>"direct_thread_info"</code></td>
+<td><code>user_block(surface=...)</code>, <code>user_unblock(surface=...)</code></td>
 </tr>
 </tbody>
 </table>
