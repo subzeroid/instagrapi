@@ -2,7 +2,7 @@ import json
 import logging
 from copy import deepcopy
 from json.decoder import JSONDecodeError
-from typing import Dict, Iterator, List, Literal, Sequence, Tuple, Union
+from typing import Dict, Iterator, List, Literal, Optional, Sequence, Tuple, Union
 
 from requests.exceptions import RequestException
 
@@ -966,7 +966,7 @@ class UserMixin:
         user_id: str,
         max_amount: int = 0,
         max_id: str = "",
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
     ) -> Tuple[List[UserShort], str]:
         """
         Get user's followers information by Private Mobile API and max_id (cursor)
@@ -979,7 +979,7 @@ class UserMixin:
             Maximum number of media to return, default is 0 - Inf
         max_id: str, optional
             Max ID, default value is empty String
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest
 
         Returns
@@ -1023,7 +1023,7 @@ class UserMixin:
         self,
         user_id: str,
         amount: int = 0,
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
     ) -> List[UserShort]:
         """
         Get user's followers information by Private Mobile API
@@ -1034,7 +1034,7 @@ class UserMixin:
             User id of an instagram account
         amount: int, optional
             Maximum number of media to return, default is 0 - Inf
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest
 
         Returns
@@ -1052,7 +1052,7 @@ class UserMixin:
         user_id: str,
         amount: int = 0,
         page_size: int = MAX_USER_COUNT,
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
     ) -> Iterator[UserShort]:
         """
         Iterate over user's followers by Private Mobile API.
@@ -1065,7 +1065,7 @@ class UserMixin:
             Maximum number of users to yield, default is 0 - Inf
         page_size: int, optional
             Maximum number of users to fetch per page, default is 200
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest
 
         Returns
@@ -1106,7 +1106,7 @@ class UserMixin:
         max_amount: int = 0,
         max_id: str = None,
         rank_token: str = None,
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
         priority: str = "u=3, i",
     ) -> Tuple[List[UserShort], str]:
         """
@@ -1122,7 +1122,7 @@ class UserMixin:
             The cursor from which it is worth continuing to receive the list of followers
         rank_token: str, optional
             Rank token for the follow list request. Defaults to client rank_token
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest
         priority: str, optional
             GraphQL request priority header captured from the Android app
@@ -1155,7 +1155,7 @@ class UserMixin:
         user_id: str,
         amount: int = 0,
         rank_token: str = None,
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
         priority: str = "u=3, i",
     ) -> List[UserShort]:
         """
@@ -1169,7 +1169,7 @@ class UserMixin:
             Maximum number of users to return, default is 0 - Inf
         rank_token: str, optional
             Rank token for the follow list request. Defaults to client rank_token
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest
         priority: str, optional
             GraphQL request priority header captured from the Android app
@@ -1205,7 +1205,7 @@ class UserMixin:
         user_id: str,
         use_cache: bool = True,
         amount: int = 0,
-        order: FOLLOWERS_ORDER = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
     ) -> Dict[str, UserShort]:
         """
         Get user's followers
@@ -1218,7 +1218,7 @@ class UserMixin:
             Whether or not to use information from cache, default value is True
         amount: int, optional
             Maximum number of media to return, default is 0 - Inf
-        order: str, optional
+        order: FOLLOWERS_ORDER, optional
             Followers sort order: date_followed_latest or date_followed_earliest.
             Sorted requests use the private mobile endpoint and bypass cache.
 
@@ -2329,7 +2329,7 @@ class UserMixin:
         client_doc_id: str = "28479704797510738576165798526",
         max_id: int = None,
         priority: str = None,
-        order: str = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
     ) -> dict:
@@ -2375,7 +2375,7 @@ class UserMixin:
         client_doc_id: str = "161046392817718486717479294775",
         max_id: int = None,
         priority: str = None,
-        order: str = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
         exclude_field_is_favorite: bool = None,
         exclude_unused_fields: bool = None,
         skip_preview_hashtags: bool = True,
