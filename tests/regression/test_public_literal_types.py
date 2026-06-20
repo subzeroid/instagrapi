@@ -13,6 +13,7 @@ from instagrapi.mixins.note import NoteAudience
 from instagrapi.mixins.notification import NotificationContentType
 from instagrapi.mixins.public import PublicTransport
 from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
+from instagrapi.mixins.user import UserBlockSurface, UserMixin
 from instagrapi.types import StoryResizeMode
 
 EXPECTED_NOTIFICATION_CONTENT_TYPES = {
@@ -67,6 +68,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
         self.assertEqual(set(get_args(DirectMediaType)), {"photo", "video"})
         self.assertEqual(set(get_args(MUSIC_PRODUCT)), EXPECTED_MUSIC_PRODUCTS)
+        self.assertEqual(set(get_args(UserBlockSurface)), {"profile", "direct_thread_info"})
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
     def test_direct_thread_filter_literals_remain_optional(self):
@@ -102,6 +104,26 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertIn(
             '| `DirectMediaType` | `"photo"`, `"video"` | `direct_send_file(content_type=...)`, '
             "`direct_media_share(media_type=...)` |",
+            docs,
+        )
+
+    def test_user_block_methods_use_public_surface_literal(self):
+        user_block = signature(UserMixin.user_block)
+        user_unblock = signature(UserMixin.user_unblock)
+
+        self.assertEqual(user_block.parameters["surface"].annotation, UserBlockSurface)
+        self.assertEqual(user_unblock.parameters["surface"].annotation, UserBlockSurface)
+
+    def test_user_usage_guide_documents_block_surface_literal(self):
+        docs = Path("docs/usage-guide/user.md").read_text()
+
+        self.assertIn('user_block(user_id: str, surface: UserBlockSurface = "profile")', docs)
+        self.assertIn('user_unblock(user_id: str, surface: UserBlockSurface = "profile")', docs)
+        self.assertIn("### Option types", docs)
+        self.assertIn('UserBlockSurface = Literal["profile", "direct_thread_info"]', docs)
+        self.assertIn(
+            '| `UserBlockSurface` | `"profile"`, `"direct_thread_info"` | `user_block(surface=...)`, '
+            "`user_unblock(surface=...)` |",
             docs,
         )
 

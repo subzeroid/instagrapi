@@ -18,6 +18,8 @@ View a list of a user's medias, following and followers
 | user_guides_v1(user_id: int)                  | List[Guide]           | Get user's guides                                            |
 | user_follow(user_id: str)                     | bool                  | Follow user, or request to follow a private user             |
 | user_unfollow(user_id: str)                   | bool                  | Unfollow user                                                |
+| user_block(user_id: str, surface: UserBlockSurface = "profile") | bool | Block a user from a profile or Direct thread surface |
+| user_unblock(user_id: str, surface: UserBlockSurface = "profile") | bool | Unblock a user from a profile or Direct thread surface |
 | user_follow_requests(amount: int = 0)         | List[UserShort]       | Get pending incoming follow requests                         |
 | user_follow_request_approve(user_id: str)     | bool                  | Approve a pending incoming follow request                    |
 | user_follow_request_decline(user_id: str)     | bool                  | Decline a pending incoming follow request                    |
@@ -47,6 +49,14 @@ View a list of a user's medias, following and followers
 | fetch_suggestion_details(user_id: str, chained_ids: str) | dict       | Expanded social-context fields for chained suggestion ids (`discover/fetch_suggestion_details/`) |
 | discover_recommended_accounts_for_category_v1(user_id: str) | dict | Business-category-similar accounts: extracts `category_id` from the target's stream payload, then calls `discover/recommended_accounts_for_category/` |
 | user_related_profiles_gql(user_id: str)       | List[UserShort]       | Related profiles via public GraphQL `edge_chaining` (legacy `query_hash`, gated by IG — prefer `chaining` for reliability) |
+
+### Option types
+
+User block surfaces are exposed as `UserBlockSurface = Literal["profile", "direct_thread_info"]`.
+
+| Type | Values | Used by |
+|------|--------|---------|
+| `UserBlockSurface` | `"profile"`, `"direct_thread_info"` | `user_block(surface=...)`, `user_unblock(surface=...)` |
 
 Lookup helpers:
 
