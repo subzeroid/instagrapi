@@ -1,4 +1,5 @@
 import unittest
+from enum import IntEnum
 from inspect import signature
 from pathlib import Path
 from typing import Optional, get_args
@@ -10,7 +11,7 @@ from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA,
 from instagrapi.mixins.hashtag import HashtagTab
 from instagrapi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME, InsightsMixin
 from instagrapi.mixins.location import LocationTab
-from instagrapi.mixins.note import NoteAudience
+from instagrapi.mixins.note import NoteAudience, NoteMixin
 from instagrapi.mixins.notification import MUTE_ALL, SETTING_VALUE, NotificationContentType, NotificationMixin
 from instagrapi.mixins.public import PublicTransport
 from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
@@ -83,7 +84,10 @@ def literal_values(alias):
 class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
     def test_public_literal_aliases_expose_supported_values(self):
         self.assertEqual(set(get_args(ProfessionalAccountType)), {2, 3})
-        self.assertEqual(set(get_args(NoteAudience)), {0, 1})
+        self.assertIsInstance(NoteAudience, type)
+        self.assertTrue(issubclass(NoteAudience, IntEnum))
+        self.assertEqual(NoteAudience.MUTUAL_FOLLOWERS.value, 0)
+        self.assertEqual(NoteAudience.CLOSE_FRIENDS.value, 1)
         self.assertEqual(set(get_args(HashtagTab)), {"top", "recent", "clips"})
         self.assertEqual(set(get_args(LocationTab)), {"ranked", "recent"})
         self.assertEqual(set(get_args(NotificationContentType)), EXPECTED_NOTIFICATION_CONTENT_TYPES)
@@ -111,6 +115,31 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         direct_threads_chunk = signature(DirectMixin.direct_threads_chunk)
         self.assertIsNone(direct_threads_chunk.parameters["selected_filter"].default)
         self.assertIsNone(direct_threads_chunk.parameters["box"].default)
+
+    def test_note_methods_use_public_audience_enum(self):
+        create_note = signature(NoteMixin.create_note)
+        create_music_note = signature(NoteMixin.create_music_note)
+
+        self.assertEqual(create_note.parameters["audience"].annotation, NoteAudience)
+        self.assertEqual(create_note.parameters["audience"].default, NoteAudience.MUTUAL_FOLLOWERS)
+        self.assertEqual(create_music_note.parameters["audience"].annotation, NoteAudience)
+        self.assertEqual(create_music_note.parameters["audience"].default, NoteAudience.MUTUAL_FOLLOWERS)
+
+    def test_note_usage_guide_documents_public_audience_enum(self):
+        docs = Path("docs/usage-guide/notes.md").read_text()
+
+        self.assertIn(
+            "create_note(text: str, audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS)",
+            docs,
+        )
+        self.assertIn(
+            'create_music_note(track: Track \\| Dict, text: str = "", '
+            "audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS",
+            docs,
+        )
+        self.assertIn("NoteAudience.MUTUAL_FOLLOWERS", docs)
+        self.assertIn("NoteAudience.CLOSE_FRIENDS", docs)
+        self.assertNotIn("audience: Literal[0, 1]", docs)
 
     def test_direct_media_share_uses_public_send_attribute_literal(self):
         direct_media_share = signature(DirectMixin.direct_media_share)

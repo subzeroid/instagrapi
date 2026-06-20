@@ -1,7 +1,29 @@
+from instagrapi.mixins.note import NoteAudience
 from tests.helpers import *
 
 
 class NoteMixinRegressionTestCase(unittest.TestCase):
+    def _note_response(self, text="hello", audience=0):
+        return {
+            "status": "ok",
+            "id": "18072502430410984",
+            "text": text,
+            "user_id": "123",
+            "user": {
+                "pk": "123",
+                "username": "example",
+                "full_name": "",
+                "profile_pic_url": None,
+                "is_private": False,
+            },
+            "audience": audience,
+            "created_at": datetime(2024, 3, 9, 16, 0, tzinfo=UTC()),
+            "expires_at": datetime(2024, 3, 10, 16, 0, tzinfo=UTC()),
+            "is_emoji_only": False,
+            "has_translation": False,
+            "note_style": 0,
+        }
+
     def test_get_note_helpers_by_user(self):
         client = Client()
         notes = [
@@ -44,6 +66,29 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
         self.assertEqual(result, expected)
+
+    def test_create_note_posts_note_audience_enum_wire_value(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.private.cookies.set("ds_user_id", "123")
+
+        with mock.patch.object(client, "private_request", return_value=self._note_response(audience=1)) as request:
+            note = client.create_note("hello", audience=NoteAudience.CLOSE_FRIENDS)
+
+        request.assert_called_once_with(
+            "notes/create_note",
+            data={"note_style": 0, "text": "hello", "_uuid": "uuid-1", "audience": 1},
+        )
+        self.assertEqual(note.audience, 1)
+
+    def test_create_note_rejects_raw_int_audience(self):
+        client = Client()
+        client.uuid = "uuid-1"
+        client.private.cookies.set("ds_user_id", "123")
+
+        with mock.patch.object(client, "private_request", return_value=self._note_response(audience=1)):
+            with self.assertRaisesRegex(AssertionError, "NoteAudience"):
+                client.create_note("hello", audience=1)  # type: ignore[arg-type]
 
     def test_get_notes_uses_inbox_tray_graphql_items(self):
         client = Client()
@@ -155,7 +200,7 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
             note = client.create_music_note(
                 track=track,
                 text="Now playing",
-                audience=1,
+                audience=NoteAudience.CLOSE_FRIENDS,
                 start_time=66000,
                 duration=30000,
                 browse_session_id="browse-1",

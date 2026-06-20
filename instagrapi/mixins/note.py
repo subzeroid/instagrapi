@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Literal, Optional, Union
+from enum import IntEnum
+from typing import Dict, List, Optional, Union
 
 from instagrapi.exceptions import ClientGraphqlError
 from instagrapi.types import Note, Track, UserShort
@@ -11,10 +12,21 @@ INBOX_TRAY_ROOT_FIELD = "xdt_get_inbox_tray_items"
 CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID = "3510400299951610199199089856"
 CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME = "CreateInboxTrayItemRequest"
 
-NoteAudience = Literal[0, 1]
+
+class NoteAudience(IntEnum):
+    MUTUAL_FOLLOWERS = 0
+    CLOSE_FRIENDS = 1
 
 
 class NoteMixin:
+    @staticmethod
+    def _note_audience_value(audience: NoteAudience) -> int:
+        assert isinstance(audience, NoteAudience), (
+            f"Invalid audience parameter={audience} (must be NoteAudience.MUTUAL_FOLLOWERS "
+            "or NoteAudience.CLOSE_FRIENDS)"
+        )
+        return int(audience)
+
     @staticmethod
     def _track_value(track: Union[Track, Dict], key: str):
         if isinstance(track, dict):
@@ -223,7 +235,7 @@ class NoteMixin:
         assert result.get("status", "") == "ok", "Failed to retrieve Notes music"
         return result
 
-    def create_note(self, text: str, audience: NoteAudience = 0) -> Note:
+    def create_note(self, text: str, audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS) -> Note:
         """
         Create personal Note
 
@@ -231,9 +243,9 @@ class NoteMixin:
         ----------
         text: str
             Content of the Note
-        audience: Literal[0, 1], optional
-            Audience to see Note, deafult 0 (Followers you follow back).
-            Best Friends - 1
+        audience: NoteAudience, optional
+            Audience to see the Note. Use NoteAudience.MUTUAL_FOLLOWERS
+            or NoteAudience.CLOSE_FRIENDS.
 
         Returns
         -------
@@ -242,12 +254,9 @@ class NoteMixin:
 
         """
         assert self.user_id, "Login required"
-        assert audience in (
-            0,
-            1,
-        ), f"Invalid audience parameter={audience} (must be 0 or 1)"
+        audience_value = self._note_audience_value(audience)
 
-        data = {"note_style": 0, "text": text, "_uuid": self.uuid, "audience": audience}
+        data = {"note_style": 0, "text": text, "_uuid": self.uuid, "audience": audience_value}
         result = self.private_request("notes/create_note", data=data)
 
         assert result.pop("status", "") == "ok", "Failed to create new Note"
@@ -257,7 +266,7 @@ class NoteMixin:
         self,
         track: Union[Track, Dict],
         text: str = "",
-        audience: NoteAudience = 0,
+        audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS,
         start_time: Optional[int] = None,
         duration: int = 30000,
         browse_session_id: Optional[str] = None,
@@ -272,9 +281,9 @@ class NoteMixin:
             Track from ``notes_music_browser()`` or a compatible dict.
         text: str, optional
             Content of the Note.
-        audience: Literal[0, 1], optional
-            Audience to see Note, default 0 (Followers you follow back).
-            Best Friends - 1.
+        audience: NoteAudience, optional
+            Audience to see the Note. Use NoteAudience.MUTUAL_FOLLOWERS
+            or NoteAudience.CLOSE_FRIENDS.
         start_time: int, optional
             Audio start time in milliseconds. Defaults to the first highlighted
             start time from the track, or 0.
@@ -292,10 +301,7 @@ class NoteMixin:
             Created music Note.
         """
         assert self.user_id, "Login required"
-        assert audience in (
-            0,
-            1,
-        ), f"Invalid audience parameter={audience} (must be 0 or 1)"
+        audience_value = self._note_audience_value(audience)
         audio_asset_id = self._track_value(track, "audio_asset_id") or self._track_value(track, "id")
         audio_cluster_id = self._track_value(track, "audio_cluster_id")
         assert audio_asset_id, "track.audio_asset_id or track.id is required"
@@ -312,7 +318,7 @@ class NoteMixin:
             "should_fetch_content_note_stack_video_info": False,
             "request": {
                 "inbox_tray_item_type": "note",
-                "audience": audience,
+                "audience": audience_value,
                 "additional_params": {
                     "note_create_params": {
                         "text": text,
