@@ -1283,7 +1283,7 @@
 <td>Get note text by username</td>
 </tr>
 <tr>
-<td>create_note(text: str, audience: Literal[0, 1] = 0)</td>
+<td>create_note(text: str, audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS)</td>
 <td>Note</td>
 <td>Post a new Note</td>
 </tr>
@@ -1293,7 +1293,7 @@
 <td>Retrieve music candidates for Notes</td>
 </tr>
 <tr>
-<td>create_music_note(track: Track | Dict, text: str = "", audience: Literal[0, 1] = 0, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None)</td>
+<td>create_music_note(track: Track | Dict, text: str = "", audience: NoteAudience = NoteAudience.MUTUAL_FOLLOWERS, start_time: Optional[int] = None, duration: int = 30000, browse_session_id: Optional[str] = None, alacorn_session_id: Optional[str] = None)</td>
 <td>Note</td>
 <td>Post a new Note with music</td>
 </tr>
@@ -1310,10 +1310,11 @@
 </tbody>
 </table>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_note</span><span class="p">(</span><span class="s2">&quot;Hello from Instagrapi, everyone can see it!&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins.note</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoteAudience</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_note</span><span class="p">(</span><span class="s2">&quot;Hello from Instagrapi!&quot;</span><span class="p">,</span> <span class="n">audience</span><span class="o">=</span><span class="n">NoteAudience</span><span class="o">.</span><span class="n">MUTUAL_FOLLOWERS</span><span class="p">)</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
 <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;17849203563031468&#39;</span><span class="p">,</span>
-<span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello from Instagrapi, everyone can see it!&#39;</span><span class="p">,</span>
+<span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="s1">&#39;Hello from Instagrapi!&#39;</span><span class="p">,</span>
 <span class="s1">&#39;user_id&#39;</span><span class="p">:</span> <span class="mi">12312312312</span><span class="p">,</span>
 <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">{</span>
   <span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="s1">&#39;12312312312&#39;</span><span class="p">,</span>
@@ -1352,7 +1353,7 @@ and pass it to <code>create_music_note()</code>:</p>
 <span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_music_note</span><span class="p">(</span>
     <span class="n">track</span><span class="o">=</span><span class="n">track</span><span class="p">,</span>
     <span class="n">text</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">audience</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">audience</span><span class="o">=</span><span class="n">NoteAudience</span><span class="o">.</span><span class="n">CLOSE_FRIENDS</span><span class="p">,</span>
     <span class="n">alacorn_session_id</span><span class="o">=</span><span class="n">music</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;alacorn_session_id&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">delete_note</span><span class="p">(</span><span class="n">note</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -1370,7 +1371,7 @@ and pass it to <code>create_music_note()</code>:</p>
 <ul>
 <li><code>note_id</code> - ID of the Note object</li>
 <li><code>text</code> - Content of the Note</li>
-<li><code>audience</code> - Who can see the note. Exposed as <code>NoteAudience = Literal[0, 1]</code> <strong>(0 = Followers you follow back, 1 = Close Friends only)</strong></li>
+<li><code>audience</code> - Who can see the note. Use <code>NoteAudience.MUTUAL_FOLLOWERS</code> for followers you follow back or <code>NoteAudience.CLOSE_FRIENDS</code> for Close Friends only. Instagram still receives the numeric wire value internally.</li>
 <li><code>username</code> - Username used to search in an existing <code>notes</code> list</li>
 <li><code>track</code> - Track object or raw track dict from <code>notes_music_browser()</code></li>
 </ul>
