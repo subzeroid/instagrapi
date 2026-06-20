@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import get_args
 
 from instagrapi.mixins.account import ProfessionalAccountType
+from instagrapi.mixins.clip import UploadClipMixin
 from instagrapi.mixins.direct import BOX, SELECTED_FILTER, SEND_ATTRIBUTE_MEDIA, DirectMixin
 from instagrapi.mixins.hashtag import HashtagTab
 from instagrapi.mixins.insights import DATA_ORDERING, POST_TYPE, TIME_FRAME, InsightsMixin
@@ -11,6 +12,7 @@ from instagrapi.mixins.location import LocationTab
 from instagrapi.mixins.note import NoteAudience
 from instagrapi.mixins.notification import NotificationContentType
 from instagrapi.mixins.public import PublicTransport
+from instagrapi.mixins.track import MUSIC_PRODUCT, TrackMixin
 from instagrapi.types import StoryResizeMode
 
 EXPECTED_NOTIFICATION_CONTENT_TYPES = {
@@ -47,6 +49,11 @@ EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES = {
     "feed_contextual_self_profile",
     "feed_contextual_profile",
 }
+EXPECTED_MUSIC_PRODUCTS = {
+    "feed_post",
+    "music_in_feed",
+    "story_camera_clips_v2",
+}
 
 
 class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
@@ -58,6 +65,7 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         self.assertEqual(set(get_args(NotificationContentType)), EXPECTED_NOTIFICATION_CONTENT_TYPES)
         self.assertEqual(set(get_args(PublicTransport)), {"requests", "curl"})
         self.assertEqual(set(get_args(SEND_ATTRIBUTE_MEDIA)), EXPECTED_DIRECT_MEDIA_SEND_ATTRIBUTES)
+        self.assertEqual(set(get_args(MUSIC_PRODUCT)), EXPECTED_MUSIC_PRODUCTS)
         self.assertEqual(set(get_args(StoryResizeMode)), {"fill", "fit"})
 
     def test_direct_thread_filter_literals_remain_optional(self):
@@ -94,5 +102,48 @@ class PublicLiteralTypesRegressionTestCase(unittest.TestCase):
         )
         self.assertNotIn(
             'post_type: str = "ALL", time_frame: str = "TWO_YEARS", data_ordering: str = "REACH_COUNT"',
+            docs,
+        )
+
+    def test_track_music_methods_use_public_product_literal_alias(self):
+        for method_name in (
+            "music_trending",
+            "music_top_trends",
+            "music_search_v2",
+            "music_keyword_search",
+            "music_clips_audio_browser",
+        ):
+            with self.subTest(method_name=method_name):
+                method = signature(getattr(TrackMixin, method_name))
+
+                self.assertEqual(method.parameters["product"].annotation, MUSIC_PRODUCT)
+
+    def test_clip_music_methods_use_public_product_literal_alias(self):
+        for method_name in ("clip_music_extra_data", "clip_upload_with_music"):
+            with self.subTest(method_name=method_name):
+                method = signature(getattr(UploadClipMixin, method_name))
+
+                self.assertEqual(method.parameters["product"].annotation, MUSIC_PRODUCT)
+
+    def test_track_usage_guide_documents_public_product_literal_alias(self):
+        docs = Path("docs/usage-guide/track.md").read_text()
+
+        self.assertIn('music_trending(product: MUSIC_PRODUCT = "feed_post")', docs)
+        self.assertIn('music_top_trends(product: MUSIC_PRODUCT = "music_in_feed", page_size: int = 15)', docs)
+        self.assertIn('music_clips_audio_browser(product: MUSIC_PRODUCT = "story_camera_clips_v2"', docs)
+        self.assertNotIn('product: str = "feed_post"', docs)
+        self.assertNotIn('product: str = "music_in_feed"', docs)
+        self.assertNotIn('product: str = "story_camera_clips_v2"', docs)
+
+    def test_media_usage_guide_documents_public_music_product_literal_alias(self):
+        docs = Path("docs/usage-guide/media.md").read_text()
+
+        self.assertIn(
+            'clip_music_extra_data(track: Track or dict, product: MUSIC_PRODUCT = "story_camera_clips_v2"',
+            docs,
+        )
+        self.assertIn(
+            "clip_upload_with_music(path: Path, caption: str, track: Track or dict, thumbnail: Path = None, "
+            'product: MUSIC_PRODUCT = "story_camera_clips_v2"',
             docs,
         )
