@@ -1202,7 +1202,7 @@
 </thead>
 <tbody>
 <tr>
-<td>notification_settings(content_type: NotificationContentType, setting_value: str)</td>
+<td>notification_settings(content_type: NotificationContentType, setting_value: NotificationSettingValue)</td>
 <td>bool</td>
 <td>Low-level notification setting helper</td>
 </tr>
@@ -1269,9 +1269,15 @@ notification categories:</p>
 <span class="s2">&quot;report_updated&quot;</span>
 <span class="s2">&quot;login_notification&quot;</span>
 </code></pre></div>
-<p><code>SETTING_VALUE = Literal["off", "following_only", "everyone"]</code> is used by
-the per-category helpers. <code>MUTE_ALL = Literal["cancel", "15_minutes",
-"1_hour", "2_hour", "4_hour", "8_hour"]</code> is used by <code>notification_mute_all()</code>.</p>
+<p>Option values are exposed as public aliases:</p>
+<div class="highlight"><pre><span></span><code><span class="n">SETTING_VALUE</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;off&quot;</span><span class="p">,</span> <span class="s2">&quot;following_only&quot;</span><span class="p">,</span> <span class="s2">&quot;everyone&quot;</span><span class="p">]</span>
+<span class="n">MUTE_ALL</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cancel&quot;</span><span class="p">,</span> <span class="s2">&quot;15_minutes&quot;</span><span class="p">,</span> <span class="s2">&quot;1_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;2_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;4_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;8_hour&quot;</span><span class="p">]</span>
+<span class="n">NotificationSettingValue</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">SETTING_VALUE</span><span class="p">,</span> <span class="n">MUTE_ALL</span><span class="p">]</span>
+</code></pre></div>
+<p><code>SETTING_VALUE</code> is used by the per-category helpers. <code>MUTE_ALL</code> is used by
+<code>notification_mute_all()</code>. <code>NotificationSettingValue</code> is used by the low-level
+<code>notification_settings(...)</code> helper because it can send either a regular
+notification value or a mute-all duration depending on <code>content_type</code>.</p>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
