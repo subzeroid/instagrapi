@@ -83,7 +83,7 @@ def extract_media_v1(data):
     )
     media["like_count"] = media.get("like_count", 0)
     media["has_liked"] = media.get("has_liked", False)
-    media["sponsor_tags"] = [tag["sponsor"] for tag in media.get("sponsor_tags") or []]
+    media["sponsor_tags"] = [extract_user_short(tag["sponsor"]) for tag in media.get("sponsor_tags") or []]
     media["view_count"] = media.get("view_count", media.get("video_view_count", 0))
     media["play_count"] = media.get("play_count", media.get("video_play_count", 0))
     media["coauthor_producers"] = [extract_user_short(user) for user in media.get("coauthor_producers", [])]
@@ -646,7 +646,7 @@ def extract_story_v1(data):
         for link in cta.get("links", []):
             story["links"].append(StoryLink(**link))
     story["user"] = extract_user_short(story.get("user"))
-    story["sponsor_tags"] = [tag["sponsor"] for tag in story.get("sponsor_tags", [])]
+    story["sponsor_tags"] = [extract_user_short(tag["sponsor"]) for tag in story.get("sponsor_tags", [])]
     story["is_paid_partnership"] = story.get("is_paid_partnership")
     if not story.get("code"):
         story["code"] = InstagramIdCodec.encode(story["pk"])
