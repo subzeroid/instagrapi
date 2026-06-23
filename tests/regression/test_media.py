@@ -58,6 +58,26 @@ class MediaInfoV2RegressionTestCase(unittest.TestCase):
         self.assertEqual(media.view_count, 1234)
         self.assertEqual(media.play_count, 5678)
 
+    def test_extract_media_v1_normalizes_sponsor_tag_friendship_status(self):
+        payload = self._media_or_ad_payload()
+        payload["sponsor_tags"] = [
+            {
+                "sponsor": {
+                    "pk": "3",
+                    "username": "sponsor",
+                    "profile_pic_url": "https://example.com/sponsor.jpg",
+                    "friendship_status": {"following": False},
+                }
+            }
+        ]
+
+        media = extract_media_v1(payload)
+
+        self.assertEqual(media.sponsor_tags[0].pk, "3")
+        self.assertEqual(media.sponsor_tags[0].friendship_status.user_id, "3")
+        self.assertFalse(media.sponsor_tags[0].friendship_status.following)
+        self.assertFalse(media.sponsor_tags[0].friendship_status.incoming_request)
+
     def test_media_info_v2_strips_userid_suffix(self):
         client = Client()
         with mock.patch.object(

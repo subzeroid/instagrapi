@@ -147,6 +147,46 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(story.polls[0].options, ["Yes", "No"])
         self.assertTrue(story.polls[0].viewer_can_vote)
 
+    def test_extract_story_v1_normalizes_sponsor_tag_friendship_status(self):
+        story = extract_story_v1(
+            {
+                "pk": "1",
+                "id": "1_2",
+                "code": "abc",
+                "taken_at": 1710000000,
+                "media_type": 1,
+                "image_versions2": {
+                    "candidates": [
+                        {
+                            "url": "https://example.com/thumbnail.jpg",
+                            "width": 720,
+                            "height": 1280,
+                        }
+                    ]
+                },
+                "user": {
+                    "pk": "2",
+                    "username": "example",
+                    "profile_pic_url": "https://example.com/profile.jpg",
+                },
+                "sponsor_tags": [
+                    {
+                        "sponsor": {
+                            "pk": "3",
+                            "username": "sponsor",
+                            "profile_pic_url": "https://example.com/sponsor.jpg",
+                            "friendship_status": {"following": False},
+                        }
+                    }
+                ],
+            }
+        )
+
+        self.assertEqual(story.sponsor_tags[0].pk, "3")
+        self.assertEqual(story.sponsor_tags[0].friendship_status.user_id, "3")
+        self.assertFalse(story.sponsor_tags[0].friendship_status.following)
+        self.assertFalse(story.sponsor_tags[0].friendship_status.incoming_request)
+
     def test_story_poll_vote_posts_vote_to_poll_endpoint(self):
         client = self.build_private_client()
         client._user_id = "1"
