@@ -33,7 +33,7 @@ from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps, json_value
 
-MEDIA_INFO_DOC_ID = "8845758582119845"
+MEDIA_INFO_DOC_ID = "27128499623469141"
 IG_PROFILE_TIMELINE_DOC_ID = "56030350814417327502004290437"
 
 
@@ -83,6 +83,46 @@ class MediaMixin:
             media["id"] = f"{media_id}_{user['pk']}"
         if "taken_at" not in media and "1ltaken_at" in media:
             media["taken_at"] = media["1ltaken_at"]
+        return media
+
+    @staticmethod
+    def _normalize_xdt_media_info(media: Dict) -> Dict:
+        media = deepcopy(media)
+        user = media.get("user") or {}
+        if "pk" not in user and user.get("id"):
+            user["pk"] = user["id"]
+        media["user"] = user
+        media_pk = str(media.get("pk") or "")
+        media_id = str(media.get("id") or "")
+        if not media_pk and media_id:
+            media_pk = media_id.split("_", 1)[0]
+            media["pk"] = media_pk
+        elif "_" in media_pk:
+            media_pk = media_pk.split("_", 1)[0]
+            media["pk"] = media_pk
+        if media_id and "_" not in media_id and user.get("pk"):
+            media["id"] = f"{media_id}_{user['pk']}"
+        elif not media_id and media_pk and user.get("pk"):
+            media["id"] = f"{media_pk}_{user['pk']}"
+        if "code" not in media and media.get("shortcode"):
+            media["code"] = media["shortcode"]
+        if "taken_at" not in media and "taken_at_timestamp" in media:
+            media["taken_at"] = media["taken_at_timestamp"]
+        if not media.get("media_type"):
+            if media.get("carousel_media"):
+                media["media_type"] = 8
+            elif media.get("video_versions"):
+                media["media_type"] = 2
+            else:
+                media["media_type"] = 1
+        if isinstance(media.get("caption"), str):
+            media["caption"] = {"text": media["caption"]}
+        elif "caption_text" in media and "caption" not in media:
+            media["caption"] = {"text": media.pop("caption_text") or ""}
+        elif "caption_text" in media:
+            media.pop("caption_text", None)
+        if media.get("carousel_media"):
+            media["carousel_media"] = [MediaMixin._normalize_xdt_media_info(item) for item in media["carousel_media"]]
         return media
 
     def _user_medias_paginated_app_gql(self, user_id: str, amount: int = 0, end_cursor=None) -> Tuple[List[Media], str]:
@@ -542,13 +582,22 @@ class MediaMixin:
         ):
             data = self.public_doc_id_graphql_request(
                 MEDIA_INFO_DOC_ID,
-                {"shortcode": shortcode},
+                {
+                    "shortcode": shortcode,
+                    "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+                },
                 referer=f"https://www.instagram.com/p/{shortcode}/",
+                url=self.GRAPHQL_PUBLIC_WEB_API_URL,
+                include_lsd=True,
+                headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
             )
             media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
-            if not media:
+            if media:
+                return extract_media_gql(media)
+            media_items = json_value(data, "xdt_api__v1__media__shortcode__web_info", "items", default=[])
+            if not media_items:
                 raise MediaNotFound(media_pk=media_pk, **data)
-            return extract_media_gql(media)
+            return extract_media_v1(self._normalize_xdt_media_info(media_items[0]))
         if not data.get("shortcode_media"):
             raise MediaNotFound(media_pk=media_pk, **data)
         if data["shortcode_media"]["location"] and self.authorization:
