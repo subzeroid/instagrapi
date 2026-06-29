@@ -32,6 +32,8 @@ from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.timing import random_delay
 
 PublicTransport = Literal["requests", "curl"]
+PUBLIC_WEB_APP_ID = "936619743392459"
+PUBLIC_WEB_ASBD_ID = "129477"
 
 
 class PublicRequestMixin:
@@ -509,8 +511,8 @@ class PublicRequestMixin:
                     "Content-Type": "application/x-www-form-urlencoded",
                     "Origin": "https://www.instagram.com",
                     "User-Agent": self.public_user_agent,
-                    "X-ASBD-ID": "129477",
-                    "X-IG-App-ID": "936619743392459",
+                    "X-ASBD-ID": PUBLIC_WEB_ASBD_ID,
+                    "X-IG-App-ID": PUBLIC_WEB_APP_ID,
                 }
             )
             if lsd:

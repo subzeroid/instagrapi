@@ -1,5 +1,5 @@
 from instagrapi.exceptions import ClientForbiddenError, ClientLoginRequired, ClientNotFoundError
-from instagrapi.mixins.public import JSONDecodeError as PublicJSONDecodeError
+from instagrapi.mixins import public as public_mixin
 from tests.helpers import *
 
 
@@ -101,7 +101,8 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(kwargs["headers"]["X-FB-LSD"], "lsd-token")
         self.assertEqual(kwargs["headers"]["X-CSRFToken"], "csrf-token")
         self.assertEqual(kwargs["headers"]["X-FB-Friendly-Name"], "PolarisPostRootQuery")
-        self.assertEqual(kwargs["headers"]["X-IG-App-ID"], "936619743392459")
+        self.assertEqual(kwargs["headers"]["X-ASBD-ID"], public_mixin.PUBLIC_WEB_ASBD_ID)
+        self.assertEqual(kwargs["headers"]["X-IG-App-ID"], public_mixin.PUBLIC_WEB_APP_ID)
         self.assertFalse(kwargs["update_headers"])
         self.assertTrue(kwargs["return_json"])
 
@@ -116,7 +117,7 @@ class PublicRegressionTestCase(unittest.TestCase):
         response.url = "https://www.instagram.com/challenge/?next=/graphql/query/"
         response.text = '<!DOCTYPE html><html lang="en" class="no-js logged-in client-root"></html>'
         response.raise_for_status.return_value = None
-        response.json.side_effect = PublicJSONDecodeError("bad", response.text, 0)
+        response.json.side_effect = public_mixin.JSONDecodeError("bad", response.text, 0)
 
         with mock.patch.object(client.public, "get", return_value=response):
             with self.assertRaises(ClientLoginRequired):
