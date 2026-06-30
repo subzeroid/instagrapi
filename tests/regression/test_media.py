@@ -950,52 +950,6 @@ class MediaActionPayloadRegressionTestCase(unittest.TestCase):
         self.assertEqual(endpoint, "media/111_222/edit_media/")
         self.assertEqual(json.loads(data["linked_media_info"])["media_id"], "333_444")
 
-    def test_media_unlink_reel_posts_linked_media_delete_graphql_mutation(self):
-        client = self._build_logged_in_client()
-        client._medias_cache = {"111": object()}
-
-        with mock.patch.object(
-            client,
-            "private_graphql_query_request",
-            return_value={"data": {"xig_linked_media_delete": {"status": "ok"}}},
-        ) as graphql_query:
-            result = client.media_unlink_reel("111_222")
-
-        self.assertTrue(result)
-        graphql_query.assert_called_once_with(
-            friendly_name="LinkedMediaDelete",
-            root_field_name="xig_linked_media_delete",
-            variables={"input_data": {"source_media_id": "111_222"}},
-            client_doc_id="8731250647292294617344433924",
-        )
-        self.assertNotIn("111", client._medias_cache)
-
-    def test_media_unlink_reel_normalizes_optional_target_media_id(self):
-        client = self._build_logged_in_client()
-
-        with (
-            mock.patch.object(
-                client,
-                "media_user",
-                side_effect=[
-                    UserShort(pk="222", username="origin", profile_pic_url="https://example.com/origin.jpg"),
-                    UserShort(pk="444", username="target", profile_pic_url="https://example.com/target.jpg"),
-                ],
-            ),
-            mock.patch.object(
-                client,
-                "private_graphql_query_request",
-                return_value={"data": {"xig_linked_media_delete": {"status": "ok"}}},
-            ) as graphql_query,
-        ):
-            self.assertTrue(client.media_unlink_reel("111", target_media_id="333"))
-
-        variables = graphql_query.call_args.kwargs["variables"]
-        self.assertEqual(
-            variables,
-            {"input_data": {"source_media_id": "111_222", "destination_media_id": "333_444"}},
-        )
-
 
 class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
     def _media_v1_payload(self, pk="1"):

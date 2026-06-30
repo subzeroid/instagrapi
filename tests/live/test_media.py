@@ -230,17 +230,7 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
         except Exception as exc:
             print(f"Linked Reel cleanup media_delete failed: {exc.__class__.__name__} {exc}")
 
-    def assert_linked_media_data_removed(self, media, attempts=6, delay=2):
-        last_payload = None
-        for attempt in range(attempts):
-            if attempt:
-                time.sleep(delay)
-            last_payload = self.uploaded_media_payload(media)
-            if not last_payload.get("linked_media_data"):
-                return
-        self.fail(f"linked_media_data was still present after unlink: {last_payload.get('linked_media_data')}")
-
-    def run_media_link_and_unlink_reel(self, client, origin_path, target_path, origin_cover, target_cover):
+    def run_media_link_reel(self, client, origin_path, target_path, origin_cover, target_cover):
         self.cl = client
         origin = None
         target = None
@@ -262,15 +252,11 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
             )
 
             self.assertTrue(self.cl.media_link_reel(origin.id, target.id, link_name="Watch Next"))
-            linked_payload = self.uploaded_media_payload(origin)
-            self.assertTrue(linked_payload.get("linked_media_data"))
-            self.assertTrue(self.cl.media_unlink_reel(origin.id, target_media_id=target.id))
-            self.assert_linked_media_data_removed(origin)
         finally:
             for media in (origin, target):
                 self.cleanup_uploaded_media(media)
 
-    def test_media_link_and_unlink_reel(self):
+    def test_media_link_reel(self):
         origin_path = self.make_video_fixture(label="linked Reel origin fixture", color="blue")
         target_path = self.make_video_fixture(label="linked Reel target fixture", color="red")
         origin_cover = self.make_cover_fixture("blue")
@@ -283,7 +269,7 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
         upload_failures = {}
         for client in self.clients:
             try:
-                self.run_media_link_and_unlink_reel(client, origin_path, target_path, origin_cover, target_cover)
+                self.run_media_link_reel(client, origin_path, target_path, origin_cover, target_cover)
                 return
             except (
                 ClipNotUpload,

@@ -35,9 +35,6 @@ from instagrapi.utils.serialization import dumps, json_value
 
 MEDIA_INFO_DOC_ID = "27128499623469141"
 IG_PROFILE_TIMELINE_DOC_ID = "56030350814417327502004290437"
-LINKED_MEDIA_DELETE_CLIENT_DOC_ID = "8731250647292294617344433924"
-LINKED_MEDIA_DELETE_FRIENDLY_NAME = "LinkedMediaDelete"
-LINKED_MEDIA_DELETE_ROOT_FIELD = "xig_linked_media_delete"
 
 
 class MediaMixin:
@@ -822,44 +819,6 @@ class MediaMixin:
             self.with_action_data(data),
         )
         return result.get("status") == "ok"
-
-    def media_unlink_reel(self, media_id: str, target_media_id: Optional[str] = None) -> bool:
-        """
-        Remove a linked Reel navigation button from a Reel.
-
-        Parameters
-        ----------
-        media_id: str
-            Origin media id that currently has the linked Reel navigation button
-        target_media_id: str, optional
-            Destination media id to remove from the origin media. When omitted,
-            Instagram removes the linked Reel from the origin media.
-
-        Returns
-        -------
-        bool
-            A boolean value
-        """
-        assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
-        input_data = {"source_media_id": media_id}
-        if target_media_id is not None:
-            input_data["destination_media_id"] = self.media_id(target_media_id)
-        self._medias_cache.pop(self.media_pk(media_id), None)
-        result = self.private_graphql_query_request(
-            friendly_name=LINKED_MEDIA_DELETE_FRIENDLY_NAME,
-            root_field_name=LINKED_MEDIA_DELETE_ROOT_FIELD,
-            variables={"input_data": input_data},
-            client_doc_id=LINKED_MEDIA_DELETE_CLIENT_DOC_ID,
-        )
-        if result.get("status") == "ok":
-            return True
-        root = (result.get("data") or {}).get(LINKED_MEDIA_DELETE_ROOT_FIELD)
-        if isinstance(root, dict):
-            if root.get("status") is not None:
-                return root.get("status") == "ok"
-            return root.get("success") is True or root.get("is_success") is True
-        return root is True
 
     def media_user(self, media_pk: str) -> UserShort:
         """
