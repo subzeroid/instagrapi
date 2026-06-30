@@ -39,7 +39,6 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_delete(media_id: str) | bool | Delete media |
 | media_edit(media_id: str, caption: str, title: str = "", usertags: List[Usertag] = [], location: Location = None) | dict | Edit caption, optional IGTV title, usertags, or location |
 | media_link_reel(media_id: str, target_media_id: str, link_name: str = "Watch Next") | bool | Link one Reel to another Reel so Instagram can show a navigation button |
-| media_unlink_reel(media_id: str) | bool | Remove the linked Reel navigation button from media |
 | media_user(media_pk: str) | UserShort | Get author of media |
 | media_oembed(url: str) | dict | Return short oEmbed-style media info by URL |
 | media_like(media_id: str) | bool | Like media |
@@ -277,7 +276,7 @@ Notes:
 * `media_pk_from_url()` now also resolves `share/p/...` URLs before extracting the canonical shortcode.
 * Accepted Instagram Collabs/coauthor users from private media payloads are available as `media.coauthor_producers`. This is separate from upload-time `coauthor_user_ids`, which only sends collaborator invitations.
 * `media_edit()` uses `caption` and optional `location`/`usertags`; for IGTV posts it can also derive or send a separate `title`.
-* `media_link_reel()` and `media_unlink_reel()` use Instagram's private `media/{media_id}/edit_media/` endpoint. Pass full media IDs when you have them; plain media PKs are normalized with `media_id()` before the request.
+* `media_link_reel()` uses Instagram's private `media/{media_id}/edit_media/` endpoint. Pass full media IDs when you have them; plain media PKs are normalized with `media_id()` before the request.
 
 Extended `Media` metadata fields:
 

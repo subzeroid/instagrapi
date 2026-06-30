@@ -820,34 +820,6 @@ class MediaMixin:
         )
         return result.get("status") == "ok"
 
-    def media_unlink_reel(self, media_id: str) -> bool:
-        """
-        Remove a linked Reel from media.
-
-        Parameters
-        ----------
-        media_id: str
-            Media id that should have its linked Reel cleared
-
-        Returns
-        -------
-        bool
-            A boolean value
-        """
-        assert self.user_id, "Login required"
-        media_id = self.media_id(media_id)
-        data = {
-            "_uid": str(self.user_id),
-            "_uuid": self.uuid,
-            "linked_media_info": dumps({}),
-        }
-        self._medias_cache.pop(self.media_pk(media_id), None)
-        result = self.private_request(
-            f"media/{media_id}/edit_media/",
-            self.with_action_data(data),
-        )
-        return result.get("status") == "ok"
-
     def media_user(self, media_pk: str) -> UserShort:
         """
         Get author of the media

@@ -950,23 +950,6 @@ class MediaActionPayloadRegressionTestCase(unittest.TestCase):
         self.assertEqual(endpoint, "media/111_222/edit_media/")
         self.assertEqual(json.loads(data["linked_media_info"])["media_id"], "333_444")
 
-    def test_media_unlink_reel_posts_empty_linked_media_info_object(self):
-        client = self._build_logged_in_client()
-        client._medias_cache = {"111": object()}
-
-        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
-            result = client.media_unlink_reel("111_222")
-
-        self.assertTrue(result)
-        endpoint, data = private_request.call_args.args
-        self.assertEqual(endpoint, "media/111_222/edit_media/")
-        self.assertEqual(data["_uid"], "1")
-        self.assertEqual(data["_uuid"], "uuid")
-        self.assertEqual(data["device_id"], "android-device")
-        self.assertEqual(data["radio_type"], "wifi-none")
-        self.assertEqual(json.loads(data["linked_media_info"]), {})
-        self.assertNotIn("111", client._medias_cache)
-
 
 class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
     def _media_v1_payload(self, pk="1"):
