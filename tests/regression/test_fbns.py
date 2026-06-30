@@ -240,6 +240,38 @@ def test_client_exposes_stateful_fbns_helpers():
     transport.disconnect.assert_called_once()
 
 
+def test_fbns_read_once_marks_client_disconnected_when_socket_closes():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    transport.recv_packet.side_effect = ConnectionError("Socket closed while reading MQTT packet")
+    fbns = FbnsClient(client, transport=transport)
+    fbns.connected = True
+
+    try:
+        fbns.read_once()
+    except ConnectionError:
+        pass
+    else:
+        raise AssertionError("read_once should raise when the transport closes")
+
+    assert not fbns.connected
+
+
+def test_fbns_disconnect_clears_client_state_after_broken_socket():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    transport.send.side_effect = ConnectionError("Socket is already closed")
+    fbns = FbnsClient(client, transport=transport)
+    fbns.connected = True
+    client.fbns = fbns
+
+    client.fbns_disconnect()
+
+    transport.disconnect.assert_called_once()
+    assert not fbns.connected
+    assert client.fbns is None
+
+
 def test_fbns_default_transport_uses_mqtt_mini_and_client_proxy():
     client = _build_logged_in_client()
     client.proxy = "socks5://127.0.0.1:8888"

@@ -1,3 +1,4 @@
+import contextlib
 import json
 import time
 import uuid
@@ -117,8 +118,8 @@ class FbnsClient:
 
     def connect(self, register: bool = True) -> None:
         self.transport.connect()
-        self.transport.send(self.connect_packet())
-        packet = decode_packet(self.transport.recv_packet())
+        self._send(self.connect_packet())
+        packet = decode_packet(self._recv_packet())
         if packet.packet_type != "connack" or packet.return_code != 0:
             raise ConnectionError(f"FBNS MQTT connect failed: {packet.return_code}")
         self.auth.read(packet.payload)
@@ -132,10 +133,13 @@ class FbnsClient:
             self.emit("registered", {"token": token, "response": response})
 
     def disconnect(self) -> None:
-        if self.connected:
-            self.transport.send(write_disconnect_packet())
-        self.transport.disconnect()
-        self.connected = False
+        try:
+            if self.connected:
+                with contextlib.suppress(Exception):
+                    self._send(write_disconnect_packet())
+            self.transport.disconnect()
+        finally:
+            self.connected = False
 
     def build_connection(self) -> MQTToTConnection:
         phone_id = getattr(self.client, "phone_id", "") or ""
@@ -179,7 +183,7 @@ class FbnsClient:
 
     def subscribe(self, topic: str) -> None:
         self._packet_id += 1
-        self.transport.send(write_subscribe_packet(topic, packet_id=self._packet_id))
+        self._send(write_subscribe_packet(topic, packet_id=self._packet_id))
 
     def register_token(self, max_packets: int = 10) -> str:
         self._publish_bytes(
@@ -193,7 +197,7 @@ class FbnsClient:
             ).encode(),
         )
         for _ in range(max_packets):
-            packet = decode_packet(self.transport.recv_packet())
+            packet = decode_packet(self._recv_packet())
             if packet.packet_type != "publish":
                 continue
             if packet.topic == FBNSTopics.REG_RESPONSE:
@@ -226,7 +230,7 @@ class FbnsClient:
         return self.client.private_request("push/register/", data, with_signature=False)
 
     def read_once(self) -> Any:
-        packet = decode_packet(self.transport.recv_packet())
+        packet = decode_packet(self._recv_packet())
         if packet.packet_type != "publish" or packet.topic is None:
             return packet
         payload = self.dispatch_packet(packet.topic, packet.payload)
@@ -236,9 +240,9 @@ class FbnsClient:
     def ping(self, max_packets: int = 5) -> bool:
         if not self.connected:
             raise RuntimeError("FBNS client is not connected")
-        self.transport.send(write_pingreq_packet())
+        self._send(write_pingreq_packet())
         for _ in range(max_packets):
-            packet = decode_packet(self.transport.recv_packet())
+            packet = decode_packet(self._recv_packet())
             if packet.packet_type == "pingresp":
                 return True
             if packet.packet_type != "publish" or packet.topic is None:
@@ -292,11 +296,25 @@ class FbnsClient:
 
     def _publish_bytes(self, topic: str, payload: bytes) -> None:
         self._packet_id += 1
-        self.transport.send(write_publish_packet(topic, compress_payload(payload), qos=1, packet_id=self._packet_id))
+        self._send(write_publish_packet(topic, compress_payload(payload), qos=1, packet_id=self._packet_id))
 
     def _ack(self, packet) -> None:
         if packet.qos == 1 and packet.packet_id is not None:
-            self.transport.send(b"\x40\x02" + packet.packet_id.to_bytes(2, "big"))
+            self._send(b"\x40\x02" + packet.packet_id.to_bytes(2, "big"))
+
+    def _send(self, packet: bytes) -> None:
+        try:
+            self.transport.send(packet)
+        except Exception:
+            self.connected = False
+            raise
+
+    def _recv_packet(self) -> bytes:
+        try:
+            return self.transport.recv_packet()
+        except Exception:
+            self.connected = False
+            raise
 
     def emit(self, event: str, payload: Any) -> None:
         for handler in self._handlers.get(event, []):
