@@ -1,5 +1,5 @@
 from instagrapi import types as ig_types
-from instagrapi.extractors import extract_user_short, extract_user_v1
+from instagrapi.extractors import extract_user_gql, extract_user_short, extract_user_v1
 from instagrapi.mixins.public import PUBLIC_WEB_APP_ID, PUBLIC_WEB_ASBD_ID
 from instagrapi.mixins.user import (
     MAX_USER_COUNT,
@@ -103,6 +103,40 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(user.public_email, "public@example.com")
         self.assertEqual(user.contact_phone_number, "+15551234567")
+
+    def test_extract_user_v1_preserves_threads_badge_fields(self):
+        payload = {
+            "pk": "123",
+            "username": "creator",
+            "full_name": "Creator",
+            "is_private": False,
+            "profile_pic_url": "https://example.com/pic.jpg",
+            "is_verified": False,
+            "media_count": 0,
+            "follower_count": 0,
+            "following_count": 0,
+            "is_business": False,
+            "show_text_post_app_badge": True,
+            "text_post_app_badge_label": "creator_threads",
+        }
+
+        user = extract_user_v1(payload)
+
+        self.assertTrue(user.show_text_post_app_badge)
+        self.assertEqual(user.text_post_app_badge_label, "creator_threads")
+
+    def test_extract_user_gql_preserves_threads_badge_fields(self):
+        payload = self.build_web_profile_user(
+            username="creator",
+            full_name="Creator",
+            show_text_post_app_badge=True,
+            text_post_app_badge_label="creator_threads",
+        )["data"]["user"]
+
+        user = extract_user_gql(payload)
+
+        self.assertTrue(user.show_text_post_app_badge)
+        self.assertEqual(user.text_post_app_badge_label, "creator_threads")
 
     def test_extract_user_short_preserves_follower_payload_fields(self):
         payload = {

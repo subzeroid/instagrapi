@@ -71,6 +71,8 @@ class User(TypesBaseModel):
     biography: Optional[str] = ""
     bio_links: List[BioLink] = []
     external_url: Optional[str] = None
+    show_text_post_app_badge: Optional[bool] = None
+    text_post_app_badge_label: Optional[str] = None
     account_type: Optional[int] = None
     is_business: bool
 
