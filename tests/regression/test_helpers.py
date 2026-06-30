@@ -65,6 +65,40 @@ class LiveAccountHelperRegressionTestCase(unittest.TestCase):
                 with self.assertRaises(helper_module.FreshAccountLoginTimeout):
                     helper_module.client_from_test_account(self._account_payload())
 
+    def test_client_from_test_account_reuses_authorized_session_settings(self):
+        account = self._account_payload()
+        account["client_settings"] = {
+            "authorization_data": {
+                "ds_user_id": "123",
+                "sessionid": "sessionid",
+                "should_use_header_over_cookies": True,
+            },
+        }
+        client = Mock()
+
+        def assert_user_id_set_before_login(**kwargs):
+            self.assertEqual(client._user_id, "123")
+            return True
+
+        client.login.side_effect = assert_user_id_set_before_login
+
+        with mock.patch.dict(helper_module.os.environ, {"IG_PROXY": ""}):
+            with mock.patch.object(helper_module, "Client", return_value=client):
+                result = helper_module.client_from_test_account(account)
+
+        self.assertIs(result, client)
+        client.login.assert_called_once_with(username="fresh.account", password="password", relogin=False)
+
+    def test_client_from_test_account_relogs_without_authorized_session_settings(self):
+        client = Mock()
+
+        with mock.patch.dict(helper_module.os.environ, {"IG_PROXY": ""}):
+            with mock.patch.object(helper_module, "Client", return_value=client):
+                result = helper_module.client_from_test_account(self._account_payload())
+
+        self.assertIs(result, client)
+        client.login.assert_called_once_with(username="fresh.account", password="password", relogin=True)
+
     def test_fresh_test_account_tries_next_account_after_login_timeout(self):
         accounts = [self._account_payload("first.account"), self._account_payload("second.account")]
         client = object()

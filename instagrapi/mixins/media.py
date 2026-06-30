@@ -787,6 +787,39 @@ class MediaMixin:
         )
         return result
 
+    def media_link_reel(self, media_id: str, target_media_id: str, link_name: str = "Watch Next") -> bool:
+        """
+        Link one Reel to another Reel.
+
+        Parameters
+        ----------
+        media_id: str
+            Origin media id that receives the linked Reel navigation button
+        target_media_id: str
+            Destination media id opened by the linked Reel navigation button
+        link_name: str, optional
+            Text shown by Instagram for the link, default value is "Watch Next"
+
+        Returns
+        -------
+        bool
+            A boolean value
+        """
+        assert self.user_id, "Login required"
+        media_id = self.media_id(media_id)
+        target_media_id = self.media_id(target_media_id)
+        data = {
+            "_uid": str(self.user_id),
+            "_uuid": self.uuid,
+            "linked_media_info": dumps({"media_id": target_media_id, "link_name": link_name}),
+        }
+        self._medias_cache.pop(self.media_pk(media_id), None)
+        result = self.private_request(
+            f"media/{media_id}/edit_media/",
+            self.with_action_data(data),
+        )
+        return result.get("status") == "ok"
+
     def media_user(self, media_pk: str) -> UserShort:
         """
         Get author of the media
