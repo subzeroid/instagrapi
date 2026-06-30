@@ -1629,6 +1629,11 @@
 <td>Edit caption, optional IGTV title, usertags, or location</td>
 </tr>
 <tr>
+<td>media_link_reel(media_id: str, target_media_id: str, link_name: str = "Watch Next")</td>
+<td>bool</td>
+<td>Link one Reel to another Reel so Instagram can show a navigation button</td>
+</tr>
+<tr>
 <td>media_user(media_pk: str)</td>
 <td>UserShort</td>
 <td>Get author of media</td>
@@ -2063,6 +2068,7 @@
 <li><code>media_pk_from_url()</code> now also resolves <code>share/p/...</code> URLs before extracting the canonical shortcode.</li>
 <li>Accepted Instagram Collabs/coauthor users from private media payloads are available as <code>media.coauthor_producers</code>. This is separate from upload-time <code>coauthor_user_ids</code>, which only sends collaborator invitations.</li>
 <li><code>media_edit()</code> uses <code>caption</code> and optional <code>location</code>/<code>usertags</code>; for IGTV posts it can also derive or send a separate <code>title</code>.</li>
+<li><code>media_link_reel()</code> uses Instagram's private <code>media/{media_id}/edit_media/</code> endpoint. Pass full media IDs when you have them; plain media PKs are normalized with <code>media_id()</code> before the request.</li>
 </ul>
 <p>Extended <code>Media</code> metadata fields:</p>
 <table>
