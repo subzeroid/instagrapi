@@ -114,6 +114,37 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
             if media:
                 self.cl.media_delete(media.id)
 
+    def test_media_link_and_unlink_reel(self):
+        origin_path = self.make_video_fixture(label="linked Reel origin fixture", color="blue")
+        target_path = self.make_video_fixture(label="linked Reel target fixture", color="red")
+        self.assertIsInstance(origin_path, Path)
+        self.assertIsInstance(target_path, Path)
+        origin = None
+        target = None
+        try:
+            timestamp = int(time.time())
+            target = self.cl.clip_upload(target_path, f"Linked Reel target {timestamp}")
+            self.assertUploadedMediaAccessible(
+                target,
+                media_type=2,
+                product_type="clips",
+                caption_text=f"Linked Reel target {timestamp}",
+            )
+            origin = self.cl.clip_upload(origin_path, f"Linked Reel origin {timestamp}")
+            self.assertUploadedMediaAccessible(
+                origin,
+                media_type=2,
+                product_type="clips",
+                caption_text=f"Linked Reel origin {timestamp}",
+            )
+
+            self.assertTrue(self.cl.media_link_reel(origin.id, target.id, link_name="Watch Next"))
+            self.assertTrue(self.cl.media_unlink_reel(origin.id))
+        finally:
+            for media in (origin, target):
+                if media:
+                    self.cl.media_delete(media.id)
+
     def test_media_edit_igtv(self):
         path = self.make_video_fixture(label="IGTV edit fixture", duration=61)
         self.assertIsInstance(path, Path)
