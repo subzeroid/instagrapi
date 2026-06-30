@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import shutil
 import time
 from pathlib import Path
@@ -31,12 +32,15 @@ from instagrapi.utils.logging import truncate_log_text
 from instagrapi.utils.timing import random_delay
 
 PublicTransport = Literal["requests", "curl"]
+PUBLIC_WEB_APP_ID = "936619743392459"
+PUBLIC_WEB_ASBD_ID = "129477"
 
 
 class PublicRequestMixin:
     public_requests_count = 0
     PUBLIC_API_URL = "https://www.instagram.com/"
     GRAPHQL_PUBLIC_API_URL = "https://www.instagram.com/graphql/query/"
+    GRAPHQL_PUBLIC_WEB_API_URL = "https://www.instagram.com/api/graphql"
     last_public_response = None
     last_public_json = {}
     public_request_logger = logging.getLogger("public_request")
@@ -450,15 +454,27 @@ class PublicRequestMixin:
                 pass
             raise ClientGraphqlError("Error: '{}'. Message: '{}'".format(e, message), response=e.response)
 
+    @staticmethod
+    def _extract_public_lsd_token(html: str) -> Optional[str]:
+        if not html:
+            return None
+        match = re.search(r'\["LSD",\[\],\{"token":"([^"]+)"\}', html)
+        if match:
+            return match.group(1)
+        match = re.search(r'"LSD",\[\],\{"token":"([^"]+)"', html)
+        return match.group(1) if match else None
+
     def public_doc_id_graphql_request(
         self,
         doc_id: str,
         variables: Dict[str, Any],
         referer: Optional[str] = None,
         headers: Optional[Dict[str, str]] = None,
+        url: Optional[str] = None,
+        include_lsd: bool = False,
     ) -> Dict[str, Any]:
         """
-        POST a doc_id-based GraphQL query to www.instagram.com/graphql/query/.
+        POST a doc_id-based GraphQL query to Instagram's public web endpoints.
 
         Newer Instagram web GraphQL endpoints use ``doc_id`` instead of the
         legacy ``query_hash`` / ``query_id`` scheme. Returns the parsed
@@ -472,28 +488,48 @@ class PublicRequestMixin:
         inject_sessionid = getattr(self, "inject_sessionid_to_public", None)
         if inject_sessionid:
             inject_sessionid()
+        query_url = url or self.GRAPHQL_PUBLIC_API_URL
+        referer_url = referer or "https://www.instagram.com/"
+        lsd = None
+        if include_lsd:
+            html = self.public_request(referer_url, return_json=False)
+            lsd = self._extract_public_lsd_token(html)
+            if lsd:
+                data["lsd"] = lsd
         merged_headers = {
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate",
             "Accept-Language": "en-US,en;q=0.8",
-            "Referer": referer or "https://www.instagram.com/",
+            "Referer": referer_url,
             "User-Agent": (
                 "Instagram 273.0.0.16.70 (iPhone15,2; iOS 17_5_1; en_US; en-US; scale=3.00; 1290x2796; 470085518)"
             ),
         }
+        if include_lsd:
+            merged_headers.update(
+                {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Origin": "https://www.instagram.com",
+                    "User-Agent": self.public_user_agent,
+                    "X-ASBD-ID": PUBLIC_WEB_ASBD_ID,
+                    "X-IG-App-ID": PUBLIC_WEB_APP_ID,
+                }
+            )
+            if lsd:
+                merged_headers["X-FB-LSD"] = lsd
         csrftoken = self.public.cookies.get("csrftoken")
         if csrftoken:
             merged_headers["X-CSRFToken"] = csrftoken
         if headers:
             merged_headers.update(headers)
         body_json = self.public_request(
-            self.GRAPHQL_PUBLIC_API_URL,
+            query_url,
             data=data,
             headers=merged_headers,
             update_headers=False,
             return_json=True,
         )
-        if "data" not in body_json:
+        if body_json.get("data") is None:
             errors = body_json.get("errors") or []
             summary = errors[0].get("summary") if errors else None
             description = errors[0].get("description") if errors else None

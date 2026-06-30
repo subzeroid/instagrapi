@@ -24,6 +24,7 @@ from instagrapi.extractors import (
     extract_user_short,
     extract_user_v1,
 )
+from instagrapi.mixins.public import PUBLIC_WEB_APP_ID, PUBLIC_WEB_ASBD_ID
 from instagrapi.types import About, AddressBookContact, Guide, Relationship, RelationshipShort, User, UserShort
 from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps, json_value
@@ -241,7 +242,7 @@ class UserMixin:
             "X-Requested-With": "XMLHttpRequest",
             "Sec-Ch-Prefers-Color-Scheme": "dark",
             "Sec-Ch-Ua-Platform": '"Linux"',
-            "X-Ig-App-Id": "936619743392459",
+            "X-Ig-App-Id": PUBLIC_WEB_APP_ID,
             "Sec-Ch-Ua-Model": '""',
             "Sec-Ch-Ua-Mobile": "?0",
             "User-Agent": (
@@ -250,7 +251,7 @@ class UserMixin:
                 "Chrome/122.0.6261.112 Safari/537.36"
             ),
             "Accept": "*/*",
-            "X-Asbd-Id": "129477",
+            "X-Asbd-Id": PUBLIC_WEB_ASBD_ID,
             "Sec-Fetch-Site": "same-origin",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Dest": "empty",

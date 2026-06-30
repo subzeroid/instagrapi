@@ -1,5 +1,5 @@
 from instagrapi.exceptions import ClientForbiddenError, ClientLoginRequired, ClientNotFoundError
-from instagrapi.mixins.public import JSONDecodeError as PublicJSONDecodeError
+from instagrapi.mixins import public as public_mixin
 from tests.helpers import *
 
 
@@ -70,6 +70,42 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertFalse(kwargs["update_headers"])
         self.assertTrue(kwargs["return_json"])
 
+    def test_public_doc_id_graphql_request_posts_web_api_with_lsd(self):
+        client = Client()
+        client.public.cookies.set("csrftoken", "csrf-token")
+        html = '<html><script>["LSD",[],{"token":"lsd-token"}]</script></html>'
+
+        with mock.patch.object(
+            client,
+            "public_request",
+            side_effect=[html, {"data": {"ok": True}}],
+        ) as public_request:
+            data = client.public_doc_id_graphql_request(
+                "27128499623469141",
+                {"shortcode": "DaHEdwgogl4"},
+                referer="https://www.instagram.com/p/DaHEdwgogl4/",
+                url=client.GRAPHQL_PUBLIC_WEB_API_URL,
+                include_lsd=True,
+                headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
+            )
+
+        self.assertEqual(data, {"ok": True})
+        bootstrap_call, query_call = public_request.call_args_list
+        self.assertEqual(bootstrap_call.args[0], "https://www.instagram.com/p/DaHEdwgogl4/")
+        self.assertFalse(bootstrap_call.kwargs["return_json"])
+        self.assertEqual(query_call.args[0], client.GRAPHQL_PUBLIC_WEB_API_URL)
+        kwargs = query_call.kwargs
+        self.assertEqual(kwargs["data"]["doc_id"], "27128499623469141")
+        self.assertEqual(kwargs["data"]["variables"], '{"shortcode":"DaHEdwgogl4"}')
+        self.assertEqual(kwargs["data"]["lsd"], "lsd-token")
+        self.assertEqual(kwargs["headers"]["X-FB-LSD"], "lsd-token")
+        self.assertEqual(kwargs["headers"]["X-CSRFToken"], "csrf-token")
+        self.assertEqual(kwargs["headers"]["X-FB-Friendly-Name"], "PolarisPostRootQuery")
+        self.assertEqual(kwargs["headers"]["X-ASBD-ID"], public_mixin.PUBLIC_WEB_ASBD_ID)
+        self.assertEqual(kwargs["headers"]["X-IG-App-ID"], public_mixin.PUBLIC_WEB_APP_ID)
+        self.assertFalse(kwargs["update_headers"])
+        self.assertTrue(kwargs["return_json"])
+
     def test_public_request_maps_challenge_redirect_html_to_login_required(self):
         client = Client()
         client.request_timeout = 0
@@ -81,7 +117,7 @@ class PublicRegressionTestCase(unittest.TestCase):
         response.url = "https://www.instagram.com/challenge/?next=/graphql/query/"
         response.text = '<!DOCTYPE html><html lang="en" class="no-js logged-in client-root"></html>'
         response.raise_for_status.return_value = None
-        response.json.side_effect = PublicJSONDecodeError("bad", response.text, 0)
+        response.json.side_effect = public_mixin.JSONDecodeError("bad", response.text, 0)
 
         with mock.patch.object(client.public, "get", return_value=response):
             with self.assertRaises(ClientLoginRequired):
@@ -109,6 +145,29 @@ class PublicRegressionTestCase(unittest.TestCase):
 
         self.assertIn("Missing 'data' in GraphQL response", str(cm.exception))
         self.assertIn("Incorrect Query", str(cm.exception))
+
+    def test_public_doc_id_graphql_request_raises_when_data_is_null(self):
+        client = Client()
+        body = {
+            "data": None,
+            "errors": [
+                {
+                    "summary": "Login required",
+                    "description": "Anonymous GraphQL access is blocked.",
+                }
+            ],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "public_request", return_value=body):
+            with self.assertRaises(ClientGraphqlError) as cm:
+                client.public_doc_id_graphql_request(
+                    "8845758582119845",
+                    {"shortcode": "DaHEdwgogl4"},
+                )
+
+        self.assertIn("Missing 'data' in doc_id GraphQL response", str(cm.exception))
+        self.assertIn("Login required", str(cm.exception))
 
     def test_user_stories_anonymous_does_not_fallback_to_private(self):
         client = Client()
@@ -214,9 +273,15 @@ class PublicRegressionTestCase(unittest.TestCase):
                 media = client.media_info_gql("2110901750722920960")
 
         doc_id_request.assert_called_once_with(
-            "8845758582119845",
-            {"shortcode": "B1LbfVPlwIA"},
+            "27128499623469141",
+            {
+                "shortcode": "B1LbfVPlwIA",
+                "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+            },
             referer="https://www.instagram.com/p/B1LbfVPlwIA/",
+            url=client.GRAPHQL_PUBLIC_WEB_API_URL,
+            include_lsd=True,
+            headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
         )
         self.assertEqual(media.media_type, 2)
         self.assertEqual(media.comment_count, 3)
@@ -237,6 +302,85 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(media.dash_info.number_of_qualities, 0)
         self.assertEqual(media.clips_music_attribution_info.artist_name, "example")
         self.assertTrue(media.clips_music_attribution_info.uses_original_audio)
+
+    def test_media_info_gql_extracts_current_web_info_payload(self):
+        client = Client()
+        media_payload = {
+            "pk": "3929128837042014584",
+            "id": "3929128837042014584_1713591624",
+            "code": "DaHEdwgogl4",
+            "taken_at": 1782608696,
+            "media_type": 2,
+            "product_type": "clips",
+            "user": {
+                "id": "1713591624",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+                "is_private": False,
+            },
+            "image_versions2": {
+                "candidates": [
+                    {
+                        "url": "https://example.com/thumbnail.jpg",
+                        "width": 720,
+                        "height": 1280,
+                    }
+                ]
+            },
+            "video_versions": [
+                {
+                    "url": "https://example.com/video.mp4",
+                    "width": 720,
+                    "height": 1280,
+                    "type": 101,
+                }
+            ],
+            "caption": {"text": "#suomi"},
+            "comment_count": 1114,
+            "like_count": 113000,
+            "view_count": 200000,
+            "play_count": 210000,
+            "has_liked": False,
+            "has_viewer_saved": True,
+        }
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=ClientUnauthorizedError("401", response=Mock(status_code=401)),
+        ):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={"xdt_api__v1__media__shortcode__web_info": {"items": [media_payload]}},
+            ) as doc_id_request:
+                media = client.media_info_gql("3929128837042014584")
+
+        doc_id_request.assert_called_once_with(
+            "27128499623469141",
+            {
+                "shortcode": "DaHEdwgogl4",
+                "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+            },
+            referer="https://www.instagram.com/p/DaHEdwgogl4/",
+            url=client.GRAPHQL_PUBLIC_WEB_API_URL,
+            include_lsd=True,
+            headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
+        )
+        self.assertEqual(media.pk, "3929128837042014584")
+        self.assertEqual(media.id, "3929128837042014584_1713591624")
+        self.assertEqual(media.code, "DaHEdwgogl4")
+        self.assertEqual(media.media_type, 2)
+        self.assertEqual(media.product_type, "clips")
+        self.assertEqual(media.user.pk, "1713591624")
+        self.assertEqual(str(media.thumbnail_url), "https://example.com/thumbnail.jpg")
+        self.assertEqual(str(media.video_url), "https://example.com/video.mp4")
+        self.assertEqual(media.caption_text, "#suomi")
+        self.assertEqual(media.comment_count, 1114)
+        self.assertEqual(media.like_count, 113000)
+        self.assertEqual(media.view_count, 200000)
+        self.assertEqual(media.play_count, 210000)
+        self.assertFalse(media.has_liked)
 
     def test_media_info_gql_normalizes_xdt_sidecar_children(self):
         client = Client()

@@ -1,5 +1,6 @@
 from instagrapi import types as ig_types
 from instagrapi.extractors import extract_user_short, extract_user_v1
+from instagrapi.mixins.public import PUBLIC_WEB_APP_ID, PUBLIC_WEB_ASBD_ID
 from instagrapi.mixins.user import (
     MAX_USER_COUNT,
     USER_INFO_BY_USERNAME_V2_DOC_ID,
@@ -237,6 +238,8 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(len(client.public_request_calls), 1)
         self.assertEqual(client.public_request_calls[0]["kwargs"], {})
         self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
+        self.assertEqual(client.public_request_calls[0]["headers"]["X-Asbd-Id"], PUBLIC_WEB_ASBD_ID)
+        self.assertEqual(client.public_request_calls[0]["headers"]["X-Ig-App-Id"], PUBLIC_WEB_APP_ID)
 
     def test_user_info_by_username_gql_normalizes_username(self):
         class DummyClient(UserMixin):
