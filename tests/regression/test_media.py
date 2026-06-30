@@ -910,6 +910,63 @@ class MediaActionPayloadRegressionTestCase(unittest.TestCase):
             with_signature=False,
         )
 
+    def test_media_link_reel_posts_linked_media_info(self):
+        client = self._build_logged_in_client()
+        client._medias_cache = {"111": object()}
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.media_link_reel("111_222", "333_444", link_name="Watch Part 1")
+
+        self.assertTrue(result)
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/111_222/edit_media/")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["_uuid"], "uuid")
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["radio_type"], "wifi-none")
+        self.assertEqual(
+            json.loads(data["linked_media_info"]),
+            {"media_id": "333_444", "link_name": "Watch Part 1"},
+        )
+        self.assertNotIn("111", client._medias_cache)
+
+    def test_media_link_reel_normalizes_origin_and_target_media_ids(self):
+        client = self._build_logged_in_client()
+
+        with (
+            mock.patch.object(
+                client,
+                "media_user",
+                side_effect=[
+                    UserShort(pk="222", username="origin", profile_pic_url="https://example.com/origin.jpg"),
+                    UserShort(pk="444", username="target", profile_pic_url="https://example.com/target.jpg"),
+                ],
+            ),
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request,
+        ):
+            self.assertTrue(client.media_link_reel("111", "333"))
+
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/111_222/edit_media/")
+        self.assertEqual(json.loads(data["linked_media_info"])["media_id"], "333_444")
+
+    def test_media_unlink_reel_posts_empty_linked_media_info(self):
+        client = self._build_logged_in_client()
+        client._medias_cache = {"111": object()}
+
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            result = client.media_unlink_reel("111_222")
+
+        self.assertTrue(result)
+        endpoint, data = private_request.call_args.args
+        self.assertEqual(endpoint, "media/111_222/edit_media/")
+        self.assertEqual(data["_uid"], "1")
+        self.assertEqual(data["_uuid"], "uuid")
+        self.assertEqual(data["device_id"], "android-device")
+        self.assertEqual(data["radio_type"], "wifi-none")
+        self.assertEqual(data["linked_media_info"], "")
+        self.assertNotIn("111", client._medias_cache)
+
 
 class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
     def _media_v1_payload(self, pk="1"):
