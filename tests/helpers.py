@@ -211,11 +211,16 @@ def build_test_accounts_url(count=None):
 def client_from_test_account(acc):
     settings = dict(acc["client_settings"])
     totp_seed = settings.pop("totp_seed", None)
+    authorization_data = settings.get("authorization_data") or {}
+    account_user_id = acc.get("user_id") or authorization_data.get("ds_user_id")
+    has_authorized_session = bool(authorization_data)
     cl = Client(settings=settings, proxy=os.getenv("IG_PROXY") or acc["proxy"])
+    if has_authorized_session and account_user_id:
+        cl._user_id = str(account_user_id)
     login_kwargs = {
         "username": acc["username"],
         "password": acc["password"],
-        "relogin": True,
+        "relogin": not has_authorized_session,
     }
     if totp_seed:
         totp_code = cl.totp_generate_code(totp_seed)
@@ -224,7 +229,7 @@ def client_from_test_account(acc):
         login_kwargs["verification_code"] = totp_code
     with fresh_account_login_timeout():
         cl.login(**login_kwargs)
-    cl._user_id = acc.get("user_id")
+    cl._user_id = account_user_id
     return cl
 
 
