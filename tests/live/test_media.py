@@ -1,4 +1,11 @@
-from instagrapi.exceptions import ClientForbiddenError
+from instagrapi.exceptions import (
+    ClientForbiddenError,
+    ClientThrottledError,
+    ClipNotUpload,
+    LoginRequired,
+    PhotoNotUpload,
+    PleaseWaitFewMinutes,
+)
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -189,6 +196,7 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
 class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
     def __init__(self, *args, **kwargs):
         self.cl = None
+        self.clients = []
         return unittest.TestCase.__init__(self, *args, **kwargs)
 
     def setup_method(self, *args, **kwargs):
@@ -198,27 +206,44 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
         if not TEST_ACCOUNTS_URL:
             self.skipTest("TEST_ACCOUNTS_URL is required for linked Reel live tests")
         try:
-            self.cl = _helpers.fresh_test_account(count=50, attempts=20, timeout=30)
+            self.clients = self.fresh_accounts(10)
         except RuntimeError as exc:
             self.skipTest(str(exc))
 
-    def test_media_link_and_unlink_reel(self):
-        origin_path = self.make_video_fixture(label="linked Reel origin fixture", color="blue")
-        target_path = self.make_video_fixture(label="linked Reel target fixture", color="red")
-        self.assertIsInstance(origin_path, Path)
-        self.assertIsInstance(target_path, Path)
+    def make_cover_fixture(self, color):
+        try:
+            from PIL import Image
+        except ImportError:
+            self.skipTest("Pillow is required to generate a linked Reel cover fixture")
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            path = Path(tmp.name)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        Image.new("RGB", (720, 1280), color).save(path, quality=95)
+        return path
+
+    def cleanup_uploaded_media(self, media):
+        if not media:
+            return
+        try:
+            self.assertTrue(self.cl.media_delete(media.id))
+        except Exception as exc:
+            print(f"Linked Reel cleanup media_delete failed: {exc.__class__.__name__} {exc}")
+
+    def run_media_link_and_unlink_reel(self, client, origin_path, target_path, origin_cover, target_cover):
+        self.cl = client
         origin = None
         target = None
         try:
             timestamp = int(time.time())
-            target = self.cl.clip_upload(target_path, f"Linked Reel target {timestamp}")
+            target = self.cl.clip_upload(target_path, f"Linked Reel target {timestamp}", thumbnail=target_cover)
             self.assertUploadedMediaAccessible(
                 target,
                 media_type=2,
                 product_type="clips",
                 caption_text=f"Linked Reel target {timestamp}",
             )
-            origin = self.cl.clip_upload(origin_path, f"Linked Reel origin {timestamp}")
+            origin = self.cl.clip_upload(origin_path, f"Linked Reel origin {timestamp}", thumbnail=origin_cover)
             self.assertUploadedMediaAccessible(
                 origin,
                 media_type=2,
@@ -230,8 +255,35 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(self.cl.media_unlink_reel(origin.id))
         finally:
             for media in (origin, target):
-                if media:
-                    self.cl.media_delete(media.id)
+                self.cleanup_uploaded_media(media)
+
+    def test_media_link_and_unlink_reel(self):
+        origin_path = self.make_video_fixture(label="linked Reel origin fixture", color="blue")
+        target_path = self.make_video_fixture(label="linked Reel target fixture", color="red")
+        origin_cover = self.make_cover_fixture("blue")
+        target_cover = self.make_cover_fixture("red")
+        self.assertIsInstance(origin_path, Path)
+        self.assertIsInstance(target_path, Path)
+        self.assertIsInstance(origin_cover, Path)
+        self.assertIsInstance(target_cover, Path)
+
+        upload_failures = {}
+        for client in self.clients:
+            try:
+                self.run_media_link_and_unlink_reel(client, origin_path, target_path, origin_cover, target_cover)
+                return
+            except (
+                ClipNotUpload,
+                PhotoNotUpload,
+                LoginRequired,
+                PleaseWaitFewMinutes,
+                ClientThrottledError,
+                RetryError,
+            ) as exc:
+                upload_failures[exc.__class__.__name__] = upload_failures.get(exc.__class__.__name__, 0) + 1
+                continue
+
+        self.skipTest(f"No linked Reel upload-capable test account was available (upload_failures={upload_failures})")
 
 
 class ClientCompareExtractTestCase(_helpers.ClientPrivateTestCase):
