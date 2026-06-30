@@ -55,7 +55,7 @@ def _normalize_media_gql_typename(data):
 def extract_media_v1(data):
     """Extract media from Private API"""
     media = deepcopy(data)
-    if "video_versions" in media:
+    if media.get("video_versions"):
         # Select Best Quality by Resolutiuon
         media["video_url"] = sorted(media["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if media["media_type"] == 2 and not media.get("product_type"):
@@ -222,7 +222,7 @@ def extract_media_inline_comment_gql(data, replied_to_comment_id=None):
 
 def extract_resource_v1(data):
     data = deepcopy(data)
-    if "video_versions" in data:
+    if data.get("video_versions"):
         data["video_url"] = sorted(data["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     candidates = data.get("image_versions2", {}).get("candidates", [])
     data["thumbnail_url"] = (
@@ -550,7 +550,7 @@ def extract_direct_message(data):
 
 def extract_direct_media(data):
     media = deepcopy(data)
-    if "video_versions" in media:
+    if media.get("video_versions"):
         # Select Best Quality by Resolutiuon
         media["video_url"] = sorted(media["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if "image_versions2" in media:
@@ -587,7 +587,7 @@ def extract_story_v1(data):
     """Extract story from Private API"""
     story = deepcopy(data)
     story["pk"] = str(story.get("pk"))
-    if "video_versions" in story:
+    if story.get("video_versions"):
         # Select Best Quality by Resolutiuon
         story["video_url"] = sorted(story["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
     if story["media_type"] == 2 and not story.get("product_type"):
