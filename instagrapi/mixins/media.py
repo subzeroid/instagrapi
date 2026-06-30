@@ -839,7 +839,7 @@ class MediaMixin:
         data = {
             "_uid": str(self.user_id),
             "_uuid": self.uuid,
-            "linked_media_info": "",
+            "linked_media_info": dumps({}),
         }
         self._medias_cache.pop(self.media_pk(media_id), None)
         result = self.private_request(
