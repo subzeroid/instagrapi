@@ -1,4 +1,9 @@
-from instagrapi.exceptions import ClientForbiddenError, ClientLoginRequired, ClientNotFoundError
+from instagrapi.exceptions import (
+    ClientForbiddenError,
+    ClientLoginRequired,
+    ClientNotFoundError,
+    ClientUnauthorizedError,
+)
 from instagrapi.mixins import public as public_mixin
 from tests.helpers import *
 
@@ -381,6 +386,75 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertEqual(media.view_count, 200000)
         self.assertEqual(media.play_count, 210000)
         self.assertFalse(media.has_liked)
+
+    def test_media_info_handles_web_info_payload_with_null_video_versions(self):
+        client = Client()
+        user = {
+            "id": "1713591624",
+            "username": "example",
+            "profile_pic_url": "https://example.com/profile.jpg",
+            "is_private": False,
+        }
+        media_payload = {
+            "pk": "3908029358833535861",
+            "id": "3908029358833535861_1713591624",
+            "code": "DY8G_8JEgt1",
+            "taken_at": 1782608696,
+            "media_type": 8,
+            "user": user,
+            "image_versions2": {
+                "candidates": [
+                    {
+                        "url": "https://example.com/thumbnail.jpg",
+                        "width": 720,
+                        "height": 1280,
+                    }
+                ]
+            },
+            "video_versions": None,
+            "carousel_media": [
+                {
+                    "pk": "3908029358833535862",
+                    "id": "3908029358833535862_1713591624",
+                    "media_type": 1,
+                    "image_versions2": {
+                        "candidates": [
+                            {
+                                "url": "https://example.com/child.jpg",
+                                "width": 720,
+                                "height": 1280,
+                            }
+                        ]
+                    },
+                    "video_versions": None,
+                }
+            ],
+            "caption": {"text": "sidecar"},
+            "comment_count": 0,
+            "like_count": -1,
+            "has_liked": False,
+        }
+
+        with mock.patch.object(
+            client,
+            "public_graphql_request",
+            side_effect=ClientUnauthorizedError("401", response=Mock(status_code=401)),
+        ):
+            with mock.patch.object(
+                client,
+                "public_doc_id_graphql_request",
+                return_value={"xdt_api__v1__media__shortcode__web_info": {"items": [media_payload]}},
+            ):
+                with mock.patch.object(client, "media_info_v1", side_effect=AssertionError("private fallback")):
+                    media = client.media_info("3908029358833535861")
+
+        self.assertEqual(media.pk, "3908029358833535861")
+        self.assertEqual(media.code, "DY8G_8JEgt1")
+        self.assertEqual(media.media_type, 8)
+        self.assertIsNone(media.video_url)
+        self.assertEqual(len(media.resources), 1)
+        self.assertEqual(media.resources[0].media_type, 1)
+        self.assertIsNone(media.resources[0].video_url)
 
     def test_media_info_gql_normalizes_xdt_sidecar_children(self):
         client = Client()
