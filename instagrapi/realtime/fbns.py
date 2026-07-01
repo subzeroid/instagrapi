@@ -312,6 +312,8 @@ class FbnsClient:
     def _recv_packet(self) -> bytes:
         try:
             return self.transport.recv_packet()
+        except TimeoutError:
+            raise
         except Exception:
             self.connected = False
             raise

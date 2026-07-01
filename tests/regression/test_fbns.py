@@ -257,6 +257,23 @@ def test_fbns_read_once_marks_client_disconnected_when_socket_closes():
     assert not fbns.connected
 
 
+def test_fbns_read_once_keeps_client_connected_on_socket_timeout():
+    client = _build_logged_in_client()
+    transport = mock.Mock()
+    transport.recv_packet.side_effect = TimeoutError("timed out")
+    fbns = FbnsClient(client, transport=transport)
+    fbns.connected = True
+
+    try:
+        fbns.read_once()
+    except TimeoutError:
+        pass
+    else:
+        raise AssertionError("read_once should raise when the transport read times out")
+
+    assert fbns.connected
+
+
 def test_fbns_disconnect_clears_client_state_after_broken_socket():
     client = _build_logged_in_client()
     transport = mock.Mock()
