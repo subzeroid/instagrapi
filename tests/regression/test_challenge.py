@@ -15,6 +15,21 @@ class ChallengeRegressionTestCase(unittest.TestCase):
         self.assertIn("challenge_code_handler", str(error))
         self.assertIn("saved client settings", str(error))
 
+    def test_challenge_required_native_flow_message_explains_manual_checkpoint(self):
+        error = ChallengeRequired(
+            message="challenge_required",
+            challenge={
+                "api_path": "/challenge/opaque-user/opaque-nonce/",
+                "native_flow": True,
+                "challenge_context": "opaque-context",
+            },
+            status="fail",
+        )
+
+        self.assertIn("native challenge flow", str(error))
+        self.assertIn("Manual verification", str(error))
+        self.assertIn("challenge_code_handler", str(error))
+
     def test_challenge_required_auth_platform_message_explains_manual_flow(self):
         error = ChallengeRequired(
             message="challenge_required",
@@ -72,6 +87,27 @@ class ChallengeRegressionTestCase(unittest.TestCase):
             client.challenge_resolve(last_json)
 
         self.assertIn("Manual verification required", str(cm.exception))
+
+    def test_native_flow_opaque_challenge_fails_fast_before_legacy_resolve(self):
+        client = Client()
+        last_json = {
+            "message": "challenge_required",
+            "challenge": {
+                "api_path": "/challenge/opaque-user/opaque-nonce/",
+                "native_flow": True,
+                "challenge_context": "opaque-context",
+            },
+            "status": "fail",
+        }
+        client._send_private_request = Mock()
+        client.challenge_resolve_simple = Mock(return_value=True)
+
+        with self.assertRaises(ChallengeRequired) as cm:
+            client.challenge_resolve(last_json)
+
+        self.assertIn("native challenge flow", str(cm.exception))
+        client._send_private_request.assert_not_called()
+        client.challenge_resolve_simple.assert_not_called()
 
     def test_challenge_resolve_simple_fails_fast_when_handler_has_no_code(self):
         client = Client()
