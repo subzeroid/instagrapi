@@ -140,6 +140,8 @@ class ChallengeRequired(ChallengeError):
         api_path = cls._challenge_api_path(data)
         step_name = data.get("step_name")
         bloks_action = data.get("bloks_action")
+        challenge = data.get("challenge")
+        native_flow = isinstance(challenge, dict) and bool(challenge.get("native_flow"))
 
         if api_path.startswith("/auth_platform/") or api_path.startswith("auth_platform/"):
             return (
@@ -154,6 +156,13 @@ class ChallengeRequired(ChallengeError):
                 "Confirm the login in the official Instagram app or web flow on a trusted device. "
                 "If you keep the same client instance alive, call challenge_bloks_redirect_dismiss() after approval; "
                 "otherwise retry with the same saved client settings, device identifiers, and proxy/IP."
+            )
+        if native_flow and api_path.startswith(("/challenge/", "/api/challenge/", "/api/v1/challenge/")):
+            return (
+                "Manual verification required via Instagram native challenge flow. "
+                "This checkpoint is not handled by challenge_code_handler or change_password_handler; "
+                "complete it in the official Instagram app or web flow on a trusted device. "
+                "Retry with the same saved client settings, device identifiers, and proxy/IP."
             )
         if api_path.startswith(("/challenge/", "/api/challenge/", "/api/v1/challenge/")):
             return (

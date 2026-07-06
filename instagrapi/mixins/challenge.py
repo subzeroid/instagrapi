@@ -155,6 +155,16 @@ class ChallengeResolveMixin:
                 "This challenge is not yet supported automatically."
             )
             raise ChallengeRequired(**last_json)
+        if last_json.get("challenge", {}).get("native_flow") and challenge_url.startswith("/challenge/"):
+            error_context = dict(last_json)
+            error_context["message"] = "challenge_required"
+            raise ChallengeRequired(
+                "Manual verification required via Instagram native challenge flow. "
+                "This checkpoint is not handled by challenge_code_handler or change_password_handler; "
+                "complete it in the official Instagram app or web flow on a trusted device. "
+                "Retry with the same saved client settings, device identifiers, and proxy/IP.",
+                **error_context,
+            )
         try:
             user_id, nonce_code = challenge_url.split("/")[2:4]
             challenge_context = last_json.get("challenge", {}).get("challenge_context")
