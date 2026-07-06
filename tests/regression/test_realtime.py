@@ -1,4 +1,6 @@
 import json
+import socket
+import threading
 import zlib
 from unittest import mock
 
@@ -115,6 +117,59 @@ def test_realtime_client_default_transport_uses_client_proxy():
 
     assert isinstance(realtime.transport, SocketMQTToTTransport)
     assert realtime.transport.proxy == "socks5://127.0.0.1:8888"
+
+
+def test_transport_disconnect_shuts_down_socket_to_unblock_active_recv():
+    class BlockingRecvSocket:
+        def __init__(self):
+            self.recv_started = threading.Event()
+            self.unblocked = threading.Event()
+            self.shutdown_calls = []
+            self.closed = False
+
+        def recv(self, size):
+            self.recv_started.set()
+            self.unblocked.wait(timeout=1)
+            return b""
+
+        def shutdown(self, how):
+            self.shutdown_calls.append(how)
+            self.unblocked.set()
+
+        def close(self):
+            self.closed = True
+
+    transport = SocketMQTToTTransport("example.com")
+    fake_socket = BlockingRecvSocket()
+    transport.sock = fake_socket
+    read_errors = []
+
+    def read_packet():
+        try:
+            transport.recv_packet()
+        except ConnectionError as exc:
+            read_errors.append(exc)
+
+    read_thread = threading.Thread(
+        target=read_packet,
+        daemon=True,
+    )
+    read_thread.start()
+    assert fake_socket.recv_started.wait(timeout=0.2)
+
+    try:
+        transport.disconnect()
+        read_thread.join(timeout=0.2)
+
+        assert not read_thread.is_alive()
+    finally:
+        fake_socket.unblocked.set()
+        read_thread.join(timeout=1)
+
+    assert fake_socket.shutdown_calls == [socket.SHUT_RDWR]
+    assert fake_socket.closed
+    assert transport.sock is None
+    assert len(read_errors) == 1
 
 
 def test_client_exposes_stateful_realtime_helpers():

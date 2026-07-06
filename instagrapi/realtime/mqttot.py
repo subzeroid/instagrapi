@@ -304,6 +304,10 @@ class SocketMQTToTTransport:
         if self.sock is None:
             return
         try:
+            try:
+                self.sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
             self.sock.close()
         finally:
             self.sock = None
