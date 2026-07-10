@@ -36,6 +36,7 @@ from instagrapi.mixins.public import (
     PublicRequestMixin,
     TopSearchesPublicMixin,
 )
+from instagrapi.mixins.quicksnap import QuickSnapMixin
 from instagrapi.mixins.realtime import RealtimeMixin
 from instagrapi.mixins.share import ShareMixin
 from instagrapi.mixins.signup import SignUpMixin
@@ -94,6 +95,7 @@ class Client(
     TOTPMixin,
     MultipleAccountsMixin,
     NoteMixin,
+    QuickSnapMixin,
     FundraiserMixin,
     RealtimeMixin,
 ):
