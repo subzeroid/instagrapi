@@ -227,6 +227,41 @@ class SignupHelperRegressionTestCase(unittest.TestCase):
                         day=9,
                     )
 
+    def test_signup_accepts_age_eligibility_to_register_response(self):
+        client = Client()
+        client.wait_seconds = 0
+        client.challenge_code_handler = mock.Mock(return_value="123456")
+        client.get_signup_config = mock.Mock(return_value={"status": "ok"})
+        client.check_email = mock.Mock(return_value={"valid": True, "available": True})
+        client.send_verify_email = mock.Mock(return_value={"email_sent": True})
+        client.check_age_eligibility = mock.Mock(return_value={"eligible_to_register": True})
+        client.check_confirmation_code = mock.Mock(return_value={"signup_code": "signup-code"})
+        client.accounts_create = mock.Mock(
+            return_value={
+                "created_user": {
+                    "pk": "123",
+                    "username": "example",
+                    "full_name": "Example User",
+                    "profile_pic_url": "https://example.com/avatar.jpg",
+                }
+            }
+        )
+
+        user = client.signup(
+            username="example",
+            password="password",
+            email="addr@example.com",
+            full_name="Example User",
+            year=1995,
+            month=6,
+            day=9,
+        )
+
+        self.assertIsInstance(user, UserShort)
+        self.assertEqual(user.pk, "123")
+        client.check_age_eligibility.assert_called_once_with(1995, 6, 9)
+        client.accounts_create.assert_called_once()
+
     def test_check_username_posts_uuid_payload(self):
         client = Client()
         client.uuid = "uuid"

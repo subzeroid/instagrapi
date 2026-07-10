@@ -711,7 +711,9 @@ class SignUpMixin:
             # Date of Birth (DOB) Age Eligibility Check
             if year and month and day:
                 age_check_result = self.check_age_eligibility(year, month, day)
-                if not age_check_result.get("eligible"):  # Assuming "eligible": True is success
+                # IG returns "eligible_to_register"; keep "eligible" as a fallback
+                eligible = age_check_result.get("eligible_to_register", age_check_result.get("eligible"))
+                if not eligible:
                     raise AgeEligibilityError(f"Account not eligible based on age criteria: {age_check_result}")
 
             # send code confirmation
