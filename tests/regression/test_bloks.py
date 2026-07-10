@@ -394,6 +394,10 @@ class BloksRegressionTestCase(unittest.TestCase):
         self.assertEqual(params["server_params"]["credential_type"], "password")
         self.assertEqual(params["server_params"]["family_device_id"], "family-device-1")
         self.assertEqual(params["server_params"]["device_id"], "android-1")
+        username_text_input_id = params["server_params"]["username_text_input_id"]
+        password_text_input_id = params["server_params"]["password_text_input_id"]
+        self.assertRegex(username_text_input_id, r"^[a-z0-9]{6}:81$")
+        self.assertEqual(password_text_input_id, f"{username_text_input_id.rsplit(':', 1)[0]}:82")
         self.assertIn("waterfall_id", params["server_params"])
 
     def test_bloks_extract_two_step_verification_context_from_caa_action(self):

@@ -457,7 +457,9 @@ class BloksMixin:
         contact_point = username or self.username
         encrypted_password = password if password.startswith("#PWD_") else self.password_encrypt(password)
         flow_id = waterfall_id or str(uuid4())
-        text_input_id = flow_id[:8]
+        # Recent CAA login screens emit short base36-like input ids. Hex-only
+        # UUID prefixes are accepted by the VM but can return a null-payload 404.
+        text_input_id = f"{uuid4().hex[:4]}ig"
         params = {
             "client_input_params": {
                 "blocked_uids": [],
@@ -525,12 +527,12 @@ class BloksMixin:
                 "offline_experiment_group": offline_experiment_group,
                 "is_from_landing_page": 0,
                 "left_nav_button_action": "NONE",
-                "password_text_input_id": f"{text_input_id}:105",
+                "password_text_input_id": f"{text_input_id}:82",
                 "is_from_empty_password": 0,  # nosec B105
                 "is_from_msplit_fallback": 0,
                 "ar_event_source": "login_home_page",
                 "qe_device_id": self.uuid,
-                "username_text_input_id": f"{text_input_id}:104",
+                "username_text_input_id": f"{text_input_id}:81",
                 "layered_homepage_experiment_group": "Deploy: Not in Experiment",
                 "device_id": self.android_device_id,
                 "login_surface": "login_home",
