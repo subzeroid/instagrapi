@@ -517,6 +517,20 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return value.strip().lower() in {"1", "true", "yes"}
         return False
 
+    def _login_response_requires_recovery(self, data: Dict) -> bool:
+        values = [self._find_login_response_value(data, key) for key in ("message", "error_title", "error_body")]
+        text = " ".join(value.lower() for value in values if isinstance(value, str))
+        return any(
+            marker in text
+            for marker in (
+                "linked facebook account",
+                "forgotten password",
+                "forgot password",
+                "send you an email",
+                "get back into your account",
+            )
+        )
+
     def _normalize_backup_code(self, code: str) -> str:
         return re.sub(r"[\s-]+", "", str(code).strip())
 
@@ -777,6 +791,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                     response=getattr(exc, "response", None),
                     **self._exception_context(login_json),
                 ) from exc
+            if not context and self._login_response_requires_recovery(login_json):
+                raise
             if context:
                 logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
             else:

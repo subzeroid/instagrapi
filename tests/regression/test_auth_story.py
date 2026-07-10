@@ -347,6 +347,28 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
+    def test_login_bad_password_recovery_response_does_not_try_caa_bloks(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "You can log in with your linked Facebook account.",
+            "error_title": "Forgotten password for example?",
+            "error_type": "bad_password",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
+        client.bloks_caa_login_send_request = Mock(
+            side_effect=AssertionError("recovery bad_password responses are not CAA two-factor challenges")
+        )
+
+        with self.assertRaises(BadPassword):
+            client.login(verification_code="654321")
+
+        client.bloks_caa_login_send_request.assert_not_called()
+
     def test_login_with_eight_digit_backup_code_selects_backup_code_bloks_challenge(self):
         client = Client()
         client.username = "example"
