@@ -1,4 +1,4 @@
-from instagrapi.exceptions import BadPassword
+from instagrapi.exceptions import BadPassword, ClientNotFoundError
 from tests.helpers import *
 
 
@@ -422,6 +422,36 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
             client.login(verification_code="654321")
 
         self.assertIn("CAA response did not include two_step_verification_context", str(cm.exception))
+        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
+        client.bloks_two_step_verification_verify_code.assert_not_called()
+
+    def test_login_bad_password_without_context_wraps_unavailable_caa_bloks_endpoint(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "Payload returned is null. A server error field_exception occured.",
+            "error_type": "field_exception",
+            "status": "fail",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
+        caa_error = ClientNotFoundError(
+            "Payload returned is null. A server error field_exception occured.",
+            response=Mock(status_code=404),
+            error_type="field_exception",
+            status="fail",
+        )
+        client.bloks_caa_login_send_request = Mock(side_effect=caa_error)
+        client.bloks_two_step_verification_verify_code = Mock()
+
+        with self.assertRaises(TwoFactorRequired) as cm:
+            client.login(verification_code="654321")
+
+        self.assertIn("CAA/Bloks login endpoint", str(cm.exception))
+        self.assertIs(cm.exception.__cause__, caa_error)
         client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
         client.bloks_two_step_verification_verify_code.assert_not_called()
 
