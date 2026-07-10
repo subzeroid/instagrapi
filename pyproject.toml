@@ -88,7 +88,7 @@ test = [
     "mike==2.2.0",
     # mike implicitly imports pkg_resources from setuptools — see
     # https://github.com/jimporter/mike/issues/148
-    "setuptools==82.0.1",
+    "setuptools==83.0.0",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
     "mkdocstrings[python]==1.0.4",
