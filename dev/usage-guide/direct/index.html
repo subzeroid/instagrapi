@@ -655,6 +655,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#incoming-quicksnaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incoming quicksnaps
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1237,6 +1248,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#incoming-quicksnaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incoming quicksnaps
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1487,9 +1509,40 @@
 <li><code>direct_thread()</code> paginates internally until it collects <code>amount</code> messages or reaches the end of the thread.</li>
 <li><code>direct_message()</code> scans the latest <code>amount</code> messages in a thread and raises <code>DirectMessageNotFound</code> if the id is not present in that window.</li>
 <li>Shared XMA items such as <code>xma_clip</code>, <code>xma_media_share</code>, <code>xma_story_share</code>, and <code>xma_profile</code> keep their original payload in <code>message.raw_xma</code>. When Instagram includes <code>target_url</code>, the normalized link is also available through <code>message.xma_share</code>.</li>
-<li>Disappearing direct photos and videos with <code>item_type == "raven_media"</code> are exposed through <code>message.visual_media</code>.</li>
+<li>Disappearing direct photos and videos, including incoming Direct quicksnaps with <code>item_type == "raven_media"</code>, are exposed through <code>message.visual_media</code>.</li>
 <li>Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via <code>dump_settings()/load_settings()</code> are more reliable than browser-only <code>sessionid</code> reuse.</li>
 </ul>
+<h3 id="incoming-quicksnaps">Incoming quicksnaps</h3>
+<p>Instagram returns snaps sent to you through Direct threads, not through <code>quicksnap_history()</code>.
+Fetch the inbox or a known thread and filter Direct messages whose <code>item_type</code> is
+<code>"raven_media"</code> and whose <code>visual_media</code> field is present.</p>
+<div class="highlight"><pre><span></span><code><span class="n">threads</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_threads</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">thread_message_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">thread</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">thread</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;raven_media&quot;</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">visual_media</span><span class="p">:</span>
+            <span class="n">media</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">visual_media</span><span class="o">.</span><span class="n">media</span>
+            <span class="n">image_versions</span> <span class="o">=</span> <span class="n">media</span><span class="o">.</span><span class="n">image_versions2</span>
+            <span class="n">video_versions</span> <span class="o">=</span> <span class="n">media</span><span class="o">.</span><span class="n">video_versions</span> <span class="ow">or</span> <span class="p">[]</span>
+
+            <span class="n">image_url</span> <span class="o">=</span> <span class="n">image_versions</span><span class="o">.</span><span class="n">candidates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span> <span class="k">if</span> <span class="n">image_versions</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">video_url</span> <span class="o">=</span> <span class="n">video_versions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">url</span> <span class="k">if</span> <span class="n">video_versions</span> <span class="k">else</span> <span class="kc">None</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">media</span><span class="o">.</span><span class="n">media_type</span><span class="p">,</span> <span class="n">image_url</span> <span class="ow">or</span> <span class="n">video_url</span><span class="p">)</span>
+</code></pre></div>
+<p>For one known thread:</p>
+<div class="highlight"><pre><span></span><code><span class="n">messages</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_messages</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">incoming_snaps</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">message</span>
+    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span>
+    <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;raven_media&quot;</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">visual_media</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>Instagram may omit playable media URLs after a disappearing photo or video has
+expired or already been viewed. In that case the message can still appear in the
+thread as a placeholder or action summary. <code>quicksnap_history()</code> returns the
+authenticated user's QuickSnap history payload and is not the Direct inbox for
+snaps sent by other users.</p>
 <p>Handling disabled message requests:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">DirectMessageRequestsDisabled</span>
 
