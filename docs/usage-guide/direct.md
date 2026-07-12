@@ -59,8 +59,47 @@ Notes:
 * `direct_thread()` paginates internally until it collects `amount` messages or reaches the end of the thread.
 * `direct_message()` scans the latest `amount` messages in a thread and raises `DirectMessageNotFound` if the id is not present in that window.
 * Shared XMA items such as `xma_clip`, `xma_media_share`, `xma_story_share`, and `xma_profile` keep their original payload in `message.raw_xma`. When Instagram includes `target_url`, the normalized link is also available through `message.xma_share`.
-* Disappearing direct photos and videos with `item_type == "raven_media"` are exposed through `message.visual_media`.
+* Disappearing direct photos and videos, including incoming Direct quicksnaps with `item_type == "raven_media"`, are exposed through `message.visual_media`.
 * Media-changing direct endpoints are more sensitive to session quality than read-only inbox calls. Stable sessions loaded via `dump_settings()/load_settings()` are more reliable than browser-only `sessionid` reuse.
+
+### Incoming quicksnaps
+
+Instagram returns snaps sent to you through Direct threads, not through `quicksnap_history()`.
+Fetch the inbox or a known thread and filter Direct messages whose `item_type` is
+`"raven_media"` and whose `visual_media` field is present.
+
+``` python
+threads = cl.direct_threads(amount=20, thread_message_limit=20)
+
+for thread in threads:
+    for message in thread.messages:
+        if message.item_type == "raven_media" and message.visual_media:
+            media = message.visual_media.media
+            image_versions = media.image_versions2
+            video_versions = media.video_versions or []
+
+            image_url = image_versions.candidates[-1].url if image_versions else None
+            video_url = video_versions[-1].url if video_versions else None
+
+            print(thread.id, message.id, media.media_type, image_url or video_url)
+```
+
+For one known thread:
+
+``` python
+messages = cl.direct_messages(thread_id, amount=50)
+incoming_snaps = [
+    message
+    for message in messages
+    if message.item_type == "raven_media" and message.visual_media
+]
+```
+
+Instagram may omit playable media URLs after a disappearing photo or video has
+expired or already been viewed. In that case the message can still appear in the
+thread as a placeholder or action summary. `quicksnap_history()` returns the
+authenticated user's QuickSnap history payload and is not the Direct inbox for
+snaps sent by other users.
 
 Handling disabled message requests:
 
