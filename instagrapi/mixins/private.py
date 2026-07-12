@@ -54,6 +54,10 @@ _DIRECT_MESSAGE_REQUESTS_DISABLED_MARKERS = (
 )
 
 _ACCOUNT_CONTACT_POINT_REQUIRED_MARKERS = ("need an email or confirmed phone number",)
+_LOGIN_CONTEXT_REJECTION_HINT = (
+    "This can also happen when Instagram rejects the proxy/IP, device fingerprint, "
+    "or login context, even if the password is correct."
+)
 
 
 def _private_message_text(message) -> str:
@@ -529,15 +533,14 @@ class PrivateRequestMixin:
                 elif error_type == "rate_limit_error":
                     raise RateLimitError(**last_json)
                 elif error_type == "bad_password":
-                    msg = last_json.get("message", "").strip()
-                    if msg:
-                        if not msg.endswith("."):
-                            msg = "%s." % msg
-                        msg = "%s " % msg
-                    last_json["message"] = (
-                        "%sIf you are sure that the password is correct, then change your IP address, "
-                        "because it is added to the blacklist of the Instagram Server"
-                    ) % msg
+                    last_json["message"] = " ".join(
+                        part
+                        for part in (
+                            last_json.get("message") or "Instagram rejected the login credentials.",
+                            _LOGIN_CONTEXT_REJECTION_HINT,
+                        )
+                        if part
+                    )
                     raise BadPassword(**last_json)
                 elif error_type == "two_factor_required":
                     if not last_json["message"]:

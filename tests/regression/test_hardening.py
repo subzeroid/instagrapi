@@ -1,4 +1,9 @@
-from instagrapi.exceptions import AccountContactPointRequired, AccountEditError, DirectMessageRequestsDisabled
+from instagrapi.exceptions import (
+    AccountContactPointRequired,
+    AccountEditError,
+    BadPassword,
+    DirectMessageRequestsDisabled,
+)
 from tests.helpers import *
 
 
@@ -102,6 +107,29 @@ class HardeningRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client.private, "get", return_value=response):
             with self.assertRaises(ClientUnauthorizedError):
                 client._send_private_request("test/")
+
+    def test_send_private_request_preserves_bad_password_message_with_login_context_hint(self):
+        client = self._build_private_client()
+        raw_message = "The password you entered is incorrect. Please try again."
+        response = self._make_http_error_response(
+            400,
+            json_body={
+                "message": raw_message,
+                "status": "fail",
+                "error_type": "bad_password",
+                "exception_name": "UserInvalidCredentials",
+            },
+        )
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(BadPassword) as cm:
+                client._send_private_request("accounts/login/", data={"username": "example"}, login=True)
+
+        self.assertTrue(cm.exception.message.startswith(raw_message))
+        self.assertIn("proxy/IP", cm.exception.message)
+        self.assertIn("device fingerprint", cm.exception.message)
+        self.assertNotIn("change your IP", cm.exception.message)
+        self.assertNotIn("blacklist", cm.exception.message)
 
     def test_send_private_request_promotes_404_not_found_body_to_challenge(self):
         client = self._build_private_client()
