@@ -186,6 +186,10 @@ class ChallengeRequired(ChallengeError):
         )
 
 
+class AccountSuspended(ClientError):
+    pass
+
+
 class ChallengeSelfieCaptcha(ChallengeError):
     pass
 

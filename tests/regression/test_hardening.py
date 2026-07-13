@@ -131,6 +131,28 @@ class HardeningRegressionTestCase(unittest.TestCase):
         self.assertNotIn("change your IP", cm.exception.message)
         self.assertNotIn("blacklist", cm.exception.message)
 
+    def test_send_private_request_promotes_suspended_challenge_to_account_suspended(self):
+        from instagrapi.exceptions import AccountSuspended
+
+        client = self._build_private_client()
+        payload = {
+            "message": "challenge_required",
+            "status": "fail",
+            "challenge": {"url": "https://i.instagram.com/challenge/action/123/suspended/"},
+        }
+        response = self._make_http_error_response(
+            400,
+            content=json.dumps(payload).encode(),
+            json_body=payload,
+        )
+
+        with mock.patch.object(client.private, "post", return_value=response):
+            with self.assertRaises(AccountSuspended) as cm:
+                client._send_private_request("accounts/login/", data={"username": "example"}, login=True)
+
+        self.assertEqual(cm.exception.message, "challenge_required")
+        self.assertEqual(cm.exception.challenge["url"], payload["challenge"]["url"])
+
     def test_send_private_request_promotes_404_not_found_body_to_challenge(self):
         client = self._build_private_client()
         response = self._make_http_error_response(404, content=b"Not Found")

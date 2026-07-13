@@ -12,6 +12,7 @@ from instagrapi import config
 from instagrapi.exceptions import (
     AccountContactPointRequired,
     AccountEditError,
+    AccountSuspended,
     BadPassword,
     ChallengeRequired,
     ClientBadRequestError,
@@ -520,6 +521,9 @@ class PrivateRequestMixin:
                         last_json["error_type"] = "two_factor_required"
                     raise TwoFactorRequired(**last_json)
                 elif message == "challenge_required":
+                    challenge = last_json.get("challenge") or {}
+                    if "/suspended/" in (challenge.get("url") or ""):
+                        raise AccountSuspended(**last_json)
                     raise ChallengeRequired(**last_json)
                 elif message == "feedback_required":
                     raise FeedbackRequired(
