@@ -91,7 +91,7 @@ test = [
     "setuptools==83.0.0",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.6",
-    "mkdocstrings[python]==1.0.5",
+    "mkdocstrings[python]==1.0.6",
     "numpy>=1.25.0",
     "pre-commit==4.6.0",
     "proglog<=1.0.0",
