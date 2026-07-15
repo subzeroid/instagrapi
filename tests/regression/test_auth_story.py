@@ -94,6 +94,23 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         payload = client.private_request.call_args.args[1]
         self.assertEqual(payload["username"], "example")
 
+    def test_login_strips_outer_username_whitespace(self):
+        client = Client()
+        client.authorization_data = {}
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
+        client.parse_authorization = Mock(return_value={"sessionid": "abc"})
+        client.pre_login_flow = Mock(return_value=True)
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+        client.password_encrypt = Mock(return_value="enc-password")
+
+        result = client.login(" example ", "password")
+
+        self.assertTrue(result)
+        payload = client.private_request.call_args.args[1]
+        self.assertEqual(payload["username"], "example")
+        self.assertEqual(client.username, "example")
+
     def test_login_two_factor_requires_verification_code(self):
         client = Client()
         client.username = "example"
