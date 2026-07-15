@@ -390,6 +390,17 @@ class BloksRegressionTestCase(unittest.TestCase):
         self.assertEqual(params["client_input_params"]["machine_id"], "machine-1")
         self.assertEqual(params["client_input_params"]["login_attempt_count"], 1)
         self.assertEqual(params["client_input_params"]["try_num"], 1)
+        network_info = params["client_input_params"]["si_device_param_network_info"]
+        self.assertEqual(network_info["active_subscriptions_info"], None)
+        self.assertEqual(network_info["is_airplane_mode"], 0)
+        self.assertEqual(network_info["is_active_network_cellular"], 0)
+        self.assertEqual(network_info["is_device_sms_capable"], 1)
+        self.assertEqual(network_info["sim_count"], 1)
+        self.assertEqual(network_info["is_wifi"], 1)
+        default_subscription = network_info["default_subscription_info"]
+        self.assertEqual(default_subscription["sim_operator"], "310260")
+        self.assertEqual(default_subscription["sim_operator_name"], "T-Mobile")
+        self.assertEqual(default_subscription["network_operator"], "310260")
         self.assertEqual(params["server_params"]["login_credential_type"], "none")
         self.assertEqual(params["server_params"]["credential_type"], "password")
         self.assertEqual(params["server_params"]["family_device_id"], "family-device-1")
