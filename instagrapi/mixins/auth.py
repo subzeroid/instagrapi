@@ -765,6 +765,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.password = password
         if self.username is None or self.password is None:
             raise BadCredentials("Both username and password must be provided.")
+        if isinstance(self.username, str):
+            self.username = self.username.strip()
 
         if relogin:
             self._clear_session_state(
