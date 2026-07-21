@@ -8,6 +8,7 @@ from instagrapi.utils.auth import gen_token, generate_signature
 from instagrapi.utils.serialization import dumps
 
 ProfessionalAccountType = Literal[2, 3]
+AIGM_UPDATE_ACCOUNT_LABEL_VISIBILITY_CLIENT_DOC_ID = "85502578717429613610069073956"
 
 
 class AccountMixin:
@@ -63,6 +64,38 @@ class AccountMixin:
         """
         result = self.private_request("accounts/current_user/?edit=true")
         return extract_account(result["user"])
+
+    def account_set_ai_info(self, enabled: bool) -> Account:
+        """
+        Set the account-level AI-generated disclosure label.
+
+        Parameters
+        ----------
+        enabled: bool
+            Whether the profile should be labeled as AI-generated.
+
+        Returns
+        -------
+        Account
+            The refreshed account.
+        """
+        data = {
+            "method": "post",
+            "format": "json",
+            "server_timestamps": "true",
+            "locale": "user",
+            "fb_api_req_friendly_name": "AIGMUpdateAccountLabelVisibilityMutation",
+            "enable_canonical_naming": "true",
+            "enable_canonical_variable_overrides": "true",
+            "enable_canonical_naming_ambiguous_type_prefixing": "true",
+            "client_doc_id": AIGM_UPDATE_ACCOUNT_LABEL_VISIBILITY_CLIENT_DOC_ID,
+            "variables": json.dumps({"is_enabled": enabled}, separators=(",", ":")),
+        }
+        self.private_graphql_request(
+            data,
+            headers={"X-Client-Doc-Id": AIGM_UPDATE_ACCOUNT_LABEL_VISIBILITY_CLIENT_DOC_ID},
+        )
+        return self.account_info()
 
     def account_convert_to_professional(
         self,
