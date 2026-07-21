@@ -3,6 +3,14 @@ from tests.helpers import *
 
 
 class ClientAccountTestCase(_helpers.ClientPrivateTestCase):
+    @unittest.skipUnless(os.getenv("IG_RUN_AI_INFO_LIVE"), "set IG_RUN_AI_INFO_LIVE=1 to run the account mutation test")
+    def test_account_set_ai_info(self):
+        enabled = self.cl.account_set_ai_info(True)
+        self.assertIsInstance(enabled, Account)
+
+        disabled = self.cl.account_set_ai_info(False)
+        self.assertIsInstance(disabled, Account)
+
     def test_account_edit(self):
         # current
         one = self.cl.user_info(self.cl.user_id)

@@ -2,6 +2,34 @@ from tests.helpers import *
 
 
 class AccountRegressionTestCase(unittest.TestCase):
+    def test_account_set_ai_info_posts_visibility_mutation(self):
+        client = Client()
+        account = object()
+
+        with (
+            mock.patch.object(client, "private_graphql_request") as graphql_request,
+            mock.patch.object(client, "account_info", return_value=account) as account_info,
+        ):
+            result = client.account_set_ai_info(True)
+
+        self.assertIs(result, account)
+        graphql_request.assert_called_once_with(
+            {
+                "method": "post",
+                "format": "json",
+                "server_timestamps": "true",
+                "locale": "user",
+                "fb_api_req_friendly_name": "AIGMUpdateAccountLabelVisibilityMutation",
+                "enable_canonical_naming": "true",
+                "enable_canonical_variable_overrides": "true",
+                "enable_canonical_naming_ambiguous_type_prefixing": "true",
+                "client_doc_id": "85502578717429613610069073956",
+                "variables": '{"is_enabled":true}',
+            },
+            headers={"X-Client-Doc-Id": "85502578717429613610069073956"},
+        )
+        account_info.assert_called_once_with()
+
     def test_send_password_reset_posts_recovery_payload(self):
         client = Client()
 
