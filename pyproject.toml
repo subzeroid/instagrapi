@@ -93,7 +93,7 @@ test = [
     "mkdocs-material==9.7.7",
     "mkdocstrings[python]==1.0.6",
     "numpy>=1.25.0",
-    "pre-commit==4.6.0",
+    "pre-commit==4.6.1",
     "proglog<=1.0.0",
     "pytest-xdist==3.8.0",
     "pytest==9.1.1",
