@@ -84,40 +84,40 @@ You can pass settings to the Client (and save cookies), it has the following for
 
 ```python
 settings = {
-   "uuids": {
-      "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
-      "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
-      "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
-      "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
-      "device_id": "android-e021b636049dc0e9"
-   },
-   "authorization_data": {},  # sessionid / ds_user_id / authorization values
-   "cookies":  {},  # saved cookies
-   "last_login": 1596069420.0000145,
-   "device_settings": {
-      "cpu": "h1",
-      "dpi": "640dpi",
-      "model": "h1",
-      "device": "RS988",
-      "resolution": "1440x2392",
-      "manufacturer": "LGE/lge",
-      "android_release": "6.0.1",
-      "android_version": 23
-   },
-   "user_agent": "Instagram 385.0.0.47.74 Android (...)",
-   "country": "US",
-   "country_code": 1,
-   "locale": "en_US",
-   "timezone_offset": -14400,
-   "request_timeout": 1,
-   "public_request_retries_count": 3,
-   "public_request_retries_timeout": 2,
-   "session_retry_total": 3,
-   "session_retry_backoff_factor": 2,
-   "session_retry_statuses": [429, 500, 502, 503, 504],
-   "public_transport": "requests",
-   "public_transport_impersonate": "chrome136",
-   "tls_verify": True
+    "uuids": {
+        "phone_id": "57d64c41-a916-3fa5-bd7a-3796c1dab122",
+        "uuid": "8aa373c6-f316-44d7-b49e-d74563f4a8f3",
+        "client_session_id": "6c296d0a-3534-4dce-b5aa-a6a6ab017443",
+        "advertising_id": "8dc88b76-dfbc-44dc-abbc-31a6f1d54b04",
+        "device_id": "android-e021b636049dc0e9",
+    },
+    "authorization_data": {},  # sessionid / ds_user_id / authorization values
+    "cookies": {},  # saved cookies
+    "last_login": 1596069420.0000145,
+    "device_settings": {
+        "cpu": "h1",
+        "dpi": "640dpi",
+        "model": "h1",
+        "device": "RS988",
+        "resolution": "1440x2392",
+        "manufacturer": "LGE/lge",
+        "android_release": "6.0.1",
+        "android_version": 23,
+    },
+    "user_agent": "Instagram 385.0.0.47.74 Android (...)",
+    "country": "US",
+    "country_code": 1,
+    "locale": "en_US",
+    "timezone_offset": -14400,
+    "request_timeout": 1,
+    "public_request_retries_count": 3,
+    "public_request_retries_timeout": 2,
+    "session_retry_total": 3,
+    "session_retry_backoff_factor": 2,
+    "session_retry_statuses": [429, 500, 502, 503, 504],
+    "public_transport": "requests",
+    "public_transport_impersonate": "chrome136",
+    "tls_verify": True,
 }
 
 cl = Client(settings)
@@ -139,14 +139,14 @@ In order for Instagram [to trust you more](https://github.com/subzeroid/instagra
 ```python
 cl = Client()
 cl.login(USERNAME, PASSWORD)
-cl.dump_settings('/tmp/dump.json')
+cl.dump_settings("/tmp/dump.json")
 ```
 
 Next time:
 
 ```python
 cl = Client()
-cl.set_settings(cl.load_settings('/tmp/dump.json'))
+cl.set_settings(cl.load_settings("/tmp/dump.json"))
 cl.login(USERNAME, PASSWORD)
 cl.get_timeline_feed()  # check session
 ```

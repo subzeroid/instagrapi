@@ -23,6 +23,7 @@ Available values are:
 
 ```python
 "mute_all"
+
 "likes"
 "like_and_comment_on_photo_user_tagged"
 "user_tagged"

@@ -240,6 +240,7 @@ import logging
 
 logger = logging.getLogger()
 
+
 def login_user():
     """
     Attempts to login to Instagram using either the provided session information

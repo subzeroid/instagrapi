@@ -198,6 +198,7 @@ Example: We go around the list of our followers and unfollow from them:
 
 ``` python
 from instagrapi import Client
+
 cl = Client()
 cl.login(USERNAME, PASSWORD)
 
