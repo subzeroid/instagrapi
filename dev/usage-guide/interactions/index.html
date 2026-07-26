@@ -1564,40 +1564,40 @@
 <p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
 <p>You can pass settings to the Client (and save cookies), it has the following format:</p>
 <div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
-   <span class="s2">&quot;uuids&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;phone_id&quot;</span><span class="p">:</span> <span class="s2">&quot;57d64c41-a916-3fa5-bd7a-3796c1dab122&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;8aa373c6-f316-44d7-b49e-d74563f4a8f3&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;client_session_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6c296d0a-3534-4dce-b5aa-a6a6ab017443&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;advertising_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8dc88b76-dfbc-44dc-abbc-31a6f1d54b04&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;device_id&quot;</span><span class="p">:</span> <span class="s2">&quot;android-e021b636049dc0e9&quot;</span>
-   <span class="p">},</span>
-   <span class="s2">&quot;authorization_data&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># sessionid / ds_user_id / authorization values</span>
-   <span class="s2">&quot;cookies&quot;</span><span class="p">:</span>  <span class="p">{},</span>  <span class="c1"># saved cookies</span>
-   <span class="s2">&quot;last_login&quot;</span><span class="p">:</span> <span class="mf">1596069420.0000145</span><span class="p">,</span>
-   <span class="s2">&quot;device_settings&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;dpi&quot;</span><span class="p">:</span> <span class="s2">&quot;640dpi&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;RS988&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="s2">&quot;1440x2392&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;manufacturer&quot;</span><span class="p">:</span> <span class="s2">&quot;LGE/lge&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;android_release&quot;</span><span class="p">:</span> <span class="s2">&quot;6.0.1&quot;</span><span class="p">,</span>
-      <span class="s2">&quot;android_version&quot;</span><span class="p">:</span> <span class="mi">23</span>
-   <span class="p">},</span>
-   <span class="s2">&quot;user_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Instagram 385.0.0.47.74 Android (...)&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;country_code&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-   <span class="s2">&quot;locale&quot;</span><span class="p">:</span> <span class="s2">&quot;en_US&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;timezone_offset&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">14400</span><span class="p">,</span>
-   <span class="s2">&quot;request_timeout&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-   <span class="s2">&quot;public_request_retries_count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-   <span class="s2">&quot;public_request_retries_timeout&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-   <span class="s2">&quot;session_retry_total&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-   <span class="s2">&quot;session_retry_backoff_factor&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-   <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
-   <span class="s2">&quot;public_transport&quot;</span><span class="p">:</span> <span class="s2">&quot;requests&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;tls_verify&quot;</span><span class="p">:</span> <span class="kc">True</span>
+    <span class="s2">&quot;uuids&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;phone_id&quot;</span><span class="p">:</span> <span class="s2">&quot;57d64c41-a916-3fa5-bd7a-3796c1dab122&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;8aa373c6-f316-44d7-b49e-d74563f4a8f3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;client_session_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6c296d0a-3534-4dce-b5aa-a6a6ab017443&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;advertising_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8dc88b76-dfbc-44dc-abbc-31a6f1d54b04&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;device_id&quot;</span><span class="p">:</span> <span class="s2">&quot;android-e021b636049dc0e9&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;authorization_data&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># sessionid / ds_user_id / authorization values</span>
+    <span class="s2">&quot;cookies&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># saved cookies</span>
+    <span class="s2">&quot;last_login&quot;</span><span class="p">:</span> <span class="mf">1596069420.0000145</span><span class="p">,</span>
+    <span class="s2">&quot;device_settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;dpi&quot;</span><span class="p">:</span> <span class="s2">&quot;640dpi&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;RS988&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="s2">&quot;1440x2392&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;manufacturer&quot;</span><span class="p">:</span> <span class="s2">&quot;LGE/lge&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;android_release&quot;</span><span class="p">:</span> <span class="s2">&quot;6.0.1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;android_version&quot;</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;user_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Instagram 385.0.0.47.74 Android (...)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;country_code&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;locale&quot;</span><span class="p">:</span> <span class="s2">&quot;en_US&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;timezone_offset&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">14400</span><span class="p">,</span>
+    <span class="s2">&quot;request_timeout&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;public_request_retries_count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;public_request_retries_timeout&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;session_retry_total&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;session_retry_backoff_factor&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
+    <span class="s2">&quot;public_transport&quot;</span><span class="p">:</span> <span class="s2">&quot;requests&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tls_verify&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
@@ -1638,11 +1638,11 @@
 <p>In order for Instagram <a href="https://github.com/subzeroid/instagrapi/discussions/220">to trust you more</a>, use one stable device profile and one stable IP (or subnet) per account whenever possible:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s1">&#39;/tmp/dump.json&#39;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;/tmp/dump.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Next time:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_settings</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s1">&#39;/tmp/dump.json&#39;</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_settings</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;/tmp/dump.json&quot;</span><span class="p">))</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">()</span>  <span class="c1"># check session</span>
 </code></pre></div>

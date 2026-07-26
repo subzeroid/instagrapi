@@ -1532,11 +1532,7 @@ Fetch the inbox or a known thread and filter Direct messages whose <code>item_ty
 </code></pre></div>
 <p>For one known thread:</p>
 <div class="highlight"><pre><span></span><code><span class="n">messages</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">direct_messages</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
-<span class="n">incoming_snaps</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">message</span>
-    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span>
-    <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;raven_media&quot;</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">visual_media</span>
-<span class="p">]</span>
+<span class="n">incoming_snaps</span> <span class="o">=</span> <span class="p">[</span><span class="n">message</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">messages</span> <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">item_type</span> <span class="o">==</span> <span class="s2">&quot;raven_media&quot;</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">visual_media</span><span class="p">]</span>
 </code></pre></div>
 <p>Instagram may omit playable media URLs after a disappearing photo or video has
 expired or already been viewed. In that case the message can still appear in the

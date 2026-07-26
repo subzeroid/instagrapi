@@ -1330,6 +1330,7 @@
     <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">chars</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">password</span>
 
+
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">change_password_handler</span> <span class="o">=</span> <span class="n">change_password_handler</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">IG_USERNAME</span><span class="p">,</span> <span class="n">IG_PASSWORD</span><span class="p">)</span>
@@ -1346,6 +1347,7 @@
     <span class="k">elif</span> <span class="n">choice</span> <span class="o">==</span> <span class="n">ChallengeChoice</span><span class="o">.</span><span class="n">EMAIL</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">get_code_from_email</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
     <span class="k">return</span> <span class="kc">False</span>
+
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">phone_number</span> <span class="o">=</span> <span class="s2">&quot;+15551234567&quot;</span>  <span class="c1"># required for submit_phone challenges</span>
