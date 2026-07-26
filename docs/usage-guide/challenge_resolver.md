@@ -16,6 +16,7 @@ def change_password_handler(username):
     password = "".join(random.sample(chars, 8))
     return password
 
+
 cl = Client()
 cl.change_password_handler = change_password_handler
 cl.login(IG_USERNAME, IG_PASSWORD)
@@ -38,6 +39,7 @@ def challenge_code_handler(username, choice):
     elif choice == ChallengeChoice.EMAIL:
         return get_code_from_email(username)
     return False
+
 
 cl = Client()
 cl.phone_number = "+15551234567"  # required for submit_phone challenges

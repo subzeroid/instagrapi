@@ -88,11 +88,7 @@ For one known thread:
 
 ``` python
 messages = cl.direct_messages(thread_id, amount=50)
-incoming_snaps = [
-    message
-    for message in messages
-    if message.item_type == "raven_media" and message.visual_media
-]
+incoming_snaps = [message for message in messages if message.item_type == "raven_media" and message.visual_media]
 ```
 
 Instagram may omit playable media URLs after a disappearing photo or video has

@@ -113,19 +113,23 @@ from instagrapi.types import StoryMention, StoryMedia, StoryLink, StoryHashtag, 
 cl = Client()
 cl.login(USERNAME, PASSWORD)
 
-media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+media_pk = cl.media_pk_from_url("https://www.instagram.com/p/CGgDsi7JQdS/")
 media_path = cl.video_download(media_pk)
-example = cl.user_info_by_username('example')
-hashtag = cl.hashtag_info('dhbastards')
+example = cl.user_info_by_username("example")
+hashtag = cl.hashtag_info("dhbastards")
 
 cl.video_upload_to_story(
     media_path,
     "Credits @example",
     mentions=[StoryMention(user=example, x=0.49892962, y=0.703125, width=0.8333333333333334, height=0.125)],
-    links=[StoryLink(webUri='https://github.com/subzeroid/instagrapi')],
+    links=[StoryLink(webUri="https://github.com/subzeroid/instagrapi")],
     hashtags=[StoryHashtag(hashtag=hashtag, x=0.23, y=0.32, width=0.5, height=0.22)],
     medias=[StoryMedia(media_pk=media_pk, x=0.5, y=0.5, width=0.6, height=0.8)],
-    polls=[StoryPoll(x = 0.5, y = 0.5, width = 0.7, height = 0.5, question = "Question", options = ["Option 1", "Option 2", "Option 3"])],
+    polls=[
+        StoryPoll(
+            x=0.5, y=0.5, width=0.7, height=0.5, question="Question", options=["Option 1", "Option 2", "Option 3"]
+        )
+    ],
 )
 
 cl.media_share_to_story(media_pk, caption="Shared to story")
@@ -191,23 +195,20 @@ Example:
 from instagrapi.types import StoryMention, StoryMedia, StoryLink
 from instagrapi.story import StoryBuilder
 
-media_pk = cl.media_pk_from_url('https://www.instagram.com/p/CGgDsi7JQdS/')
+media_pk = cl.media_pk_from_url("https://www.instagram.com/p/CGgDsi7JQdS/")
 media_path = cl.video_download(media_pk)
-example = cl.user_info_by_username('example')
+example = cl.user_info_by_username("example")
 
 buildout = StoryBuilder(
-    media_path,
-    'Credits @example',
-    [StoryMention(user=example)],
-    Path('/path/to/background_720x1280.jpg')
+    media_path, "Credits @example", [StoryMention(user=example)], Path("/path/to/background_720x1280.jpg")
 ).video(15)  # seconds
 
 cl.video_upload_to_story(
     buildout.path,
     "Credits @example",
     mentions=buildout.mentions,
-    links=[StoryLink(webUri='https://github.com/subzeroid/instagrapi')],
-    medias=[StoryMedia(media_pk=media_pk)]
+    links=[StoryLink(webUri="https://github.com/subzeroid/instagrapi")],
+    medias=[StoryMedia(media_pk=media_pk)],
 )
 ```
 
@@ -218,13 +219,13 @@ Result:
 Photo upload:
 
 ``` python
-cl.photo_upload_to_story('/app/image.jpg')
+cl.photo_upload_to_story("/app/image.jpg")
 ```
 
 Upload photo as video:
 
 ``` python
-buildout = StoryBuilder('/app/image.jpg').photo()
+buildout = StoryBuilder("/app/image.jpg").photo()
 cl.video_upload_to_story(buildout.path)
 ```
 
@@ -234,11 +235,11 @@ Like & unlike story:
 pk = cl.story_pk_from_url("https://instagram.com/stories/purely.anand/2884886531427631361/")
 info = cl.story_info(pk).dict()
 
-cl.story_like(info['id']) # To like story
-cl.story_unlike(info['id']) # To unlike story
+cl.story_like(info["id"])  # To like story
+cl.story_unlike(info["id"])  # To unlike story
 
 # another way to unlike story
-cl.story_like(info['id'], revert=True)
+cl.story_like(info["id"], revert=True)
 ```
 
 More stories here [https://www.instagram.com/wrclive/](https://www.instagram.com/wrclive/)

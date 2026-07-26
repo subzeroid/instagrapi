@@ -6,14 +6,21 @@ import logging
 
 from instagrapi import Client
 from instagrapi.exceptions import (
-    BadPassword, ReloginAttemptExceeded, ChallengeRequired,
-    SelectContactPointRecoveryForm, RecaptchaChallengeForm,
-    FeedbackRequired, PleaseWaitFewMinutes, LoginRequired,
-    ClientThrottledError, DirectMessageRequestsDisabled,
+    BadPassword,
+    ReloginAttemptExceeded,
+    ChallengeRequired,
+    SelectContactPointRecoveryForm,
+    RecaptchaChallengeForm,
+    FeedbackRequired,
+    PleaseWaitFewMinutes,
+    LoginRequired,
+    ClientThrottledError,
+    DirectMessageRequestsDisabled,
 )
 from instagrapi.utils import json_value
 
 logger = logging.getLogger(__name__)
+
 
 def handle_exception(client: Client, e: Exception):
     if isinstance(e, BadPassword):
@@ -52,6 +59,7 @@ def handle_exception(client: Client, e: Exception):
     elif isinstance(e, DirectMessageRequestsDisabled):
         logger.warning("Recipient does not accept new Direct message requests: %s", e)
     raise e
+
 
 cl = Client()
 cl.handle_exception = handle_exception
