@@ -6,7 +6,7 @@ Saved posts, collections, and liked media.
 | --- | --- | --- |
 | collections() | List\[Collection] | Get all collections for the authenticated account |
 | collection_pk_by_name(name: str) | int | Resolve collection ID by collection name |
-| collection_medias_by_name(name: str) | List\[Media] | Get medias in a collection by collection name |
+| collection_medias_by_name(name: str, amount: int = 21, last_media_pk: int = 0) | List\[Media] | Get medias in a collection by collection name |
 | collection_medias(collection_pk: str, amount: int = 21, last_media_pk: int = 0) | List\[Media] | Get medias in a collection; use `amount=0` to keep paginating |
 | collection_medias_v1_chunk(collection_pk: str, max_id: str = "") | Tuple[List\[Media], str] | Low-level chunk fetch with raw `next_max_id` cursor |
 | liked_medias(amount: int = 21, last_media_pk: int = 0) | List\[Media] | Get media liked by the current account |
