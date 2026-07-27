@@ -17,6 +17,7 @@ from instagrapi.exceptions import (
     PhotoNotUpload,
 )
 from instagrapi.image_util import prepare_image, prepare_story_image_fit
+from instagrapi.mixins.crossposting import FbDestinationType
 from instagrapi.types import (
     Location,
     Media,
@@ -253,9 +254,16 @@ class UploadPhotoMixin:
         upload_id: str = "",
         usertags: List[Usertag] = [],
         location: Location = None,
-        extra_data: Dict[str, str] = {},
+        extra_data: Dict[str, object] = {},
         schedule_at: Optional[Union[int, datetime]] = None,
         coauthor_user_ids: Optional[List[Union[int, str]]] = None,
+        share_to_facebook: bool = False,
+        share_to_threads: bool = False,
+        fb_destination_id: Optional[str] = None,
+        fb_destination_type: Optional[FbDestinationType] = None,
+        fb_validation_bypass: Optional[List[str]] = None,
+        threads_destination_id: Optional[str] = None,
+        threads_validation_bypass: Optional[List[str]] = None,
     ) -> Media:
         """
         Upload photo and configure to feed
@@ -278,6 +286,20 @@ class UploadPhotoMixin:
             Unix timestamp in seconds or datetime when the photo should be published.
         coauthor_user_ids: List[int | str], optional
             Instagram user IDs to invite as post coauthors.
+        share_to_facebook: bool, optional
+            Share this photo to a linked Facebook account/page.
+        share_to_threads: bool, optional
+            Share this photo to the linked Threads profile.
+        fb_destination_id: str, optional
+            Explicit Facebook destination id.
+        fb_destination_type: Literal["USER", "PAGE"], optional
+            Explicit Facebook destination type.
+        fb_validation_bypass: List[str], optional
+            Android Facebook cross-post validation bypass reasons.
+        threads_destination_id: str, optional
+            Explicit Threads profile id.
+        threads_validation_bypass: List[str], optional
+            Android Threads cross-post validation bypass reasons.
 
         Returns
         -------
@@ -291,6 +313,16 @@ class UploadPhotoMixin:
 
         extra_data = with_coauthor_user_ids(extra_data, coauthor_user_ids)
         extra_data = self._scheduled_extra_data(extra_data, schedule_at)
+        extra_data = self._media_crossposting_extra_data(
+            extra_data,
+            share_to_facebook=share_to_facebook,
+            share_to_threads=share_to_threads,
+            fb_destination_id=fb_destination_id,
+            fb_destination_type=fb_destination_type,
+            fb_validation_bypass=fb_validation_bypass,
+            threads_destination_id=threads_destination_id,
+            threads_validation_bypass=threads_validation_bypass,
+        )
         previous_media_ids = self._current_media_ids()
         upload_id, width, height = self.photo_rupload(path, upload_id)
         for attempt in range(10):
@@ -368,6 +400,7 @@ class UploadPhotoMixin:
         browse_session_id: Optional[str] = None,
         alacorn_session_id: Optional[str] = None,
         schedule_at: Optional[Union[int, datetime]] = None,
+        **kwargs,
     ) -> Media:
         """
         Upload a feed photo with attached music.
@@ -400,6 +433,9 @@ class UploadPhotoMixin:
             Fetched automatically when omitted.
         schedule_at: int or datetime, optional
             Unix timestamp in seconds or datetime when the photo should be published.
+        **kwargs
+            Additional options forwarded to :meth:`photo_upload`, including
+            cross-posting options.
 
         Returns
         -------
@@ -422,6 +458,7 @@ class UploadPhotoMixin:
             location=location,
             extra_data=data,
             schedule_at=schedule_at,
+            **kwargs,
         )
 
     @staticmethod

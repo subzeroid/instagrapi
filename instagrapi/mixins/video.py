@@ -16,6 +16,7 @@ from instagrapi.exceptions import (
     VideoConfigureStoryError,
     VideoNotUpload,
 )
+from instagrapi.mixins.crossposting import FbDestinationType
 from instagrapi.story import StoryBuilder
 from instagrapi.types import (
     DirectMessage,
@@ -439,9 +440,16 @@ class UploadVideoMixin:
         thumbnail: Path = None,
         usertags: List[Usertag] = [],
         location: Location = None,
-        extra_data: Dict[str, str] = {},
+        extra_data: Dict[str, object] = {},
         schedule_at: Optional[Union[int, datetime]] = None,
         coauthor_user_ids: Optional[List[Union[int, str]]] = None,
+        share_to_facebook: bool = False,
+        share_to_threads: bool = False,
+        fb_destination_id: Optional[str] = None,
+        fb_destination_type: Optional[FbDestinationType] = None,
+        fb_validation_bypass: Optional[List[str]] = None,
+        threads_destination_id: Optional[str] = None,
+        threads_validation_bypass: Optional[List[str]] = None,
     ) -> Media:
         """
         Upload video and configure to feed
@@ -464,6 +472,20 @@ class UploadVideoMixin:
             Unix timestamp in seconds or datetime when the video should be published.
         coauthor_user_ids: List[int | str], optional
             Instagram user IDs to invite as post coauthors.
+        share_to_facebook: bool, optional
+            Share this video to a linked Facebook account/page.
+        share_to_threads: bool, optional
+            Share this video to the linked Threads profile.
+        fb_destination_id: str, optional
+            Explicit Facebook destination id.
+        fb_destination_type: Literal["USER", "PAGE"], optional
+            Explicit Facebook destination type.
+        fb_validation_bypass: List[str], optional
+            Android Facebook cross-post validation bypass reasons.
+        threads_destination_id: str, optional
+            Explicit Threads profile id.
+        threads_validation_bypass: List[str], optional
+            Android Threads cross-post validation bypass reasons.
 
         Returns
         -------
@@ -475,6 +497,16 @@ class UploadVideoMixin:
             thumbnail = Path(thumbnail)
         extra_data = with_coauthor_user_ids(extra_data, coauthor_user_ids)
         extra_data = self._scheduled_extra_data(extra_data, schedule_at)
+        extra_data = self._media_crossposting_extra_data(
+            extra_data,
+            share_to_facebook=share_to_facebook,
+            share_to_threads=share_to_threads,
+            fb_destination_id=fb_destination_id,
+            fb_destination_type=fb_destination_type,
+            fb_validation_bypass=fb_validation_bypass,
+            threads_destination_id=threads_destination_id,
+            threads_validation_bypass=threads_validation_bypass,
+        )
         upload_id, width, height, duration, thumbnail = self.video_rupload(path, thumbnail, to_story=False)
         for attempt in range(50):
             self.logger.debug(f"Attempt #{attempt} to configure Video: {path}")
