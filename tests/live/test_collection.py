@@ -12,12 +12,16 @@ class ClientCollectionTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(hasattr(collection, field))
 
     def test_collection_medias_by_name(self):
-        medias = self.cl.collection_medias_by_name("Repost")
-        self.assertTrue(len(medias) > 0)
+        medias = self.cl.collection_medias_by_name("Repost", amount=1)
+        self.assertEqual(len(medias), 1)
         media = medias[0]
         self.assertIsInstance(media, Media)
         for field in REQUIRED_MEDIA_FIELDS:
             self.assertTrue(hasattr(media, field))
+        self.assertEqual(
+            self.cl.collection_medias_by_name("Repost", amount=1, last_media_pk=media.pk),
+            [],
+        )
 
     def test_media_save_to_collection(self):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
