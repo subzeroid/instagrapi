@@ -2276,17 +2276,17 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 </thead>
 <tbody>
 <tr>
-<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
+<td>photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)</td>
 <td>Media</td>
 <td>Upload photo (Support JPG files)</td>
 </tr>
 <tr>
-<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
+<td>video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)</td>
 <td>Media</td>
 <td>Upload video (Support MP4 files)</td>
 </tr>
 <tr>
-<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None)</td>
+<td>album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int | datetime = None, coauthor_user_ids: List[int | str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)</td>
 <td>Media</td>
 <td>Upload Album (Support JPG/MP4 files)</td>
 </tr>
@@ -2296,9 +2296,9 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <td>Upload IGTV (Support MP4 files)</td>
 </tr>
 <tr>
-<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int | str] = None, show_preview_in_feed: bool = True)</td>
+<td>clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int | str] = None, show_preview_in_feed: bool = True, share_to_threads: bool = False)</td>
 <td>Media</td>
-<td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts. Set <code>share_to_facebook=True</code> to cross-post to a linked Facebook destination. Pass Reel topic <code>fit_id</code> values with <code>topics=[...]</code>. Set <code>show_preview_in_feed=False</code> to hide the feed/profile grid preview</td>
+<td>Upload Reels Clip (Support MP4 files). Set <code>trial=True</code> to publish a Trial Reel on eligible accounts. Use <code>share_to_facebook=True</code> or <code>share_to_threads=True</code> to cross-post to a linked destination. Pass Reel topic <code>fit_id</code> values with <code>topics=[...]</code>. Set <code>show_preview_in_feed=False</code> to hide the feed/profile grid preview</td>
 </tr>
 <tr>
 <td>clip_change_cover(media_pk: str, cover_path: Path)</td>
@@ -2319,6 +2319,41 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
 <td>clip_interest_topics()</td>
 <td>List[dict]</td>
 <td>Get Reel topic catalog items with <code>name</code> and <code>fit_id</code> values for <code>clip_upload(..., topics=...)</code></td>
+</tr>
+<tr>
+<td>media_share_to_fb_unified_config()</td>
+<td>dict</td>
+<td>Get Android's unified cross-posting configuration for Facebook destinations</td>
+</tr>
+<tr>
+<td>media_share_to_fb_unified_destination(config: Dict = None)</td>
+<td>dict</td>
+<td>Resolve confirmed Facebook Feed destination fields from unified cross-posting configuration</td>
+</tr>
+<tr>
+<td>media_share_to_fb_destination(config: Dict = None, destination_id: str = None, destination_type: Literal["USER", "PAGE"] = None)</td>
+<td>dict</td>
+<td>Resolve or validate Facebook Feed destination fields</td>
+</tr>
+<tr>
+<td>media_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: Literal["USER", "PAGE"] = None)</td>
+<td>dict</td>
+<td>Build Facebook Feed cross-post configure fields for manual <code>extra_data</code></td>
+</tr>
+<tr>
+<td>media_share_to_threads_config()</td>
+<td>dict</td>
+<td>Get the Threads profile linked to the current Instagram account</td>
+</tr>
+<tr>
+<td>media_share_to_threads_destination(config: Dict = None, destination_id: str = None)</td>
+<td>dict</td>
+<td>Resolve or validate the linked Threads destination id</td>
+</tr>
+<tr>
+<td>media_share_to_threads_extra_data(config: Dict = None, destination_id: str = None)</td>
+<td>dict</td>
+<td>Build Threads cross-post configure fields for manual <code>extra_data</code></td>
 </tr>
 <tr>
 <td>clip_share_to_fb_config()</td>
@@ -2415,9 +2450,13 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <code>trial_params={"graduation_strategy": "manual"}</code> by default and disables feed preview for the upload.</p>
 <p>For regular Reels, pass <code>show_preview_in_feed=False</code> to hide the Reel preview from the feed/profile grid. instagrapi sends this as Instagram's low-level <code>clips_share_preview_to_feed</code> value <code>"0"</code>; the default <code>True</code> sends <code>"1"</code>. The legacy <code>feed_show</code> argument is still accepted as a raw override for callers that already build wire-format payloads.</p>
 <p>Reel topics use Instagram's interest topic <code>fit_id</code> values. Call <code>clip_interest_topics()</code> to get the current catalog, then pass selected ids with <code>clip_upload(..., topics=[topic["fit_id"]])</code>; instagrapi sends them as the Android <code>interest_topics</code> configure field.</p>
+<p>Feed cross-posting is supported by <code>photo_upload()</code>, <code>video_upload()</code>, and <code>album_upload()</code>, including their feed-music wrappers. Set <code>share_to_facebook=True</code>, <code>share_to_threads=True</code>, or both. Unless you provide explicit destination values, instagrapi discovers the linked destinations before uploading media bytes and raises <code>ClientError</code> if the requested destination cannot be confirmed.</p>
+<p>Facebook Feed cross-posting requires a linked Facebook account or page and sends both a destination id and <code>fb_destination_type="USER"</code> or <code>"PAGE"</code>. Threads cross-posting requires a linked Threads profile and sends only its destination id; Threads does not use a destination type. Call <code>media_share_to_fb_destination()</code> or <code>media_share_to_threads_destination()</code> to inspect the normalized destination, or pass <code>fb_destination_id</code>, <code>fb_destination_type</code>, and <code>threads_destination_id</code> directly when discovery is unavailable. Validation bypass lists are available through <code>fb_validation_bypass</code> and <code>threads_validation_bypass</code> for callers reproducing a confirmed app payload.</p>
+<p>Explicit fields in <code>extra_data</code> take precedence over generated cross-posting fields. Upload responses preserve Instagram's cross-post status in <code>Media.crosspost</code>, <code>Media.crosspost_metadata</code>, and <code>Media.has_shared_to_fb</code> when those fields are returned.</p>
 <p>Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer use only <code>{"share_to_facebook": 1}</code> for Reels; they also send destination and cross-posting fields such as <code>share_to_fb_destination_id</code>, <code>share_to_fb_destination_type</code>, <code>no_token_crosspost</code>, and <code>attempt_id</code>.</p>
-<p><code>clip_share_to_fb_config()</code> calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return <code>share_to_fb_unavailable=True</code> even when the Instagram app can cross-post manually. When <code>clip_upload(..., share_to_facebook=True)</code> has no manual destination override, instagrapi now falls back to Android's <code>CrosspostingUnifiedConfigsQuery</code> via <code>clip_share_to_fb_unified_config()</code> and uses <code>clip_share_to_fb_unified_destination()</code> only if that response contains confirmed Reel-to-Facebook destination fields. Use <code>clip_share_to_fb_destination()</code> when a config or captured app response already contains confirmed destination fields; it normalizes <code>destination_id</code>, <code>destination_type</code>, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass <code>fb_destination_id</code> and <code>fb_destination_type="USER"</code> or <code>"PAGE"</code> to <code>clip_upload(...)</code>, or build <code>extra_data</code> manually with <code>clip_share_to_fb_extra_data(...)</code>. The destination type is typed as <code>Literal["USER", "PAGE"]</code>, and those uppercase values are what the Reel configure payload sends to Instagram. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises <code>ClientError</code> before uploading video bytes. The Reel cross-post <code>attempt_id</code> is generated automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> when replaying or testing a specific low-level payload.
-<code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
+<p><code>clip_share_to_fb_config()</code> calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return <code>share_to_fb_unavailable=True</code> even when the Instagram app can cross-post manually. When <code>clip_upload(..., share_to_facebook=True)</code> has no manual destination override, instagrapi now falls back to Android's <code>CrosspostingUnifiedConfigsQuery</code> via <code>clip_share_to_fb_unified_config()</code> and uses <code>clip_share_to_fb_unified_destination()</code> only if that response contains confirmed Reel-to-Facebook destination fields. Use <code>clip_share_to_fb_destination()</code> when a config or captured app response already contains confirmed destination fields; it normalizes <code>destination_id</code>, <code>destination_type</code>, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass <code>fb_destination_id</code> and <code>fb_destination_type="USER"</code> or <code>"PAGE"</code> to <code>clip_upload(...)</code>, or build <code>extra_data</code> manually with <code>clip_share_to_fb_extra_data(...)</code>. The destination type is typed as <code>Literal["USER", "PAGE"]</code>, and those uppercase values are what the Reel configure payload sends to Instagram. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises <code>ClientError</code> before uploading video bytes. The Reel cross-post <code>attempt_id</code> is generated automatically; only pass it to <code>clip_share_to_fb_extra_data(...)</code> when replaying or testing a specific low-level payload.</p>
+<p>Threads sharing on Reels uses the same <code>share_to_threads</code>, <code>threads_destination_id</code>, and <code>threads_validation_bypass</code> options as feed uploads.</p>
+<p><code>bloks_fxcal_link_reels_share()</code> exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks <code>fbid</code>, auth, and linking values as linking context, not as <code>fb_destination_id</code>; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as <code>share_to_fb_destination_id</code>. See <a href="https://github.com/subzeroid/instagrapi/issues/2556">#2556</a> for tracking automatic destination discovery.</p>
 <h3 id="example_2">Example:</h3>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
@@ -2430,6 +2469,23 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <span class="o">...</span>     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
 <span class="o">...</span>     <span class="s2">&quot;Scheduled photo&quot;</span><span class="p">,</span>
 <span class="o">...</span>     <span class="n">schedule_at</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span> <span class="o">+</span> <span class="mi">3600</span><span class="p">,</span>
+<span class="o">...</span> <span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">crossposted_photo</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="s2">&quot;Cross-posting this photo&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">share_to_facebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">share_to_threads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="o">...</span> <span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">crossposted_photo</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload</span><span class="p">(</span>
+<span class="o">...</span>     <span class="s2">&quot;/app/image.jpg&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="s2">&quot;Cross-posting with explicit destinations&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">share_to_facebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">fb_destination_id</span><span class="o">=</span><span class="s2">&quot;FACEBOOK_DESTINATION_ID&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">fb_destination_type</span><span class="o">=</span><span class="s2">&quot;PAGE&quot;</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">share_to_threads</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="o">...</span>     <span class="n">threads_destination_id</span><span class="o">=</span><span class="s2">&quot;THREADS_PROFILE_ID&quot;</span><span class="p">,</span>
 <span class="o">...</span> <span class="p">)</span>
 
 <span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_trial_eligible</span><span class="p">():</span>
