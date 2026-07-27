@@ -59,7 +59,7 @@ class CollectionMixin:
                 return item.id
         raise CollectionNotFound(name=name)
 
-    def collection_medias_by_name(self, name: str) -> List[Collection]:
+    def collection_medias_by_name(self, name: str, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
         Get medias by collection name
 
@@ -67,14 +67,22 @@ class CollectionMixin:
         ----------
         name: str
             Name of the collection
+        amount: int, optional
+            Maximum number of media to return, default is 21
+        last_media_pk: int, optional
+            Last PK user has seen, function will return medias after this pk. Default is 0
 
         Returns
         -------
-        List[Collection]
-            A list of collections
+        List[Media]
+            A list of objects of Media
         """
 
-        return self.collection_medias(self.collection_pk_by_name(name))
+        return self.collection_medias(
+            self.collection_pk_by_name(name),
+            amount=amount,
+            last_media_pk=last_media_pk,
+        )
 
     def liked_medias(self, amount: int = 21, last_media_pk: int = 0) -> List[Media]:
         """
