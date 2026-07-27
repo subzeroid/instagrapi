@@ -370,15 +370,22 @@ Upload medias to your feed. Common arguments:
 
 | Method                                                                                                                                 | Return  | Description
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------
-| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)             | Media   | Upload photo (Support JPG files)
-| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)            | Media   | Upload video (Support MP4 files)
-| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None)                      | Media   | Upload Album (Support JPG/MP4 files)
+| photo_upload(path: Path, caption: str, upload_id: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)             | Media   | Upload photo (Support JPG files)
+| video_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)            | Media   | Upload video (Support MP4 files)
+| album_upload(paths: List[Path], caption: str, usertags: List[Usertag], location: Location, extra_data: Dict = {}, schedule_at: int \| datetime = None, coauthor_user_ids: List[int \| str] = None, share_to_facebook: bool = False, share_to_threads: bool = False)                      | Media   | Upload Album (Support JPG/MP4 files)
 | igtv_upload(path: Path, title: str, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}) | Media   | Upload IGTV (Support MP4 files)
-| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int \| str] = None, show_preview_in_feed: bool = True) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Set `share_to_facebook=True` to cross-post to a linked Facebook destination. Pass Reel topic `fit_id` values with `topics=[...]`. Set `show_preview_in_feed=False` to hide the feed/profile grid preview
+| clip_upload(path: Path, caption: str, thumbnail: Path, usertags: List[Usertag], location: Location, extra_data: Dict = {}, trial: bool = False, trial_graduation_strategy: str = "manual", share_to_facebook: bool = False, topics: List[int \| str] = None, show_preview_in_feed: bool = True, share_to_threads: bool = False) | Media | Upload Reels Clip (Support MP4 files). Set `trial=True` to publish a Trial Reel on eligible accounts. Use `share_to_facebook=True` or `share_to_threads=True` to cross-post to a linked destination. Pass Reel topic `fit_id` values with `topics=[...]`. Set `show_preview_in_feed=False` to hide the feed/profile grid preview
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel
 | clip_trial_eligible() | bool | Check whether Reel creation preflight reports Trial Reels enabled before uploading video bytes
 | clip_info_for_creation() | dict | Get Reel creation preflight configuration from the mobile API
 | clip_interest_topics() | List[dict] | Get Reel topic catalog items with `name` and `fit_id` values for `clip_upload(..., topics=...)`
+| media_share_to_fb_unified_config() | dict | Get Android's unified cross-posting configuration for Facebook destinations
+| media_share_to_fb_unified_destination(config: Dict = None) | dict | Resolve confirmed Facebook Feed destination fields from unified cross-posting configuration
+| media_share_to_fb_destination(config: Dict = None, destination_id: str = None, destination_type: Literal["USER", "PAGE"] = None) | dict | Resolve or validate Facebook Feed destination fields
+| media_share_to_fb_extra_data(config: Dict = None, destination_id: str = None, destination_type: Literal["USER", "PAGE"] = None) | dict | Build Facebook Feed cross-post configure fields for manual `extra_data`
+| media_share_to_threads_config() | dict | Get the Threads profile linked to the current Instagram account
+| media_share_to_threads_destination(config: Dict = None, destination_id: str = None) | dict | Resolve or validate the linked Threads destination id
+| media_share_to_threads_extra_data(config: Dict = None, destination_id: str = None) | dict | Build Threads cross-post configure fields for manual `extra_data`
 | clip_share_to_fb_config() | dict | Get Reel Facebook sharing configuration from the mobile API
 | clip_share_to_fb_unified_config() | dict | Get the Android cross-posting unified config used by the Reel composer
 | clip_share_to_fb_unified_destination(config: Dict = None) | dict | Resolve confirmed Reel Facebook destination fields from the unified cross-posting config
@@ -416,9 +423,18 @@ For regular Reels, pass `show_preview_in_feed=False` to hide the Reel preview fr
 
 Reel topics use Instagram's interest topic `fit_id` values. Call `clip_interest_topics()` to get the current catalog, then pass selected ids with `clip_upload(..., topics=[topic["fit_id"]])`; instagrapi sends them as the Android `interest_topics` configure field.
 
+Feed cross-posting is supported by `photo_upload()`, `video_upload()`, and `album_upload()`, including their feed-music wrappers. Set `share_to_facebook=True`, `share_to_threads=True`, or both. Unless you provide explicit destination values, instagrapi discovers the linked destinations before uploading media bytes and raises `ClientError` if the requested destination cannot be confirmed.
+
+Facebook Feed cross-posting requires a linked Facebook account or page and sends both a destination id and `fb_destination_type="USER"` or `"PAGE"`. Threads cross-posting requires a linked Threads profile and sends only its destination id; Threads does not use a destination type. Call `media_share_to_fb_destination()` or `media_share_to_threads_destination()` to inspect the normalized destination, or pass `fb_destination_id`, `fb_destination_type`, and `threads_destination_id` directly when discovery is unavailable. Validation bypass lists are available through `fb_validation_bypass` and `threads_validation_bypass` for callers reproducing a confirmed app payload.
+
+Explicit fields in `extra_data` take precedence over generated cross-posting fields. Upload responses preserve Instagram's cross-post status in `Media.crosspost`, `Media.crosspost_metadata`, and `Media.has_shared_to_fb` when those fields are returned.
+
 Facebook Reel sharing requires a Facebook account/page linked in the Instagram app. Modern Android app builds no longer use only `{"share_to_facebook": 1}` for Reels; they also send destination and cross-posting fields such as `share_to_fb_destination_id`, `share_to_fb_destination_type`, `no_token_crosspost`, and `attempt_id`.
 
 `clip_share_to_fb_config()` calls the lightweight Reel sharing preflight endpoint. On recent app versions this response contains availability flags, not the full Account Center destination state, and some linked accounts can still return `share_to_fb_unavailable=True` even when the Instagram app can cross-post manually. When `clip_upload(..., share_to_facebook=True)` has no manual destination override, instagrapi now falls back to Android's `CrosspostingUnifiedConfigsQuery` via `clip_share_to_fb_unified_config()` and uses `clip_share_to_fb_unified_destination()` only if that response contains confirmed Reel-to-Facebook destination fields. Use `clip_share_to_fb_destination()` when a config or captured app response already contains confirmed destination fields; it normalizes `destination_id`, `destination_type`, optional audience, and validation bypass values. For accounts where the app can cross-post manually but automatic discovery still has no destination, pass `fb_destination_id` and `fb_destination_type="USER"` or `"PAGE"` to `clip_upload(...)`, or build `extra_data` manually with `clip_share_to_fb_extra_data(...)`. The destination type is typed as `Literal["USER", "PAGE"]`, and those uppercase values are what the Reel configure payload sends to Instagram. If neither the preflight/unified config data nor the caller provides a destination, instagrapi raises `ClientError` before uploading video bytes. The Reel cross-post `attempt_id` is generated automatically; only pass it to `clip_share_to_fb_extra_data(...)` when replaying or testing a specific low-level payload.
+
+Threads sharing on Reels uses the same `share_to_threads`, `threads_destination_id`, and `threads_validation_bypass` options as feed uploads.
+
 `bloks_fxcal_link_reels_share()` exposes the raw Account Center Bloks link action seen on the Reel composer surface, but it starts an app linking flow and does not replace the interactive Facebook linking step in Instagram. Treat Account Center Bloks `fbid`, auth, and linking values as linking context, not as `fb_destination_id`; only use them as a Reel publish destination after verifying that the final Reel configure request sends the same value as `share_to_fb_destination_id`. See [#2556](https://github.com/subzeroid/instagrapi/issues/2556) for tracking automatic destination discovery.
 
 ### Example:
@@ -435,6 +451,23 @@ Facebook Reel sharing requires a Facebook account/page linked in the Instagram a
 ...     "/app/image.jpg",
 ...     "Scheduled photo",
 ...     schedule_at=int(time.time()) + 3600,
+... )
+
+>>> crossposted_photo = cl.photo_upload(
+...     "/app/image.jpg",
+...     "Cross-posting this photo",
+...     share_to_facebook=True,
+...     share_to_threads=True,
+... )
+
+>>> crossposted_photo = cl.photo_upload(
+...     "/app/image.jpg",
+...     "Cross-posting with explicit destinations",
+...     share_to_facebook=True,
+...     fb_destination_id="FACEBOOK_DESTINATION_ID",
+...     fb_destination_type="PAGE",
+...     share_to_threads=True,
+...     threads_destination_id="THREADS_PROFILE_ID",
 ... )
 
 >>> if cl.clip_trial_eligible():

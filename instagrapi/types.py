@@ -552,6 +552,9 @@ class Media(TypesBaseModel):
     title: Optional[str] = ""
     resources: List[Resource] = []
     clips_metadata: Optional[Union[ClipsMetadata, dict]] = None
+    crosspost: List[str] = []
+    crosspost_metadata: Optional[dict] = None
+    has_shared_to_fb: Optional[int] = None
 
 
 class MediaXma(TypesBaseModel):

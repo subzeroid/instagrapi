@@ -675,6 +675,9 @@ class UploadClipMixin:
         fb_validation_check_bypass: Optional[bool] = None,
         topics: Optional[List[Union[str, int]]] = None,
         show_preview_in_feed: bool = True,
+        share_to_threads: bool = False,
+        threads_destination_id: Optional[str] = None,
+        threads_validation_bypass: Optional[List[str]] = None,
     ) -> Media:
         """
         Upload CLIP to Instagram
@@ -722,6 +725,12 @@ class UploadClipMixin:
         show_preview_in_feed: bool, optional
             Show Reel preview in feed/profile grid, default is True.
             Sent to Instagram as ``"1"`` or ``"0"``.
+        share_to_threads: bool, optional
+            Share this Reel to the linked Threads profile.
+        threads_destination_id: str, optional
+            Explicit Threads profile id.
+        threads_validation_bypass: List[str], optional
+            Android Threads cross-post validation bypass reasons.
 
         Returns
         -------
@@ -747,6 +756,12 @@ class UploadClipMixin:
                 validation_check_bypass=fb_validation_check_bypass,
             )
             configure_extra_data = {**fb_extra_data, **configure_extra_data}
+        if share_to_threads:
+            threads_extra_data = self.media_share_to_threads_extra_data(
+                destination_id=threads_destination_id,
+                validation_bypass=threads_validation_bypass,
+            )
+            configure_extra_data = {**threads_extra_data, **configure_extra_data}
         if trial:
             feed_show = "0"
             configure_extra_data.setdefault(

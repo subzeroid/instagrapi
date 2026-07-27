@@ -1011,3 +1011,108 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+
+class ClientFeedCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
+    photo_path = Path("examples/kanada.jpg")
+
+    def __init__(self, *args, **kwargs):
+        self.cl = None
+        return unittest.TestCase.__init__(self, *args, **kwargs)
+
+    def setup_method(self, *args, **kwargs):
+        return None
+
+    def setUp(self):
+        if not TEST_ACCOUNTS_URL:
+            self.skipTest("TEST_ACCOUNTS_URL is required for feed crosspost live tests")
+        try:
+            self.cl = self.fresh_account()
+        except RuntimeError as exc:
+            self.skipTest(str(exc))
+
+    def cleanup_uploaded_media(self, media):
+        if media:
+            self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_media_share_to_fb_unified_config_live(self):
+        config = self.cl.media_share_to_fb_unified_config()
+
+        self.assertIsInstance(config.get("data"), dict)
+
+    def test_media_share_to_fb_destination_live(self):
+        try:
+            destination = self.cl.media_share_to_fb_destination()
+        except ClientError as exc:
+            self.skipTest(f"No confirmed Facebook Feed destination available: {exc}")
+
+        self.assertTrue(destination["destination_id"])
+        self.assertIn(destination["destination_type"], {"USER", "PAGE"})
+
+    def test_media_share_to_threads_config_live(self):
+        config = self.cl.media_share_to_threads_config()
+
+        data = config.get("data")
+        self.assertIsInstance(data, dict)
+        self.assertIn("xcxp_fetch_linked_threads_profile", data)
+
+    def test_media_share_to_threads_destination_live(self):
+        try:
+            destination = self.cl.media_share_to_threads_destination()
+        except ClientError as exc:
+            self.skipTest(f"No linked Threads profile available: {exc}")
+
+        self.assertTrue(destination["destination_id"])
+
+    def test_photo_upload_share_to_facebook_live(self):
+        try:
+            destination = self.cl.media_share_to_fb_destination()
+        except ClientError as exc:
+            self.skipTest(f"No confirmed Facebook Feed destination available: {exc}")
+
+        media = None
+        try:
+            media = self.cl.photo_upload(
+                self.photo_path,
+                "Facebook Feed crosspost live test",
+                share_to_facebook=True,
+                fb_destination_id=destination["destination_id"],
+                fb_destination_type=destination["destination_type"],
+            )
+            self.assertUploadedMediaAccessible(
+                media,
+                media_type=1,
+                caption_text="Facebook Feed crosspost live test",
+            )
+            self.assertTrue(
+                "FB" in {str(item).upper() for item in media.crosspost} or bool(media.has_shared_to_fb),
+                "Instagram configure response did not confirm Facebook cross-posting",
+            )
+        finally:
+            self.cleanup_uploaded_media(media)
+
+    def test_photo_upload_share_to_threads_live(self):
+        try:
+            destination = self.cl.media_share_to_threads_destination()
+        except ClientError as exc:
+            self.skipTest(f"No linked Threads profile available: {exc}")
+
+        media = None
+        try:
+            media = self.cl.photo_upload(
+                self.photo_path,
+                "Threads crosspost live test",
+                share_to_threads=True,
+                threads_destination_id=destination["destination_id"],
+            )
+            self.assertUploadedMediaAccessible(
+                media,
+                media_type=1,
+                caption_text="Threads crosspost live test",
+            )
+            self.assertTrue(
+                {"THREADS", "BARCELONA"} & {str(item).upper() for item in media.crosspost},
+                "Instagram configure response did not confirm Threads cross-posting",
+            )
+        finally:
+            self.cleanup_uploaded_media(media)

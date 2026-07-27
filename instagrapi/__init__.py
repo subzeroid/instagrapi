@@ -14,6 +14,7 @@ from instagrapi.mixins.challenge import ChallengeResolveMixin
 from instagrapi.mixins.clip import ClipMixin, DownloadClipMixin, UploadClipMixin
 from instagrapi.mixins.collection import CollectionMixin
 from instagrapi.mixins.comment import CommentMixin
+from instagrapi.mixins.crossposting import CrossPostingMixin
 from instagrapi.mixins.direct import DirectMixin
 from instagrapi.mixins.explore import ExploreMixin
 from instagrapi.mixins.fbsearch import FbSearchMixin
@@ -58,6 +59,7 @@ class Client(
     ChallengeResolveMixin,
     PrivateRequestMixin,
     PrivateGraphQLRequestMixin,
+    CrossPostingMixin,
     TopSearchesPublicMixin,
     ProfilePublicMixin,
     LoginMixin,

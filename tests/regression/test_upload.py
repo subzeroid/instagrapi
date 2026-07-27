@@ -84,6 +84,10 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assert_fb_destination_type_literal("clip_share_to_fb_destination", "destination_type")
         self.assert_fb_destination_type_literal("clip_share_to_fb_extra_data", "destination_type")
         self.assert_fb_destination_type_literal("clip_upload", "fb_destination_type")
+        self.assert_fb_destination_type_literal("media_share_to_fb_destination", "destination_type")
+        self.assert_fb_destination_type_literal("media_share_to_fb_extra_data", "destination_type")
+        for method_name in ("photo_upload", "video_upload", "album_upload"):
+            self.assert_fb_destination_type_literal(method_name, "fb_destination_type")
 
     def build_story(self, story_pk="10", media_type=1):
         return Story(
@@ -182,6 +186,257 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
         self.assertEqual(result, expected)
+
+    def test_media_share_to_fb_destination_selects_feed_and_normalizes_identity_type(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "xcxp_unified_crossposting_configs_root": {
+                    "configs": [
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                            "destination": {
+                                "destination_id": "reels-destination",
+                                "destination_type": "USER",
+                            },
+                        },
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                            "destination": {
+                                "obfuscated_identity_id": "feed-destination",
+                                "identity_type": "FB_PAGE",
+                            },
+                        },
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(config=config)
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-destination",
+                "destination_type": "PAGE",
+            },
+        )
+
+    def test_media_share_to_fb_destination_extracts_feed_service_identity_mapping(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "custom_service_data": {
+                                "auto_xpost_setting": [
+                                    {
+                                        "is_auto_crosspost_enabled": True,
+                                        "source_surface": "STORY",
+                                    },
+                                    {
+                                        "is_auto_crosspost_enabled": True,
+                                        "source_surface": "FEED",
+                                    },
+                                ]
+                            },
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "feed-service-destination",
+                                            "identity_type": "FB_USER",
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(config=config)
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-service-destination",
+                "destination_type": "USER",
+            },
+        )
+
+    def test_media_share_to_fb_extra_data_builds_feed_crosspost_payload(self):
+        client = self.build_client()
+
+        extra_data = client.media_share_to_fb_extra_data(
+            destination_id="fb-destination",
+            destination_type="USER",
+            validation_bypass=["AUTO_CROSSPOST_SETTING"],
+            attempt_id="attempt-id",
+        )
+
+        self.assertEqual(
+            extra_data,
+            {
+                "share_to_facebook": "1",
+                "share_to_fb_destination_id": "fb-destination",
+                "share_to_fb_destination_type": "USER",
+                "share_to_facebook_validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+                "no_token_crosspost": "1",
+                "attempt_id": "attempt-id",
+            },
+        )
+
+    def test_media_share_to_threads_config_requests_linked_profile_query(self):
+        client = self.build_client()
+        expected = {
+            "data": {
+                "xcxp_fetch_linked_threads_profile": {
+                    "id": "threads-destination",
+                    "username": "threads-user",
+                }
+            }
+        }
+
+        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+            result = client.media_share_to_threads_config()
+
+        graphql_request.assert_called_once_with(
+            friendly_name="LinkedBarcelonaProfileQuery",
+            root_field_name="xcxp_fetch_linked_threads_profile",
+            variables={},
+            client_doc_id="1294688273527445410149299611",
+            priority="u=3, i",
+            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+        )
+        self.assertEqual(result, expected)
+
+    def test_media_share_to_threads_destination_extracts_linked_profile_id(self):
+        client = self.build_client()
+
+        destination = client.media_share_to_threads_destination(
+            config={
+                "data": {
+                    "xcxp_fetch_linked_threads_profile": {
+                        "id": "threads-destination",
+                        "username": "threads-user",
+                        "profile_pic_url": "https://example.com/threads.jpg",
+                    }
+                }
+            }
+        )
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "threads-destination",
+                "username": "threads-user",
+                "profile_pic_url": "https://example.com/threads.jpg",
+            },
+        )
+
+    def test_media_share_to_threads_destination_rejects_unlinked_profile(self):
+        client = self.build_client()
+
+        with self.assertRaises(ClientError) as ctx:
+            client.media_share_to_threads_destination(config={"data": {"xcxp_fetch_linked_threads_profile": None}})
+
+        self.assertIn("no linked Threads profile", str(ctx.exception))
+
+    def test_media_share_to_threads_extra_data_builds_android_payload(self):
+        client = self.build_client()
+
+        extra_data = client.media_share_to_threads_extra_data(
+            destination_id="threads-destination",
+            validation_bypass=["AUTO_CROSSPOST_SETTING"],
+        )
+
+        self.assertEqual(
+            extra_data,
+            {
+                "share_to_threads": "1",
+                "share_to_threads_destination_id": "threads-destination",
+                "share_to_threads_validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+            },
+        )
+
+    def test_media_crossposting_extra_data_combines_destinations_without_mutating_input(self):
+        client = self.build_client()
+        original = {"disable_comments": 1, "attempt_id": "caller-attempt"}
+
+        with mock.patch.object(
+            client,
+            "media_share_to_fb_extra_data",
+            return_value={"share_to_facebook": "1", "attempt_id": "generated-attempt"},
+        ) as facebook_extra:
+            with mock.patch.object(
+                client,
+                "media_share_to_threads_extra_data",
+                return_value={
+                    "share_to_threads": "1",
+                    "share_to_threads_destination_id": "threads-destination",
+                },
+            ) as threads_extra:
+                result = client._media_crossposting_extra_data(
+                    original,
+                    share_to_facebook=True,
+                    share_to_threads=True,
+                    fb_destination_id="fb-destination",
+                    fb_destination_type="PAGE",
+                    threads_destination_id="threads-destination",
+                )
+
+        self.assertEqual(original, {"disable_comments": 1, "attempt_id": "caller-attempt"})
+        self.assertEqual(
+            result,
+            {
+                "share_to_facebook": "1",
+                "share_to_threads": "1",
+                "share_to_threads_destination_id": "threads-destination",
+                "disable_comments": 1,
+                "attempt_id": "caller-attempt",
+            },
+        )
+        facebook_extra.assert_called_once_with(
+            destination_id="fb-destination",
+            destination_type="PAGE",
+            validation_bypass=None,
+        )
+        threads_extra.assert_called_once_with(
+            destination_id="threads-destination",
+            validation_bypass=None,
+        )
+
+    def test_extract_media_preserves_crosspost_metadata(self):
+        payload = self.build_media_payload(media_type=1)
+        payload.update(
+            {
+                "crosspost": ["FB", "IG", "THREADS"],
+                "crosspost_metadata": {
+                    "fb_crosspost_fbid": "fb-media-id",
+                    "threads_crosspost_id": "threads-media-id",
+                },
+                "has_shared_to_fb": 3,
+            }
+        )
+
+        media = extract_media_v1(payload)
+
+        self.assertEqual(media.crosspost, ["FB", "IG", "THREADS"])
+        self.assertEqual(
+            media.crosspost_metadata,
+            {
+                "fb_crosspost_fbid": "fb-media-id",
+                "threads_crosspost_id": "threads-media-id",
+            },
+        )
+        self.assertEqual(media.has_shared_to_fb, 3)
 
     def test_photo_rupload_sends_private_auth_headers(self):
         client = self.build_client()
@@ -716,6 +971,191 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(extra_data["publish_mode"], "scheduled")
         self.assertEqual(json.loads(extra_data["content_scheduling_metadata"]), {"scheduled_publish_time": schedule_at})
 
+    def test_photo_upload_adds_feed_crossposting_params_before_upload(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=1)
+        original = {"disable_comments": 1}
+        crosspost_data = {
+            "disable_comments": 1,
+            "share_to_facebook": "1",
+            "share_to_threads": "1",
+        }
+
+        with mock.patch.object(
+            client,
+            "_media_crossposting_extra_data",
+            return_value=crosspost_data,
+        ) as crossposting:
+            with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)) as photo_rupload:
+                with mock.patch.object(
+                    client,
+                    "photo_configure",
+                    return_value={"status": "ok", "media": media_payload},
+                ) as configure:
+                    with mock.patch("time.sleep"):
+                        media = client.photo_upload(
+                            Path("example.jpg"),
+                            "caption",
+                            extra_data=original,
+                            share_to_facebook=True,
+                            share_to_threads=True,
+                            fb_destination_id="fb-destination",
+                            fb_destination_type="PAGE",
+                            threads_destination_id="threads-destination",
+                        )
+
+        self.assertIsInstance(media, Media)
+        self.assertEqual(original, {"disable_comments": 1})
+        crossposting.assert_called_once_with(
+            {"disable_comments": 1},
+            share_to_facebook=True,
+            share_to_threads=True,
+            fb_destination_id="fb-destination",
+            fb_destination_type="PAGE",
+            fb_validation_bypass=None,
+            threads_destination_id="threads-destination",
+            threads_validation_bypass=None,
+        )
+        photo_rupload.assert_called_once()
+        self.assertEqual(configure.call_args.kwargs["extra_data"], crosspost_data)
+
+    def test_video_upload_adds_feed_crossposting_params_before_upload(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=2)
+        crosspost_data = {
+            "share_to_facebook": "1",
+            "share_to_threads": "1",
+        }
+
+        with mock.patch.object(
+            client,
+            "_media_crossposting_extra_data",
+            return_value=crosspost_data,
+        ) as crossposting:
+            with mock.patch.object(
+                client,
+                "video_rupload",
+                return_value=("1", 720, 1280, 5, Path("/tmp/thumb.jpg")),
+            ) as video_rupload:
+                with mock.patch.object(
+                    client,
+                    "video_configure",
+                    return_value={"status": "ok", "media": media_payload},
+                ) as configure:
+                    with mock.patch("time.sleep"):
+                        media = client.video_upload(
+                            Path("example.mp4"),
+                            "caption",
+                            share_to_facebook=True,
+                            share_to_threads=True,
+                            fb_destination_id="fb-destination",
+                            fb_destination_type="USER",
+                            threads_destination_id="threads-destination",
+                        )
+
+        self.assertIsInstance(media, Media)
+        crossposting.assert_called_once_with(
+            {},
+            share_to_facebook=True,
+            share_to_threads=True,
+            fb_destination_id="fb-destination",
+            fb_destination_type="USER",
+            fb_validation_bypass=None,
+            threads_destination_id="threads-destination",
+            threads_validation_bypass=None,
+        )
+        video_rupload.assert_called_once()
+        self.assertEqual(configure.call_args.kwargs["extra_data"], crosspost_data)
+
+    def test_album_upload_adds_feed_crossposting_params_before_upload(self):
+        client = self.build_client()
+        media_payload = self.build_media_payload(media_type=8)
+        media_payload["carousel_media"] = [self.build_media_payload(media_type=1)]
+        crosspost_data = {
+            "share_to_facebook": "1",
+            "share_to_threads": "1",
+        }
+
+        with mock.patch.object(
+            client,
+            "_media_crossposting_extra_data",
+            return_value=crosspost_data,
+        ) as crossposting:
+            with mock.patch.object(client, "photo_rupload", return_value=("1", 720, 720)) as photo_rupload:
+                with mock.patch.object(
+                    client,
+                    "album_configure",
+                    return_value={"status": "ok", "media": media_payload},
+                ) as configure:
+                    with mock.patch("time.sleep"):
+                        media = client.album_upload(
+                            [Path("one.jpg")],
+                            "caption",
+                            share_to_facebook=True,
+                            share_to_threads=True,
+                            fb_destination_id="fb-destination",
+                            fb_destination_type="PAGE",
+                            threads_destination_id="threads-destination",
+                        )
+
+        self.assertIsInstance(media, Media)
+        crossposting.assert_called_once_with(
+            {},
+            share_to_facebook=True,
+            share_to_threads=True,
+            fb_destination_id="fb-destination",
+            fb_destination_type="PAGE",
+            fb_validation_bypass=None,
+            threads_destination_id="threads-destination",
+            threads_validation_bypass=None,
+        )
+        photo_rupload.assert_called_once()
+        self.assertEqual(configure.call_args.kwargs["extra_data"], crosspost_data)
+
+    def test_feed_crossposting_preflight_fails_before_uploading_bytes(self):
+        cases = (
+            (
+                "photo",
+                "photo_rupload",
+                lambda client: client.photo_upload(
+                    Path("example.jpg"),
+                    "caption",
+                    share_to_threads=True,
+                ),
+            ),
+            (
+                "video",
+                "video_rupload",
+                lambda client: client.video_upload(
+                    Path("example.mp4"),
+                    "caption",
+                    share_to_threads=True,
+                ),
+            ),
+            (
+                "album",
+                "photo_rupload",
+                lambda client: client.album_upload(
+                    [Path("one.jpg")],
+                    "caption",
+                    share_to_threads=True,
+                ),
+            ),
+        )
+
+        for label, upload_method, invoke in cases:
+            with self.subTest(label=label):
+                client = self.build_client()
+                with mock.patch.object(
+                    client,
+                    "_media_crossposting_extra_data",
+                    side_effect=ClientError("no linked Threads profile"),
+                ):
+                    with mock.patch.object(client, upload_method) as upload:
+                        with self.assertRaises(ClientError):
+                            invoke(client)
+                upload.assert_not_called()
+
     def test_album_upload_with_music_forwards_schedule_at_without_mutating_extra_data(self):
         client = self.build_client()
         track = {
@@ -741,6 +1181,47 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(result, "uploaded")
         self.assertEqual(extra_data, {"disable_comments": 1})
         self.assertEqual(album_upload.call_args.kwargs["schedule_at"], schedule_at)
+
+    def test_feed_music_uploads_forward_crossposting_options(self):
+        client = self.build_client()
+        track = {
+            "id": "track-id",
+            "audio_cluster_id": "cluster-id",
+            "highlight_start_times_in_ms": [12000],
+            "title": "Crosspost song",
+            "display_artist": "Crosspost artist",
+        }
+        options = {
+            "share_to_facebook": True,
+            "share_to_threads": True,
+            "fb_destination_id": "fb-destination",
+            "fb_destination_type": "USER",
+            "threads_destination_id": "threads-destination",
+        }
+
+        with mock.patch.object(client, "photo_upload", return_value="photo") as photo_upload:
+            result = client.photo_upload_with_music(
+                Path("one.jpg"),
+                "caption",
+                track,
+                alacorn_session_id="alacorn-1",
+                **options,
+            )
+        self.assertEqual(result, "photo")
+        for key, value in options.items():
+            self.assertEqual(photo_upload.call_args.kwargs[key], value)
+
+        with mock.patch.object(client, "album_upload", return_value="album") as album_upload:
+            result = client.album_upload_with_music(
+                [Path("one.jpg"), Path("two.jpg")],
+                "caption",
+                track,
+                alacorn_session_id="alacorn-1",
+                **options,
+            )
+        self.assertEqual(result, "album")
+        for key, value in options.items():
+            self.assertEqual(album_upload.call_args.kwargs[key], value)
 
     def test_photo_upload_adds_coauthor_user_ids_without_mutating_extra_data(self):
         client = self.build_client()
@@ -1680,6 +2161,54 @@ class UploadRegressionTestCase(unittest.TestCase):
         self.assertEqual(configure_extra["share_to_fb_destination_id"], "fb-destination-id")
         self.assertTrue(configure_extra["share_to_facebook_reels"])
         self.assertEqual(configure_extra["xpost_surface"], "IG_REELS_COMPOSER")
+
+    def test_clip_upload_share_to_threads_adds_crosspost_params_before_upload(self):
+        client = self.build_client()
+        client.last_json = {"media": self.build_media_payload()}
+        ok_response = Mock(status_code=200)
+        threads_extra = {
+            "share_to_threads": "1",
+            "share_to_threads_destination_id": "threads-destination",
+        }
+
+        with mock.patch.object(
+            client,
+            "media_share_to_threads_extra_data",
+            return_value=threads_extra,
+        ) as share_to_threads_extra:
+            with mock.patch(
+                "instagrapi.mixins.clip.analyze_video",
+                return_value=(Path("/tmp/thumb.jpg"), 720, 1280, 6.023),
+            ):
+                with mock.patch.object(client.private, "get", return_value=ok_response):
+                    with mock.patch.object(
+                        client.private,
+                        "post",
+                        side_effect=[ok_response, ok_response],
+                    ):
+                        with mock.patch.object(
+                            client,
+                            "clip_configure",
+                            return_value={"status": "ok"},
+                        ) as clip_configure:
+                            with mock.patch(
+                                "builtins.open",
+                                mock.mock_open(read_data=b"video-bytes"),
+                            ):
+                                with mock.patch("time.sleep"):
+                                    client.clip_upload(
+                                        Path("example.mp4"),
+                                        "caption",
+                                        share_to_threads=True,
+                                        threads_destination_id="threads-destination",
+                                    )
+
+        share_to_threads_extra.assert_called_once_with(
+            destination_id="threads-destination",
+            validation_bypass=None,
+        )
+        configure_extra = clip_configure.call_args.kwargs["extra_data"]
+        self.assertEqual(configure_extra, threads_extra)
 
     def test_video_story_upload_falls_back_to_recent_story_when_configure_has_no_media(self):
         client = self.build_client()
