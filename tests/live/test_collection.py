@@ -13,9 +13,8 @@ class ClientCollectionTestCase(_helpers.ClientPrivateTestCase):
 
     def test_collection_medias_by_name(self):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
-        self.cl.media_unsave(media_pk)
+        self.assertTrue(self.cl.media_save(media_pk))
         try:
-            self.assertTrue(self.cl.media_save(media_pk))
             collection = next((item for item in self.cl.collections() if item.media_count), None)
             self.assertIsNotNone(collection)
 
