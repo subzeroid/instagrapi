@@ -12,16 +12,25 @@ class ClientCollectionTestCase(_helpers.ClientPrivateTestCase):
             self.assertTrue(hasattr(collection, field))
 
     def test_collection_medias_by_name(self):
-        medias = self.cl.collection_medias_by_name("Repost", amount=1)
-        self.assertEqual(len(medias), 1)
-        media = medias[0]
-        self.assertIsInstance(media, Media)
-        for field in REQUIRED_MEDIA_FIELDS:
-            self.assertTrue(hasattr(media, field))
-        self.assertEqual(
-            self.cl.collection_medias_by_name("Repost", amount=1, last_media_pk=media.pk),
-            [],
-        )
+        media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
+        self.cl.media_unsave(media_pk)
+        try:
+            self.assertTrue(self.cl.media_save(media_pk))
+            collection = next((item for item in self.cl.collections() if item.media_count), None)
+            self.assertIsNotNone(collection)
+
+            medias = self.cl.collection_medias_by_name(collection.name, amount=1)
+            self.assertEqual(len(medias), 1)
+            media = medias[0]
+            self.assertIsInstance(media, Media)
+            for field in REQUIRED_MEDIA_FIELDS:
+                self.assertTrue(hasattr(media, field))
+            self.assertEqual(
+                self.cl.collection_medias_by_name(collection.name, amount=1, last_media_pk=media.pk),
+                [],
+            )
+        finally:
+            self.cl.media_unsave(media_pk)
 
     def test_media_save_to_collection(self):
         media_pk = self.cl.media_pk_from_url("https://www.instagram.com/p/B3mr1-OlWMG/")
