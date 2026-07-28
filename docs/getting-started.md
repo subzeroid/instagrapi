@@ -35,7 +35,12 @@ from instagrapi import Client
 cl = Client()
 cl.load_settings("session.json")
 cl.login(USERNAME, PASSWORD)
+cl.dump_settings("session.json")
 ```
+
+The saved session is validated during `login()`. If Instagram rejects it with
+`login_required`, instagrapi performs a fresh login with the supplied
+credentials. Saving the settings again persists any refreshed session.
 
 ## What's Next?
 

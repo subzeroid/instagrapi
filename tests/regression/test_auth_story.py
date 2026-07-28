@@ -1,4 +1,4 @@
-from instagrapi.exceptions import BadPassword, ClientNotFoundError
+from instagrapi.exceptions import BadPassword, ClientNotFoundError, LoginRequired
 from tests.helpers import *
 
 
@@ -64,15 +64,56 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.private.cookies.get_dict(), {})
         self.assertEqual(client.public.cookies.get_dict(), {})
 
-    def test_login_returns_early_when_user_is_already_authorized(self):
+    def test_login_validates_existing_session_before_returning(self):
         client = Client()
         client.authorization_data = {"ds_user_id": "123"}
+        client.account_info = Mock(return_value=object())
         client.pre_login_flow = Mock()
         client.private_request = Mock()
 
         result = client.login("example", "password")
 
         self.assertTrue(result)
+        client.account_info.assert_called_once_with()
+        client.pre_login_flow.assert_not_called()
+        client.private_request.assert_not_called()
+
+    def test_login_refreshes_session_rejected_during_validation(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "123", "sessionid": "stale"}
+        client.private.cookies.set("sessionid", "stale")
+        client.public.cookies.set("sessionid", "public-stale")
+        client.private.headers["Authorization"] = "Bearer stale"
+        client.account_info = Mock(side_effect=LoginRequired())
+        client.last_response = Mock(headers={"ig-set-authorization": "Bearer fresh"})
+        client.parse_authorization = Mock(return_value={"ds_user_id": "123", "sessionid": "fresh"})
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(return_value=True)
+        client.login_flow = Mock()
+
+        result = client.login("example", "password")
+
+        self.assertTrue(result)
+        client.account_info.assert_called_once_with()
+        client.pre_login_flow.assert_called_once_with()
+        self.assertEqual(client.private_request.call_args.args[0], "accounts/login/")
+        self.assertNotIn("Authorization", client.private.headers)
+        self.assertEqual(client.private.cookies.get_dict(), {})
+        self.assertEqual(client.public.cookies.get_dict(), {})
+        self.assertEqual(client.authorization_data["sessionid"], "fresh")
+        self.assertEqual(client.relogin_attempt, 0)
+
+    def test_login_does_not_mask_other_session_validation_errors(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "123"}
+        client.account_info = Mock(side_effect=PleaseWaitFewMinutes())
+        client.pre_login_flow = Mock()
+        client.private_request = Mock()
+
+        with self.assertRaises(PleaseWaitFewMinutes):
+            client.login("example", "password")
+
         client.pre_login_flow.assert_not_called()
         client.private_request.assert_not_called()
 

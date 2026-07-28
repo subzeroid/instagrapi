@@ -1,7 +1,26 @@
+import tempfile
+
 from tests.helpers import *
 
 
 class ClientTestCase(unittest.TestCase):
+    @unittest.skipUnless(TEST_ACCOUNTS_URL, "TEST_ACCOUNTS_URL is required for saved session login tests")
+    def test_login_validates_saved_session_before_reuse(self):
+        original = fresh_test_account()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            session_file = Path(tmpdir) / "session.json"
+            original.dump_settings(session_file)
+
+            restored = Client(proxy=getattr(original, "proxy", None))
+            restored.load_settings(session_file)
+            with mock.patch.object(restored, "account_info", wraps=restored.account_info) as account_info:
+                result = restored.login(original.username, original.password)
+
+        self.assertTrue(result)
+        account_info.assert_called_once_with()
+        self.assertEqual(restored.user_id, original.user_id)
+
     def test_default_settings_are_not_shared_between_clients(self):
         first = Client()
         second = Client()
