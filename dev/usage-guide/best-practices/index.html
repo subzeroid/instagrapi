@@ -1768,9 +1768,13 @@ Public web endpoints can hit this independently from private mobile endpoints; a
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">()</span>  <span class="c1"># optional session validity check</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>You'll notice we do a call to <code>cl.get_timeline_feed()</code> to check if the session is valid. If it's not valid, you'll get an exception.</p>
+<p><code>login()</code> validates the loaded session before reusing it. When Instagram
+returns <code>login_required</code>, instagrapi clears the rejected authorization and
+logs in again with the supplied credentials. Other errors still propagate so
+rate limits, challenges, and network failures are not mistaken for an expired
+session. Save the settings again in case the session was refreshed.</p>
 <p>If you want more explicit control over the loaded settings object:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
@@ -1778,60 +1782,22 @@ Public web endpoints can hit this independently from private mobile endpoints; a
 <span class="n">session</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_settings</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Putting this all together, you can write a reusable login helper like this:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoginRequired</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">login_user</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Attempts to login to Instagram using either the provided session information</span>
-<span class="sd">    or the provided username and password.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Login with a saved session and refresh it only when required.&quot;&quot;&quot;</span>
+    <span class="n">session_file</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
     <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-    <span class="n">session</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">session_file</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="n">session_file</span><span class="p">)</span>
 
-    <span class="n">login_via_session</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="n">login_via_pw</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">if</span> <span class="n">session</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">cl</span><span class="o">.</span><span class="n">set_settings</span><span class="p">(</span><span class="n">session</span><span class="p">)</span>
-            <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-
-            <span class="c1"># check if session is valid</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">cl</span><span class="o">.</span><span class="n">get_timeline_feed</span><span class="p">()</span>
-            <span class="k">except</span> <span class="n">LoginRequired</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Session is invalid, need to login via username and password&quot;</span><span class="p">)</span>
-
-                <span class="n">old_session</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
-
-                <span class="c1"># use the same device uuids across logins</span>
-                <span class="n">cl</span><span class="o">.</span><span class="n">set_settings</span><span class="p">({})</span>
-                <span class="n">cl</span><span class="o">.</span><span class="n">set_uuids</span><span class="p">(</span><span class="n">old_session</span><span class="p">[</span><span class="s2">&quot;uuids&quot;</span><span class="p">])</span>
-
-                <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-            <span class="n">login_via_session</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t login user using session information: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">login_via_session</span><span class="p">:</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Attempting to login via username and password. username: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">USERNAME</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">):</span>
-                <span class="n">login_via_pw</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t login user using username and password: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">login_via_pw</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">login_via_session</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t login user with either password or session&quot;</span><span class="p">)</span>
-
+    <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="n">session_file</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cl</span>
 </code></pre></div>
 <h2 id="prefer-readwrite-separation">Prefer Read/Write Separation</h2>
