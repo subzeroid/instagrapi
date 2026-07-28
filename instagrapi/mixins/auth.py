@@ -20,6 +20,7 @@ from instagrapi.exceptions import (
     BadPassword,
     ClientError,
     ClientThrottledError,
+    LoginRequired,
     PleaseWaitFewMinutes,
     PrivateError,
     ReloginAttemptExceeded,
@@ -759,6 +760,12 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         -------
         bool
             A boolean value
+
+        Notes
+        -----
+        An existing session is validated before it is reused. If Instagram
+        rejects it, the saved authorization state is cleared and the supplied
+        credentials are used to log in again.
         """
         if username and password:
             self.username = username
@@ -782,7 +789,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         #     if time.time() - self.last_login < 60 * 60 * 24:
         #        return True  # already login
         if self.user_id and not relogin:
-            return True  # already login
+            try:
+                self.account_info()
+            except LoginRequired:
+                return self.login(relogin=True, verification_code=verification_code)
+            return True
         try:
             self.pre_login_flow()
         except (PleaseWaitFewMinutes, ClientThrottledError):

@@ -146,9 +146,9 @@ Next time:
 
 ```python
 cl = Client()
-cl.set_settings(cl.load_settings("/tmp/dump.json"))
+cl.load_settings("/tmp/dump.json")
 cl.login(USERNAME, PASSWORD)
-cl.get_timeline_feed()  # check session
+cl.dump_settings("/tmp/dump.json")
 ```
 
 ### Manage device, proxy and other account settings
