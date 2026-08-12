@@ -6,11 +6,20 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from instagrapi.exceptions import ChallengeError, ClientError
+from instagrapi.mixins.challenge import ChallengeChoice
 from instagrapi.utils.serialization import dumps
+
+CAA_API_DOMAIN = "b.i.instagram.com"
+AP_2SV_ENTRYPOINT = "com.bloks.www.ap.two_step_verification.entrypoint_async"
+AP_2SV_CODE_ENTRY = "com.bloks.www.ap.two_step_verification.code_entry"
+AP_2SV_CODE_ENTRY_ASYNC = "com.bloks.www.ap.two_step_verification.code_entry_async"
 
 
 class BloksMixin:
     bloks_versioning_id = ""
+    caa_aac = ""
+    caa_waterfall_id = ""
 
     def _bloks_payload(self, params: Dict, bloks_versioning_id: str = "") -> Dict[str, str]:
         versioning_id = bloks_versioning_id or self.bloks_versioning_id
@@ -28,6 +37,8 @@ class BloksMixin:
         params: Dict,
         bloks_versioning_id: str = "",
         domain: Optional[str] = None,
+        extra_headers: Optional[Dict[str, str]] = None,
+        login: bool = False,
     ) -> Dict:
         """
         Perform a raw Bloks async action.
@@ -42,6 +53,10 @@ class BloksMixin:
             Bloks versioning id. Uses ``Client.bloks_versioning_id`` when omitted.
         domain: str, optional
             API domain override. Uses the default private API domain when omitted.
+        extra_headers: Dict[str, str], optional
+            Per-request HTTP headers.
+        login: bool, optional
+            Send the request without the normal post-login delay.
 
         Returns
         -------
@@ -49,16 +64,28 @@ class BloksMixin:
             Raw Instagram response.
         """
         data = self._bloks_payload(params, bloks_versioning_id=bloks_versioning_id)
+        headers = {"X-FB-Friendly-Name": f"IgApi: bloks/async_action/{action}/"}
+        if extra_headers:
+            headers.update(extra_headers)
         kwargs = {
             "data": data,
             "with_signature": False,
-            "headers": {"X-FB-Friendly-Name": f"IgApi: bloks/async_action/{action}/"},
+            "headers": headers,
         }
         if domain:
             kwargs["domain"] = domain
+        if login:
+            kwargs["login"] = True
         return self.private_request(f"bloks/async_action/{action}/", **kwargs)
 
-    def bloks_app(self, app: str, params: Dict, bloks_versioning_id: str = "") -> Dict:
+    def bloks_app(
+        self,
+        app: str,
+        params: Dict,
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+        login: bool = False,
+    ) -> Dict:
         """
         Perform a raw Bloks app request.
 
@@ -70,6 +97,10 @@ class BloksMixin:
             Bloks ``params`` payload.
         bloks_versioning_id: str, optional
             Bloks versioning id. Uses ``Client.bloks_versioning_id`` when omitted.
+        domain: str, optional
+            API domain override. Uses the default private API domain when omitted.
+        login: bool, optional
+            Send the request without the normal post-login delay.
 
         Returns
         -------
@@ -77,7 +108,12 @@ class BloksMixin:
             Raw Instagram response.
         """
         data = self._bloks_payload(params, bloks_versioning_id=bloks_versioning_id)
-        return self.private_request(f"bloks/apps/{app}/", data=data, with_signature=False)
+        kwargs = {"data": data, "with_signature": False}
+        if domain:
+            kwargs["domain"] = domain
+        if login:
+            kwargs["login"] = True
+        return self.private_request(f"bloks/apps/{app}/", **kwargs)
 
     def bloks_graphql_app(
         self,
@@ -432,6 +468,154 @@ class BloksMixin:
             bloks_versioning_id=bloks_versioning_id,
         )
 
+    def _caa_device_network_info(self) -> Dict[str, Any]:
+        return {
+            "active_subscriptions_info": None,
+            "default_subscription_info": {
+                "network_type": None,
+                "is_data_roaming": 1,
+                "is_esim": None,
+                "is_gsm_roaming": 0,
+                "is_sim_sms_capable": None,
+                "is_mobile_data_enabled": 1,
+                "sim_carrier_id": 1,
+                "sim_carrier_id_name": None,
+                "sim_state": 5,
+                "sim_operator": "310260",
+                "sim_operator_name": "T-Mobile",
+                "signal_strength": None,
+                "group_id_level_1": None,
+                "network_operator": "310260",
+            },
+            "is_airplane_mode": 0,
+            "is_active_network_cellular": 0,
+            "is_device_sms_capable": 1,
+            "sim_count": 1,
+            "is_wifi": 1,
+        }
+
+    def bloks_extract_aac(self, result: Dict) -> str:
+        """Extract the server-issued CAA account access context."""
+        data = result.get("layout", {}).get("bloks_payload", {}).get("data", [])
+        if not isinstance(data, list):
+            return ""
+        for node in data:
+            payload = node.get("data") if isinstance(node, dict) else None
+            if not isinstance(payload, dict) or payload.get("key") != "CAA_ACCOUNT_ACCESS_CONTEXT:aac":
+                continue
+            initial = payload.get("initial")
+            if isinstance(initial, str) and initial.strip():
+                return initial
+            lispy = payload.get("initial_lispy")
+            if isinstance(lispy, str) and lispy:
+                value = self._extract_first_json_string(lispy, 0)
+                if value:
+                    return value
+        return ""
+
+    def bloks_caa_login_process_client_data(
+        self,
+        waterfall_id: str = "",
+        offline_experiment_group: str = "caa_iteration_v3_perf_ig_4",
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict:
+        """Open the CAA login homepage and retain its server-issued ``aac``."""
+        self.caa_waterfall_id = waterfall_id or str(uuid4())
+        self.caa_aac = ""
+        params = {
+            "is_from_logged_out": False,
+            "logged_out_user": "",
+            "qpl_join_id": None,
+            "family_device_id": self.phone_id,
+            "device_id": self.android_device_id,
+            "offline_experiment_group": offline_experiment_group,
+            "waterfall_id": self.caa_waterfall_id,
+            "logout_source": "",
+            "show_internal_settings": False,
+            "last_auto_login_time": 0,
+            "disable_auto_login": False,
+            "qe_device_id": self.uuid,
+            "use_auto_login_interstitial": True,
+            "disable_recursive_auto_login_interstitial": True,
+            "auto_login_interstitial_experiment_group_name": "",
+            "is_from_logged_in_switcher": False,
+            "switcher_logged_in_uid": "",
+            "account_list": [],
+            "blocked_uid": [],
+            "INTERNAL_INFRA_THEME": "THREE_NEUTRAL_GRAY",
+            "layered_homepage_experiment_group": "Deploy: Not in Experiment",
+            "launched_url": "",
+            "sim_phone_numbers": [],
+            "is_from_registration_reminder": False,
+        }
+        result = self.bloks_async_action(
+            "com.bloks.www.bloks.caa.login.process_client_data_and_redirect",
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            login=True,
+        )
+        self.caa_aac = self.bloks_extract_aac(result)
+        return result
+
+    def bloks_caa_login_oauth_token_fetch(
+        self,
+        username: str = "",
+        waterfall_id: str = "",
+        offline_experiment_group: str = "caa_iteration_v3_perf_ig_4",
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict:
+        """Perform the CAA OAuth token preflight sent before credentials."""
+        self.caa_waterfall_id = waterfall_id or self.caa_waterfall_id or str(uuid4())
+        params = {
+            "client_input_params": {
+                "username_input": username or self.username,
+                "si_device_param_network_info": self._caa_device_network_info(),
+                "aac": self.caa_aac,
+                "lois_settings": {"lois_token": ""},  # nosec B105
+                "cloud_trust_token": None,  # nosec B105
+                "zero_balance_state": "",
+                "network_bssid": None,
+            },
+            "server_params": {
+                "is_from_logged_out": 0,
+                "layered_homepage_experiment_group": "Deploy: Not in Experiment",
+                "device_id": self.android_device_id,
+                "login_surface": "login_home",
+                "waterfall_id": self.caa_waterfall_id,
+                "INTERNAL__latency_qpl_instance_id": int(time.time() * 1000),
+                "is_platform_login": 0,
+                "login_entry_point": "logged_out",
+                "INTERNAL__latency_qpl_marker_id": 36707139,
+                "family_device_id": self.phone_id,
+                "offline_experiment_group": offline_experiment_group,
+                "access_flow_version": "pre_mt_behavior",
+                "is_from_logged_in_switcher": 0,
+                "qe_device_id": self.uuid,
+            },
+        }
+        return self.bloks_async_action(
+            "com.bloks.www.caa.login.oauth.token.fetch.async",
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            login=True,
+        )
+
+    def bloks_caa_login_prepare(self, username: str = "", domain: Optional[str] = None) -> bool:
+        """Run the ordered device and CAA preflight needed before login."""
+        if not self.usdid_registered and not self.usdid_register():
+            return False
+        self.bloks_caa_login_process_client_data(domain=domain)
+        self.attestation_challenge_nonce = ""
+        self.attestation_key_nonce = ""
+        self.attestation_create_android_keystore(domain=domain)
+        if self.caa_aac:
+            self.bloks_caa_login_oauth_token_fetch(username=username, domain=domain)
+        return bool(self.caa_aac and self.attestation_challenge_nonce)
+
     def bloks_caa_login_send_request(
         self,
         password: str,
@@ -441,13 +625,14 @@ class BloksMixin:
         waterfall_id: str = "",
         offline_experiment_group: str = "caa_iteration_v3_perf_ig_4",
         bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
     ) -> Dict:
         """
         Send the current CAA/Bloks login request used before Bloks 2FA.
 
-        This low-level helper is intentionally conservative: it uses ordinary
-        device/session identifiers already available on the client and leaves
-        attestation-like fields empty instead of inventing fake values.
+        This low-level helper requires the server-issued account access context
+        and uses the attestation state populated by
+        :meth:`bloks_caa_login_prepare`.
 
         Returns
         -------
@@ -456,20 +641,19 @@ class BloksMixin:
         """
         contact_point = username or self.username
         encrypted_password = password if password.startswith("#PWD_") else self.password_encrypt(password)
-        flow_id = waterfall_id or str(uuid4())
+        flow_id = waterfall_id or self.caa_waterfall_id or str(uuid4())
+        self.caa_waterfall_id = flow_id
+        if not self.caa_aac:
+            raise ClientError(
+                "CAA login requires a server-issued aac; call bloks_caa_login_prepare() before send_login_request"
+            )
         # Recent CAA login screens emit short base36-like input ids. Hex-only
         # UUID prefixes are accepted by the VM but can return a null-payload 404.
         text_input_id = f"{uuid4().hex[:4]}ig"
         params = {
             "client_input_params": {
                 "blocked_uids": [],
-                "aac": dumps(
-                    {
-                        "aac_init_timestamp": int(time.time()),
-                        "aaccs": "",
-                        "aacjid": str(uuid4()),
-                    }
-                ),
+                "aac": self.caa_aac,
                 "sim_phones": [],
                 "aymh_accounts": [],
                 "network_bssid": None,
@@ -477,30 +661,7 @@ class BloksMixin:
                 "has_granted_read_contacts_permissions": 0,
                 "auth_secure_device_id": "",
                 "has_whatsapp_installed": 0,
-                "si_device_param_network_info": {
-                    "active_subscriptions_info": None,
-                    "default_subscription_info": {
-                        "network_type": None,
-                        "is_data_roaming": 1,
-                        "is_esim": None,
-                        "is_gsm_roaming": 0,
-                        "is_sim_sms_capable": None,
-                        "is_mobile_data_enabled": 1,
-                        "sim_carrier_id": 1,
-                        "sim_carrier_id_name": None,
-                        "sim_state": 5,
-                        "sim_operator": "310260",
-                        "sim_operator_name": "T-Mobile",
-                        "signal_strength": None,
-                        "group_id_level_1": None,
-                        "network_operator": "310260",
-                    },
-                    "is_airplane_mode": 0,
-                    "is_active_network_cellular": 0,
-                    "is_device_sms_capable": 1,
-                    "sim_count": 1,
-                    "is_wifi": 1,
-                },
+                "si_device_param_network_info": self._caa_device_network_info(),
                 "password": encrypted_password,
                 "sso_token_map_json_string": "",  # nosec B105
                 "block_store_machine_id": "",
@@ -524,7 +685,7 @@ class BloksMixin:
                     "ANSWER_PHONE_CALLS": "DENIED",
                 },
                 "accounts_list": [],
-                "gms_incoming_call_retriever_eligibility": "not_eligible",
+                "gms_incoming_call_retriever_eligibility": "eligible",
                 "family_device_id": self.phone_id,
                 "fb_ig_device_id": [],
                 "device_emails": [],
@@ -572,11 +733,282 @@ class BloksMixin:
                 "is_from_logged_in_switcher": 0,
             },
         }
+        attest_params = self.attestation_params()
         return self.bloks_async_action(
             "com.bloks.www.bloks.caa.login.async.send_login_request",
             params,
             bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            extra_headers={"X-IG-Attest-Params": attest_params} if attest_params else None,
+            login=True,
         )
+
+    def bloks_caa_login(
+        self,
+        username: str = "",
+        password: Optional[str] = None,
+        prepare: bool = True,
+        domain: str = CAA_API_DOMAIN,
+        verification_code: str = "",
+    ) -> Dict[str, Any]:
+        """Run current Android CAA login, including its profile-code challenge."""
+        username = username or self.username
+        password = password or self.password
+        if prepare and not self.bloks_caa_login_prepare(username=username, domain=domain):
+            return {
+                "logged_in": False,
+                "two_step_verification_context": "",
+                "result": {},
+                "two_step": {},
+                "reason": "CAA preflight did not return account access and attestation data",
+            }
+        result = self.bloks_caa_login_send_request(password, username=username, domain=domain)
+        logged_in = self.bloks_apply_login_response(result)
+        two_step = {}
+        if not logged_in and self.bloks_caa_login_needs_two_step(result):
+            two_step = self.bloks_caa_resolve_two_step_verification(
+                result,
+                verification_code=verification_code,
+                domain=domain,
+            )
+            logged_in = bool(two_step.get("logged_in"))
+        context = "" if logged_in else self.bloks_extract_two_step_verification_context(result)
+        return {
+            "logged_in": logged_in,
+            "two_step_verification_context": context,
+            "result": result,
+            "two_step": two_step,
+            "reason": "" if logged_in else str(two_step.get("reason") or "CAA login did not return a session"),
+        }
+
+    def _bloks_collect_strings(self, value: Any, output: List[str]) -> None:
+        if isinstance(value, str):
+            output.append(value)
+        elif isinstance(value, dict):
+            for child in value.values():
+                self._bloks_collect_strings(child, output)
+        elif isinstance(value, list):
+            for child in value:
+                self._bloks_collect_strings(child, output)
+
+    def _bloks_all_text(self, result: Dict) -> str:
+        strings: List[str] = []
+        self._bloks_collect_strings(result, strings)
+        return "\n".join(strings)
+
+    def bloks_caa_login_needs_two_step(self, result: Dict) -> bool:
+        """Return whether CAA routed login to the profile-code challenge."""
+        return AP_2SV_ENTRYPOINT in self._bloks_all_text(result)
+
+    @staticmethod
+    def _bloks_parenthesized_expression(value: str, start: int) -> str:
+        """Return one balanced Bloks expression while respecting quoted strings."""
+        depth = 0
+        in_string = False
+        escaped = False
+        for index in range(start, len(value)):
+            character = value[index]
+            if in_string:
+                if escaped:
+                    escaped = False
+                elif character == "\\":
+                    escaped = True
+                elif character == '"':
+                    in_string = False
+                continue
+            if character == '"':
+                in_string = True
+            elif character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+                if depth == 0:
+                    return value[start : index + 1]
+        return ""
+
+    @staticmethod
+    def _bloks_string_literals(value: str) -> List[str]:
+        """Decode JSON-style string literals from a Bloks expression."""
+        strings: List[str] = []
+        decoder = json.JSONDecoder()
+        index = 0
+        while True:
+            index = value.find('"', index)
+            if index < 0:
+                return strings
+            try:
+                decoded, consumed = decoder.raw_decode(value[index:])
+            except JSONDecodeError:
+                index += 1
+                continue
+            if isinstance(decoded, str):
+                strings.append(decoded)
+            index += consumed
+
+    def bloks_extract_context_data(self, result: Dict, app_id: str) -> str:
+        """Extract the context token chained to an exact Bloks app id."""
+        strings: List[str] = []
+        self._bloks_collect_strings(result, strings)
+        anchor = re.compile(re.escape(app_id) + r"(?![_a-zA-Z])")
+        app_reference = re.compile(r"(?<![_a-zA-Z0-9])com\.bloks\.[_a-zA-Z0-9.]+")
+        for text in strings:
+            for found in anchor.finditer(text):
+                map_start = text.find("(f4i", found.end())
+                if map_start < 0:
+                    continue
+                next_app = app_reference.search(text, found.end())
+                if next_app and next_app.start() < map_start:
+                    continue
+                expression = self._bloks_parenthesized_expression(text, map_start)
+                if not expression:
+                    continue
+                groups: List[List[str]] = []
+                cursor = 0
+                while True:
+                    group_start = expression.find("(dkc", cursor)
+                    if group_start < 0:
+                        break
+                    group = self._bloks_parenthesized_expression(expression, group_start)
+                    if not group:
+                        break
+                    groups.append(self._bloks_string_literals(group))
+                    cursor = group_start + len(group)
+                for keys, values in zip(groups, groups[1:]):
+                    if "context_data" not in keys:
+                        continue
+                    context_index = keys.index("context_data")
+                    if context_index < len(values):
+                        return values[context_index]
+        return ""
+
+    def bloks_ap_two_step_verification_entrypoint(
+        self,
+        context_data: str,
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict:
+        """Open the CAA profile-code challenge entrypoint."""
+        params = {
+            "client_input_params": {
+                "auth_secure_device_id": "",
+                "accounts_list": [],
+                "has_whatsapp_installed": 0,
+                "family_device_id": self.phone_id,
+                "machine_id": self.mid,
+            },
+            "server_params": {
+                "use_open_instead_of_push": 0,
+                "context_data": context_data,
+                "INTERNAL__latency_qpl_marker_id": 36707139,
+                "INTERNAL__latency_qpl_instance_id": int(time.time() * 1000),
+                "device_id": self.uuid,
+                "use_close_instead_of_back": 0,
+            },
+        }
+        return self.bloks_async_action(
+            AP_2SV_ENTRYPOINT,
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            login=True,
+        )
+
+    def bloks_ap_two_step_verification_code_entry(
+        self,
+        context_data: str,
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict:
+        """Open the profile-code input screen and obtain its submit context."""
+        params = {
+            "client_input_params": {"aac": self.caa_aac},
+            "server_params": {
+                "context_data": context_data,
+                "show_close_button": 0,
+                "device_id": self.uuid,
+                "INTERNAL_INFRA_screen_id": "generic_code_entry",
+                "is_dismissable": 1,
+            },
+        }
+        return self.bloks_app(
+            AP_2SV_CODE_ENTRY,
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            login=True,
+        )
+
+    def bloks_ap_two_step_verification_submit_code(
+        self,
+        context_data: str,
+        code: str,
+        bloks_versioning_id: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict:
+        """Submit the one-time code and return the terminal login response."""
+        params = {
+            "client_input_params": {
+                "auth_secure_device_id": "",
+                "aac": self.caa_aac,
+                "code": str(code),
+                "family_device_id": self.phone_id,
+                "device_id": self.android_device_id,
+                "machine_id": self.mid,
+            },
+            "server_params": {
+                "context_data": context_data,
+                "INTERNAL__latency_qpl_marker_id": 36707139,
+                "INTERNAL__latency_qpl_instance_id": int(time.time() * 1000),
+                "device_id": self.uuid,
+            },
+        }
+        return self.bloks_async_action(
+            AP_2SV_CODE_ENTRY_ASYNC,
+            params,
+            bloks_versioning_id=bloks_versioning_id,
+            domain=domain,
+            login=True,
+        )
+
+    def bloks_caa_resolve_two_step_verification(
+        self,
+        send_result: Dict,
+        verification_code: str = "",
+        domain: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Drive the CAA profile-code challenge through its terminal step."""
+        entry_context = self.bloks_extract_context_data(send_result, AP_2SV_ENTRYPOINT)
+        if not entry_context:
+            return {"logged_in": False, "reason": "missing entrypoint context_data"}
+        entry_result = self.bloks_ap_two_step_verification_entrypoint(entry_context, domain=domain)
+
+        code_context = self.bloks_extract_context_data(entry_result, AP_2SV_CODE_ENTRY)
+        if not code_context:
+            return {"logged_in": False, "reason": "missing code_entry context_data"}
+        code_result = self.bloks_ap_two_step_verification_code_entry(code_context, domain=domain)
+
+        submit_context = self.bloks_extract_context_data(code_result, AP_2SV_CODE_ENTRY_ASYNC)
+        if not submit_context:
+            return {"logged_in": False, "reason": "missing code_entry_async context_data"}
+        code = verification_code or self.challenge_code_or_raised(ChallengeChoice.EMAIL)
+        try:
+            submit_result = self.bloks_ap_two_step_verification_submit_code(
+                submit_context,
+                code,
+                domain=domain,
+            )
+        except ChallengeError:
+            raise
+        except ClientError as exc:
+            raise ChallengeError(
+                f"CAA profile-code submission failed: {exc}",
+                response=getattr(exc, "response", None),
+            ) from exc
+        return {
+            "logged_in": self.bloks_apply_login_response(submit_result),
+            "reason": "",
+            "result": submit_result,
+        }
 
     def _find_bloks_value(self, data: Any, key: str) -> Any:
         if isinstance(data, dict):

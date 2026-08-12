@@ -290,6 +290,8 @@ class PrivateRequestMixin:
             headers.update({"IG-U-RUR": self.ig_u_rur})
         if self.ig_www_claim:
             headers.update({"X-IG-WWW-Claim": self.ig_www_claim})
+        if self.usdid_private_key:
+            headers.update({"X-Meta-Usdid": self.usdid_header()})
         return headers
 
     def private_headers(self, headers=None):
