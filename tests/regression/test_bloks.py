@@ -373,6 +373,7 @@ class BloksRegressionTestCase(unittest.TestCase):
         client.phone_id = "family-device-1"
         client.uuid = "uuid-1"
         client.mid = "machine-1"
+        client.caa_aac = '{"aaccs":"server"}'
         client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:encrypted")
         expected = {"status": "ok"}
 
@@ -384,6 +385,7 @@ class BloksRegressionTestCase(unittest.TestCase):
         action, params = bloks_async_action.call_args.args[:2]
         self.assertEqual(action, "com.bloks.www.bloks.caa.login.async.send_login_request")
         self.assertEqual(params["client_input_params"]["contact_point"], "example")
+        self.assertEqual(params["client_input_params"]["aac"], client.caa_aac)
         self.assertEqual(params["client_input_params"]["password"], "#PWD_INSTAGRAM:4:1:encrypted")
         self.assertEqual(params["client_input_params"]["device_id"], "android-1")
         self.assertEqual(params["client_input_params"]["family_device_id"], "family-device-1")
@@ -410,6 +412,7 @@ class BloksRegressionTestCase(unittest.TestCase):
         self.assertRegex(username_text_input_id, r"^[a-z0-9]{6}:81$")
         self.assertEqual(password_text_input_id, f"{username_text_input_id.rsplit(':', 1)[0]}:82")
         self.assertIn("waterfall_id", params["server_params"])
+        self.assertTrue(bloks_async_action.call_args.kwargs["login"])
 
     def test_bloks_extract_two_step_verification_context_from_caa_action(self):
         client = self.build_client()

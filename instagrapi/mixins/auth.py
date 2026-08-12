@@ -18,6 +18,8 @@ from instagrapi import config
 from instagrapi.exceptions import (
     BadCredentials,
     BadPassword,
+    ChallengeError,
+    ChallengeRequired,
     ClientError,
     ClientThrottledError,
     LoginRequired,
@@ -518,20 +520,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return value.strip().lower() in {"1", "true", "yes"}
         return False
 
-    def _login_response_requires_recovery(self, data: Dict) -> bool:
-        values = [self._find_login_response_value(data, key) for key in ("message", "error_title", "error_body")]
-        text = " ".join(value.lower() for value in values if isinstance(value, str))
-        return any(
-            marker in text
-            for marker in (
-                "linked facebook account",
-                "forgotten password",
-                "forgot password",
-                "send you an email",
-                "get back into your account",
-            )
-        )
-
     def _normalize_backup_code(self, code: str) -> str:
         return re.sub(r"[\s-]+", "", str(code).strip())
 
@@ -547,12 +535,31 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return "sms"
         return "totp"
 
-    def _is_unavailable_caa_bloks_login_error(self, exc: ClientError) -> bool:
-        response = getattr(exc, "response", None)
-        status_code = getattr(response, "status_code", None) or getattr(exc, "code", None)
-        error_type = str(getattr(exc, "error_type", "") or "").casefold()
-        message = str(getattr(exc, "message", "") or exc).casefold()
-        return status_code == 404 or (error_type == "field_exception" and "payload returned is null" in message)
+    def _try_caa_login(self, exc: Exception, verification_code: str = "") -> bool:
+        """Try current Android CAA login while preserving the legacy error on failure."""
+        try:
+            outcome = self.bloks_caa_login(verification_code=verification_code)
+        except (ChallengeError, TwoFactorRequired):
+            raise
+        except ClientError as caa_exc:
+            self.logger.warning("CAA login fallback failed: %s", caa_exc)
+            return False
+        if outcome.get("logged_in"):
+            return True
+        context = str(outcome.get("two_step_verification_context") or "")
+        if not context:
+            return False
+        if not verification_code.strip():
+            raise TwoFactorRequired(
+                f"{exc} (Instagram returned a Bloks two-factor context from the CAA login flow; "
+                "provide verification_code for login)",
+                response=getattr(exc, "response", None),
+            ) from exc
+        return self._login_with_bloks_two_factor(
+            verification_code,
+            {"two_step_verification_context": context},
+            exc,
+        )
 
     def _login_with_bloks_two_factor(self, verification_code: str, login_json: Dict, exc: Exception) -> bool:
         context = self._extract_two_step_verification_context(login_json)
@@ -590,39 +597,6 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             response=getattr(exc, "response", None),
             **self._exception_context(login_json),
         ) from exc
-
-    def _login_with_caa_bloks_two_factor(self, verification_code: str, password: str, exc: Exception) -> bool:
-        try:
-            caa_result = self.bloks_caa_login_send_request(password, login_attempt_count=1)
-        except ClientError as caa_exc:
-            if not self._is_unavailable_caa_bloks_login_error(caa_exc):
-                raise
-            login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
-            raise TwoFactorRequired(
-                "Instagram rejected the legacy login endpoint and the current "
-                "CAA/Bloks login endpoint is unavailable for this account/session. "
-                "Complete verification in the official Instagram app or web flow "
-                "on a trusted device, then retry with the same saved client "
-                "settings, device identifiers, and proxy/IP. If this persists, "
-                "capture a fresh CAA login flow because Instagram may require "
-                "additional Bloks preflight steps before send_login_request.",
-                response=getattr(caa_exc, "response", getattr(exc, "response", None)),
-                **self._exception_context(login_json),
-            ) from caa_exc
-        context = self.bloks_extract_two_step_verification_context(caa_result)
-        login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
-        if not context:
-            raise TwoFactorRequired(
-                "Instagram rejected the legacy login endpoint and may require "
-                "a newer CAA/Bloks login flow, but the CAA response did not "
-                "include two_step_verification_context required for automatic "
-                "Bloks two-factor verification. Complete verification in the "
-                "Instagram app or inspect the current login response.",
-                response=getattr(exc, "response", None),
-                **self._exception_context(login_json),
-            ) from exc
-        login_json["two_step_verification_context"] = context
-        return self._login_with_bloks_two_factor(verification_code, login_json, exc)
 
     def init(self) -> bool:
         """
@@ -674,6 +648,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.mid = self.settings.get("mid", self.cookie_dict.get("mid"))
         self.set_ig_u_rur(self.settings.get("ig_u_rur"))
         self.set_ig_www_claim(self.settings.get("ig_www_claim"))
+        self.set_usdid_settings(self.settings.get("usdid"))
         # init headers
         headers = self.base_headers
         if self.authorization:
@@ -819,20 +794,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except BadPassword as exc:
             login_json = deepcopy(self.last_json) if isinstance(self.last_json, dict) else {}
             context = self._extract_two_step_verification_context(login_json)
-            if not context and not verification_code.strip():
-                raise
-            if not verification_code.strip():
+            if not context:
+                logged = self._try_caa_login(exc, verification_code=verification_code)
+                if not logged:
+                    raise
+            elif not verification_code.strip():
                 raise TwoFactorRequired(
                     f"{exc} (Instagram returned a Bloks two-factor context; provide verification_code for login)",
                     response=getattr(exc, "response", None),
                     **self._exception_context(login_json),
                 ) from exc
-            if not context and self._login_response_requires_recovery(login_json):
-                raise
-            if context:
-                logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
             else:
-                logged = self._login_with_caa_bloks_two_factor(verification_code, self.password, exc)
+                logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
@@ -999,6 +972,9 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         }
         if self.settings.get("fbns_auth"):
             settings["fbns_auth"] = self.settings["fbns_auth"]
+        usdid_settings = self.get_usdid_settings()
+        if usdid_settings:
+            settings["usdid"] = usdid_settings
         return settings
 
     def set_settings(self, settings: Dict) -> bool:
@@ -1261,6 +1237,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         bool
             A boolean value
         """
+        previous_phone_id = self.phone_id
         self.phone_id = uuids.get("phone_id", self.generate_uuid())
         self.uuid = uuids.get("uuid", self.generate_uuid())
         self.client_session_id = uuids.get("client_session_id", self.generate_uuid())
@@ -1270,6 +1247,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.tray_session_id = uuids.get("tray_session_id", self.generate_uuid())
         # self.device_id = uuids.get("device_id", self.generate_uuid())
         self.settings["uuids"] = uuids
+        if previous_phone_id and previous_phone_id != self.phone_id:
+            self.set_usdid_settings({})
         return True
 
     def generate_uuid(self, prefix: str = "", suffix: str = "") -> str:
