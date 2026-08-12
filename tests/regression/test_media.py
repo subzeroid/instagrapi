@@ -734,6 +734,53 @@ class UserMediasPrivateFirstRegressionTestCase(unittest.TestCase):
         private_lookup.assert_not_called()
 
 
+class UserPinnedMediasRegressionTestCase(unittest.TestCase):
+    def test_user_pinned_medias_filters_by_requested_user_id(self):
+        client = Client()
+        response = {
+            "items": [
+                {"code": "target-int", "timeline_pinned_user_ids": [1349651722]},
+                {"code": "target-str", "timeline_pinned_user_ids": ["1349651722"]},
+                {"code": "other-user", "timeline_pinned_user_ids": [999]},
+                {"code": "ordinary", "timeline_pinned_user_ids": []},
+                {"code": "missing"},
+            ]
+        }
+
+        with mock.patch.object(client, "private_request", return_value=response):
+            with mock.patch(
+                "instagrapi.mixins.media.extract_media_v1",
+                side_effect=lambda media: media,
+            ):
+                medias = client.user_pinned_medias("1349651722")
+
+        self.assertEqual(
+            [media["code"] for media in medias],
+            ["target-int", "target-str"],
+        )
+
+    def test_user_pinned_medias_sends_profile_nav_chain(self):
+        client = Client()
+
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"items": []},
+        ) as private_request:
+            client.user_pinned_medias("1349651722")
+
+        private_request.assert_called_once_with(
+            "feed/user/1349651722/",
+            params={
+                "exclude_comment": "true",
+                "only_fetch_first_carousel_media": "false",
+            },
+            headers={
+                "X-IG-Nav-Chain": "MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::"
+            },
+        )
+
+
 class MediaShareToStoryRegressionTestCase(unittest.TestCase):
     def test_media_share_to_story_uses_existing_media_as_story_sticker(self):
         client = Client()

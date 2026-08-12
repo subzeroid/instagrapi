@@ -1324,22 +1324,21 @@ class MediaMixin:
         List[Media]
             A list of objects of Media
         """
-        default_nav = self.base_headers["X-IG-Nav-Chain"]
-        self.base_headers["X-IG-Nav-Chain"] = (
-            "MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::"
-        )
+        user_id = str(user_id)
+        nav_chain = "MainFeedFragment:feed_timeline:12:main_home::,UserDetailFragment:profile:13:button::"
         medias = self.private_request(
             f"feed/user/{user_id}/",
             params={
                 "exclude_comment": "true",
                 "only_fetch_first_carousel_media": "false",
             },
+            headers={"X-IG-Nav-Chain": nav_chain},
         )
         pinned_medias = []
         for media in medias["items"]:
-            if media.get("timeline_pinned_user_ids") is not None:
+            pinned_user_ids = media.get("timeline_pinned_user_ids") or ()
+            if user_id in map(str, pinned_user_ids):
                 pinned_medias.append(extract_media_v1(media))
-        self.base_headers["X-IG-Nav-Chain"] = default_nav
         return pinned_medias
 
     def user_medias(self, user_id: str, amount: int = 0, sleep: int = 0) -> List[Media]:
