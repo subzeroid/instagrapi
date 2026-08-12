@@ -19,6 +19,7 @@ from instagrapi.extractors import (
     extract_direct_thread,
     extract_user_short,
 )
+from instagrapi.image_util import prepare_image
 from instagrapi.types import (
     DirectMessage,
     DirectShortThread,
@@ -722,23 +723,73 @@ class DirectMixin:
 
     def direct_send_photo(self, path: Path, user_ids: List[int] = [], thread_ids: List[int] = []) -> DirectMessage:
         """
-        Send a direct photo to list of users or threads
+        Send a direct photo to a list of users or threads.
+
+        Instagram retired ``direct_v2/threads/broadcast/configure_photo/``.
+        Direct photos now use the messenger image attachment flow:
+
+        1. Normalize the image to JPEG and upload it to
+           ``rupload.facebook.com/messenger_image/``.
+        2. Send the returned ``media_id`` through
+           ``direct_v2/threads/broadcast/photo_attachment/``.
+
+        When ``user_ids`` is used, an existing Direct thread is required.
 
         Parameters
         ----------
         path: Path
-            Path to photo that will be posted on the thread
+            Path to a JPG, JPEG, PNG, or WebP image.
         user_ids: List[int]
-            List of unique identifier of Users id
+            List of unique identifiers of Users id.
         thread_ids: List[int]
-            List of unique identifier of Direct Message thread id
+            List of unique identifiers of Direct Message thread id.
 
         Returns
         -------
         DirectMessage
-            An object of DirectMessage
+            An object of DirectMessage.
         """
-        return self.direct_send_file(path, user_ids, thread_ids, content_type="photo")
+        assert self.user_id, "Login required"
+        user_ids = _direct_id_list(user_ids)
+        thread_ids = _direct_id_list(thread_ids)
+        assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
+            "Specify user_ids or thread_ids, but not both"
+        )
+        if user_ids:
+            thread_ids = [self._direct_thread_id_from_user_ids(user_ids, "photo")]
+
+        path = Path(path)
+        valid_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        if path.suffix.lower() not in valid_extensions:
+            raise ValueError("Invalid file format. Only JPG/JPEG/PNG/WEBP files are supported.")
+        photo_bytes, _ = prepare_image(str(path), max_side=1080)
+
+        entity_name = f"fb_uploader_{int(time.time() * 1000)}"
+        media_id = self._photo_rupload(photo_bytes, entity_name)
+
+        token = self.generate_mutation_token()
+        data = {
+            "action": "send_item",
+            "is_x_transport_forward": "false",
+            "is_shh_mode": "0",
+            "thread_ids": dumps([int(tid) for tid in thread_ids]),
+            "send_attribution": "inbox",
+            "client_context": token,
+            "attachment_fbid": str(media_id),
+            "device_id": self.android_device_id,
+            "mutation_token": token,
+            "_uuid": self.uuid,
+            "allow_full_aspect_ratio": "true",
+            "btt_dual_send": "false",
+            "is_ae_dual_send": "false",
+            "offline_threading_id": token,
+        }
+        result = self.private_request(
+            "direct_v2/threads/broadcast/photo_attachment/",
+            data=self.with_default_data(data),
+            with_signature=False,
+        )
+        return extract_direct_message(result["payload"])
 
     def _direct_video_metadata(self, path: Path) -> Tuple[int, int, float]:
         width, height, duration_sec = 720, 1280, 1.0
@@ -928,6 +979,36 @@ class DirectMixin:
         if extra_headers:
             headers.update(extra_headers)
         return headers
+
+    def _photo_rupload(self, photo_bytes: bytes, entity_name: str) -> int:
+        """Upload JPEG bytes to messenger_image and return its media_id."""
+        import requests
+
+        url = f"https://rupload.facebook.com/messenger_image/{entity_name}"
+
+        sess = requests.Session()
+        sess.verify = self.tls_verify
+        if getattr(self, "proxy", None):
+            sess.proxies = {"http": self.proxy, "https": self.proxy}
+
+        headers = self._messenger_rupload_headers({"image_type": "FILE_ATTACHMENT"})
+        headers.update(
+            {
+                "content-type": "application/octet-stream",
+                "offset": "0",
+                "x-entity-length": str(len(photo_bytes)),
+                "x-entity-name": entity_name,
+                "x-entity-type": "image/jpeg",
+            }
+        )
+        response = sess.post(url, data=photo_bytes, headers=headers, timeout=120)
+        if response.status_code != 200:
+            raise ClientError(f"messenger_image upload POST failed: {response.status_code} {response.text[:300]}")
+        try:
+            media_id = int(response.json()["media_id"])
+        except Exception as exc:
+            raise ClientError(f"messenger_image response missing media_id: {response.text[:300]}") from exc
+        return media_id
 
     def _video_rupload(self, video_bytes: bytes, entity_name: str, waterfall_id: str) -> int:
         """Upload mp4 bytes to ``rupload.facebook.com/messenger_video/...`` and
@@ -1162,53 +1243,11 @@ class DirectMixin:
         assert (user_ids or thread_ids) and not (user_ids and thread_ids), (
             "Specify user_ids or thread_ids, but not both"
         )
-        method = f"configure_{content_type}"
-        token = self.generate_mutation_token()
-        nav_chains = [
-            (
-                "6xQ:direct_media_picker_photos_fragment:1,5rG:direct_thread:2,"
-                "5ME:direct_quick_camera_fragment:3,5ME:direct_quick_camera_fragment:4,"
-                "4ju:reel_composer_preview:5,5rG:direct_thread:6,5rG:direct_thread:7,"
-                "6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9"
-            ),
-            (
-                "1qT:feed_timeline:1,7Az:direct_inbox:2,7Az:direct_inbox:3,"
-                "5rG:direct_thread:4,6xQ:direct_media_picker_photos_fragment:5,"
-                "5rG:direct_thread:6,5rG:direct_thread:7,"
-                "6xQ:direct_media_picker_photos_fragment:8,5rG:direct_thread:9"
-            ),
-        ]
-        kwargs = {}
-        data = {
-            "action": "send_item",
-            "is_shh_mode": "0",
-            "send_attribution": "direct_thread",
-            "client_context": token,
-            "mutation_token": token,
-            "nav_chain": random.choices(nav_chains),
-            "offline_threading_id": token,
-        }
-        if content_type == "video":
-            data["video_result"] = ""
-            kwargs["to_direct"] = True
         if content_type == "photo":
-            data["send_attribution"] = "inbox"
-            data["allow_full_aspect_ratio"] = "true"
-        if user_ids:
-            data["recipient_users"] = dumps([[int(uid) for uid in user_ids]])
-        if thread_ids:
-            data["thread_ids"] = dumps([int(tid) for tid in thread_ids])
-        path = Path(path)
-        upload_id = str(int(time.time() * 1000))
-        upload_id, width, height = getattr(self, f"{content_type}_rupload")(path, upload_id, **kwargs)[:3]
-        data["upload_id"] = upload_id
-        # data['content_type'] = content_type
-        result = self.private_request(
-            f"direct_v2/threads/broadcast/{method}/",
-            data=self.with_default_data(data),
-            with_signature=False,
-        )
-        return extract_direct_message(result["payload"])
+            return self.direct_send_photo(path, user_ids, thread_ids)
+        if content_type == "video":
+            return self.direct_send_video(path, user_ids, thread_ids)
+        raise ValueError('content_type must be "photo" or "video"')
 
     def direct_send_cutout_sticker(
         self,

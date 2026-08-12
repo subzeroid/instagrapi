@@ -1,3 +1,5 @@
+from PIL import Image
+
 from instagrapi.exceptions import DirectMessageNotFound
 from instagrapi.extractors import extract_direct_thread
 from tests.helpers import *
@@ -361,6 +363,13 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
     def make_voice_file(self, content=b"voice-bytes"):
         return self.make_temp_file(".m4a", content)
 
+    def make_photo_file(self, suffix=".png"):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            path = Path(tmp.name)
+        Image.new("RGBA", (8, 6), (37, 99, 235, 128)).save(path)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        return path
+
     def direct_payload(self):
         return {
             "payload": {
@@ -565,6 +574,153 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
                 return FakeResponse({"media_id": media_id})
 
         return FakeSession()
+
+    def test_direct_send_photo_uploads_and_broadcasts_for_thread_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_photo_file()
+
+        with (
+            mock.patch("instagrapi.mixins.direct.time.time", return_value=1234.567),
+            mock.patch.object(client, "_photo_rupload", return_value=987654321, create=True) as rupload,
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
+        ):
+            result = client.direct_send_photo(path, thread_ids=[123])
+
+        self.assertIs(result, expected)
+        rupload.assert_called_once()
+        photo_bytes, entity_name = rupload.call_args.args
+        self.assertTrue(photo_bytes.startswith(b"\xff\xd8"))
+        self.assertEqual(entity_name, "fb_uploader_1234567")
+        private.assert_called_once_with(
+            "direct_v2/threads/broadcast/photo_attachment/",
+            data=mock.ANY,
+            with_signature=False,
+        )
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [123])
+        self.assertEqual(data["attachment_fbid"], "987654321")
+        self.assertEqual(data["client_context"], "mutation-token")
+        self.assertEqual(data["mutation_token"], "mutation-token")
+        self.assertEqual(data["offline_threading_id"], "mutation-token")
+        self.assertEqual(data["allow_full_aspect_ratio"], "true")
+
+    def test_direct_send_photo_resolves_existing_thread_for_user_ids(self):
+        client = self.build_client()
+        expected = Mock(spec=DirectMessage)
+        path = self.make_photo_file()
+        thread_id = "340282366841710300949128149448121770626"
+
+        with (
+            mock.patch.object(
+                client,
+                "direct_thread_by_participants",
+                return_value={"thread_v2_id": thread_id},
+            ) as thread_lookup,
+            mock.patch.object(client, "_photo_rupload", return_value=123, create=True),
+            mock.patch.object(client, "generate_mutation_token", return_value="mutation-token"),
+            mock.patch("instagrapi.mixins.direct.extract_direct_message", return_value=expected),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()) as private,
+        ):
+            result = client.direct_send_photo(path, user_ids=[42])
+
+        self.assertIs(result, expected)
+        thread_lookup.assert_called_once_with([42])
+        data = private.call_args.kwargs["data"]
+        self.assertEqual(json.loads(data["thread_ids"]), [int(thread_id)])
+
+    def test_direct_send_photo_raises_before_upload_when_existing_thread_is_missing(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "direct_thread_by_participants", return_value={}) as thread_lookup:
+            with mock.patch.object(client, "_photo_rupload", create=True) as rupload:
+                with self.assertRaises(DirectThreadNotFound):
+                    client.direct_send_photo("missing.png", user_ids=[42])
+
+        thread_lookup.assert_called_once_with([42])
+        rupload.assert_not_called()
+
+    def test_direct_send_photo_rejects_unsupported_extension(self):
+        client = self.build_client()
+        path = self.make_temp_file(".gif", b"not-an-image")
+
+        with self.assertRaisesRegex(ValueError, "JPG/JPEG/PNG/WEBP"):
+            client.direct_send_photo(path, thread_ids=[123])
+
+    def test_direct_send_file_delegates_to_current_photo_and_video_flows(self):
+        client = self.build_client()
+        photo_result = Mock(spec=DirectMessage)
+        video_result = Mock(spec=DirectMessage)
+
+        with (
+            mock.patch.object(client, "direct_send_photo", return_value=photo_result) as send_photo,
+            mock.patch.object(client, "direct_send_video", return_value=video_result) as send_video,
+            mock.patch.object(client, "photo_rupload", return_value=("1", 1, 1)),
+            mock.patch.object(client, "video_rupload", return_value=("2", 1, 1)),
+            mock.patch.object(client, "private_request", return_value=self.direct_payload()),
+        ):
+            photo = client.direct_send_file("photo.jpg", thread_ids=[123], content_type="photo")
+            video = client.direct_send_file("video.mp4", user_ids=[42], content_type="video")
+
+        self.assertIs(photo, photo_result)
+        self.assertIs(video, video_result)
+        send_photo.assert_called_once_with("photo.jpg", [], [123])
+        send_video.assert_called_once_with("video.mp4", [42], [])
+
+    def test_photo_rupload_posts_jpeg_with_messenger_headers(self):
+        client = self.build_client()
+        client.proxy = "http://proxy.example:8080"
+        session = self.fake_rupload_session(media_id=987654321)
+
+        with (
+            mock.patch("requests.Session", return_value=session),
+            mock.patch.object(
+                client,
+                "_messenger_rupload_headers",
+                return_value={"authorization": "Bearer token", "image_type": "FILE_ATTACHMENT"},
+            ) as headers,
+        ):
+            media_id = client._photo_rupload(b"photo-bytes", "fb_uploader_123")
+
+        self.assertEqual(media_id, 987654321)
+        headers.assert_called_once_with({"image_type": "FILE_ATTACHMENT"})
+        self.assertEqual(session.verify, client.tls_verify)
+        self.assertEqual(session.proxies, {"http": client.proxy, "https": client.proxy})
+        self.assertEqual(len(session.calls), 1)
+        method, url, upload_headers, body = session.calls[0]
+        self.assertEqual(method, "POST")
+        self.assertEqual(url, "https://rupload.facebook.com/messenger_image/fb_uploader_123")
+        self.assertEqual(body, b"photo-bytes")
+        self.assertEqual(upload_headers["image_type"], "FILE_ATTACHMENT")
+        self.assertEqual(upload_headers["content-type"], "application/octet-stream")
+        self.assertEqual(upload_headers["offset"], "0")
+        self.assertEqual(upload_headers["x-entity-length"], "11")
+        self.assertEqual(upload_headers["x-entity-name"], "fb_uploader_123")
+        self.assertEqual(upload_headers["x-entity-type"], "image/jpeg")
+
+    def test_photo_rupload_raises_for_failed_upload(self):
+        client = self.build_client()
+        session = mock.Mock()
+        session.proxies = {}
+        session.post.return_value = mock.Mock(status_code=500, text="server error")
+
+        with mock.patch("requests.Session", return_value=session):
+            with self.assertRaisesRegex(ClientError, "messenger_image upload POST failed: 500"):
+                client._photo_rupload(b"photo-bytes", "fb_uploader_123")
+
+    def test_photo_rupload_raises_when_media_id_is_missing(self):
+        client = self.build_client()
+        session = mock.Mock()
+        session.proxies = {}
+        response = mock.Mock(status_code=200, text='{"status":"ok"}')
+        response.json.return_value = {"status": "ok"}
+        session.post.return_value = response
+
+        with mock.patch("requests.Session", return_value=session):
+            with self.assertRaisesRegex(ClientError, "messenger_image response missing media_id"):
+                client._photo_rupload(b"photo-bytes", "fb_uploader_123")
 
     def test_direct_send_video_uploads_and_broadcasts_for_thread_ids(self):
         client = self.build_client()
