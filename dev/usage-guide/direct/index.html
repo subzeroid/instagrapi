@@ -1462,7 +1462,7 @@
 <tr>
 <td>direct_send_photo(path: Path, user_ids: List[int], thread_ids: List[int])</td>
 <td>DirectMessage</td>
-<td>Send a direct photo to list of users or threads</td>
+<td>Send a direct photo to users in an existing thread or directly to thread ids</td>
 </tr>
 <tr>
 <td>direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int])</td>
@@ -1503,6 +1503,7 @@
 <ul>
 <li>For <code>direct_send()</code>, <code>direct_media_share()</code>, <code>direct_send_photo()</code>, <code>direct_send_video()</code>, and <code>direct_send_voice()</code>, pass exactly one of <code>user_ids</code> or <code>thread_ids</code>.</li>
 <li>Direct recipient arguments accept either one id (<code>user_ids=123</code>) or a list of ids (<code>user_ids=[123]</code>).</li>
+<li>Direct photo, video, and voice attachments sent with <code>user_ids</code> require an existing Direct thread. Use <code>direct_send()</code> to start the conversation first, or prefer <code>thread_ids</code> when the thread id is already known.</li>
 <li>Direct message requests / invitations are exposed as <code>direct_requests()</code>; <code>direct_pending_inbox()</code> remains as the older name.</li>
 <li><code>direct_pending_requests_preview()</code> is the lightweight Android-app preview for request counters; use <code>direct_requests()</code> when you need the actual threads.</li>
 <li><code>direct_channels()</code> and <code>direct_search_gen_ai_bots()</code> expose raw app surfaces whose response shape may vary by rollout.</li>
