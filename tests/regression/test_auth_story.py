@@ -373,7 +373,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_without_context_tries_caa_bloks_context_when_code_provided(self):
+    def test_login_bad_password_without_context_tries_current_caa_flow(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -383,29 +383,15 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.password_encrypt = Mock(return_value="enc-password")
         client.login_flow = Mock()
         client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
-        caa_result = {"layout": {"bloks_payload": {"action": "action-with-context"}}}
-        client.bloks_caa_login_send_request = Mock(return_value=caa_result)
-        client.bloks_extract_two_step_verification_context = Mock(return_value="context-1")
-        client.bloks_two_step_verification_entrypoint = Mock(return_value={"status": "ok"})
-        client.bloks_two_step_verification_method_picker = Mock(return_value={"status": "ok"})
-        client.bloks_two_step_verification_select_method = Mock(return_value={"status": "ok"})
-        client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
-        client.bloks_apply_login_response = Mock(return_value=True)
+        client.bloks_caa_login = Mock(return_value={"logged_in": True})
 
         result = client.login(verification_code="654321")
 
         self.assertTrue(result)
-        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
-        client.bloks_extract_two_step_verification_context.assert_called_once_with(caa_result)
-        client.bloks_two_step_verification_select_method.assert_called_once_with("context-1", selected_method="totp")
-        client.bloks_two_step_verification_verify_code.assert_called_once_with(
-            "context-1",
-            "654321",
-            challenge="totp",
-        )
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_recovery_response_does_not_try_caa_bloks(self):
+    def test_login_bad_password_recovery_response_tries_current_caa_flow_without_code(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -417,15 +403,15 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         }
         client.pre_login_flow = Mock(return_value=True)
         client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
         client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
-        client.bloks_caa_login_send_request = Mock(
-            side_effect=AssertionError("recovery bad_password responses are not CAA two-factor challenges")
-        )
+        client.bloks_caa_login = Mock(return_value={"logged_in": True})
 
-        with self.assertRaises(BadPassword):
-            client.login(verification_code="654321")
+        result = client.login()
 
-        client.bloks_caa_login_send_request.assert_not_called()
+        self.assertTrue(result)
+        client.bloks_caa_login.assert_called_once_with(verification_code="")
+        client.login_flow.assert_called_once_with()
 
     def test_login_with_eight_digit_backup_code_selects_backup_code_bloks_challenge(self):
         client = Client()
@@ -463,7 +449,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_without_context_raises_clear_error_when_caa_has_no_context(self):
+    def test_login_bad_password_without_context_preserves_original_error_when_caa_has_no_session(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -472,18 +458,16 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.pre_login_flow = Mock(return_value=True)
         client.password_encrypt = Mock(return_value="enc-password")
         client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
-        client.bloks_caa_login_send_request = Mock(return_value={"layout": {"bloks_payload": {"action": ""}}})
-        client.bloks_extract_two_step_verification_context = Mock(return_value="")
-        client.bloks_two_step_verification_verify_code = Mock()
+        client.bloks_caa_login = Mock(
+            return_value={"logged_in": False, "two_step_verification_context": "", "reason": "no session"}
+        )
 
-        with self.assertRaises(TwoFactorRequired) as cm:
+        with self.assertRaises(BadPassword):
             client.login(verification_code="654321")
 
-        self.assertIn("CAA response did not include two_step_verification_context", str(cm.exception))
-        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
-        client.bloks_two_step_verification_verify_code.assert_not_called()
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
 
-    def test_login_bad_password_without_context_wraps_unavailable_caa_bloks_endpoint(self):
+    def test_login_bad_password_without_context_preserves_original_error_when_caa_is_unavailable(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -502,16 +486,52 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
             error_type="field_exception",
             status="fail",
         )
-        client.bloks_caa_login_send_request = Mock(side_effect=caa_error)
-        client.bloks_two_step_verification_verify_code = Mock()
+        client.bloks_caa_login = Mock(side_effect=caa_error)
 
-        with self.assertRaises(TwoFactorRequired) as cm:
+        with self.assertRaises(BadPassword):
             client.login(verification_code="654321")
 
-        self.assertIn("CAA/Bloks login endpoint", str(cm.exception))
-        self.assertIs(cm.exception.__cause__, caa_error)
-        client.bloks_caa_login_send_request.assert_called_once_with("password", login_attempt_count=1)
-        client.bloks_two_step_verification_verify_code.assert_not_called()
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
+
+    def test_caa_profile_code_error_is_not_replaced_with_legacy_bad_password(self):
+        client = Client()
+        original = BadPassword("Bad Password", response=Mock(status_code=400))
+        rejection = ChallengeError("CAA profile-code submission failed")
+        client.bloks_caa_login = Mock(side_effect=rejection)
+
+        with self.assertRaises(ChallengeError) as raised:
+            client._try_caa_login(original, verification_code="654321")
+
+        self.assertIs(raised.exception, rejection)
+
+    def test_caa_legacy_two_step_context_requires_a_verification_code(self):
+        client = Client()
+        original = BadPassword("Bad Password", response=Mock(status_code=400))
+        client.bloks_caa_login = Mock(
+            return_value={"logged_in": False, "two_step_verification_context": "legacy-context"}
+        )
+
+        with self.assertRaises(TwoFactorRequired) as raised:
+            client._try_caa_login(original)
+
+        self.assertIn("provide verification_code", str(raised.exception))
+
+    def test_caa_legacy_two_step_context_delegates_supplied_code(self):
+        client = Client()
+        original = BadPassword("Bad Password", response=Mock(status_code=400))
+        client.bloks_caa_login = Mock(
+            return_value={"logged_in": False, "two_step_verification_context": "legacy-context"}
+        )
+        client._login_with_bloks_two_factor = Mock(return_value=True)
+
+        result = client._try_caa_login(original, verification_code="654321")
+
+        self.assertTrue(result)
+        client._login_with_bloks_two_factor.assert_called_once_with(
+            "654321",
+            {"two_step_verification_context": "legacy-context"},
+            original,
+        )
 
     def test_login_by_sessionid_falls_back_to_private_stream_before_public(self):
         client = Client()

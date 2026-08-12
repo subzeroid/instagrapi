@@ -8,6 +8,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from instagrapi.mixins.account import AccountMixin
 from instagrapi.mixins.album import DownloadAlbumMixin, UploadAlbumMixin
+from instagrapi.mixins.attestation import DeviceAttestationMixin
 from instagrapi.mixins.auth import LoginMixin
 from instagrapi.mixins.bloks import BloksMixin
 from instagrapi.mixins.challenge import ChallengeResolveMixin
@@ -93,6 +94,7 @@ class Client(
     UploadClipMixin,
     ReelsMixin,
     ExploreMixin,
+    DeviceAttestationMixin,
     BloksMixin,
     TOTPMixin,
     MultipleAccountsMixin,
