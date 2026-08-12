@@ -144,3 +144,4 @@ dmypy.json
 ig_settings.json
 .backlog/
 .playwright-mcp/
+docs/superpowers/
