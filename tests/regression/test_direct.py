@@ -366,7 +366,10 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
     def make_photo_file(self, suffix=".png"):
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
             path = Path(tmp.name)
-        Image.new("RGBA", (8, 6), (37, 99, 235, 128)).save(path)
+        if suffix.lower() in {".jpg", ".jpeg"}:
+            Image.new("RGB", (8, 6), (37, 99, 235)).save(path)
+        else:
+            Image.new("RGBA", (8, 6), (37, 99, 235, 128)).save(path)
         self.addCleanup(lambda: path.unlink(missing_ok=True))
         return path
 
@@ -607,6 +610,44 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(data["offline_threading_id"], "mutation-token")
         self.assertEqual(data["allow_full_aspect_ratio"], "true")
 
+    def test_direct_send_photo_accepts_jpeg_and_webp_inputs(self):
+        client = self.build_client()
+
+        for suffix in (".jpeg", ".webp"):
+            with self.subTest(suffix=suffix):
+                path = self.make_photo_file(suffix)
+                with (
+                    mock.patch.object(client, "_photo_rupload", return_value=123) as rupload,
+                    mock.patch.object(client, "generate_mutation_token", return_value="token"),
+                    mock.patch(
+                        "instagrapi.mixins.direct.extract_direct_message",
+                        return_value=Mock(spec=DirectMessage),
+                    ),
+                    mock.patch.object(client, "private_request", return_value=self.direct_payload()),
+                ):
+                    client.direct_send_photo(path, thread_ids=[123])
+
+                photo_bytes, _ = rupload.call_args.args
+                self.assertTrue(photo_bytes.startswith(b"\xff\xd8"))
+
+    def test_direct_send_photo_requires_login(self):
+        client = Client()
+
+        with self.assertRaisesRegex(AssertionError, "Login required"):
+            client.direct_send_photo("missing.png", thread_ids=[123])
+
+    def test_direct_send_photo_requires_exactly_one_recipient_mode(self):
+        client = self.build_client()
+
+        for user_ids, thread_ids in (([], []), ([42], [123])):
+            with self.subTest(user_ids=user_ids, thread_ids=thread_ids):
+                with self.assertRaisesRegex(AssertionError, "Specify user_ids or thread_ids, but not both"):
+                    client.direct_send_photo(
+                        "missing.png",
+                        user_ids=user_ids,
+                        thread_ids=thread_ids,
+                    )
+
     def test_direct_send_photo_resolves_existing_thread_for_user_ids(self):
         client = self.build_client()
         expected = Mock(spec=DirectMessage)
@@ -668,6 +709,12 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
         self.assertIs(video, video_result)
         send_photo.assert_called_once_with("photo.jpg", [], [123])
         send_video.assert_called_once_with("video.mp4", [42], [])
+
+    def test_direct_send_file_rejects_unsupported_content_type(self):
+        client = self.build_client()
+
+        with self.assertRaisesRegex(ValueError, 'content_type must be "photo" or "video"'):
+            client.direct_send_file("voice.m4a", thread_ids=[123], content_type="audio")
 
     def test_photo_rupload_posts_jpeg_with_messenger_headers(self):
         client = self.build_client()
