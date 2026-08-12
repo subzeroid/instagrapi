@@ -1,3 +1,5 @@
+from PIL import Image
+
 from instagrapi.exceptions import DirectMessageNotFound
 from tests import helpers as _helpers
 from tests.helpers import *
@@ -209,6 +211,13 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
             ],
         )
 
+    def make_photo_png(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
+            path = Path(tmp.name)
+        Image.new("RGBA", (64, 48), (37, 99, 235, 128)).save(path)
+        self.addCleanup(lambda: path.unlink(missing_ok=True))
+        return path
+
     def thread_id_by_participants(self, client, user_id):
         thread = client.direct_thread_by_participants([user_id])
         thread_id = thread.get("thread_v2_id") or thread.get("thread_id")
@@ -297,6 +306,55 @@ class ClientDirectMediaLiveTestCase(_helpers.ClientPrivateTestCase):
                 time.sleep(3)
             else:
                 self.fail(f"Direct reaction was still visible: {getattr(cleared_message, 'reactions', None)}")
+        finally:
+            if thread_id:
+                self.cleanup_direct_media_messages(thread_id, sent_messages, [sender, recipient])
+
+    def test_direct_send_photo_with_thread_and_user_ids(self):
+        sender = self.cl
+        recipient = self.fresh_accounts(1, exclude_user_ids={sender.user_id})[0]
+        photo_path = self.make_photo_png()
+        sent_messages = []
+        thread_id = None
+
+        try:
+            seed_message = sender.direct_send(
+                f"instagrapi direct photo live warm {int(time.time())}",
+                user_ids=[recipient.user_id],
+            )
+            self.assertIsInstance(seed_message, DirectMessage)
+            sent_messages.append((sender, seed_message))
+
+            thread_id = seed_message.thread_id or self.thread_id_by_participants(sender, recipient.user_id)
+            self.assertTrue(thread_id)
+
+            reply_message = recipient.direct_answer(
+                thread_id,
+                f"instagrapi direct photo live reply {int(time.time())}",
+            )
+            self.assertIsInstance(reply_message, DirectMessage)
+            sent_messages.append((recipient, reply_message))
+
+            thread_photo = sender.direct_send_photo(photo_path, thread_ids=[thread_id])
+            self.assertIsInstance(thread_photo, DirectMessage)
+            self.assertTrue(thread_photo.id)
+            sent_messages.append((sender, thread_photo))
+
+            user_photo = sender.direct_send_photo(photo_path, user_ids=[recipient.user_id])
+            self.assertIsInstance(user_photo, DirectMessage)
+            self.assertTrue(user_photo.id)
+            sent_messages.append((sender, user_photo))
+
+            for sent_photo in (thread_photo, user_photo):
+                received_photo = None
+                for _ in range(6):
+                    received_photo = self.direct_message_by_id(recipient, thread_id, sent_photo.id)
+                    if received_photo and received_photo.item_type == "media" and received_photo.media:
+                        break
+                    time.sleep(2)
+                self.assertIsNotNone(received_photo)
+                self.assertEqual(received_photo.item_type, "media")
+                self.assertIsNotNone(received_photo.media)
         finally:
             if thread_id:
                 self.cleanup_direct_media_messages(thread_id, sent_messages, [sender, recipient])
