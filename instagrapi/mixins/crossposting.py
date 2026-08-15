@@ -139,7 +139,22 @@ class CrossPostingMixin:
             for key, value in data.items():
                 if root_field in str(key):
                     return value
+        root = (config or {}).get(root_field)
+        if root is not None:
+            return root
+        for key, value in (config or {}).items():
+            if root_field in str(key):
+                return value
         return config or {}
+
+    @staticmethod
+    def _crossposting_has_graphql_root(config: Dict[str, object], root_field: str) -> bool:
+        if not isinstance(config, dict):
+            return False
+        data = config.get("data")
+        if isinstance(data, dict) and any(root_field in str(key) for key in data):
+            return True
+        return any(root_field in str(key) for key in config)
 
     @staticmethod
     def _media_share_to_fb_feed_candidate(config: Dict[str, object]) -> bool:
@@ -350,14 +365,26 @@ class CrossPostingMixin:
         Dict[str, object]
             Normalized destination fields.
         """
-        has_unified_root = bool(
-            config
-            and (
-                isinstance(config.get("data"), dict)
-                or any(FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD in str(key) for key in config)
-            )
+        explicit_destination = bool(destination_id or destination_type)
+        has_connected_services_root = bool(
+            config and self._crossposting_has_graphql_root(config, FB_CONNECTED_SERVICES_ROOT_FIELD)
         )
-        if config is not None and has_unified_root:
+        if config is not None and has_connected_services_root and not explicit_destination:
+            for candidate in self._fb_connected_services_destination_candidates(config, "FEED"):
+                try:
+                    return self.media_share_to_fb_destination(
+                        config=candidate,
+                        validation_bypass=validation_bypass,
+                        use_unified_config=False,
+                    )
+                except ClientError:
+                    continue
+            raise ClientError("Facebook connected-services config has no eligible Feed destination")
+
+        has_unified_root = bool(
+            config and self._crossposting_has_graphql_root(config, FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD)
+        )
+        if config is not None and has_unified_root and not explicit_destination:
             candidates = list(self._media_share_to_fb_unified_destination_candidates(config))
             if candidates:
                 for candidate in candidates:
@@ -373,7 +400,6 @@ class CrossPostingMixin:
                         continue
 
         fb_config = config or {}
-        explicit_destination = bool(destination_id or destination_type)
         if not fb_config and not explicit_destination and use_unified_config:
             return self.media_share_to_fb_unified_destination()
         if fb_config.get("enabled") is False or fb_config.get("is_account_linked") is False:

@@ -445,6 +445,46 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_media_share_to_fb_destination_rejects_ineligible_connected_service_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "custom_service_data": {
+                                "auto_xpost_setting": [
+                                    {
+                                        "is_auto_crosspost_enabled": True,
+                                        "source_surface": "FEED",
+                                    }
+                                ]
+                            },
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "ineligible-feed-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {
+                                                    "surface": "FEED",
+                                                    "is_eligible": False,
+                                                }
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
+
+        with self.assertRaises(ClientError):
+            client.media_share_to_fb_destination(config=config)
+
     def test_media_share_to_fb_extra_data_builds_feed_crosspost_payload(self):
         client = self.build_client()
 
@@ -734,7 +774,27 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "destination_type": "PAGE",
                 "destination_audience_type": "PUBLIC",
                 "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+                "validation_check_bypass": True,
             },
+        )
+
+    def test_clip_share_to_fb_extra_data_preserves_normalized_destination_bypass(self):
+        client = self.build_client()
+        destination = client.clip_share_to_fb_destination(
+            config={},
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            validation_check_bypass=True,
+        )
+
+        result = client.clip_share_to_fb_extra_data(
+            config=destination,
+            attempt_id="attempt-id",
+        )
+
+        self.assertEqual(
+            result["share_to_facebook_validation_bypass"],
+            '["AUTO_CROSSPOST_SETTING"]',
         )
 
     def test_clip_share_to_fb_destination_rejects_unavailable_config_without_destination(self):
@@ -816,6 +876,7 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "destination_type": "PAGE",
                 "destination_audience_type": "PUBLIC",
                 "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+                "validation_check_bypass": True,
             },
         )
 
@@ -942,8 +1003,55 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "destination_type": "PAGE",
                 "destination_audience_type": "PUBLIC",
                 "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+                "validation_check_bypass": True,
             },
         )
+
+    def test_clip_share_to_fb_unified_destination_rejects_ineligible_connected_service_identity(self):
+        client = self.build_client()
+        connected_services_config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "ineligible-reels-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True},
+                                                {"surface": "REELS", "is_eligible": False},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_unified_config",
+                return_value={
+                    "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+                    "status": "ok",
+                },
+            ),
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ),
+            self.assertRaises(ClientError),
+        ):
+            client.clip_share_to_fb_unified_destination()
 
     def test_clip_share_to_fb_unified_destination_ignores_generic_account_center_ids(self):
         client = self.build_client()

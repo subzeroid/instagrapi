@@ -573,6 +573,8 @@ class UploadClipMixin:
                 fb_config,
                 (
                     "share_to_facebook_validation_bypass",
+                    "validation_bypass",
+                    "validation_check_bypass",
                     "reels_cross_app_share_fb_validation_check_bypass",
                     "cross_app_share_fb_validation_check_bypass",
                 ),
@@ -605,13 +607,16 @@ class UploadClipMixin:
                 if validation_bypass_provided:
                     if validation_bypass:
                         discovered_destination["validation_bypass"] = validation_bypass
+                        discovered_destination["validation_check_bypass"] = True
                     else:
                         discovered_destination.pop("validation_bypass", None)
+                        discovered_destination["validation_check_bypass"] = False
                 elif "validation_bypass" not in discovered_destination and (
                     fb_config.get("share_to_fb_unavailable") is True
                     or fb_config.get("default_share_to_fb_enabled") is False
                 ):
                     discovered_destination["validation_bypass"] = ["AUTO_CROSSPOST_SETTING"]
+                    discovered_destination["validation_check_bypass"] = True
                 return discovered_destination
         if fb_config.get("share_to_fb_unavailable") and not has_destination:
             raise ClientError(
@@ -645,6 +650,9 @@ class UploadClipMixin:
             destination["destination_audience_type"] = str(destination_audience_type)
         if validation_bypass:
             destination["validation_bypass"] = validation_bypass
+            destination["validation_check_bypass"] = True
+        elif validation_bypass_provided:
+            destination["validation_check_bypass"] = False
         return destination
 
     def clip_share_to_fb_extra_data(
