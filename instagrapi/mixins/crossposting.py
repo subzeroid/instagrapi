@@ -2,11 +2,15 @@ import json
 from typing import Dict, Iterable, List, Literal, Optional
 from uuid import uuid4
 
-from instagrapi.exceptions import ClientError
+from instagrapi import config
+from instagrapi.exceptions import ClientError, ClientGraphqlError
 
 FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID = "216179630714134719310007237117"
 FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME = "CrosspostingUnifiedConfigsQuery"
 FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD = "xcxp_unified_crossposting_configs_root"
+FB_CONNECTED_SERVICES_CLIENT_DOC_ID = "21631519911413744205623093060"
+FB_CONNECTED_SERVICES_FRIENDLY_NAME = "FxIgConnectedServicesInfoQuery"
+FB_CONNECTED_SERVICES_ROOT_FIELD = "fx_service_cache"
 FB_STORY_CROSSPOSTING_SURFACE = {
     "source_surface": "STORY",
     "destination_app": "FB",
@@ -62,14 +66,50 @@ class CrossPostingMixin:
                 "crosspost_app_surface_list": crosspost_app_surface_list or FB_CROSSPOSTING_SURFACES,
             }
         }
-        return self.private_graphql_query_request(
+        result = self.private_graphql_www_request(
             friendly_name=FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME,
-            root_field_name=FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
             variables=variables,
             client_doc_id=FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID,
-            priority="u=3, i",
-            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            domain=config.API_DOMAIN,
+            extra_headers={
+                "X-Root-Field-Name": FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+            },
+            purpose=None,
         )
+        result.setdefault("status", "ok")
+        return result
+
+    def media_share_to_fb_connected_services_config(self) -> Dict:
+        """Get Android's connected Facebook destination service cache."""
+        variables = {
+            "service_names": ["CROSS_POSTING_SETTING"],
+            "custom_partner_params": [
+                {"value": "FB", "key": "CROSSPOSTING_DESTINATION_APP"},
+                {"value": "", "key": "CROSSPOSTING_SHARE_TO_SURFACE"},
+                {
+                    "value": "true",
+                    "key": "OVERRIDE_USER_VALIDATION_WITH_CXP_ELIGIBILITY_RULE",
+                },
+            ],
+            "client_caller_name": "ig_android_service_cache_crossposting_setting",
+            "caller_name": "fx_product_foundation_client_FXOnline_client_cache",
+        }
+        result = self.private_graphql_www_request(
+            friendly_name=FB_CONNECTED_SERVICES_FRIENDLY_NAME,
+            variables=variables,
+            client_doc_id=FB_CONNECTED_SERVICES_CLIENT_DOC_ID,
+            domain=config.API_DOMAIN,
+            extra_headers={
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": FB_CONNECTED_SERVICES_ROOT_FIELD,
+            },
+            purpose=None,
+        )
+        result.setdefault("status", "ok")
+        return result
 
     @staticmethod
     def _crossposting_iter_dicts(value) -> Iterable[Dict[str, object]]:
@@ -99,7 +139,22 @@ class CrossPostingMixin:
             for key, value in data.items():
                 if root_field in str(key):
                     return value
+        root = (config or {}).get(root_field)
+        if root is not None:
+            return root
+        for key, value in (config or {}).items():
+            if root_field in str(key):
+                return value
         return config or {}
+
+    @staticmethod
+    def _crossposting_has_graphql_root(config: Dict[str, object], root_field: str) -> bool:
+        if not isinstance(config, dict):
+            return False
+        data = config.get("data")
+        if isinstance(data, dict) and any(root_field in str(key) for key in data):
+            return True
+        return any(root_field in str(key) for key in config)
 
     @staticmethod
     def _media_share_to_fb_feed_candidate(config: Dict[str, object]) -> bool:
@@ -162,6 +217,64 @@ class CrossPostingMixin:
                     merged.update(nested)
             yield merged
 
+    def _fb_connected_services_destination_candidates(
+        self,
+        config: Dict[str, object],
+        surface: str,
+    ) -> Iterable[Dict[str, object]]:
+        """Yield eligible Facebook destinations from Android's Fx service cache."""
+        root = self._crossposting_graphql_root(config, FB_CONNECTED_SERVICES_ROOT_FIELD)
+        if not isinstance(root, dict):
+            return
+        services = root.get("services")
+        if not isinstance(services, list):
+            return
+        surface = surface.upper()
+        for service in services:
+            if not isinstance(service, dict):
+                continue
+            audience_type = None
+            if surface == "REELS":
+                custom_service_data = service.get("custom_service_data")
+                if isinstance(custom_service_data, dict):
+                    privacy_data = custom_service_data.get("fb_reels_privacy_setting_service_data")
+                    if isinstance(privacy_data, dict):
+                        audience_type = privacy_data.get("fb_reels_audience")
+            identity_mappings = service.get("identity_mapping")
+            if not isinstance(identity_mappings, list):
+                continue
+            for identity_mapping in identity_mappings:
+                if not isinstance(identity_mapping, dict):
+                    continue
+                destination_identities = identity_mapping.get("destination_identities")
+                if not isinstance(destination_identities, list):
+                    continue
+                for destination in destination_identities:
+                    if not isinstance(destination, dict):
+                        continue
+                    eligibilities = destination.get("surface_to_xpost_eligibilities")
+                    matching_eligibilities = (
+                        [
+                            eligibility
+                            for eligibility in eligibilities
+                            if isinstance(eligibility, dict)
+                            and str(eligibility.get("surface") or "").upper() == surface
+                        ]
+                        if isinstance(eligibilities, list)
+                        else []
+                    )
+                    if any(eligibility.get("is_eligible") is False for eligibility in matching_eligibilities):
+                        continue
+                    candidate = {
+                        "source_surface": surface,
+                        "destination_app": "FB",
+                        "destination_surface": surface,
+                        **destination,
+                    }
+                    if audience_type:
+                        candidate["destination_audience_type"] = audience_type
+                    yield candidate
+
     def _media_share_to_fb_unified_config_variants(self):
         yield self.media_share_to_fb_unified_config()
         yield self.media_share_to_fb_unified_config(crosspost_app_surface_list=[FB_FEED_CROSSPOSTING_SURFACE])
@@ -193,7 +306,20 @@ class CrossPostingMixin:
                     )
                 except ClientError:
                     continue
-        raise ClientError("Facebook Feed sharing unified config has no confirmed Facebook destination")
+        if config is None:
+            connected_services_config = self.media_share_to_fb_connected_services_config()
+            for candidate in self._fb_connected_services_destination_candidates(
+                connected_services_config,
+                "FEED",
+            ):
+                try:
+                    return self.media_share_to_fb_destination(
+                        config=candidate,
+                        use_unified_config=False,
+                    )
+                except ClientError:
+                    continue
+        raise ClientError("Facebook Feed cross-posting config has no confirmed Facebook destination")
 
     @staticmethod
     def _crossposting_validation_bypass(value) -> Optional[List[str]]:
@@ -239,14 +365,29 @@ class CrossPostingMixin:
         Dict[str, object]
             Normalized destination fields.
         """
-        has_unified_root = bool(
-            config
-            and (
-                isinstance(config.get("data"), dict)
-                or any(FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD in str(key) for key in config)
-            )
+        explicit_destination = bool(destination_id or destination_type)
+        complete_explicit_destination = bool(destination_id and destination_type)
+        has_connected_services_root = bool(
+            config and self._crossposting_has_graphql_root(config, FB_CONNECTED_SERVICES_ROOT_FIELD)
         )
-        if config is not None and has_unified_root:
+        if config is not None and has_connected_services_root and not complete_explicit_destination:
+            for candidate in self._fb_connected_services_destination_candidates(config, "FEED"):
+                try:
+                    return self.media_share_to_fb_destination(
+                        config=candidate,
+                        destination_id=destination_id,
+                        destination_type=destination_type,
+                        validation_bypass=validation_bypass,
+                        use_unified_config=False,
+                    )
+                except ClientError:
+                    continue
+            raise ClientError("Facebook connected-services config has no eligible Feed destination")
+
+        has_unified_root = bool(
+            config and self._crossposting_has_graphql_root(config, FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD)
+        )
+        if config is not None and has_unified_root and not complete_explicit_destination:
             candidates = list(self._media_share_to_fb_unified_destination_candidates(config))
             if candidates:
                 for candidate in candidates:
@@ -262,7 +403,6 @@ class CrossPostingMixin:
                         continue
 
         fb_config = config or {}
-        explicit_destination = bool(destination_id or destination_type)
         if not fb_config and not explicit_destination and use_unified_config:
             return self.media_share_to_fb_unified_destination()
         if fb_config.get("enabled") is False or fb_config.get("is_account_linked") is False:
@@ -273,6 +413,7 @@ class CrossPostingMixin:
             (
                 "share_to_fb_destination_id",
                 "obfuscated_identity_id",
+                "identity_id",
                 "feed_destination_id",
                 "crosspost_destination_id",
                 "crossposting_destination_id",
@@ -368,14 +509,32 @@ class CrossPostingMixin:
         Dict
             Private GraphQL response.
         """
-        return self.private_graphql_query_request(
-            friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
-            root_field_name=THREADS_LINKED_PROFILE_ROOT_FIELD,
-            variables={},
-            client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
-            priority="u=3, i",
-            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
-        )
+        try:
+            result = self.private_graphql_www_request(
+                friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
+                variables={},
+                client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
+                domain=config.API_DOMAIN,
+                extra_headers={
+                    "X-Root-Field-Name": THREADS_LINKED_PROFILE_ROOT_FIELD,
+                    "Priority": "u=3, i",
+                    "X-FB-RMD": "state=URL_ELIGIBLE",
+                },
+                purpose=None,
+            )
+        except ClientGraphqlError:
+            # Unlinked accounts can reject the current app transport instead
+            # of returning a null profile. Preserve the older null response.
+            result = self.private_graphql_query_request(
+                friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
+                root_field_name=THREADS_LINKED_PROFILE_ROOT_FIELD,
+                variables={},
+                client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
+                priority="u=3, i",
+                extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            )
+        result.setdefault("status", "ok")
+        return result
 
     def media_share_to_threads_destination(
         self,
