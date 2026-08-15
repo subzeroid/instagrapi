@@ -373,14 +373,18 @@ class UploadClipMixin:
                 "crosspost_app_surface_list": crosspost_app_surface_list or CLIP_FB_CROSSPOSTING_SURFACES,
             }
         }
-        return self.private_graphql_query_request(
+        result = self.private_graphql_www_request(
             friendly_name=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME,
-            root_field_name=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
             variables=variables,
             client_doc_id=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID,
-            priority="u=3, i",
-            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            extra_headers={
+                "X-Root-Field-Name": CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+            },
         )
+        result.setdefault("status", "ok")
+        return result
 
     def _clip_share_to_fb_unified_root(self, config: Dict[str, object]) -> object:
         data = (config or {}).get("data")
@@ -643,6 +647,7 @@ class UploadClipMixin:
             "share_to_facebook": "1",
             "is_reel_shared_to_fb": True,
             "share_to_facebook_reels": True,
+            "cross_app_share_type": "2",
             "share_to_fb_destination_id": destination["destination_id"],
             "share_to_fb_destination_type": destination["destination_type"],
             "xpost_surface": xpost_surface,

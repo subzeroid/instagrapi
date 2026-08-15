@@ -148,18 +148,27 @@ class UploadRegressionTestCase(unittest.TestCase):
 
     def test_clip_share_to_fb_unified_config_requests_android_cxp_query(self):
         client = self.build_client()
-        expected = {"status": "ok", "data": {"xcxp_unified_crossposting_configs_root": {}}}
+        response = {"data": {"xcxp_unified_crossposting_configs_root": {}}}
 
-        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
             result = client.clip_share_to_fb_unified_config()
 
+        legacy_graphql_request.assert_not_called()
         graphql_request.assert_called_once()
         kwargs = graphql_request.call_args.kwargs
         self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
-        self.assertEqual(kwargs["root_field_name"], "xcxp_unified_crossposting_configs_root")
         self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
-        self.assertEqual(kwargs["priority"], "u=3, i")
-        self.assertEqual(kwargs["extra_headers"], {"X-FB-RMD": "state=URL_ELIGIBLE"})
+        self.assertEqual(
+            kwargs["extra_headers"],
+            {
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_unified_crossposting_configs_root",
+            },
+        )
         self.assertEqual(
             kwargs["variables"],
             {
@@ -185,7 +194,69 @@ class UploadRegressionTestCase(unittest.TestCase):
                 }
             },
         )
-        self.assertEqual(result, expected)
+        self.assertEqual(
+            result,
+            {
+                "data": {"xcxp_unified_crossposting_configs_root": {}},
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_unified_config_requests_android_graphql_www(self):
+        client = self.build_client()
+        response = {"data": {"xcxp_unified_crossposting_configs_root": {}}}
+
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
+            result = client.media_share_to_fb_unified_config()
+
+        legacy_graphql_request.assert_not_called()
+        graphql_request.assert_called_once()
+        kwargs = graphql_request.call_args.kwargs
+        self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
+        self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
+        self.assertEqual(
+            kwargs["extra_headers"],
+            {
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_unified_crossposting_configs_root",
+            },
+        )
+        self.assertEqual(
+            kwargs["variables"],
+            {
+                "configs_request": {
+                    "source_app": "IG",
+                    "crosspost_app_surface_list": [
+                        {
+                            "source_surface": "STORY",
+                            "destination_app": "FB",
+                            "destination_surface": "STORY",
+                        },
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                        },
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                        },
+                    ],
+                }
+            },
+        )
+        self.assertEqual(
+            result,
+            {
+                "data": {"xcxp_unified_crossposting_configs_root": {}},
+                "status": "ok",
+            },
+        )
 
     def test_media_share_to_fb_destination_selects_feed_and_normalizes_identity_type(self):
         client = self.build_client()
@@ -690,7 +761,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "reels_share_to_facebook": True,
             "reels_destination_id": "fb-destination-id",
             "posting_type": "USER",
-            "reels_cross_app_share_type": "CROSSPOST",
+            "reels_cross_app_share_type": "2",
             "reels_cross_app_share_fb_validation_check_bypass": True,
             "status": "ok",
         }
@@ -703,6 +774,7 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "share_to_facebook": "1",
                 "is_reel_shared_to_fb": True,
                 "share_to_facebook_reels": True,
+                "cross_app_share_type": "2",
                 "share_to_fb_destination_id": "fb-destination-id",
                 "share_to_fb_destination_type": "USER",
                 "cross_app_share_fb_validation_check_bypass": True,
@@ -727,6 +799,7 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(result["share_to_fb_destination_id"], "fb-destination-id")
         self.assertEqual(result["share_to_fb_destination_type"], "USER")
+        self.assertEqual(result["cross_app_share_type"], "2")
         self.assertEqual(result["attempt_id"], "attempt-id")
 
     def test_clip_share_to_fb_extra_data_allows_config_destination_when_preflight_is_unavailable(self):
@@ -2119,6 +2192,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "share_to_facebook": "1",
             "is_reel_shared_to_fb": True,
             "share_to_facebook_reels": True,
+            "cross_app_share_type": "2",
             "share_to_fb_destination_id": "fb-destination-id",
             "share_to_fb_destination_type": "USER",
             "cross_app_share_fb_validation_check_bypass": False,
@@ -2159,6 +2233,7 @@ class UploadRegressionTestCase(unittest.TestCase):
         configure_extra = clip_configure.call_args.kwargs["extra_data"]
         self.assertEqual(configure_extra["disable_comments"], "1")
         self.assertEqual(configure_extra["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertEqual(configure_extra["cross_app_share_type"], "2")
         self.assertTrue(configure_extra["share_to_facebook_reels"])
         self.assertEqual(configure_extra["xpost_surface"], "IG_REELS_COMPOSER")
 

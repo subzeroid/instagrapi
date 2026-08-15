@@ -987,7 +987,11 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         config = self.cl.clip_share_to_fb_unified_config()
 
         self.assertEqual(config.get("status"), "ok")
-        self.assertIsInstance(config.get("data"), dict)
+        self.assertIsInstance(
+            self.cl._clip_share_to_fb_unified_root(config),
+            dict,
+            "Android unified config returned a null Facebook cross-posting root",
+        )
 
     def test_clip_upload_share_to_facebook_live(self):
         try:
@@ -1001,12 +1005,32 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         media = None
         try:
             caption_text = "Facebook Reel crosspost live test"
-            media = self.cl.clip_upload(path, caption_text, share_to_facebook=True)
-            self.assertUploadedMediaAccessible(
+            media = self.cl.clip_upload(
+                path,
+                caption_text,
+                share_to_facebook=True,
+                fb_destination_id=destination["destination_id"],
+                fb_destination_type=destination["destination_type"],
+            )
+            payload = self.assertUploadedMediaAccessible(
                 media,
                 media_type=2,
                 product_type="clips",
                 caption_text=caption_text,
+            )
+            for attempt in range(8):
+                clips_metadata = payload.get("clips_metadata") or {}
+                crosspost = {str(item).upper() for item in payload.get("crosspost") or []}
+                if clips_metadata.get("is_shared_to_fb") or payload.get("has_shared_to_fb") or "FB" in crosspost:
+                    break
+                if attempt < 7:
+                    time.sleep(5)
+                    payload = self.uploaded_media_payload(media)
+            self.assertTrue(
+                (payload.get("clips_metadata") or {}).get("is_shared_to_fb")
+                or payload.get("has_shared_to_fb")
+                or "FB" in {str(item).upper() for item in payload.get("crosspost") or []},
+                "Instagram did not confirm Facebook Reel cross-posting",
             )
         finally:
             if media:
@@ -1038,7 +1062,15 @@ class ClientFeedCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
     def test_media_share_to_fb_unified_config_live(self):
         config = self.cl.media_share_to_fb_unified_config()
 
-        self.assertIsInstance(config.get("data"), dict)
+        self.assertEqual(config.get("status"), "ok")
+        self.assertIsInstance(
+            self.cl._crossposting_graphql_root(
+                config,
+                "xcxp_unified_crossposting_configs_root",
+            ),
+            dict,
+            "Android unified config returned a null Facebook cross-posting root",
+        )
 
     def test_media_share_to_fb_destination_live(self):
         try:

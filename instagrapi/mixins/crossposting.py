@@ -62,14 +62,18 @@ class CrossPostingMixin:
                 "crosspost_app_surface_list": crosspost_app_surface_list or FB_CROSSPOSTING_SURFACES,
             }
         }
-        return self.private_graphql_query_request(
+        result = self.private_graphql_www_request(
             friendly_name=FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME,
-            root_field_name=FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
             variables=variables,
             client_doc_id=FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID,
-            priority="u=3, i",
-            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            extra_headers={
+                "X-Root-Field-Name": FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+            },
         )
+        result.setdefault("status", "ok")
+        return result
 
     @staticmethod
     def _crossposting_iter_dicts(value) -> Iterable[Dict[str, object]]:
