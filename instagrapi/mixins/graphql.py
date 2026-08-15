@@ -363,6 +363,7 @@ class PrivateGraphQLRequestMixin:
         client_doc_id: Optional[str] = None,
         domain: str = PRIVATE_GRAPHQL_WWW_DOMAIN,
         extra_headers: Optional[Dict] = None,
+        purpose: Optional[str] = "fetch",
     ) -> Dict:
         data = {
             "method": "post",
@@ -370,13 +371,14 @@ class PrivateGraphQLRequestMixin:
             "format": "json",
             "server_timestamps": "true",
             "locale": "user",
-            "purpose": "fetch",
             "fb_api_req_friendly_name": friendly_name,
             "enable_canonical_naming": "true",
             "enable_canonical_variable_overrides": "true",
             "enable_canonical_naming_ambiguous_type_prefixing": "true",
             "variables": json.dumps(variables or {}, separators=(",", ":")),
         }
+        if purpose is not None:
+            data["purpose"] = purpose
         if client_doc_id:
             data["client_doc_id"] = str(client_doc_id)
         headers = {

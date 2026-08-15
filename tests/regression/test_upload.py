@@ -148,18 +148,29 @@ class UploadRegressionTestCase(unittest.TestCase):
 
     def test_clip_share_to_fb_unified_config_requests_android_cxp_query(self):
         client = self.build_client()
-        expected = {"status": "ok", "data": {"xcxp_unified_crossposting_configs_root": {}}}
+        response = {"data": {"xcxp_unified_crossposting_configs_root": {}}}
 
-        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
             result = client.clip_share_to_fb_unified_config()
 
+        legacy_graphql_request.assert_not_called()
         graphql_request.assert_called_once()
         kwargs = graphql_request.call_args.kwargs
         self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
-        self.assertEqual(kwargs["root_field_name"], "xcxp_unified_crossposting_configs_root")
         self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
-        self.assertEqual(kwargs["priority"], "u=3, i")
-        self.assertEqual(kwargs["extra_headers"], {"X-FB-RMD": "state=URL_ELIGIBLE"})
+        self.assertEqual(kwargs["domain"], "i.instagram.com")
+        self.assertIsNone(kwargs["purpose"])
+        self.assertEqual(
+            kwargs["extra_headers"],
+            {
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_unified_crossposting_configs_root",
+            },
+        )
         self.assertEqual(
             kwargs["variables"],
             {
@@ -185,7 +196,170 @@ class UploadRegressionTestCase(unittest.TestCase):
                 }
             },
         )
-        self.assertEqual(result, expected)
+        self.assertEqual(
+            result,
+            {
+                "data": {"xcxp_unified_crossposting_configs_root": {}},
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_unified_config_requests_android_graphql_www(self):
+        client = self.build_client()
+        response = {"data": {"xcxp_unified_crossposting_configs_root": {}}}
+
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
+            result = client.media_share_to_fb_unified_config()
+
+        legacy_graphql_request.assert_not_called()
+        graphql_request.assert_called_once()
+        kwargs = graphql_request.call_args.kwargs
+        self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
+        self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
+        self.assertEqual(kwargs["domain"], "i.instagram.com")
+        self.assertIsNone(kwargs["purpose"])
+        self.assertEqual(
+            kwargs["extra_headers"],
+            {
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_unified_crossposting_configs_root",
+            },
+        )
+        self.assertEqual(
+            kwargs["variables"],
+            {
+                "configs_request": {
+                    "source_app": "IG",
+                    "crosspost_app_surface_list": [
+                        {
+                            "source_surface": "STORY",
+                            "destination_app": "FB",
+                            "destination_surface": "STORY",
+                        },
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                        },
+                        {
+                            "source_surface": "REELS",
+                            "destination_app": "FB",
+                            "destination_surface": "REELS",
+                        },
+                    ],
+                }
+            },
+        )
+        self.assertEqual(
+            result,
+            {
+                "data": {"xcxp_unified_crossposting_configs_root": {}},
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_connected_services_config_requests_android_fx_query(self):
+        client = self.build_client()
+        response = {"data": {"fx_service_cache": {"services": []}}}
+
+        with mock.patch.object(
+            client,
+            "private_graphql_www_request",
+            return_value=response,
+        ) as graphql_request:
+            result = client.media_share_to_fb_connected_services_config()
+
+        graphql_request.assert_called_once_with(
+            friendly_name="FxIgConnectedServicesInfoQuery",
+            variables={
+                "service_names": ["CROSS_POSTING_SETTING"],
+                "custom_partner_params": [
+                    {"value": "FB", "key": "CROSSPOSTING_DESTINATION_APP"},
+                    {"value": "", "key": "CROSSPOSTING_SHARE_TO_SURFACE"},
+                    {
+                        "value": "true",
+                        "key": "OVERRIDE_USER_VALIDATION_WITH_CXP_ELIGIBILITY_RULE",
+                    },
+                ],
+                "client_caller_name": "ig_android_service_cache_crossposting_setting",
+                "caller_name": "fx_product_foundation_client_FXOnline_client_cache",
+            },
+            client_doc_id="21631519911413744205623093060",
+            domain="i.instagram.com",
+            extra_headers={
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "fx_service_cache",
+            },
+            purpose=None,
+        )
+        self.assertEqual(
+            result,
+            {
+                "data": {"fx_service_cache": {"services": []}},
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_destination_falls_back_to_connected_services_identity(self):
+        client = self.build_client()
+        unified_config = {
+            "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+            "status": "ok",
+        }
+        connected_services_config = {
+            "data": {
+                "1$fx_service_cache(caller_name:$caller_name)": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "feed-service-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True},
+                                                {"surface": "REELS", "is_eligible": False},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "media_share_to_fb_unified_config",
+                return_value=unified_config,
+            ) as unified,
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ) as connected_services,
+        ):
+            destination = client.media_share_to_fb_destination()
+
+        self.assertEqual(unified.call_count, 2)
+        connected_services.assert_called_once_with()
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-service-destination",
+                "destination_type": "USER",
+            },
+        )
 
     def test_media_share_to_fb_destination_selects_feed_and_normalizes_identity_type(self):
         client = self.build_client()
@@ -217,6 +391,39 @@ class UploadRegressionTestCase(unittest.TestCase):
         }
 
         destination = client.media_share_to_fb_destination(config=config)
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-destination",
+                "destination_type": "PAGE",
+            },
+        )
+
+    def test_media_share_to_fb_destination_applies_partial_type_override_to_unified_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "xcxp_unified_crossposting_configs_root": {
+                    "configs": [
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                            "destination": {
+                                "destination_id": "feed-destination",
+                                "destination_type": "USER",
+                            },
+                        }
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(
+            config=config,
+            destination_type="PAGE",
+        )
 
         self.assertEqual(
             destination,
@@ -271,6 +478,85 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_media_share_to_fb_destination_rejects_ineligible_connected_service_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "custom_service_data": {
+                                "auto_xpost_setting": [
+                                    {
+                                        "is_auto_crosspost_enabled": True,
+                                        "source_surface": "FEED",
+                                    }
+                                ]
+                            },
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "ineligible-feed-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {
+                                                    "surface": "FEED",
+                                                    "is_eligible": False,
+                                                }
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ]
+                }
+            }
+        }
+
+        with self.assertRaises(ClientError):
+            client.media_share_to_fb_destination(config=config)
+
+    def test_media_share_to_fb_destination_applies_partial_id_override_to_connected_service_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "service-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True}
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(
+            config=config,
+            destination_id="override-destination",
+        )
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "override-destination",
+                "destination_type": "USER",
+            },
+        )
+
     def test_media_share_to_fb_extra_data_builds_feed_crosspost_payload(self):
         client = self.build_client()
 
@@ -295,7 +581,7 @@ class UploadRegressionTestCase(unittest.TestCase):
 
     def test_media_share_to_threads_config_requests_linked_profile_query(self):
         client = self.build_client()
-        expected = {
+        response = {
             "data": {
                 "xcxp_fetch_linked_threads_profile": {
                     "id": "threads-destination",
@@ -304,10 +590,58 @@ class UploadRegressionTestCase(unittest.TestCase):
             }
         }
 
-        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
             result = client.media_share_to_threads_config()
 
+        legacy_graphql_request.assert_not_called()
         graphql_request.assert_called_once_with(
+            friendly_name="LinkedBarcelonaProfileQuery",
+            variables={},
+            client_doc_id="1294688273527445410149299611",
+            domain="i.instagram.com",
+            extra_headers={
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_fetch_linked_threads_profile",
+            },
+            purpose=None,
+        )
+        self.assertEqual(
+            result,
+            {
+                "data": {
+                    "xcxp_fetch_linked_threads_profile": {
+                        "id": "threads-destination",
+                        "username": "threads-user",
+                    }
+                },
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_threads_config_falls_back_when_graphql_www_rejects_unlinked_account(self):
+        client = self.build_client()
+        response = {"data": {"xcxp_fetch_linked_threads_profile": None}, "status": "ok"}
+
+        with (
+            mock.patch.object(
+                client,
+                "private_graphql_www_request",
+                side_effect=ClientGraphqlError("GraphQL rejected the unlinked profile query"),
+            ) as graphql_www_request,
+            mock.patch.object(
+                client,
+                "private_graphql_query_request",
+                return_value=response,
+            ) as legacy_graphql_request,
+        ):
+            result = client.media_share_to_threads_config()
+
+        graphql_www_request.assert_called_once()
+        legacy_graphql_request.assert_called_once_with(
             friendly_name="LinkedBarcelonaProfileQuery",
             root_field_name="xcxp_fetch_linked_threads_profile",
             variables={},
@@ -315,7 +649,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             priority="u=3, i",
             extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
         )
-        self.assertEqual(result, expected)
+        self.assertEqual(result, response)
 
     def test_media_share_to_threads_destination_extracts_linked_profile_id(self):
         client = self.build_client()
@@ -511,8 +845,28 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "destination_id": "fb-destination-id",
                 "destination_type": "PAGE",
                 "destination_audience_type": "PUBLIC",
+                "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
                 "validation_check_bypass": True,
             },
+        )
+
+    def test_clip_share_to_fb_extra_data_preserves_normalized_destination_bypass(self):
+        client = self.build_client()
+        destination = client.clip_share_to_fb_destination(
+            config={},
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            validation_check_bypass=True,
+        )
+
+        result = client.clip_share_to_fb_extra_data(
+            config=destination,
+            attempt_id="attempt-id",
+        )
+
+        self.assertEqual(
+            result["share_to_facebook_validation_bypass"],
+            '["AUTO_CROSSPOST_SETTING"]',
         )
 
     def test_clip_share_to_fb_destination_rejects_unavailable_config_without_destination(self):
@@ -568,7 +922,6 @@ class UploadRegressionTestCase(unittest.TestCase):
                                 "destination_type": "page",
                                 "destination_audience_type": "PUBLIC",
                             },
-                            "cross_app_share_fb_validation_check_bypass": True,
                         },
                     ]
                 }
@@ -594,6 +947,7 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "destination_id": "reels-destination-id",
                 "destination_type": "PAGE",
                 "destination_audience_type": "PUBLIC",
+                "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
                 "validation_check_bypass": True,
             },
         )
@@ -656,6 +1010,121 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_clip_share_to_fb_destination_falls_back_to_connected_services_identity(self):
+        client = self.build_client()
+        unified_config = {
+            "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+            "status": "ok",
+        }
+        connected_services_config = {
+            "data": {
+                "1$fx_service_cache(caller_name:$caller_name)": {
+                    "services": [
+                        {
+                            "custom_service_data": {
+                                "fb_reels_privacy_setting_service_data": {
+                                    "fb_reels_audience": "PUBLIC",
+                                }
+                            },
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "reels-service-destination",
+                                            "identity_type": "FB_PAGE",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": False},
+                                                {"surface": "REELS", "is_eligible": True},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_config",
+                return_value={"share_to_fb_unavailable": True, "status": "ok"},
+            ),
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_unified_config",
+                return_value=unified_config,
+            ) as unified,
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ) as connected_services,
+        ):
+            destination = client.clip_share_to_fb_destination()
+
+        self.assertEqual(unified.call_count, 3)
+        connected_services.assert_called_once_with()
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "reels-service-destination",
+                "destination_type": "PAGE",
+                "destination_audience_type": "PUBLIC",
+                "validation_bypass": ["AUTO_CROSSPOST_SETTING"],
+                "validation_check_bypass": True,
+            },
+        )
+
+    def test_clip_share_to_fb_unified_destination_rejects_ineligible_connected_service_identity(self):
+        client = self.build_client()
+        connected_services_config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "ineligible-reels-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True},
+                                                {"surface": "REELS", "is_eligible": False},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_unified_config",
+                return_value={
+                    "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+                    "status": "ok",
+                },
+            ),
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ),
+            self.assertRaises(ClientError),
+        ):
+            client.clip_share_to_fb_unified_destination()
+
     def test_clip_share_to_fb_unified_destination_ignores_generic_account_center_ids(self):
         client = self.build_client()
 
@@ -690,7 +1159,7 @@ class UploadRegressionTestCase(unittest.TestCase):
             "reels_share_to_facebook": True,
             "reels_destination_id": "fb-destination-id",
             "posting_type": "USER",
-            "reels_cross_app_share_type": "CROSSPOST",
+            "reels_cross_app_share_type": "2",
             "reels_cross_app_share_fb_validation_check_bypass": True,
             "status": "ok",
         }
@@ -703,9 +1172,10 @@ class UploadRegressionTestCase(unittest.TestCase):
                 "share_to_facebook": "1",
                 "is_reel_shared_to_fb": True,
                 "share_to_facebook_reels": True,
+                "cross_app_share_type": "2",
                 "share_to_fb_destination_id": "fb-destination-id",
                 "share_to_fb_destination_type": "USER",
-                "cross_app_share_fb_validation_check_bypass": True,
+                "share_to_facebook_validation_bypass": '["AUTO_CROSSPOST_SETTING"]',
                 "xpost_surface": "IG_REELS_COMPOSER",
                 "no_token_crosspost": "1",
                 "attempt_id": "attempt-id",
@@ -727,6 +1197,12 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(result["share_to_fb_destination_id"], "fb-destination-id")
         self.assertEqual(result["share_to_fb_destination_type"], "USER")
+        self.assertEqual(result["cross_app_share_type"], "2")
+        self.assertEqual(
+            result["share_to_facebook_validation_bypass"],
+            '["AUTO_CROSSPOST_SETTING"]',
+        )
+        self.assertNotIn("cross_app_share_fb_validation_check_bypass", result)
         self.assertEqual(result["attempt_id"], "attempt-id")
 
     def test_clip_share_to_fb_extra_data_allows_config_destination_when_preflight_is_unavailable(self):
@@ -744,6 +1220,80 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(result["share_to_fb_destination_id"], "fb-destination-id")
         self.assertEqual(result["share_to_fb_destination_type"], "PAGE")
+
+    def test_clip_share_to_fb_extra_data_preserves_explicit_false_validation_bypass(self):
+        client = self.build_client()
+
+        result = client.clip_share_to_fb_extra_data(
+            config={
+                "share_to_fb_unavailable": True,
+                "status": "ok",
+            },
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            validation_check_bypass=False,
+        )
+
+        self.assertNotIn("share_to_facebook_validation_bypass", result)
+
+    def test_clip_share_to_fb_extra_data_applies_bypass_to_automatically_discovered_destination(self):
+        client = self.build_client()
+        connected_services_config = {
+            "data": {
+                "1$fx_service_cache(caller_name:$caller_name)": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "reels-service-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "REELS", "is_eligible": True},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_config",
+                return_value={
+                    "default_share_to_fb_enabled": False,
+                    "share_to_fb_unavailable": True,
+                    "status": "ok",
+                },
+            ),
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_unified_config",
+                return_value={
+                    "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+                    "status": "ok",
+                },
+            ),
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ),
+        ):
+            result = client.clip_share_to_fb_extra_data()
+
+        self.assertEqual(result["share_to_fb_destination_id"], "reels-service-destination")
+        self.assertEqual(
+            result["share_to_facebook_validation_bypass"],
+            '["AUTO_CROSSPOST_SETTING"]',
+        )
 
     def test_clip_share_to_fb_extra_data_does_not_use_cross_app_share_type_as_destination_type(self):
         client = self.build_client()
@@ -2110,6 +2660,52 @@ class UploadRegressionTestCase(unittest.TestCase):
         payload = private_request.call_args.args[1]
         self.assertEqual(payload["clips_share_preview_to_feed"], "0")
 
+    def test_clip_configure_sends_reel_facebook_crosspost_fields_in_signed_payload(self):
+        client = self.build_client()
+        destination_id = "9" * 114
+        extra_data = client.clip_share_to_fb_extra_data(
+            config={
+                "default_share_to_fb_enabled": False,
+                "share_to_fb_unavailable": True,
+                "status": "ok",
+            },
+            destination_id=destination_id,
+            destination_type="USER",
+            attempt_id="attempt-id",
+        )
+
+        with (
+            mock.patch.object(client, "photo_rupload", return_value=None),
+            mock.patch.object(client, "location_build", return_value=None),
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request,
+        ):
+            client.clip_configure(
+                "upload-id",
+                Path("/tmp/thumb.jpg"),
+                720,
+                1280,
+                6023,
+                "caption",
+                extra_data=extra_data,
+            )
+
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "media/configure_to_clips/?video=1")
+        self.assertTrue(private_request.call_args.kwargs["with_signature"])
+        payload = private_request.call_args.args[1]
+        self.assertEqual(payload["share_to_facebook"], "1")
+        self.assertEqual(payload["cross_app_share_type"], "2")
+        self.assertEqual(payload["share_to_fb_destination_id"], destination_id)
+        self.assertEqual(len(payload["share_to_fb_destination_id"]), 114)
+        self.assertEqual(payload["share_to_fb_destination_type"], "USER")
+        self.assertEqual(
+            payload["share_to_facebook_validation_bypass"],
+            '["AUTO_CROSSPOST_SETTING"]',
+        )
+        self.assertNotIn("cross_app_share_fb_validation_check_bypass", payload)
+        self.assertEqual(payload["no_token_crosspost"], "1")
+        self.assertEqual(payload["attempt_id"], "attempt-id")
+
     def test_clip_upload_share_to_facebook_adds_crosspost_params_before_upload(self):
         client = self.build_client()
         client.last_json = {"media": self.build_media_payload()}
@@ -2119,9 +2715,9 @@ class UploadRegressionTestCase(unittest.TestCase):
             "share_to_facebook": "1",
             "is_reel_shared_to_fb": True,
             "share_to_facebook_reels": True,
+            "cross_app_share_type": "2",
             "share_to_fb_destination_id": "fb-destination-id",
             "share_to_fb_destination_type": "USER",
-            "cross_app_share_fb_validation_check_bypass": False,
             "xpost_surface": "IG_REELS_COMPOSER",
             "no_token_crosspost": "1",
             "attempt_id": "attempt-id",
@@ -2150,15 +2746,24 @@ class UploadRegressionTestCase(unittest.TestCase):
                                         Path("example.mp4"),
                                         "caption",
                                         share_to_facebook=True,
+                                        fb_destination_id="fb-destination-id",
+                                        fb_destination_type="USER",
                                         extra_data=extra_data,
                                     )
 
-        share_to_fb_extra.assert_called_once()
+        share_to_fb_extra.assert_called_once_with(
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            destination_audience_type=None,
+            xpost_surface="IG_REELS_COMPOSER",
+            validation_check_bypass=None,
+        )
         analyze_video.assert_called_once()
         self.assertEqual(extra_data, {"disable_comments": "1"})
         configure_extra = clip_configure.call_args.kwargs["extra_data"]
         self.assertEqual(configure_extra["disable_comments"], "1")
         self.assertEqual(configure_extra["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertEqual(configure_extra["cross_app_share_type"], "2")
         self.assertTrue(configure_extra["share_to_facebook_reels"])
         self.assertEqual(configure_extra["xpost_surface"], "IG_REELS_COMPOSER")
 
