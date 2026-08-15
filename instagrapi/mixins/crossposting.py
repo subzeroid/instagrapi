@@ -3,7 +3,7 @@ from typing import Dict, Iterable, List, Literal, Optional
 from uuid import uuid4
 
 from instagrapi import config
-from instagrapi.exceptions import ClientError
+from instagrapi.exceptions import ClientError, ClientGraphqlError
 
 FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID = "216179630714134719310007237117"
 FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME = "CrosspostingUnifiedConfigsQuery"
@@ -480,18 +480,30 @@ class CrossPostingMixin:
         Dict
             Private GraphQL response.
         """
-        result = self.private_graphql_www_request(
-            friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
-            variables={},
-            client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
-            domain=config.API_DOMAIN,
-            extra_headers={
-                "X-Root-Field-Name": THREADS_LINKED_PROFILE_ROOT_FIELD,
-                "Priority": "u=3, i",
-                "X-FB-RMD": "state=URL_ELIGIBLE",
-            },
-            purpose=None,
-        )
+        try:
+            result = self.private_graphql_www_request(
+                friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
+                variables={},
+                client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
+                domain=config.API_DOMAIN,
+                extra_headers={
+                    "X-Root-Field-Name": THREADS_LINKED_PROFILE_ROOT_FIELD,
+                    "Priority": "u=3, i",
+                    "X-FB-RMD": "state=URL_ELIGIBLE",
+                },
+                purpose=None,
+            )
+        except ClientGraphqlError:
+            # Unlinked accounts can reject the current app transport instead
+            # of returning a null profile. Preserve the older null response.
+            result = self.private_graphql_query_request(
+                friendly_name=THREADS_LINKED_PROFILE_FRIENDLY_NAME,
+                root_field_name=THREADS_LINKED_PROFILE_ROOT_FIELD,
+                variables={},
+                client_doc_id=THREADS_LINKED_PROFILE_CLIENT_DOC_ID,
+                priority="u=3, i",
+                extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            )
         result.setdefault("status", "ok")
         return result
 

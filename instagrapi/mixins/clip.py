@@ -492,7 +492,7 @@ class UploadClipMixin:
         destination_id: Optional[str] = None,
         destination_type: Optional[FbDestinationType] = None,
         destination_audience_type: Optional[str] = None,
-        validation_check_bypass: Optional[bool] = None,
+        validation_check_bypass: Optional[Union[bool, List[str], str]] = None,
         use_unified_config: bool = True,
     ) -> Dict[str, object]:
         """
@@ -515,8 +515,9 @@ class UploadClipMixin:
             Overrides config values.
         destination_audience_type: str, optional
             Explicit Facebook Reels audience type, e.g. ``PUBLIC``.
-        validation_check_bypass: bool, optional
-            Explicit validation bypass flag. Overrides config values.
+        validation_check_bypass: bool, List[str], or str, optional
+            Explicit validation bypass reasons. ``True`` uses Android's
+            ``AUTO_CROSSPOST_SETTING`` reason. Overrides config values.
         use_unified_config: bool, optional
             When config is omitted, fall back to the Android cross-posting
             unified config if the lightweight Reel preflight has no destination.
@@ -566,18 +567,52 @@ class UploadClipMixin:
                 "audience_type",
             ),
         )
-        if validation_check_bypass is None:
-            validation_check_bypass = fb_config.get(
-                "reels_cross_app_share_fb_validation_check_bypass",
-                fb_config.get("cross_app_share_fb_validation_check_bypass"),
+        validation_bypass_provided = validation_check_bypass is not None
+        if not validation_bypass_provided:
+            validation_check_bypass = self._clip_share_to_fb_candidate_value(
+                fb_config,
+                (
+                    "share_to_facebook_validation_bypass",
+                    "reels_cross_app_share_fb_validation_check_bypass",
+                    "cross_app_share_fb_validation_check_bypass",
+                ),
             )
+            validation_bypass_provided = validation_check_bypass is not None
 
         has_destination = bool(destination_id and destination_type_text)
+        if validation_check_bypass is True:
+            validation_bypass = ["AUTO_CROSSPOST_SETTING"]
+        elif validation_check_bypass is False:
+            validation_bypass = None
+        else:
+            validation_bypass = self._crossposting_validation_bypass(validation_check_bypass)
+        if (
+            not validation_bypass_provided
+            and validation_bypass is None
+            and has_destination
+            and (
+                fb_config.get("share_to_fb_unavailable") is True
+                or fb_config.get("default_share_to_fb_enabled") is False
+            )
+        ):
+            validation_bypass = ["AUTO_CROSSPOST_SETTING"]
         if not has_destination and use_unified_config and config is None and not explicit_destination:
             try:
-                return self.clip_share_to_fb_unified_destination()
+                discovered_destination = self.clip_share_to_fb_unified_destination()
             except ClientError:
                 pass
+            else:
+                if validation_bypass_provided:
+                    if validation_bypass:
+                        discovered_destination["validation_bypass"] = validation_bypass
+                    else:
+                        discovered_destination.pop("validation_bypass", None)
+                elif "validation_bypass" not in discovered_destination and (
+                    fb_config.get("share_to_fb_unavailable") is True
+                    or fb_config.get("default_share_to_fb_enabled") is False
+                ):
+                    discovered_destination["validation_bypass"] = ["AUTO_CROSSPOST_SETTING"]
+                return discovered_destination
         if fb_config.get("share_to_fb_unavailable") and not has_destination:
             raise ClientError(
                 "Facebook Reel sharing is unavailable from the Reel preflight response. "
@@ -608,8 +643,8 @@ class UploadClipMixin:
         }
         if destination_audience_type:
             destination["destination_audience_type"] = str(destination_audience_type)
-        if validation_check_bypass is not None:
-            destination["validation_check_bypass"] = bool(validation_check_bypass)
+        if validation_bypass:
+            destination["validation_bypass"] = validation_bypass
         return destination
 
     def clip_share_to_fb_extra_data(
@@ -619,7 +654,7 @@ class UploadClipMixin:
         destination_type: Optional[FbDestinationType] = None,
         destination_audience_type: Optional[str] = None,
         xpost_surface: str = "IG_REELS_COMPOSER",
-        validation_check_bypass: Optional[bool] = None,
+        validation_check_bypass: Optional[Union[bool, List[str], str]] = None,
         attempt_id: Optional[str] = None,
     ) -> Dict[str, object]:
         """
@@ -644,8 +679,9 @@ class UploadClipMixin:
             Facebook Reels audience type, e.g. ``PUBLIC``.
         xpost_surface: str, optional
             Cross-posting surface reported by the Instagram app.
-        validation_check_bypass: bool, optional
-            Whether to bypass app-side FB validation. Overrides config values.
+        validation_check_bypass: bool, List[str], or str, optional
+            App-side Facebook validation bypass reasons. ``True`` uses
+            ``AUTO_CROSSPOST_SETTING``. Overrides config values.
         attempt_id: str, optional
             Cross-post configure attempt id. Generated when omitted.
 
@@ -676,8 +712,11 @@ class UploadClipMixin:
         }
         if destination.get("destination_audience_type"):
             data["share_to_fb_destination_audience_type"] = destination["destination_audience_type"]
-        if destination.get("validation_check_bypass") is not None:
-            data["cross_app_share_fb_validation_check_bypass"] = bool(destination["validation_check_bypass"])
+        if destination.get("validation_bypass"):
+            data["share_to_facebook_validation_bypass"] = json.dumps(
+                destination["validation_bypass"],
+                separators=(",", ":"),
+            )
         return data
 
     def clip_upload(
@@ -697,7 +736,7 @@ class UploadClipMixin:
         fb_destination_type: Optional[FbDestinationType] = None,
         fb_destination_audience_type: Optional[str] = None,
         fb_xpost_surface: str = "IG_REELS_COMPOSER",
-        fb_validation_check_bypass: Optional[bool] = None,
+        fb_validation_check_bypass: Optional[Union[bool, List[str], str]] = None,
         topics: Optional[List[Union[str, int]]] = None,
         show_preview_in_feed: bool = True,
         share_to_threads: bool = False,
@@ -743,8 +782,8 @@ class UploadClipMixin:
             Facebook Reels audience type, e.g. ``PUBLIC``.
         fb_xpost_surface: str, optional
             Cross-posting surface reported by the Instagram app.
-        fb_validation_check_bypass: bool, optional
-            Override the validation bypass value from share_to_fb_config.
+        fb_validation_check_bypass: bool, List[str], or str, optional
+            Override Facebook validation bypass reasons from cross-post config.
         topics: List[str or int], optional
             Reel topic ids to send as Instagram's ``interest_topics`` configure field.
         show_preview_in_feed: bool, optional
