@@ -400,6 +400,39 @@ class UploadRegressionTestCase(unittest.TestCase):
             },
         )
 
+    def test_media_share_to_fb_destination_applies_partial_type_override_to_unified_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "xcxp_unified_crossposting_configs_root": {
+                    "configs": [
+                        {
+                            "source_surface": "FEED",
+                            "destination_app": "FB",
+                            "destination_surface": "FEED",
+                            "destination": {
+                                "destination_id": "feed-destination",
+                                "destination_type": "USER",
+                            },
+                        }
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(
+            config=config,
+            destination_type="PAGE",
+        )
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-destination",
+                "destination_type": "PAGE",
+            },
+        )
+
     def test_media_share_to_fb_destination_extracts_feed_service_identity_mapping(self):
         client = self.build_client()
         config = {
@@ -484,6 +517,45 @@ class UploadRegressionTestCase(unittest.TestCase):
 
         with self.assertRaises(ClientError):
             client.media_share_to_fb_destination(config=config)
+
+    def test_media_share_to_fb_destination_applies_partial_id_override_to_connected_service_identity(self):
+        client = self.build_client()
+        config = {
+            "data": {
+                "fx_service_cache": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "service-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True}
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+
+        destination = client.media_share_to_fb_destination(
+            config=config,
+            destination_id="override-destination",
+        )
+
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "override-destination",
+                "destination_type": "USER",
+            },
+        )
 
     def test_media_share_to_fb_extra_data_builds_feed_crosspost_payload(self):
         client = self.build_client()

@@ -366,14 +366,17 @@ class CrossPostingMixin:
             Normalized destination fields.
         """
         explicit_destination = bool(destination_id or destination_type)
+        complete_explicit_destination = bool(destination_id and destination_type)
         has_connected_services_root = bool(
             config and self._crossposting_has_graphql_root(config, FB_CONNECTED_SERVICES_ROOT_FIELD)
         )
-        if config is not None and has_connected_services_root and not explicit_destination:
+        if config is not None and has_connected_services_root and not complete_explicit_destination:
             for candidate in self._fb_connected_services_destination_candidates(config, "FEED"):
                 try:
                     return self.media_share_to_fb_destination(
                         config=candidate,
+                        destination_id=destination_id,
+                        destination_type=destination_type,
                         validation_bypass=validation_bypass,
                         use_unified_config=False,
                     )
@@ -384,7 +387,7 @@ class CrossPostingMixin:
         has_unified_root = bool(
             config and self._crossposting_has_graphql_root(config, FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD)
         )
-        if config is not None and has_unified_root and not explicit_destination:
+        if config is not None and has_unified_root and not complete_explicit_destination:
             candidates = list(self._media_share_to_fb_unified_destination_candidates(config))
             if candidates:
                 for candidate in candidates:
