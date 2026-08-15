@@ -85,7 +85,7 @@ cl.bloks_two_step_verification_enter_backup_code(context)
 result = cl.bloks_two_step_verification_verify_code(context, "12345678", challenge="backup_codes")
 ```
 
-`bloks_caa_login(...)` runs the complete current CAA sequence. For low-level inspection, call `bloks_caa_login_prepare(...)` before `bloks_caa_login_send_request(...)`; the send helper requires the account access context returned by Instagram during that preflight. `bloks_extract_two_step_verification_context(...)` extracts a legacy Bloks two-factor context when the login response exposes one.
+`bloks_caa_login(...)` runs the complete current CAA sequence. For low-level inspection, `bloks_caa_login_send_request(...)` now runs `bloks_caa_login_prepare(...)` automatically when the client has no server-issued account access context; existing prepared context is reused on later calls. Its domain, waterfall ID, offline experiment group, and Bloks versioning ID overrides are forwarded to that automatic preflight. Pass `auto_prepare=False` to require pre-existing state, or call the preparation helper explicitly when you need to inspect or control the preflight separately. `bloks_extract_two_step_verification_context(...)` extracts a legacy Bloks two-factor context when the login response exposes one.
 
 `bloks_extract_login_response(...)` returns decoded `login_response`, response `headers`, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns `{}` when the response is an intermediate UI state or an error. `bloks_apply_login_response(...)` can then copy the returned authorization data and cookies into the current client session.
 
