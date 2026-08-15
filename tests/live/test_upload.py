@@ -987,8 +987,12 @@ class ClientFacebookReelCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         config = self.cl.clip_share_to_fb_unified_config()
 
         self.assertEqual(config.get("status"), "ok")
+        data = config.get("data")
+        self.assertIsInstance(data, dict)
+        roots = [value for key, value in data.items() if "xcxp_unified_crossposting_configs_root" in str(key)]
+        self.assertTrue(roots, "Android unified config response omitted its root field")
         self.assertIsInstance(
-            self.cl._clip_share_to_fb_unified_root(config),
+            roots[0],
             dict,
             "Android unified config returned a null Facebook cross-posting root",
         )
@@ -1063,14 +1067,25 @@ class ClientFeedCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
         config = self.cl.media_share_to_fb_unified_config()
 
         self.assertEqual(config.get("status"), "ok")
+        data = config.get("data")
+        self.assertIsInstance(data, dict)
+        roots = [value for key, value in data.items() if "xcxp_unified_crossposting_configs_root" in str(key)]
+        self.assertTrue(roots, "Android unified config response omitted its root field")
         self.assertIsInstance(
-            self.cl._crossposting_graphql_root(
-                config,
-                "xcxp_unified_crossposting_configs_root",
-            ),
+            roots[0],
             dict,
             "Android unified config returned a null Facebook cross-posting root",
         )
+
+    def test_media_share_to_fb_connected_services_config_live(self):
+        config = self.cl.media_share_to_fb_connected_services_config()
+
+        self.assertEqual(config.get("status"), "ok")
+        data = config.get("data")
+        self.assertIsInstance(data, dict)
+        roots = [value for key, value in data.items() if "fx_service_cache" in str(key)]
+        self.assertTrue(roots, "Android connected-services response omitted its root field")
+        self.assertIsInstance(roots[0], dict)
 
     def test_media_share_to_fb_destination_live(self):
         try:
@@ -1086,7 +1101,8 @@ class ClientFeedCrosspostLiveTestCase(_helpers.ClientPrivateTestCase):
 
         data = config.get("data")
         self.assertIsInstance(data, dict)
-        self.assertIn("xcxp_fetch_linked_threads_profile", data)
+        roots = [value for key, value in data.items() if "xcxp_fetch_linked_threads_profile" in str(key)]
+        self.assertTrue(roots, "Android linked-Threads response omitted its root field")
 
     def test_media_share_to_threads_destination_live(self):
         try:

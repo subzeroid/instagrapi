@@ -377,11 +377,13 @@ class UploadClipMixin:
             friendly_name=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_FRIENDLY_NAME,
             variables=variables,
             client_doc_id=CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_CLIENT_DOC_ID,
+            domain=config.API_DOMAIN,
             extra_headers={
                 "X-Root-Field-Name": CLIP_FB_CROSSPOSTING_UNIFIED_CONFIG_ROOT_FIELD,
                 "Priority": "u=3, i",
                 "X-FB-RMD": "state=URL_ELIGIBLE",
             },
+            purpose=None,
         )
         result.setdefault("status", "ok")
         return result
@@ -469,7 +471,20 @@ class UploadClipMixin:
                     return self.clip_share_to_fb_destination(config=candidate, use_unified_config=False)
                 except ClientError:
                     continue
-        raise ClientError("Facebook Reel sharing unified config has no confirmed Reel Facebook destination")
+        if config is None:
+            connected_services_config = self.media_share_to_fb_connected_services_config()
+            for candidate in self._fb_connected_services_destination_candidates(
+                connected_services_config,
+                "REELS",
+            ):
+                try:
+                    return self.clip_share_to_fb_destination(
+                        config=candidate,
+                        use_unified_config=False,
+                    )
+                except ClientError:
+                    continue
+        raise ClientError("Facebook Reel cross-posting config has no confirmed Reel Facebook destination")
 
     def clip_share_to_fb_destination(
         self,
@@ -520,6 +535,8 @@ class UploadClipMixin:
             fb_config,
             (
                 "share_to_fb_destination_id",
+                "obfuscated_identity_id",
+                "identity_id",
                 "reels_destination_id",
                 "crosspost_destination_id",
                 "crossposting_destination_id",
@@ -531,6 +548,7 @@ class UploadClipMixin:
             fb_config,
             (
                 "share_to_fb_destination_type",
+                "identity_type",
                 "crosspost_destination_type",
                 "crossposting_destination_type",
                 "xpost_destination_type",
@@ -576,6 +594,8 @@ class UploadClipMixin:
                 "Facebook Reel sharing configuration has no destination type. Pass destination_type as USER or PAGE."
             )
         destination_type_text = destination_type_text.upper()
+        if destination_type_text.startswith("FB_"):
+            destination_type_text = destination_type_text[3:]
         if destination_type_text not in {"USER", "PAGE"}:
             raise ClientError(
                 "Facebook Reel sharing destination type must be USER or PAGE. "

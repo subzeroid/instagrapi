@@ -636,3 +636,26 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
         self.assertEqual(post.call_args.kwargs["headers"]["Host"], "b.i.instagram.com")
         self.assertEqual(post.call_args.kwargs["proxies"], client.private.proxies)
         request_log.assert_called_once_with(response)
+
+    def test_private_graphql_www_request_can_omit_purpose_on_mobile_endpoint(self):
+        client = Client()
+        client.request_timeout = 0
+        response = Mock()
+        response.url = "https://i.instagram.com/graphql_www"
+        response.json.return_value = {"data": {"ok": True}}
+        response.raise_for_status.return_value = None
+
+        with mock.patch.object(client, "request_log"):
+            with mock.patch.object(client.private, "post", return_value=response) as post:
+                result = client.private_graphql_www_request(
+                    "ExampleQuery",
+                    {},
+                    client_doc_id="doc-id",
+                    domain="i.instagram.com",
+                    purpose=None,
+                )
+
+        self.assertEqual(result, {"data": {"ok": True}})
+        self.assertEqual(post.call_args.args, ("https://i.instagram.com/graphql_www",))
+        self.assertNotIn("purpose", post.call_args.kwargs["data"])
+        self.assertEqual(post.call_args.kwargs["headers"]["Host"], "i.instagram.com")

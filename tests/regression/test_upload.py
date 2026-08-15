@@ -161,6 +161,8 @@ class UploadRegressionTestCase(unittest.TestCase):
         kwargs = graphql_request.call_args.kwargs
         self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
         self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
+        self.assertEqual(kwargs["domain"], "i.instagram.com")
+        self.assertIsNone(kwargs["purpose"])
         self.assertEqual(
             kwargs["extra_headers"],
             {
@@ -217,6 +219,8 @@ class UploadRegressionTestCase(unittest.TestCase):
         kwargs = graphql_request.call_args.kwargs
         self.assertEqual(kwargs["friendly_name"], "CrosspostingUnifiedConfigsQuery")
         self.assertEqual(kwargs["client_doc_id"], "216179630714134719310007237117")
+        self.assertEqual(kwargs["domain"], "i.instagram.com")
+        self.assertIsNone(kwargs["purpose"])
         self.assertEqual(
             kwargs["extra_headers"],
             {
@@ -255,6 +259,105 @@ class UploadRegressionTestCase(unittest.TestCase):
             {
                 "data": {"xcxp_unified_crossposting_configs_root": {}},
                 "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_connected_services_config_requests_android_fx_query(self):
+        client = self.build_client()
+        response = {"data": {"fx_service_cache": {"services": []}}}
+
+        with mock.patch.object(
+            client,
+            "private_graphql_www_request",
+            return_value=response,
+        ) as graphql_request:
+            result = client.media_share_to_fb_connected_services_config()
+
+        graphql_request.assert_called_once_with(
+            friendly_name="FxIgConnectedServicesInfoQuery",
+            variables={
+                "service_names": ["CROSS_POSTING_SETTING"],
+                "custom_partner_params": [
+                    {"value": "FB", "key": "CROSSPOSTING_DESTINATION_APP"},
+                    {"value": "", "key": "CROSSPOSTING_SHARE_TO_SURFACE"},
+                    {
+                        "value": "true",
+                        "key": "OVERRIDE_USER_VALIDATION_WITH_CXP_ELIGIBILITY_RULE",
+                    },
+                ],
+                "client_caller_name": "ig_android_service_cache_crossposting_setting",
+                "caller_name": "fx_product_foundation_client_FXOnline_client_cache",
+            },
+            client_doc_id="21631519911413744205623093060",
+            domain="i.instagram.com",
+            extra_headers={
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "fx_service_cache",
+            },
+            purpose=None,
+        )
+        self.assertEqual(
+            result,
+            {
+                "data": {"fx_service_cache": {"services": []}},
+                "status": "ok",
+            },
+        )
+
+    def test_media_share_to_fb_destination_falls_back_to_connected_services_identity(self):
+        client = self.build_client()
+        unified_config = {
+            "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+            "status": "ok",
+        }
+        connected_services_config = {
+            "data": {
+                "1$fx_service_cache(caller_name:$caller_name)": {
+                    "services": [
+                        {
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "feed-service-destination",
+                                            "identity_type": "FB_USER",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": True},
+                                                {"surface": "REELS", "is_eligible": False},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "media_share_to_fb_unified_config",
+                return_value=unified_config,
+            ) as unified,
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ) as connected_services,
+        ):
+            destination = client.media_share_to_fb_destination()
+
+        self.assertEqual(unified.call_count, 2)
+        connected_services.assert_called_once_with()
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "feed-service-destination",
+                "destination_type": "USER",
             },
         )
 
@@ -366,7 +469,7 @@ class UploadRegressionTestCase(unittest.TestCase):
 
     def test_media_share_to_threads_config_requests_linked_profile_query(self):
         client = self.build_client()
-        expected = {
+        response = {
             "data": {
                 "xcxp_fetch_linked_threads_profile": {
                     "id": "threads-destination",
@@ -375,18 +478,37 @@ class UploadRegressionTestCase(unittest.TestCase):
             }
         }
 
-        with mock.patch.object(client, "private_graphql_query_request", return_value=expected) as graphql_request:
+        with (
+            mock.patch.object(client, "private_graphql_www_request", return_value=response) as graphql_request,
+            mock.patch.object(client, "private_graphql_query_request") as legacy_graphql_request,
+        ):
             result = client.media_share_to_threads_config()
 
+        legacy_graphql_request.assert_not_called()
         graphql_request.assert_called_once_with(
             friendly_name="LinkedBarcelonaProfileQuery",
-            root_field_name="xcxp_fetch_linked_threads_profile",
             variables={},
             client_doc_id="1294688273527445410149299611",
-            priority="u=3, i",
-            extra_headers={"X-FB-RMD": "state=URL_ELIGIBLE"},
+            domain="i.instagram.com",
+            extra_headers={
+                "Priority": "u=3, i",
+                "X-FB-RMD": "state=URL_ELIGIBLE",
+                "X-Root-Field-Name": "xcxp_fetch_linked_threads_profile",
+            },
+            purpose=None,
         )
-        self.assertEqual(result, expected)
+        self.assertEqual(
+            result,
+            {
+                "data": {
+                    "xcxp_fetch_linked_threads_profile": {
+                        "id": "threads-destination",
+                        "username": "threads-user",
+                    }
+                },
+                "status": "ok",
+            },
+        )
 
     def test_media_share_to_threads_destination_extracts_linked_profile_id(self):
         client = self.build_client()
@@ -724,6 +846,73 @@ class UploadRegressionTestCase(unittest.TestCase):
                         "destination_surface": "REELS",
                     }
                 ]
+            },
+        )
+
+    def test_clip_share_to_fb_destination_falls_back_to_connected_services_identity(self):
+        client = self.build_client()
+        unified_config = {
+            "data": {"xcxp_unified_crossposting_configs_root": {"configs": []}},
+            "status": "ok",
+        }
+        connected_services_config = {
+            "data": {
+                "1$fx_service_cache(caller_name:$caller_name)": {
+                    "services": [
+                        {
+                            "custom_service_data": {
+                                "fb_reels_privacy_setting_service_data": {
+                                    "fb_reels_audience": "PUBLIC",
+                                }
+                            },
+                            "identity_mapping": [
+                                {
+                                    "destination_identities": [
+                                        {
+                                            "obfuscated_identity_id": "reels-service-destination",
+                                            "identity_type": "FB_PAGE",
+                                            "surface_to_xpost_eligibilities": [
+                                                {"surface": "FEED", "is_eligible": False},
+                                                {"surface": "REELS", "is_eligible": True},
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ],
+                        }
+                    ]
+                }
+            },
+            "status": "ok",
+        }
+
+        with (
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_config",
+                return_value={"share_to_fb_unavailable": True, "status": "ok"},
+            ),
+            mock.patch.object(
+                client,
+                "clip_share_to_fb_unified_config",
+                return_value=unified_config,
+            ) as unified,
+            mock.patch.object(
+                client,
+                "media_share_to_fb_connected_services_config",
+                return_value=connected_services_config,
+            ) as connected_services,
+        ):
+            destination = client.clip_share_to_fb_destination()
+
+        self.assertEqual(unified.call_count, 3)
+        connected_services.assert_called_once_with()
+        self.assertEqual(
+            destination,
+            {
+                "destination_id": "reels-service-destination",
+                "destination_type": "PAGE",
+                "destination_audience_type": "PUBLIC",
             },
         )
 
@@ -2183,6 +2372,41 @@ class UploadRegressionTestCase(unittest.TestCase):
         payload = private_request.call_args.args[1]
         self.assertEqual(payload["clips_share_preview_to_feed"], "0")
 
+    def test_clip_configure_sends_reel_facebook_crosspost_fields_in_signed_payload(self):
+        client = self.build_client()
+        extra_data = client.clip_share_to_fb_extra_data(
+            config={},
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            attempt_id="attempt-id",
+        )
+
+        with (
+            mock.patch.object(client, "photo_rupload", return_value=None),
+            mock.patch.object(client, "location_build", return_value=None),
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request,
+        ):
+            client.clip_configure(
+                "upload-id",
+                Path("/tmp/thumb.jpg"),
+                720,
+                1280,
+                6023,
+                "caption",
+                extra_data=extra_data,
+            )
+
+        private_request.assert_called_once()
+        self.assertEqual(private_request.call_args.args[0], "media/configure_to_clips/?video=1")
+        self.assertTrue(private_request.call_args.kwargs["with_signature"])
+        payload = private_request.call_args.args[1]
+        self.assertEqual(payload["share_to_facebook"], "1")
+        self.assertEqual(payload["cross_app_share_type"], "2")
+        self.assertEqual(payload["share_to_fb_destination_id"], "fb-destination-id")
+        self.assertEqual(payload["share_to_fb_destination_type"], "USER")
+        self.assertEqual(payload["no_token_crosspost"], "1")
+        self.assertEqual(payload["attempt_id"], "attempt-id")
+
     def test_clip_upload_share_to_facebook_adds_crosspost_params_before_upload(self):
         client = self.build_client()
         client.last_json = {"media": self.build_media_payload()}
@@ -2224,10 +2448,18 @@ class UploadRegressionTestCase(unittest.TestCase):
                                         Path("example.mp4"),
                                         "caption",
                                         share_to_facebook=True,
+                                        fb_destination_id="fb-destination-id",
+                                        fb_destination_type="USER",
                                         extra_data=extra_data,
                                     )
 
-        share_to_fb_extra.assert_called_once()
+        share_to_fb_extra.assert_called_once_with(
+            destination_id="fb-destination-id",
+            destination_type="USER",
+            destination_audience_type=None,
+            xpost_surface="IG_REELS_COMPOSER",
+            validation_check_bypass=None,
+        )
         analyze_video.assert_called_once()
         self.assertEqual(extra_data, {"disable_comments": "1"})
         configure_extra = clip_configure.call_args.kwargs["extra_data"]
