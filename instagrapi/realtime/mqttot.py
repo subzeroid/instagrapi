@@ -240,7 +240,13 @@ class SocketMQTToTTransport:
         self.host = host
         self.port = port
         self.timeout = timeout
-        self.tls_context = tls_context or ssl.create_default_context()
+        if tls_context is None:
+            tls_context = ssl.create_default_context()
+            default_minimum_version = tls_context.minimum_version
+            tls_context.minimum_version = ssl.TLSVersion.TLSv1_2
+            if default_minimum_version > tls_context.minimum_version:
+                tls_context.minimum_version = default_minimum_version
+        self.tls_context = tls_context
         self.proxy = proxy
         self.sock = None
 
