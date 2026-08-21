@@ -1243,36 +1243,36 @@ notification categories:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins.notification</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotificationContentType</span>
 </code></pre></div>
 <p>Available values are:</p>
-<div class="highlight"><pre><span></span><code><span class="s2">&quot;mute_all&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="s2">"mute_all"</span>
 
-<span class="s2">&quot;likes&quot;</span>
-<span class="s2">&quot;like_and_comment_on_photo_user_tagged&quot;</span>
-<span class="s2">&quot;user_tagged&quot;</span>
-<span class="s2">&quot;comments&quot;</span>
-<span class="s2">&quot;comment_likes&quot;</span>
-<span class="s2">&quot;first_post&quot;</span>
-<span class="s2">&quot;new_follower&quot;</span>
-<span class="s2">&quot;follow_request_accepted&quot;</span>
-<span class="s2">&quot;connection_notification&quot;</span>
-<span class="s2">&quot;tagged_in_bio&quot;</span>
-<span class="s2">&quot;pending_direct_share&quot;</span>
-<span class="s2">&quot;direct_share_activity&quot;</span>
-<span class="s2">&quot;direct_group_requests&quot;</span>
-<span class="s2">&quot;video_call&quot;</span>
-<span class="s2">&quot;rooms&quot;</span>
-<span class="s2">&quot;live_broadcast&quot;</span>
-<span class="s2">&quot;felix_upload_result&quot;</span>
-<span class="s2">&quot;view_count&quot;</span>
-<span class="s2">&quot;fundraiser_creator&quot;</span>
-<span class="s2">&quot;fundraiser_supporter&quot;</span>
-<span class="s2">&quot;notification_reminders&quot;</span>
-<span class="s2">&quot;announcements&quot;</span>
-<span class="s2">&quot;report_updated&quot;</span>
-<span class="s2">&quot;login_notification&quot;</span>
+<span class="s2">"likes"</span>
+<span class="s2">"like_and_comment_on_photo_user_tagged"</span>
+<span class="s2">"user_tagged"</span>
+<span class="s2">"comments"</span>
+<span class="s2">"comment_likes"</span>
+<span class="s2">"first_post"</span>
+<span class="s2">"new_follower"</span>
+<span class="s2">"follow_request_accepted"</span>
+<span class="s2">"connection_notification"</span>
+<span class="s2">"tagged_in_bio"</span>
+<span class="s2">"pending_direct_share"</span>
+<span class="s2">"direct_share_activity"</span>
+<span class="s2">"direct_group_requests"</span>
+<span class="s2">"video_call"</span>
+<span class="s2">"rooms"</span>
+<span class="s2">"live_broadcast"</span>
+<span class="s2">"felix_upload_result"</span>
+<span class="s2">"view_count"</span>
+<span class="s2">"fundraiser_creator"</span>
+<span class="s2">"fundraiser_supporter"</span>
+<span class="s2">"notification_reminders"</span>
+<span class="s2">"announcements"</span>
+<span class="s2">"report_updated"</span>
+<span class="s2">"login_notification"</span>
 </code></pre></div>
 <p>Option values are exposed as public aliases:</p>
-<div class="highlight"><pre><span></span><code><span class="n">SETTING_VALUE</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;off&quot;</span><span class="p">,</span> <span class="s2">&quot;following_only&quot;</span><span class="p">,</span> <span class="s2">&quot;everyone&quot;</span><span class="p">]</span>
-<span class="n">MUTE_ALL</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;cancel&quot;</span><span class="p">,</span> <span class="s2">&quot;15_minutes&quot;</span><span class="p">,</span> <span class="s2">&quot;1_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;2_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;4_hour&quot;</span><span class="p">,</span> <span class="s2">&quot;8_hour&quot;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><code><span class="n">SETTING_VALUE</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"off"</span><span class="p">,</span> <span class="s2">"following_only"</span><span class="p">,</span> <span class="s2">"everyone"</span><span class="p">]</span>
+<span class="n">MUTE_ALL</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"cancel"</span><span class="p">,</span> <span class="s2">"15_minutes"</span><span class="p">,</span> <span class="s2">"1_hour"</span><span class="p">,</span> <span class="s2">"2_hour"</span><span class="p">,</span> <span class="s2">"4_hour"</span><span class="p">,</span> <span class="s2">"8_hour"</span><span class="p">]</span>
 <span class="n">NotificationSettingValue</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">SETTING_VALUE</span><span class="p">,</span> <span class="n">MUTE_ALL</span><span class="p">]</span>
 </code></pre></div>
 <p><code>SETTING_VALUE</code> is used by the per-category helpers. <code>MUTE_ALL</code> is used by
@@ -1285,9 +1285,9 @@ notification value or a mute-all duration depending on <code>content_type</code>
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 
-<span class="n">cl</span><span class="o">.</span><span class="n">notification_comments</span><span class="p">(</span><span class="s2">&quot;following_only&quot;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">notification_settings</span><span class="p">(</span><span class="s2">&quot;likes&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">notification_mute_all</span><span class="p">(</span><span class="s2">&quot;1_hour&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_comments</span><span class="p">(</span><span class="s2">"following_only"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_settings</span><span class="p">(</span><span class="s2">"likes"</span><span class="p">,</span> <span class="s2">"off"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">notification_mute_all</span><span class="p">(</span><span class="s2">"1_hour"</span><span class="p">)</span>
 </code></pre></div>
 
 

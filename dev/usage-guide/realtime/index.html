@@ -1333,10 +1333,10 @@ Instagram push payloads, for example Direct message notification callbacks.</p>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_receive</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;topic&quot;</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;payload&quot;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">"topic"</span><span class="p">],</span> <span class="n">event</span><span class="p">[</span><span class="s2">"payload"</span><span class="p">])</span>
 
 
-<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">&quot;receive&quot;</span><span class="p">,</span> <span class="n">handle_receive</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">"receive"</span><span class="p">,</span> <span class="n">handle_receive</span><span class="p">)</span>
 <span class="n">rt</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">realtime_connect</span><span class="p">()</span>
 
 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -1355,7 +1355,7 @@ Instagram push payloads, for example Direct message notification callbacks.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
 
-<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="n">handle_direct_message</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">realtime_on</span><span class="p">(</span><span class="s2">"message"</span><span class="p">,</span> <span class="n">handle_direct_message</span><span class="p">)</span>
 
 <span class="n">rt</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">realtime_connect</span><span class="p">()</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">direct_subscribe</span><span class="p">()</span>
@@ -1372,8 +1372,8 @@ Instagram push payloads, for example Direct message notification callbacks.</p>
     <span class="n">cl</span><span class="o">.</span><span class="n">realtime_disconnect</span><span class="p">()</span>
 </code></pre></div>
 <p>Send lightweight Direct actions over MQTT:</p>
-<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">direct_send_text</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="s2">&quot;Hello from MQTT&quot;</span><span class="p">)</span>
-<span class="n">rt</span><span class="o">.</span><span class="n">direct_send_reaction</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="s2">&quot;❤️&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">direct_send_text</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="s2">"Hello from MQTT"</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">direct_send_reaction</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">item_id</span><span class="p">,</span> <span class="n">emoji</span><span class="o">=</span><span class="s2">"❤️"</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">direct_indicate_activity</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">is_active</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">direct_mark_seen</span><span class="p">(</span><span class="n">thread_id</span><span class="p">,</span> <span class="n">item_id</span><span class="p">)</span>
 </code></pre></div>
@@ -1393,7 +1393,7 @@ dictionaries before depending on nested keys.</p>
     <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
 
-<span class="n">cl</span><span class="o">.</span><span class="n">fbns_on</span><span class="p">(</span><span class="s2">&quot;push&quot;</span><span class="p">,</span> <span class="n">handle_push</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">fbns_on</span><span class="p">(</span><span class="s2">"push"</span><span class="p">,</span> <span class="n">handle_push</span><span class="p">)</span>
 <span class="n">fbns</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbns_connect</span><span class="p">()</span>
 
 <span class="k">try</span><span class="p">:</span>
@@ -1409,8 +1409,8 @@ dictionaries before depending on nested keys.</p>
 returned by the broker is stored in <code>settings["fbns_auth"]</code>, so <code>dump_settings()</code> can persist it with the normal
 session data.</p>
 <p>Subscribe to raw realtime topics:</p>
-<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">graph_ql_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;graphql-subscription&gt;&quot;</span><span class="p">])</span>
-<span class="n">rt</span><span class="o">.</span><span class="n">skywalker_subscribe</span><span class="p">([</span><span class="s2">&quot;&lt;skywalker-subscription&gt;&quot;</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><code><span class="n">rt</span><span class="o">.</span><span class="n">graph_ql_subscribe</span><span class="p">([</span><span class="s2">"&lt;graphql-subscription&gt;"</span><span class="p">])</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">skywalker_subscribe</span><span class="p">([</span><span class="s2">"&lt;skywalker-subscription&gt;"</span><span class="p">])</span>
 </code></pre></div>
 <p>Raw GraphQL and Skywalker subscription strings are advanced and unstable. Message sync is subscribed by the default
 connection topics, so the Direct message example above does not need an extra raw subscription.</p>

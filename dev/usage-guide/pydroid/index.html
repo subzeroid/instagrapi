@@ -1330,14 +1330,14 @@
 <p>For standard MP4 files, <code>instagrapi</code> can read video width, height, and duration with its built-in MP4 parser. If you also pass a thumbnail file, these upload helpers do not need MoviePy/ffmpeg just to analyze the upload:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="n">cl</span><span class="o">.</span><span class="n">video_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;video.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">igtv_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;video.mp4&quot;</span><span class="p">),</span> <span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;caption&quot;</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_story</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;story.mp4&quot;</span><span class="p">),</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;thumb.jpg&quot;</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"video.mp4"</span><span class="p">),</span> <span class="s2">"caption"</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"thumb.jpg"</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"reel.mp4"</span><span class="p">),</span> <span class="s2">"caption"</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"thumb.jpg"</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">igtv_upload</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"video.mp4"</span><span class="p">),</span> <span class="s2">"title"</span><span class="p">,</span> <span class="s2">"caption"</span><span class="p">,</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"thumb.jpg"</span><span class="p">))</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">video_upload_to_story</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s2">"story.mp4"</span><span class="p">),</span> <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"thumb.jpg"</span><span class="p">))</span>
 </code></pre></div>
 <p>MoviePy/ffmpeg is still required when <code>instagrapi</code> has to render or extract media. Install the optional video extra for these flows:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
-pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">&quot;moviepy==2.2.1&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[video]"</span>
+pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 </code></pre></div>
 <p>The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi keeps <code>Pillow&gt;=12.2.0</code> for security fixes; the <code>--no-deps</code> install keeps the safe Pillow version. MoviePy <code>1.x</code> is no longer supported by instagrapi's video helpers.</p>
 <ul>
@@ -1354,7 +1354,7 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <div class="highlight"><pre><span></span><code>RuntimeError: No ffmpeg exe could be found. Install ffmpeg on your system, or set the IMAGEIO_FFMPEG_EXE environment variable.
 </code></pre></div>
 <p>Current <code>instagrapi</code> upload helpers raise a clearer error for this thumbnail path:</p>
-<div class="highlight"><pre><span></span><code>Could not generate video thumbnail. Pass thumbnail=... or install MoviePy 2.2.1. Install video dependencies with pip install &quot;instagrapi[video]&quot; and then install MoviePy with pip install --no-deps &quot;moviepy==2.2.1&quot;. Make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE.
+<div class="highlight"><pre><span></span><code>Could not generate video thumbnail. Pass thumbnail=... or install MoviePy 2.2.1. Install video dependencies with pip install "instagrapi[video]" and then install MoviePy with pip install --no-deps "moviepy==2.2.1". Make sure ffmpeg is executable or set IMAGEIO_FFMPEG_EXE.
 </code></pre></div>
 <h2 id="fix">Fix</h2>
 <p>The most reliable Pydroid setup is to pre-process the video outside Pydroid and pass both files:</p>
@@ -1366,13 +1366,13 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <p>If you need automatic thumbnail generation or StoryBuilder inside Pydroid, install the optional video dependencies and MoviePy, install an ffmpeg binary that the Pydroid app can execute, and set <code>IMAGEIO_FFMPEG_EXE</code> before running the upload:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;IMAGEIO_FFMPEG_EXE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/absolute/path/to/ffmpeg&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"IMAGEIO_FFMPEG_EXE"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"/absolute/path/to/ffmpeg"</span>
 </code></pre></div>
 <p>Verify the same Python process can execute it:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
-<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;IMAGEIO_FFMPEG_EXE&quot;</span><span class="p">],</span> <span class="s2">&quot;-version&quot;</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"IMAGEIO_FFMPEG_EXE"</span><span class="p">],</span> <span class="s2">"-version"</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </code></pre></div>
 <p>If this raises <code>PermissionError</code>, the file exists but Android is not allowing Pydroid to execute it. A binary placed under shared storage such as <code>/storage/emulated/0/...</code> can hit that limitation. Move ffmpeg to a location executable by the app or use a Pydroid package/plugin that provides an executable binary.</p>
 <h2 id="minimal-upload-example">Minimal upload example</h2>
@@ -1384,9 +1384,9 @@ pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 
 <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
-    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel.mp4&quot;</span><span class="p">),</span>
-    <span class="s2">&quot;Uploaded from Pydroid&quot;</span><span class="p">,</span>
-    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel-thumb.jpg&quot;</span><span class="p">),</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">"reel.mp4"</span><span class="p">),</span>
+    <span class="s2">"Uploaded from Pydroid"</span><span class="p">,</span>
+    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"reel-thumb.jpg"</span><span class="p">),</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
 </code></pre></div>

@@ -1459,14 +1459,14 @@
 <ul>
 <li><code>Client(settings: dict = {}, proxy: str = "", tls_verify: Union[bool, str] = True)</code> - Init <code>instagrapi</code> client</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">&quot;instagrapi&quot;</span><span class="p">,</span> <span class="s2">&quot;42&quot;</span><span class="p">)</span>
-<span class="c1"># cl.login(&quot;instagrapi&quot;, &quot;42&quot;, verification_code=&quot;123456&quot;)  # with 2FA verification_code</span>
-<span class="c1"># cl.login_by_sessionid(&quot;peiWooShooghahdi2Eip7phohph0eeng&quot;)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s2">&quot;socks5://127.0.0.1:30235&quot;</span><span class="p">)</span>
-<span class="c1"># cl.set_proxy(&quot;http://username:password@127.0.0.1:8080&quot;)</span>
-<span class="c1"># cl.set_proxy(&quot;socks5://username:password@127.0.0.1:30235&quot;)</span>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">"instagrapi"</span><span class="p">,</span> <span class="s2">"42"</span><span class="p">)</span>
+<span class="c1"># cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code</span>
+<span class="c1"># cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s2">"socks5://127.0.0.1:30235"</span><span class="p">)</span>
+<span class="c1"># cl.set_proxy("http://username:password@127.0.0.1:8080")</span>
+<span class="c1"># cl.set_proxy("socks5://username:password@127.0.0.1:30235")</span>
 <span class="c1"># when addressing the proxy via hostname:</span>
-<span class="c1"># cl.set_proxy(&quot;socks5h://username:password@exampleproxy.tld:30235&quot;)</span>
+<span class="c1"># cl.set_proxy("socks5h://username:password@exampleproxy.tld:30235")</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_info</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">))</span>
@@ -1564,40 +1564,40 @@
 <p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
 <p>You can pass settings to the Client (and save cookies), it has the following format:</p>
 <div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;uuids&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;phone_id&quot;</span><span class="p">:</span> <span class="s2">&quot;57d64c41-a916-3fa5-bd7a-3796c1dab122&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="s2">&quot;8aa373c6-f316-44d7-b49e-d74563f4a8f3&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;client_session_id&quot;</span><span class="p">:</span> <span class="s2">&quot;6c296d0a-3534-4dce-b5aa-a6a6ab017443&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;advertising_id&quot;</span><span class="p">:</span> <span class="s2">&quot;8dc88b76-dfbc-44dc-abbc-31a6f1d54b04&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;device_id&quot;</span><span class="p">:</span> <span class="s2">&quot;android-e021b636049dc0e9&quot;</span><span class="p">,</span>
+    <span class="s2">"uuids"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"phone_id"</span><span class="p">:</span> <span class="s2">"57d64c41-a916-3fa5-bd7a-3796c1dab122"</span><span class="p">,</span>
+        <span class="s2">"uuid"</span><span class="p">:</span> <span class="s2">"8aa373c6-f316-44d7-b49e-d74563f4a8f3"</span><span class="p">,</span>
+        <span class="s2">"client_session_id"</span><span class="p">:</span> <span class="s2">"6c296d0a-3534-4dce-b5aa-a6a6ab017443"</span><span class="p">,</span>
+        <span class="s2">"advertising_id"</span><span class="p">:</span> <span class="s2">"8dc88b76-dfbc-44dc-abbc-31a6f1d54b04"</span><span class="p">,</span>
+        <span class="s2">"device_id"</span><span class="p">:</span> <span class="s2">"android-e021b636049dc0e9"</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;authorization_data&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># sessionid / ds_user_id / authorization values</span>
-    <span class="s2">&quot;cookies&quot;</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># saved cookies</span>
-    <span class="s2">&quot;last_login&quot;</span><span class="p">:</span> <span class="mf">1596069420.0000145</span><span class="p">,</span>
-    <span class="s2">&quot;device_settings&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s2">&quot;cpu&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;dpi&quot;</span><span class="p">:</span> <span class="s2">&quot;640dpi&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;h1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;RS988&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;resolution&quot;</span><span class="p">:</span> <span class="s2">&quot;1440x2392&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;manufacturer&quot;</span><span class="p">:</span> <span class="s2">&quot;LGE/lge&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;android_release&quot;</span><span class="p">:</span> <span class="s2">&quot;6.0.1&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;android_version&quot;</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
+    <span class="s2">"authorization_data"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># sessionid / ds_user_id / authorization values</span>
+    <span class="s2">"cookies"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># saved cookies</span>
+    <span class="s2">"last_login"</span><span class="p">:</span> <span class="mf">1596069420.0000145</span><span class="p">,</span>
+    <span class="s2">"device_settings"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"cpu"</span><span class="p">:</span> <span class="s2">"h1"</span><span class="p">,</span>
+        <span class="s2">"dpi"</span><span class="p">:</span> <span class="s2">"640dpi"</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"h1"</span><span class="p">,</span>
+        <span class="s2">"device"</span><span class="p">:</span> <span class="s2">"RS988"</span><span class="p">,</span>
+        <span class="s2">"resolution"</span><span class="p">:</span> <span class="s2">"1440x2392"</span><span class="p">,</span>
+        <span class="s2">"manufacturer"</span><span class="p">:</span> <span class="s2">"LGE/lge"</span><span class="p">,</span>
+        <span class="s2">"android_release"</span><span class="p">:</span> <span class="s2">"6.0.1"</span><span class="p">,</span>
+        <span class="s2">"android_version"</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
     <span class="p">},</span>
-    <span class="s2">&quot;user_agent&quot;</span><span class="p">:</span> <span class="s2">&quot;Instagram 385.0.0.47.74 Android (...)&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;country_code&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;locale&quot;</span><span class="p">:</span> <span class="s2">&quot;en_US&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;timezone_offset&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">14400</span><span class="p">,</span>
-    <span class="s2">&quot;request_timeout&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s2">&quot;public_request_retries_count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="s2">&quot;public_request_retries_timeout&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="s2">&quot;session_retry_total&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="s2">&quot;session_retry_backoff_factor&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-    <span class="s2">&quot;session_retry_statuses&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
-    <span class="s2">&quot;public_transport&quot;</span><span class="p">:</span> <span class="s2">&quot;requests&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;public_transport_impersonate&quot;</span><span class="p">:</span> <span class="s2">&quot;chrome136&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;tls_verify&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">"user_agent"</span><span class="p">:</span> <span class="s2">"Instagram 385.0.0.47.74 Android (...)"</span><span class="p">,</span>
+    <span class="s2">"country"</span><span class="p">:</span> <span class="s2">"US"</span><span class="p">,</span>
+    <span class="s2">"country_code"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">"locale"</span><span class="p">:</span> <span class="s2">"en_US"</span><span class="p">,</span>
+    <span class="s2">"timezone_offset"</span><span class="p">:</span> <span class="o">-</span><span class="mi">14400</span><span class="p">,</span>
+    <span class="s2">"request_timeout"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">"public_request_retries_count"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"public_request_retries_timeout"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"session_retry_total"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"session_retry_backoff_factor"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"session_retry_statuses"</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
+    <span class="s2">"public_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
+    <span class="s2">"public_transport_impersonate"</span><span class="p">:</span> <span class="s2">"chrome136"</span><span class="p">,</span>
+    <span class="s2">"tls_verify"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
@@ -1638,13 +1638,13 @@
 <p>In order for Instagram <a href="https://github.com/subzeroid/instagrapi/discussions/220">to trust you more</a>, use one stable device profile and one stable IP (or subnet) per account whenever possible:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;/tmp/dump.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
 </code></pre></div>
 <p>Next time:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;/tmp/dump.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;/tmp/dump.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="manage-device-proxy-and-other-account-settings">Manage device, proxy and other account settings</h3>
 <table>
@@ -1754,10 +1754,10 @@
 <span class="p">)</span>
 </code></pre></div>
 <p>For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[curl]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[curl]"</span>
 </code></pre></div>
 <p>Then opt in explicitly:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">&quot;curl&quot;</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">&quot;chrome136&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">"chrome136"</span><span class="p">)</span>
 </code></pre></div>
 <p>The default remains <code>public_transport="requests"</code>. Private mobile API requests still use the regular mobile session.
 See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
@@ -1767,7 +1767,7 @@ See <a href="../public-transport/">Public Transport</a> for live comparison resu
 <h3 id="tls-verification-and-debugging-proxies">TLS verification and debugging proxies</h3>
 <p>By default <code>instagrapi</code> verifies TLS certificates on all client sessions. Keep this enabled for production, residential proxies, and normal CONNECT-tunnel proxies.</p>
 <p>If you use a trusted local debugging proxy that intercepts TLS, prefer installing its CA certificate and pointing the client at that bundle:</p>
-<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="s2">&quot;/path/to/proxy-ca.pem&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="s2">"/path/to/proxy-ca.pem"</span><span class="p">)</span>
 </code></pre></div>
 <p>For short local captures you can disable verification explicitly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1776,32 +1776,32 @@ See <a href="../public-transport/">Public Transport</a> for live comparison resu
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 
 <span class="c1"># Los Angles user:</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">&#39;http://los:angeles@proxy.address:8080&#39;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">&#39;en_US&#39;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'http://los:angeles@proxy.address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'en_US'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># Los Angeles UTC (GMT) -7 hours == -25200 seconds</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="o">...</span>
-    <span class="s1">&#39;user_agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;country&#39;</span><span class="p">:</span> <span class="s1">&#39;US&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;country_code&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="s1">&#39;locale&#39;</span><span class="p">:</span> <span class="s1">&#39;en_US&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;timezone_offset&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">25200</span>
+    <span class="s1">'user_agent'</span><span class="p">:</span> <span class="s1">'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)'</span><span class="p">,</span>
+    <span class="s1">'country'</span><span class="p">:</span> <span class="s1">'US'</span><span class="p">,</span>
+    <span class="s1">'country_code'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">'locale'</span><span class="p">:</span> <span class="s1">'en_US'</span><span class="p">,</span>
+    <span class="s1">'timezone_offset'</span><span class="p">:</span> <span class="o">-</span><span class="mi">25200</span>
 <span class="p">}</span>
 
 <span class="c1"># Moscow user:</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">&#39;socks5://moscow:proxy@address:8080&#39;</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">&#39;ru_RU&#39;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'socks5://moscow:proxy@address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'ru_RU'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_country_code</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># +7</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>  <span class="c1"># Moscow UTC+3</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
 <span class="p">{</span>
     <span class="o">...</span>
-    <span class="s1">&#39;user_agent&#39;</span><span class="p">:</span> <span class="s1">&#39;Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; ru_RU; 301484483)&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;country&#39;</span><span class="p">:</span> <span class="s1">&#39;RU&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;country_code&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
-    <span class="s1">&#39;locale&#39;</span><span class="p">:</span> <span class="s1">&#39;ru_RU&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;timezone_offset&#39;</span><span class="p">:</span> <span class="mi">10800</span>
+    <span class="s1">'user_agent'</span><span class="p">:</span> <span class="s1">'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; ru_RU; 301484483)'</span><span class="p">,</span>
+    <span class="s1">'country'</span><span class="p">:</span> <span class="s1">'RU'</span><span class="p">,</span>
+    <span class="s1">'country_code'</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="s1">'locale'</span><span class="p">:</span> <span class="s1">'ru_RU'</span><span class="p">,</span>
+    <span class="s1">'timezone_offset'</span><span class="p">:</span> <span class="mi">10800</span>
 <span class="p">}</span>
 </code></pre></div>
 <h2 id="whats-next">What's Next?</h2>

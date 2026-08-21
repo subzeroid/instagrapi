@@ -1411,14 +1411,14 @@ and how to work with the code base.</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
 pre-commit<span class="w"> </span>install
 </code></pre></div>
 <p>This installs the library, runtime dependencies, test tools, lint tools, and documentation tooling in one environment.</p>
 <p>If you use <a href="https://docs.astral.sh/uv/">uv</a>, keep the same <code>pyproject.toml</code> source of truth:</p>
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>venv
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[test]&quot;</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
 pre-commit<span class="w"> </span>install
 </code></pre></div>
 <p>If you prefer to keep <code>pre-commit</code> outside the project environment, install it with <a href="https://pipx.pypa.io/">pipx</a>:</p>

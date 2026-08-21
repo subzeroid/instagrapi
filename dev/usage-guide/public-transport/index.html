@@ -1289,12 +1289,12 @@
 transport-level retry behavior.</p>
 <p>The public transport option is exposed as <code>PublicTransport = Literal["requests", "curl"]</code>.</p>
 <p>For public web endpoints that are sensitive to browser TLS fingerprints, you can install the optional curl transport:</p>
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[curl]&quot;</span>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[curl]"</span>
 </code></pre></div>
 <p>Then opt in explicitly:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
-<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">&quot;curl&quot;</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">&quot;chrome136&quot;</span><span class="p">)</span>
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">"chrome136"</span><span class="p">)</span>
 </code></pre></div>
 <p>Private mobile API requests still use the regular mobile session. The curl transport only changes the public web
 session.</p>

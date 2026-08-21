@@ -1703,59 +1703,59 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <span class="p">{</span>
   <span class="mi">8530498223</span><span class="p">:</span> <span class="n">UserShort</span><span class="p">(</span>
     <span class="n">pk</span><span class="o">=</span><span class="mi">8530498223</span><span class="p">,</span>
-    <span class="n">username</span><span class="o">=</span><span class="s2">&quot;something&quot;</span><span class="p">,</span>
-    <span class="n">full_name</span><span class="o">=</span><span class="s2">&quot;Example description&quot;</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="s2">"something"</span><span class="p">,</span>
+    <span class="n">full_name</span><span class="o">=</span><span class="s2">"Example description"</span><span class="p">,</span>
     <span class="n">profile_pic_url</span><span class="o">=</span><span class="n">HttpUrl</span><span class="p">(</span>
-      <span class="s1">&#39;https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg&#39;</span><span class="p">,</span>
-      <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span>
-      <span class="n">host</span><span class="o">=</span><span class="s1">&#39;instagram.frix7-1.fna.fbcdn.net&#39;</span><span class="p">,</span>
+      <span class="s1">'https://instagram.frix7-1.fna.fbcdn.net/v/t5...9217617140_n.jpg'</span><span class="p">,</span>
+      <span class="n">scheme</span><span class="o">=</span><span class="s1">'https'</span><span class="p">,</span>
+      <span class="n">host</span><span class="o">=</span><span class="s1">'instagram.frix7-1.fna.fbcdn.net'</span><span class="p">,</span>
       <span class="o">...</span>
     <span class="p">),</span>
   <span class="p">),</span>
   <span class="mi">49114585</span><span class="p">:</span> <span class="n">UserShort</span><span class="p">(</span>
     <span class="n">pk</span><span class="o">=</span><span class="mi">49114585</span><span class="p">,</span>
-    <span class="n">username</span><span class="o">=</span><span class="s1">&#39;gx1000&#39;</span><span class="p">,</span>
-    <span class="n">full_name</span><span class="o">=</span><span class="s1">&#39;GX1000&#39;</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="s1">'gx1000'</span><span class="p">,</span>
+    <span class="n">full_name</span><span class="o">=</span><span class="s1">'GX1000'</span><span class="p">,</span>
     <span class="n">profile_pic_url</span><span class="o">=</span><span class="n">HttpUrl</span><span class="p">(</span>
-      <span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/10388...jpg&#39;</span><span class="p">,</span>
-      <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span>
-      <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span>
+      <span class="s1">'https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/10388...jpg'</span><span class="p">,</span>
+      <span class="n">scheme</span><span class="o">=</span><span class="s1">'https'</span><span class="p">,</span>
+      <span class="n">host</span><span class="o">=</span><span class="s1">'scontent-hel3-1.cdninstagram.com'</span><span class="p">,</span>
       <span class="o">...</span>
     <span class="p">)</span>
   <span class="p">),</span>
   <span class="o">...</span>
 <span class="p">}</span>
 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_info_by_username</span><span class="p">(</span><span class="s1">&#39;example&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
-<span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
- <span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
- <span class="s1">&#39;full_name&#39;</span><span class="p">:</span> <span class="s1">&#39;Example Example&#39;</span><span class="p">,</span>
- <span class="s1">&#39;is_private&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;profile_pic_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_803537687159702_2508263208740189974_n.jpg?...&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;scontent-hel3-1.cdninstagram.com&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="o">...</span><span class="s1">&#39;),</span>
- <span class="s1">&#39;is_verified&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
- <span class="s1">&#39;media_count&#39;</span><span class="p">:</span> <span class="mi">102</span><span class="p">,</span>
- <span class="s1">&#39;follower_count&#39;</span><span class="p">:</span> <span class="mi">576</span><span class="p">,</span>
- <span class="s1">&#39;following_count&#39;</span><span class="p">:</span> <span class="mi">538</span><span class="p">,</span>
- <span class="s1">&#39;biography&#39;</span><span class="p">:</span> <span class="s1">&#39;Engineer: Python, JavaScript, Erlang&#39;</span><span class="p">,</span>
- <span class="s1">&#39;external_url&#39;</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">&#39;https://example.org/&#39;</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">&#39;example.org&#39;</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">&#39;com&#39;</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">&#39;domain&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;/&#39;</span><span class="p">),</span>
- <span class="s1">&#39;is_business&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_info_by_username</span><span class="p">(</span><span class="s1">'example'</span><span class="p">)</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>
+<span class="p">{</span><span class="s1">'pk'</span><span class="p">:</span> <span class="mi">1903424587</span><span class="p">,</span>
+ <span class="s1">'username'</span><span class="p">:</span> <span class="s1">'example'</span><span class="p">,</span>
+ <span class="s1">'full_name'</span><span class="p">:</span> <span class="s1">'Example Example'</span><span class="p">,</span>
+ <span class="s1">'is_private'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">'profile_pic_url'</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">'https://scontent-hel3-1.cdninstagram.com/v/t51.2885-19/s150x150/123884060_803537687159702_2508263208740189974_n.jpg?...'</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">'https'</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">'scontent-hel3-1.cdninstagram.com'</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">'com'</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">'domain'</span><span class="p">,</span> <span class="o">...</span><span class="s1">'),</span>
+ <span class="s1">'is_verified'</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+ <span class="s1">'media_count'</span><span class="p">:</span> <span class="mi">102</span><span class="p">,</span>
+ <span class="s1">'follower_count'</span><span class="p">:</span> <span class="mi">576</span><span class="p">,</span>
+ <span class="s1">'following_count'</span><span class="p">:</span> <span class="mi">538</span><span class="p">,</span>
+ <span class="s1">'biography'</span><span class="p">:</span> <span class="s1">'Engineer: Python, JavaScript, Erlang'</span><span class="p">,</span>
+ <span class="s1">'external_url'</span><span class="p">:</span> <span class="n">HttpUrl</span><span class="p">(</span><span class="s1">'https://example.org/'</span><span class="p">,</span> <span class="n">scheme</span><span class="o">=</span><span class="s1">'https'</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s1">'example.org'</span><span class="p">,</span> <span class="n">tld</span><span class="o">=</span><span class="s1">'com'</span><span class="p">,</span> <span class="n">host_type</span><span class="o">=</span><span class="s1">'domain'</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">'/'</span><span class="p">),</span>
+ <span class="s1">'is_business'</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 </code></pre></div>
 <p>Sorted followers:</p>
-<div class="highlight"><pre><span></span><code><span class="n">latest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
-<span class="n">earliest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_earliest&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">latest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_latest"</span><span class="p">)</span>
+<span class="n">earliest_followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_earliest"</span><span class="p">)</span>
 </code></pre></div>
 <p>Streaming followers/following:</p>
-<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">follower</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">):</span>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">follower</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_user_followers_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_latest"</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">follower</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">follower</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">user</span> <span class="ow">in</span> <span class="n">cl</span><span class="o">.</span><span class="n">iter_user_following_v1</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">page_size</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
 </code></pre></div>
 <p>Raw private GraphQL helpers expose the same mobile <code>order</code> variable for callers that need the <code>FollowersList</code>/<code>FollowingList</code> payload directly:</p>
-<div class="highlight"><pre><span></span><code><span class="n">payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">private_graphql_followers_list</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">cl</span><span class="o">.</span><span class="n">rank_token</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">payload</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">private_graphql_followers_list</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">cl</span><span class="o">.</span><span class="n">rank_token</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_latest"</span><span class="p">)</span>
 </code></pre></div>
 <p>Use <code>user_followers_private_gql()</code> when you want the current mobile GraphQL followers list parsed into <code>UserShort</code> objects:</p>
-<div class="highlight"><pre><span></span><code><span class="n">followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_private_gql</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">&quot;date_followed_latest&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_private_gql</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_latest"</span><span class="p">)</span>
 </code></pre></div>
 <p>Example: We go around the list of our followers and unfollow from them:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
@@ -1774,14 +1774,14 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 
-<span class="n">user_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_id_from_username</span><span class="p">(</span><span class="s2">&quot;example&quot;</span><span class="p">)</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_id_from_username</span><span class="p">(</span><span class="s2">"example"</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="n">suggested</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_suggested_profiles</span><span class="p">(</span><span class="n">user_id</span><span class="p">)</span>
-    <span class="c1"># Expanded social-context fields (current app responses expose them under &quot;items&quot;):</span>
+    <span class="c1"># Expanded social-context fields (current app responses expose them under "items"):</span>
     <span class="n">detailed</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_suggested_profiles</span><span class="p">(</span><span class="n">user_id</span><span class="p">,</span> <span class="n">expand_suggestion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">except</span> <span class="n">InvalidTargetUser</span><span class="p">:</span>
     <span class="c1"># Instagram refuses chaining for locked-down / private targets</span>
-    <span class="n">suggested</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;users&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="n">suggested</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"users"</span><span class="p">:</span> <span class="p">[]}</span>
 </code></pre></div>
 <p>Tip:</p>
 <ul>

@@ -1336,21 +1336,21 @@
 </table>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Top tab — first page</span>
-<span class="n">top</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_topsearch_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+<span class="n">top</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_topsearch_v2</span><span class="p">(</span><span class="s2">"python"</span><span class="p">)</span>
 
 <span class="c1"># Accounts — paginate</span>
-<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
-<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">page_token</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">&quot;next_page_token&quot;</span><span class="p">])</span>
+<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">"python"</span><span class="p">)</span>
+<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_accounts_v2</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">page_token</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">"next_page_token"</span><span class="p">])</span>
 
 <span class="c1"># Reels — paginate</span>
-<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
-<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">reels_max_id</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">&quot;reels_max_id&quot;</span><span class="p">])</span>
+<span class="n">page1</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">"python"</span><span class="p">)</span>
+<span class="n">page2</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_reels_v2</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">reels_max_id</span><span class="o">=</span><span class="n">page1</span><span class="p">[</span><span class="s2">"reels_max_id"</span><span class="p">])</span>
 
 <span class="c1"># Typeahead — flat list of user dicts</span>
-<span class="n">users</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_typehead</span><span class="p">(</span><span class="s2">&quot;py&quot;</span><span class="p">)</span>
+<span class="n">users</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">fbsearch_typehead</span><span class="p">(</span><span class="s2">"py"</span><span class="p">)</span>
 
 <span class="c1"># Top media — typed Media objects</span>
-<span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="other-search-helpers">Other search helpers</h2>
 <table>

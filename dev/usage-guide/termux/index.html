@@ -1316,21 +1316,21 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">clip_upload</span><span class="p">(</span>
-    <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel.mp4&quot;</span><span class="p">),</span>
-    <span class="s2">&quot;Uploaded from Termux&quot;</span><span class="p">,</span>
-    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;reel-thumb.jpg&quot;</span><span class="p">),</span>
+    <span class="n">Path</span><span class="p">(</span><span class="s2">"reel.mp4"</span><span class="p">),</span>
+    <span class="s2">"Uploaded from Termux"</span><span class="p">,</span>
+    <span class="n">thumbnail</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">"reel-thumb.jpg"</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 <p>This path does not need MoviePy, NumPy, or ffmpeg.</p>
 <h2 id="optional-video-helpers">Optional Video Helpers</h2>
 <p>Install the optional video extra only if you need automatic thumbnail generation, <code>StoryBuilder</code>, <code>prepare_video()</code>, or audio/video composition helpers:</p>
 <div class="highlight"><pre><span></span><code>pkg<span class="w"> </span>install<span class="w"> </span>ffmpeg
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;instagrapi[video]&quot;</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">&quot;moviepy==2.2.1&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[video]"</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 </code></pre></div>
 <p>MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi keeps <code>Pillow&gt;=12.2.0</code> for security fixes; the <code>--no-deps</code> install keeps the safe Pillow version. MoviePy <code>1.x</code> is no longer supported by instagrapi's optional video helpers.</p>
 <p>If MoviePy cannot find ffmpeg, point ImageIO at the Termux binary before running the script:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">IMAGEIO_FFMPEG_EXE</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">command</span><span class="w"> </span>-v<span class="w"> </span>ffmpeg<span class="k">)</span><span class="s2">&quot;</span>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">IMAGEIO_FFMPEG_EXE</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span><span class="nb">command</span><span class="w"> </span>-v<span class="w"> </span>ffmpeg<span class="k">)</span><span class="s2">"</span>
 </code></pre></div>
 <p>If <code>pip install "instagrapi[video]"</code> tries to build NumPy and fails, avoid the optional video helpers on-device: prepare the MP4 and thumbnail elsewhere, then use upload methods with <code>thumbnail=...</code>.</p>
 

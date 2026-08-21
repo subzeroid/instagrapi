@@ -1316,15 +1316,15 @@
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
 </code></pre></div>
 <p>Then on the next run:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">&quot;session.json&quot;</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
 </code></pre></div>
 <p>The saved session is validated during <code>login()</code>. If Instagram rejects it with
 <code>login_required</code>, instagrapi performs a fresh login with the supplied
