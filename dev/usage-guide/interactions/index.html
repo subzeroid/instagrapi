@@ -1753,6 +1753,7 @@
     <span class="n">session_retry_total</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
+<p>For the default Requests transport, <code>session_retry_total</code> controls adapter-level attempts for <code>session_retry_statuses</code>. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as <code>ClientThrottledError</code> for HTTP 429. When adapter retries are enabled, <code>public_request()</code> does not start a second retry package for the same configured status; when <code>session_retry_total&lt;=0</code>, the existing <code>public_request_retries_count</code> loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.</p>
 <p>For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[curl]"</span>
 </code></pre></div>
