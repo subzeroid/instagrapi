@@ -106,7 +106,8 @@ jobs:
             tests/regression/test_timeline.py::TimelineRegressionTestCase \
             tests/regression/test_story_configure.py::StoryConfigureRegressionTestCase \
             tests/regression/test_video_metadata.py::VideoMetadataRegressionTestCase \
-            tests/regression/test_upload.py::UploadRegressionTestCase
+            tests/regression/test_upload.py::UploadRegressionTestCase \
+            tests/regression/test_retry.py::RetryRegressionTestCase
 
   build-docs:
     runs-on: ubuntu-latest

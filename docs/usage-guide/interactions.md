@@ -190,6 +190,8 @@ cl.set_retry_config(
 )
 ```
 
+For the default Requests transport, `session_retry_total` controls adapter-level attempts for `session_retry_statuses`. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as `ClientThrottledError` for HTTP 429. When adapter retries are enabled, `public_request()` does not start a second retry package for the same configured status; when `session_retry_total<=0`, the existing `public_request_retries_count` loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.
+
 For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:
 
 ```bash

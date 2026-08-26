@@ -128,8 +128,8 @@ class ClientMediaExtendTestCase(_helpers.ClientPrivateTestCase):
         try:
             try:
                 media = self.cl.igtv_upload(path, "Test title", "Test caption for IGTV")
-            except RetryError as exc:
-                if "configure_to_igtv" in str(exc) and "500 error responses" in str(exc):
+            except (ClientError, RetryError) as exc:
+                if is_retryable_http_status_error(exc, {500}, endpoint="configure_to_igtv"):
                     self.skipTest("Instagram returned server 500 for configure_to_igtv")
                 raise
             self.assertIsInstance(media, Media)
@@ -271,14 +271,12 @@ class ClientLinkedReelLiveTestCase(_helpers.ClientPrivateTestCase):
             try:
                 self.run_media_link_reel(client, origin_path, target_path, origin_cover, target_cover)
                 return
-            except (
-                ClipNotUpload,
-                PhotoNotUpload,
-                LoginRequired,
-                PleaseWaitFewMinutes,
-                ClientThrottledError,
-                RetryError,
-            ) as exc:
+            except (ClientError, RetryError) as exc:
+                if not isinstance(
+                    exc,
+                    (ClipNotUpload, PhotoNotUpload, LoginRequired, PleaseWaitFewMinutes, ClientThrottledError),
+                ) and not is_retryable_http_status_error(exc, client.session_retry_statuses):
+                    raise
                 upload_failures[exc.__class__.__name__] = upload_failures.get(exc.__class__.__name__, 0) + 1
                 continue
 

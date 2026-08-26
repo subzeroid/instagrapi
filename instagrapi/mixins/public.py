@@ -148,6 +148,7 @@ class PublicRequestMixin:
                 status_forcelist=self.session_retry_statuses,
                 allowed_methods=["GET", "POST"],
                 backoff_factor=self.session_retry_backoff_factor,
+                raise_on_status=False,
             )
         except TypeError:
             return Retry(
@@ -155,6 +156,7 @@ class PublicRequestMixin:
                 status_forcelist=self.session_retry_statuses,
                 method_whitelist=["GET", "POST"],
                 backoff_factor=self.session_retry_backoff_factor,
+                raise_on_status=False,
             )
 
     def _configure_public_session_retry(self):
@@ -238,6 +240,13 @@ class PublicRequestMixin:
             # except JSONDecodeError as e:
             #     raise ClientJSONDecodeError(e, respones=self.last_public_response)
             except ClientError as e:
+                response_status = getattr(getattr(e, "response", None), "status_code", None)
+                if (
+                    self.public_transport == "requests"
+                    and self.session_retry_total > 0
+                    and response_status in self.session_retry_statuses
+                ):
+                    raise
                 msg = str(e)
                 if all(
                     (
@@ -296,16 +305,14 @@ class PublicRequestMixin:
                     timeout=timeout,
                 )
 
-            if stream:
-                return response
-
-            expected_length = int(response.headers.get("Content-Length") or 0)
-            actual_length = response.raw.tell()
-            if actual_length < expected_length:
-                raise ClientIncompleteReadError(
-                    "Incomplete read ({} bytes read, {} more expected)".format(actual_length, expected_length),
-                    response=response,
-                )
+            if not stream:
+                expected_length = int(response.headers.get("Content-Length") or 0)
+                actual_length = response.raw.tell()
+                if actual_length < expected_length:
+                    raise ClientIncompleteReadError(
+                        "Incomplete read ({} bytes read, {} more expected)".format(actual_length, expected_length),
+                        response=response,
+                    )
 
             self.public_request_logger.debug("public_request %s: %s", response.status_code, response.url)
 
@@ -318,6 +325,8 @@ class PublicRequestMixin:
             )
             self.last_public_response = response
             response.raise_for_status()
+            if stream:
+                return response
             if return_json:
                 self.last_public_json = response.json()
                 return self.last_public_json
@@ -338,6 +347,8 @@ class PublicRequestMixin:
                 response=response,
             )
         except requests.HTTPError as e:
+            if stream:
+                e.response.close()
             if e.response.status_code == 401:
                 # HTTPError: 401 Client Error: Unauthorized for url: https://i.instagram.com/api/v1/users....
                 raise ClientUnauthorizedError(e, response=e.response)

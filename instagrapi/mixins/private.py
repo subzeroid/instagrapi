@@ -174,6 +174,7 @@ class PrivateRequestMixin:
                 status_forcelist=self.session_retry_statuses,
                 allowed_methods=["GET", "POST"],
                 backoff_factor=self.session_retry_backoff_factor,
+                raise_on_status=False,
             )
         except TypeError:
             return Retry(
@@ -181,6 +182,7 @@ class PrivateRequestMixin:
                 status_forcelist=self.session_retry_statuses,
                 method_whitelist=["GET", "POST"],
                 backoff_factor=self.session_retry_backoff_factor,
+                raise_on_status=False,
             )
 
     def _configure_private_session_retry(self):
