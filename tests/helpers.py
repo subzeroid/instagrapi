@@ -101,6 +101,21 @@ COMMENT_REPLIES_LIVE_FIXTURES = [
 ]
 
 
+def is_retryable_http_status_error(exc, statuses, endpoint=None):
+    statuses = set(statuses)
+    response = getattr(exc, "response", None)
+    status_code = getattr(response, "status_code", None) or getattr(exc, "code", None)
+    response_url = str(getattr(response, "url", "") or "")
+    if status_code in statuses:
+        return endpoint is None or endpoint in response_url
+    if not isinstance(exc, RetryError):
+        return False
+    if endpoint is None:
+        return True
+    message = str(exc)
+    return endpoint in message and any(f"{status} error responses" in message for status in statuses)
+
+
 class FreshAccountLoginTimeout(RuntimeError):
     pass
 
