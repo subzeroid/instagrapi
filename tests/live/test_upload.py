@@ -253,11 +253,13 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             return payload
         self.fail(f"Scheduled media {media.id} was not accessible through media/infos: {last_result}")
 
+    def is_scheduled_publish_unavailable(self, exc):
+        return isinstance(exc, (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes)) or (
+            is_retryable_http_status_error(exc, self.cl.session_retry_statuses)
+        )
+
     def skip_unavailable_scheduled_publish(self, exc):
-        if exc is None or isinstance(
-            exc,
-            (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError),
-        ):
+        if exc is None or self.is_scheduled_publish_unavailable(exc):
             self.skipTest("No usable scheduled publishing account was available")
         raise exc
 
@@ -276,7 +278,9 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             self.ensure_creator_account()
             try:
                 return upload()
-            except (ClientNotFoundError, ClientThrottledError, PleaseWaitFewMinutes, RetryError) as exc:
+            except (ClientError, RetryError) as exc:
+                if not self.is_scheduled_publish_unavailable(exc):
+                    raise
                 last_exc = exc
                 continue
         self.skip_unavailable_scheduled_publish(last_exc)
@@ -475,8 +479,8 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
             caption_text = "Test caption for IGTV"
             try:
                 media = self.cl.igtv_upload(path, title, caption_text)
-            except RetryError as exc:
-                if "configure_to_igtv" in str(exc) and "500 error responses" in str(exc):
+            except (ClientError, RetryError) as exc:
+                if is_retryable_http_status_error(exc, {500}, endpoint="configure_to_igtv"):
                     self.skipTest("Instagram returned server 500 for configure_to_igtv")
                 raise
             self.assertIsInstance(media, Media)
