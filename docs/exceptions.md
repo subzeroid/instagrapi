@@ -11,10 +11,10 @@
 | ClientUnauthorizedError   | ClientError | HTTP 401 Exception
 | ClientForbiddenError      | ClientError | HTTP 403 Exception
 | ClientNotFoundError       | ClientError | HTTP 404 Exception
-| ClientThrottledError      | ClientError | HTTP 429 Exception (Solution: try changing your proxy)
+| ClientThrottledError      | ClientError | HTTP 429 exception; stop the current request burst and back off before retrying. See [Best Practices](usage-guide/best-practices.md#pleasewaitfewminutes)
 | ClientRequestTimeout      | ClientError | Request Timeout Exception
 | ClientIncompleteReadError | ClientError | Raises when response interrupted
-| ClientLoginRequired       | ClientError | Raises when Instagram required Login (Solution: try changing your proxy)
+| ClientLoginRequired       | ClientError | Raises when Instagram requires login; reuse saved settings and relogin once instead of repeatedly creating fresh sessions. See [Best Practices](usage-guide/best-practices.md#loginrequired)
 | ReloginAttemptExceeded    | ClientError | Raises when all attempts exceeded
 | ClientErrorWithTitle      | ClientError | Occurs when Instagram returns an unknown error with the title
 | ClientUnknownError        | ClientError | Occurs when Instagram returns an unknown error
@@ -31,8 +31,8 @@
 | AuthRequiredProxyError    | ProxyError   | Occurs when incorrect credentials are passed to authorize your proxy
 | ProxyAddressIsBlocked     | PrivateError | Happens when your proxy is blocked by Instagram, change your proxy!
 | SentryBlock               | PrivateError | Raises when get message=sentry_block (most likely you were banned from instagram by ip address. Solution: try changing your proxy)
-| RateLimitError            | PrivateError | Raises when get message=rate_limit_error (Solution: try changing your proxy)
-| PleaseWaitFewMinutes     | PrivateError | Raises when get message="Please wait a few minutes before you try again" (Solution: try changing your proxy)
+| RateLimitError            | PrivateError | Raises when Instagram returns `rate_limit_error`; stop repeated requests and allow a cooldown before retrying
+| PleaseWaitFewMinutes      | PrivateError | Raises when Instagram asks the account, device, or IP context to slow down; stop retries, preserve the saved device/session context, and retry after a cooldown. See [Best Practices](usage-guide/best-practices.md#pleasewaitfewminutes)
 
 ## GraphQL/Public Exceptions
 
