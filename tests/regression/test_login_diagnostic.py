@@ -207,20 +207,24 @@ def test_report_cannot_overwrite_settings(diagnostic, monkeypatch, tmp_path):
     client.assert_not_called()
 
 
-def test_library_stdout_logs_and_exception_text_are_not_exported(diagnostic, capsys):
+def test_library_stdout_logs_and_exception_text_are_not_exported(diagnostic, capsys, caplog):
     client = Client()
+    # Test blanket output suppression independently of the credential fixtures.
+    output_marker = "synthetic-library-output"
 
     def reject(*args, **kwargs):
-        print(SECRET)
-        logging.getLogger("instagrapi").error(SECRET)
-        raise RuntimeError(SECRET)
+        print(output_marker)
+        logging.getLogger("instagrapi").error(output_marker)
+        raise RuntimeError(output_marker)
 
     client.login = reject
     report = diagnostic.diagnose(client, "synthetic-user", SECRET)
     assert report["exception"]["type"] == "RuntimeError"
     assert SECRET not in json.dumps(report)
+    assert output_marker not in json.dumps(report)
     streams = capsys.readouterr()
     assert SECRET not in streams.out + streams.err
+    assert output_marker not in streams.out + streams.err + caplog.text
 
 
 def test_interruption_still_saves_settings_and_report(diagnostic, monkeypatch, tmp_path):
