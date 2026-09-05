@@ -32,6 +32,7 @@ export IG_PUBLIC_TRANSPORT_IMPERSONATE="chrome136"
 | --- | --- |
 | [`_common.py`](_common.py) | Shared login, proxy, session, and environment helpers used by the examples. |
 | [`session_login.py`](session_login.py) | Minimal session persistence and `sessionid` login sample. |
+| [`diagnose_login.py`](diagnose_login.py) | Capture sanitized HTTP diagnostics for password login, CAA fallback, and challenges. |
 | [`public_lookup.py`](public_lookup.py) | Public profile lookup with optional `public_transport="curl"`. |
 | [`download_user_media.py`](download_user_media.py) | Login, list recent media for a username, and download photos/videos/albums. |
 | [`monitor_user_content.py`](monitor_user_content.py) | Poll a small set of users for new posts and stories using a saved session. |
@@ -42,6 +43,38 @@ export IG_PUBLIC_TRANSPORT_IMPERSONATE="chrome136"
 | [`challenge_resolvers.py`](challenge_resolvers.py) | Email/SMS challenge resolver hooks. |
 | [`next_proxy.py`](next_proxy.py) | Example proxy rotation scaffold. |
 | [`download_all_medias.py`](download_all_medias.py) | Larger download script for account media. |
+
+## Login diagnostics
+
+Run [`diagnose_login.py`](diagnose_login.py) in the same Python environment and with the same
+`instagrapi` version as the failing script. It is standalone: downloading that one file is enough;
+keep your installed library version unchanged while collecting evidence.
+
+```bash
+python examples/diagnose_login.py --settings session.json --report login-diagnostic.json --relogin
+```
+
+If you downloaded the file outside the repository, use `python diagnose_login.py` with the same options.
+Point `--settings` at the settings file your script already uses. An existing file is loaded before login;
+otherwise a new client identity is created. Settings are saved even when login fails. `--relogin` tests
+password login even with an authorized saved session, preserving its device identifiers. Without it,
+the library can validate and reuse the saved session instead.
+
+The script prompts for username/password unless `IG_USERNAME`/`IG_PASSWORD` are set. Add `--proxy`
+to enter your usual proxy privately, or keep your existing `IG_PROXY`. Add `--two-factor` to enter a
+current 2FA code. It stops at the original challenge response without automatically resolving
+email/SMS challenges or changing passwords.
+
+It calls `login()` once, disables transport retries, and applies 10-second connect / 30-second
+read timeouts. The normal library login flow can make several requests, including a CAA fallback.
+Each response is summarized immediately, before another request can overwrite `last_json`.
+
+Share **only `login-diagnostic.json`**, after reviewing it. It contains fixed endpoint labels, HTTP
+statuses, content types, response sizes, and allowlisted error categories. Unknown messages and values
+become `other`; response bodies, full URLs, cookies, credentials, IDs, and challenge tokens are omitted.
+The separate **settings file is private** and contains session credentials. Both files are written with
+owner-only permissions on systems that support them. Exit code `1` is expected when login fails; the
+report is still written. Use the next observed failure rather than repeatedly retrying to collect logs.
 
 ## Public lookup
 
