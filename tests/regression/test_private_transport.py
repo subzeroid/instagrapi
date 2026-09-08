@@ -7,9 +7,10 @@ from requests.adapters import HTTPAdapter
 from instagrapi import Client
 
 
-def test_default_private_transport_does_not_import_optional_dependencies():
-    with mock.patch.dict(sys.modules, {"curl_adapter": None, "curl_cffi": None}):
-        client = Client()
+def test_default_private_transport_does_not_import_optional_dependencies(monkeypatch):
+    monkeypatch.setitem(sys.modules, "curl_adapter", None)
+    monkeypatch.setitem(sys.modules, "curl_cffi", None)
+    client = Client()
 
     assert client.private_transport == "requests"
     assert type(client.private.get_adapter("https://i.instagram.com/")) is HTTPAdapter
@@ -20,10 +21,12 @@ def test_unknown_private_transport_is_rejected():
         Client(private_transport="unknown")
 
 
-def test_missing_curl_extra_has_actionable_error():
-    with mock.patch.dict(sys.modules, {"curl_adapter": None, "curl_cffi": None}):
-        with pytest.raises(RuntimeError, match=r"pip install instagrapi\[curl\]"):
-            Client(private_transport="curl")
+def test_missing_curl_extra_has_actionable_error(monkeypatch):
+    # Keep newly imported application modules cached for later mock targets.
+    monkeypatch.setitem(sys.modules, "curl_adapter", None)
+    monkeypatch.setitem(sys.modules, "curl_cffi", None)
+    with pytest.raises(RuntimeError, match=r"pip install instagrapi\[curl\]"):
+        Client(private_transport="curl")
 
 
 @pytest.fixture
