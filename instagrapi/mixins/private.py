@@ -135,6 +135,7 @@ class PrivateRequestMixin:
     session_retry_total = 3
     session_retry_backoff_factor = 2
     session_retry_statuses = [429, 500, 502, 503, 504]
+    private_transport = "requests"
     domain = config.API_DOMAIN
     last_response = None
     last_json = {}
@@ -143,6 +144,9 @@ class PrivateRequestMixin:
         session = requests.Session()
         self.private = session
         self.private.verify = getattr(self, "tls_verify", True)
+        self.private_transport = self._normalize_private_transport(
+            kwargs.pop("private_transport", self.private_transport)
+        )
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))
@@ -185,10 +189,30 @@ class PrivateRequestMixin:
                 raise_on_status=False,
             )
 
-    def _configure_private_session_retry(self):
-        adapter = HTTPAdapter(max_retries=self._build_private_session_retry_strategy())
+    @staticmethod
+    def _normalize_private_transport(private_transport):
+        if private_transport not in {"requests", "curl"}:
+            raise ValueError("private_transport must be 'requests' or 'curl'")
+        return private_transport
+
+    def _configure_private_session_retry(self, private_transport=None):
+        private_transport = self.private_transport if private_transport is None else private_transport
+        if private_transport == "curl":
+            if getattr(self, "_private_adapter_transport", None) == "curl":
+                return
+            from instagrapi.transports import create_curl_h2_adapter
+
+            adapter = create_curl_h2_adapter()
+        else:
+            adapter = HTTPAdapter(max_retries=self._build_private_session_retry_strategy())
+        previous = set(self.private.adapters.values())
         self.private.mount("https://", adapter)
         self.private.mount("http://", adapter)
+        self.private_transport = private_transport
+        self._private_adapter_transport = private_transport
+        for old_adapter in previous:
+            if old_adapter not in self.private.adapters.values():
+                old_adapter.close()
 
     def small_delay(self):
         """

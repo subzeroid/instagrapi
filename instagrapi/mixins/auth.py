@@ -634,6 +634,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             ),
             session_retry_statuses=self.settings.get("session_retry_statuses", self.session_retry_statuses),
             public_transport=self.settings.get("public_transport"),
+            private_transport=self.settings.get("private_transport"),
             public_transport_impersonate=self.settings.get("public_transport_impersonate"),
         )
 
@@ -967,6 +968,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "session_retry_backoff_factor": self.session_retry_backoff_factor,
             "session_retry_statuses": self.session_retry_statuses,
             "public_transport": self.public_transport,
+            "private_transport": self.private_transport,
             "public_transport_impersonate": self.public_transport_impersonate,
             "tls_verify": self.tls_verify,
         }
@@ -1050,7 +1052,10 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         session_retry_statuses: list = None,
         public_transport: Optional[Literal["requests", "curl"]] = None,
         public_transport_impersonate: str = None,
+        private_transport: Optional[Literal["requests", "curl"]] = None,
     ) -> bool:
+        if private_transport is not None:
+            private_transport = self._normalize_private_transport(private_transport)
         if request_timeout is not None:
             self.request_timeout = request_timeout
         if public_request_retries_count is not None:
@@ -1074,7 +1079,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.public.headers["User-Agent"] = self.public_user_agent
 
         self._configure_public_session_retry()
-        self._configure_private_session_retry()
+        self._configure_private_session_retry(private_transport=private_transport)
 
         if self.settings is not None:
             self.settings.update(
@@ -1086,6 +1091,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                     "session_retry_backoff_factor": self.session_retry_backoff_factor,
                     "session_retry_statuses": self.session_retry_statuses,
                     "public_transport": self.public_transport,
+                    "private_transport": self.private_transport,
                     "public_transport_impersonate": self.public_transport_impersonate,
                 }
             )

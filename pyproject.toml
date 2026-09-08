@@ -69,6 +69,7 @@ Guides = "https://instagrapi.com/guides/"
 [project.optional-dependencies]
 curl = [
     "curl-adapter>=1.2.1",
+    "curl_cffi>=0.15.0",
 ]
 video = [
     # MoviePy 2.2.1 still declares pillow<12, while instagrapi requires Pillow 12.2.0
@@ -82,9 +83,11 @@ video = [
 ]
 test = [
     "bandit==1.9.4",
+    "cryptography>=46,<47",
     "decorator>=4.0.2,<6.0",
     "imageio>=2.5,<3.0",
     "imageio-ffmpeg>=0.2.0",
+    "h2>=4.3,<5",
     "mike==2.2.0",
     # mike implicitly imports pkg_resources from setuptools — see
     # https://github.com/jimporter/mike/issues/148
