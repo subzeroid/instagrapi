@@ -30,19 +30,21 @@ Support **Python 3.10+**
 pip install instagrapi
 ```
 
-Optional public web TLS impersonation support is available as an extra:
+Optional public web TLS impersonation and private HTTP/2 transports are available as an extra:
 
 ```bash
 pip install "instagrapi[curl]"
 ```
 
-Use it only for public web endpoints that are sensitive to browser TLS fingerprints:
+For public web endpoints that are sensitive to browser TLS fingerprints:
 
 ```python
 cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 ```
 
 See the [public transport guide](docs/usage-guide/public-transport.md) for live comparison results and caveats.
+
+For private mobile API requests, select `Client(private_transport="curl")` separately. See the [private HTTP/2 transport guide](docs/usage-guide/interactions.md#private-http2-transport) for saved-session setup, requirements and limitations.
 
 TLS certificate verification is enabled by default. For a trusted debugging MITM proxy, prefer `Client(tls_verify="/path/to/proxy-ca.pem")`; use `Client(tls_verify=False)` only for temporary local debugging because it allows session interception.
 
