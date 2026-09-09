@@ -91,6 +91,7 @@ class ReelsMixin:
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
         next_max_id = ""
+        seen_cursors = {next_max_id}
         while True:
             if len(total_items) >= float(amount):
                 return total_items[:amount]
@@ -113,3 +114,6 @@ class ReelsMixin:
                 return total_items
 
             next_max_id = result.get("paging_info", {}).get("max_id", "")
+            if not next_max_id or next_max_id in seen_cursors:
+                return total_items
+            seen_cursors.add(next_max_id)
