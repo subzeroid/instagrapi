@@ -1296,8 +1296,8 @@ transport-level retry behavior.</p>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">"chrome136"</span><span class="p">)</span>
 </code></pre></div>
-<p>Private mobile API requests still use the regular mobile session. The curl transport only changes the public web
-session.</p>
+<p><code>public_transport</code> configures the public web session. Private mobile API requests use <code>requests</code> by default and can
+separately opt into <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> with <code>private_transport="curl"</code>.</p>
 <h2 id="live-comparison">Live Comparison</h2>
 <p>This is a point-in-time live comparison from May 15, 2026. Instagram public web behavior changes frequently, so treat
 these numbers as a practical signal, not a guarantee.</p>

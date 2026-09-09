@@ -505,6 +505,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#private-http2-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private HTTP/2 transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#private-mobile-headers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1366,6 +1377,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#private-http2-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private HTTP/2 transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#private-mobile-headers" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1509,6 +1531,10 @@
 <td>Public web transport: <code>requests</code> by default, or <code>curl</code> when <code>instagrapi[curl]</code> is installed</td>
 </tr>
 <tr>
+<td>private_transport</td>
+<td>Private mobile API transport: <code>requests</code> by default, or <code>curl</code> for HTTP/2 with h2-only ALPN</td>
+</tr>
+<tr>
 <td>public_transport_impersonate</td>
 <td>Browser fingerprint used by the optional curl public transport</td>
 </tr>
@@ -1596,6 +1622,7 @@
     <span class="s2">"session_retry_backoff_factor"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
     <span class="s2">"session_retry_statuses"</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
     <span class="s2">"public_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
+    <span class="s2">"private_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
     <span class="s2">"public_transport_impersonate"</span><span class="p">:</span> <span class="s2">"chrome136"</span><span class="p">,</span>
     <span class="s2">"tls_verify"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">}</span>
@@ -1760,8 +1787,19 @@
 <p>Then opt in explicitly:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">"chrome136"</span><span class="p">)</span>
 </code></pre></div>
-<p>The default remains <code>public_transport="requests"</code>. Private mobile API requests still use the regular mobile session.
+<p>The default remains <code>public_transport="requests"</code>. Configure private mobile API requests separately with <code>private_transport</code>.
 See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
+<h3 id="private-http2-transport">Private HTTP/2 transport</h3>
+<p>Install <code>instagrapi[curl]</code> and use <code>Client(private_transport="curl")</code> to send private mobile API requests over HTTP/2 with an ALPN offer containing only <code>h2</code>. This option also applies to the existing CAA login flow. It preserves the mobile request headers and the account's device settings.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">saved_settings</span><span class="p">,</span> <span class="n">proxy</span><span class="o">=</span><span class="n">proxy_url</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_retry_config</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"settings.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>The transport selection is saved in settings. Restoring settings also restores their saved transport, taking precedence over the constructor option; call <code>cl.set_retry_config(private_transport="curl")</code> afterwards to switch it. Public and GraphQL transports have their own configuration. The default private transport remains <code>requests</code>; loading older settings without a transport value preserves an explicitly selected transport.</p>
+<p>The curl private transport requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. With older libcurl versions, requesting HTTP/2 can still offer both <code>h2</code> and <code>http/1.1</code> during TLS negotiation. See the <a href="https://curl.se/libcurl/c/CURLOPT_HTTP_VERSION.html">libcurl HTTP version documentation</a>.</p>
+<p>This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with <code>stream=True</code>. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a <code>(connect, read)</code> tuple of numbers supplies a connection budget and a total budget of their sum. Use <code>timeout=None</code> for no timeout; tuples containing <code>None</code> and <code>urllib3.util.Timeout</code> objects are rejected before sending a request.</p>
+<p>Private curl requests are sent once at the adapter level: <code>session_retry_total</code>, <code>session_retry_backoff_factor</code> and <code>session_retry_statuses</code> do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. Login routing and challenge handling follow the existing library flow; enabling the transport does not remove account, proxy or verification restrictions.</p>
 <h3 id="private-mobile-headers">Private mobile headers</h3>
 <p><code>base_headers</code> follows the current supported Android app profile for normal private API requests, including static transport/network hints such as <code>X-FB-HTTP-Engine</code>, <code>X-Tigon-Is-Retry</code>, and <code>X-Zero-*</code>.</p>
 <p>Device-bound or attestation-style headers such as <code>x-meta-zca</code>, <code>x-meta-usdid</code>, and <code>x-ig-attest-params</code> are not generated by default. These values are tied to Android / Google Play / device signing context, so adding fake static values is more likely to hurt trust than help.</p>
