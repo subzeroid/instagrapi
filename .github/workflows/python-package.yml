@@ -109,6 +109,24 @@ jobs:
             tests/regression/test_upload.py::UploadRegressionTestCase \
             tests/regression/test_retry.py::RetryRegressionTestCase
 
+  test-curl-transport:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.10", "3.14" ]
+        curl-cffi: [ "curl_cffi==0.15.0", "curl_cffi" ]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install optional transport and wire test dependencies
+        run: python -m pip install ".[curl]" "${{ matrix.curl-cffi }}" pytest "h2>=4.3,<5" "cryptography>=46,<47"
+      - name: Verify dependencies and run real TLS/HTTP2 tests
+        run: |
+          python -c "import curl_cffi, h2, cryptography"
+          pytest -q tests/regression/test_private_transport.py tests/regression/test_private_transport_wire.py
+
   build-docs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
