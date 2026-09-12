@@ -4,9 +4,11 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 ## Unreleased
 
-### Fixed
-
 - Reels readers now honor last_media_pk when the server returns media IDs as strings, stopping before the matching media.
+
+## 3.0.1 — 2026-09-13
+
+- Return configured photos, videos, albums, Reels, IGTV and Stories without a follow-up `qe/expose/` request, preventing an exposure endpoint error from hiding a successful upload (#2790).
 
 ## 3.0.0 — 2026-09-13
 

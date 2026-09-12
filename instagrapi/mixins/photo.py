@@ -338,7 +338,6 @@ class UploadPhotoMixin:
                 extra_data=extra_data,
             )
             if configured:
-                self.expose()
                 media = self._extract_configured_media_or_recent(
                     configured,
                     PhotoConfigureError,
@@ -633,7 +632,6 @@ class UploadPhotoMixin:
                 extra_data=extra_data,
             )
             if configured:
-                self.expose()
                 return self._extract_configured_story_or_recent(
                     configured,
                     PhotoConfigureStoryError,
