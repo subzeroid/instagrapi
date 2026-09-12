@@ -807,6 +807,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                 ) from exc
             else:
                 logged = self._login_with_bloks_two_factor(verification_code, login_json, exc)
+        except UnknownError as exc:
+            # Newer Instagram login responses may classify an obsolete
+            # legacy client as ``needs_upgrade`` instead of ``bad_password``.
+            # Route only that specific login error through the existing CAA
+            # flow; unrelated UnknownError responses must keep their original
+            # behavior.
+            error_type = str(getattr(exc, "error_type", "") or "").strip().lower()
+            if error_type != "needs_upgrade":
+                raise
+            logged = self._try_caa_login(exc, verification_code=verification_code)
+            if not logged:
+                raise
         except TwoFactorRequired as e:
             if not verification_code.strip():
                 raise TwoFactorRequired(f"{e} (you did not provide verification_code for login method)")
