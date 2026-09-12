@@ -91,6 +91,7 @@ class ReelsMixin:
         last_media_pk = last_media_pk and int(last_media_pk)
         total_items = []
         next_max_id = ""
+        seen_cursors = {next_max_id}
         while True:
             if len(total_items) >= float(amount):
                 return total_items[:amount]
@@ -104,12 +105,21 @@ class ReelsMixin:
                 self.logger.exception(e)
                 return total_items
 
-            for item in result["items"]:
-                if last_media_pk and str(last_media_pk) == str(item["media"]["pk"]):
+            items = result.get("items") or result.get("items_with_ads") or []
+            for item in items:
+                media = item.get("media")
+                if not media:
+                    continue
+                if last_media_pk and str(last_media_pk) == str(media["pk"]):
                     return total_items
-                total_items.append(extract_media_v1(item.get("media")))
+                total_items.append(extract_media_v1(media))
+                if len(total_items) >= float(amount):
+                    return total_items[:amount]
 
             if not result.get("paging_info", {}).get("more_available"):
                 return total_items
 
             next_max_id = result.get("paging_info", {}).get("max_id", "")
+            if not next_max_id or next_max_id in seen_cursors:
+                return total_items
+            seen_cursors.add(next_max_id)

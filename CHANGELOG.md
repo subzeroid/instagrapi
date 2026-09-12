@@ -2,8 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.0.2 — 2026-09-13
 
+- Reels feed readers now accept media from current `items_with_ads` responses when legacy `items` is empty or absent, avoiding empty results and unnecessary pagination. Existing feed ordering and cursor behavior are preserved.
+- Reels readers now stop as soon as the requested amount is collected, including on the final page or before a later stop marker.
+- Reels pagination now stops when the next cursor is missing or already visited, preserving collected media without repeating the same requests.
 - Reels readers now honor last_media_pk when the server returns media IDs as strings, stopping before the matching media.
 
 ## 3.0.1 — 2026-09-13
