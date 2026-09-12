@@ -1,6 +1,6 @@
 # CAA login migration
 
-The upcoming major version changes the default login flow and private transport. These changes are currently unreleased.
+Version 3.0.0 changes the default login flow and private transport. This guide explains how to migrate existing applications and saved settings.
 
 ## Default usage
 
