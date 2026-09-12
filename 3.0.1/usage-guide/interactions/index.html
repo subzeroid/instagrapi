@@ -1,0 +1,1948 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/3.0.1/usage-guide/interactions/">
+      
+      
+        <link rel="prev" href="../fundamentals/">
+      
+      
+        <link rel="next" href="../login-migration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Interactions - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#interactions" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Interactions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interacting-with-instagram-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interacting with Instagram Account
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interacting with Instagram Account">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-device-proxy-and-other-account-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage device, proxy and other account settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-http2-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private HTTP/2 transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-mobile-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private mobile headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-verification-and-debugging-proxies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS verification and debugging proxies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's Next?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../login-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../realtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Realtime MQTT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pydroid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydroid and ffmpeg
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../public-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public Transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../termux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Termux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#interacting-with-instagram-account" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interacting with Instagram Account
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interacting with Instagram Account">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manage-device-proxy-and-other-account-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manage device, proxy and other account settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-http2-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private HTTP/2 transport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-mobile-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private mobile headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-verification-and-debugging-proxies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS verification and debugging proxies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#whats-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What's Next?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="interactions">Interactions</h1>
+<p><code>instagrapi</code> provides various types of <code>Interactions</code> that can be used to control how the program will interact with the <code>Instagram</code>:</p>
+<ul>
+<li><a href="../media/"><code>Media</code></a> - Media (Photo, Video, Album, IGTV, Reels or Story)</li>
+<li><a href="../types/">Types</a> - Field reference for public <code>instagrapi.types</code> models</li>
+<li><a href="../media/"><code>Resource</code></a> - Part of Media (for albums)</li>
+<li><a href="../media/"><code>MediaOembed</code></a> - Short version of Media</li>
+<li><a href="../account/"><code>Account</code></a> - Full private info for your account (e.g. email, phone_number)</li>
+<li><a href="../totp/"><code>TOTP</code></a> - 2FA TOTP helpers (generate seed, enable/disable TOTP, generate code as Google Authenticator)</li>
+<li><a href="../user/"><code>User</code></a> - Full public user data</li>
+<li><a href="../user/"><code>UserShort</code></a> - Short public user data (used in Usertag, Comment, Media, Direct)</li>
+<li><a href="../user/"><code>Usertag</code></a> - Tag user in Media (coordinates + UserShort)</li>
+<li><a href="../location/"><code>Location</code></a> - GEO location (GEO coordinates, name, address)</li>
+<li><a href="../hashtag/"><code>Hashtag</code></a> - Hashtag object (id, name, picture)</li>
+<li><a href="../collection/"><code>Collection</code></a> - Collection of medias (name, picture and list of medias)</li>
+<li><a href="../comment/"><code>Comment</code></a> - Comments to Media</li>
+<li><a href="../highlight/"><code>Highlight</code></a> - Highlights</li>
+<li><a href="../story/"><code>Story</code></a> - Story</li>
+<li><a href="../story/"><code>StoryArchiveDay</code></a> - Story archive day shell</li>
+<li><a href="../story/"><code>StoryLink</code></a> - Story link sticker</li>
+<li><a href="../story/"><code>StoryLocation</code></a> - Tag Location in Story (as sticker)</li>
+<li><a href="../story/"><code>StoryMention</code></a> - Mention users in Story (user, coordinates and dimensions)</li>
+<li><a href="../story/"><code>StoryHashtag</code></a> - Hashtag for story (as sticker)</li>
+<li><a href="../story/"><code>StorySticker</code></a> - Tag sticker to story (for example from giphy)</li>
+<li><a href="../story/"><code>StoryBuild</code></a> - <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/story.py">StoryBuilder</a> return path to photo/video and mention co-ordinates</li>
+<li><a href="../direct/"><code>DirectThread</code></a> - Thread (topic) with messages in Direct</li>
+<li><a href="../direct/"><code>DirectMessage</code></a> - Message in Direct</li>
+<li><a href="../insight/"><code>Insight</code></a> - Insights for a post</li>
+<li><a href="../track/"><code>Track</code></a> - Music track (for Reels/Clips)</li>
+<li><a href="../notes/"><code>Note</code></a> - Direct Notes</li>
+</ul>
+<h2 id="interacting-with-instagram-account">Interacting with Instagram Account</h2>
+<p><code>instagrapi</code> provides the following <code>Interactions</code> that can be used to control and get the information about your <code>Instagram</code> account:</p>
+<ul>
+<li><code>Client(settings: dict = {}, proxy: str = "", tls_verify: Union[bool, str] = True)</code> - Init <code>instagrapi</code> client</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">"instagrapi"</span><span class="p">,</span> <span class="s2">"42"</span><span class="p">)</span>
+<span class="c1"># cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code</span>
+<span class="c1"># cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s2">"socks5://127.0.0.1:30235"</span><span class="p">)</span>
+<span class="c1"># cl.set_proxy("http://127.0.0.1:8080")</span>
+<span class="c1"># cl.set_proxy("socks5://127.0.0.1:30235")</span>
+<span class="c1"># when addressing the proxy via hostname:</span>
+<span class="c1"># cl.set_proxy("socks5h://exampleproxy.tld:30235")</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_info</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="request">Request</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>request_logger</td>
+<td>Logger in which various actions from Instagram are registered</td>
+</tr>
+<tr>
+<td>request_timeout</td>
+<td>Timeout in seconds between requests (1 second by default)</td>
+</tr>
+<tr>
+<td>public_request_retries_count</td>
+<td>Default retry count for <code>public_request()</code></td>
+</tr>
+<tr>
+<td>public_request_retries_timeout</td>
+<td>Delay between <code>public_request()</code> retries</td>
+</tr>
+<tr>
+<td>session_retry_total</td>
+<td>Adapter retry count for Requests transports; private curl does not use this setting</td>
+</tr>
+<tr>
+<td>session_retry_backoff_factor</td>
+<td>Backoff factor for Requests adapter retries; private curl does not use this setting</td>
+</tr>
+<tr>
+<td>public_transport</td>
+<td>Public web transport: <code>requests</code> by default, or <code>curl</code> when <code>instagrapi[curl]</code> is installed</td>
+</tr>
+<tr>
+<td>private_transport</td>
+<td>Private mobile API transport: <code>curl</code> by default for HTTP/2 with h2-only ALPN; <code>requests</code> for compatibility</td>
+</tr>
+<tr>
+<td>public_transport_impersonate</td>
+<td>Browser fingerprint used by the optional curl public transport</td>
+</tr>
+<tr>
+<td>tls_verify</td>
+<td>TLS certificate verification: <code>True</code> by default, <code>False</code> for temporary trusted MITM debugging, or a CA bundle path</td>
+</tr>
+</tbody>
+</table>
+<h3 id="login">Login</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>login(username: str, password: str)</td>
+<td>bool</td>
+<td>CAA login by username and password; validate and reuse a saved session when present</td>
+</tr>
+<tr>
+<td>login(username: str, password: str, verification_code: str)</td>
+<td>bool</td>
+<td>CAA login with a supported TOTP, SMS, backup or profile verification code</td>
+</tr>
+<tr>
+<td>login_legacy(username: str, password: str, relogin: bool = False, verification_code: str = "")</td>
+<td>bool</td>
+<td>Explicit compatibility entry point for the previous login flow</td>
+</tr>
+<tr>
+<td>relogin()</td>
+<td>bool</td>
+<td>Re-login with clean cookies (required cl.username and cl.password)</td>
+</tr>
+<tr>
+<td>login_by_sessionid(sessionid: str)</td>
+<td>bool</td>
+<td>Lightweight compatibility login using a session cookie value</td>
+</tr>
+<tr>
+<td>inject_sessionid_to_public()</td>
+<td>bool</td>
+<td>Inject sessionid from Private Session to Public Session</td>
+</tr>
+<tr>
+<td>logout()</td>
+<td>bool</td>
+<td>Logout</td>
+</tr>
+</tbody>
+</table>
+<p><code>login()</code> uses CAA directly and does not automatically fall back to <code>login_legacy()</code>. Both entry points accept the same arguments. See the <a href="../login-migration/">login migration guide</a> for compatibility and saved-session behavior.</p>
+<p><code>login_by_sessionid()</code> only works when Instagram accepts that <code>sessionid</code> for the private mobile API. A browser/web <code>sessionid</code> can be rejected with <code>login_required</code> or invalidated server-side; for long-lived automation, prefer <code>login()</code> once, then <code>dump_settings()</code> and reuse the saved settings.</p>
+<p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
+<p>You can pass settings to the Client (and save cookies), it has the following format:</p>
+<div class="highlight"><pre><span></span><code><span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"uuids"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"phone_id"</span><span class="p">:</span> <span class="s2">"57d64c41-a916-3fa5-bd7a-3796c1dab122"</span><span class="p">,</span>
+        <span class="s2">"uuid"</span><span class="p">:</span> <span class="s2">"8aa373c6-f316-44d7-b49e-d74563f4a8f3"</span><span class="p">,</span>
+        <span class="s2">"client_session_id"</span><span class="p">:</span> <span class="s2">"6c296d0a-3534-4dce-b5aa-a6a6ab017443"</span><span class="p">,</span>
+        <span class="s2">"advertising_id"</span><span class="p">:</span> <span class="s2">"8dc88b76-dfbc-44dc-abbc-31a6f1d54b04"</span><span class="p">,</span>
+        <span class="s2">"device_id"</span><span class="p">:</span> <span class="s2">"android-e021b636049dc0e9"</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"authorization_data"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># sessionid / ds_user_id / authorization values</span>
+    <span class="s2">"cookies"</span><span class="p">:</span> <span class="p">{},</span>  <span class="c1"># saved cookies</span>
+    <span class="s2">"last_login"</span><span class="p">:</span> <span class="mf">1596069420.0000145</span><span class="p">,</span>
+    <span class="s2">"device_settings"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"cpu"</span><span class="p">:</span> <span class="s2">"h1"</span><span class="p">,</span>
+        <span class="s2">"dpi"</span><span class="p">:</span> <span class="s2">"640dpi"</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"h1"</span><span class="p">,</span>
+        <span class="s2">"device"</span><span class="p">:</span> <span class="s2">"RS988"</span><span class="p">,</span>
+        <span class="s2">"resolution"</span><span class="p">:</span> <span class="s2">"1440x2392"</span><span class="p">,</span>
+        <span class="s2">"manufacturer"</span><span class="p">:</span> <span class="s2">"LGE/lge"</span><span class="p">,</span>
+        <span class="s2">"android_release"</span><span class="p">:</span> <span class="s2">"6.0.1"</span><span class="p">,</span>
+        <span class="s2">"android_version"</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="s2">"user_agent"</span><span class="p">:</span> <span class="s2">"Instagram 385.0.0.47.74 Android (...)"</span><span class="p">,</span>
+    <span class="s2">"country"</span><span class="p">:</span> <span class="s2">"US"</span><span class="p">,</span>
+    <span class="s2">"country_code"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">"locale"</span><span class="p">:</span> <span class="s2">"en_US"</span><span class="p">,</span>
+    <span class="s2">"timezone_offset"</span><span class="p">:</span> <span class="o">-</span><span class="mi">14400</span><span class="p">,</span>
+    <span class="s2">"request_timeout"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">"public_request_retries_count"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"public_request_retries_timeout"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"session_retry_total"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">"session_retry_backoff_factor"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">"session_retry_statuses"</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
+    <span class="s2">"public_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
+    <span class="s2">"private_transport"</span><span class="p">:</span> <span class="s2">"curl"</span><span class="p">,</span>
+    <span class="s2">"public_transport_impersonate"</span><span class="p">:</span> <span class="s2">"chrome136"</span><span class="p">,</span>
+    <span class="s2">"tls_verify"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="settings">Settings</h3>
+<p>Store and manage uuids, device configuration, user agent, authorization data (aka cookies) and other session settings</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>get_settings()</td>
+<td>dict</td>
+<td>Return settings dict</td>
+</tr>
+<tr>
+<td>set_settings(settings: dict)</td>
+<td>bool</td>
+<td>Set session settings</td>
+</tr>
+<tr>
+<td>load_settings(path: Path, override_app_version: bool = False)</td>
+<td>dict</td>
+<td>Load session settings; optionally update the app version, version code and Bloks hash</td>
+</tr>
+<tr>
+<td>dump_settings(path: Path)</td>
+<td>bool</td>
+<td>Serialize and save session settings to file</td>
+</tr>
+</tbody>
+</table>
+<p>In order for Instagram <a href="https://github.com/subzeroid/instagrapi/discussions/220">to trust you more</a>, use one stable device profile and one stable IP (or subnet) per account whenever possible:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>Next time:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="manage-device-proxy-and-other-account-settings">Manage device, proxy and other account settings</h3>
+<p>New clients use the Instagram <code>446.0.0.49.77</code> app profile. Saved settings for the previous
+<code>428.0.0.47.67</code> profile retain their version and receive the matching Bloks hash when it is missing.
+You can also select that profile explicitly with <code>cl.set_app("428.0.0.47.67")</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Return</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>set_proxy(dsn: str)</td>
+<td>dict</td>
+<td>Support socks and http/https proxy <code>scheme://host:port</code></td>
+</tr>
+<tr>
+<td>private.proxies</td>
+<td>dict</td>
+<td>Stores used proxy servers for private (mobile, v1) requests</td>
+</tr>
+<tr>
+<td>public.proxies</td>
+<td>dict</td>
+<td>Stores used proxy servers for public (web, graphql) requests</td>
+</tr>
+<tr>
+<td>set_device(device: dict)</td>
+<td>bool</td>
+<td>Change device settings (<a href="https://www.myfakeinfo.com/mobile/get-android-device-information.php">Android Device Information Generator Online</a>)</td>
+</tr>
+<tr>
+<td>set_app(app: Union[str, Dict] = None)</td>
+<td>bool</td>
+<td>Apply a supported Instagram app version profile (<code>app_version</code>, <code>version_code</code>, <code>bloks_versioning_id</code>)</td>
+</tr>
+<tr>
+<td>device</td>
+<td>dict</td>
+<td>Return device dict which we pass to Instagram</td>
+</tr>
+<tr>
+<td>set_user_agent(user_agent: str = "")</td>
+<td>bool</td>
+<td>Change User-Agent header (<a href="https://user-agents.net/applications/instagram-app">User Agents</a>)</td>
+</tr>
+<tr>
+<td>cookie_dict</td>
+<td>dict</td>
+<td>Return cookies</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>int</td>
+<td>Return your user_id (after login)</td>
+</tr>
+<tr>
+<td>base_headers</td>
+<td>dict</td>
+<td>Base headers for Instagram</td>
+</tr>
+<tr>
+<td>set_country(country: str = "US")</td>
+<td>bool</td>
+<td>Set country (advice: use the country of your proxy)</td>
+</tr>
+<tr>
+<td>set_country_code(country_code: int = 1)</td>
+<td>bool</td>
+<td>Set country calling code. Default: +1 (USA)</td>
+</tr>
+<tr>
+<td>set_locale(locale: str = "en_US")</td>
+<td>bool</td>
+<td>Set locale (advice: use the locale of your proxy)</td>
+</tr>
+<tr>
+<td>set_timezone_offset(seconds: int)</td>
+<td>bool</td>
+<td>Set timezone offset in seconds</td>
+</tr>
+<tr>
+<td>set_retry_config(...)</td>
+<td>bool</td>
+<td>Configure request timeout plus public/manual and session/transport retry settings</td>
+</tr>
+<tr>
+<td>set_tls_verify(tls_verify: bool | str)</td>
+<td>bool</td>
+<td>Update TLS certificate verification for existing public, private and GraphQL sessions</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+    <span class="n">request_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">public_request_retries_count</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">public_request_retries_timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">session_retry_total</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">session_retry_backoff_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">cl</span><span class="o">.</span><span class="n">set_retry_config</span><span class="p">(</span>
+    <span class="n">public_request_retries_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">public_request_retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">session_retry_total</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>For the Requests transport (<code>public_transport="requests"</code> by default, or explicitly <code>private_transport="requests"</code>), <code>session_retry_total</code> controls adapter-level attempts for <code>session_retry_statuses</code>. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as <code>ClientThrottledError</code> for HTTP 429. When adapter retries are enabled, <code>public_request()</code> does not start a second retry package for the same configured status; when <code>session_retry_total&lt;=0</code>, the existing <code>public_request_retries_count</code> loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.</p>
+<p>For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[curl]"</span>
+</code></pre></div>
+<p>Then opt in explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_transport_impersonate</span><span class="o">=</span><span class="s2">"chrome136"</span><span class="p">)</span>
+</code></pre></div>
+<p>The default remains <code>public_transport="requests"</code>. Configure private mobile API requests separately with <code>private_transport</code>.
+See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
+<h3 id="private-http2-transport">Private HTTP/2 transport</h3>
+<p>The standard installation includes <code>curl_cffi</code>. <code>Client()</code> sends private mobile API requests over HTTP/2 with an ALPN offer containing only <code>h2</code>, including CAA login. Mobile request headers and account device settings are preserved.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">saved_settings</span><span class="p">,</span> <span class="n">proxy</span><span class="o">=</span><span class="n">proxy_url</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"settings.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>Transport selection is saved in settings. An explicit saved choice overrides the constructor; settings without this field preserve the constructor choice, which defaults to <code>curl</code>. To migrate settings that explicitly saved <code>requests</code>, call <code>cl.set_retry_config(private_transport="curl")</code> after loading them, then save again. <code>Client(private_transport="requests")</code> selects the previous private transport. Public and GraphQL transports have their own configuration.</p>
+<p>The curl private transport requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. With older libcurl versions, requesting HTTP/2 can still offer both <code>h2</code> and <code>http/1.1</code> during TLS negotiation. See the <a href="https://curl.se/libcurl/c/CURLOPT_HTTP_VERSION.html">libcurl HTTP version documentation</a>.</p>
+<p>The TLS offer includes the hybrid <code>X25519MLKEM768</code> group alongside <code>X25519</code>, <code>P-256</code> and <code>P-384</code> to address connection failures on some proxy paths. Servers without hybrid support can still select a classical group, while ALPN offers only <code>h2</code>.</p>
+<p>This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with <code>stream=True</code>. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a <code>(connect, read)</code> tuple of numbers supplies a connection budget and a total budget of their sum. Use <code>timeout=None</code> for no timeout; tuples containing <code>None</code> and <code>urllib3.util.Timeout</code> objects are rejected before sending a request.</p>
+<p>Private curl requests are sent once at the adapter level: <code>session_retry_total</code>, <code>session_retry_backoff_factor</code> and <code>session_retry_statuses</code> do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. <code>login()</code> uses CAA; <code>login_legacy()</code> explicitly selects the previous login flow. Transport selection does not remove account, proxy or verification restrictions.</p>
+<h3 id="private-mobile-headers">Private mobile headers</h3>
+<p><code>base_headers</code> follows the current supported Android app profile for normal private API requests, including static transport/network hints such as <code>X-FB-HTTP-Engine</code>, <code>X-Tigon-Is-Retry</code>, and <code>X-Zero-*</code>.</p>
+<p>Device-bound or attestation-style headers such as <code>x-meta-zca</code>, <code>x-meta-usdid</code>, and <code>x-ig-attest-params</code> are not generated by default. These values are tied to Android / Google Play / device signing context, so adding fake static values is more likely to hurt trust than help.</p>
+<h3 id="tls-verification-and-debugging-proxies">TLS verification and debugging proxies</h3>
+<p>By default <code>instagrapi</code> verifies TLS certificates on all client sessions. Keep this enabled for production, residential proxies, and normal CONNECT-tunnel proxies.</p>
+<p>If you use a trusted local debugging proxy that intercepts TLS, prefer installing its CA certificate and pointing the client at that bundle:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="s2">"/path/to/proxy-ca.pem"</span><span class="p">)</span>
+</code></pre></div>
+<p>For short local captures you can disable verification explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">tls_verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div>
+<p>Do not disable TLS verification on untrusted networks or shared proxies because session cookies and passwords can be intercepted.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+
+<span class="c1"># Los Angles user:</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'http://proxy.address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'en_US'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># Los Angeles UTC (GMT) -7 hours == -25200 seconds</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="o">...</span>
+    <span class="s1">'user_agent'</span><span class="p">:</span> <span class="s1">'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; en_US; 301484483)'</span><span class="p">,</span>
+    <span class="s1">'country'</span><span class="p">:</span> <span class="s1">'US'</span><span class="p">,</span>
+    <span class="s1">'country_code'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">'locale'</span><span class="p">:</span> <span class="s1">'en_US'</span><span class="p">,</span>
+    <span class="s1">'timezone_offset'</span><span class="p">:</span> <span class="o">-</span><span class="mi">25200</span>
+<span class="p">}</span>
+
+<span class="c1"># Moscow user:</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'socks5://address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'ru_RU'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_country_code</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># +7</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>  <span class="c1"># Moscow UTC+3</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="o">...</span>
+    <span class="s1">'user_agent'</span><span class="p">:</span> <span class="s1">'Instagram 194.0.0.36.172 Android (26/8.0.0; 480dpi; 1080x1920; Xiaomi; MI 5s; capricorn; qcom; ru_RU; 301484483)'</span><span class="p">,</span>
+    <span class="s1">'country'</span><span class="p">:</span> <span class="s1">'RU'</span><span class="p">,</span>
+    <span class="s1">'country_code'</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="s1">'locale'</span><span class="p">:</span> <span class="s1">'ru_RU'</span><span class="p">,</span>
+    <span class="s1">'timezone_offset'</span><span class="p">:</span> <span class="mi">10800</span>
+<span class="p">}</span>
+</code></pre></div>
+<h2 id="whats-next">What's Next?</h2>
+<ul>
+<li><a href="../../getting-started/">Getting Started</a></li>
+<li><a href="../fundamentals/">Usage Guide</a></li>
+<li><a href="../best-practices/">Best Practices</a></li>
+<li><a href="../handle_exception/">Handle Exceptions</a></li>
+<li><a href="../challenge_resolver/">Challenge Resolver</a></li>
+<li><a href="../../exceptions/">Exceptions</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
