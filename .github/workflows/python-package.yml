@@ -107,6 +107,7 @@ jobs:
             tests/regression/test_story_configure.py::StoryConfigureRegressionTestCase \
             tests/regression/test_video_metadata.py::VideoMetadataRegressionTestCase \
             tests/regression/test_upload.py::UploadRegressionTestCase \
+            tests/regression/test_upload_without_expose.py \
             tests/regression/test_retry.py::RetryRegressionTestCase
 
   test-curl-transport:
