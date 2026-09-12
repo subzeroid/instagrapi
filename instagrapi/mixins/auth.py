@@ -718,8 +718,96 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         relogin: bool = False,
         verification_code: str = "",
     ) -> bool:
+        """Log in using the current Android CAA flow.
+
+        Parameters
+        ----------
+        username: str
+            Instagram Username. Uses stored credentials when omitted.
+        password: str
+            Instagram Password. Uses stored credentials when omitted.
+        relogin: bool
+            Clear the current session before logging in, default False.
+        verification_code: str
+            Two-factor or profile verification code.
+
+        Returns
+        -------
+        bool
+            True after successful login or validation of an existing session.
+
+        Notes
+        -----
+        Existing sessions are validated before reuse. Rejected sessions are
+        cleared and refreshed through CAA. CAA errors propagate directly;
+        use ``login_legacy`` to select the legacy accounts login flow.
         """
-        Login
+        if username and password:
+            self.username = username
+            self.password = password
+        if self.username is None or self.password is None:
+            raise BadCredentials("Both username and password must be provided.")
+        if isinstance(self.username, str):
+            self.username = self.username.strip()
+
+        if relogin:
+            self._clear_session_state(
+                clear_authorization_data=True,
+                clear_authorization_header=True,
+                clear_private_cookies=True,
+                clear_public_cookies=True,
+            )
+            if self.relogin_attempt > 1:
+                raise ReloginAttemptExceeded()
+            self.relogin_attempt += 1
+        if self.user_id and not relogin:
+            try:
+                self.account_info()
+            except LoginRequired:
+                return self.login(relogin=True, verification_code=verification_code)
+            return True
+
+        if not self.bloks_versioning_id:
+            raise ClientError(
+                "CAA login requires bloks_versioning_id for the saved app profile. "
+                "Load settings with override_app_version=True to use the supported app profile, "
+                "or provide the matching Bloks hash."
+            )
+        outcome = self.bloks_caa_login(verification_code=verification_code)
+        logged = bool(outcome.get("logged_in"))
+        if not logged:
+            context = self._extract_two_step_verification_context(outcome)
+            if context:
+                exc = TwoFactorRequired(
+                    "Instagram returned a Bloks two-factor context from the CAA login flow; "
+                    "provide verification_code for login",
+                    response=self.last_response,
+                    **self._exception_context(outcome),
+                )
+                if not verification_code.strip():
+                    raise exc
+                logged = self._login_with_bloks_two_factor(verification_code, outcome, exc)
+            if not logged:
+                raise ClientError(
+                    str(outcome.get("reason") or "CAA login did not return a session"),
+                    response=self.last_response,
+                    **self._exception_context(outcome),
+                )
+
+        self.login_flow()
+        self.last_login = time.time()
+        self.relogin_attempt = 0
+        return True
+
+    def login_legacy(
+        self,
+        username: Union[str, None] = None,
+        password: Union[str, None] = None,
+        relogin: bool = False,
+        verification_code: str = "",
+    ) -> bool:
+        """
+        Login using the legacy accounts endpoint and its existing fallbacks.
 
         Parameters
         ----------
@@ -768,7 +856,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             try:
                 self.account_info()
             except LoginRequired:
-                return self.login(relogin=True, verification_code=verification_code)
+                return self.login_legacy(relogin=True, verification_code=verification_code)
             return True
         try:
             self.pre_login_flow()

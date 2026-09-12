@@ -1,4 +1,4 @@
-"""Optional transports for the requests sessions used by Client."""
+"""Private HTTP/2 transport for the requests sessions used by Client."""
 
 import os
 import re
@@ -32,7 +32,7 @@ class _CurlH2Adapter(HTTPAdapter):
             from curl_cffi import requests as curl_requests
         except ImportError as exc:
             raise RuntimeError(
-                "curl private transport requires the optional curl extra: pip install instagrapi[curl]"
+                "curl private transport requires curl_cffi>=0.15.0; reinstall instagrapi with its dependencies"
             ) from exc
 
         version = re.search(r"libcurl/(\d+)\.(\d+)\.(\d+)", curl_cffi.__curl_version__)
