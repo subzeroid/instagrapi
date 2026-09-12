@@ -1,22 +1,25 @@
 from instagrapi import config
 from tests.helpers import *
 
+EXPECTED_DEFAULT_VERSION_CODE = "385211303"
+EXPECTED_DEFAULT_BLOKS_VERSIONING_ID = "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df"
+
 
 class CurrentAppProfileRegressionTestCase(unittest.TestCase):
     def test_default_client_uses_current_android_app_profile(self):
         client = Client()
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
-        self.assertEqual(client.device_settings["version_code"], "385211303")
+        self.assertEqual(client.device_settings["version_code"], EXPECTED_DEFAULT_VERSION_CODE)
         self.assertEqual(
             client.bloks_versioning_id,
-            "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df",
+            EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
         )
         self.assertEqual(
             client.user_agent,
             (
                 "Instagram 446.0.0.49.77 Android (34/14; 480dpi; 1344x2992; "
-                "Google/google; Pixel 8 Pro; husky; husky; en_US; 385211303)"
+                f"Google/google; Pixel 8 Pro; husky; husky; en_US; {EXPECTED_DEFAULT_VERSION_CODE})"
             ),
         )
 
@@ -35,8 +38,8 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
                 "model": "Pixel 8 Pro",
                 "cpu": "husky",
                 "app_version": "446.0.0.49.77",
-                "version_code": "385211303",
-                "bloks_versioning_id": "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df",
+                "version_code": EXPECTED_DEFAULT_VERSION_CODE,
+                "bloks_versioning_id": EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
             },
         )
 
@@ -47,10 +50,10 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         client.set_app(config.DEFAULT_APP_VERSION)
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
-        self.assertEqual(client.device_settings["version_code"], "385211303")
+        self.assertEqual(client.device_settings["version_code"], EXPECTED_DEFAULT_VERSION_CODE)
         self.assertEqual(
             client.bloks_versioning_id,
-            "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df",
+            EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
         )
 
     def test_private_headers_use_current_android_transport_values(self):
@@ -66,7 +69,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         self.assertEqual(client.private.headers["Zero-HTTP-Network-Interface"], "wifi")
         self.assertEqual(
             client.private.headers["X-Bloks-Version-Id"],
-            "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df",
+            EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
         )
 
     def test_default_private_headers_omit_signed_integrity_values(self):
@@ -110,7 +113,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         client.set_app()
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
-        self.assertEqual(client.device_settings["version_code"], "385211303")
+        self.assertEqual(client.device_settings["version_code"], EXPECTED_DEFAULT_VERSION_CODE)
 
     def test_constructor_override_app_version_replaces_saved_profile_with_current_default(self):
         client = Client(
@@ -125,7 +128,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         )
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
-        self.assertEqual(client.device_settings["version_code"], "385211303")
+        self.assertEqual(client.device_settings["version_code"], EXPECTED_DEFAULT_VERSION_CODE)
 
     def test_unknown_saved_app_without_bloks_hash_uses_current_default_profile(self):
         client = Client(
@@ -138,10 +141,10 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         )
 
         self.assertEqual(client.device_settings["app_version"], config.DEFAULT_APP_VERSION)
-        self.assertEqual(client.device_settings["version_code"], "385211303")
+        self.assertEqual(client.device_settings["version_code"], EXPECTED_DEFAULT_VERSION_CODE)
         self.assertEqual(
             client.bloks_versioning_id,
-            "935a519904e9017324cdedb64a283a3c2c1a3d5b0bbc698b451f5aef72cc11df",
+            EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
         )
 
     def test_legacy_saved_app_without_bloks_hash_is_not_overridden_by_default(self):
