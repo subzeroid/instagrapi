@@ -1513,10 +1513,10 @@
 <span class="c1"># cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code</span>
 <span class="c1"># cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s2">"socks5://127.0.0.1:30235"</span><span class="p">)</span>
-<span class="c1"># cl.set_proxy("http://username:password@127.0.0.1:8080")</span>
-<span class="c1"># cl.set_proxy("socks5://username:password@127.0.0.1:30235")</span>
+<span class="c1"># cl.set_proxy("http://127.0.0.1:8080")</span>
+<span class="c1"># cl.set_proxy("socks5://127.0.0.1:30235")</span>
 <span class="c1"># when addressing the proxy via hostname:</span>
-<span class="c1"># cl.set_proxy("socks5h://username:password@exampleproxy.tld:30235")</span>
+<span class="c1"># cl.set_proxy("socks5h://exampleproxy.tld:30235")</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_info</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">))</span>
@@ -1723,7 +1723,7 @@ You can also select that profile explicitly with <code>cl.set_app("428.0.0.47.67
 <tr>
 <td>set_proxy(dsn: str)</td>
 <td>dict</td>
-<td>Support socks and http/https proxy <code>scheme://username:password@host:port</code></td>
+<td>Support socks and http/https proxy <code>scheme://host:port</code></td>
 </tr>
 <tr>
 <td>private.proxies</td>
@@ -1852,7 +1852,7 @@ See <a href="../public-transport/">Public Transport</a> for live comparison resu
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 
 <span class="c1"># Los Angles user:</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'http://los:angeles@proxy.address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'http://proxy.address:8080'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'en_US'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="o">-</span><span class="mi">7</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>  <span class="c1"># Los Angeles UTC (GMT) -7 hours == -25200 seconds</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">get_settings</span><span class="p">()</span>
@@ -1866,7 +1866,7 @@ See <a href="../public-transport/">Public Transport</a> for live comparison resu
 <span class="p">}</span>
 
 <span class="c1"># Moscow user:</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'socks5://moscow:proxy@address:8080'</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="s1">'socks5://address:8080'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_locale</span><span class="p">(</span><span class="s1">'ru_RU'</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_country_code</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># +7</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">set_timezone_offset</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>  <span class="c1"># Moscow UTC+3</span>
