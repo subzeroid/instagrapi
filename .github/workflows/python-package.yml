@@ -58,6 +58,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install \
+            "curl_cffi==0.15.0" \
             "requests==2.34.2" \
             "PySocks==1.7.1" \
             "pydantic==2.12.5" \
@@ -68,7 +69,7 @@ jobs:
           python - <<'PY'
           from instagrapi import Client
 
-          Client()
+          assert Client().private_transport == "curl"
           PY
 
   test-compat:
@@ -86,29 +87,50 @@ jobs:
         uses: ./.github/actions/install-dependencies
         with:
           test: "true"
-      - name: Run compatibility smoke tests
+      - name: Run full offline regression suite
+        env:
+          PYTHON_DOTENV_DISABLED: "1"
+          TEST_ACCOUNTS_URL: ""
+        run: pytest -q tests/regression
+
+  default-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Verify a clean standard installation
+        shell: bash
         run: |
-          pytest -sv \
-            tests/regression/test_extractors.py::ExtractorsRegressionTestCase \
-            tests/regression/test_public.py::PublicRegressionTestCase \
-            tests/regression/test_public.py::PrivateGraphQLRequestRegressionTestCase \
-            tests/regression/test_direct.py::DirectMixinRegressionTestCase \
-            tests/regression/test_challenge.py::ChallengeRegressionTestCase \
-            tests/regression/test_comments.py::CommentRepliesRegressionTestCase \
-            tests/regression/test_current_app_profile.py::CurrentAppProfileRegressionTestCase \
-            tests/regression/test_auth_story.py::AuthAndStoryRegressionTestCase \
-            tests/regression/test_attestation.py::CaaLoginRegressionTestCase \
-            tests/regression/test_download.py::DownloadRegressionTestCase \
-            tests/regression/test_notes.py::NoteMixinRegressionTestCase \
-            tests/regression/test_location.py::LocationMixinRegressionTestCase \
-            tests/regression/test_media.py::UserMediasGraphQLRegressionTestCase \
-            tests/regression/test_user.py::UserMixinRegressionTestCase \
-            tests/regression/test_timeline.py::TimelineRegressionTestCase \
-            tests/regression/test_story_configure.py::StoryConfigureRegressionTestCase \
-            tests/regression/test_video_metadata.py::VideoMetadataRegressionTestCase \
-            tests/regression/test_upload.py::UploadRegressionTestCase \
-            tests/regression/test_upload_without_expose.py \
-            tests/regression/test_retry.py::RetryRegressionTestCase
+          python - <<'PY'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          environment = Path(".default-install").resolve()
+          subprocess.run([sys.executable, "-m", "venv", str(environment)], check=True)
+          python = environment / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+          subprocess.run([str(python), "-m", "pip", "install", "."], check=True)
+          subprocess.run([str(python), "-m", "pip", "check"], check=True)
+          code = """
+          import importlib.util
+          from instagrapi import Client
+
+          assert importlib.util.find_spec("h2") is None
+          assert importlib.util.find_spec("curl_adapter") is None
+          client = Client()
+          assert client.private_transport == "curl"
+          assert callable(client.login_legacy)
+          print(type(client.private).__name__, client.private_transport)
+          """
+          subprocess.run([str(python), "-c", code], cwd=environment, check=True)
+          PY
 
   test-curl-transport:
     runs-on: ubuntu-latest
@@ -121,12 +143,12 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install optional transport and wire test dependencies
-        run: python -m pip install ".[curl]" "${{ matrix.curl-cffi }}" pytest "h2>=4.3,<5" "cryptography>=46,<47"
+      - name: Install standard package and wire test dependencies
+        run: python -m pip install . "${{ matrix.curl-cffi }}" pytest "h2>=4.3,<5" "cryptography>=46,<47"
       - name: Verify dependencies and run real TLS/HTTP2 tests
         run: |
           python -c "import curl_cffi, h2, cryptography"
-          pytest -q tests/regression/test_private_transport.py tests/regression/test_private_transport_wire.py
+          pytest -q tests/regression/test_default_transport.py tests/regression/test_private_transport.py tests/regression/test_private_transport_wire.py
 
   build-docs:
     runs-on: ubuntu-latest

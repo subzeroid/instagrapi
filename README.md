@@ -30,7 +30,9 @@ Support **Python 3.10+**
 pip install instagrapi
 ```
 
-Optional public web TLS impersonation and private HTTP/2 transports are available as an extra:
+Private mobile requests use HTTP/2 through `curl_cffi`, included in the standard installation. `Client()` needs no transport argument, and `login()` uses CAA directly. The previous login remains available as `login_legacy()`. See the [login migration guide](docs/usage-guide/login-migration.md).
+
+Optional public web TLS impersonation is available as an extra:
 
 ```bash
 pip install "instagrapi[curl]"
@@ -44,7 +46,7 @@ cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 
 See the [public transport guide](docs/usage-guide/public-transport.md) for live comparison results and caveats.
 
-For private mobile API requests, select `Client(private_transport="curl")` separately. See the [private HTTP/2 transport guide](docs/usage-guide/interactions.md#private-http2-transport) for saved-session setup, requirements and limitations.
+Private mobile API requests use curl and HTTP/2 by default. See the [private HTTP/2 transport guide](docs/usage-guide/interactions.md#private-http2-transport) for saved-session setup, requirements and limitations.
 
 TLS certificate verification is enabled by default. For a trusted debugging MITM proxy, prefer `Client(tls_verify="/path/to/proxy-ca.pem")`; use `Client(tls_verify=False)` only for temporary local debugging because it allows session interception.
 
