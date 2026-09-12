@@ -24,8 +24,8 @@ from instagrapi import Client
 cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 ```
 
-`public_transport` configures the public web session. Private mobile API requests use `requests` by default and can
-separately opt into [private HTTP/2 transport](interactions.md#private-http2-transport) with `private_transport="curl"`.
+`public_transport` configures the public web session. Private mobile API requests
+use [private HTTP/2 transport](interactions.md#private-http2-transport) by default.
 
 ## Live Comparison
 

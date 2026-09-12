@@ -37,8 +37,9 @@ def response(request, status, body, content_type="application/json"):
     return result
 
 
-def failing_login(monkeypatch, caa_body, content_type):
-    client = Client()
+def failing_legacy_login(monkeypatch, caa_body, content_type):
+    client = Client(private_transport="requests")
+    client.login = client.login_legacy
     client.private.trust_env = False
     client.public.trust_env = False
     client.caa_aac = '{"aaccs":"synthetic-context"}'
@@ -75,10 +76,10 @@ def failing_login(monkeypatch, caa_body, content_type):
         (b'{"message":"limit","status":"fail"}', "application/json", "dict", False),
     ],
 )
-def test_captures_original_and_caa_before_last_json_is_overwritten(
+def test_captures_legacy_and_caa_before_last_json_is_overwritten(
     diagnostic, monkeypatch, body, content_type, body_kind, empty
 ):
-    client, calls = failing_login(monkeypatch, body, content_type)
+    client, calls = failing_legacy_login(monkeypatch, body, content_type)
     previous_logging = logging.root.manager.disable
 
     report = diagnostic.diagnose(client, "synthetic-user", SECRET)
@@ -98,6 +99,73 @@ def test_captures_original_and_caa_before_last_json_is_overwritten(
     assert "private response" not in json.dumps(report)
     assert logging.root.manager.disable == previous_logging
     assert client.private.hooks["response"] == []
+
+
+@pytest.mark.parametrize(
+    ("error_type", "exception_type"),
+    [("bad_password", "BadPassword"), ("rate_limit_error", "RateLimitError")],
+)
+def test_default_caa_captures_one_request_and_preserves_sanitized_native_error(
+    diagnostic, monkeypatch, error_type, exception_type
+):
+    client = Client(settings={"session_retry_total": 0, "request_timeout": 0})
+    client.private.trust_env = False
+    client.public.trust_env = False
+    client.caa_aac = '{"aaccs":"synthetic-context"}'
+    client.pre_login_flow = Mock(side_effect=AssertionError("Unexpected legacy preflight"))
+    client.login_legacy = Mock(side_effect=AssertionError("Unexpected legacy login"))
+    client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:synthetic")
+    client.bloks_caa_login_prepare = Mock(return_value=True)
+    client.login_flow = Mock(side_effect=AssertionError("Unexpected success finalization"))
+    calls = []
+    previous_logging = logging.root.manager.disable
+    previous_handler = client.handle_exception
+
+    def send(request, **kwargs):
+        calls.append(request.url)
+        assert calls == [CAA], "Default login must submit credentials once through CAA"
+        assert request.method == "POST"
+        body = {
+            "message": SECRET,
+            "error_type": error_type,
+            "status": "fail",
+            "username": SECRET,
+            "challenge_context": SECRET,
+            "authorization_data": {"sessionid": SECRET},
+        }
+        result = response(request, 400, json.dumps(body).encode())
+        result.headers["Set-Cookie"] = f"sessionid={SECRET}"
+        return result
+
+    # Patch the selected adapter so this exercises Client's default transport
+    # and the real response hooks without sending a network request.
+    monkeypatch.setattr(client.private.get_adapter(CAA), "send", send)
+    monkeypatch.setattr(
+        client.public,
+        "send",
+        Mock(side_effect=AssertionError("Unexpected public request")),
+    )
+
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+
+    assert calls == [CAA]
+    assert report["outcome"] == "error"
+    assert report["exception"]["type"] == exception_type
+    assert report["exception"]["error_type"] == error_type
+    assert report["last_json"]["error_type"] == error_type
+    assert [(item["endpoint"], item["http_status"]) for item in report["responses"]] == [
+        ("caa/send_login_request", 400),
+    ]
+    assert report["responses"][0]["json"]["error_type"] == error_type
+    assert SECRET not in json.dumps(report)
+    assert logging.root.manager.disable == previous_logging
+    assert client.handle_exception is previous_handler
+    assert client.private.hooks["response"] == []
+    assert client.public.hooks["response"] == []
+    client.bloks_caa_login_prepare.assert_called_once_with(username="synthetic-user", domain="b.i.instagram.com")
+    client.pre_login_flow.assert_not_called()
+    client.login_legacy.assert_not_called()
+    client.login_flow.assert_not_called()
 
 
 def test_response_summary_never_copies_untrusted_strings(diagnostic):
@@ -140,7 +208,8 @@ def test_native_challenge_fields_remain_useful(diagnostic):
 
 @pytest.mark.parametrize("custom_handler", [False, True])
 def test_stops_before_automatic_challenge_requests_and_restores_handler(diagnostic, monkeypatch, custom_handler):
-    client = Client(settings={"session_retry_total": 0, "request_timeout": 0})
+    client = Client(private_transport="requests", settings={"session_retry_total": 0, "request_timeout": 0})
+    client.login = client.login_legacy
     client.pre_login_flow = Mock(return_value=True)
     client.password_encrypt = Mock(return_value="synthetic")
     original_handler = Mock(side_effect=RuntimeError("must not call user handler")) if custom_handler else None
@@ -170,7 +239,7 @@ def test_stops_before_automatic_challenge_requests_and_restores_handler(diagnost
 
 
 def test_main_saves_private_settings_and_sanitized_report_after_failure(diagnostic, monkeypatch, tmp_path, capsys):
-    client, _ = failing_login(monkeypatch, b"", "text/html")
+    client, _ = failing_legacy_login(monkeypatch, b"", "text/html")
     client.private.cookies.set("synthetic_private_cookie", SECRET)
     factory = Mock(return_value=client)
     monkeypatch.setattr(diagnostic, "Client", factory)

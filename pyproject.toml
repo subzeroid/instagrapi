@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "instagrapi"
-version = "2.18.20"
+version = "3.0.0"
 authors = [
     {name = "Mark Subzeroid", email = "143403577+subzeroid@users.noreply.github.com"}
 ]
@@ -51,6 +51,7 @@ keywords = [
     "instagram-note",
 ]
 dependencies = [
+    "curl_cffi>=0.15.0",
     "requests>=2.34.2,<3",
     "PySocks>=1.7.1,<2",
     "pydantic==2.12.5; sys_platform == 'android'",
@@ -69,7 +70,6 @@ Guides = "https://instagrapi.com/guides/"
 [project.optional-dependencies]
 curl = [
     "curl-adapter>=1.2.1",
-    "curl_cffi>=0.15.0",
 ]
 video = [
     # MoviePy 2.2.1 still declares pillow<12, while instagrapi requires Pillow 12.2.0
