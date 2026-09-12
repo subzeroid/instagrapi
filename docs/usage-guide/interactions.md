@@ -61,7 +61,7 @@ print(cl.user_info(cl.user_id))
 | session\_retry\_total | Transport-level retry count for `public` and `private` sessions
 | session\_retry\_backoff\_factor | Backoff factor for transport-level retries
 | public\_transport | Public web transport: `requests` by default, or `curl` when `instagrapi[curl]` is installed
-| private\_transport | Private mobile API transport: `requests` by default, or `curl` for HTTP/2 with h2-only ALPN
+| private\_transport | Private mobile API transport: `curl` by default for HTTP/2 with h2-only ALPN; `requests` for compatibility
 | public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
 | tls\_verify | TLS certificate verification: `True` by default, `False` for temporary trusted MITM debugging, or a CA bundle path
 
@@ -70,12 +70,15 @@ print(cl.user_info(cl.user_id))
 
 | Method                               | Return  | Description
 | ------------------------------------ | ------- | -------------------------------------------------
-| login(username: str, password: str)  | bool    | Login by username and password (get new cookies if it does not exist in settings)
-| login(username: str, password: str, verification\_code: str) | bool | Login by username and password with 2FA verification code (use Google Authenticator or something similar to generate TOTP code, not work with SMS)
+| login(username: str, password: str)  | bool    | CAA login by username and password; validate and reuse a saved session when present
+| login(username: str, password: str, verification\_code: str) | bool | CAA login with a supported TOTP, SMS, backup or profile verification code
+| login\_legacy(username: str, password: str, relogin: bool = False, verification\_code: str = "") | bool | Explicit compatibility entry point for the previous login flow
 | relogin()                            | bool    | Re-login with clean cookies (required cl.username and cl.password)
 | login\_by\_sessionid(sessionid: str) | bool    | Lightweight compatibility login using a session cookie value
 | inject\_sessionid\_to\_public()      | bool    | Inject sessionid from Private Session to Public Session
 | logout()                             | bool    | Logout
+
+`login()` uses CAA directly and does not automatically fall back to `login_legacy()`. Both entry points accept the same arguments. See the [login migration guide](login-migration.md) for compatibility and saved-session behavior.
 
 `login_by_sessionid()` only works when Instagram accepts that `sessionid` for the private mobile API. A browser/web `sessionid` can be rejected with `login_required` or invalidated server-side; for long-lived automation, prefer `login()` once, then `dump_settings()` and reuse the saved settings.
 
@@ -117,7 +120,7 @@ settings = {
     "session_retry_backoff_factor": 2,
     "session_retry_statuses": [429, 500, 502, 503, 504],
     "public_transport": "requests",
-    "private_transport": "requests",
+    "private_transport": "curl",
     "public_transport_impersonate": "chrome136",
     "tls_verify": True,
 }
@@ -215,16 +218,15 @@ See [Public Transport](public-transport.md) for live comparison results and cave
 
 ### Private HTTP/2 transport
 
-Install `instagrapi[curl]` and use `Client(private_transport="curl")` to send private mobile API requests over HTTP/2 with an ALPN offer containing only `h2`. This option also applies to the existing CAA login flow. It preserves the mobile request headers and the account's device settings.
+The standard installation includes `curl_cffi`. `Client()` sends private mobile API requests over HTTP/2 with an ALPN offer containing only `h2`, including CAA login. Mobile request headers and account device settings are preserved.
 
 ```python
 cl = Client(settings=saved_settings, proxy=proxy_url)
-cl.set_retry_config(private_transport="curl")
 cl.login(username, password)
 cl.dump_settings("settings.json")
 ```
 
-The transport selection is saved in settings. Restoring settings also restores their saved transport, taking precedence over the constructor option; call `cl.set_retry_config(private_transport="curl")` afterwards to switch it. Public and GraphQL transports have their own configuration. The default private transport remains `requests`; loading older settings without a transport value preserves an explicitly selected transport.
+Transport selection is saved in settings. An explicit saved choice overrides the constructor; settings without this field preserve the constructor choice, which defaults to `curl`. To migrate settings that explicitly saved `requests`, call `cl.set_retry_config(private_transport="curl")` after loading them, then save again. `Client(private_transport="requests")` selects the previous private transport. Public and GraphQL transports have their own configuration.
 
 The curl private transport requires `curl_cffi>=0.15.0` and libcurl 8.10 or newer. With older libcurl versions, requesting HTTP/2 can still offer both `h2` and `http/1.1` during TLS negotiation. See the [libcurl HTTP version documentation](https://curl.se/libcurl/c/CURLOPT_HTTP_VERSION.html).
 
@@ -232,7 +234,7 @@ The TLS offer includes the hybrid `X25519MLKEM768` group alongside `X25519`, `P-
 
 This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with `stream=True`. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a `(connect, read)` tuple of numbers supplies a connection budget and a total budget of their sum. Use `timeout=None` for no timeout; tuples containing `None` and `urllib3.util.Timeout` objects are rejected before sending a request.
 
-Private curl requests are sent once at the adapter level: `session_retry_total`, `session_retry_backoff_factor` and `session_retry_statuses` do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. Login routing and challenge handling follow the existing library flow; enabling the transport does not remove account, proxy or verification restrictions.
+Private curl requests are sent once at the adapter level: `session_retry_total`, `session_retry_backoff_factor` and `session_retry_statuses` do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. `login()` uses CAA; `login_legacy()` explicitly selects the previous login flow. Transport selection does not remove account, proxy or verification restrictions.
 
 ### Private mobile headers
 

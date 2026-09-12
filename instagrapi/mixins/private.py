@@ -135,7 +135,7 @@ class PrivateRequestMixin:
     session_retry_total = 3
     session_retry_backoff_factor = 2
     session_retry_statuses = [429, 500, 502, 503, 504]
-    private_transport = "requests"
+    private_transport = "curl"
     domain = config.API_DOMAIN
     last_response = None
     last_json = {}

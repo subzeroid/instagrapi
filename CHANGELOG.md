@@ -4,8 +4,12 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 ## Unreleased
 
+- **Breaking:** Make `login()` use CAA directly; retain the previous login flow and arguments as `login_legacy()`. Default login does not automatically fall back to legacy login.
+- Reject CAA login with a clear error before preflight when saved app settings lack the required Bloks hash; document explicit app-profile migration.
+- **Breaking:** Use `curl_cffi` and private HTTP/2 by default and install `curl_cffi` as a runtime dependency. Preserve explicit saved transport choices and the `private_transport="requests"` compatibility option.
+
 - Update the default Android app profile to Instagram `446.0.0.49.77` while retaining the previous `428.0.0.47.67` profile for saved settings and explicit selection.
-- Try the existing CAA login flow when legacy login returns `needs_upgrade`, preserving the original error if no session or supported two-factor flow is available.
+- Try the existing CAA login flow when `login_legacy()` returns `needs_upgrade`, preserving the original error if no session or supported two-factor flow is available.
 
 ## 2.18.20 — 2026-09-12
 
