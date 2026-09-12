@@ -21,8 +21,8 @@ LAB_HOST = "localhost"
 LAB_JSON = b'{"status":"lab-ok"}'
 
 
-def peek_protocols(sock):
-    """Read ALPN names from the actual ClientHello without consuming it."""
+def peek_client_hello(sock):
+    """Read ALPN and supported groups from the actual ClientHello."""
     header = sock.recv(5, socket.MSG_PEEK | socket.MSG_WAITALL)
     if len(header) != 5 or header[0] != 22:
         raise ValueError("Expected a TLS handshake")
@@ -38,12 +38,15 @@ def peek_protocols(sock):
     end = offset + 2 + int.from_bytes(hello[offset : offset + 2], "big")
     offset += 2
     protocols = []
+    groups = []
     while offset < end:
         kind = int.from_bytes(hello[offset : offset + 2], "big")
         length = int.from_bytes(hello[offset + 2 : offset + 4], "big")
         value = hello[offset + 4 : offset + 4 + length]
         offset += 4 + length
-        if kind == 16:
+        if kind == 10:
+            groups = [int.from_bytes(value[i : i + 2], "big") for i in range(2, len(value), 2)]
+        elif kind == 16:
             index = 2
             while index < len(value):
                 length = value[index]
@@ -51,7 +54,7 @@ def peek_protocols(sock):
                 index += 1 + length
     if offset != end or end != len(hello):
         raise ValueError("Malformed ClientHello")
-    return protocols
+    return {"alpn_offers": protocols, "supported_groups": groups}
 
 
 class Handler(socketserver.BaseRequestHandler):
@@ -59,7 +62,7 @@ class Handler(socketserver.BaseRequestHandler):
         raw = self.request
         raw.settimeout(5)
         try:
-            offers = peek_protocols(raw)
+            hello = peek_client_hello(raw)
             conn = self.server.tls.wrap_socket(raw, server_side=True)
         except (OSError, ValueError, ssl.SSLError):
             return
@@ -87,7 +90,7 @@ class Handler(socketserver.BaseRequestHandler):
                             record = {
                                 "connection_id": connection_id,
                                 "stream_id": event.stream_id,
-                                "alpn_offers": offers,
+                                **hello,
                                 "negotiated": conn.selected_alpn_protocol(),
                                 "headers": request["headers"],
                                 "body_base64": base64.b64encode(request["body"]).decode(),
@@ -237,6 +240,53 @@ class LoopbackServer:
         return self
 
     def close(self):
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=5)
+
+
+class LoopbackProxy:
+    """CONNECT tunnel restricted to the associated loopback server."""
+
+    def __init__(self, lab):
+        import select
+        from http.server import BaseHTTPRequestHandler
+
+        records = self.records = []
+
+        class ConnectHandler(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_CONNECT(self):
+                if self.path != f"{LAB_HOST}:{lab.port}":
+                    self.send_error(403)
+                    return
+                records.append(dict(self.headers))
+                with socket.create_connection(("127.0.0.1", lab.port), timeout=3) as upstream:
+                    self.send_response(200)
+                    self.end_headers()
+                    peers = [self.connection, upstream]
+                    while True:
+                        readable, _, _ = select.select(peers, [], [], 3)
+                        if not readable:
+                            return
+                        for source in readable:
+                            data = source.recv(65536)
+                            if not data:
+                                return
+                            target = upstream if source is self.connection else self.connection
+                            target.sendall(data)
+
+        self.server = TCPServer(("127.0.0.1", 0), ConnectHandler)
+        self.port = self.server.server_address[1]
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+
+    def __enter__(self):
+        self.thread.start()
+        return self
+
+    def __exit__(self, *args):
         self.server.shutdown()
         self.server.server_close()
         self.thread.join(timeout=5)
