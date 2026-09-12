@@ -58,8 +58,8 @@ print(cl.user_info(cl.user_id))
 | request\_timeout    | Timeout in seconds between requests (1 second by default)
 | public\_request\_retries\_count | Default retry count for `public_request()`
 | public\_request\_retries\_timeout | Delay between `public_request()` retries
-| session\_retry\_total | Transport-level retry count for `public` and `private` sessions
-| session\_retry\_backoff\_factor | Backoff factor for transport-level retries
+| session\_retry\_total | Adapter retry count for Requests transports; private curl does not use this setting
+| session\_retry\_backoff\_factor | Backoff factor for Requests adapter retries; private curl does not use this setting
 | public\_transport | Public web transport: `requests` by default, or `curl` when `instagrapi[curl]` is installed
 | private\_transport | Private mobile API transport: `curl` by default for HTTP/2 with h2-only ALPN; `requests` for compatibility
 | public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
@@ -136,7 +136,7 @@ Store and manage uuids, device configuration, user agent, authorization data (ak
 | ------------------------------ | ------- | ------------------------------------------------------------------
 | get\_settings()                | dict    | Return settings dict
 | set\_settings(settings: dict)  | bool    | Set session settings
-| load\_settings(path: Path)     | dict    | Load session settings from file
+| load\_settings(path: Path, override\_app\_version: bool = False) | dict | Load session settings; optionally update the app version, version code and Bloks hash
 | dump\_settings(path: Path)     | bool    | Serialize and save session settings to file
 
 In order for Instagram [to trust you more](https://github.com/subzeroid/instagrapi/discussions/220), use one stable device profile and one stable IP (or subnet) per account whenever possible:
@@ -199,7 +199,7 @@ cl.set_retry_config(
 )
 ```
 
-For the default Requests transport, `session_retry_total` controls adapter-level attempts for `session_retry_statuses`. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as `ClientThrottledError` for HTTP 429. When adapter retries are enabled, `public_request()` does not start a second retry package for the same configured status; when `session_retry_total<=0`, the existing `public_request_retries_count` loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.
+For the Requests transport (`public_transport="requests"` by default, or explicitly `private_transport="requests"`), `session_retry_total` controls adapter-level attempts for `session_retry_statuses`. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as `ClientThrottledError` for HTTP 429. When adapter retries are enabled, `public_request()` does not start a second retry package for the same configured status; when `session_retry_total<=0`, the existing `public_request_retries_count` loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.
 
 For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:
 
