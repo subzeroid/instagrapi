@@ -360,6 +360,9 @@ If Instagram returns a `Content-Length` header and the downloaded file is shorte
 
 ## Upload media
 
+Photo, video, album, Reel, IGTV and Story upload helpers return the configured publication without a follow-up
+`qe/expose/` request. Errors from the upload or configure request still propagate normally.
+
 Upload medias to your feed. Common arguments:
 
 * `path` - Path to source file

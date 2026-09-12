@@ -4,9 +4,11 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 ## Unreleased
 
-### Fixed
-
 - Reels pagination now stops when the next cursor is missing or already visited, preserving collected media without repeating the same requests.
+
+## 3.0.1 — 2026-09-13
+
+- Return configured photos, videos, albums, Reels, IGTV and Stories without a follow-up `qe/expose/` request, preventing an exposure endpoint error from hiding a successful upload (#2790).
 
 ## 3.0.0 — 2026-09-13
 
