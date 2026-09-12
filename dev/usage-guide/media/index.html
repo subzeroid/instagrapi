@@ -2286,6 +2286,8 @@ endpoint is gated. It does not rewrite CDN URLs manually.</p>
  <span class="n">PosixPath</span><span class="p">(</span><span class="s1">'/app/example_1787133803186894424.jpg'</span><span class="p">)]</span>
 </code></pre></div>
 <h2 id="upload-media">Upload media</h2>
+<p>Photo, video, album, Reel, IGTV and Story upload helpers return the configured publication without a follow-up
+<code>qe/expose/</code> request. Errors from the upload or configure request still propagate normally.</p>
 <p>Upload medias to your feed. Common arguments:</p>
 <ul>
 <li><code>path</code> - Path to source file</li>
