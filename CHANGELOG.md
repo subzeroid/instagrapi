@@ -4,9 +4,11 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 ## Unreleased
 
-### Fixed
-
 - Reels feed readers now accept media from current `items_with_ads` responses when legacy `items` is empty or absent, avoiding empty results and unnecessary pagination. Existing feed ordering and cursor behavior are preserved.
+
+## 3.0.1 — 2026-09-13
+
+- Return configured photos, videos, albums, Reels, IGTV and Stories without a follow-up `qe/expose/` request, preventing an exposure endpoint error from hiding a successful upload (#2790).
 
 ## 3.0.0 — 2026-09-13
 
