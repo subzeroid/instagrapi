@@ -8,6 +8,10 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 - Reels readers now honor last_media_pk when the server returns media IDs as strings, stopping before the matching media.
 
+## 2.18.20 — 2026-09-12
+
+- Advertise the hybrid `X25519MLKEM768` TLS group in the optional private curl transport to address connection failures on proxy paths that reject a classical-only ClientHello. Preserve classical groups and h2-only ALPN; this changes TLS reachability, not authentication handling.
+
 ## 2.18.19 — 2026-09-09
 
 - Add optional private HTTP/2 transport through `Client(private_transport="curl")` and the `curl` extra. TLS offers only `h2`; private requests retain mobile headers, proxy configuration, cookies and saved device settings. The default transport and login routing remain unchanged. See the [private transport guide](https://github.com/subzeroid/instagrapi/blob/master/docs/usage-guide/interactions.md#private-http2-transport).
