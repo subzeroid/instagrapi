@@ -4,9 +4,11 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 ## Unreleased
 
-### Fixed
-
 - Reels readers now stop as soon as the requested amount is collected, including on the final page or before a later stop marker.
+
+## 3.0.1 — 2026-09-13
+
+- Return configured photos, videos, albums, Reels, IGTV and Stories without a follow-up `qe/expose/` request, preventing an exposure endpoint error from hiding a successful upload (#2790).
 
 ## 3.0.0 — 2026-09-13
 

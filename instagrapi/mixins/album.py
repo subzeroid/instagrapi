@@ -264,7 +264,6 @@ class UploadAlbumMixin:
                 raise e
             else:
                 if configured:
-                    self.expose()
                     return self._extract_configured_media_or_raise(
                         configured,
                         configure_exception or AlbumConfigureError,
