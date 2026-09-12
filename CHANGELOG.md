@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+- Update the default Android app profile to Instagram `446.0.0.49.77` while retaining the previous `428.0.0.47.67` profile for saved settings and explicit selection.
+- Try the existing CAA login flow when legacy login returns `needs_upgrade`, preserving the original error if no session or supported two-factor flow is available.
+
 ## 2.18.20 — 2026-09-12
 
 - Advertise the hybrid `X25519MLKEM768` TLS group in the optional private curl transport to address connection failures on proxy paths that reject a classical-only ClientHello. Preserve classical groups and h2-only ALPN; this changes TLS reachability, not authentication handling.

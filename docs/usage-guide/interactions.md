@@ -155,6 +155,10 @@ cl.dump_settings("/tmp/dump.json")
 
 ### Manage device, proxy and other account settings
 
+New clients use the Instagram `446.0.0.49.77` app profile. Saved settings for the previous
+`428.0.0.47.67` profile retain their version and receive the matching Bloks hash when it is missing.
+You can also select that profile explicitly with `cl.set_app("428.0.0.47.67")`.
+
 | Method                                   | Return | Description
 |------------------------------------------|------|----------------------------------------------------------------------------
 | set_proxy(dsn: str)                      | dict | Support socks and http/https proxy `scheme://username:password@host:port`

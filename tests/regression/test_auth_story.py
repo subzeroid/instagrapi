@@ -1,4 +1,4 @@
-from instagrapi.exceptions import BadPassword, ClientNotFoundError, LoginRequired
+from instagrapi.exceptions import BadPassword, ClientNotFoundError, LoginRequired, UnknownError
 from tests.helpers import *
 
 
@@ -489,6 +489,58 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_caa_login = Mock(side_effect=caa_error)
 
         with self.assertRaises(BadPassword):
+            client.login(verification_code="654321")
+
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
+
+    def test_login_needs_upgrade_tries_current_caa_flow(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "Your version of Instagram is out of date.",
+            "error_type": "needs_upgrade",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(
+            side_effect=UnknownError(
+                "Your version of Instagram is out of date.",
+                error_type="needs_upgrade",
+                response=Mock(status_code=400),
+            )
+        )
+        client.bloks_caa_login = Mock(return_value={"logged_in": True})
+
+        result = client.login(verification_code="654321")
+
+        self.assertTrue(result)
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
+        client.login_flow.assert_called_once_with()
+
+    def test_login_needs_upgrade_preserves_original_error_when_caa_has_no_session(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "Your version of Instagram is out of date.",
+            "error_type": "needs_upgrade",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(
+            side_effect=UnknownError(
+                "Your version of Instagram is out of date.",
+                error_type="needs_upgrade",
+                response=Mock(status_code=400),
+            )
+        )
+        client.bloks_caa_login = Mock(return_value={"logged_in": False, "two_step_verification_context": ""})
+
+        with self.assertRaises(UnknownError):
             client.login(verification_code="654321")
 
         client.bloks_caa_login.assert_called_once_with(verification_code="654321")

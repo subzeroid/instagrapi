@@ -42,6 +42,10 @@ Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In th
 
 `Client.login(..., verification_code="123456")` still uses the legacy mobile endpoint first. If Instagram returns a `two_step_verification_context`, instagrapi automatically retries through the Bloks two-factor flow. If the legacy endpoint instead returns `BadPassword` without that context, instagrapi retries the current Android CAA login sequence, including its device registration and server-issued preflight state. A successful embedded session is applied automatically. When Instagram opens the CAA profile-code screen, instagrapi uses the supplied `verification_code` or `challenge_code_handler` and applies the terminal session response.
 
+A legacy login response with `error_type="needs_upgrade"` also uses the existing CAA fallback and forwards
+`verification_code`. Other `UnknownError` responses propagate directly. If CAA provides neither a session nor a
+supported two-factor flow, `login()` preserves the original `needs_upgrade` error.
+
 8-digit backup codes can be passed through the same `verification_code` parameter:
 
 ``` python
