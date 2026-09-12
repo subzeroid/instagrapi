@@ -105,10 +105,16 @@ class ReelsMixin:
                 self.logger.exception(e)
                 return total_items
 
-            for item in result["items"]:
-                if last_media_pk and last_media_pk == item["media"]["pk"]:
+            items = result.get("items") or result.get("items_with_ads") or []
+            for item in items:
+                media = item.get("media")
+                if not media:
+                    continue
+                if last_media_pk and last_media_pk == media["pk"]:
                     return total_items
-                total_items.append(extract_media_v1(item.get("media")))
+                total_items.append(extract_media_v1(media))
+                if len(total_items) >= float(amount):
+                    return total_items[:amount]
 
             if not result.get("paging_info", {}).get("more_available"):
                 return total_items
