@@ -1,4 +1,4 @@
-from instagrapi.exceptions import BadPassword, ClientNotFoundError, LoginRequired
+from instagrapi.exceptions import BadPassword, ClientNotFoundError, LoginRequired, UnknownError
 from tests.helpers import *
 
 
@@ -9,7 +9,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         with self.assertRaises(BadCredentials):
             client.login()
 
-    def test_login_continues_after_pre_login_throttling(self):
+    def test_login_legacy_continues_after_pre_login_throttling(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -21,14 +21,14 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.login_flow = Mock()
         client.password_encrypt = Mock(return_value="enc-password")
 
-        result = client.login()
+        result = client.login_legacy()
 
         self.assertTrue(result)
         client.pre_login_flow.assert_called_once_with()
         client.private_request.assert_called_once()
         client.login_flow.assert_called_once_with()
 
-    def test_login_continues_after_client_throttled_error(self):
+    def test_login_legacy_continues_after_client_throttled_error(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -40,7 +40,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.login_flow = Mock()
         client.password_encrypt = Mock(return_value="enc-password")
 
-        result = client.login()
+        result = client.login_legacy()
 
         self.assertTrue(result)
         client.pre_login_flow.assert_called_once_with()
@@ -78,7 +78,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.pre_login_flow.assert_not_called()
         client.private_request.assert_not_called()
 
-    def test_login_refreshes_session_rejected_during_validation(self):
+    def test_login_legacy_refreshes_session_rejected_during_validation(self):
         client = Client()
         client.authorization_data = {"ds_user_id": "123", "sessionid": "stale"}
         client.private.cookies.set("sessionid", "stale")
@@ -92,7 +92,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.private_request = Mock(return_value=True)
         client.login_flow = Mock()
 
-        result = client.login("example", "password")
+        result = client.login_legacy("example", "password")
 
         self.assertTrue(result)
         client.account_info.assert_called_once_with()
@@ -117,7 +117,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.pre_login_flow.assert_not_called()
         client.private_request.assert_not_called()
 
-    def test_login_uses_stored_username_when_called_without_args(self):
+    def test_login_legacy_uses_stored_username_when_called_without_args(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -129,13 +129,13 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.login_flow = Mock()
         client.password_encrypt = Mock(return_value="enc-password")
 
-        result = client.login()
+        result = client.login_legacy()
 
         self.assertTrue(result)
         payload = client.private_request.call_args.args[1]
         self.assertEqual(payload["username"], "example")
 
-    def test_login_strips_outer_username_whitespace(self):
+    def test_login_legacy_strips_outer_username_whitespace(self):
         client = Client()
         client.authorization_data = {}
         client.last_response = Mock(headers={"ig-set-authorization": "Bearer token"})
@@ -145,14 +145,14 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.login_flow = Mock()
         client.password_encrypt = Mock(return_value="enc-password")
 
-        result = client.login(" example ", "password")
+        result = client.login_legacy(" example ", "password")
 
         self.assertTrue(result)
         payload = client.private_request.call_args.args[1]
         self.assertEqual(payload["username"], "example")
         self.assertEqual(client.username, "example")
 
-    def test_login_two_factor_requires_verification_code(self):
+    def test_login_legacy_two_factor_requires_verification_code(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -161,11 +161,11 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.password_encrypt = Mock(return_value="enc-password")
 
         with self.assertRaises(TwoFactorRequired) as cm:
-            client.login()
+            client.login_legacy()
 
         self.assertIn("you did not provide verification_code", str(cm.exception))
 
-    def test_login_two_factor_uses_verification_code_flow(self):
+    def test_login_legacy_two_factor_uses_verification_code_flow(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -187,7 +187,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
             ]
         )
 
-        result = client.login(verification_code="123456")
+        result = client.login_legacy(verification_code="123456")
 
         self.assertTrue(result)
         self.assertEqual(client.private_request.call_count, 2)
@@ -200,7 +200,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertEqual(second_call.args[1]["username"], "example")
         client.login_flow.assert_called_once_with()
 
-    def test_login_two_factor_invalid_parameters_raises_clear_bloks_hint(self):
+    def test_login_legacy_two_factor_invalid_parameters_raises_clear_bloks_hint(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -220,12 +220,12 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
 
         with self.assertRaises(TwoFactorRequired) as cm:
-            client.login(verification_code="123456")
+            client.login_legacy(verification_code="123456")
 
         self.assertIn("Bloks-based two-factor verification flow", str(cm.exception))
         self.assertEqual(client.private_request.call_count, 2)
 
-    def test_login_two_factor_invalid_parameters_falls_back_to_bloks_when_context_available(self):
+    def test_login_legacy_two_factor_invalid_parameters_falls_back_to_bloks_when_context_available(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -257,7 +257,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
         client.bloks_apply_login_response = Mock(return_value=True)
 
-        result = client.login(verification_code="123456")
+        result = client.login_legacy(verification_code="123456")
 
         self.assertTrue(result)
         self.assertEqual(client.private_request.call_count, 2)
@@ -272,7 +272,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_apply_login_response.assert_called_once_with({"layout": {}})
         client.login_flow.assert_called_once_with()
 
-    def test_login_two_factor_backup_code_with_context_uses_bloks_without_legacy_two_factor_request(self):
+    def test_login_legacy_two_factor_backup_code_with_context_uses_bloks_without_legacy_two_factor_request(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -300,7 +300,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
         client.bloks_apply_login_response = Mock(return_value=True)
 
-        result = client.login(verification_code="1234 5678")
+        result = client.login_legacy(verification_code="1234 5678")
 
         self.assertTrue(result)
         self.assertEqual(client.private_request.call_count, 1)
@@ -316,7 +316,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
-    def test_login_two_factor_invalid_parameters_without_context_keeps_clear_error(self):
+    def test_login_legacy_two_factor_invalid_parameters_without_context_keeps_clear_error(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -337,12 +337,12 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_two_step_verification_verify_code = Mock()
 
         with self.assertRaises(TwoFactorRequired) as cm:
-            client.login(verification_code="123456")
+            client.login_legacy(verification_code="123456")
 
         self.assertIn("two_step_verification_context", str(cm.exception))
         client.bloks_two_step_verification_verify_code.assert_not_called()
 
-    def test_login_bad_password_with_bloks_context_and_code_falls_back_to_bloks(self):
+    def test_login_legacy_bad_password_with_bloks_context_and_code_falls_back_to_bloks(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -362,7 +362,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
         client.bloks_apply_login_response = Mock(return_value=True)
 
-        result = client.login(verification_code="654321")
+        result = client.login_legacy(verification_code="654321")
 
         self.assertTrue(result)
         client.bloks_two_step_verification_select_method.assert_called_once_with("context-1", selected_method="sms")
@@ -373,7 +373,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_without_context_tries_current_caa_flow(self):
+    def test_login_legacy_bad_password_without_context_tries_current_caa_flow(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -385,13 +385,13 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
         client.bloks_caa_login = Mock(return_value={"logged_in": True})
 
-        result = client.login(verification_code="654321")
+        result = client.login_legacy(verification_code="654321")
 
         self.assertTrue(result)
         client.bloks_caa_login.assert_called_once_with(verification_code="654321")
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_recovery_response_tries_current_caa_flow_without_code(self):
+    def test_login_legacy_bad_password_recovery_response_tries_current_caa_flow_without_code(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -407,13 +407,13 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.private_request = Mock(side_effect=BadPassword("Bad Password", response=Mock(status_code=400)))
         client.bloks_caa_login = Mock(return_value={"logged_in": True})
 
-        result = client.login()
+        result = client.login_legacy()
 
         self.assertTrue(result)
         client.bloks_caa_login.assert_called_once_with(verification_code="")
         client.login_flow.assert_called_once_with()
 
-    def test_login_with_eight_digit_backup_code_selects_backup_code_bloks_challenge(self):
+    def test_login_legacy_with_eight_digit_backup_code_selects_backup_code_bloks_challenge(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -434,7 +434,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_two_step_verification_verify_code = Mock(return_value={"layout": {}})
         client.bloks_apply_login_response = Mock(return_value=True)
 
-        result = client.login(verification_code="1234 5678")
+        result = client.login_legacy(verification_code="1234 5678")
 
         self.assertTrue(result)
         client.bloks_two_step_verification_select_method.assert_called_once_with(
@@ -449,7 +449,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
         client.login_flow.assert_called_once_with()
 
-    def test_login_bad_password_without_context_preserves_original_error_when_caa_has_no_session(self):
+    def test_login_legacy_bad_password_without_context_preserves_original_error_when_caa_has_no_session(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -463,11 +463,11 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         )
 
         with self.assertRaises(BadPassword):
-            client.login(verification_code="654321")
+            client.login_legacy(verification_code="654321")
 
         client.bloks_caa_login.assert_called_once_with(verification_code="654321")
 
-    def test_login_bad_password_without_context_preserves_original_error_when_caa_is_unavailable(self):
+    def test_login_legacy_bad_password_without_context_preserves_original_error_when_caa_is_unavailable(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -489,7 +489,59 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.bloks_caa_login = Mock(side_effect=caa_error)
 
         with self.assertRaises(BadPassword):
-            client.login(verification_code="654321")
+            client.login_legacy(verification_code="654321")
+
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
+
+    def test_login_legacy_needs_upgrade_tries_current_caa_flow(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "Your version of Instagram is out of date.",
+            "error_type": "needs_upgrade",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.login_flow = Mock()
+        client.private_request = Mock(
+            side_effect=UnknownError(
+                "Your version of Instagram is out of date.",
+                error_type="needs_upgrade",
+                response=Mock(status_code=400),
+            )
+        )
+        client.bloks_caa_login = Mock(return_value={"logged_in": True})
+
+        result = client.login_legacy(verification_code="654321")
+
+        self.assertTrue(result)
+        client.bloks_caa_login.assert_called_once_with(verification_code="654321")
+        client.login_flow.assert_called_once_with()
+
+    def test_login_legacy_needs_upgrade_preserves_original_error_when_caa_has_no_session(self):
+        client = Client()
+        client.username = "example"
+        client.password = "password"
+        client.authorization_data = {}
+        client.last_json = {
+            "message": "Your version of Instagram is out of date.",
+            "error_type": "needs_upgrade",
+        }
+        client.pre_login_flow = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="enc-password")
+        client.private_request = Mock(
+            side_effect=UnknownError(
+                "Your version of Instagram is out of date.",
+                error_type="needs_upgrade",
+                response=Mock(status_code=400),
+            )
+        )
+        client.bloks_caa_login = Mock(return_value={"logged_in": False, "two_step_verification_context": ""})
+
+        with self.assertRaises(UnknownError):
+            client.login_legacy(verification_code="654321")
 
         client.bloks_caa_login.assert_called_once_with(verification_code="654321")
 
@@ -647,7 +699,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         with self.assertRaises(AssertionError):
             client.login_by_sessionid("abcdefghijklmnopqrstuvwxyz123456")
 
-    def test_login_resets_relogin_attempt_after_success(self):
+    def test_login_legacy_resets_relogin_attempt_after_success(self):
         client = Client()
         client.username = "example"
         client.password = "password"
@@ -660,7 +712,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.login_flow = Mock()
         client.password_encrypt = Mock(return_value="enc-password")
 
-        result = client.login(relogin=True)
+        result = client.login_legacy(relogin=True)
 
         self.assertTrue(result)
         self.assertEqual(client.relogin_attempt, 0)

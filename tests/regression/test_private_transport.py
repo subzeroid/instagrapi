@@ -7,10 +7,10 @@ from requests.adapters import HTTPAdapter
 from instagrapi import Client
 
 
-def test_default_private_transport_does_not_import_optional_dependencies(monkeypatch):
+def test_explicit_requests_transport_does_not_import_curl(monkeypatch):
     monkeypatch.setitem(sys.modules, "curl_adapter", None)
     monkeypatch.setitem(sys.modules, "curl_cffi", None)
-    client = Client()
+    client = Client(private_transport="requests")
 
     assert client.private_transport == "requests"
     assert type(client.private.get_adapter("https://i.instagram.com/")) is HTTPAdapter
@@ -21,12 +21,13 @@ def test_unknown_private_transport_is_rejected():
         Client(private_transport="unknown")
 
 
-def test_missing_curl_extra_has_actionable_error(monkeypatch):
+@pytest.mark.parametrize("kwargs", [{}, {"private_transport": "curl"}])
+def test_missing_curl_dependency_has_actionable_error(monkeypatch, kwargs):
     # Keep newly imported application modules cached for later mock targets.
     monkeypatch.setitem(sys.modules, "curl_adapter", None)
     monkeypatch.setitem(sys.modules, "curl_cffi", None)
-    with pytest.raises(RuntimeError, match=r"pip install instagrapi\[curl\]"):
-        Client(private_transport="curl")
+    with pytest.raises(RuntimeError, match=r"requires curl_cffi>=0.15.0"):
+        Client(**kwargs)
 
 
 @pytest.fixture
@@ -91,7 +92,7 @@ def test_invalid_transport_update_does_not_replace_adapter(curl_adapter_factory)
 
 
 def test_unavailable_transport_update_keeps_working_configuration():
-    client = Client()
+    client = Client(private_transport="requests")
     adapter = client.private.get_adapter("https://i.instagram.com/")
     with mock.patch("instagrapi.transports.create_curl_h2_adapter", side_effect=RuntimeError("Unavailable")):
         with pytest.raises(RuntimeError, match="Unavailable"):
