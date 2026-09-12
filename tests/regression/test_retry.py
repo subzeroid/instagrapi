@@ -63,6 +63,7 @@ def response_with_json(status_code, payload, url):
 
 def retry_client(total=2):
     client = Client(
+        private_transport="requests",
         request_timeout=0,
         public_request_retries_timeout=0,
         session_retry_total=total,

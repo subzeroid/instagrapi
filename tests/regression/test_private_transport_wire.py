@@ -9,7 +9,7 @@ import pytest
 import requests
 from urllib3.util import Timeout
 
-curl_cffi = pytest.importorskip("curl_cffi", reason="install instagrapi[curl] for transport wire tests")
+curl_cffi = pytest.importorskip("curl_cffi", reason="curl_cffi is required for private transport wire tests")
 pytest.importorskip("h2")
 pytest.importorskip("cryptography")
 
@@ -35,7 +35,7 @@ def lab(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(lab):
-    client = Client(private_transport="curl", tls_verify=str(lab.ca_path), request_timeout=0)
+    client = Client(tls_verify=str(lab.ca_path), request_timeout=0)
     client.private.trust_env = False
     adapter = client.private.get_adapter("https://localhost/")
     adapter.client.curl_options[CurlOpt.RESOLVE] = [f"{LAB_HOST}:{lab.port}:127.0.0.1"]
