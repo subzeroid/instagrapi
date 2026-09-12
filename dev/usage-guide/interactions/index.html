@@ -14,7 +14,7 @@
         <link rel="prev" href="../fundamentals/">
       
       
-        <link rel="next" href="../totp/">
+        <link rel="next" href="../login-migration/">
       
       
         
@@ -557,6 +557,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../login-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1520,11 +1548,11 @@
 </tr>
 <tr>
 <td>session_retry_total</td>
-<td>Transport-level retry count for <code>public</code> and <code>private</code> sessions</td>
+<td>Adapter retry count for Requests transports; private curl does not use this setting</td>
 </tr>
 <tr>
 <td>session_retry_backoff_factor</td>
-<td>Backoff factor for transport-level retries</td>
+<td>Backoff factor for Requests adapter retries; private curl does not use this setting</td>
 </tr>
 <tr>
 <td>public_transport</td>
@@ -1532,7 +1560,7 @@
 </tr>
 <tr>
 <td>private_transport</td>
-<td>Private mobile API transport: <code>requests</code> by default, or <code>curl</code> for HTTP/2 with h2-only ALPN</td>
+<td>Private mobile API transport: <code>curl</code> by default for HTTP/2 with h2-only ALPN; <code>requests</code> for compatibility</td>
 </tr>
 <tr>
 <td>public_transport_impersonate</td>
@@ -1557,12 +1585,17 @@
 <tr>
 <td>login(username: str, password: str)</td>
 <td>bool</td>
-<td>Login by username and password (get new cookies if it does not exist in settings)</td>
+<td>CAA login by username and password; validate and reuse a saved session when present</td>
 </tr>
 <tr>
 <td>login(username: str, password: str, verification_code: str)</td>
 <td>bool</td>
-<td>Login by username and password with 2FA verification code (use Google Authenticator or something similar to generate TOTP code, not work with SMS)</td>
+<td>CAA login with a supported TOTP, SMS, backup or profile verification code</td>
+</tr>
+<tr>
+<td>login_legacy(username: str, password: str, relogin: bool = False, verification_code: str = "")</td>
+<td>bool</td>
+<td>Explicit compatibility entry point for the previous login flow</td>
 </tr>
 <tr>
 <td>relogin()</td>
@@ -1586,6 +1619,7 @@
 </tr>
 </tbody>
 </table>
+<p><code>login()</code> uses CAA directly and does not automatically fall back to <code>login_legacy()</code>. Both entry points accept the same arguments. See the <a href="../login-migration/">login migration guide</a> for compatibility and saved-session behavior.</p>
 <p><code>login_by_sessionid()</code> only works when Instagram accepts that <code>sessionid</code> for the private mobile API. A browser/web <code>sessionid</code> can be rejected with <code>login_required</code> or invalidated server-side; for long-lived automation, prefer <code>login()</code> once, then <code>dump_settings()</code> and reuse the saved settings.</p>
 <p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
 <p>You can pass settings to the Client (and save cookies), it has the following format:</p>
@@ -1622,7 +1656,7 @@
     <span class="s2">"session_retry_backoff_factor"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
     <span class="s2">"session_retry_statuses"</span><span class="p">:</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span>
     <span class="s2">"public_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
-    <span class="s2">"private_transport"</span><span class="p">:</span> <span class="s2">"requests"</span><span class="p">,</span>
+    <span class="s2">"private_transport"</span><span class="p">:</span> <span class="s2">"curl"</span><span class="p">,</span>
     <span class="s2">"public_transport_impersonate"</span><span class="p">:</span> <span class="s2">"chrome136"</span><span class="p">,</span>
     <span class="s2">"tls_verify"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">}</span>
@@ -1651,9 +1685,9 @@
 <td>Set session settings</td>
 </tr>
 <tr>
-<td>load_settings(path: Path)</td>
+<td>load_settings(path: Path, override_app_version: bool = False)</td>
 <td>dict</td>
-<td>Load session settings from file</td>
+<td>Load session settings; optionally update the app version, version code and Bloks hash</td>
 </tr>
 <tr>
 <td>dump_settings(path: Path)</td>
@@ -1783,7 +1817,7 @@ You can also select that profile explicitly with <code>cl.set_app("428.0.0.47.67
     <span class="n">session_retry_total</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">)</span>
 </code></pre></div>
-<p>For the default Requests transport, <code>session_retry_total</code> controls adapter-level attempts for <code>session_retry_statuses</code>. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as <code>ClientThrottledError</code> for HTTP 429. When adapter retries are enabled, <code>public_request()</code> does not start a second retry package for the same configured status; when <code>session_retry_total&lt;=0</code>, the existing <code>public_request_retries_count</code> loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.</p>
+<p>For the Requests transport (<code>public_transport="requests"</code> by default, or explicitly <code>private_transport="requests"</code>), <code>session_retry_total</code> controls adapter-level attempts for <code>session_retry_statuses</code>. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as <code>ClientThrottledError</code> for HTTP 429. When adapter retries are enabled, <code>public_request()</code> does not start a second retry package for the same configured status; when <code>session_retry_total&lt;=0</code>, the existing <code>public_request_retries_count</code> loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.</p>
 <p>For public web endpoints that are sensitive to browser TLS fingerprints, install the optional curl transport:</p>
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[curl]"</span>
 </code></pre></div>
@@ -1793,17 +1827,16 @@ You can also select that profile explicitly with <code>cl.set_app("428.0.0.47.67
 <p>The default remains <code>public_transport="requests"</code>. Configure private mobile API requests separately with <code>private_transport</code>.
 See <a href="../public-transport/">Public Transport</a> for live comparison results and caveats.</p>
 <h3 id="private-http2-transport">Private HTTP/2 transport</h3>
-<p>Install <code>instagrapi[curl]</code> and use <code>Client(private_transport="curl")</code> to send private mobile API requests over HTTP/2 with an ALPN offer containing only <code>h2</code>. This option also applies to the existing CAA login flow. It preserves the mobile request headers and the account's device settings.</p>
+<p>The standard installation includes <code>curl_cffi</code>. <code>Client()</code> sends private mobile API requests over HTTP/2 with an ALPN offer containing only <code>h2</code>, including CAA login. Mobile request headers and account device settings are preserved.</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">saved_settings</span><span class="p">,</span> <span class="n">proxy</span><span class="o">=</span><span class="n">proxy_url</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">set_retry_config</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"settings.json"</span><span class="p">)</span>
 </code></pre></div>
-<p>The transport selection is saved in settings. Restoring settings also restores their saved transport, taking precedence over the constructor option; call <code>cl.set_retry_config(private_transport="curl")</code> afterwards to switch it. Public and GraphQL transports have their own configuration. The default private transport remains <code>requests</code>; loading older settings without a transport value preserves an explicitly selected transport.</p>
+<p>Transport selection is saved in settings. An explicit saved choice overrides the constructor; settings without this field preserve the constructor choice, which defaults to <code>curl</code>. To migrate settings that explicitly saved <code>requests</code>, call <code>cl.set_retry_config(private_transport="curl")</code> after loading them, then save again. <code>Client(private_transport="requests")</code> selects the previous private transport. Public and GraphQL transports have their own configuration.</p>
 <p>The curl private transport requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. With older libcurl versions, requesting HTTP/2 can still offer both <code>h2</code> and <code>http/1.1</code> during TLS negotiation. See the <a href="https://curl.se/libcurl/c/CURLOPT_HTTP_VERSION.html">libcurl HTTP version documentation</a>.</p>
 <p>The TLS offer includes the hybrid <code>X25519MLKEM768</code> group alongside <code>X25519</code>, <code>P-256</code> and <code>P-384</code> to address connection failures on some proxy paths. Servers without hybrid support can still select a classical group, while ALPN offers only <code>h2</code>.</p>
 <p>This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with <code>stream=True</code>. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a <code>(connect, read)</code> tuple of numbers supplies a connection budget and a total budget of their sum. Use <code>timeout=None</code> for no timeout; tuples containing <code>None</code> and <code>urllib3.util.Timeout</code> objects are rejected before sending a request.</p>
-<p>Private curl requests are sent once at the adapter level: <code>session_retry_total</code>, <code>session_retry_backoff_factor</code> and <code>session_retry_statuses</code> do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. Login routing and challenge handling follow the existing library flow; enabling the transport does not remove account, proxy or verification restrictions.</p>
+<p>Private curl requests are sent once at the adapter level: <code>session_retry_total</code>, <code>session_retry_backoff_factor</code> and <code>session_retry_statuses</code> do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. <code>login()</code> uses CAA; <code>login_legacy()</code> explicitly selects the previous login flow. Transport selection does not remove account, proxy or verification restrictions.</p>
 <h3 id="private-mobile-headers">Private mobile headers</h3>
 <p><code>base_headers</code> follows the current supported Android app profile for normal private API requests, including static transport/network hints such as <code>X-FB-HTTP-Engine</code>, <code>X-Tigon-Is-Retry</code>, and <code>X-Zero-*</code>.</p>
 <p>Device-bound or attestation-style headers such as <code>x-meta-zca</code>, <code>x-meta-usdid</code>, and <code>x-ig-attest-params</code> are not generated by default. These values are tied to Android / Google Play / device signing context, so adding fake static values is more likely to hurt trust than help.</p>

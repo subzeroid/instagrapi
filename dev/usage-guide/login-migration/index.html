@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/insight/">
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/login-migration/">
       
       
-        <link rel="prev" href="../highlight/">
+        <link rel="prev" href="../interactions/">
       
       
-        <link rel="next" href="../location/">
+        <link rel="next" href="../totp/">
       
       
         
@@ -25,7 +25,7 @@
     
     
       
-        <title>Insight - instagrapi Documentation</title>
+        <title>Login Migration - instagrapi Documentation</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#insights" class="md-skip">
+        <a href="#caa-login-migration" class="md-skip">
           Skip to content
         </a>
       
@@ -110,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Insight
+              Login Migration
             
           </span>
         </div>
@@ -414,10 +414,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../login-migration/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -433,6 +460,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#default-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep-the-previous-login-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep the previous login flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reuse-saved-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reuse saved sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#older-app-profiles-without-a-bloks-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Older app profiles without a Bloks hash
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-and-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification and failures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -722,19 +835,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../insight/" class="md-nav__link">
         
   
   
@@ -750,7 +854,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -1200,6 +1303,80 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#default-usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default usage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep-the-previous-login-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keep the previous login flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reuse-saved-sessions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reuse saved sessions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#older-app-profiles-without-a-bloks-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Older app profiles without a Bloks hash
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification-and-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification and failures
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1218,59 +1395,59 @@
   
 
 
-<h1 id="insights">Insights</h1>
-<p>Get business/professional account statistics. Common arguments:</p>
-<ul>
-<li><code>post_type</code> - Media type: "ALL", "CAROUSEL_V2", "IMAGE", "SHOPPING", "VIDEO".</li>
-<li><code>time_frame</code> - Time frame for media publishing date: "ONE_WEEK", "ONE_MONTH", "THREE_MONTHS", "SIX_MONTHS", "ONE_YEAR", "TWO_YEARS".</li>
-<li><code>data_ordering</code> - Data ordering in instagram response: "REACH_COUNT", "LIKE_COUNT", "FOLLOW", "SHARE_COUNT", "BIO_LINK_CLICK", "COMMENT_COUNT", "IMPRESSION_COUNT", "PROFILE_VIEW", "VIDEO_VIEW_COUNT", "SAVE_COUNT".</li>
-</ul>
-<p>These arguments are exposed as <code>POST_TYPE</code>, <code>TIME_FRAME</code>, and <code>DATA_ORDERING</code> Literal aliases.</p>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Return</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>insights_media_feed_all(post_type: POST_TYPE = "ALL", time_frame: TIME_FRAME = "TWO_YEARS", data_ordering: DATA_ORDERING = "REACH_COUNT", count: int = 0, sleep: int = 2)</td>
-<td>List[Dict]</td>
-<td>Return feed media edges with insight stats and pagination</td>
-</tr>
-<tr>
-<td>insights_account()</td>
-<td>Dict</td>
-<td>Get account-level insights (activity, audience, content tabs)</td>
-</tr>
-<tr>
-<td>insights_media(media_pk: int)</td>
-<td>Dict</td>
-<td>Get insights for a single media object</td>
-</tr>
-</tbody>
-</table>
-<p>Example:</p>
+<h1 id="caa-login-migration">CAA login migration</h1>
+<p>Version 3.0.0 changes the default login flow and private transport. This guide explains how to migrate existing applications and saved settings.</p>
+<h2 id="default-usage">Default usage</h2>
+<p>Install the package normally; <code>curl_cffi</code> is a required dependency:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>instagrapi
+</code></pre></div>
+<p>The application code stays simple:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
-
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media_feed_all</span><span class="p">(</span><span class="s2">"VIDEO"</span><span class="p">,</span> <span class="s2">"ONE_WEEK"</span><span class="p">,</span> <span class="s2">"LIKE_COUNT"</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_account</span><span class="p">()</span>
-
-<span class="n">media_pk</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_pk_from_url</span><span class="p">(</span><span class="s2">"https://www.instagram.com/p/CP5h-I1FuPr/"</span><span class="p">)</span>
-<span class="n">cl</span><span class="o">.</span><span class="n">insights_media</span><span class="p">(</span><span class="n">media_pk</span><span class="p">)</span>
 </code></pre></div>
-<p>Notes:</p>
-<ul>
-<li>These methods require an authenticated business/professional account. Personal accounts can raise <code>UserError</code>.</li>
-<li><code>insights_media_feed_all()</code> paginates internally and sleeps between pages; reduce <code>count</code> if you only need a small sample.</li>
-<li><code>insights_media()</code> raises <code>MediaError</code> when Instagram does not return insight data for the requested media.</li>
-<li>If Instagram returns media metadata without <code>inline_insights_node</code>, <code>insights_media()</code> raises <code>MediaError</code> instead of returning partial counts with null insight metrics.</li>
-</ul>
+<p><code>login()</code> uses CAA directly. It does not try <code>accounts/login/</code> first and does not automatically fall back to that endpoint after a CAA failure. All private mobile API requests use curl with HTTP/2 by default. Public web and GraphQL transports retain their separate configuration.</p>
+<h2 id="keep-the-previous-login-flow">Keep the previous login flow</h2>
+<p>The previous method is now named <code>login_legacy()</code>. Its arguments and existing fallback behavior are preserved:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login_legacy</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">,</span> <span class="n">verification_code</span><span class="o">=</span><span class="s2">"123456"</span><span class="p">)</span>
+</code></pre></div>
+<p>Login flow and transport are independent choices. To explicitly use the previous Requests private transport as well:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"requests"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login_legacy</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+</code></pre></div>
+<p>An explicit legacy login may still invoke its existing CAA fallback. There is no automatic fallback in the opposite direction. <code>relogin()</code> uses the new default CAA flow; use <code>login_legacy(relogin=True)</code> to explicitly repeat the previous flow.</p>
+<h2 id="reuse-saved-sessions">Reuse saved sessions</h2>
+<p>Both entry points validate an existing session before using the supplied credentials. If Instagram rejects that session with <code>LoginRequired</code>, each repeats its own login flow after clearing the expired authorization state.</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>Settings with an explicit <code>private_transport</code> keep that choice, even when it differs from the constructor. Settings without that field keep the selected constructor transport, which now defaults to <code>curl</code>.</p>
+<p>To migrate settings that explicitly saved <code>requests</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_retry_config</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
+</code></pre></div>
+<p>This transport change does not replace the saved device profile, proxy, cookies or authorization data. Keep the account's existing proxy configuration when restoring its session.</p>
+<h2 id="older-app-profiles-without-a-bloks-hash">Older app profiles without a Bloks hash</h2>
+<p>CAA needs a Bloks hash matching the configured app version. Saved settings for an older unsupported version may lack this hash. If the session cannot be reused, <code>login()</code> raises <code>ClientError</code> before starting CAA requests and explains how to update the profile.</p>
+<p>Use the supported profile explicitly when migrating those settings:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">load_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">,</span> <span class="n">override_app_version</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_retry_config</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">)</span>  <span class="c1"># migrate an explicit saved requests choice</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"session.json"</span><span class="p">)</span>
+</code></pre></div>
+<p><code>override_app_version=True</code> updates the app version, version code and Bloks hash. It retains hardware settings and device identifiers. Keep using the account's existing proxy. Alternatively, provide the correct Bloks hash for the original profile or explicitly use <code>login_legacy()</code>.</p>
+<h2 id="verification-and-failures">Verification and failures</h2>
+<p>Continue to pass <code>verification_code</code> for supported two-factor challenges. The CAA profile-code flow also supports <code>challenge_code_handler</code>; see <a href="../totp/">TOTP</a>. Native CAA exceptions propagate. A response without a session or a supported verification context raises <code>ClientError</code> with the CAA failure reason. Curl does not automatically retry a failed password POST.</p>
+<h2 id="installation-requirements">Installation requirements</h2>
+<p>Private HTTP/2 requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. <code>curl_cffi</code> normally supplies libcurl in its wheels; a system <code>curl</code> executable and the Python <code>h2</code> package are not required for this transport. A compatible wheel or a supported native build is required for your platform. Android/Termux has not been verified.</p>
+<p>The optional <code>instagrapi[curl]</code> extra remains available for public web browser impersonation through <code>curl-adapter</code>. It is not required for private HTTP/2. See <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> for TLS, proxy and timeout behavior.</p>
 
 
 

@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://subzeroid.github.io/instagrapi/dev/usage-guide/totp/">
       
       
-        <link rel="prev" href="../interactions/">
+        <link rel="prev" href="../login-migration/">
       
       
         <link rel="next" href="../types/">
@@ -397,6 +397,34 @@
     
   
     Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../login-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
   
 
     
@@ -1314,11 +1342,8 @@
 <li>Save the backup codes returned by <code>totp_enable()</code> immediately. Instagram does not guarantee that you can fetch the same codes again later.</li>
 </ul>
 <h2 id="bloks-two-factor-flow">Bloks two-factor flow</h2>
-<p>Some accounts are moved by Instagram to a newer CAA/Bloks two-factor flow. In that case the legacy <code>accounts/two_factor_login/</code> endpoint can reject a valid code with <code>Invalid Parameters</code>.</p>
-<p><code>Client.login(..., verification_code="123456")</code> still uses the legacy mobile endpoint first. If Instagram returns a <code>two_step_verification_context</code>, instagrapi automatically retries through the Bloks two-factor flow. If the legacy endpoint instead returns <code>BadPassword</code> without that context, instagrapi retries the current Android CAA login sequence, including its device registration and server-issued preflight state. A successful embedded session is applied automatically. When Instagram opens the CAA profile-code screen, instagrapi uses the supplied <code>verification_code</code> or <code>challenge_code_handler</code> and applies the terminal session response.</p>
-<p>A legacy login response with <code>error_type="needs_upgrade"</code> also uses the existing CAA fallback and forwards
-<code>verification_code</code>. Other <code>UnknownError</code> responses propagate directly. If CAA provides neither a session nor a
-supported two-factor flow, <code>login()</code> preserves the original <code>needs_upgrade</code> error.</p>
+<p><code>cl.login(..., verification_code="123456")</code> uses CAA directly, including device registration and server-issued preflight state. A successful embedded session is applied automatically. The CAA profile-code flow uses the supplied <code>verification_code</code> or <code>challenge_code_handler</code>. When Instagram returns <code>two_step_verification_context</code>, the existing Bloks verification helpers handle the code; a missing code raises <code>TwoFactorRequired</code>.</p>
+<p>The previous login flow is available explicitly as <code>cl.login_legacy(...)</code>, with the same arguments and its existing CAA/Bloks fallbacks. Default <code>login()</code> never invokes that legacy flow automatically. See the <a href="../login-migration/">login migration guide</a>.</p>
 <p>8-digit backup codes can be passed through the same <code>verification_code</code> parameter:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">,</span> <span class="n">verification_code</span><span class="o">=</span><span class="s2">"12345678"</span><span class="p">)</span>
 </code></pre></div>
@@ -1351,7 +1376,7 @@ supported two-factor flow, <code>login()</code> preserves the original <code>nee
 </code></pre></div>
 <p><code>bloks_caa_login(...)</code> runs the complete current CAA sequence. For low-level inspection, <code>bloks_caa_login_send_request(...)</code> now runs <code>bloks_caa_login_prepare(...)</code> automatically when the client has no server-issued account access context; existing prepared context is reused on later calls. Its domain, waterfall ID, offline experiment group, and Bloks versioning ID overrides are forwarded to that automatic preflight. Pass <code>auto_prepare=False</code> to require pre-existing state, or call the preparation helper explicitly when you need to inspect or control the preflight separately. <code>bloks_extract_two_step_verification_context(...)</code> extracts a legacy Bloks two-factor context when the login response exposes one.</p>
 <p><code>bloks_extract_login_response(...)</code> returns decoded <code>login_response</code>, response <code>headers</code>, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns <code>{}</code> when the response is an intermediate UI state or an error. <code>bloks_apply_login_response(...)</code> can then copy the returned authorization data and cookies into the current client session.</p>
-<p>The separate account-recovery UI used by some accounts is not automated. If current CAA login does not return a session or a supported profile-code challenge, <code>login()</code> preserves the original <code>BadPassword</code>. That response can still mean a wrong password or Instagram account-risk handling, so inspect proxy/IP and device consistency before retrying repeatedly.</p>
+<p>The separate account-recovery UI used by some accounts is not automated. Native CAA exceptions propagate from <code>login()</code>. If CAA returns neither a session nor a supported verification context, <code>login()</code> raises <code>ClientError</code> with the CAA failure reason. The explicit <code>login_legacy()</code> entry point preserves its previous fallback error behavior.</p>
 
 
 
