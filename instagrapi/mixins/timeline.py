@@ -112,6 +112,8 @@ class ReelsMixin:
                 if last_media_pk and last_media_pk == media["pk"]:
                     return total_items
                 total_items.append(extract_media_v1(media))
+                if len(total_items) >= float(amount):
+                    return total_items[:amount]
 
             if not result.get("paging_info", {}).get("more_available"):
                 return total_items
