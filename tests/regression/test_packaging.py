@@ -1,4 +1,15 @@
+import re
 from pathlib import Path
+
+import instagrapi
+
+
+def test_package_version_matches_pyproject():
+    pyproject = Path("pyproject.toml").read_text()
+    match = re.search(r'(?m)^version = "([^"]+)"', pyproject)
+
+    assert match is not None
+    assert instagrapi.__version__ == match.group(1)
 
 
 def test_pydantic_dependency_allows_termux_android_wheel_version():
