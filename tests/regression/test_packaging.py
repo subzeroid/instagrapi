@@ -1,5 +1,15 @@
 from pathlib import Path
 
+import tomllib
+
+import instagrapi
+
+
+def test_package_version_matches_pyproject():
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text())
+
+    assert instagrapi.__version__ == pyproject["project"]["version"]
+
 
 def test_pydantic_dependency_allows_termux_android_wheel_version():
     pyproject = Path("pyproject.toml").read_text()
