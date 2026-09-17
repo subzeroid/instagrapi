@@ -711,6 +711,14 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         self.private.headers.update({"Authorization": self.authorization})
         return True
 
+    def _caa_result_action_markers(self, outcome: Dict) -> List[str]:
+        """Extract CAA step/action markers from the raw Bloks login payload."""
+        markers: List[str] = []
+        result = outcome.get("result")
+        if isinstance(result, dict):
+            self._bloks_collect_strings(result, markers)
+        return [marker for marker in markers if marker.startswith("CAA_") and ":" in marker]
+
     def login(
         self,
         username: Union[str, None] = None,
@@ -739,8 +747,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         Notes
         -----
         Existing sessions are validated before reuse. Rejected sessions are
-        cleared and refreshed through CAA. CAA errors propagate directly;
-        use ``login_legacy`` to select the legacy accounts login flow.
+        cleared and refreshed through CAA. CAA errors propagate directly.
+        When Instagram's CAA response directs the client back to the legacy
+        accounts flow (``CAA_LOGIN_FALLBACK:...``), this method completes that
+        step through ``login_legacy`` so the typed failure reason surfaces;
+        use ``login_legacy`` to select the legacy flow directly.
         """
         if username and password:
             self.username = username
@@ -788,10 +799,18 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                     raise exc
                 logged = self._login_with_bloks_two_factor(verification_code, outcome, exc)
             if not logged:
+                markers = self._caa_result_action_markers(outcome)
+                if any(marker.startswith("CAA_LOGIN_FALLBACK:") for marker in markers):
+                    # Instagram routed this login back to the legacy accounts
+                    # flow; that endpoint carries the typed failure reason.
+                    return self.login_legacy(verification_code=verification_code)
+                exc_context = self._exception_context(outcome)
+                if markers:
+                    exc_context["caa_actions"] = markers
                 raise ClientError(
                     str(outcome.get("reason") or "CAA login did not return a session"),
                     response=self.last_response,
-                    **self._exception_context(outcome),
+                    **exc_context,
                 )
 
         self.login_flow()
