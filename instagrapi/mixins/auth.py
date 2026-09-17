@@ -1091,8 +1091,15 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "public_transport_impersonate": self.public_transport_impersonate,
             "tls_verify": self.tls_verify,
         }
-        if self.settings.get("fbns_auth"):
-            settings["fbns_auth"] = self.settings["fbns_auth"]
+        fbns_auth = None
+        if getattr(self, "fbns", None) and getattr(self.fbns, "auth", None):
+            fbns_auth = self.fbns.auth.to_settings()
+            if getattr(self, "settings", None) is not None:
+                self.settings["fbns_auth"] = deepcopy(fbns_auth)
+        elif getattr(self, "settings", None) and self.settings.get("fbns_auth") is not None:
+            fbns_auth = deepcopy(self.settings["fbns_auth"])
+        if fbns_auth:
+            settings["fbns_auth"] = fbns_auth
         usdid_settings = self.get_usdid_settings()
         if usdid_settings:
             settings["usdid"] = usdid_settings

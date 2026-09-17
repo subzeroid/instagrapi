@@ -70,6 +70,57 @@ def test_fbns_device_auth_reads_connack_payload_and_updates_settings():
     assert client.settings["fbns_auth"]["user_id"] == 123456
 
 
+def test_get_settings_preserves_fbns_auth_from_live_object_and_settings(tmp_path):
+    client = _build_logged_in_client()
+    auth = FbnsDeviceAuth.from_client(client)
+
+    auth.read(
+        {
+            "ck": 123456,
+            "cs": "connection-secret",
+            "di": "fbns-device-id",
+            "ds": "fbns-device-secret",
+            "sr": "odn",
+            "rc": "ATN",
+        }
+    )
+    auth.save(client)
+    client.fbns = mock.Mock(auth=auth)
+
+    settings = client.get_settings()
+    assert settings["fbns_auth"]["device_id"] == "fbns-device-id"
+    assert settings["fbns_auth"]["user_id"] == 123456
+
+    session_file = tmp_path / "session.json"
+    client.dump_settings(session_file)
+    restored = _build_logged_in_client()
+    restored.load_settings(session_file)
+    assert restored.get_settings()["fbns_auth"]["device_id"] == "fbns-device-id"
+    restored_auth = FbnsDeviceAuth.from_client(restored)
+    assert restored_auth.device_id == "fbns-device-id"
+    assert restored_auth.user_id == 123456
+    assert restored_auth.password == "connection-secret"
+    assert restored_auth.device_secret == "fbns-device-secret"
+
+
+def test_get_settings_keeps_saved_fbns_auth_without_live_object():
+    client = _build_logged_in_client()
+    client.settings["fbns_auth"] = {
+        "client_id": "phone-id-12345678901",
+        "user_id": 123456,
+        "password": "connection-secret",
+        "device_id": "fbns-device-id",
+        "device_secret": "fbns-device-secret",
+        "server_region": "odn",
+        "region_hint": "ATN",
+    }
+
+    settings = client.get_settings()
+
+    assert settings["fbns_auth"]["device_id"] == "fbns-device-id"
+    assert settings["fbns_auth"]["user_id"] == 123456
+
+
 def test_fbns_device_auth_reads_length_prefixed_connack_payload():
     auth = FbnsDeviceAuth()
     payload = json.dumps({"ck": 123456, "cs": "secret"}, separators=(",", ":")).encode()
