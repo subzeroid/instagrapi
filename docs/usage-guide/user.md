@@ -96,6 +96,8 @@ Low level methods:
 | user_followers_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: Optional[FOLLOWERS_ORDER] = None) | List[UserShort] | Get user's followers through the private mobile GraphQL `FollowersList` surface |
 | user_following_v1(user_id: str, amount: int = 0)                                    | List[UserShort]             | Get user's following users information by Private Mobile API               |
 | iter_user_following_v1(user_id: str, amount: int = 0, page_size: int = 200)         | Iterator[UserShort]          | Stream following users page by page through `user_following_v1_chunk()` |
+| user_following_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: Optional[FOLLOWERS_ORDER] = None) | Tuple[List[UserShort], str] | Get user's following users through the private mobile GraphQL `FollowingList` surface and max_id cursor |
+| user_following_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: Optional[FOLLOWERS_ORDER] = None) | List[UserShort] | Get user's following users through the private mobile GraphQL `FollowingList` surface |
 | user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")                   | Tuple[List[UserShort], str] | Get pending incoming follow requests by Private Mobile API and max_id      |
 | user_following_gql(user_id: str, amount: int = 0)                                   | List[UserShort]             | Get user's following information by Public Graphql API                     |
 | search_followers_v1(user_id: str, query: str)                                       | List[UserShort]             | Search by followers by Private Mobile API                                  |
@@ -193,6 +195,14 @@ Use `user_followers_private_gql()` when you want the current mobile GraphQL foll
 ``` python
 followers = cl.user_followers_private_gql(cl.user_id, amount=50, order="date_followed_latest")
 ```
+
+`user_following_private_gql()` is the matching helper for the following list:
+
+``` python
+following = cl.user_following_private_gql(cl.user_id, amount=50)
+```
+
+When the account is authorized, `user_followers()` and `user_following()` prefer the private mobile API and automatically retry through the private mobile GraphQL follow-list surface (`FollowersList`/`FollowingList`) when the private endpoint fails or the followers list is limited. The legacy public GraphQL query is only used as the last resort, because Instagram returns an empty `edges` list for the legacy followers/following query hash.
 
 Example: We go around the list of our followers and unfollow from them:
 

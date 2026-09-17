@@ -700,11 +700,16 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             return [private_user]
 
         with mock.patch.object(client, "user_followers_v1", side_effect=private_lookup) as private_lookup_mock:
-            with mock.patch.object(client, "user_followers_gql", return_value=[public_user]) as public_lookup:
-                followers = client.user_followers("123", use_cache=False, amount=2)
+            with mock.patch.object(client, "user_followers_private_gql", return_value=[public_user]) as private_gql:
+                with mock.patch.object(
+                    client,
+                    "user_followers_gql",
+                    side_effect=AssertionError("limited private list should use private GraphQL, not legacy"),
+                ):
+                    followers = client.user_followers("123", use_cache=False, amount=2)
 
         private_lookup_mock.assert_called_once_with("123", 2)
-        public_lookup.assert_called_once_with("123", 2)
+        private_gql.assert_called_once_with("123", 2)
         self.assertEqual(list(followers), ["public"])
 
     def test_authorized_user_followers_default_amount_falls_back_when_private_list_is_limited(self):
@@ -717,11 +722,16 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             return [private_user]
 
         with mock.patch.object(client, "user_followers_v1", side_effect=private_lookup) as private_lookup_mock:
-            with mock.patch.object(client, "user_followers_gql", return_value=[public_user]) as public_lookup:
-                followers = client.user_followers("123", use_cache=False)
+            with mock.patch.object(client, "user_followers_private_gql", return_value=[public_user]) as private_gql:
+                with mock.patch.object(
+                    client,
+                    "user_followers_gql",
+                    side_effect=AssertionError("limited private list should use private GraphQL, not legacy"),
+                ):
+                    followers = client.user_followers("123", use_cache=False)
 
         private_lookup_mock.assert_called_once_with("123", 0)
-        public_lookup.assert_called_once_with("123", 0)
+        private_gql.assert_called_once_with("123", 0)
         self.assertEqual(list(followers), ["public"])
 
     def test_user_followers_with_order_uses_private_api_without_cache(self):
@@ -771,10 +781,35 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "user_followers_v1",
             side_effect=ClientError("private lookup failed"),
         ) as private_lookup:
-            with mock.patch.object(client, "user_followers_gql", return_value=[follower]) as public_lookup:
-                followers = client.user_followers("123", use_cache=False, amount=1)
+            with mock.patch.object(client, "user_followers_private_gql", return_value=[follower]) as private_gql:
+                with mock.patch.object(
+                    client,
+                    "user_followers_gql",
+                    side_effect=AssertionError("private GraphQL should answer before legacy lookup"),
+                ):
+                    followers = client.user_followers("123", use_cache=False, amount=1)
 
         private_lookup.assert_called_once_with("123", 1)
+        private_gql.assert_called_once_with("123", 1)
+        self.assertEqual(list(followers), ["456"])
+
+    def test_authorized_user_followers_uses_legacy_public_after_private_gql_fails(self):
+        client = self.build_private_client()
+        follower = UserShort(pk="456", username="follower")
+
+        with mock.patch.object(
+            client,
+            "user_followers_v1",
+            side_effect=ClientError("private lookup failed"),
+        ):
+            with mock.patch.object(
+                client,
+                "user_followers_private_gql",
+                side_effect=ClientError("private graphql lookup failed"),
+            ):
+                with mock.patch.object(client, "user_followers_gql", return_value=[follower]) as public_lookup:
+                    followers = client.user_followers("123", use_cache=False, amount=1)
+
         public_lookup.assert_called_once_with("123", 1)
         self.assertEqual(list(followers), ["456"])
 
@@ -819,10 +854,35 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "user_following_v1",
             side_effect=ClientError("private lookup failed"),
         ) as private_lookup:
-            with mock.patch.object(client, "user_following_gql", return_value=[following_user]) as public_lookup:
-                following = client.user_following("123", use_cache=False, amount=1)
+            with mock.patch.object(client, "user_following_private_gql", return_value=[following_user]) as private_gql:
+                with mock.patch.object(
+                    client,
+                    "user_following_gql",
+                    side_effect=AssertionError("private GraphQL should answer before legacy lookup"),
+                ):
+                    following = client.user_following("123", use_cache=False, amount=1)
 
         private_lookup.assert_called_once_with("123", 1)
+        private_gql.assert_called_once_with("123", 1)
+        self.assertEqual(list(following), ["456"])
+
+    def test_authorized_user_following_uses_legacy_public_after_private_gql_fails(self):
+        client = self.build_private_client()
+        following_user = UserShort(pk="456", username="following")
+
+        with mock.patch.object(
+            client,
+            "user_following_v1",
+            side_effect=ClientError("private lookup failed"),
+        ):
+            with mock.patch.object(
+                client,
+                "user_following_private_gql",
+                side_effect=ClientError("private graphql lookup failed"),
+            ):
+                with mock.patch.object(client, "user_following_gql", return_value=[following_user]) as public_lookup:
+                    following = client.user_following("123", use_cache=False, amount=1)
+
         public_lookup.assert_called_once_with("123", 1)
         self.assertEqual(list(following), ["456"])
 
