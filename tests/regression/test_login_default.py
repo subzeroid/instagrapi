@@ -42,6 +42,10 @@ class LoginDefaultRegressionTestCase(unittest.TestCase):
         outcome.update(updates)
         return outcome
 
+    def caa_outcome_with_actions(self, actions, **updates):
+        result = {"layout": {"bloks_payload": {"data": list(actions)}}}
+        return self.caa_outcome(result=result, **updates)
+
     def legacy_success(self):
         self.client.pre_login_flow = Mock(return_value=True)
         self.client.password_encrypt = Mock(return_value="encrypted")
@@ -86,6 +90,58 @@ class LoginDefaultRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(self.client.username, "example")
         self.client.bloks_caa_login.assert_called_once_with(verification_code="")
+
+    def test_login_follows_caa_fallback_instruction_through_legacy_flow(self):
+        self.client.bloks_caa_login = Mock(
+            return_value=self.caa_outcome_with_actions(
+                ["CAA_LOGIN_FALLBACK:fallback_triggered"],
+                reason="",
+            )
+        )
+        self.client.pre_login_flow = Mock(return_value=True)
+        self.client.password_encrypt = Mock(return_value="encrypted")
+        self.client.private_request = Mock(return_value=True)
+        self.client.last_response = Mock(headers={"ig-set-authorization": "Bearer fresh"})
+        self.client.parse_authorization = Mock(return_value={"ds_user_id": "123", "sessionid": "fresh"})
+
+        self.assertTrue(self.client.login("user", "password"))
+
+        self.client.bloks_caa_login.assert_called_once_with(verification_code="")
+        self.client.pre_login_flow.assert_called_once_with()
+        self.client.private_request.assert_called_once()
+        self.assertEqual(self.client.authorization_data["sessionid"], "fresh")
+
+    def test_login_preserves_legacy_failure_after_caa_fallback_instruction(self):
+        self.client.bloks_caa_login = Mock(
+            return_value=self.caa_outcome_with_actions(
+                ["CAA_LOGIN_FALLBACK:fallback_triggered"],
+                reason="",
+            )
+        )
+        self.client.pre_login_flow = Mock(return_value=True)
+        self.client.password_encrypt = Mock(return_value="encrypted")
+        self.client.private_request = Mock(
+            side_effect=PleaseWaitFewMinutes(429, "Please wait a few minutes before you try again.")
+        )
+
+        with self.assertRaises(PleaseWaitFewMinutes):
+            self.client.login("user", "password")
+
+        self.client.pre_login_flow.assert_called_once_with()
+
+    def test_login_reports_caa_action_markers_when_no_fallback_is_requested(self):
+        self.client.bloks_caa_login = Mock(
+            return_value=self.caa_outcome_with_actions(
+                ["CAA_LOGIN_FORM:account_list"],
+                reason="",
+            )
+        )
+
+        with self.assertRaises(ClientError) as ctx:
+            self.client.login("user", "password")
+
+        self.assertEqual(str(ctx.exception), "CAA login did not return a session")
+        self.assertEqual(getattr(ctx.exception, "caa_actions", None), ["CAA_LOGIN_FORM:account_list"])
 
     def test_login_and_legacy_keep_the_same_call_signature(self):
         self.assertTrue(hasattr(Client, "login_legacy"))
