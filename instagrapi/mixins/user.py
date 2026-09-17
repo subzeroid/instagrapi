@@ -753,6 +753,106 @@ class UserMixin:
             users = users[:amount]
         return users
 
+    def user_following_private_gql_chunk(
+        self,
+        user_id: str,
+        max_amount: int = 0,
+        max_id: str = None,
+        rank_token: str = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
+        priority: str = "u=3, i",
+    ) -> Tuple[List[UserShort], str]:
+        """
+        Get user's following users information by Private GraphQL API and max_id.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        max_amount: int, optional
+            Maximum number of users to return from the fetched chunk, default is 0 - full chunk
+        max_id: str, optional
+            The cursor from which it is worth continuing to receive the list of following users
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: FOLLOWERS_ORDER, optional
+            Following sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        Tuple[List[UserShort], str]
+            List of users and next max_id cursor
+        """
+        user_id = str(user_id)
+        result = self.private_graphql_following_list(
+            user_id,
+            rank_token or self.rank_token,
+            max_id=max_id,
+            order=order,
+            priority=priority,
+        )
+        following = self._private_graphql_root(result, "xdt_api__v1__friendships__following")
+        if not following:
+            raise ClientGraphqlError("Missing private GraphQL following payload")
+        users = []
+        for user in following.get("users") or []:
+            users.append(extract_user_short(user))
+            if max_amount and len(users) >= max_amount:
+                break
+        return users, following.get("next_max_id")
+
+    def user_following_private_gql(
+        self,
+        user_id: str,
+        amount: int = 0,
+        rank_token: str = None,
+        order: Optional[FOLLOWERS_ORDER] = None,
+        priority: str = "u=3, i",
+    ) -> List[UserShort]:
+        """
+        Get user's following users information by Private GraphQL API.
+
+        Parameters
+        ----------
+        user_id: str
+            User id of an instagram account
+        amount: int, optional
+            Maximum number of users to return, default is 0 - Inf
+        rank_token: str, optional
+            Rank token for the follow list request. Defaults to client rank_token
+        order: FOLLOWERS_ORDER, optional
+            Following sort order: date_followed_latest or date_followed_earliest
+        priority: str, optional
+            GraphQL request priority header captured from the Android app
+
+        Returns
+        -------
+        List[UserShort]
+            List of objects of UserShort type
+        """
+        users = []
+        max_id = None
+        while True:
+            chunk_amount = max(amount - len(users), 0) if amount else 0
+            chunk, max_id = self.user_following_private_gql_chunk(
+                user_id,
+                max_amount=chunk_amount,
+                max_id=max_id,
+                rank_token=rank_token,
+                order=order,
+                priority=priority,
+            )
+            users.extend(chunk)
+            if amount and len(users) >= amount:
+                break
+            if not max_id or not chunk:
+                break
+        if amount:
+            users = users[:amount]
+        return users
+
     def user_following_v1_chunk(
         self, user_id: str, max_amount: int = 0, max_id: str = ""
     ) -> Tuple[List[UserShort], str]:
@@ -881,7 +981,12 @@ class UserMixin:
                 except Exception as e:
                     if not isinstance(e, ClientError):
                         self.logger.exception(e)
-                    users = self.user_following_gql(user_id, amount)
+                    try:
+                        users = self.user_following_private_gql(user_id, amount)
+                    except Exception as e:
+                        if not isinstance(e, ClientError):
+                            self.logger.exception(e)
+                        users = self.user_following_gql(user_id, amount)
             else:
                 try:
                     users = self.user_following_gql(user_id, amount)
@@ -1237,12 +1342,21 @@ class UserMixin:
             if self._has_private_auth():
                 try:
                     users = self.user_followers_v1(user_id, amount)
-                    if self.last_json.get("should_limit_list_of_followers") and (not amount or len(users) < amount):
-                        users = self.user_followers_gql(user_id, amount)
+                    limited = self.last_json.get("should_limit_list_of_followers") and (
+                        not amount or len(users) < amount
+                    )
                 except Exception as e:
                     if not isinstance(e, ClientError):
                         self.logger.exception(e)
-                    users = self.user_followers_gql(user_id, amount)
+                    users = None
+                    limited = True
+                if limited:
+                    try:
+                        users = self.user_followers_private_gql(user_id, amount)
+                    except Exception as e:
+                        if not isinstance(e, ClientError):
+                            self.logger.exception(e)
+                        users = self.user_followers_gql(user_id, amount)
             else:
                 try:
                     users = self.user_followers_gql(user_id, amount)
