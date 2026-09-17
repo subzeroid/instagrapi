@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.4 — 2026-09-17
+
+- `get_settings()` now returns `fbns_auth` from the live FBNS auth object when present (falling back to previously saved values), so `dump_settings()`/`load_settings()` preserve the FBNS device auth across a settings round trip. Mirror of the aiograpi 2.0.4 fix.
+
 ## 3.0.3 — 2026-09-17
 
 - `login()` now follows Instagram's CAA fallback instruction (`CAA_LOGIN_FALLBACK:fallback_triggered`) and completes the legacy accounts flow, so typed failure reasons such as `PleaseWaitFewMinutes` or `BadPassword` surface instead of the generic "CAA login did not return a session" error (#2800).
