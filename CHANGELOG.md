@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.3 — 2026-09-17
+
+- `login()` now follows Instagram's CAA fallback instruction (`CAA_LOGIN_FALLBACK:fallback_triggered`) and completes the legacy accounts flow, so typed failure reasons such as `PleaseWaitFewMinutes` or `BadPassword` surface instead of the generic "CAA login did not return a session" error (#2800).
+- `ClientError` raised by CAA login now carries the observed CAA step markers as `caa_actions` (for example `CAA_LOGIN_FORM:account_list`) for diagnostics.
+
 ## 3.0.2 — 2026-09-13
 
 - Reels feed readers now accept media from current `items_with_ads` responses when legacy `items` is empty or absent, avoiding empty results and unnecessary pagination. Existing feed ordering and cursor behavior are preserved.
