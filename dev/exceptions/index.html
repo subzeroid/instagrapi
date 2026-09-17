@@ -1819,7 +1819,7 @@
 <tr>
 <td>ClientThrottledError</td>
 <td>ClientError</td>
-<td>HTTP 429 Exception (Solution: try changing your proxy)</td>
+<td>HTTP 429 exception; stop the current request burst and back off before retrying. See <a href="../usage-guide/best-practices/#pleasewaitfewminutes">Best Practices</a></td>
 </tr>
 <tr>
 <td>ClientRequestTimeout</td>
@@ -1834,7 +1834,7 @@
 <tr>
 <td>ClientLoginRequired</td>
 <td>ClientError</td>
-<td>Raises when Instagram required Login (Solution: try changing your proxy)</td>
+<td>Raises when Instagram requires login; reuse saved settings and relogin once instead of repeatedly creating fresh sessions. See <a href="../usage-guide/best-practices/#loginrequired">Best Practices</a></td>
 </tr>
 <tr>
 <td>ReloginAttemptExceeded</td>
@@ -1906,12 +1906,12 @@
 <tr>
 <td>RateLimitError</td>
 <td>PrivateError</td>
-<td>Raises when get message=rate_limit_error (Solution: try changing your proxy)</td>
+<td>Raises when Instagram returns <code>rate_limit_error</code>; stop repeated requests and allow a cooldown before retrying</td>
 </tr>
 <tr>
 <td>PleaseWaitFewMinutes</td>
 <td>PrivateError</td>
-<td>Raises when get message="Please wait a few minutes before you try again" (Solution: try changing your proxy)</td>
+<td>Raises when Instagram asks the account, device, or IP context to slow down; stop retries, preserve the saved device/session context, and retry after a cooldown. See <a href="../usage-guide/best-practices/#pleasewaitfewminutes">Best Practices</a></td>
 </tr>
 </tbody>
 </table>
