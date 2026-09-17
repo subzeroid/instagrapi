@@ -1667,6 +1667,16 @@ Pass <code>None</code> to keep Instagram's default follower order.</p>
 <td>Stream following users page by page through <code>user_following_v1_chunk()</code></td>
 </tr>
 <tr>
+<td>user_following_private_gql_chunk(user_id: str, max_amount: int = 0, max_id: str = None, rank_token: str = None, order: Optional[FOLLOWERS_ORDER] = None)</td>
+<td>Tuple[List[UserShort], str]</td>
+<td>Get user's following users through the private mobile GraphQL <code>FollowingList</code> surface and max_id cursor</td>
+</tr>
+<tr>
+<td>user_following_private_gql(user_id: str, amount: int = 0, rank_token: str = None, order: Optional[FOLLOWERS_ORDER] = None)</td>
+<td>List[UserShort]</td>
+<td>Get user's following users through the private mobile GraphQL <code>FollowingList</code> surface</td>
+</tr>
+<tr>
 <td>user_follow_requests_chunk(max_amount: int = 0, max_id: str = "")</td>
 <td>Tuple[List[UserShort], str]</td>
 <td>Get pending incoming follow requests by Private Mobile API and max_id</td>
@@ -1785,6 +1795,10 @@ each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <p>Use <code>user_followers_private_gql()</code> when you want the current mobile GraphQL followers list parsed into <code>UserShort</code> objects:</p>
 <div class="highlight"><pre><span></span><code><span class="n">followers</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_followers_private_gql</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s2">"date_followed_latest"</span><span class="p">)</span>
 </code></pre></div>
+<p><code>user_following_private_gql()</code> is the matching helper for the following list:</p>
+<div class="highlight"><pre><span></span><code><span class="n">following</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">user_following_private_gql</span><span class="p">(</span><span class="n">cl</span><span class="o">.</span><span class="n">user_id</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+</code></pre></div>
+<p>When the account is authorized, <code>user_followers()</code> and <code>user_following()</code> prefer the private mobile API and automatically retry through the private mobile GraphQL follow-list surface (<code>FollowersList</code>/<code>FollowingList</code>) when the private endpoint fails or the followers list is limited. The legacy public GraphQL query is only used as the last resort, because Instagram returns an empty <code>edges</code> list for the legacy followers/following query hash.</p>
 <p>Example: We go around the list of our followers and unfollow from them:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
 
