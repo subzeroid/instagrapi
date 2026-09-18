@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.5 — 2026-09-18
+
+- Refresh the private GraphQL `FollowersList`/`FollowingList` doc ids to the ones the current Android app sends (`284797047911918316998205836755`, `16104639286363954576550227636`); the previous ids still resolve but are one generation behind (#2798).
+
 ## 3.0.4 — 2026-09-17
 
 - `get_settings()` now returns `fbns_auth` from the live FBNS auth object when present (falling back to previously saved values), so `dump_settings()`/`load_settings()` preserve the FBNS device auth across a settings round trip. Mirror of the aiograpi 2.0.4 fix.
