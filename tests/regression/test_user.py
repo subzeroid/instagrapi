@@ -1551,7 +1551,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         query.assert_called_once()
         self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowersList")
         self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__followers")
-        self.assertEqual(query.call_args.kwargs["client_doc_id"], "28479704797510738576165798526")
+        self.assertEqual(query.call_args.kwargs["client_doc_id"], "284797047911918316998205836755")
         self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
         self.assertEqual(query.call_args.kwargs["variables"]["max_id"], 10)
         self.assertEqual(query.call_args.kwargs["variables"]["order"], "date_followed_latest")
@@ -1646,7 +1646,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         self.assertEqual(query.call_args.kwargs["friendly_name"], "FollowingList")
         self.assertEqual(query.call_args.kwargs["root_field_name"], "xdt_api__v1__friendships__following")
-        self.assertEqual(query.call_args.kwargs["client_doc_id"], "161046392817718486717479294775")
+        self.assertEqual(query.call_args.kwargs["client_doc_id"], "16104639286363954576550227636")
         self.assertEqual(query.call_args.kwargs["variables"]["user_id"], "123")
         self.assertEqual(query.call_args.kwargs["variables"]["order"], "date_followed_earliest")
         self.assertTrue(query.call_args.kwargs["variables"]["skip_use_clickable_see_more"])
