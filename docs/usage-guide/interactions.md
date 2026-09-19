@@ -94,7 +94,7 @@ client.read_timeout = 30  # Set the HTTP timeout for these helpers to 30 seconds
 | inject\_sessionid\_to\_public()      | bool    | Inject sessionid from Private Session to Public Session
 | logout()                             | bool    | Logout
 
-`login()` uses CAA directly and does not automatically fall back to `login_legacy()`. Both entry points accept the same arguments. See the [login migration guide](login-migration.md) for compatibility and saved-session behavior.
+`login()` uses CAA directly. It continues through `login_legacy()` only when Instagram explicitly returns a `CAA_LOGIN_FALLBACK` instruction. Both entry points accept the same arguments. See the [login migration guide](login-migration.md) for compatibility and saved-session behavior.
 
 `login_by_sessionid()` only works when Instagram accepts that `sessionid` for the private mobile API. A browser/web `sessionid` can be rejected with `login_required` or invalidated server-side; for long-lived automation, prefer `login()` once, then `dump_settings()` and reuse the saved settings.
 
