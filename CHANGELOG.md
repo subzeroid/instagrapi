@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.8 — 2026-09-20
+
+- Keep user, media, story, follower, and following caches separate for each `Client`, so one client cannot reuse or clear another client's cached data (#2813).
+- Make `user_highlights()` and `user_highlights_v1()` respect positive `amount` limits before parsing the returned tray. `amount=0` continues to return all Highlights (#2814).
+
 ## 3.0.7 — 2026-09-19
 
 - The default app profile is now the current Android app: `448.0.0.0.20` (version_code `1065560286`, captured bloks_versioning_id). New clients present the current app version by default, avoiding the server-side "Your version of Instagram is out of date" login gate reported in #2807. Saved 446 sessions keep resolving; the 446 profile remains explicitly selectable via `set_app("446.0.0.49.77")` (#2812).
