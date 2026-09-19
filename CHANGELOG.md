@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.7 — 2026-09-19
+
+- The default app profile is now the current Android app: `448.0.0.0.20` (version_code `1065560286`, captured bloks_versioning_id). New clients present the current app version by default, avoiding the server-side "Your version of Instagram is out of date" login gate reported in #2807. Saved 446 sessions keep resolving; the 446 profile remains explicitly selectable via `set_app("446.0.0.49.77")` (#2812).
+
 ## 3.0.6 — 2026-09-19
 
 - Align the Reels configure payload (`clip_configure`) with the current Android app: send `clips_segments_metadata`, `clips_audio_metadata`, `additional_audio_info`, nested `edits`, and the current capture metadata fields; drop `media_folder` and `date_time_original` the app no longer sends (#2808).
