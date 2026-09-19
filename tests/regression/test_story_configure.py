@@ -162,3 +162,21 @@ class StoryConfigureRegressionTestCase(unittest.TestCase):
         configure_args, _ = private_request.call_args
         self.assertEqual(configure_args[0], "media/configure_to_story/?video=1")
         self.assert_story_location_model(configure_args[1])
+
+    def test_photo_story_rich_text_format_matches_current_app(self):
+        client = self.build_client()
+
+        with mock.patch.object(client, "private_request") as private_request:
+            client.photo_configure_to_story(
+                upload_id="1",
+                width=720,
+                height=1280,
+                caption="",
+            )
+
+        configure_args, _ = private_request.call_args
+        data = configure_args[1]
+        self.assertEqual(data["rich_text_format_types"], '["modern_refreshed_v2"]')
+        text_metadata = json.loads(data["text_metadata"])
+        self.assertEqual(text_metadata[0]["format_type"], "modern_refreshed_v2")
+        self.assertEqual(text_metadata[0]["effects"], ["default"])
