@@ -2,9 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.0.9 — 2026-09-20
 
-- Separate HTTP timeouts from the `request_timeout` pacing delay in download, share-link, public HEAD, and legacy DTSG helpers. Their `read_timeout` defaults to 25 seconds and can be changed independently of request pacing.
+- Separate HTTP timeouts from the `request_timeout` pacing delay in download, share-link, public HEAD, and legacy DTSG helpers. Their `read_timeout` defaults to 25 seconds and can be changed independently of request pacing (#2817, thanks to @marnelle1 for the report).
+- Clarify the existing CAA-to-legacy transition in the login guides: it follows an explicit fallback instruction from Instagram.
 
 ## 3.0.8 — 2026-09-20
 
