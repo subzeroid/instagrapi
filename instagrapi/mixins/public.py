@@ -202,7 +202,7 @@ class PublicRequestMixin:
             url,
             allow_redirects=follow_redirects,
             proxies=self.public.proxies,
-            timeout=self.request_timeout,
+            timeout=self.read_timeout,
         )
 
     def public_request(

@@ -465,7 +465,7 @@ class StoryMixin:
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
 
-        response = self._send_public_request(url, stream=True, timeout=self.request_timeout)
+        response = self._send_public_request(url, stream=True, timeout=self.read_timeout)
         response.raise_for_status()
         return self._download_response_to_path(response, path)
 
