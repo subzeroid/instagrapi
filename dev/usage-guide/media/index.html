@@ -1742,6 +1742,16 @@
 <td>Fetch a clip template payload for a Reel/clip media</td>
 </tr>
 <tr>
+<td>media_upload_status(post_client_id: str)</td>
+<td>dict</td>
+<td>Poll the processing status of an async upload by its client-side upload id until <code>COMPLETED</code></td>
+</tr>
+<tr>
+<td>video_refresh_resources(media_id: str, should_fetch_all_language_variants: bool = False)</td>
+<td>dict</td>
+<td>Refresh expired video URLs and get a fresh <code>video_versions</code> list (and DASH manifest)</td>
+</tr>
+<tr>
 <td>clip_mashup_info(media_pk: str)</td>
 <td>dict</td>
 <td>Fetch Reel remix/reuse availability metadata</td>
