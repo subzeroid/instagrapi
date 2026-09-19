@@ -55,6 +55,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_pin(media_pk: str) | bool | Pin media to profile |
 | media_unpin(media_pk: str) | bool | Unpin media from profile |
 | media_template_v1(media_id: str) | dict | Fetch a clip template payload for a Reel/clip media |
+| media_upload_status(post_client_id: str) | dict | Poll the processing status of an async upload by its client-side upload id until `COMPLETED` |
+| video_refresh_resources(media_id: str, should_fetch_all_language_variants: bool = False) | dict | Refresh expired video URLs and get a fresh `video_versions` list (and DASH manifest) |
 | clip_mashup_info(media_pk: str) | dict | Fetch Reel remix/reuse availability metadata |
 | clip_seen(media_ids: List[str], blend_media_ids: List[str] = None) | bool | Mark Reels/Clips as seen through the Clips seen-state endpoint |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |

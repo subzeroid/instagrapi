@@ -1211,3 +1211,60 @@ class UserMediasGraphQLRegressionTestCase(unittest.TestCase):
                 "_uuid": "uuid",
             },
         )
+
+
+class MediaUploadResourcesRegressionTestCase(unittest.TestCase):
+    def test_media_upload_status_polls_upload_status_endpoint(self):
+        client = Client()
+        client.uuid = "uuid"
+        expected = {
+            "posts": [
+                {
+                    "id": 3894039944230104734,
+                    "post_client_id": "837060269065",
+                    "status": "COMPLETED",
+                    "media_ids": [3894039944230104734],
+                    "error_info": {"error_type": "NO_ERROR", "message": ""},
+                }
+            ],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.media_upload_status("837060269065")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "media/get_upload_status_REST/",
+            data={"post_client_id": "837060269065"},
+            with_signature=True,
+        )
+
+    def test_video_refresh_resources_returns_video_versions(self):
+        client = Client()
+        expected = {
+            "video_dash_manifest": "<MPD></MPD>",
+            "video_versions": [{"url": "https://example.com/video.mp4", "type": "video/mp4"}],
+            "status": "ok",
+        }
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            result = client.video_refresh_resources("3894039944230104734")
+
+        self.assertEqual(result, expected)
+        private_request.assert_called_once_with(
+            "video/refresh_resources/3894039944230104734/",
+            params={"should_fetch_all_language_variants": "false"},
+        )
+
+    def test_video_refresh_resources_can_fetch_all_language_variants(self):
+        client = Client()
+        expected = {"video_versions": [], "status": "ok"}
+
+        with mock.patch.object(client, "private_request", return_value=expected) as private_request:
+            client.video_refresh_resources("3894039944230104734", should_fetch_all_language_variants=True)
+
+        private_request.assert_called_once_with(
+            "video/refresh_resources/3894039944230104734/",
+            params={"should_fetch_all_language_variants": "true"},
+        )

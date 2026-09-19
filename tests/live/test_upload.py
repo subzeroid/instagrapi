@@ -1,6 +1,13 @@
 import io
 
-from instagrapi.exceptions import ClientNotFoundError, ClipNotUpload, MediaNotFound, PhotoConfigureError, PhotoNotUpload
+from instagrapi.exceptions import (
+    ClientNotFoundError,
+    ClipConfigureError,
+    ClipNotUpload,
+    MediaNotFound,
+    PhotoConfigureError,
+    PhotoNotUpload,
+)
 from tests import helpers as _helpers
 from tests.helpers import *
 
@@ -539,6 +546,42 @@ class ClienUploadTestCase(_ClipMusicMetadataAssertionsMixin, _helpers.ClientPriv
         finally:
             if media:
                 self.assertTrue(self.cl.media_delete(media.id))
+
+    def test_clip_upload_async_publish_status_polling(self):
+        path = self.make_video_fixture(label="clip async publish fixture")
+        self.assertIsInstance(path, Path)
+        upload_ids = []
+        original_configure = self.cl.clip_configure
+
+        def recording_configure(upload_id, *args, **kwargs):
+            upload_ids.append(str(upload_id))
+            return original_configure(upload_id, *args, **kwargs)
+
+        with mock.patch.object(self.cl, "clip_configure", side_effect=recording_configure):
+            with self.assertRaises(ClipConfigureError):
+                self.cl.clip_upload(path, f"Async publish {int(time.time())}", extra_data={"async_publish": "1"})
+        self.assertTrue(upload_ids)
+
+        media_pk = None
+        status = None
+        for _ in range(15):
+            result = self.cl.media_upload_status(upload_ids[0])
+            posts = result.get("posts") or []
+            if posts:
+                status = posts[0].get("status")
+                media_ids = posts[0].get("media_ids") or []
+                if status == "COMPLETED" and media_ids:
+                    media_pk = str(media_ids[0])
+                    break
+            time.sleep(2)
+        self.assertEqual(status, "COMPLETED")
+        self.assertTrue(media_pk)
+
+        media = self.cl.media_info(str(media_pk))
+        self.assertEqual(media.media_type, 2)
+        refreshed = self.cl.video_refresh_resources(str(media.pk))
+        self.assertTrue(refreshed.get("video_versions"))
+        self.assertTrue(self.cl.media_delete(str(media.pk)))
 
     def test_clip_upload_with_topics(self):
         path = self.make_video_fixture(label="clip topics fixture")
