@@ -22,7 +22,7 @@ from instagrapi import Client
 
 cl = Client()
 before_ip = cl._send_public_request("https://api.ipify.org/")
-cl.set_proxy("http://username:password@proxy.example.com:8080")
+cl.set_proxy("http://YOUR_USERNAME:YOUR_PASSWORD@proxy.example.com:8080")
 after_ip = cl._send_public_request("https://api.ipify.org/")
 
 print(f"Before: {before_ip}")

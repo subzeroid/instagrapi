@@ -41,7 +41,7 @@ cl.login("instagrapi", "42")
 # cl.login("instagrapi", "42", verification_code="123456")  # with 2FA verification_code
 # cl.login_by_sessionid("peiWooShooghahdi2Eip7phohph0eeng")
 cl.set_proxy("socks5://127.0.0.1:30235")
-# cl.set_proxy("http://username:password@127.0.0.1:8080")
+# cl.set_proxy("http://YOUR_USERNAME:YOUR_PASSWORD@127.0.0.1:8080")
 # cl.set_proxy("socks5://username:password@127.0.0.1:30235")
 # when addressing the proxy via hostname:
 # cl.set_proxy("socks5h://username:password@exampleproxy.tld:30235")
@@ -264,7 +264,7 @@ Do not disable TLS verification on untrusted networks or shared proxies because 
 cl = Client()
 
 # Los Angles user:
-cl.set_proxy('http://los:angeles@proxy.address:8080')
+cl.set_proxy('http://YOUR_USERNAME:YOUR_PASSWORD@proxy.example.com:8080')
 cl.set_locale('en_US')
 cl.set_timezone_offset(-7 * 60 * 60)  # Los Angeles UTC (GMT) -7 hours == -25200 seconds
 cl.get_settings()
