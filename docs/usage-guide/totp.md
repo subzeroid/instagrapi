@@ -40,7 +40,7 @@ Notes:
 
 `cl.login(..., verification_code="123456")` uses CAA directly, including device registration and server-issued preflight state. A successful embedded session is applied automatically. The CAA profile-code flow uses the supplied `verification_code` or `challenge_code_handler`. When Instagram returns `two_step_verification_context`, the existing Bloks verification helpers handle the code; a missing code raises `TwoFactorRequired`.
 
-The previous login flow is available explicitly as `cl.login_legacy(...)`, with the same arguments and its existing CAA/Bloks fallbacks. Default `login()` never invokes that legacy flow automatically. See the [login migration guide](login-migration.md).
+The previous login flow is available explicitly as `cl.login_legacy(...)`, with the same arguments and its existing CAA/Bloks fallbacks. Default `login()` enters the legacy flow only when Instagram explicitly returns a `CAA_LOGIN_FALLBACK` instruction. See the [login migration guide](login-migration.md).
 
 8-digit backup codes can be passed through the same `verification_code` parameter:
 
@@ -89,4 +89,4 @@ result = cl.bloks_two_step_verification_verify_code(context, "12345678", challen
 
 `bloks_extract_login_response(...)` returns decoded `login_response`, response `headers`, cookie values, raw cookie header text, and the raw embedded object when Instagram returns a successful Bloks login payload. It returns `{}` when the response is an intermediate UI state or an error. `bloks_apply_login_response(...)` can then copy the returned authorization data and cookies into the current client session.
 
-The separate account-recovery UI used by some accounts is not automated. Native CAA exceptions propagate from `login()`. If CAA returns neither a session nor a supported verification context, `login()` raises `ClientError` with the CAA failure reason. The explicit `login_legacy()` entry point preserves its previous fallback error behavior.
+The separate account-recovery UI used by some accounts is not automated. Native CAA exceptions propagate from `login()`. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, `login()` raises `ClientError` with the CAA failure reason. The explicit `login_legacy()` entry point preserves its previous fallback error behavior.

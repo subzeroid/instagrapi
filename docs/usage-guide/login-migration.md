@@ -81,7 +81,7 @@ cl.dump_settings("session.json")
 
 ## Verification and failures
 
-Continue to pass `verification_code` for supported two-factor challenges. The CAA profile-code flow also supports `challenge_code_handler`; see [TOTP](totp.md). Native CAA exceptions propagate. A response without a session or a supported verification context raises `ClientError` with the CAA failure reason. Curl does not automatically retry a failed password POST.
+Continue to pass `verification_code` for supported two-factor challenges. The CAA profile-code flow also supports `challenge_code_handler`; see [TOTP](totp.md). Native CAA exceptions propagate. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, `login()` raises `ClientError` with the CAA failure reason. Curl does not automatically retry a failed password POST.
 
 ## Installation requirements
 
