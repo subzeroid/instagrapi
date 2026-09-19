@@ -132,6 +132,7 @@ class PrivateRequestMixin:
     change_password_handler = manual_change_password
     private_request_logger = logging.getLogger("private_request")
     request_timeout = 1
+    read_timeout = 25
     session_retry_total = 3
     session_retry_backoff_factor = 2
     session_retry_statuses = [429, 500, 502, 503, 504]

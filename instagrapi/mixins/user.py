@@ -131,7 +131,7 @@ class UserMixin:
         response = self.public.get(
             self.PUBLIC_API_URL,
             proxies=self.public.proxies,
-            timeout=self.request_timeout,
+            timeout=self.read_timeout,
         )
         html = response.text
         if html:

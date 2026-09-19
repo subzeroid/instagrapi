@@ -48,7 +48,7 @@ class TrackMixin:
         assert fname, """The URL must contain the path to the file (m4a or mp3)."""
         filename = "%s.%s" % (filename, fname.rsplit(".", 1)[1]) if filename else fname
         path = Path(folder) / filename
-        response = requests.get(url, stream=True, timeout=self.request_timeout)
+        response = requests.get(url, stream=True, timeout=self.read_timeout)
         response.raise_for_status()
         return self._download_response_to_path(response, path)
 

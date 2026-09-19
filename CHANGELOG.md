@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+- Separate HTTP timeouts from the `request_timeout` pacing delay in download, share-link, public HEAD, and legacy DTSG helpers. Their `read_timeout` defaults to 25 seconds and can be changed independently of request pacing.
+
 ## 3.0.8 — 2026-09-20
 
 - Keep user, media, story, follower, and following caches separate for each `Client`, so one client cannot reuse or clear another client's cached data (#2813).

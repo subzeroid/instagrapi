@@ -55,7 +55,8 @@ print(cl.user_info(cl.user_id))
 | Property            | Description
 | ------------------- | --------------------------------------------------------------
 | request\_logger     | Logger in which various actions from Instagram are registered
-| request\_timeout    | Timeout in seconds between requests (1 second by default)
+| request\_timeout    | Delay in seconds between requests (1 second by default); controls pacing, not HTTP timeouts
+| read\_timeout       | HTTP timeout in seconds for URL downloads and selected public helpers listed below (25 seconds by default)
 | public\_request\_retries\_count | Default retry count for `public_request()`
 | public\_request\_retries\_timeout | Delay between `public_request()` retries
 | session\_retry\_total | Adapter retry count for Requests transports; private curl does not use this setting
@@ -64,6 +65,21 @@ print(cl.user_info(cl.user_id))
 | private\_transport | Private mobile API transport: `curl` by default for HTTP/2 with h2-only ALPN; `requests` for compatibility
 | public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
 | tls\_verify | TLS certificate verification: `True` by default, `False` for temporary trusted MITM debugging, or a CA bundle path
+
+Set `read_timeout` directly on the client at runtime; it is not a constructor option and is not saved or restored in settings. It applies to:
+
+- The HTTP request for `/share/p/` links in `media_pk_from_url()`.
+- `photo_download_by_url()` and `photo_download_by_url_origin()`.
+- `video_download_by_url()` and `video_download_by_url_origin()`.
+- `story_download_by_url()` and `track_download_by_url()`.
+- `public_head()`.
+
+The legacy `UserMixin.fetch_fb_dtsg()` implementation also uses this setting. `Client.fetch_fb_dtsg()` uses a separate GraphQL implementation and retains its existing timeout behavior, as do other request methods outside the list above.
+
+```python
+client = Client(request_timeout=0)  # Disable the pacing delay.
+client.read_timeout = 30  # Set the HTTP timeout for these helpers to 30 seconds.
+```
 
 
 ### Login
