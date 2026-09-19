@@ -1536,7 +1536,11 @@
 </tr>
 <tr>
 <td>request_timeout</td>
-<td>Timeout in seconds between requests (1 second by default)</td>
+<td>Delay in seconds between requests (1 second by default); controls pacing, not HTTP timeouts</td>
+</tr>
+<tr>
+<td>read_timeout</td>
+<td>HTTP timeout in seconds for URL downloads and selected public helpers listed below (25 seconds by default)</td>
 </tr>
 <tr>
 <td>public_request_retries_count</td>
@@ -1572,6 +1576,18 @@
 </tr>
 </tbody>
 </table>
+<p>Set <code>read_timeout</code> directly on the client at runtime; it is not a constructor option and is not saved or restored in settings. It applies to:</p>
+<ul>
+<li>The HTTP request for <code>/share/p/</code> links in <code>media_pk_from_url()</code>.</li>
+<li><code>photo_download_by_url()</code> and <code>photo_download_by_url_origin()</code>.</li>
+<li><code>video_download_by_url()</code> and <code>video_download_by_url_origin()</code>.</li>
+<li><code>story_download_by_url()</code> and <code>track_download_by_url()</code>.</li>
+<li><code>public_head()</code>.</li>
+</ul>
+<p>The legacy <code>UserMixin.fetch_fb_dtsg()</code> implementation also uses this setting. <code>Client.fetch_fb_dtsg()</code> uses a separate GraphQL implementation and retains its existing timeout behavior, as do other request methods outside the list above.</p>
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">request_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># Disable the pacing delay.</span>
+<span class="n">client</span><span class="o">.</span><span class="n">read_timeout</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># Set the HTTP timeout for these helpers to 30 seconds.</span>
+</code></pre></div>
 <h3 id="login">Login</h3>
 <table>
 <thead>
