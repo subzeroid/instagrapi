@@ -120,6 +120,13 @@ class Client(
         override_app_version: bool = False,
         **kwargs,
     ):
+        self._users_cache = {}
+        self._userhorts_cache = {}
+        self._usernames_cache = {}
+        self._users_following = {}
+        self._users_followers = {}
+        self._medias_cache = {}
+        self._stories_cache = {}
         self.tls_verify = kwargs.pop("tls_verify", True)
         self.request_timeout = kwargs.pop("request_timeout", 1)
         self.public_request_retries_count = kwargs.pop("public_request_retries_count", 3)

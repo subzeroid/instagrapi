@@ -1,7 +1,7 @@
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from urllib.parse import urlparse
 
 from instagrapi import config
@@ -23,7 +23,7 @@ from instagrapi.types import Story, StoryArchiveDay, UserShort, Viewer
 
 
 class StoryMixin:
-    _stories_cache = {}  # pk -> object
+    _stories_cache: Dict[str, Story]
 
     def story_pk_from_url(self, url: str) -> str:
         """

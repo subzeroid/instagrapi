@@ -51,11 +51,11 @@ class UserMixin:
     Helpers to manage user
     """
 
-    _users_cache = {}  # user_pk -> User
-    _userhorts_cache = {}  # user_pk -> UserShort
-    _usernames_cache = {}  # username -> user_pk
-    _users_following = {}  # user_pk -> dict(user_pk -> "short user object")
-    _users_followers = {}  # user_pk -> dict(user_pk -> "short user object")
+    _users_cache: Dict[str, User]
+    _userhorts_cache: Dict[str, UserShort]
+    _usernames_cache: Dict[str, str]
+    _users_following: Dict[str, Dict[str, UserShort]]
+    _users_followers: Dict[str, Dict[str, UserShort]]
     _fb_dtsg = None
 
     @staticmethod
