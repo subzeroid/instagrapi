@@ -42,7 +42,7 @@ class MediaMixin:
     Helpers for media
     """
 
-    _medias_cache = {}  # pk -> object
+    _medias_cache: Dict[str, Media]
 
     def _media_share_story_background(self) -> Path:
         temp = tempfile.NamedTemporaryFile(prefix="instagrapi_story_share_", suffix=".jpg", delete=False)
