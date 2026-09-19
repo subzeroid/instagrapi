@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.6 — 2026-09-19
+
+- Align the Reels configure payload (`clip_configure`) with the current Android app: send `clips_segments_metadata`, `clips_audio_metadata`, `additional_audio_info`, nested `edits`, and the current capture metadata fields; drop `media_folder` and `date_time_original` the app no longer sends (#2808).
+- Story captions now use the current app rich text format: `rich_text_format_types: ["modern_refreshed_v2"]` and matching `text_metadata` fields (#2809).
+- New helpers: `media_upload_status(post_client_id)` polls `media/get_upload_status_REST/` for asynchronous clip/story publishing until `COMPLETED`, and `video_refresh_resources(media_id)` returns a fresh `video_versions` list when previously returned video URLs have expired (#2810).
+
 ## 3.0.5 — 2026-09-18
 
 - Refresh the private GraphQL `FollowersList`/`FollowingList` doc ids to the ones the current Android app sends (`284797047911918316998205836755`, `16104639286363954576550227636`); the previous ids still resolve but are one generation behind (#2798).
