@@ -1407,7 +1407,7 @@
 <span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 </code></pre></div>
-<p><code>login()</code> uses CAA directly. It does not try <code>accounts/login/</code> first and does not automatically fall back to that endpoint after a CAA failure. All private mobile API requests use curl with HTTP/2 by default. Public web and GraphQL transports retain their separate configuration.</p>
+<p><code>login()</code> uses CAA directly. Since instagrapi 3.0.3, an explicit <code>CAA_LOGIN_FALLBACK</code> instruction from Instagram continues through <code>login_legacy()</code>, allowing the accounts endpoint to complete login or surface its typed error. Other CAA failures retain their normal error handling. All private mobile API requests use curl with HTTP/2 by default. Public web and GraphQL transports retain their separate configuration.</p>
 <h2 id="keep-the-previous-login-flow">Keep the previous login flow</h2>
 <p>The previous method is now named <code>login_legacy()</code>. Its arguments and existing fallback behavior are preserved:</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
@@ -1417,7 +1417,7 @@
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">private_transport</span><span class="o">=</span><span class="s2">"requests"</span><span class="p">)</span>
 <span class="n">cl</span><span class="o">.</span><span class="n">login_legacy</span><span class="p">(</span><span class="n">USERNAME</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span>
 </code></pre></div>
-<p>An explicit legacy login may still invoke its existing CAA fallback. There is no automatic fallback in the opposite direction. <code>relogin()</code> uses the new default CAA flow; use <code>login_legacy(relogin=True)</code> to explicitly repeat the previous flow.</p>
+<p>An explicit legacy login may invoke its CAA fallback, including when the accounts endpoint returns <code>needs_upgrade</code>. The default CAA flow enters legacy login only when Instagram explicitly requests it. <code>relogin()</code> uses the new default CAA flow; use <code>login_legacy(relogin=True)</code> to explicitly repeat the previous flow.</p>
 <h2 id="reuse-saved-sessions">Reuse saved sessions</h2>
 <p>Both entry points validate an existing session before using the supplied credentials. If Instagram rejects that session with <code>LoginRequired</code>, each repeats its own login flow after clearing the expired authorization state.</p>
 <div class="highlight"><pre><span></span><code><span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
@@ -1444,7 +1444,7 @@
 </code></pre></div>
 <p><code>override_app_version=True</code> updates the app version, version code and Bloks hash. It retains hardware settings and device identifiers. Keep using the account's existing proxy. Alternatively, provide the correct Bloks hash for the original profile or explicitly use <code>login_legacy()</code>.</p>
 <h2 id="verification-and-failures">Verification and failures</h2>
-<p>Continue to pass <code>verification_code</code> for supported two-factor challenges. The CAA profile-code flow also supports <code>challenge_code_handler</code>; see <a href="../totp/">TOTP</a>. Native CAA exceptions propagate. A response without a session or a supported verification context raises <code>ClientError</code> with the CAA failure reason. Curl does not automatically retry a failed password POST.</p>
+<p>Continue to pass <code>verification_code</code> for supported two-factor challenges. The CAA profile-code flow also supports <code>challenge_code_handler</code>; see <a href="../totp/">TOTP</a>. Native CAA exceptions propagate. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, <code>login()</code> raises <code>ClientError</code> with the CAA failure reason. Curl does not automatically retry a failed password POST.</p>
 <h2 id="installation-requirements">Installation requirements</h2>
 <p>Private HTTP/2 requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. <code>curl_cffi</code> normally supplies libcurl in its wheels; a system <code>curl</code> executable and the Python <code>h2</code> package are not required for this transport. A compatible wheel or a supported native build is required for your platform. Android/Termux has not been verified.</p>
 <p>The optional <code>instagrapi[curl]</code> extra remains available for public web browser impersonation through <code>curl-adapter</code>. It is not required for private HTTP/2. See <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> for TLS, proxy and timeout behavior.</p>

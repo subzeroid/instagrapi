@@ -1635,7 +1635,7 @@
 </tr>
 </tbody>
 </table>
-<p><code>login()</code> uses CAA directly and does not automatically fall back to <code>login_legacy()</code>. Both entry points accept the same arguments. See the <a href="../login-migration/">login migration guide</a> for compatibility and saved-session behavior.</p>
+<p><code>login()</code> uses CAA directly. It continues through <code>login_legacy()</code> only when Instagram explicitly returns a <code>CAA_LOGIN_FALLBACK</code> instruction. Both entry points accept the same arguments. See the <a href="../login-migration/">login migration guide</a> for compatibility and saved-session behavior.</p>
 <p><code>login_by_sessionid()</code> only works when Instagram accepts that <code>sessionid</code> for the private mobile API. A browser/web <code>sessionid</code> can be rejected with <code>login_required</code> or invalidated server-side; for long-lived automation, prefer <code>login()</code> once, then <code>dump_settings()</code> and reuse the saved settings.</p>
 <p>When <code>login_by_sessionid()</code> needs to recover the account username after a private profile lookup failure, it tries the private mobile profile stream before falling back to public/web GraphQL.</p>
 <p>You can pass settings to the Client (and save cookies), it has the following format:</p>
