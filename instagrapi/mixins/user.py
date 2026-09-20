@@ -2642,7 +2642,7 @@ class UserMixin:
     def user_related_profiles_gql(self, user_id: str) -> List[UserShort]:
         """
         Get related profiles for a target user via the public GraphQL
-        ``edge_chaining`` field.
+        ``edge_chaining`` field, reusing the private session when available.
 
         Hits the legacy ``query_hash="ad99dd9d3646cc3c0dda65debcd266a7"``
         — IG has been gating this query_hash more aggressively over
@@ -2669,6 +2669,7 @@ class UserMixin:
             below 4 (opt-in retry signal — set ``client.num_retry``
             yourself to enable).
         """
+        self.inject_sessionid_to_public()
         variables = {
             "user_id": str(user_id),
             "include_chaining": True,
