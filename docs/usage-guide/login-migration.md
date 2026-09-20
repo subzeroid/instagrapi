@@ -23,7 +23,7 @@ cl.login(USERNAME, PASSWORD)
 
 ## Keep the previous login flow
 
-The previous method is now named `login_legacy()`. Its arguments and existing fallback behavior are preserved:
+The previous method is now named `login_legacy()`. It keeps the same arguments and can fall back to CAA:
 
 ```python
 cl = Client()

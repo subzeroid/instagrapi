@@ -543,7 +543,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         return status_code == 404 or (error_type == "field_exception" and "payload returned is null" in message)
 
     def _try_caa_login(self, exc: Exception, verification_code: str = "") -> bool:
-        """Try current Android CAA login while preserving the legacy error on failure."""
+        """Try current Android CAA login, propagating actionable login errors."""
         try:
             outcome = self.bloks_caa_login(verification_code=verification_code)
         except (ChallengeError, TwoFactorRequired):
