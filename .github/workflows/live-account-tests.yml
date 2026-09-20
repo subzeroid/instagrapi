@@ -38,6 +38,16 @@ jobs:
       IG_SIGNUP_SMS_CODE: ${{ secrets.IG_SIGNUP_SMS_CODE }}
       IG_SIGNUP_SMS_CODE_COMMAND: ${{ secrets.IG_SIGNUP_SMS_CODE_COMMAND }}
     steps:
+      - name: Validate live test configuration
+        env:
+          LIVE_TEST_TARGET: ${{ github.event.inputs.test_target }}
+        run: |
+          if [ "$LIVE_TEST_TARGET" != "signup" ] && [ -z "$TEST_ACCOUNTS_URL" ]; then
+            message="Live validation did not run: TEST_ACCOUNTS_URL is missing. Configure the repository Actions secret and rerun this job."
+            echo "::error::$message"
+            echo "$message" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
       - name: Check out code
         uses: actions/checkout@v7
 

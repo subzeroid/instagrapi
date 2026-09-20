@@ -57,6 +57,8 @@ ruff format .
 
 Regression tests live in `tests/regression/`. Live-account tests live in `tests/live/` and require `TEST_ACCOUNTS_URL`; do not run or modify live tests in a way that prints credentials, proxies, sessions, or the account URL.
 
+The [Live Account Tests workflow](https://github.com/subzeroid/instagrapi/blob/master/.github/workflows/live-account-tests.yml) runs live tests on manual dispatch. For targets that use the account pool, the job fails before running tests if the `TEST_ACCOUNTS_URL` Actions secret is missing, and its summary explicitly states that live validation did not run. The `signup` target uses separate signup configuration and does not require the account-pool secret. Local test skip behavior is unchanged.
+
 ## Pull Request Checklist
 
 1. Branch from `master` and keep the change scoped.
@@ -76,6 +78,8 @@ Maintainers handle release versioning and publishing unless a maintainer asks fo
 - Error guides and tutorials: [instagrapi.com/guides](https://instagrapi.com/guides/)
 
 ## Release Commands
+
+Before tagging, record live validation separately from offline CI. Inspect the selected live targets for the release commit and confirm the relevant tests passed rather than skipped. A green workflow with skipped live tests is not evidence of live validation; report missing configuration, skips, or account limitations explicitly.
 
 Maintainer-only release flow:
 
