@@ -2,9 +2,14 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.0.10 — 2026-09-21
 
 - Preserve CAA fallback errors, including throttling and rate limits, instead of masking them with the earlier legacy `needs_upgrade` or `BadPassword`. Keep the original legacy error when the CAA endpoint is unavailable or returns no session.
+- Parse media responses with `crosspost: null` or `coauthor_producers: null` as empty lists, avoiding validation and extraction errors while preserving valid values and rejecting malformed values (#2821, #2822).
+
+### For contributors
+
+- Fail manually dispatched live test jobs when test account configuration is missing, so an unconfigured run cannot appear to validate live behavior (#2820).
 
 ## 3.0.9 — 2026-09-20
 
