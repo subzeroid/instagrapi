@@ -55,6 +55,8 @@ def _normalize_media_gql_typename(data):
 def extract_media_v1(data):
     """Extract media from Private API"""
     media = deepcopy(data)
+    if media.get("crosspost") is None:
+        media["crosspost"] = []
     if media.get("video_versions"):
         # Select Best Quality by Resolutiuon
         media["video_url"] = sorted(media["video_versions"], key=lambda o: o["height"] * o["width"])[-1]["url"]
