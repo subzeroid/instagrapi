@@ -535,6 +535,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             return "sms"
         return "totp"
 
+    def _is_unavailable_caa_login_error(self, exc: ClientError) -> bool:
+        response = getattr(exc, "response", None)
+        status_code = getattr(response, "status_code", None) or getattr(exc, "code", None)
+        error_type = str(getattr(exc, "error_type", "") or "").casefold()
+        message = str(getattr(exc, "message", "") or exc).casefold()
+        return status_code == 404 or (error_type == "field_exception" and "payload returned is null" in message)
+
     def _try_caa_login(self, exc: Exception, verification_code: str = "") -> bool:
         """Try current Android CAA login while preserving the legacy error on failure."""
         try:
@@ -542,6 +549,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         except (ChallengeError, TwoFactorRequired):
             raise
         except ClientError as caa_exc:
+            if not self._is_unavailable_caa_login_error(caa_exc):
+                raise
             self.logger.warning("CAA login fallback failed: %s", caa_exc)
             return False
         if outcome.get("logged_in"):

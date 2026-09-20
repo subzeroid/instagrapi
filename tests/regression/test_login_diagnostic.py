@@ -86,8 +86,8 @@ def test_captures_legacy_and_caa_before_last_json_is_overwritten(
 
     assert calls == [LOGIN, CAA]
     assert report["outcome"] == "error"
-    assert report["exception"]["type"] == "BadPassword"
-    assert report["exception"]["error_type"] == "bad_password"
+    assert report["exception"]["type"] == "ClientThrottledError"
+    assert report["exception"]["error_type"] is None
     assert report["last_json"]["empty"] is empty
     assert [(item["endpoint"], item["http_status"]) for item in report["responses"]] == [
         ("accounts/login", 400),
@@ -255,7 +255,7 @@ def test_main_saves_private_settings_and_sanitized_report_after_failure(diagnost
 
     assert code == 1
     assert factory.call_args.kwargs["settings"]["uuids"]["uuid"] == "saved-device"
-    assert json.loads(output.read_text())["exception"]["type"] == "BadPassword"
+    assert json.loads(output.read_text())["exception"]["type"] == "ClientThrottledError"
     assert SECRET not in output.read_text()
     assert SECRET in settings.read_text()
     assert stat.S_IMODE(settings.stat().st_mode) == 0o600

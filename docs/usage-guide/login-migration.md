@@ -39,6 +39,8 @@ cl.login_legacy(USERNAME, PASSWORD)
 
 An explicit legacy login may invoke its CAA fallback, including when the accounts endpoint returns `needs_upgrade`. The default CAA flow enters legacy login only when Instagram explicitly requests it. `relogin()` uses the new default CAA flow; use `login_legacy(relogin=True)` to explicitly repeat the previous flow.
 
+If that CAA fallback raises a throttling, rate-limit, feedback, or other login error, its exception propagates instead of being replaced by the earlier legacy `needs_upgrade` or `BadPassword`. The original legacy error is retained when CAA returns no session or its endpoint is unavailable (HTTP 404, or a `field_exception` reporting a null payload). An outdated-app error alone therefore does not identify the cause of every failed login; inspect the actual failure before retrying.
+
 ## Reuse saved sessions
 
 Both entry points validate an existing session before using the supplied credentials. If Instagram rejects that session with `LoginRequired`, each repeats its own login flow after clearing the expired authorization state.
