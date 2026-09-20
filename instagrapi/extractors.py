@@ -86,6 +86,8 @@ def extract_media_v1(data):
     media["sponsor_tags"] = [extract_user_short(tag["sponsor"]) for tag in media.get("sponsor_tags") or []]
     media["view_count"] = media.get("view_count", media.get("video_view_count", 0))
     media["play_count"] = media.get("play_count", media.get("video_play_count", 0))
+    if media.get("coauthor_producers") is None:
+        media["coauthor_producers"] = []
     media["coauthor_producers"] = [extract_user_short(user) for user in media.get("coauthor_producers", [])]
     return Media(
         caption_text=(media.get("caption") or {}).get("text", ""),
