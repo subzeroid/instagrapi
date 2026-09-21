@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.12 — 2026-09-21
+
+- Restore optional `public_transport="curl"` response-body reads with urllib3 2.8 by requiring `curl-adapter>=1.2.3`. This also fixes password-encryption key fetching through that transport (#2827; thanks to @marnelle1 for the report).
+- Add regression coverage and CI checks for buffered and streamed public curl responses with plain, gzip and deflate bodies.
+
 ## 3.0.11 — 2026-09-21
 
 - Reuse an available saved private session before the first `user_related_profiles_gql()` request, so related-profile lookup no longer depends on an earlier public lookup having copied the session (#2824).
