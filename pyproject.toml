@@ -69,7 +69,7 @@ Guides = "https://instagrapi.com/guides/"
 
 [project.optional-dependencies]
 curl = [
-    "curl-adapter>=1.2.1",
+    "curl-adapter>=1.2.3",
 ]
 video = [
     # MoviePy 2.2.1 still declares pillow<12, while instagrapi requires Pillow 12.2.0

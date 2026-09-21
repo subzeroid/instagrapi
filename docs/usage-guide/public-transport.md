@@ -16,6 +16,8 @@ For public web endpoints that are sensitive to browser TLS fingerprints, you can
 pip install "instagrapi[curl]"
 ```
 
+The curl extra requires `curl-adapter>=1.2.3` for compatibility with urllib3 2.8. If an existing environment has an older adapter, upgrade it with `pip install --upgrade "curl-adapter>=1.2.3"`.
+
 Then opt in explicitly:
 
 ```python
