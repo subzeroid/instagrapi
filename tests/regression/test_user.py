@@ -246,7 +246,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user["username"], "instagram")
         doc_id_request.assert_called_once()
         args, kwargs = doc_id_request.call_args
-        self.assertEqual(args[0], "26762473490008061")
+        self.assertEqual(args[0], "28036671149327607")
         self.assertEqual(args[1]["id"], "25025320")
         self.assertEqual(args[1]["render_surface"], "PROFILE")
         self.assertEqual(kwargs["referer"], "https://www.instagram.com/25025320/")
