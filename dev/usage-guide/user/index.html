@@ -1560,12 +1560,12 @@ Pass <code>None</code> to keep Instagram's default follower order.</p>
 <tr>
 <td>user_short_gql(user_id: str, use_cache: bool = True)</td>
 <td>UserShort</td>
-<td>Short user info with current GraphQL/web-profile fallback chain</td>
+<td>Short user info through the current web profile GraphQL query</td>
 </tr>
 <tr>
 <td>username_from_user_id_gql(user_id: str)</td>
 <td>str</td>
-<td>Resolve username from user id using the same fallback chain</td>
+<td>Resolve username through the current web profile GraphQL query</td>
 </tr>
 </tbody>
 </table>
@@ -1728,6 +1728,7 @@ Pass <code>None</code> to keep Instagram's default follower order.</p>
 </tr>
 </tbody>
 </table>
+<p><code>user_short_gql()</code> and <code>user_info_v2_gql()</code> use the same current web profile GraphQL query and return <code>UserShort</code> and <code>User</code>, respectively. <code>user_info_by_username_v2_gql()</code> resolves the username before fetching that profile. These methods copy an available mobile session into the public request session.</p>
 <p>The batch follow request helpers call the single-user approve/decline endpoints for
 each <code>user_id</code>; they do not implement an auto-approval policy.</p>
 <p><code>user_follow()</code> returns <code>True</code> only when it sends a new follow action and Instagram reports either an immediate follow or a new outgoing follow request for a private account. It returns <code>False</code> when the current account already follows the target or already has a pending outgoing follow request. Use <code>user_friendship_v1()</code> when you need to distinguish <code>following</code> from <code>outgoing_request</code>.</p>
