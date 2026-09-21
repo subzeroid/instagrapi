@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.11 — 2026-09-21
+
+- Reuse an available saved private session before the first `user_related_profiles_gql()` request, so related-profile lookup no longer depends on an earlier public lookup having copied the session (#2824).
+- Restore authenticated `user_short_gql()` and `user_info_v2_gql()` lookups with the current shared web profile query and complete Relay variables. Remove the short-profile friendly-name override that caused HTML responses in verified requests (#2825).
+
 ## 3.0.10 — 2026-09-21
 
 - Preserve CAA fallback errors, including throttling and rate limits, instead of masking them with the earlier legacy `needs_upgrade` or `BadPassword`. Keep the original legacy error when the CAA endpoint is unavailable or returns no session.
