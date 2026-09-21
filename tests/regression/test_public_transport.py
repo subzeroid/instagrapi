@@ -1,6 +1,8 @@
 import sys
-from pathlib import Path
+from importlib.metadata import requires
 from unittest import mock
+
+from packaging.requirements import Requirement
 
 from instagrapi import Client
 
@@ -16,13 +18,17 @@ def test_public_user_agent_override_is_preserved():
 
 
 def test_curl_adapter_is_optional_extra():
-    pyproject = Path("pyproject.toml").read_text()
-    required_dependencies = pyproject.split("[project.optional-dependencies]", 1)[0]
-    optional_dependencies = pyproject.split("[project.optional-dependencies]", 1)[1]
+    requirements = [Requirement(value) for value in requires("instagrapi")]
+    adapters = [requirement for requirement in requirements if requirement.name == "curl-adapter"]
 
-    assert "curl-adapter" not in required_dependencies
-    assert "curl = [" in optional_dependencies
-    assert '"curl-adapter>=1.2.1"' in optional_dependencies
+    assert len(adapters) == 1
+    adapter = adapters[0]
+    assert adapter.marker is not None
+    assert not adapter.marker.evaluate({"extra": ""})
+    assert adapter.marker.evaluate({"extra": "curl"})
+    assert "1.2.2" not in adapter.specifier
+    assert "1.2.3" in adapter.specifier
+    assert "1.2.4" in adapter.specifier
 
 
 def test_curl_public_transport_uses_optional_adapter():
