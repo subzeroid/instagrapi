@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.13 — 2026-09-23
+
+- Normalize carousel resource IDs in app profile timeline responses before extraction, so `user_medias_gql()` accepts children with a composite `id` and no `pk` (#2831). Explicit resource IDs and validation of identifier-free children are preserved.
+
 ## 3.0.12 — 2026-09-21
 
 - Restore optional `public_transport="curl"` response-body reads with urllib3 2.8 by requiring `curl-adapter>=1.2.3`. This also fixes password-encryption key fetching through that transport (#2827; thanks to @marnelle1 for the report).
