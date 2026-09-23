@@ -192,6 +192,29 @@ def test_response_summary_never_copies_untrusted_strings(diagnostic):
     assert "Set-Cookie" not in summary
 
 
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Your version of Instagram is out of date.",
+        "Your version of Instagram is out of date. Please upgrade your app to log in to Instagram.",
+    ],
+)
+def test_outdated_app_response_keeps_signal_without_copying_message(diagnostic, message):
+    request = requests.Request("POST", LOGIN).prepare()
+    raw = response(
+        request,
+        400,
+        json.dumps({"message": message + SECRET, "error_type": "needs_upgrade", "status": "fail"}).encode(),
+    )
+
+    summary = diagnostic.summarize_response(raw)
+
+    assert summary["endpoint"] == "accounts/login"
+    assert summary["json"]["error_type"] == "needs_upgrade"
+    assert summary["json"]["message_category"] == "app_out_of_date"
+    assert SECRET not in json.dumps(summary)
+
+
 def test_native_challenge_fields_remain_useful(diagnostic):
     summary = diagnostic.summarize_json(
         {
