@@ -1838,17 +1838,17 @@
 <tr>
 <td>user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0)</td>
 <td>List[Media]</td>
-<td>Get user media via public GraphQL API</td>
+<td>Get user media from the private app GraphQL timeline, falling back to public GraphQL on a client error</td>
 </tr>
 <tr>
 <td>user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None)</td>
 <td>Tuple[List[Media], str]</td>
-<td>Get one public GraphQL page of user media</td>
+<td>Get one page from the private app GraphQL timeline, falling back to public GraphQL on a client error</td>
 </tr>
 <tr>
 <td>user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0)</td>
 <td>Tuple[List[Media], str]</td>
-<td>Compatibility alias for one public GraphQL page of user media</td>
+<td>Compatibility alias for <code>user_medias_paginated_gql</code></td>
 </tr>
 <tr>
 <td>user_medias_v1(user_id: str, amount: int = 0)</td>
