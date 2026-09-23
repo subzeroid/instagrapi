@@ -1,0 +1,1812 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/3.0.13/superpowers/specs/2026-08-25-retry-final-response-design/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Retry final-response exception mapping - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#retry-final-response-exception-mapping" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Retry final-response exception mapping
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/login-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/realtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Realtime MQTT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/pydroid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydroid and ffmpeg
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/public-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public Transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/termux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Termux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-goals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#considered-approaches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Considered approaches
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Considered approaches">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-return-the-final-response-after-retries-selected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Return the final response after retries (selected)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-catch-and-translate-retryerror" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Catch and translate RetryError
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-stop-retrying-http-429" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Stop retrying HTTP 429
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#compatibility-and-rollout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compatibility and rollout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engineering-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engineering review
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Engineering review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-already-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What already exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-coverage-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test coverage diagram
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Failure modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#not-in-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NOT in scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parallelization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parallelization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Tasks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gstack-review-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GSTACK REVIEW REPORT
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="retry-final-response-exception-mapping">Retry final-response exception mapping</h1>
+<p>Date: 2026-08-25
+Issue: https://github.com/subzeroid/instagrapi/issues/2774
+Status: Approved</p>
+<h2 id="problem">Problem</h2>
+<p>The private and public <code>requests</code> sessions configure urllib3 retries for HTTP
+429, 500, 502, 503, and 504. urllib3's default <code>raise_on_status=True</code> raises a
+<code>requests.exceptions.RetryError</code> when those retries are exhausted. That happens
+inside the transport adapter, before instagrapi receives the final HTTP response.</p>
+<p>As a result, <code>_send_private_request()</code> and <code>_send_public_request()</code> cannot apply
+their existing status mapping. In particular, a final HTTP 429 escapes as the
+transport-specific <code>RetryError</code> instead of instagrapi's
+<code>ClientThrottledError</code>.</p>
+<h2 id="goals">Goals</h2>
+<ul>
+<li>Preserve the configured retry count, status list, allowed methods, and
+  backoff behavior.</li>
+<li>Let instagrapi inspect the final HTTP response after retry exhaustion.</li>
+<li>Preserve the existing typed exception mapping, including HTTP 429 to
+  <code>ClientThrottledError</code>.</li>
+<li>Prevent the public request loop from repeating a status that the Requests
+  adapter has already retried to exhaustion.</li>
+<li>Apply the same typed-error contract to private requests, ordinary public
+  requests, and streaming public requests.</li>
+<li>Add regression coverage that fails under the current configuration.</li>
+</ul>
+<h2 id="non-goals">Non-goals</h2>
+<ul>
+<li>Do not hide or automatically bypass Instagram rate limits.</li>
+<li>Do not change the default number of retries or backoff timing.</li>
+<li>Do not change login, challenge, CAA/Bloks payloads, or protocol selection.</li>
+<li>Do not refactor feature mixins that call the raw Requests sessions directly;
+  they receive the final response but continue to own their existing mapping or
+  parsing behavior.</li>
+<li>Do not infer why Instagram rate-limited a particular account or IP address.</li>
+</ul>
+<h2 id="considered-approaches">Considered approaches</h2>
+<h3 id="1-return-the-final-response-after-retries-selected">1. Return the final response after retries (selected)</h3>
+<p>Set <code>raise_on_status=False</code> on both urllib3 <code>Retry</code> strategies. urllib3 still
+performs the configured retries, then returns the last HTTP response. The
+existing instagrapi request handlers call <code>raise_for_status()</code> and map the
+response to the appropriate typed exception.</p>
+<p>This is the smallest change and keeps HTTP semantics in the layer that already
+owns them.</p>
+<h3 id="2-catch-and-translate-retryerror">2. Catch and translate <code>RetryError</code></h3>
+<p>Catch <code>requests.exceptions.RetryError</code> around session calls and inspect its
+cause. This is rejected because Requests usually does not retain the final
+HTTP response on this exception, so translation would depend on exception text
+or urllib3 internals.</p>
+<h3 id="3-stop-retrying-http-429">3. Stop retrying HTTP 429</h3>
+<p>Remove 429 from the default retry status list. This would expose a typed
+exception immediately, but it would also change the established retry policy
+and would not solve the same exception leak for 500, 502, 503, or 504.</p>
+<h2 id="design">Design</h2>
+<p>Add <code>raise_on_status=False</code> to both compatibility branches of
+<code>PrivateRequestMixin._build_private_session_retry_strategy()</code> and
+<code>PublicRequestMixin._build_public_session_retry_strategy()</code>.</p>
+<p>In <code>PublicRequestMixin.public_request()</code>, stop the outer application retry loop
+when all of the following are true:</p>
+<ul>
+<li>the mapped exception has a response status in <code>session_retry_statuses</code>;</li>
+<li><code>session_retry_total</code> is greater than zero, so the adapter already performed
+  status retries.</li>
+</ul>
+<p>When <code>session_retry_total=0</code>, retain the existing outer public retry loop. This
+preserves the explicitly disabled-adapter configuration while preventing the
+default configuration from multiplying four transport attempts into twelve.</p>
+<p>In <code>_send_public_request()</code>, move the <code>stream=True</code> return until after
+<code>last_public_response</code> is assigned and <code>raise_for_status()</code> has run. Do not run
+the content-length completeness check or read the response body for a streaming
+request. HTTP failures therefore enter the existing public typed-exception
+mapping before the open response is returned to a successful caller.</p>
+<p>No new public API is introduced. <code>Client.set_retry_config()</code> continues to
+rebuild both adapters with the same user-configurable values. The final response
+reaches instagrapi instead of urllib3 raising first, and the public application
+loop does not repeat a status already exhausted by the adapter.</p>
+<p>Data flow after the change:</p>
+<ol>
+<li>Requests sends an HTTP request through the configured adapter.</li>
+<li>urllib3 retries configured status codes using the existing count and
+   backoff.</li>
+<li>After the final failed attempt, urllib3 returns the response.</li>
+<li>The private or public request handler calls <code>raise_for_status()</code>.</li>
+<li>Existing instagrapi status handling raises a typed exception, such as
+   <code>ClientThrottledError</code> for HTTP 429.</li>
+<li>For public requests, an adapter-exhausted configured status is re-raised
+   immediately instead of starting another full retry package.</li>
+</ol>
+<h2 id="error-handling">Error handling</h2>
+<p>Connection, TLS, DNS, and timeout exhaustion remain transport errors because
+they do not have a final HTTP response to map. Only status-based retry
+exhaustion changes. Unknown HTTP statuses continue through the existing
+<code>ClientError</code> fallback.</p>
+<p>Private HTTP 429 handling remains body-aware. A response whose message contains
+<code>Please wait a few minutes</code> maps to the existing <code>PleaseWaitFewMinutes</code> exception;
+other 429 responses map to <code>ClientThrottledError</code>. Login already handles both.</p>
+<p>The optional curl public transport does not use the urllib3 retry strategy and
+is unchanged. Feature code that calls <code>self.private</code> or <code>self.public</code> directly
+will now receive the final retryable-status response instead of <code>RetryError</code>, but
+remains outside the central typed handlers by design.</p>
+<h2 id="testing">Testing</h2>
+<p>Use test-driven development:</p>
+<p>Add focused coverage in <code>tests/regression/test_retry.py</code>:</p>
+<ol>
+<li>Assert that both constructed retry strategies set <code>raise_on_status</code> to
+   <code>False</code> while preserving totals, backoff, allowed methods, and status lists.
+   Exercise both the current <code>allowed_methods</code> path and the compatibility
+   <code>method_whitelist</code> fallback by making the first <code>Retry</code> construction raise
+   <code>TypeError</code> in a focused unit test.</li>
+<li>Exercise an actual Requests <code>HTTPAdapter</code> against a local deterministic HTTP
+   endpoint that always returns 429. Set backoff to zero, assert that the
+   configured number of attempts occurs, and assert that the final response is
+   returned instead of <code>RetryError</code> escaping.</li>
+<li>Pass a 429 response through <code>_send_private_request()</code> and
+   <code>_send_public_request()</code> separately. Assert that both raise
+   <code>ClientThrottledError</code>, retain the final response on the exception, and do not
+   leak <code>RetryError</code>. These handler-level tests complement the adapter-level
+   test without requiring a local TLS server for the private API's fixed HTTPS
+   URL. Add a second private response body containing <code>Please wait a few minutes</code>
+   and assert <code>PleaseWaitFewMinutes</code>.</li>
+<li>Exercise <code>public_request()</code> with a persistent 429 and assert that the default
+   configuration performs exactly <code>session_retry_total + 1</code> attempts. Set
+   <code>session_retry_total=0</code> separately and assert that the existing outer
+   <code>public_request_retries_count</code> loop still applies.</li>
+<li>Repeat the public exhaustion assertion for HTTP 503 and confirm that the
+   final response becomes <code>ClientError</code> without duplicate retry packages.</li>
+<li>Exercise <code>_send_public_request(stream=True)</code> against the local 429 endpoint.
+   Assert that retry exhaustion maps to <code>ClientThrottledError</code>; for a successful
+   response, assert that the response remains open and its body is not consumed.</li>
+<li>Exercise connection exhaustion against a closed local port and assert that it
+   remains <code>ClientConnectionError</code> rather than a status-mapping exception.</li>
+<li>Update live-test expectations that currently special-case <code>RetryError</code> for
+   retryable HTTP statuses. Match the final typed <code>ClientError</code> by response status
+   and endpoint while retaining defensive <code>RetryError</code> coverage where tests
+   intentionally model a generic Requests failure.</li>
+<li>Run the focused regression file, the full regression suite, and the project
+   lint checks.</li>
+</ol>
+<p>The tests must be observed failing before the production change and passing
+after it.</p>
+<h2 id="compatibility-and-rollout">Compatibility and rollout</h2>
+<p>The change uses an urllib3 <code>Retry</code> argument available in the supported urllib3
+versions and is independent of Python version. No migration or configuration
+change is required. Release notes should describe this as exception-mapping
+correctness, note that configured status retries no longer stack with the outer
+public retry loop, and avoid presenting it as a workaround for Instagram
+throttling.</p>
+<h2 id="engineering-review">Engineering review</h2>
+<h3 id="what-already-exists">What already exists</h3>
+<ul>
+<li><code>PrivateRequestMixin</code> and <code>PublicRequestMixin</code> already build and mount urllib3
+  <code>Retry</code> strategies. The change reuses those builders instead of adding a new
+  retry layer.</li>
+<li><code>_send_private_request()</code> and <code>_send_public_request()</code> already own HTTP status
+  mapping. The change restores their ability to see the final response.</li>
+<li><code>login()</code> already catches both <code>ClientThrottledError</code> and
+  <code>PleaseWaitFewMinutes</code> around <code>pre_login_flow()</code>, so no login policy change is
+  needed.</li>
+<li><code>public_request()</code> already owns the application-level public retry loop. It
+  receives one explicit guard against repeating an adapter-exhausted status.</li>
+<li><code>Client.set_retry_config()</code> already rebuilds both adapters, so no new public
+  configuration is needed.</li>
+</ul>
+<h3 id="test-coverage-diagram">Test coverage diagram</h3>
+<div class="highlight"><pre><span></span><code>CODE PATHS                                              CALLER CONTRACTS
+[+] private Retry builder                               [+] Private request
+  |-- [GAP -&gt; PLANNED] allowed_methods branch             |-- [GAP -&gt; PLANNED] 429 -&gt; ClientThrottledError
+  `-- [GAP -&gt; PLANNED] method_whitelist fallback          `-- [GAP -&gt; PLANNED] body marker -&gt; PleaseWaitFewMinutes
+[+] public Retry builder                                [+] Public request
+  |-- [GAP -&gt; PLANNED] allowed_methods branch             |-- [GAP -&gt; PLANNED] 429 -&gt; ClientThrottledError
+  `-- [GAP -&gt; PLANNED] method_whitelist fallback          |-- [GAP -&gt; PLANNED] 503 -&gt; ClientError
+[+] Requests adapter                                      |-- [GAP -&gt; PLANNED] no duplicate outer retries
+  |-- [GAP -&gt; PLANNED] total=N produces N+1 attempts       |-- [GAP -&gt; PLANNED] total=0 retains outer retries
+  |-- [GAP -&gt; PLANNED] final status response returned      `-- [GAP -&gt; PLANNED] stream failure -&gt; typed error
+  `-- [GAP -&gt; PLANNED] connect exhaustion stays transport [+] Login
+                                                          `-- [★★ TESTED] both throttle exceptions continue login
+
+CURRENT COVERAGE: 2/14 paths tested
+PLANNED COVERAGE: 14/14 paths tested
+QUALITY TARGET: all new paths exercise behavior, boundary values, and errors
+</code></pre></div>
+<h3 id="failure-modes">Failure modes</h3>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Planned test</th>
+<th>Existing handling</th>
+<th>Caller result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Persistent private 429</td>
+<td>Yes</td>
+<td>Private HTTP mapping</td>
+<td><code>ClientThrottledError</code> or <code>PleaseWaitFewMinutes</code></td>
+</tr>
+<tr>
+<td>Persistent public 429</td>
+<td>Yes</td>
+<td>Public HTTP mapping</td>
+<td><code>ClientThrottledError</code> after one retry package</td>
+</tr>
+<tr>
+<td>Persistent public 503</td>
+<td>Yes</td>
+<td>Generic public mapping</td>
+<td><code>ClientError</code> after one retry package</td>
+</tr>
+<tr>
+<td>Closed port or DNS failure</td>
+<td>Yes</td>
+<td>Connection mapping</td>
+<td><code>ClientConnectionError</code></td>
+</tr>
+<tr>
+<td>Streaming public 429</td>
+<td>Yes</td>
+<td>Public HTTP mapping before stream return</td>
+<td><code>ClientThrottledError</code></td>
+</tr>
+<tr>
+<td>Legacy urllib3 constructor path</td>
+<td>Yes</td>
+<td><code>method_whitelist</code> fallback</td>
+<td>Same final-response contract</td>
+</tr>
+</tbody>
+</table>
+<p>No failure mode is silent, unhandled, and untested after the planned coverage.</p>
+<h3 id="not-in-scope">NOT in scope</h3>
+<ul>
+<li>Changing the configured retry totals, status list, backoff formula, or
+  <code>Retry-After</code> behavior. Those are existing public settings.</li>
+<li>Refactoring every feature mixin that calls a raw Requests session directly.
+  Those flows do not pass through the central handlers and need endpoint-specific
+  work if a concrete report shows incorrect mapping.</li>
+<li>Adding retry behavior to the optional curl transport. It has a separate adapter
+  and is unaffected by this urllib3 defect.</li>
+<li>Diagnosing or bypassing the account, IP, or risk-state reason for an Instagram
+  rate limit. The library only exposes the server response correctly.</li>
+<li>Redesigning the full public retry API. This change only prevents the two
+  existing retry layers from repeating the same configured status.</li>
+</ul>
+<h3 id="parallelization">Parallelization</h3>
+<p>Sequential implementation, no parallelization opportunity. The regression tests
+define the contract, the request mixins make them pass, and live-test/docs updates
+then align with the new exception behavior.</p>
+<h2 id="implementation-tasks">Implementation Tasks</h2>
+<ul>
+<li>[ ] <strong>T1 (P1, human: ~2h / CC: ~20min)</strong> - Retry regression tests - Add the complete fail-first retry and typed-error matrix.</li>
+<li>Surfaced by: Test review - the repository has no transport-level 429 exhaustion coverage.</li>
+<li>Files: <code>tests/regression/test_retry.py</code></li>
+<li>Verify: <code>pytest -q tests/regression/test_retry.py</code></li>
+<li>[ ] <strong>T2 (P1, human: ~1h / CC: ~15min)</strong> - Request transports - Return final status responses, prevent duplicate public retries, and type streaming failures.</li>
+<li>Surfaced by: Architecture and performance review - raw <code>RetryError</code> bypasses mapping, while naive public mapping would multiply requests.</li>
+<li>Files: <code>instagrapi/mixins/private.py</code>, <code>instagrapi/mixins/public.py</code></li>
+<li>Verify: <code>pytest -q tests/regression/test_retry.py tests/regression/test_auth_story.py</code></li>
+<li>[ ] <strong>T3 (P2, human: ~1h / CC: ~15min)</strong> - Live expectations and documentation - Replace obsolete retry-status <code>RetryError</code> assumptions and document final-response mapping.</li>
+<li>Surfaced by: Code quality review - live skips and retry documentation describe the pre-fix exception path.</li>
+<li>Files: <code>tests/live/test_media.py</code>, <code>tests/live/test_upload.py</code>, <code>docs/usage-guide/interactions.md</code></li>
+<li>Verify: <code>ruff check . &amp;&amp; ruff format --check . &amp;&amp; mkdocs build --strict</code></li>
+</ul>
+<h2 id="gstack-review-report">GSTACK REVIEW REPORT</h2>
+<table>
+<thead>
+<tr>
+<th>Review</th>
+<th>Trigger</th>
+<th>Why</th>
+<th style="text-align: right;">Runs</th>
+<th>Status</th>
+<th>Findings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CEO Review</td>
+<td><code>/plan-ceo-review</code></td>
+<td>Scope &amp; strategy</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>Not needed for a transport bug fix</td>
+</tr>
+<tr>
+<td>Codex Review</td>
+<td><code>/codex review</code></td>
+<td>Independent second opinion</td>
+<td style="text-align: right;">1</td>
+<td>ISSUES FOLDED</td>
+<td>Claude and OpenCode approved the core fix and independently found nested public retry amplification</td>
+</tr>
+<tr>
+<td>Eng Review</td>
+<td><code>/plan-eng-review</code></td>
+<td>Architecture &amp; tests (required)</td>
+<td style="text-align: right;">1</td>
+<td>CLEAR</td>
+<td>16 findings and test gaps, 0 critical gaps</td>
+</tr>
+<tr>
+<td>Design Review</td>
+<td><code>/plan-design-review</code></td>
+<td>UI/UX gaps</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>No UI scope</td>
+</tr>
+<tr>
+<td>DX Review</td>
+<td><code>/plan-devex-review</code></td>
+<td>Developer experience gaps</td>
+<td style="text-align: right;">0</td>
+<td>-</td>
+<td>No separate DX review needed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CROSS-MODEL:</strong> Plan Eng, Claude, and OpenCode <code>ox-alpha</code> agree on <code>raise_on_status=False</code>; the user selected guards against nested public retries and typed streaming errors.</p>
+<p><strong>VERDICT:</strong> ENG CLEARED - ready to implement with TDD.</p>
+<p>NO UNRESOLVED DECISIONS</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

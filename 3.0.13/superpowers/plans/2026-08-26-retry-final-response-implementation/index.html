@@ -1,0 +1,1955 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://subzeroid.github.io/instagrapi/3.0.13/superpowers/plans/2026-08-26-retry-final-response-implementation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Retry Final-Response Mapping Implementation Plan - instagrapi Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#retry-final-response-mapping-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="instagrapi Documentation" class="md-header__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            instagrapi Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Retry Final-Response Mapping Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="instagrapi Documentation" class="md-nav__button md-logo" aria-label="instagrapi Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    instagrapi Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subzeroid/instagrapi/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subzeroid/instagrapi
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Usage Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/fundamentals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fundamentals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/interactions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/login-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Login Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/totp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TOTP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/challenge_resolver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Challenge Resolver
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/handle_exception/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Handle Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Collection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/comment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Comment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/direct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Direct
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/realtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Realtime MQTT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/hashtag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hashtag
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/highlight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Highlight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/insight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/location/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Location
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/media/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Media
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/notes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/pydroid/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydroid and ffmpeg
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/public-transport/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Public Transport
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/story/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Story
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/termux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Termux
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/track/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Track
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/user/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/account/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../usage-guide/best-practices/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Best Practices
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../development-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="File structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-1-lock-the-retry-strategy-and-final-response-transport-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1: Lock the Retry strategy and final-response transport contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-2-prevent-duplicate-public-retry-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2: Prevent duplicate public retry packages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-3-apply-typed-mapping-to-public-streaming-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3: Apply typed mapping to public streaming failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-4-pin-private-body-aware-mapping-and-connection-exhaustion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4: Pin private body-aware mapping and connection exhaustion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-5-align-live-test-status-detection-and-user-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 5: Align live-test status detection and user documentation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-6-final-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 6: Final verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="retry-final-response-mapping-implementation-plan">Retry Final-Response Mapping Implementation Plan</h1>
+<blockquote>
+<p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p>
+</blockquote>
+<p><strong>Goal:</strong> Return the final retryable HTTP response to instagrapi's typed error handlers without multiplying public retries or bypassing mapping for streaming requests.</p>
+<p><strong>Architecture:</strong> Keep urllib3 responsible for status retries and instagrapi responsible for HTTP semantics. Configure both Requests adapters with <code>raise_on_status=False</code>, stop the outer public loop when the adapter has already exhausted the same configured status, and run public streaming responses through <code>raise_for_status()</code> before returning the open response.</p>
+<p><strong>Tech Stack:</strong> Python 3.10+, Requests 2.34, urllib3 <code>Retry</code>, <code>unittest</code>/pytest, local <code>ThreadingHTTPServer</code>, Ruff, MkDocs.</p>
+<hr />
+<h2 id="file-structure">File structure</h2>
+<ul>
+<li>Create <code>tests/regression/test_retry.py</code>: deterministic transport, retry-count, typed-mapping, compatibility-fallback, streaming, and connection regressions.</li>
+<li>Modify <code>instagrapi/mixins/private.py</code>: return the final response after private status retry exhaustion.</li>
+<li>Modify <code>instagrapi/mixins/public.py</code>: return final public responses, prevent nested retry packages, and map stream failures before returning.</li>
+<li>Modify <code>tests/helpers.py</code>: recognize retryable HTTP status failures in both old <code>RetryError</code> and new typed <code>ClientError</code> forms for live-test skips.</li>
+<li>Modify <code>tests/live/test_media.py</code>: retain the IGTV 500 skip and linked-Reel fallback under typed status errors.</li>
+<li>Modify <code>tests/live/test_upload.py</code>: retain IGTV and scheduled-publish availability handling under typed status errors.</li>
+<li>Modify <code>docs/usage-guide/interactions.md</code>: document how adapter and outer public retries compose.</li>
+</ul>
+<h3 id="task-1-lock-the-retry-strategy-and-final-response-transport-contract">Task 1: Lock the Retry strategy and final-response transport contract</h3>
+<p><strong>Files:</strong>
+- Create: <code>tests/regression/test_retry.py</code>
+- Modify: <code>instagrapi/mixins/private.py:170-184</code>
+- Modify: <code>instagrapi/mixins/public.py:144-158</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Add deterministic status-server and response helpers</strong></li>
+</ul>
+<p>Create <code>tests/regression/test_retry.py</code> with these imports and helpers:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">unittest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">http.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseHTTPRequestHandler</span><span class="p">,</span> <span class="n">ThreadingHTTPServer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">unittest</span><span class="w"> </span><span class="kn">import</span> <span class="n">mock</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ClientConnectionError</span><span class="p">,</span>
+    <span class="n">ClientError</span><span class="p">,</span>
+    <span class="n">ClientThrottledError</span><span class="p">,</span>
+    <span class="n">PleaseWaitFewMinutes</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">private</span> <span class="k">as</span> <span class="n">private_mixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins</span><span class="w"> </span><span class="kn">import</span> <span class="n">public</span> <span class="k">as</span> <span class="n">public_mixin</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">status_server</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span> <span class="ow">or</span> <span class="p">{</span><span class="s2">"message"</span><span class="p">:</span> <span class="s2">"rate limited"</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">})</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">Handler</span><span class="p">(</span><span class="n">BaseHTTPRequestHandler</span><span class="p">):</span>
+        <span class="n">hits</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">do_GET</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">hits</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_response</span><span class="p">(</span><span class="n">status_code</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">"Content-Type"</span><span class="p">,</span> <span class="s2">"application/json"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">"Content-Length"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">body</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_header</span><span class="p">(</span><span class="s2">"Retry-After"</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end_headers</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">log_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">return</span>
+
+    <span class="n">server</span> <span class="o">=</span> <span class="n">ThreadingHTTPServer</span><span class="p">((</span><span class="s2">"127.0.0.1"</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">Handler</span><span class="p">)</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">,</span> <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="sa">f</span><span class="s2">"http://127.0.0.1:</span><span class="si">{</span><span class="n">server</span><span class="o">.</span><span class="n">server_port</span><span class="si">}</span><span class="s2">/retry"</span><span class="p">,</span> <span class="n">Handler</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="n">server</span><span class="o">.</span><span class="n">server_close</span><span class="p">()</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">response_with_json</span><span class="p">(</span><span class="n">status_code</span><span class="p">,</span> <span class="n">payload</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Response</span><span class="p">()</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">=</span> <span class="n">status_code</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">"Content-Type"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"application/json"</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">request</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span><span class="s2">"GET"</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">prepare</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">response</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span>
+        <span class="n">request_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">public_request_retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">session_retry_total</span><span class="o">=</span><span class="n">total</span><span class="p">,</span>
+        <span class="n">session_retry_backoff_factor</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">delay_range</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">last_response_ts</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">public</span><span class="o">.</span><span class="n">trust_env</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">private</span><span class="o">.</span><span class="n">trust_env</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">client</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Write failing tests for both modern Retry builders and both legacy fallbacks</strong></li>
+</ul>
+<p>Add <code>RetryRegressionTestCase</code> with:</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RetryRegressionTestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_retry_strategies_return_final_status_response</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">session_retry_backoff_factor</span> <span class="o">=</span> <span class="mf">0.25</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">session_retry_statuses</span> <span class="o">=</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">503</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">strategy</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">_build_private_session_retry_strategy</span><span class="p">(),</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">_build_public_session_retry_strategy</span><span class="p">(),</span>
+        <span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">raise_on_status</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">total</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">backoff_factor</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">status_forcelist</span><span class="p">,</span> <span class="p">[</span><span class="mi">429</span><span class="p">,</span> <span class="mi">503</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">allowed_methods</span><span class="p">,</span> <span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_legacy_retry_fallback_returns_final_status_response</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">module</span><span class="p">,</span> <span class="n">builder_name</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">private_mixin</span><span class="p">,</span> <span class="s2">"_build_private_session_retry_strategy"</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">public_mixin</span><span class="p">,</span> <span class="s2">"_build_public_session_retry_strategy"</span><span class="p">),</span>
+        <span class="p">):</span>
+            <span class="n">calls</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">legacy_retry</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="n">calls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">"allowed_methods"</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"legacy urllib3"</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">kwargs</span>
+
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"Retry"</span><span class="p">,</span> <span class="n">side_effect</span><span class="o">=</span><span class="n">legacy_retry</span><span class="p">):</span>
+                    <span class="n">strategy</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">builder_name</span><span class="p">)()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"raise_on_status"</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">strategy</span><span class="p">[</span><span class="s2">"method_whitelist"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">calls</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Write failing real-adapter tests for private and public sessions</strong></li>
+</ul>
+<p>Add:</p>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_private_session_returns_final_429_after_configured_attempts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">429</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">private</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">429</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_request_maps_final_429_after_configured_attempts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">429</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">)</span> <span class="k">as</span> <span class="n">raised</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">_send_public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">return_json</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">raised</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">429</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 4: Run Task 1 tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"strategies or legacy or private_session or public_request_maps"</span>
+</code></pre></div>
+<p>Expected: failures show <code>raise_on_status</code> is still <code>True</code>, the legacy kwargs omit <code>raise_on_status</code>, and the real sessions raise <code>requests.exceptions.RetryError</code> instead of returning or mapping the final response.</p>
+<ul>
+<li>[ ] <strong>Step 5: Implement the minimal Retry change</strong></li>
+</ul>
+<p>In both builders, add the same keyword to both constructor branches:</p>
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">Retry</span><span class="p">(</span>
+    <span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_total</span><span class="p">,</span>
+    <span class="n">status_forcelist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_statuses</span><span class="p">,</span>
+    <span class="n">allowed_methods</span><span class="o">=</span><span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">],</span>
+    <span class="n">backoff_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_backoff_factor</span><span class="p">,</span>
+    <span class="n">raise_on_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>and:</p>
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">Retry</span><span class="p">(</span>
+    <span class="n">total</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_total</span><span class="p">,</span>
+    <span class="n">status_forcelist</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_statuses</span><span class="p">,</span>
+    <span class="n">method_whitelist</span><span class="o">=</span><span class="p">[</span><span class="s2">"GET"</span><span class="p">,</span> <span class="s2">"POST"</span><span class="p">],</span>
+    <span class="n">backoff_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">session_retry_backoff_factor</span><span class="p">,</span>
+    <span class="n">raise_on_status</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 6: Run Task 1 tests and verify GREEN</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"strategies or legacy or private_session or public_request_maps"</span>
+</code></pre></div>
+<p>Expected: all selected tests pass with exactly three attempts for <code>total=2</code>.</p>
+<ul>
+<li>[ ] <strong>Step 7: Commit Task 1</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>instagrapi/mixins/private.py<span class="w"> </span>instagrapi/mixins/public.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"fix: return final response after status retries"</span>
+</code></pre></div>
+<h3 id="task-2-prevent-duplicate-public-retry-packages">Task 2: Prevent duplicate public retry packages</h3>
+<p><strong>Files:</strong>
+- Modify: <code>tests/regression/test_retry.py</code>
+- Modify: <code>instagrapi/mixins/public.py:227-255</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write a failing 429 amplification test and a zero-transport-retry contract test</strong></li>
+</ul>
+<p>Add:</p>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_request_does_not_repeat_adapter_exhausted_429</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">429</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">):</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">retries_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_request_retains_outer_retries_when_transport_retries_are_disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">total</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">subTest</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">):</span>
+                <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
+
+                <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">429</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">):</span>
+                        <span class="n">client</span><span class="o">.</span><span class="n">public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">retries_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_request_retains_outer_retries_for_curl_transport</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">public_transport</span> <span class="o">=</span> <span class="s2">"curl"</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">response_with_json</span><span class="p">(</span>
+            <span class="mi">429</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">"message"</span><span class="p">:</span> <span class="s2">"rate limited"</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">},</span>
+            <span class="s2">"https://www.instagram.com/test/"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">ClientThrottledError</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="s2">"_send_public_request"</span><span class="p">,</span> <span class="n">side_effect</span><span class="o">=</span><span class="n">error</span><span class="p">)</span> <span class="k">as</span> <span class="n">send</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">):</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">public_request</span><span class="p">(</span><span class="s2">"https://www.instagram.com/test/"</span><span class="p">,</span> <span class="n">retries_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">send</span><span class="o">.</span><span class="n">call_count</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Add a failing 503 amplification test</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_request_does_not_repeat_adapter_exhausted_503</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">503</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientError</span><span class="p">)</span> <span class="k">as</span> <span class="n">raised</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">retries_count</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">retries_timeout</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">raised</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">503</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Run Task 2 tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"does_not_repeat or retains_outer"</span>
+</code></pre></div>
+<p>Expected: the 429 and 503 amplification tests report six hits instead of three; the <code>total=0</code> preservation test passes with two hits.</p>
+<ul>
+<li>[ ] <strong>Step 4: Add the public outer-loop guard</strong></li>
+</ul>
+<p>At the start of <code>except ClientError as e:</code> in <code>public_request()</code> add:</p>
+<div class="highlight"><pre><span></span><code><span class="n">response_status</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">"status_code"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">public_transport</span> <span class="o">==</span> <span class="s2">"requests"</span>
+    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_retry_total</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="ow">and</span> <span class="n">response_status</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_retry_statuses</span>
+<span class="p">):</span>
+    <span class="k">raise</span>
+</code></pre></div>
+<p>Keep the existing SOCKS connection special case and application retry loop unchanged below it.</p>
+<ul>
+<li>[ ] <strong>Step 5: Run Task 2 tests and verify GREEN</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"does_not_repeat or retains_outer"</span>
+</code></pre></div>
+<p>Expected: all three selected tests pass; <code>total=2</code> produces three hits and <code>total=0</code> produces two outer-loop hits.</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit Task 2</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>instagrapi/mixins/public.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"fix: avoid duplicate public status retries"</span>
+</code></pre></div>
+<h3 id="task-3-apply-typed-mapping-to-public-streaming-failures">Task 3: Apply typed mapping to public streaming failures</h3>
+<p><strong>Files:</strong>
+- Modify: <code>tests/regression/test_retry.py</code>
+- Modify: <code>instagrapi/mixins/public.py:299-324</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Write the failing streaming 429 test</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_stream_maps_final_429_before_returning</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">429</span><span class="p">)</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">)</span> <span class="k">as</span> <span class="n">raised</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">_send_public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">raised</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">closed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">hits</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Pin the successful streaming response contract</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_stream_returns_open_success_response</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">status_server</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">})</span> <span class="k">as</span> <span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">_handler</span><span class="p">):</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">_send_public_request</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">_content</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Run the streaming tests and verify RED</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"public_stream"</span>
+</code></pre></div>
+<p>Expected: the 429 test fails because a raw response is returned; the successful-stream characterization passes.</p>
+<ul>
+<li>[ ] <strong>Step 4: Move stream return after status validation without consuming the body</strong></li>
+</ul>
+<p>Replace the early stream return and unconditional content-length block with:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="ow">not</span> <span class="n">stream</span><span class="p">:</span>
+    <span class="n">expected_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"Content-Length"</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">actual_length</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">raw</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">actual_length</span> <span class="o">&lt;</span> <span class="n">expected_length</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ClientIncompleteReadError</span><span class="p">(</span>
+            <span class="s2">"Incomplete read (</span><span class="si">{}</span><span class="s2"> bytes read, </span><span class="si">{}</span><span class="s2"> more expected)"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">actual_length</span><span class="p">,</span> <span class="n">expected_length</span><span class="p">),</span>
+            <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div>
+<p>Keep logging and <code>self.last_public_response = response</code>, then place this directly after <code>response.raise_for_status()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">response</span>
+</code></pre></div>
+<p>In <code>except requests.HTTPError as e:</code>, close only an errored streaming response before mapping it so the connection is
+released while the typed exception retains status and headers:</p>
+<div class="highlight"><pre><span></span><code><span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+    <span class="n">e</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Run the streaming tests and verify GREEN</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"public_stream"</span>
+</code></pre></div>
+<p>Expected: both tests pass, and the successful response body remains unread.</p>
+<ul>
+<li>[ ] <strong>Step 6: Commit Task 3</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>instagrapi/mixins/public.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"fix: map public streaming HTTP errors"</span>
+</code></pre></div>
+<h3 id="task-4-pin-private-body-aware-mapping-and-connection-exhaustion">Task 4: Pin private body-aware mapping and connection exhaustion</h3>
+<p><strong>Files:</strong>
+- Modify: <code>tests/regression/test_retry.py</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Add private handler characterization tests</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_private_final_429_maps_to_client_throttled_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">response_with_json</span><span class="p">(</span>
+            <span class="mi">429</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">"message"</span><span class="p">:</span> <span class="s2">"rate limited"</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">},</span>
+            <span class="s2">"https://i.instagram.com/api/v1/test/"</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">private</span><span class="p">,</span> <span class="s2">"get"</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">response</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientThrottledError</span><span class="p">)</span> <span class="k">as</span> <span class="n">raised</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">_send_private_request</span><span class="p">(</span><span class="s2">"test/"</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIs</span><span class="p">(</span><span class="n">raised</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_private_final_429_with_wait_message_maps_to_please_wait</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">response_with_json</span><span class="p">(</span>
+            <span class="mi">429</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Please wait a few minutes before you try again."</span><span class="p">,</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">},</span>
+            <span class="s2">"https://i.instagram.com/api/v1/test/"</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">object</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">private</span><span class="p">,</span> <span class="s2">"get"</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="n">response</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">PleaseWaitFewMinutes</span><span class="p">)</span> <span class="k">as</span> <span class="n">raised</span><span class="p">:</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">_send_private_request</span><span class="p">(</span><span class="s2">"test/"</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIs</span><span class="p">(</span><span class="n">raised</span><span class="o">.</span><span class="n">exception</span><span class="o">.</span><span class="n">response</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Add the non-status exhaustion guard test</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_public_connection_exhaustion_remains_client_connection_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">retry_client</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">probe</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">()</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s2">"127.0.0.1"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">getsockname</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">probe</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">ClientConnectionError</span><span class="p">):</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">_send_public_request</span><span class="p">(</span><span class="sa">f</span><span class="s2">"http://127.0.0.1:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">/"</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Run Task 4 tests</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"private_final or connection_exhaustion"</span>
+</code></pre></div>
+<p>Expected: all three characterization/guard tests pass. These pin existing handler behavior and prove <code>raise_on_status=False</code> does not alter connection exhaustion.</p>
+<ul>
+<li>[ ] <strong>Step 4: Run the complete focused regression file</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py
+</code></pre></div>
+<p>Expected: all retry regressions pass with no warnings.</p>
+<ul>
+<li>[ ] <strong>Step 5: Commit Task 4</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>tests/regression/test_retry.py
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"test: cover retry exception contracts"</span>
+</code></pre></div>
+<h3 id="task-5-align-live-test-status-detection-and-user-documentation">Task 5: Align live-test status detection and user documentation</h3>
+<p><strong>Files:</strong>
+- Modify: <code>tests/helpers.py</code>
+- Modify: <code>tests/live/test_media.py</code>
+- Modify: <code>tests/live/test_upload.py</code>
+- Modify: <code>docs/usage-guide/interactions.md:172-191</code></p>
+<ul>
+<li>[ ] <strong>Step 1: Add a shared old/new retry-status predicate</strong></li>
+</ul>
+<p>Add this top-level helper to <code>tests/helpers.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_retryable_http_status_error</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">statuses</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">statuses</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">statuses</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">status_code</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">"status_code"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="s2">"code"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">response_url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="s2">"url"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">status_code</span> <span class="ow">in</span> <span class="n">statuses</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">endpoint</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">response_url</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">RetryError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">endpoint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="n">message</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> error responses"</span> <span class="ow">in</span> <span class="n">message</span> <span class="k">for</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">statuses</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 2: Test the shared predicate's typed and legacy forms</strong></li>
+</ul>
+<p>Add these imports and tests to <code>tests/regression/test_retry.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">requests.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">RetryError</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">tests.helpers</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_retryable_http_status_error</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">test_retryable_http_status_error_accepts_typed_status_and_legacy_retry_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">response_with_json</span><span class="p">(</span>
+            <span class="mi">500</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">},</span>
+            <span class="s2">"https://i.instagram.com/api/v1/media/configure_to_igtv/"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">typed_error</span> <span class="o">=</span> <span class="n">ClientError</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+        <span class="n">legacy_error</span> <span class="o">=</span> <span class="n">RetryError</span><span class="p">(</span><span class="s2">"configure_to_igtv: too many 500 error responses"</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">typed_error</span><span class="p">,</span> <span class="p">{</span><span class="mi">500</span><span class="p">},</span> <span class="s2">"configure_to_igtv"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">legacy_error</span><span class="p">,</span> <span class="p">{</span><span class="mi">500</span><span class="p">},</span> <span class="s2">"configure_to_igtv"</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_retryable_http_status_error_rejects_wrong_status_or_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">response_with_json</span><span class="p">(</span>
+            <span class="mi">400</span><span class="p">,</span>
+            <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"fail"</span><span class="p">},</span>
+            <span class="s2">"https://i.instagram.com/api/v1/media/configure/"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">ClientError</span><span class="p">(</span><span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="p">{</span><span class="mi">500</span><span class="p">},</span> <span class="s2">"configure_to_igtv"</span><span class="p">))</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 3: Run the predicate tests</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>-k<span class="w"> </span><span class="s2">"retryable_http_status_error"</span>
+</code></pre></div>
+<p>Expected: all predicate cases pass. This is test infrastructure; every production behavior remains governed by a separate observed RED/GREEN cycle.</p>
+<ul>
+<li>[ ] <strong>Step 4: Update both IGTV live-test skips</strong></li>
+</ul>
+<p>In <code>tests/live/test_media.py</code> and <code>tests/live/test_upload.py</code>, replace the <code>except RetryError</code> block with:</p>
+<div class="highlight"><pre><span></span><code><span class="k">except</span> <span class="p">(</span><span class="n">ClientError</span><span class="p">,</span> <span class="n">RetryError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="p">{</span><span class="mi">500</span><span class="p">},</span> <span class="n">endpoint</span><span class="o">=</span><span class="s2">"configure_to_igtv"</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skipTest</span><span class="p">(</span><span class="s2">"Instagram returned server 500 for configure_to_igtv"</span><span class="p">)</span>
+    <span class="k">raise</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 5: Preserve the linked-Reel fallback for typed retryable statuses</strong></li>
+</ul>
+<p>In <code>tests/live/test_media.py</code>, replace the linked-Reel upload fallback with:</p>
+<div class="highlight"><pre><span></span><code>            <span class="k">except</span> <span class="p">(</span><span class="n">ClientError</span><span class="p">,</span> <span class="n">RetryError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">exc</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">ClipNotUpload</span><span class="p">,</span> <span class="n">PhotoNotUpload</span><span class="p">,</span> <span class="n">LoginRequired</span><span class="p">,</span> <span class="n">PleaseWaitFewMinutes</span><span class="p">,</span> <span class="n">ClientThrottledError</span><span class="p">),</span>
+                <span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="n">client</span><span class="o">.</span><span class="n">session_retry_statuses</span><span class="p">):</span>
+                    <span class="k">raise</span>
+                <span class="n">upload_failures</span><span class="p">[</span><span class="n">exc</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">]</span> <span class="o">=</span> <span class="n">upload_failures</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+</code></pre></div>
+<p>This keeps the previous known upload exceptions and transport <code>RetryError</code> fallback while admitting only configured
+retryable HTTP statuses from the broader <code>ClientError</code> family.</p>
+<ul>
+<li>[ ] <strong>Step 6: Update scheduled-publish availability handling</strong></li>
+</ul>
+<p>In <code>tests/live/test_upload.py</code>, replace the existing scheduled-publish exception checks with this shared method and the two call sites below:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_scheduled_publish_unavailable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="p">(</span><span class="n">ClientNotFoundError</span><span class="p">,</span> <span class="n">ClientThrottledError</span><span class="p">,</span> <span class="n">PleaseWaitFewMinutes</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="n">is_retryable_http_status_error</span><span class="p">(</span><span class="n">exc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cl</span><span class="o">.</span><span class="n">session_retry_statuses</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">skip_unavailable_scheduled_publish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">exc</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_scheduled_publish_unavailable</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skipTest</span><span class="p">(</span><span class="s2">"No usable scheduled publishing account was available"</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="n">exc</span>
+</code></pre></div>
+<p>In <code>upload_with_scheduled_publish()</code>, use:</p>
+<div class="highlight"><pre><span></span><code><span class="k">try</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">upload</span><span class="p">()</span>
+<span class="k">except</span> <span class="p">(</span><span class="n">ClientError</span><span class="p">,</span> <span class="n">RetryError</span><span class="p">)</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_scheduled_publish_unavailable</span><span class="p">(</span><span class="n">exc</span><span class="p">):</span>
+        <span class="k">raise</span>
+    <span class="n">last_exc</span> <span class="o">=</span> <span class="n">exc</span>
+    <span class="k">continue</span>
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 7: Document retry-layer composition</strong></li>
+</ul>
+<p>After the <code>set_retry_config()</code> example in <code>docs/usage-guide/interactions.md</code>, add:</p>
+<div class="highlight"><pre><span></span><code>For the default Requests transport, <span class="sb">`session_retry_total`</span> controls adapter-level attempts for <span class="sb">`session_retry_statuses`</span>. After those attempts are exhausted, instagrapi receives the final response and raises its normal typed exception, such as <span class="sb">`ClientThrottledError`</span> for HTTP 429. When adapter retries are enabled, <span class="sb">`public_request()`</span> does not start a second retry package for the same configured status; when <span class="sb">`session_retry_total=0`</span>, the existing <span class="sb">`public_request_retries_count`</span> loop remains active. Connection, TLS, DNS, and timeout exhaustion remain transport errors because there is no final HTTP response to map. The optional curl public transport uses its own adapter and is unaffected by these urllib3 settings.
+</code></pre></div>
+<ul>
+<li>[ ] <strong>Step 8: Run focused live-test syntax and documentation checks</strong></li>
+</ul>
+<p>Run:</p>
+<div class="highlight"><pre><span></span><code>.venv/bin/python<span class="w"> </span>-m<span class="w"> </span>py_compile<span class="w"> </span>tests/live/test_media.py<span class="w"> </span>tests/live/test_upload.py
+.venv/bin/ruff<span class="w"> </span>check<span class="w"> </span>tests/helpers.py<span class="w"> </span>tests/live/test_media.py<span class="w"> </span>tests/live/test_upload.py<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>instagrapi/mixins/private.py<span class="w"> </span>instagrapi/mixins/public.py
+.venv/bin/ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>tests/helpers.py<span class="w"> </span>tests/live/test_media.py<span class="w"> </span>tests/live/test_upload.py<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>instagrapi/mixins/private.py<span class="w"> </span>instagrapi/mixins/public.py
+.venv/bin/mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+</code></pre></div>
+<p>Expected: live modules compile, Ruff reports no errors or formatting changes, and MkDocs completes without errors. Full
+pytest collection is intentionally avoided because these unittest classes log into configured Instagram accounts while
+pytest constructs them, even under <code>--collect-only</code>.</p>
+<ul>
+<li>[ ] <strong>Step 9: Commit Task 5</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>tests/helpers.py<span class="w"> </span>tests/live/test_media.py<span class="w"> </span>tests/live/test_upload.py<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>docs/usage-guide/interactions.md
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"test: align retry status expectations"</span>
+</code></pre></div>
+<h3 id="task-6-final-verification">Task 6: Final verification</h3>
+<p><strong>Files:</strong>
+- Verify all modified files.</p>
+<ul>
+<li>[ ] <strong>Step 1: Run focused retry and login regressions</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>tests/regression/test_auth_story.py<span class="w"> </span>tests/regression/test_public.py
+</code></pre></div>
+<p>Expected: all focused regressions pass.</p>
+<ul>
+<li>[ ] <strong>Step 2: Run all repository quality gates</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>.venv/bin/ruff<span class="w"> </span>check<span class="w"> </span>.
+.venv/bin/ruff<span class="w"> </span>format<span class="w"> </span>--check<span class="w"> </span>.
+.venv/bin/pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression
+.venv/bin/bandit<span class="w"> </span>-c<span class="w"> </span>pyproject.toml<span class="w"> </span>-r<span class="w"> </span>instagrapi
+.venv/bin/mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+.venv/bin/pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</code></pre></div>
+<p>Expected: every command exits zero; no test, lint, security, documentation, or hook failures.</p>
+<ul>
+<li>[ ] <strong>Step 3: Review the final diff against the approved design</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>diff<span class="w"> </span>origin/master...HEAD<span class="w"> </span>--stat
+git<span class="w"> </span>diff<span class="w"> </span>origin/master...HEAD<span class="w"> </span>--<span class="w"> </span>instagrapi/mixins/private.py<span class="w"> </span>instagrapi/mixins/public.py<span class="w"> </span>tests/regression/test_retry.py<span class="w"> </span>tests/helpers.py<span class="w"> </span>tests/live/test_media.py<span class="w"> </span>tests/live/test_upload.py<span class="w"> </span>docs/usage-guide/interactions.md
+</code></pre></div>
+<p>Expected: the diff contains only the approved retry mapping, duplicate-loop guard, streaming mapping, tests, and documentation.</p>
+<ul>
+<li>[ ] <strong>Step 4: Commit any final plan-status update separately</strong></li>
+</ul>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>add<span class="w"> </span>docs/superpowers/plans/2026-08-26-retry-final-response-implementation.md<span class="w"> </span>docs/superpowers/specs/2026-08-25-retry-final-response-design.md
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"docs: finalize retry response plan"</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
