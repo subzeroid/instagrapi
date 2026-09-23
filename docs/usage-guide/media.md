@@ -80,9 +80,9 @@ Low level methods:
 | media_info_gql(media_pk: str) | Media | Get media from PK via public GraphQL API. Falls back from legacy `query_hash` to the newer `doc_id` media query when available. |
 | media_info_v1(media_pk: str) | Media | Get media from PK via private mobile API |
 | media_info_v2(media_id: str) | Media | Alternative source for media info via `discover/media_metadata/` (`media_or_ad` payload). Useful as fallback when `media_info_v1` fails on certain ad-tagged or sponsored media. Strips `_userid` suffix automatically. |
-| user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media via public GraphQL API |
-| user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one public GraphQL page of user media |
-| user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0) | Tuple[List\[Media], str] | Compatibility alias for one public GraphQL page of user media |
+| user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media from the private app GraphQL timeline, falling back to public GraphQL on a client error |
+| user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one page from the private app GraphQL timeline, falling back to public GraphQL on a client error |
+| user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0) | Tuple[List\[Media], str] | Compatibility alias for `user_medias_paginated_gql` |
 | user_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get user media via private mobile API |
 | user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of user media |
 | user_medias_chunk_v1(user_id: str, end_cursor: str = "") | Tuple[List\[Media], str] | Compatibility alias for one private API page of user media |
