@@ -83,6 +83,10 @@ class MediaMixin:
             media["id"] = f"{media_id}_{user['pk']}"
         if "taken_at" not in media and "1ltaken_at" in media:
             media["taken_at"] = media["1ltaken_at"]
+        if media.get("carousel_media"):
+            media["carousel_media"] = [
+                MediaMixin._normalize_xdt_profile_media(item) for item in media["carousel_media"]
+            ]
         return media
 
     @staticmethod
