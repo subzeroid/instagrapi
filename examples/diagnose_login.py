@@ -28,6 +28,7 @@ ERROR_TYPES = {
     "challenge_required",
     "checkpoint_required",
     "login_required",
+    "needs_upgrade",
     "two_factor_required",
     "rate_limit_error",
     "sentry_block",
@@ -59,6 +60,8 @@ def message_category(value):
     if not isinstance(value, str) or not value:
         return None
     text = value.lower()
+    if text.startswith("your version of instagram is out of date"):
+        return "app_out_of_date"
     if "email" in text and "back into your account" in text:
         return "email_account_recovery"
     for marker in (
