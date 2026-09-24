@@ -111,6 +111,21 @@ class PublicRegressionTestCase(unittest.TestCase):
         self.assertFalse(kwargs["update_headers"])
         self.assertTrue(kwargs["return_json"])
 
+    def test_public_doc_id_graphql_request_posts_current_dtsg_from_html(self):
+        client = Client()
+        html = '<script>["LSD",[],{"token":"lsd-token"}]</script><script>["DTSGInitData",[],{"token":"dtsg-token"}]</script>'
+
+        with mock.patch.object(client, "public_request", side_effect=[html, {"data": {"ok": True}}]) as request:
+            result = client.public_doc_id_graphql_request(
+                "27830990013244856",
+                {"shortcode": "DaHEdwgogl4"},
+                include_lsd=True,
+                include_fb_dtsg=True,
+            )
+
+        self.assertEqual(result, {"ok": True})
+        self.assertEqual(request.call_args_list[1].kwargs["data"]["fb_dtsg"], "dtsg-token")
+
     def test_public_request_maps_challenge_redirect_html_to_login_required(self):
         client = Client()
         client.request_timeout = 0
@@ -278,14 +293,16 @@ class PublicRegressionTestCase(unittest.TestCase):
                 media = client.media_info_gql("2110901750722920960")
 
         doc_id_request.assert_called_once_with(
-            "27128499623469141",
+            "27830990013244856",
             {
                 "shortcode": "B1LbfVPlwIA",
-                "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+                "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": False,
+                "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": True,
             },
             referer="https://www.instagram.com/p/B1LbfVPlwIA/",
             url=client.GRAPHQL_PUBLIC_WEB_API_URL,
             include_lsd=True,
+            include_fb_dtsg=True,
             headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
         )
         self.assertEqual(media.media_type, 2)
@@ -362,14 +379,16 @@ class PublicRegressionTestCase(unittest.TestCase):
                 media = client.media_info_gql("3929128837042014584")
 
         doc_id_request.assert_called_once_with(
-            "27128499623469141",
+            "27830990013244856",
             {
                 "shortcode": "DaHEdwgogl4",
-                "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+                "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": False,
+                "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": True,
             },
             referer="https://www.instagram.com/p/DaHEdwgogl4/",
             url=client.GRAPHQL_PUBLIC_WEB_API_URL,
             include_lsd=True,
+            include_fb_dtsg=True,
             headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
         )
         self.assertEqual(media.pk, "3929128837042014584")

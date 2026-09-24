@@ -167,7 +167,18 @@ class PublicRequestMixin:
                 raise RuntimeError(
                     "curl public transport requires the optional curl extra: pip install instagrapi[curl]"
                 ) from exc
-            adapter = CurlCffiAdapter(impersonate_browser_type=self.public_transport_impersonate)
+            try:
+                from curl_cffi.requests.impersonate import resolve_latest_browser_type as normalize_browser_type
+            except ImportError:
+                from curl_cffi.requests.impersonate import normalize_browser_type
+
+            class BrowserCurlAdapter(CurlCffiAdapter):
+                def set_curl_options(self, curl, *args, **kwargs):
+                    super().set_curl_options(curl, *args, **kwargs)
+                    # curl-adapter disables browser defaults; public web GraphQL requires them.
+                    curl.impersonate(normalize_browser_type(self.impersonate_browser_type), default_headers=True)
+
+            adapter = BrowserCurlAdapter(impersonate_browser_type=self.public_transport_impersonate)
         else:
             adapter = HTTPAdapter(max_retries=self._build_public_session_retry_strategy())
         self.public.mount("https://", adapter)
@@ -475,6 +486,13 @@ class PublicRequestMixin:
         match = re.search(r'"LSD",\[\],\{"token":"([^"]+)"', html)
         return match.group(1) if match else None
 
+    @staticmethod
+    def _extract_public_fb_dtsg_token(html: str) -> Optional[str]:
+        if not html:
+            return None
+        match = re.search(r'\["DTSG(?:Init|Initial)Data",\[\],\{"token":"([^"]+)"', html)
+        return match.group(1) if match else None
+
     def public_doc_id_graphql_request(
         self,
         doc_id: str,
@@ -483,6 +501,7 @@ class PublicRequestMixin:
         headers: Optional[Dict[str, str]] = None,
         url: Optional[str] = None,
         include_lsd: bool = False,
+        include_fb_dtsg: bool = False,
     ) -> Dict[str, Any]:
         """
         POST a doc_id-based GraphQL query to Instagram's public web endpoints.
@@ -502,11 +521,15 @@ class PublicRequestMixin:
         query_url = url or self.GRAPHQL_PUBLIC_API_URL
         referer_url = referer or "https://www.instagram.com/"
         lsd = None
-        if include_lsd:
+        if include_lsd or include_fb_dtsg:
             html = self.public_request(referer_url, return_json=False)
             lsd = self._extract_public_lsd_token(html)
             if lsd:
                 data["lsd"] = lsd
+            if include_fb_dtsg:
+                fb_dtsg = self._extract_public_fb_dtsg_token(html)
+                if fb_dtsg:
+                    data["fb_dtsg"] = fb_dtsg
         merged_headers = {
             "Accept": "*/*",
             "Accept-Encoding": "gzip, deflate",

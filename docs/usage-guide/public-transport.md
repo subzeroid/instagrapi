@@ -58,6 +58,8 @@ Observed failures:
 * `curl` avoided those `429` responses in early rounds, then hit `401` on the same public endpoint;
 * both transports hit `404` on the tested public media info path.
 
+On September 24, 2026, `media_info_gql` with `public_transport="curl"` returned a current public carousel post using a saved session. The default `requests` transport returned HTML for that GraphQL call. This single-post check is separate from the historical May comparison above; public document IDs and access behavior can change.
+
 ## Recommendation
 
 Use the default `requests` transport unless you specifically need public web endpoints that are being rate limited or
