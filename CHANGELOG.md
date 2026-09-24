@@ -2,6 +2,13 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.14 — 2026-09-25
+
+- Restore `media_info_gql()` for the optional `public_transport="curl"` path using the current PostRoot document, `fb_dtsg` token, and browser headers (#2835). The default `requests` transport still received HTML for the sampled GraphQL call; private media lookup is unchanged.
+- Preserve the `needs_upgrade` type and known outdated-app message category in the sanitized `examples/diagnose_login.py` report (#2834). This diagnostic change does not alter login behavior or resolve #2807.
+- Clarify that `user_medias*_gql()` uses app GraphQL first and public GraphQL as a fallback (#2833).
+- Update development Ruff and the CodeQL Action (#2829, #2830).
+
 ## 3.0.13 — 2026-09-23
 
 - Normalize carousel resource IDs in app profile timeline responses before extraction, so `user_medias_gql()` accepts children with a composite `id` and no `pk` (#2831). Explicit resource IDs and validation of identifier-free children are preserved.
