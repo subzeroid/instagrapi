@@ -1,6 +1,7 @@
 """Exercise the optional public adapter with real loopback response bodies."""
 
 import gzip
+import json
 import threading
 import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -17,6 +18,14 @@ PAYLOAD = {"status": "ok", "title": "café"}
 def public_server():
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
+            if self.path == "/browser-headers":
+                body = json.dumps({"browser_headers": "Sec-Fetch-Mode" in self.headers}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             body = BODY
             encoding = self.path.removeprefix("/")
             if encoding == "gzip":
@@ -78,3 +87,21 @@ def test_public_curl_reads_response_body(curl_client, public_server, encoding, s
 @pytest.mark.parametrize("encoding", ["plain", "gzip", "deflate"])
 def test_public_curl_request_decodes_json(curl_client, public_server, encoding):
     assert curl_client.public_request(f"{public_server}/{encoding}", return_json=True, retries_count=1) == PAYLOAD
+
+
+def test_public_curl_sends_browser_headers(curl_client, public_server):
+    assert curl_client.public_request(f"{public_server}/browser-headers", return_json=True, retries_count=1) == {
+        "browser_headers": True
+    }
+
+
+def test_public_curl_browser_alias_sends_browser_headers(curl_adapter, public_server):
+    client = Client(public_transport="curl", public_transport_impersonate="chrome")
+    client.public.trust_env = False
+    try:
+        assert client.public_request(f"{public_server}/browser-headers", return_json=True, retries_count=1) == {
+            "browser_headers": True
+        }
+    finally:
+        client.public.close()
+        client.private.close()

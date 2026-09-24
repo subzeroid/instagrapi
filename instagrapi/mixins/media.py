@@ -33,7 +33,7 @@ from instagrapi.utils.ids import InstagramIdCodec
 from instagrapi.utils.iterators import iter_paginated
 from instagrapi.utils.serialization import dumps, json_value
 
-MEDIA_INFO_DOC_ID = "27128499623469141"
+MEDIA_INFO_DOC_ID = "27830990013244856"
 IG_PROFILE_TIMELINE_DOC_ID = "56030350814417327502004290437"
 
 
@@ -588,11 +588,13 @@ class MediaMixin:
                 MEDIA_INFO_DOC_ID,
                 {
                     "shortcode": shortcode,
-                    "__relay_internal__pv__PolarisAIGMMediaWebLabelEnabledrelayprovider": False,
+                    "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": False,
+                    "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": True,
                 },
                 referer=f"https://www.instagram.com/p/{shortcode}/",
                 url=self.GRAPHQL_PUBLIC_WEB_API_URL,
                 include_lsd=True,
+                include_fb_dtsg=True,
                 headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
             )
             media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
