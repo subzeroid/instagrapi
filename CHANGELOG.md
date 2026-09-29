@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.15 — 2026-09-29
+
+- Read nested `server_params` contexts during CAA profile-code verification, avoiding `missing code_entry context_data` for that response shape (#2841). Preserve operand positions and ignore non-literal or unrelated contexts. This does not establish a general fix for `needs_upgrade` or other challenge routes.
+
 ## 3.0.14 — 2026-09-25
 
 - Restore `media_info_gql()` for the optional `public_transport="curl"` path using the current PostRoot document, `fb_dtsg` token, and browser headers (#2835). The default `requests` transport still received HTML for the sampled GraphQL call; private media lookup is unchanged.

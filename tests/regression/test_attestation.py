@@ -790,6 +790,82 @@ class CaaVerifyProfileRegressionTestCase(unittest.TestCase):
         payload = {container: (f'"{app_id}" (f4i (dkc "context_data" "device_id") (dkc "{context_data}" "device"))')}
         return {"layout": {"bloks_payload": payload}}
 
+    @staticmethod
+    def nested_action(app_id, context_data):
+        # Reduced from the official app's code-entry navigation response.
+        params = (
+            '(f4i (dkc "server_params" "client_input_params") '
+            '(dkc (f4i (dkc "context_data" "flag" "device_id") '
+            f'(dkc {json.dumps(context_data)} false "synthetic-device")) '
+            '(f6m 0 "account" (fhz "synthetic-account"))))'
+        )
+        return {"layout": {"bloks_payload": {"action": f'"{app_id}" {params}'}}}
+
+    def test_context_extraction_reads_nested_server_params(self):
+        client = self.build_client()
+        result = self.nested_action(self.CODE_ENTRY, "nested-context")
+
+        self.assertEqual(client.bloks_extract_context_data(result, self.CODE_ENTRY), "nested-context")
+
+    def test_context_extraction_preserves_non_string_value_positions(self):
+        client = self.build_client()
+        for value in ("false", "42", "null", '(f6m 0 "dynamic-value")'):
+            with self.subTest(value=value):
+                result = {
+                    "layout": {
+                        "bloks_payload": {
+                            "action": (
+                                f'"{self.CODE_ENTRY}" '
+                                '(f4i (dkc "other" "context_data" "device_id") '
+                                f'(dkc {value} "expected-context" "wrong-context"))'
+                            )
+                        }
+                    }
+                }
+                self.assertEqual(client.bloks_extract_context_data(result, self.CODE_ENTRY), "expected-context")
+
+    def test_context_extraction_rejects_non_literal_context(self):
+        client = self.build_client()
+        for value in ("false", "42", "null", '(f6m 0 "not-a-context")'):
+            with self.subTest(value=value):
+                result = {
+                    "layout": {
+                        "bloks_payload": {
+                            "action": (
+                                f'"{self.CODE_ENTRY}" (f4i (dkc "context_data" "device_id") '
+                                f'(dkc {value} "wrong-context"))'
+                            )
+                        }
+                    }
+                }
+                self.assertEqual(client.bloks_extract_context_data(result, self.CODE_ENTRY), "")
+
+    def test_context_extraction_ignores_other_nested_maps(self):
+        client = self.build_client()
+        foreign = '(f6m "com.bloks.www.unrelated.action" (f4i (dkc "context_data") (dkc "foreign-context")))'
+        server = '(f4i (dkc "context_data") (dkc "server-context"))'
+        for keys, values in (
+            ('"client_input_params" "server_params"', f"{foreign} {server}"),
+            ('"server_params" "client_input_params"', f"{server} {foreign}"),
+        ):
+            with self.subTest(keys=keys):
+                result = {
+                    "layout": {"bloks_payload": {"action": f'"{self.CODE_ENTRY}" (f4i (dkc {keys}) (dkc {values}))'}}
+                }
+                self.assertEqual(client.bloks_extract_context_data(result, self.CODE_ENTRY), "server-context")
+
+    def test_context_extraction_does_not_evaluate_server_params(self):
+        client = self.build_client()
+        nested = '(f4i (dkc "context_data") (dkc "foreign-context"))'
+        for value in (f"(f6m 0 {nested})", json.dumps(nested)):
+            with self.subTest(value=value):
+                result = {
+                    "layout": {
+                        "bloks_payload": {"action": f'"{self.CODE_ENTRY}" (f4i (dkc "server_params") (dkc {value}))'}
+                    }
+                }
+                self.assertEqual(client.bloks_extract_context_data(result, self.CODE_ENTRY), "")
+
     def test_context_extraction_matches_exact_app_and_reads_template_map(self):
         client = self.build_client()
         result = {
@@ -871,7 +947,7 @@ class CaaVerifyProfileRegressionTestCase(unittest.TestCase):
     def test_verify_profile_chains_contexts_and_applies_terminal_login(self):
         client = self.build_client()
         send_result = self.action(self.ENTRYPOINT, "entry-context")
-        entry_result = self.action(self.CODE_ENTRY, "code-context")
+        entry_result = self.nested_action(self.CODE_ENTRY, "code-context")
         code_result = self.action(self.CODE_ENTRY_ASYNC, "submit-context", container="ft")
         submit_result = {"layout": {"bloks_payload": {"action": "embedded-login"}}}
         calls = []
