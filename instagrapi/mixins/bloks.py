@@ -873,24 +873,36 @@ class BloksMixin:
                     return value[start : index + 1]
         return ""
 
-    @staticmethod
-    def _bloks_string_literals(value: str) -> List[str]:
-        """Decode JSON-style string literals from a Bloks expression."""
-        strings: List[str] = []
+    @classmethod
+    def _bloks_expression_items(cls, value: str) -> List[str]:
+        """Read direct operands without flattening nested expressions or scalars."""
+        if not value.startswith("(") or not value.endswith(")"):
+            return []
+        items: List[str] = []
         decoder = json.JSONDecoder()
-        index = 0
-        while True:
-            index = value.find('"', index)
-            if index < 0:
-                return strings
-            try:
-                decoded, consumed = decoder.raw_decode(value[index:])
-            except JSONDecodeError:
+        index = 1
+        while index < len(value) - 1:
+            if value[index].isspace():
                 index += 1
                 continue
-            if isinstance(decoded, str):
-                strings.append(decoded)
-            index += consumed
+            if value[index] == "(":
+                item = cls._bloks_parenthesized_expression(value, index)
+                if not item:
+                    return []
+            elif value[index] == '"':
+                try:
+                    _, consumed = decoder.raw_decode(value[index:])
+                except JSONDecodeError:
+                    return []
+                item = value[index : index + consumed]
+            else:
+                atom = re.match(r'[^()\s"]+', value[index:])
+                if not atom:
+                    return []
+                item = atom.group()
+            items.append(item)
+            index += len(item)
+        return items
 
     def bloks_extract_context_data(self, result: Dict, app_id: str) -> str:
         """Extract the context token chained to an exact Bloks app id."""
@@ -909,23 +921,25 @@ class BloksMixin:
                 expression = self._bloks_parenthesized_expression(text, map_start)
                 if not expression:
                     continue
-                groups: List[List[str]] = []
-                cursor = 0
-                while True:
-                    group_start = expression.find("(dkc", cursor)
-                    if group_start < 0:
+                while expression:
+                    items = self._bloks_expression_items(expression)
+                    if len(items) != 3 or items[0] != "f4i":
                         break
-                    group = self._bloks_parenthesized_expression(expression, group_start)
-                    if not group:
+                    keys = self._bloks_expression_items(items[1])
+                    values = self._bloks_expression_items(items[2])
+                    if keys[:1] != ["dkc"] or values[:1] != ["dkc"] or len(keys) != len(values):
                         break
-                    groups.append(self._bloks_string_literals(group))
-                    cursor = group_start + len(group)
-                for keys, values in zip(groups, groups[1:]):
-                    if "context_data" not in keys:
-                        continue
-                    context_index = keys.index("context_data")
-                    if context_index < len(values):
-                        return values[context_index]
+                    expression = ""
+                    for key, value in zip(keys[1:], values[1:]):
+                        if not key.startswith('"'):
+                            continue
+                        name = json.loads(key)
+                        if name == "context_data":
+                            # Contexts must be literal strings, never evaluated expressions.
+                            return json.loads(value) if value.startswith('"') else ""
+                        if name == "server_params":
+                            # Only descend into the target app's static server parameters.
+                            expression = value
         return ""
 
     def bloks_ap_two_step_verification_entrypoint(

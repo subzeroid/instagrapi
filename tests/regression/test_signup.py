@@ -1,3 +1,7 @@
+import base64
+
+from Cryptodome.PublicKey import RSA
+
 from instagrapi.exceptions import FeedbackRequired, SignupSpamError
 from instagrapi.mixins.challenge import ChallengeChoice
 from instagrapi.mixins.signup import CHOICE_EMAIL
@@ -6,9 +10,19 @@ from tests.live.test_signup import SignUpTestCase
 
 
 class PasswordEncryptionRegressionTestCase(unittest.TestCase):
-    def test_password_enrypt(self):
+    def test_password_encrypt(self):
         cl = Client()
-        enc_password = cl.password_encrypt("test")
+        public_key = RSA.generate(2048).publickey().export_key()
+        response = requests.Response()
+        response.headers.update(
+            {
+                "ig-set-password-encryption-key-id": "123",
+                "ig-set-password-encryption-pub-key": base64.b64encode(public_key).decode(),
+            }
+        )
+        with mock.patch.object(cl.public, "get", return_value=response) as get_public_key:
+            enc_password = cl.password_encrypt("test")
+        get_public_key.assert_called_once_with("https://i.instagram.com/api/v1/qe/sync/")
         parts = enc_password.split(":")
         self.assertEqual(parts[0], "#PWD_INSTAGRAM")
         self.assertEqual(parts[1], "4")
