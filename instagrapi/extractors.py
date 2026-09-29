@@ -711,6 +711,8 @@ def extract_story_gql(data):
 def extract_highlight_v1(data):
     highlight = deepcopy(data)
     highlight["pk"] = highlight["id"].split(":")[1]
+    if isinstance(highlight.get("user"), dict):
+        highlight["user"] = extract_user_short(highlight["user"])
     highlight["items"] = [extract_story_v1(item) for item in highlight.get("items", [])]
     return Highlight(**highlight)
 
