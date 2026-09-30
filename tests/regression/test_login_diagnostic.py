@@ -365,3 +365,197 @@ def test_diagnostic_retry_overrides_do_not_change_saved_preferences(diagnostic, 
     saved = json.loads(settings.read_text())
     for key in ("session_retry_total", "public_request_retries_count"):
         assert saved.get(key) == retry_settings.get(key)
+
+
+def test_caa_legacy_caa_records_each_outcome_before_state_changes(diagnostic, monkeypatch):
+    client = Client(private_transport="requests", settings={"session_retry_total": 0, "request_timeout": 0})
+    client.caa_aac = '{"aaccs":"synthetic-context"}'
+    client.bloks_caa_login_prepare = Mock(return_value=True)
+    client.pre_login_flow = Mock(return_value=True)
+    client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:synthetic")
+    original_caa = client.bloks_caa_login
+    calls = []
+
+    def send(adapter, request, **kwargs):
+        calls.append(request.url)
+        assert calls == [CAA, LOGIN, CAA][: len(calls)]
+        if request.url == LOGIN:
+            body = {"status": "fail", "error_type": "needs_upgrade", "message": SECRET}
+            return response(request, 400, json.dumps(body).encode())
+        body = {
+            "status": "ok",
+            "layout": {"bloks_payload": {"action": SECRET}},
+            "markers": ["CAA_LOGIN_FALLBACK:fallback_triggered", SECRET],
+        }
+        return response(request, 200, json.dumps(body).encode())
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", send)
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET, verification_code="123456")
+
+    assert calls == [CAA, LOGIN, CAA]
+    assert report["exception"]["error_type"] == "needs_upgrade"
+    assert report["last_json"]["status"] == "ok"
+    assert [(a["response_start"], a["response_end"]) for a in report["caa_attempts"]] == [(0, 1), (2, 3)]
+    for attempt in report["caa_attempts"]:
+        assert attempt["outcome"] == "returned"
+        assert attempt["logged_in"] is False
+        assert attempt["two_factor_context_present"] is False
+        assert attempt["reason"] == "CAA login did not return a session"
+        assert attempt["fallback_marker_present"] is True
+        assert attempt["profile_code_reference_present"] is False
+        assert attempt["profile_code_context_parsed"] is False
+    assert SECRET not in json.dumps(report)
+    assert client.bloks_caa_login == original_caa
+    assert "bloks_caa_login" not in vars(client)
+    assert client.private.hooks["response"] == []
+    assert client.public.hooks["response"] == []
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "CAA preflight did not return account access and attestation data",
+        "missing entrypoint context_data",
+        "missing code_entry context_data",
+        "missing code_entry_async context_data",
+    ],
+)
+def test_caa_reason_categories_are_preserved(diagnostic, reason):
+    result = diagnostic.summarize_caa_outcome(Client(), {"logged_in": False, "reason": reason, "result": {}})
+    assert result["reason"] == reason
+
+
+def test_caa_summary_withholds_contexts_unknown_reasons_and_marker_suffixes(diagnostic):
+    client = Client()
+    body = {
+        "logged_in": False,
+        "two_step_verification_context": SECRET,
+        "reason": SECRET,
+        "result": {"markers": ["CAA_LOGIN_FALLBACK:" + SECRET], "token": SECRET},
+    }
+    before = json.dumps(body, sort_keys=True)
+    summary = diagnostic.summarize_caa_outcome(client, body)
+    assert summary["two_factor_context_present"] is True
+    assert summary["reason"] == "other"
+    assert summary["fallback_marker_present"] is True
+    assert SECRET not in json.dumps(summary)
+    assert json.dumps(body, sort_keys=True) == before
+
+
+@pytest.mark.parametrize("has_context", [False, True])
+def test_caa_summary_distinguishes_profile_reference_from_parsed_context(diagnostic, has_context):
+    app = "com.bloks.www.ap.two_step_verification.entrypoint_async"
+    action = json.dumps(app)
+    if has_context:
+        action += f' (f4i (dkc "context_data") (dkc "{SECRET}"))'
+    body = {"logged_in": False, "result": {"layout": {"bloks_payload": {"action": action}}}}
+    summary = diagnostic.summarize_caa_outcome(Client(), body)
+    assert summary["profile_code_reference_present"] is True
+    assert summary["profile_code_context_parsed"] is has_context
+    assert SECRET not in json.dumps(summary)
+
+
+@pytest.mark.parametrize("exc", [RuntimeError(SECRET), KeyboardInterrupt()])
+def test_caa_observer_records_failure_and_restores_instance_override(diagnostic, exc):
+    client = Client()
+    original = Mock(side_effect=exc)
+    client.bloks_caa_login = original
+    previous_handler = client.handle_exception
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert report["exception"]["type"] == type(exc).__name__
+    assert report["caa_attempts"] == [{"outcome": "error", "response_start": 0, "response_end": 0}]
+    original.assert_called_once_with(verification_code="")
+    assert client.bloks_caa_login is original
+    assert client.handle_exception is previous_handler
+    assert SECRET not in json.dumps(report)
+
+
+def test_caa_inspection_failure_cannot_change_login_result(diagnostic, monkeypatch):
+    client = Client()
+    outcome = {"logged_in": True, "result": {}, "reason": ""}
+    client.bloks_caa_login = Mock(return_value=outcome)
+    client.login_flow = Mock(return_value=True)
+    monkeypatch.setattr(diagnostic, "summarize_caa_outcome", Mock(side_effect=ValueError(SECRET)))
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert report["outcome"] == "success"
+    assert report["caa_attempts"] == [
+        {"outcome": "returned", "response_start": 0, "response_end": 0, "inspection_error": True}
+    ]
+    assert client.bloks_caa_login.return_value is outcome
+    assert SECRET not in json.dumps(report)
+
+
+def test_partial_hook_setup_restores_client_without_calling_login(diagnostic):
+    client = Client()
+    original_caa = Mock()
+    original_handler = Mock()
+    original_hook = Mock()
+    client.bloks_caa_login = original_caa
+    client.handle_exception = original_handler
+    client.private.hooks["response"] = [original_hook]
+    client.public.hooks["response"] = ()
+    client.login = Mock(side_effect=AssertionError("Setup must fail before login"))
+    with pytest.raises(AttributeError):
+        diagnostic.diagnose(client, "synthetic-user", SECRET)
+    client.login.assert_not_called()
+    assert client.bloks_caa_login is original_caa
+    assert client.handle_exception is original_handler
+    assert client.private.hooks["response"] == [original_hook]
+    assert client.public.hooks["response"] == ()
+
+
+@pytest.mark.parametrize("known_profile", [False, True])
+@pytest.mark.parametrize("has_hash", [False, True])
+def test_diagnostic_reports_only_catalogued_app_versions(diagnostic, known_profile, has_hash):
+    client = Client()
+    expected_version = client.device_settings["app_version"]
+    if not known_profile:
+        client.device_settings["app_version"] = SECRET
+        expected_version = "other"
+    client.bloks_versioning_id = SECRET if has_hash else ""
+    client.login = Mock(return_value=True)
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert report["client_profile"] == {
+        "app_version": expected_version,
+        "bloks_versioning_id_present": has_hash,
+    }
+    assert report["caa_attempts"] == []
+    assert SECRET not in json.dumps(report)
+
+
+@pytest.mark.parametrize("raw_result", [{}, None, []])
+def test_caa_observer_preserves_success_object_and_summarizes_empty_results(diagnostic, raw_result):
+    client = Client()
+    outcome = {"logged_in": True, "result": raw_result, "reason": ""}
+    original = Mock(return_value=outcome)
+    client.bloks_caa_login = original
+
+    def login(*args, **kwargs):
+        assert client.bloks_caa_login(verification_code="123456") is outcome
+        return True
+
+    client.login = login
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    attempt = report["caa_attempts"][0]
+    assert report["outcome"] == "success"
+    assert attempt["logged_in"] is True
+    assert attempt["reason"] == ""
+    assert attempt["profile_code_reference_present"] is False
+    assert attempt["profile_code_context_parsed"] is False
+    assert client.bloks_caa_login is original
+    original.assert_called_once_with(verification_code="123456")
+
+
+def test_caa_observer_preserves_system_exit_identity_and_restores_hooks(diagnostic):
+    client = Client()
+    error = SystemExit(SECRET)
+    original = Mock(side_effect=error)
+    client.bloks_caa_login = original
+    handler = client.handle_exception
+    with pytest.raises(SystemExit) as caught:
+        diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert caught.value is error
+    assert client.bloks_caa_login is original
+    assert client.handle_exception is handler
+    assert client.private.hooks["response"] == []
+    assert client.public.hooks["response"] == []

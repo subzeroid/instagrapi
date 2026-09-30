@@ -5,6 +5,9 @@ version as the failing script. Use --settings for its existing settings file,
 --proxy to enter the same proxy privately, and --relogin to test password login
 even if the settings already contain an authorized session. Only the report is
 intended for sharing; the settings file contains private session credentials.
+
+The report records each CAA outcome before a fallback replaces the last response.
+Marker presence means a reference was found, not that Instagram executed it.
 """
 
 import argparse
@@ -21,7 +24,9 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from instagrapi import Client
+from instagrapi.config import APP_SETTINGS
 from instagrapi.exceptions import ChallengeRequired
+from instagrapi.mixins.bloks import AP_2SV_ENTRYPOINT
 
 ERROR_TYPES = {
     "bad_password",
@@ -47,6 +52,14 @@ STEPS = {
     "select_contact_point_recovery",
 }
 CONTENT_TYPES = {"application/json", "text/json", "text/html", "text/plain"}
+CAA_REASONS = {
+    "",
+    "CAA login did not return a session",
+    "CAA preflight did not return account access and attestation data",
+    "missing entrypoint context_data",
+    "missing code_entry context_data",
+    "missing code_entry_async context_data",
+}
 
 
 def allowed(value, choices):
@@ -147,6 +160,21 @@ def summarize_response(response):
     }
 
 
+def summarize_caa_outcome(client, outcome):
+    """Record parsed state and reference presence without copying context values."""
+    result = outcome.get("result")
+    result = result if isinstance(result, dict) else {}
+    markers = client._caa_result_action_markers(outcome)
+    return {
+        "logged_in": bool(outcome.get("logged_in")),
+        "two_factor_context_present": bool(client._extract_two_step_verification_context(outcome)),
+        "reason": allowed(outcome.get("reason"), CAA_REASONS),
+        "fallback_marker_present": any(marker.startswith("CAA_LOGIN_FALLBACK:") for marker in markers),
+        "profile_code_reference_present": client.bloks_caa_login_needs_two_step(result),
+        "profile_code_context_parsed": bool(client.bloks_extract_context_data(result, AP_2SV_ENTRYPOINT)),
+    }
+
+
 @contextlib.contextmanager
 def quiet_library():
     """Library logs and exception messages can contain raw responses or proxies."""
@@ -167,7 +195,35 @@ def manual_checkpoint(*args, **kwargs):
 
 def diagnose(client, username, password, *, relogin=False, verification_code=""):
     """Observe one login() call; snapshot each response before fallback mutates state."""
-    report = {"outcome": "error", "responses": []}
+    report = {
+        "outcome": "error",
+        "responses": [],
+        "caa_attempts": [],
+        "client_profile": {
+            "app_version": allowed(client.device_settings.get("app_version"), APP_SETTINGS),
+            "bloks_versioning_id_present": bool(client.bloks_versioning_id),
+        },
+    }
+
+    original_caa = client.bloks_caa_login
+    missing = object()
+    previous_caa_override = vars(client).get("bloks_caa_login", missing)
+
+    def observe_caa(*args, **kwargs):
+        attempt = {"outcome": "error", "response_start": len(report["responses"])}
+        report["caa_attempts"].append(attempt)
+        try:
+            outcome = original_caa(*args, **kwargs)
+            attempt["outcome"] = "returned"
+            try:
+                attempt.update(summarize_caa_outcome(client, outcome))
+            except Exception:
+                # Inspection must not change the original result or expose an
+                # exception message containing an unexpected response payload.
+                attempt["inspection_error"] = True
+            return outcome
+        finally:
+            attempt["response_end"] = len(report["responses"])
 
     def capture(response, *args, **kwargs):
         report["responses"].append(summarize_response(response))
@@ -179,11 +235,14 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
         raise exc
 
     sessions = (client.private, client.public)
+    registered = []
     previous_handler = client.handle_exception
-    client.handle_exception = stop_on_error
-    for session in sessions:
-        session.hooks.setdefault("response", []).append(capture)
     try:
+        client.handle_exception = stop_on_error
+        client.bloks_caa_login = observe_caa
+        for session in sessions:
+            session.hooks.setdefault("response", []).append(capture)
+            registered.append(session)
         with quiet_library():
             try:
                 result = client.login(username, password, relogin=relogin, verification_code=verification_code)
@@ -192,7 +251,11 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
                 report["exception"] = {**summarize_json(vars(exc)), "type": type(exc).__name__}
     finally:
         client.handle_exception = previous_handler
-        for session in sessions:
+        if previous_caa_override is missing:
+            del client.bloks_caa_login
+        else:
+            client.bloks_caa_login = previous_caa_override
+        for session in registered:
             session.hooks["response"].remove(capture)
     report["last_json"] = summarize_json(client.last_json)
     return report

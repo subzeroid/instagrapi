@@ -69,12 +69,9 @@ It calls `login()` once, disables transport retries, and applies 10-second conne
 read timeouts. The normal library login flow can make several requests, including a CAA fallback.
 Each response is summarized immediately, before another request can overwrite `last_json`.
 
-Share **only `login-diagnostic.json`**, after reviewing it. It contains fixed endpoint labels, HTTP
-statuses, content types, response sizes, and allowlisted error categories. Unknown messages and values
-become `other`; response bodies, full URLs, cookies, credentials, IDs, and challenge tokens are omitted.
-The separate **settings file is private** and contains session credentials. Both files are written with
-owner-only permissions on systems that support them. Exit code `1` is expected when login fails; the
-report is still written. Use the next observed failure rather than repeatedly retrying to collect logs.
+Each entry in `caa_attempts` records a CAA call before fallback replaces the last response. An attempt's `outcome: "returned"` means the CAA method returned; `logged_in` and the report's top-level `outcome` describe the login result. Marker/reference flags indicate content found in a response, while `profile_code_context_parsed` indicates extraction of a supported entrypoint context. These fields do not prove route execution or completed verification, and `last_json.status: "ok"` alone does not establish successful login.
+
+Share **only `login-diagnostic.json`**, after reviewing it. It contains fixed endpoint labels, HTTP statuses, content types, response sizes, allowlisted error categories, and the per-call CAA summaries. `client_profile` records the app version when it is in the installed library's catalog and whether a Bloks hash is present, without exporting the hash. Unknown messages and values become `other`; response bodies, full URLs, cookies, credentials, IDs, and challenge tokens are omitted. The separate **settings file is private** and contains session credentials. Both files are written with owner-only permissions on systems that support them. Exit code `1` is expected when login fails; the report is still written. Use the next observed failure rather than repeatedly retrying to collect logs.
 
 ## Public lookup
 
