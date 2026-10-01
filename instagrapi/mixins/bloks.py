@@ -906,9 +906,13 @@ class BloksMixin:
 
     def bloks_extract_context_data(self, result: Dict, app_id: str) -> str:
         """Extract the context token chained to an exact Bloks app id."""
+        return self._bloks_extract_context_value(result, app_id, "context_data")
+
+    def _bloks_extract_context_value(self, result: Dict, app_id: str, context_key: str) -> str:
+        """Read a literal context from the target app's static parameter map."""
         strings: List[str] = []
         self._bloks_collect_strings(result, strings)
-        anchor = re.compile(re.escape(app_id) + r"(?![_a-zA-Z])")
+        anchor = re.compile(re.escape(json.dumps(app_id)))
         app_reference = re.compile(r"(?<![_a-zA-Z0-9])com\.bloks\.[_a-zA-Z0-9.]+")
         for text in strings:
             for found in anchor.finditer(text):
@@ -934,7 +938,7 @@ class BloksMixin:
                         if not key.startswith('"'):
                             continue
                         name = json.loads(key)
-                        if name == "context_data":
+                        if name == context_key:
                             # Contexts must be literal strings, never evaluated expressions.
                             return json.loads(value) if value.startswith('"') else ""
                         if name == "server_params":
@@ -1118,19 +1122,13 @@ class BloksMixin:
         if isinstance(value, str) and value.strip():
             return value.strip()
         action = result.get("layout", {}).get("bloks_payload", {}).get("action", "")
-        if not isinstance(action, str) or "two_step_verification.entrypoint" not in action:
+        if not isinstance(action, str):
             return ""
-        marker = '"two_step_verification_context"'
-        marker_index = action.find(marker)
-        if marker_index < 0:
-            return ""
-        key_list_end = action.find(")", marker_index)
-        if key_list_end < 0:
-            return ""
-        value_group = re.search(r"\(dkc\s+", action[key_list_end:])
-        if not value_group:
-            return ""
-        return self._extract_first_json_string(action, key_list_end + value_group.start()).strip()
+        return self._bloks_extract_context_value(
+            {"action": action},
+            "com.bloks.www.two_step_verification.entrypoint",
+            "two_step_verification_context",
+        ).strip()
 
     def bloks_extract_login_response(self, result: Dict) -> Dict[str, Any]:
         """
