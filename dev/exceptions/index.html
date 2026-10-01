@@ -1762,6 +1762,7 @@
   <h1>Exceptions</h1>
 
 <h2 id="common-exceptions">Common Exceptions</h2>
+<p>For <code>ClientError</code> and its subclasses, the exception's <code>code</code> attribute contains <code>response.status_code</code> when the response provides it, including HTTP 4xx and 5xx statuses. This HTTP status is separate from any Instagram <code>error_code</code> in the response JSON. If there is no response or it has no <code>status_code</code> attribute, <code>code</code> retains an explicitly supplied value and otherwise defaults to <code>None</code>.</p>
 <table>
 <thead>
 <tr>
