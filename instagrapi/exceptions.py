@@ -15,8 +15,7 @@ class ClientError(Exception):
                 body=getattr(self, "error_type", vars(self)),
             )
         super().__init__(self.message, *args, **kwargs)
-        if self.response:
-            self.code = self.response.status_code
+        self.code = getattr(self.response, "status_code", self.code)
 
 
 class ClientUnknownError(ClientError):
