@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.17 — 2026-10-02
+
+- Preserve HTTP status in `ClientError.code` for 4xx/5xx responses while keeping response payloads and report-flow errors intact (#2847).
+- Report each CAA login attempt separately in the sanitized [login diagnostic](https://github.com/subzeroid/instagrapi/blob/master/examples/diagnose_login.py) output, preserving outcome categories and continuation indicators before fallback overwrites the last response (#2846). This improves diagnosis without changing login behavior.
+
 ## 3.0.16 — 2026-09-30
 
 - Fix `highlight_info()` validation when the top-level owner’s `friendship_status` omits `user_id`. Normalize the owner with the existing short-user extractor while preserving relationship values and story order (#2844; fixes #2837).
