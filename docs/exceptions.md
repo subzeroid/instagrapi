@@ -1,5 +1,7 @@
 ## Common Exceptions
 
+For `ClientError` and its subclasses, the exception's `code` attribute contains `response.status_code` when the response provides it, including HTTP 4xx and 5xx statuses. This HTTP status is separate from any Instagram `error_code` in the response JSON. If there is no response or it has no `status_code` attribute, `code` retains an explicitly supplied value and otherwise defaults to `None`.
+
 | Exception                 | Base        | Description
 | ------------------------- | ----------- |-------------------------------------
 | ClientError               | Exception   | Base Exception for Instagram calls
