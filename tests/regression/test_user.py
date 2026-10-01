@@ -1345,6 +1345,22 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             self.assertEqual(json.loads(call.kwargs["data"]["selected_tag_types"]), [tag])
             self.assertEqual(call.kwargs["data"]["is_dark_mode"], "false")
 
+    def test_user_report_missing_context_preserves_client_error(self):
+        for completed_steps in range(4):
+            with self.subTest(completed_steps=completed_steps):
+                client = Client()
+                payload = {"response": {}, "status": "ok"}
+                responses = [{"response": {"context": f"context-{step}"}} for step in range(completed_steps)]
+                responses.append(payload)
+
+                with mock.patch.object(client, "private_request", side_effect=responses) as private_request:
+                    with self.assertRaisesRegex(ClientError, "Instagram report flow did not return") as caught:
+                        client.user_report("123")
+
+                self.assertIs(caught.exception.response, payload["response"])
+                self.assertIsNone(caught.exception.code)
+                self.assertEqual(private_request.call_count, completed_steps + 1)
+
     def test_user_report_rejects_unknown_reason_before_request(self):
         client = Client()
 
