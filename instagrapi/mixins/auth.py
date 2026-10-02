@@ -472,6 +472,13 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
     ) -> None:
         if clear_authorization_data:
             self.authorization_data = {}
+            self.set_ig_u_rur("")
+            self.set_ig_www_claim("")
+            for key in list(self.private.headers):
+                name = key.lower()
+                if name.startswith("ig-u-") or name in ("ig-intended-user-id", "x-ig-www-claim"):
+                    self.private.headers.pop(key, None)
+            self.private.headers.update({"IG-INTENDED-USER-ID": "0", "X-IG-WWW-Claim": "0"})
         if clear_last_login:
             self.last_login = None
         if reset_relogin_attempt:
