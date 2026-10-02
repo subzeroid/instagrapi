@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.18 — 2026-10-02
+
+- Pair `two_step_verification_context` with its matching parameter value when CAA fields are reordered, preserving scalar positions and reading nested static `server_params`. Require exact quoted app references and retain the existing JSON fallback and action-only two-step scope (#2849).
+
 ## 3.0.17 — 2026-10-02
 
 - Preserve HTTP status in `ClientError.code` for 4xx/5xx responses while keeping response payloads and report-flow errors intact (#2847).
