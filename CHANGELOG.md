@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.19 — 2026-10-03
+
+- Clear stale account routing and claim headers when authorization is reset for relogin or successful logout. Preserve device identifiers, valid saved-session reuse and cookie-only cleanup (#2851).
+
 ## 3.0.18 — 2026-10-02
 
 - Pair `two_step_verification_context` with its matching parameter value when CAA fields are reordered, preserving scalar positions and reading nested static `server_params`. Require exact quoted app references and retain the existing JSON fallback and action-only two-step scope (#2849).
