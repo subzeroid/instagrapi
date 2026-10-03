@@ -1,8 +1,8 @@
 from instagrapi import config
 from tests.helpers import *
 
-EXPECTED_DEFAULT_VERSION_CODE = "1065560286"
-EXPECTED_DEFAULT_BLOKS_VERSIONING_ID = "0bc46a03e177bfc9bc8d611918815acf248fa9c77754d807d6a5951dc9ce9432"
+EXPECTED_DEFAULT_VERSION_CODE = "385511871"
+EXPECTED_DEFAULT_BLOKS_VERSIONING_ID = "a5285a65f5cac38099bb8f7d2a7c0888028a324e5b1cf3e6953bc1e96b9ecfd2"
 
 
 class CurrentAppProfileRegressionTestCase(unittest.TestCase):
@@ -18,7 +18,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         self.assertEqual(
             client.user_agent,
             (
-                "Instagram 448.0.0.0.20 Android (34/14; 480dpi; 1344x2992; "
+                "Instagram 449.0.0.52.84 Android (34/14; 480dpi; 1344x2992; "
                 f"Google/google; Pixel 8 Pro; husky; husky; en_US; {EXPECTED_DEFAULT_VERSION_CODE})"
             ),
         )
@@ -37,7 +37,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
                 "device": "husky",
                 "model": "Pixel 8 Pro",
                 "cpu": "husky",
-                "app_version": "448.0.0.0.20",
+                "app_version": "449.0.0.52.84",
                 "version_code": EXPECTED_DEFAULT_VERSION_CODE,
                 "bloks_versioning_id": EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
             },
@@ -134,8 +134,8 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         client = Client(
             {
                 "device_settings": {
-                    "app_version": "449.0.0.0.1",
-                    "version_code": "385211304",
+                    "app_version": "450.0.0.0.1",
+                    "version_code": "385511872",
                 },
             }
         )

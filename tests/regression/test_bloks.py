@@ -407,6 +407,48 @@ class BloksRegressionTestCase(unittest.TestCase):
         self.assertEqual(params["server_params"]["credential_type"], "password")
         self.assertEqual(params["server_params"]["family_device_id"], "family-device-1")
         self.assertEqual(params["server_params"]["device_id"], "android-1")
+        self.assertEqual(
+            set(params["server_params"]),
+            {
+                "credential_type",
+                "username_text_input_id",
+                "password_text_input_id",
+                "login_source",
+                "login_credential_type",
+                "server_login_source",
+                "ar_event_source",
+                "should_trigger_override_login_success_action",
+                "should_trigger_override_login_2fa_action",
+                "is_caa_perf_enabled",
+                "reg_flow_source",
+                "caller",
+                "is_from_landing_page",
+                "should_show_nested_nta_from_aymh",
+                "is_from_empty_password",
+                "is_from_aymh",
+                "is_from_password_entry_page",
+                "is_from_assistive_id",
+                "is_from_msplit_fallback",
+                "two_step_login_type",
+                "left_nav_button_action",
+                "device_id",
+                "family_device_id",
+                "waterfall_id",
+                "offline_experiment_group",
+                "layered_homepage_experiment_group",
+                "is_platform_login",
+                "is_from_logged_in_switcher",
+                "is_from_logged_out",
+                "access_flow_version",
+                "login_surface",
+            },
+        )
+        self.assertEqual(len(params["client_input_params"]), 38)
+        self.assertNotIn("should_show_nested_nta_from_aymh", params["client_input_params"])
+        self.assertEqual(params["server_params"]["should_show_nested_nta_from_aymh"], 1)
+        self.assertEqual(params["server_params"]["is_from_empty_password"], 1)
+        self.assertEqual(params["server_params"]["reg_flow_source"], "cacheable_aymh_screen")
+        self.assertEqual(params["server_params"]["login_surface"], "unknown")
         username_text_input_id = params["server_params"]["username_text_input_id"]
         password_text_input_id = params["server_params"]["password_text_input_id"]
         self.assertRegex(username_text_input_id, r"^[a-z0-9]{6}:81$")
