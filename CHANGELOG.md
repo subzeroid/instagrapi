@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.20 — 2026-10-04
+
+- Update the default Android app profile to 449.0.0.52.84 with the native User-Agent build and API Bloks version; retain the 448 profile for saved settings and explicit selection (#2855).
+- Add serialized CAA login-payload regression coverage for QPL fields and direct-home context while preserving the existing request body.
+
 ## 3.0.19 — 2026-10-03
 
 - Clear stale account routing and claim headers when authorization is reset for relogin or successful logout. Preserve device identifiers, valid saved-session reuse and cookie-only cleanup (#2851).
