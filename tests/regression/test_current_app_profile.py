@@ -1,8 +1,8 @@
 from instagrapi import config
 from tests.helpers import *
 
-EXPECTED_DEFAULT_VERSION_CODE = "1065560286"
-EXPECTED_DEFAULT_BLOKS_VERSIONING_ID = "0bc46a03e177bfc9bc8d611918815acf248fa9c77754d807d6a5951dc9ce9432"
+EXPECTED_DEFAULT_VERSION_CODE = "1079242191"
+EXPECTED_DEFAULT_BLOKS_VERSIONING_ID = "799db3e387d7a21a19c72918b8698b6cd28a1516ade363792c100ed45a0f9f0b"
 
 
 class CurrentAppProfileRegressionTestCase(unittest.TestCase):
@@ -18,7 +18,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         self.assertEqual(
             client.user_agent,
             (
-                "Instagram 448.0.0.0.20 Android (34/14; 480dpi; 1344x2992; "
+                "Instagram 449.0.0.52.84 Android (34/14; 480dpi; 1344x2992; "
                 f"Google/google; Pixel 8 Pro; husky; husky; en_US; {EXPECTED_DEFAULT_VERSION_CODE})"
             ),
         )
@@ -37,7 +37,7 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
                 "device": "husky",
                 "model": "Pixel 8 Pro",
                 "cpu": "husky",
-                "app_version": "448.0.0.0.20",
+                "app_version": "449.0.0.52.84",
                 "version_code": EXPECTED_DEFAULT_VERSION_CODE,
                 "bloks_versioning_id": EXPECTED_DEFAULT_BLOKS_VERSIONING_ID,
             },
@@ -98,6 +98,19 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
             "a8973d49a9cc6a6f65a4997c10216ce2a06f65a517010e64885e92029bb19221",
         )
 
+    def test_saved_previous_app_profile_receives_matching_bloks_hash(self):
+        client = Client({"device_settings": {"app_version": "448.0.0.0.20", "version_code": "1065560286"}})
+
+        self.assertEqual(client.device_settings["app_version"], "448.0.0.0.20")
+        self.assertEqual(client.device_settings["version_code"], "1065560286")
+        self.assertEqual(
+            client.bloks_versioning_id,
+            "0bc46a03e177bfc9bc8d611918815acf248fa9c77754d807d6a5951dc9ce9432",
+        )
+        self.assertEqual(client.private.headers["X-Bloks-Version-Id"], client.bloks_versioning_id)
+        self.assertTrue(client.user_agent.startswith("Instagram 448.0.0.0.20 Android ("))
+        self.assertTrue(client.user_agent.endswith("; 1065560286)"))
+
     def test_override_app_version_replaces_saved_profile_with_current_default(self):
         client = Client(
             {
@@ -134,8 +147,8 @@ class CurrentAppProfileRegressionTestCase(unittest.TestCase):
         client = Client(
             {
                 "device_settings": {
-                    "app_version": "449.0.0.0.1",
-                    "version_code": "385211304",
+                    "app_version": "450.0.0.0.1",
+                    "version_code": "385511872",
                 },
             }
         )
