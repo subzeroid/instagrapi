@@ -6,8 +6,9 @@ version as the failing script. Use --settings for its existing settings file,
 even if the settings already contain an authorized session. Only the report is
 intended for sharing; the settings file contains private session credentials.
 
-The report records each CAA outcome before a fallback replaces the last response.
-Marker presence means a reference was found, not that Instagram executed it.
+The report records response stages and each CAA outcome before a fallback
+replaces the last response. Marker presence means a reference was found, not
+that Instagram executed it or accepted a verification code.
 """
 
 import argparse
@@ -17,6 +18,7 @@ import json
 import logging
 import os
 import platform
+import re
 import tempfile
 import warnings
 from importlib.metadata import version
@@ -26,7 +28,7 @@ from urllib.parse import urlsplit
 from instagrapi import Client
 from instagrapi.config import APP_SETTINGS
 from instagrapi.exceptions import ChallengeRequired
-from instagrapi.mixins.bloks import AP_2SV_ENTRYPOINT
+from instagrapi.mixins.bloks import AP_2SV_ENTRYPOINT, BloksMixin
 
 ERROR_TYPES = {
     "bad_password",
@@ -60,6 +62,24 @@ CAA_REASONS = {
     "missing code_entry context_data",
     "missing code_entry_async context_data",
 }
+BLOKS_APPS = {
+    "com.bloks.www.bloks.caa.login.process_client_data_and_redirect": "caa/process_client_data_and_redirect",
+    "com.bloks.www.caa.login.oauth.token.fetch.async": "caa/oauth_token_fetch",
+    "com.bloks.www.bloks.caa.login.async.send_login_request": "caa/send_login_request",
+    "com.bloks.www.two_step_verification.entrypoint": "two_step/entrypoint",
+    "com.bloks.www.two_step_verification.method_picker": "two_step/method_picker",
+    "com.bloks.www.two_step_verification.method_picker.navigation.async": "two_step/select_method",
+    "com.bloks.www.two_factor_login.enter_totp_code": "two_step/enter_totp_code",
+    "com.bloks.www.two_factor_login.enter_backup_code": "two_step/enter_backup_code",
+    "com.bloks.www.two_step_verification.verify_code.async": "two_step/verify_code",
+    "com.bloks.www.two_step_verification.has_been_allowed.async": "two_step/has_been_allowed",
+    "com.bloks.www.caa.notif_status.async": "caa/notif_status",
+    "com.bloks.www.ap.two_step_verification.entrypoint_async": "profile_code/entrypoint",
+    "com.bloks.www.ap.two_step_verification.code_entry": "profile_code/code_entry",
+    "com.bloks.www.ap.two_step_verification.code_entry_async": "profile_code/code_entry_async",
+}
+# These helpers only parse their input; this instance has no client sessions.
+BLOKS_PARSER = BloksMixin()
 
 
 def allowed(value, choices):
@@ -122,14 +142,22 @@ def summarize_json(data):
     }
 
 
-def endpoint_label(path):
+def endpoint_label(path, request_headers=None):
+    for app, label in BLOKS_APPS.items():
+        if any(path.endswith(f"/bloks/{kind}/{app}/") for kind in ("apps", "async_action")):
+            return label
+    if path.endswith("/graphql_www") and (request_headers or {}).get("X-FB-Friendly-Name") == (
+        "IGUSDIDRegistrationMutation"
+    ):
+        return "usdid/registration"
     for suffix, label in (
         ("/accounts/login/", "accounts/login"),
         ("/accounts/two_factor_login/", "accounts/two_factor_login"),
         ("/accounts/current_user/", "accounts/current_user"),
-        ("send_login_request/", "caa/send_login_request"),
-        ("process_client_data/", "caa/process_client_data"),
-        ("oauth_token.fetch/", "caa/oauth_token_fetch"),
+        ("/send_login_request/", "caa/send_login_request"),
+        ("/process_client_data/", "caa/process_client_data"),
+        ("/oauth_token.fetch/", "caa/oauth_token_fetch"),
+        ("/attestation/create_android_keystore/", "attestation/create_android_keystore"),
         ("/launcher/sync/", "launcher/sync"),
         ("/qe/sync/", "qe/sync"),
         ("/feed/timeline/", "feed/timeline"),
@@ -143,21 +171,123 @@ def endpoint_label(path):
     return "other"
 
 
+def proxy_error_category(value):
+    """Read a reported token or error parameter without copying proxy details."""
+    if value is None:
+        return None
+    if value.strip() == "http_request_error":
+        return "http_request_error"
+    # Keep quoted parameter values intact so a details string cannot supply
+    # an apparent error parameter through its own semicolons or commas.
+    parts = []
+    current = ""
+    index = 0
+    while index < len(value):
+        token = re.match(r'"(?:[^"\\]|\\.)*"|[^;,\"]+|[;,]', value[index:])
+        if token is None:
+            return "other"
+        item = token.group()
+        if item in {";", ","}:
+            parts.append(current.strip())
+            current = ""
+        else:
+            current += item
+        index += len(item)
+    parts.append(current.strip())
+    if any(re.fullmatch(r'error\s*=\s*(?:http_request_error|"http_request_error")', part) for part in parts[1:]):
+        return "http_request_error"
+    return "other"
+
+
+def empty_bloks_summary():
+    return {
+        "referenced_apps": [],
+        "fallback_reference_present": False,
+        "login_success_reference_present": False,
+        "continuation_reference_present": False,
+        "two_step_context_parsed": False,
+        "profile_code_context_parsed": False,
+        "error_reference_present": False,
+        "login_response_reference_present": False,
+        "login_response_decoded": False,
+        "logged_in_user_present": False,
+        "authorization_present": False,
+        "sessionid_cookie_present": False,
+        "inspection_error": False,
+    }
+
+
+def summarize_bloks(data):
+    """Inspect only this received payload, without executing or applying it."""
+    summary = empty_bloks_summary()
+    if not isinstance(data, dict):
+        return summary
+    try:
+        strings = []
+        BLOKS_PARSER._bloks_collect_strings(data, strings)
+        text = "\n".join(strings)
+        apps = [app for app in BLOKS_APPS if re.search(r"(?<![\w.])" + re.escape(app) + r"(?![\w.])", text)]
+        summary["referenced_apps"] = apps
+        summary["continuation_reference_present"] = any(
+            BLOKS_APPS[app].startswith(("two_step/", "profile_code/")) for app in apps
+        )
+        summary["fallback_reference_present"] = any(value.startswith("CAA_LOGIN_FALLBACK:") for value in strings)
+        summary["login_success_reference_present"] = any(
+            marker in strings or f'"{marker}"' in text for marker in ("login_success", "two_fac_redirect")
+        )
+        summary["error_reference_present"] = (
+            allowed(data.get("error_type"), ERROR_TYPES) not in {None, "other"}
+            or message_category(data.get("message")) not in {None, "other"}
+            or any(value.startswith("CAA_LOGIN_OCL_ERROR:") for value in strings)
+        )
+        summary["login_response_reference_present"] = bool(re.search(r"(?<![\w])login_response(?![\w])", text))
+        summary["two_step_context_parsed"] = bool(BLOKS_PARSER.bloks_extract_two_step_verification_context(data))
+        summary["profile_code_context_parsed"] = any(
+            BLOKS_PARSER.bloks_extract_context_data(data, app)
+            for app in apps
+            if BLOKS_APPS[app].startswith("profile_code/")
+        )
+        parsed = BLOKS_PARSER.bloks_extract_login_response(data)
+        summary["login_response_decoded"] = bool(parsed)
+        login = parsed.get("login_response")
+        headers = parsed.get("headers")
+        cookies = parsed.get("cookies")
+        summary["logged_in_user_present"] = isinstance(login, dict) and bool(login.get("logged_in_user"))
+        summary["authorization_present"] = isinstance(headers, dict) and bool(
+            headers.get("IG-Set-Authorization") or headers.get("ig-set-authorization")
+        )
+        summary["sessionid_cookie_present"] = isinstance(cookies, dict) and bool(cookies.get("sessionid"))
+    except Exception:
+        summary["inspection_error"] = True
+    return summary
+
+
 def summarize_response(response):
     url = urlsplit(response.url)
+    data = None
     try:
-        body = summarize_json(response.json())
+        data = response.json()
+        body = summarize_json(data)
     except ValueError:
         body = {"type": "non_json"}
-    return {
+    summary = {
         "host": allowed(url.hostname, {"i.instagram.com", "b.i.instagram.com", "www.instagram.com"}),
-        "endpoint": endpoint_label(url.path),
+        "endpoint": endpoint_label(url.path, response.request.headers if response.request is not None else None),
         "method": allowed(response.request.method if response.request else None, {"GET", "POST"}),
         "http_status": response.status_code,
         "content_type": allowed(response.headers.get("Content-Type", "").split(";", 1)[0], CONTENT_TYPES),
         "body_bytes": len(response.content),
         "json": body,
+        "server_category": allowed(response.headers.get("Server"), {"proxygen-bolt"}),
+        "proxy_error_category": proxy_error_category(response.headers.get("Proxy-Status")),
+        "retry_after_present": "Retry-After" in response.headers,
     }
+    if "/bloks/" in url.path:
+        try:
+            summary["bloks"] = summarize_bloks(data)
+        except Exception:
+            summary["bloks"] = {**empty_bloks_summary(), "inspection_error": True}
+    return summary
 
 
 def summarize_caa_outcome(client, outcome):
@@ -202,6 +332,7 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
         "client_profile": {
             "app_version": allowed(client.device_settings.get("app_version"), APP_SETTINGS),
             "bloks_versioning_id_present": bool(client.bloks_versioning_id),
+            "private_transport": allowed(getattr(client, "private_transport", None), {"curl", "requests"}),
         },
     }
 
@@ -226,7 +357,12 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
             attempt["response_end"] = len(report["responses"])
 
     def capture(response, *args, **kwargs):
-        report["responses"].append(summarize_response(response))
+        try:
+            summary = summarize_response(response)
+        except Exception:
+            # Keep the response's position even if optional inspection fails.
+            summary = {"inspection_error": True}
+        report["responses"].append(summary)
         return response
 
     def stop_on_error(client, exc):

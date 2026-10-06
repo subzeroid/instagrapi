@@ -9,11 +9,21 @@ import pytest
 import requests
 
 from instagrapi import Client
+from instagrapi.transports import _CurlH2Adapter
 
 SCRIPT = Path(__file__).resolve().parents[2] / "examples" / "diagnose_login.py"
 LOGIN = "https://i.instagram.com/api/v1/accounts/login/"
 CAA = "https://b.i.instagram.com/api/v1/bloks/async_action/com.bloks.www.bloks.caa.login.async.send_login_request/"
 SECRET = "DO_NOT_SHARE_test_secret_12345"
+
+
+@pytest.fixture(autouse=True)
+def deny_unexpected_network(monkeypatch):
+    def deny(*args, **kwargs):
+        raise AssertionError("Unexpected network attempt in offline diagnostic test")
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", deny)
+    monkeypatch.setattr(_CurlH2Adapter, "send", deny)
 
 
 @pytest.fixture
@@ -518,6 +528,7 @@ def test_diagnostic_reports_only_catalogued_app_versions(diagnostic, known_profi
     assert report["client_profile"] == {
         "app_version": expected_version,
         "bloks_versioning_id_present": has_hash,
+        "private_transport": client.private_transport,
     }
     assert report["caa_attempts"] == []
     assert SECRET not in json.dumps(report)
@@ -557,5 +568,420 @@ def test_caa_observer_preserves_system_exit_identity_and_restores_hooks(diagnost
     assert caught.value is error
     assert client.bloks_caa_login is original
     assert client.handle_exception is handler
+    assert client.private.hooks["response"] == []
+    assert client.public.hooks["response"] == []
+
+
+STAGE_APPS = [
+    ("com.bloks.www.bloks.caa.login.process_client_data_and_redirect", "caa/process_client_data_and_redirect"),
+    ("com.bloks.www.caa.login.oauth.token.fetch.async", "caa/oauth_token_fetch"),
+    ("com.bloks.www.bloks.caa.login.async.send_login_request", "caa/send_login_request"),
+    ("com.bloks.www.two_step_verification.entrypoint", "two_step/entrypoint"),
+    ("com.bloks.www.two_step_verification.method_picker", "two_step/method_picker"),
+    ("com.bloks.www.two_step_verification.method_picker.navigation.async", "two_step/select_method"),
+    ("com.bloks.www.two_factor_login.enter_totp_code", "two_step/enter_totp_code"),
+    ("com.bloks.www.two_factor_login.enter_backup_code", "two_step/enter_backup_code"),
+    ("com.bloks.www.two_step_verification.verify_code.async", "two_step/verify_code"),
+    ("com.bloks.www.two_step_verification.has_been_allowed.async", "two_step/has_been_allowed"),
+    ("com.bloks.www.caa.notif_status.async", "caa/notif_status"),
+    ("com.bloks.www.ap.two_step_verification.entrypoint_async", "profile_code/entrypoint"),
+    ("com.bloks.www.ap.two_step_verification.code_entry", "profile_code/code_entry"),
+    ("com.bloks.www.ap.two_step_verification.code_entry_async", "profile_code/code_entry_async"),
+]
+
+
+@pytest.mark.parametrize(("app", "label"), STAGE_APPS, ids=[label for _, label in STAGE_APPS])
+def test_exact_new_endpoint_stages(diagnostic, app, label):
+    assert diagnostic.endpoint_label(f"/api/v1/bloks/async_action/{app}/") == label
+    assert diagnostic.endpoint_label(f"/api/v1/bloks/apps/{app}/") == label
+    for unknown in (app + SECRET, app + ".unknown", SECRET + app):
+        assert diagnostic.endpoint_label(f"/api/v1/bloks/async_action/{unknown}/") == "bloks"
+
+
+def test_attestation_and_legacy_endpoint_categories(diagnostic):
+    assert diagnostic.endpoint_label("/api/v1/attestation/create_android_keystore/") == (
+        "attestation/create_android_keystore"
+    )
+    assert diagnostic.endpoint_label("/api/v1/attestation/" + SECRET) == "attestation"
+    for suffix, category in (
+        ("process_client_data/", "caa/process_client_data"),
+        ("oauth_token.fetch/", "caa/oauth_token_fetch"),
+        ("send_login_request/", "caa/send_login_request"),
+        ("accounts/current_user/", "accounts/current_user"),
+    ):
+        assert diagnostic.endpoint_label("/api/v1/" + suffix) == category
+
+
+@pytest.mark.parametrize("friendly_name_kind", ["exact", "missing", "unknown", "suffix", "prefix"])
+def test_usdid_registration_uses_only_exact_friendly_name(diagnostic, friendly_name_kind):
+    friendly_name = {
+        "exact": "IGUSDIDRegistrationMutation",
+        "missing": None,
+        "unknown": SECRET,
+        "suffix": "IGUSDIDRegistrationMutation" + SECRET,
+        "prefix": SECRET + "IGUSDIDRegistrationMutation",
+    }[friendly_name_kind]
+    headers = {"x-fb-friendly-name": friendly_name} if friendly_name is not None else {}
+    request = requests.Request("POST", "https://b.i.instagram.com/graphql_www", headers=headers, data=SECRET).prepare()
+    raw = response(request, 200, b"{}")
+    summary = diagnostic.summarize_response(raw)
+    assert summary["endpoint"] == ("usdid/registration" if friendly_name_kind == "exact" else "other")
+    assert SECRET not in json.dumps(summary)
+
+
+@pytest.mark.parametrize(
+    ("server", "proxy_status", "server_category", "proxy_category"),
+    [
+        ("proxygen-bolt", "http_request_error", "proxygen-bolt", "http_request_error"),
+        ("proxygen-bolt", 'proxy; error=http_request_error; details="private"', "proxygen-bolt", "http_request_error"),
+        ("proxygen-bolt", 'proxy; error="http_request_error"', "proxygen-bolt", "http_request_error"),
+        (None, None, None, None),
+        (SECRET, SECRET, "other", "other"),
+        ("proxygen-bolt" + SECRET, "http_request_error" + SECRET, "other", "other"),
+        (SECRET, 'proxy; details="error=http_request_error"', "other", "other"),
+        (SECRET, 'proxy; details="private; error=http_request_error;"', "other", "other"),
+        (SECRET, "proxy; error=http_request_error" + SECRET, "other", "other"),
+    ],
+    ids=[
+        "bare",
+        "parameter",
+        "quoted",
+        "absent",
+        "unknown",
+        "hostile-suffix",
+        "details",
+        "quoted-details",
+        "hostile-error",
+    ],
+)
+def test_response_metadata_is_allowlisted(diagnostic, server, proxy_status, server_category, proxy_category):
+    request = requests.Request("POST", CAA).prepare()
+    raw = response(request, 429, b"", "text/plain")
+    if server is not None:
+        raw.headers["Server"] = server
+    if proxy_status is not None:
+        raw.headers["Proxy-Status"] = proxy_status
+    raw.headers["Retry-After"] = SECRET
+    summary = diagnostic.summarize_response(raw)
+    assert summary["server_category"] == server_category
+    assert summary["proxy_error_category"] == proxy_category
+    assert summary["retry_after_present"] is True
+    assert SECRET not in json.dumps(summary)
+    del raw.headers["Retry-After"]
+    assert diagnostic.summarize_response(raw)["retry_after_present"] is False
+
+
+def embedded_bloks(*, session=False, authorization=False, user=False):
+    embedded = {
+        "login_response": json.dumps({"logged_in_user": {"pk": "123", "username": SECRET}} if user else {}),
+        "headers": json.dumps({"IG-Set-Authorization": SECRET} if authorization else {}),
+        "cookies": f"Set-Cookie: sessionid={SECRET}; Path=/" if session else "Set-Cookie: sessionid=; Path=/",
+        "private": SECRET,
+    }
+    return {"status": "ok", "layout": {"bloks_payload": {"action": f"(bk.action {json.dumps(json.dumps(embedded))})"}}}
+
+
+@pytest.mark.parametrize("kind", ["empty", "fallback", "reference", "malformed", "decoded-empty", "session"])
+def test_bloks_summary_distinguishes_references_and_current_session_material(diagnostic, kind):
+    body = {
+        "empty": {},
+        "fallback": {"markers": ["CAA_LOGIN_FALLBACK:" + SECRET]},
+        "reference": {"layout": {"bloks_payload": {"action": "login_response " + SECRET}}},
+        "malformed": {"layout": {"bloks_payload": {"action": '"{invalid login_response ' + SECRET}}},
+        "decoded-empty": embedded_bloks(),
+        "session": embedded_bloks(session=True, authorization=True, user=True),
+    }[kind]
+    before = json.dumps(body, sort_keys=True)
+    request = requests.Request("POST", CAA).prepare()
+    raw = response(request, 200, json.dumps(body).encode())
+    summary = diagnostic.summarize_response(raw)
+    bloks = summary["bloks"]
+    assert bloks["login_response_reference_present"] is (kind in {"reference", "malformed", "decoded-empty", "session"})
+    assert bloks["login_response_decoded"] is (kind in {"decoded-empty", "session"})
+    assert bloks["logged_in_user_present"] is (kind == "session")
+    assert bloks["authorization_present"] is (kind == "session")
+    assert bloks["sessionid_cookie_present"] is (kind == "session")
+    assert bloks["fallback_reference_present"] is (kind == "fallback")
+    assert bloks["inspection_error"] is False
+    assert SECRET not in json.dumps(summary)
+    assert json.dumps(body, sort_keys=True) == before
+
+
+def test_bloks_referenced_apps_are_exact_and_closed(diagnostic):
+    app = "com.bloks.www.two_step_verification.entrypoint"
+    payload = {
+        "layout": {"bloks_payload": {"action": f"{json.dumps(app)} {json.dumps(app + SECRET)}"}},
+        "private": SECRET,
+    }
+    request = requests.Request("POST", CAA).prepare()
+    summary = diagnostic.summarize_response(response(request, 200, json.dumps(payload).encode()))
+    assert summary["bloks"]["referenced_apps"] == [app]
+    assert SECRET not in json.dumps(summary)
+    payload["layout"]["bloks_payload"]["action"] = json.dumps(app + SECRET)
+    summary = diagnostic.summarize_response(response(request, 200, json.dumps(payload).encode()))
+    assert summary["bloks"]["referenced_apps"] == []
+
+
+@pytest.mark.parametrize("kind", ["success", "redirect", "continuation", "error", "ocl-error", "hostile"])
+def test_bloks_marker_references_are_narrow_and_not_outcomes(diagnostic, kind):
+    app = "com.bloks.www.two_step_verification.method_picker"
+    body = {
+        "success": {"layout": {"bloks_payload": {"action": json.dumps("login_success") + SECRET}}},
+        "redirect": {"layout": {"bloks_payload": {"action": json.dumps("two_fac_redirect") + SECRET}}},
+        "continuation": {"layout": {"bloks_payload": {"action": json.dumps(app) + SECRET}}},
+        "error": {"error_type": "bad_password", "message": SECRET},
+        "ocl-error": {"markers": ["CAA_LOGIN_OCL_ERROR:" + SECRET]},
+        "hostile": {"layout": {"bloks_payload": {"action": json.dumps("login_success" + SECRET)}}},
+    }[kind]
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+    bloks = diagnostic.summarize_response(raw)["bloks"]
+    assert bloks["login_success_reference_present"] is (kind in {"success", "redirect"})
+    assert bloks["continuation_reference_present"] is (kind == "continuation")
+    assert bloks["error_reference_present"] is (kind in {"error", "ocl-error"})
+    assert bloks["login_response_decoded"] is False
+    assert bloks["sessionid_cookie_present"] is False
+    assert SECRET not in json.dumps(bloks)
+
+
+def test_bloks_extraction_failure_uses_fixed_schema_without_session_changes(diagnostic, monkeypatch):
+    body = embedded_bloks(session=True, authorization=True, user=True)
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+    before = raw.content
+    monkeypatch.setattr(diagnostic.BLOKS_PARSER, "bloks_extract_login_response", Mock(side_effect=ValueError(SECRET)))
+    bloks = diagnostic.summarize_response(raw)["bloks"]
+    assert set(bloks) == {
+        "referenced_apps",
+        "fallback_reference_present",
+        "login_success_reference_present",
+        "continuation_reference_present",
+        "error_reference_present",
+        "login_response_reference_present",
+        "two_step_context_parsed",
+        "profile_code_context_parsed",
+        "login_response_decoded",
+        "logged_in_user_present",
+        "authorization_present",
+        "sessionid_cookie_present",
+        "inspection_error",
+    }
+    assert bloks["inspection_error"] is True
+    assert bloks["login_response_decoded"] is False
+    assert raw.content == before
+    assert SECRET not in json.dumps(bloks)
+
+
+@pytest.mark.parametrize(
+    "kind", ["two-step-json", "two-step-action", "profile-action", "reference-only", "hostile-app"]
+)
+def test_current_response_context_booleans_withhold_values(diagnostic, kind):
+    app = "com.bloks.www.two_step_verification.entrypoint"
+    profile = "com.bloks.www.ap.two_step_verification.code_entry"
+    body = {
+        "two-step-json": {"two_step_verification_context": SECRET},
+        "two-step-action": {
+            "layout": {
+                "bloks_payload": {
+                    "action": (f'{json.dumps(app)} (f4i (dkc "two_step_verification_context") (dkc "{SECRET}"))')
+                }
+            }
+        },
+        "profile-action": {
+            "layout": {
+                "bloks_payload": {"action": (f'{json.dumps(profile)} (f4i (dkc "context_data") (dkc "{SECRET}"))')}
+            }
+        },
+        "reference-only": {"layout": {"bloks_payload": {"action": json.dumps(profile)}}},
+        "hostile-app": {
+            "layout": {
+                "bloks_payload": {
+                    "action": (f'{json.dumps(profile + SECRET)} (f4i (dkc "context_data") (dkc "{SECRET}"))')
+                }
+            }
+        },
+    }[kind]
+    before = json.dumps(body, sort_keys=True)
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+    bloks = diagnostic.summarize_response(raw)["bloks"]
+    assert bloks["two_step_context_parsed"] is (kind in {"two-step-json", "two-step-action"})
+    assert bloks["profile_code_context_parsed"] is (kind == "profile-action")
+    assert bloks["inspection_error"] is False
+    assert json.dumps(body, sort_keys=True) == before
+    assert SECRET not in json.dumps(bloks)
+
+
+@pytest.mark.parametrize("transport", ["requests", "curl", "unknown"])
+def test_private_transport_is_allowlisted(diagnostic, transport):
+    client = Client(private_transport=transport if transport != "unknown" else "requests")
+    client.login = Mock(return_value=True)
+    if transport == "unknown":
+        client.private_transport = SECRET
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert report["client_profile"]["private_transport"] == ("other" if transport == "unknown" else transport)
+    assert SECRET not in json.dumps(report)
+
+
+@pytest.mark.parametrize("verification", ["session", "no-session", "credential-429", "pre-submit-429", "backup"])
+@pytest.mark.parametrize("inspection_failure", [False, True])
+def test_real_mocked_transport_two_factor_sequence_preserves_outcome(
+    diagnostic, monkeypatch, verification, inspection_failure
+):
+    if inspection_failure:
+        monkeypatch.setattr(
+            diagnostic.BLOKS_PARSER, "bloks_extract_login_response", Mock(side_effect=ValueError(SECRET))
+        )
+
+    def run(observe):
+        client = Client(private_transport="requests", settings={"request_timeout": 0, "session_retry_total": 0})
+        client.private.trust_env = False
+        client.public.trust_env = False
+        client.caa_aac = '{"aaccs":"synthetic-context"}'
+        if verification == "pre-submit-429":
+            client.usdid_registered = True
+        else:
+            client.bloks_caa_login_prepare = Mock(return_value=True)
+        client.password_encrypt = Mock(return_value="#PWD_INSTAGRAM:4:1:synthetic")
+        client.login_flow = Mock(return_value=True)
+        calls = []
+        entry = "https://i.instagram.com/api/v1/bloks/apps/com.bloks.www.two_step_verification.entrypoint/"
+        picker = "https://i.instagram.com/api/v1/bloks/apps/com.bloks.www.two_step_verification.method_picker/"
+        select = "https://i.instagram.com/api/v1/bloks/async_action/com.bloks.www.two_step_verification.method_picker.navigation.async/"
+        backup = "https://i.instagram.com/api/v1/bloks/apps/com.bloks.www.two_factor_login.enter_backup_code/"
+        verify = (
+            "https://i.instagram.com/api/v1/bloks/async_action/com.bloks.www.two_step_verification.verify_code.async/"
+        )
+        expected = [CAA, entry, picker, select] + ([backup] if verification == "backup" else []) + [verify]
+        if verification == "credential-429":
+            expected = expected[:1]
+        elif verification == "pre-submit-429":
+            expected = [
+                "https://b.i.instagram.com/api/v1/bloks/async_action/"
+                "com.bloks.www.bloks.caa.login.process_client_data_and_redirect/"
+            ]
+
+        def send(adapter, request, **kwargs):
+            calls.append(request.url)
+            assert calls == expected[: len(calls)], "Unexpected request/order in offline 2FA flow"
+            assert request.method == "POST"
+            if verification in {"credential-429", "pre-submit-429"}:
+                return response(request, 429, b"", "text/plain")
+            if request.url == CAA:
+                body = {"status": "ok", "two_step_verification_context": SECRET}
+            elif request.url == verify:
+                body = embedded_bloks(session=verification in {"session", "backup"}, user=True)
+            else:
+                body = {"status": "ok", "layout": {"bloks_payload": {"action": SECRET}}}
+            return response(request, 200, json.dumps(body).encode())
+
+        monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", send)
+        code = "12345678" if verification == "backup" else "123456"
+        if observe:
+            report = diagnostic.diagnose(client, "synthetic-user", SECRET, verification_code=code)
+            result = report["outcome"]
+            error_type = report.get("exception", {}).get("type")
+        else:
+            with diagnostic.quiet_library():
+                try:
+                    result = (
+                        "success" if client.login("synthetic-user", SECRET, verification_code=code) else "false_return"
+                    )
+                    error_type = None
+                except Exception as exc:
+                    result, error_type = "error", type(exc).__name__
+            report = None
+        assert calls == expected
+        return result, error_type, calls, report, client
+
+    baseline = run(False)
+    observed = run(True)
+    assert observed[:3] == baseline[:3]
+    report, client = observed[3:]
+    expected_labels = [
+        "caa/send_login_request",
+        "two_step/entrypoint",
+        "two_step/method_picker",
+        "two_step/select_method",
+    ]
+    if verification == "backup":
+        expected_labels.append("two_step/enter_backup_code")
+    expected_labels.append("two_step/verify_code")
+    if verification == "credential-429":
+        expected_labels = expected_labels[:1]
+    elif verification == "pre-submit-429":
+        expected_labels = ["caa/process_client_data_and_redirect"]
+    assert [item["endpoint"] for item in report["responses"]] == expected_labels
+    if verification in {"session", "backup"}:
+        assert report["outcome"] == "success"
+        assert report["responses"][-1]["bloks"]["sessionid_cookie_present"] is (not inspection_failure)
+        client.login_flow.assert_called_once_with()
+    else:
+        assert report["outcome"] == "error"
+        assert report["exception"]["type"] == (
+            "ClientThrottledError" if verification in {"credential-429", "pre-submit-429"} else "TwoFactorRequired"
+        )
+        client.login_flow.assert_not_called()
+    assert SECRET not in json.dumps(report)
+    assert client.private.hooks["response"] == []
+    assert client.public.hooks["response"] == []
+
+
+@pytest.mark.parametrize("error_type", [None, [], {}], ids=["null", "list", "dict"])
+def test_non_string_error_metadata_does_not_hide_decoded_payload(diagnostic, error_type):
+    body = embedded_bloks(session=True)
+    body["error_type"] = error_type
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+    summary = diagnostic.summarize_response(raw)
+    assert summary["bloks"]["sessionid_cookie_present"] is True
+    assert summary["bloks"]["inspection_error"] is False
+    assert SECRET not in json.dumps(summary)
+
+
+def test_response_inspection_failure_and_old_cookies_cannot_change_login(diagnostic, monkeypatch):
+    client = Client(private_transport="requests")
+    client.private.cookies.set("sessionid", SECRET)
+    client.public.cookies.set("sessionid", SECRET)
+    original_hook = Mock(side_effect=lambda raw, **kwargs: raw)
+    client.private.hooks["response"].append(original_hook)
+    client.handle_exception = Mock()
+    original_handler = client.handle_exception
+    original_caa = client.bloks_caa_login
+    raw = response(requests.Request("POST", CAA).prepare(), 200, b"{}")
+
+    def login(*args, **kwargs):
+        for hook in list(client.private.hooks["response"]):
+            assert hook(raw) is raw
+        return True
+
+    client.login = login
+    clean = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert clean["responses"][0]["bloks"]["sessionid_cookie_present"] is False
+    assert clean["responses"][0]["bloks"]["authorization_present"] is False
+    monkeypatch.setattr(diagnostic, "summarize_bloks", Mock(side_effect=ValueError(SECRET)))
+    report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert report["outcome"] == "success"
+    assert len(report["responses"]) == 1
+    assert report["responses"][0]["bloks"]["inspection_error"] is True
+    assert client.handle_exception is original_handler
+    assert client.bloks_caa_login == original_caa
+    assert "bloks_caa_login" not in vars(client)
+    assert client.private.hooks["response"] == [original_hook]
+    assert client.public.hooks["response"] == []
+    assert SECRET not in json.dumps(report)
+
+
+def test_capture_failure_preserves_exception_identity_and_response_index(diagnostic, monkeypatch):
+    client = Client()
+    error = SystemExit(SECRET)
+    raw = response(requests.Request("POST", CAA).prepare(), 429, b"", "text/plain")
+
+    def login(*args, **kwargs):
+        for hook in client.private.hooks["response"]:
+            assert hook(raw) is raw
+        raise error
+
+    client.login = login
+    monkeypatch.setattr(diagnostic, "summarize_response", Mock(side_effect=ValueError(SECRET)))
+    with pytest.raises(SystemExit) as caught:
+        diagnostic.diagnose(client, "synthetic-user", SECRET)
+    assert caught.value is error
     assert client.private.hooks["response"] == []
     assert client.public.hooks["response"] == []
