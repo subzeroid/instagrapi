@@ -532,6 +532,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#shareable-login-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shareable login diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation-requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1365,6 +1376,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#shareable-login-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shareable login diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#installation-requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1446,6 +1468,17 @@
 <p><code>override_app_version=True</code> updates the app version, version code and Bloks hash. It retains hardware settings and device identifiers. Keep using the account's existing proxy. Alternatively, provide the correct Bloks hash for the original profile or explicitly use <code>login_legacy()</code>.</p>
 <h2 id="verification-and-failures">Verification and failures</h2>
 <p>Continue to pass <code>verification_code</code> for supported two-factor challenges. The CAA profile-code flow also supports <code>challenge_code_handler</code>; see <a href="../totp/">TOTP</a>. Native CAA exceptions propagate. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, <code>login()</code> raises <code>ClientError</code> with the CAA failure reason. Curl does not automatically retry a failed password POST.</p>
+<h2 id="shareable-login-diagnostics">Shareable login diagnostics</h2>
+<p>Download <a href="https://github.com/subzeroid/instagrapi/blob/master/examples/diagnose_login.py">examples/diagnose_login.py</a> and run it in the same Python environment as the failing application, with its existing private settings and proxy:</p>
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>diagnose_login.py<span class="w"> </span>--settings<span class="w"> </span>session.json<span class="w"> </span>--report<span class="w"> </span>login-diagnostic.json<span class="w"> </span>--proxy
+</code></pre></div>
+<p>The script prompts privately for the proxy and password. Credentials can also come from <code>IG_USERNAME</code>, <code>IG_PASSWORD</code> and <code>IG_PROXY</code>. Add <code>--two-factor</code> to supply a current verification code, or <code>--relogin</code> to explicitly request password login even when settings contain an authorized session. Running the script performs a real login attempt; the library can make several requests or enter its existing fallback flow. The script disables transport retries for this run, bounds request timeouts, stops automatic checkpoint handling, and saves updated settings after failure or interruption. Share only the report after reviewing it; settings contain private session credentials.</p>
+<p>Each <code>responses</code> entry records the received HTTP status and a closed endpoint label. Labels distinguish USDID registration, CAA client-data preparation, Android keystore attestation, OAuth preparation and credential submission; <code>two_step/</code> labels identify entrypoint, method picker, method selection, TOTP or backup-code entry, code verification and the allowed-status step. <code>profile_code/</code> labels identify the separate AP entrypoint, code-entry and submission flow. A stage appears only if the installed library actually requested it. Unrecognized endpoints use the existing broad categories such as <code>bloks</code>, <code>challenge</code>, <code>attestation</code> or <code>usdid</code>. USDID registration is identified by the exact <code>IGUSDIDRegistrationMutation</code> request header, without inspecting or exporting its request body.</p>
+<p>Bloks response entries also contain a fixed <code>bloks</code> summary. <code>referenced_apps</code> contains only known app names; <code>continuation_reference_present</code> records a known verification-app reference. <code>fallback_reference_present</code> records <code>CAA_LOGIN_FALLBACK</code>, <code>login_success_reference_present</code> records the exact <code>login_success</code> or <code>two_fac_redirect</code> reference, and <code>error_reference_present</code> records a known error category or <code>CAA_LOGIN_OCL_ERROR</code> reference. These references can occur in unexecuted branches: none proves that Instagram executed the instruction, accepted a code or completed login. HTTP 200 alone does not establish success.</p>
+<p><code>two_step_context_parsed</code> and <code>profile_code_context_parsed</code> indicate that the installed pure parsers recognized nonempty context in this response; the latter examines only referenced, known AP profile-code apps. A false value does not prove that no context exists in an unsupported Bloks grammar. Context recognition does not establish that the next step executed or succeeded, and context values are withheld.</p>
+<p><code>login_response_reference_present</code> distinguishes a payload reference from <code>login_response_decoded</code>, which means the installed pure Bloks parser actually decoded an embedded payload. <code>logged_in_user_present</code>, <code>authorization_present</code> and <code>sessionid_cookie_present</code> record nonempty material from that decoded response only. They do not inspect the client's old cookies, apply the payload, expose its values or verify the resulting identity. <code>inspection_error</code> marks unavailable or failing optional inspection; the observer preserves the original response and login outcome. Existing <code>caa_attempts</code> retain each CAA result and its response-index range before fallback replaces the last response.</p>
+<p>Response metadata includes only <code>server_category</code> (<code>proxygen-bolt</code>, <code>other</code> or absent), <code>proxy_error_category</code> (<code>http_request_error</code>, <code>other</code> or absent) and <code>retry_after_present</code>. The proxy category comes from the exact reported token or a separate <code>error=</code> parameter, without copying proxy details. These fields do not explain the cause of a 429. The client profile records only a catalogued app version, Bloks-hash presence and <code>private_transport</code> (<code>curl</code>, <code>requests</code>, <code>other</code> or absent); raw URLs, headers, response bodies, credentials, contexts and cookies are withheld.</p>
+<p>Downloading the latest diagnostic script does not upgrade the installed package or change its login flow. Use it with a package exposing the existing CAA helpers; older installed parsers may provide less structural information or set <code>inspection_error</code>. Keep the package version in the report when comparing results.</p>
 <h2 id="installation-requirements">Installation requirements</h2>
 <p>Private HTTP/2 requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. <code>curl_cffi</code> normally supplies libcurl in its wheels; a system <code>curl</code> executable and the Python <code>h2</code> package are not required for this transport. A compatible wheel or a supported native build is required for your platform. Android/Termux has not been verified.</p>
 <p>The optional <code>instagrapi[curl]</code> extra remains available for public web browser impersonation through <code>curl-adapter</code>. It is not required for private HTTP/2. See <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> for TLS, proxy and timeout behavior.</p>
