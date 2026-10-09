@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.21 — 2026-10-09
+
+- Require TLS 1.3 for private curl requests while retaining hybrid/classical groups, HTTP/2, certificate verification and proxy handling (#2862). HTTPS targets and TLS-intercepting proxies must support TLS 1.3; see the [private transport guide](https://subzeroid.github.io/instagrapi/usage-guide/interactions/#private-http2-transport).
+- Add sanitized CAA and two-factor stage details to the [login diagnostic](https://github.com/subzeroid/instagrapi/blob/master/examples/diagnose_login.py), including per-attempt response metadata and continuation context (#2858).
+- Update development Ruff to 0.16.10 (#2859).
+
 ## 3.0.20 — 2026-10-04
 
 - Update the default Android app profile to 449.0.0.52.84 with the native User-Agent build and API Bloks version; retain the 448 profile for saved settings and explicit selection (#2855).
