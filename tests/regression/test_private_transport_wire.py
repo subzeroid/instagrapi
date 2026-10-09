@@ -2,6 +2,7 @@
 
 import base64
 import shutil
+import ssl
 import subprocess
 from io import BytesIO
 
@@ -13,7 +14,7 @@ curl_cffi = pytest.importorskip("curl_cffi", reason="curl_cffi is required for p
 pytest.importorskip("h2")
 pytest.importorskip("cryptography")
 
-from curl_cffi import CurlHttpVersion, CurlOpt
+from curl_cffi import CurlHttpVersion, CurlOpt, CurlSslVersion
 
 from instagrapi import Client
 from instagrapi.exceptions import ClientConnectionError, ClientThrottledError
@@ -69,6 +70,29 @@ def test_mixed_alpn_control_still_negotiates_h2_but_has_different_clienthello(cl
     assert response.status_code == 200
     assert lab.records[0]["negotiated"] == "h2"
     assert lab.records[0]["alpn_offers"] == ["h2", "http/1.1"]
+
+
+def test_actual_clienthello_offers_tls13_without_legacy_versions(client, lab):
+    for _ in range(2):
+        assert client.private.get(url(lab), timeout=2).status_code == 200
+    assert [r["supported_versions"] for r in lab.records] == [[0x0304], [0x0304]]
+    assert [r["tls_version"] for r in lab.records] == ["TLSv1.3", "TLSv1.3"]
+    assert [r["connection_id"] for r in lab.records] == [1, 1]
+
+
+def test_default_tls_control_negotiates_tls13_but_also_offers_tls12(client, lab):
+    adapter = client.private.get_adapter(url(lab))
+    adapter.client.curl_options[CurlOpt.SSLVERSION] = CurlSslVersion.DEFAULT
+    assert client.private.get(url(lab), timeout=2).status_code == 200
+    assert lab.records[0]["tls_version"] == "TLSv1.3"
+    assert 0x0303 in lab.records[0]["supported_versions"]
+
+
+def test_tls12_only_peer_is_rejected_before_sending_http_body(client, lab):
+    lab.server.tls.maximum_version = ssl.TLSVersion.TLSv1_2
+    with pytest.raises(requests.exceptions.SSLError):
+        client.private.post(url(lab), data="synthetic_password=test", timeout=2)
+    assert lab.records == []
 
 
 @pytest.mark.parametrize(
@@ -305,7 +329,9 @@ def test_hybrid_group_reaches_peer_through_proxy(client, hybrid_lab, proxy_schem
         assert headers["user-agent"] == client.user_agent
         assert "proxy-authorization" not in headers
         assert base64.b64decode(lab.records[0]["body_base64"]) == b"synthetic-body"
-        assert hellos == [{"alpn_offers": ["h2"], "supported_groups": [4588, 29, 23, 24]}]
+        assert hellos == [
+            {"alpn_offers": ["h2"], "supported_groups": [4588, 29, 23, 24], "supported_versions": [0x0304]}
+        ]
         assert [r["connection_id"] for r in lab.records] == [1, 1]
         if proxy_scheme:
             assert len(proxy.records) == 1
