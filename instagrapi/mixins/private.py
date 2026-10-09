@@ -148,6 +148,7 @@ class PrivateRequestMixin:
         self.private_transport = self._normalize_private_transport(
             kwargs.pop("private_transport", self.private_transport)
         )
+        self.utls_library_path = kwargs.pop("utls_library_path", None)
         self.email = kwargs.pop("email", None)
         self.phone_number = kwargs.pop("phone_number", None)
         self.request_timeout = kwargs.pop("request_timeout", getattr(self, "request_timeout", self.request_timeout))
@@ -192,18 +193,25 @@ class PrivateRequestMixin:
 
     @staticmethod
     def _normalize_private_transport(private_transport):
-        if private_transport not in {"requests", "curl"}:
-            raise ValueError("private_transport must be 'requests' or 'curl'")
+        if private_transport not in {"requests", "curl", "utls"}:
+            raise ValueError("private_transport must be 'requests', 'curl' or 'utls'")
         return private_transport
 
     def _configure_private_session_retry(self, private_transport=None):
         private_transport = self.private_transport if private_transport is None else private_transport
+        if (
+            private_transport in {"curl", "utls"}
+            and getattr(self, "_private_adapter_transport", None) == private_transport
+        ):
+            return
         if private_transport == "curl":
-            if getattr(self, "_private_adapter_transport", None) == "curl":
-                return
             from instagrapi.transports import create_curl_h2_adapter
 
             adapter = create_curl_h2_adapter()
+        elif private_transport == "utls":
+            from instagrapi.utls import create_utls_h2_adapter
+
+            adapter = create_utls_h2_adapter(self.utls_library_path)
         else:
             adapter = HTTPAdapter(max_retries=self._build_private_session_retry_strategy())
         previous = set(self.private.adapters.values())
