@@ -1724,7 +1724,10 @@
 <span class="n">cl</span><span class="o">.</span><span class="n">dump_settings</span><span class="p">(</span><span class="s2">"/tmp/dump.json"</span><span class="p">)</span>
 </code></pre></div>
 <h3 id="manage-device-proxy-and-other-account-settings">Manage device, proxy and other account settings</h3>
-<p>New clients use the Instagram <code>449.0.0.52.84</code> app profile from <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/config.py"><code>config.py</code></a>. Saved settings for the previous <code>448.0.0.0.20</code> profile retain their version and receive the matching Bloks hash when it is missing. You can also select that profile explicitly with <code>cl.set_app("448.0.0.0.20")</code>.</p>
+<p>New clients use the Instagram <code>449.0.0.52.84</code> app profile from <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/config.py"><code>config.py</code></a>. Saved settings for the previous <code>448.0.0.0.20</code> profile retain their version and receive the matching Bloks hash when it is missing. To select that profile explicitly, update the app settings and rebuild the User-Agent:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">set_app</span><span class="p">(</span><span class="s2">"448.0.0.0.20"</span><span class="p">)</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">set_user_agent</span><span class="p">()</span>
+</code></pre></div>
 <table>
 <thead>
 <tr>
