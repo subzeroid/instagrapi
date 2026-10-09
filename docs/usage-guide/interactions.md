@@ -174,7 +174,12 @@ cl.dump_settings("/tmp/dump.json")
 
 ### Manage device, proxy and other account settings
 
-New clients use the Instagram `449.0.0.52.84` app profile from [`config.py`](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/config.py). Saved settings for the previous `448.0.0.0.20` profile retain their version and receive the matching Bloks hash when it is missing. You can also select that profile explicitly with `cl.set_app("448.0.0.0.20")`.
+New clients use the Instagram `449.0.0.52.84` app profile from [`config.py`](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/config.py). Saved settings for the previous `448.0.0.0.20` profile retain their version and receive the matching Bloks hash when it is missing. To select that profile explicitly, update the app settings and rebuild the User-Agent:
+
+```python
+cl.set_app("448.0.0.0.20")
+cl.set_user_agent()
+```
 
 | Method                                   | Return | Description
 |------------------------------------------|------|----------------------------------------------------------------------------
