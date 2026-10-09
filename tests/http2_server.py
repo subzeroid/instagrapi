@@ -22,7 +22,7 @@ LAB_JSON = b'{"status":"lab-ok"}'
 
 
 def peek_client_hello(sock):
-    """Read ALPN and supported groups from the actual ClientHello."""
+    """Read ALPN, groups and TLS versions from the actual ClientHello."""
     header = sock.recv(5, socket.MSG_PEEK | socket.MSG_WAITALL)
     if len(header) != 5 or header[0] != 22:
         raise ValueError("Expected a TLS handshake")
@@ -39,6 +39,7 @@ def peek_client_hello(sock):
     offset += 2
     protocols = []
     groups = []
+    versions = []
     while offset < end:
         kind = int.from_bytes(hello[offset : offset + 2], "big")
         length = int.from_bytes(hello[offset + 2 : offset + 4], "big")
@@ -46,6 +47,8 @@ def peek_client_hello(sock):
         offset += 4 + length
         if kind == 10:
             groups = [int.from_bytes(value[i : i + 2], "big") for i in range(2, len(value), 2)]
+        elif kind == 43:
+            versions = [int.from_bytes(value[i : i + 2], "big") for i in range(1, len(value), 2)]
         elif kind == 16:
             index = 2
             while index < len(value):
@@ -54,7 +57,7 @@ def peek_client_hello(sock):
                 index += 1 + length
     if offset != end or end != len(hello):
         raise ValueError("Malformed ClientHello")
-    return {"alpn_offers": protocols, "supported_groups": groups}
+    return {"alpn_offers": protocols, "supported_groups": groups, "supported_versions": versions}
 
 
 class Handler(socketserver.BaseRequestHandler):
@@ -92,6 +95,7 @@ class Handler(socketserver.BaseRequestHandler):
                                 "stream_id": event.stream_id,
                                 **hello,
                                 "negotiated": conn.selected_alpn_protocol(),
+                                "tls_version": conn.version(),
                                 "headers": request["headers"],
                                 "body_base64": base64.b64encode(request["body"]).decode(),
                             }
