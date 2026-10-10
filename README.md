@@ -351,6 +351,7 @@ Related services:
 * [LamaTok](https://lamatok.com/p/B9ScEYIQ) for TikTok API access, automation, and data workflows
 * [InstaSurfBot](https://t.me/InstaSurfBot) for downloading Instagram media in Telegram
 * [OSINTagramBot](https://t.me/OSINTagramBot) for Instagram OSINT in Telegram
+* [insto](https://github.com/subzeroid/insto) for interactive Instagram OSINT from the terminal (HikerAPI or aiograpi backend)
 
 ### [HikerAPI Affiliate Program](https://hikerapi.com/help/affiliate)
 
