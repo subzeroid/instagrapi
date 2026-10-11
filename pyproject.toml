@@ -94,7 +94,11 @@ test = [
     "setuptools==84.0.0",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.7",
-    "mkdocstrings[python]==1.0.7",
+    # 1.0.7 is the release that works with pymdown-extensions 12.2 (docs build
+    # on PYTHON_VERSION 3.13); it requires Python >=3.11, and the 3.10 test job
+    # only needs the extras to install.
+    "mkdocstrings[python]==1.0.7; python_version >= '3.11'",
+    "mkdocstrings[python]==1.0.6; python_version < '3.11'",
     "numpy>=1.25.0",
     "pre-commit==4.6.2",
     "proglog<=1.0.0",
