@@ -85,6 +85,37 @@ cl.dump_settings("session.json")
 
 Continue to pass `verification_code` for supported two-factor challenges. The CAA profile-code flow also supports `challenge_code_handler`; see [TOTP](totp.md). Native CAA exceptions propagate. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, `login()` raises `ClientError` with the CAA failure reason. Curl does not automatically retry a failed password POST.
 
+## Optional uTLS transport for CAA
+
+Some accounts in [issue #2852](https://github.com/subzeroid/instagrapi/issues/2852) received provider errors or HTTP 429 during CAA login with curl. An explicitly selected `utls` private transport implements the TLS/HTTP2 candidate from that discussion using the official `tls-client` v1.16.0 native library. It offers only TLS 1.3 and HTTP/2, with the candidate's cipher, extension order, key share, HTTP/2 settings and pseudo-header order. This is a tested candidate, not a verified fingerprint capture of the official Instagram app or a guarantee against rate limits. The default remains `curl`; CAA request fields and error handling are unchanged.
+
+Install the native library explicitly before creating a client:
+
+```bash
+python -m instagrapi.utls_native ./native
+```
+
+The command selects the platform asset from the pinned official release, verifies its SHA-256 and prints the installed path. It does not download anything during login. Applications should perform this step during installation or packaging and include that file in their deployment.
+
+```python
+from instagrapi import Client
+from instagrapi.utls_native import native_library_asset
+from pathlib import Path
+
+library = Path("native") / native_library_asset().name
+cl = Client(private_transport="utls", utls_library_path=library)
+cl.load_settings("session.json")
+cl.set_retry_config(private_transport="utls")  # override an explicitly saved transport
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings("session.json")
+```
+
+`utls_library_path` is deployment configuration and is not saved in account settings. Pass it to each new client. The loader checks the binary's checksum before loading it. Official assets are selected for macOS arm64/amd64, Linux glibc arm64/armv7/amd64, Linux musl amd64, and Windows 32/64-bit; runtime availability still depends on the platform's native dependencies. Android/Termux is not supported by this transport.
+
+Requests continues to own prepared URLs, headers, bodies, cookies, redirects and proxy selection, including HTTP CONNECT and `socks5h` proxies. A native session pools connections until closed or its timeout, proxy or certificate policy changes. Failures are mapped to Requests connection, TLS and timeout exceptions without exposing provider error text; the transport never retries a request or falls back to HTTP/1.1. Normal system CA verification is enabled by default. Custom CA paths and client certificates are rejected before transmission. `timeout` accepts a positive numeric total deadline, defaulting to 30 seconds; connect/read tuples are not supported.
+
+The native API buffers and decompresses response bodies. Consequently, `stream=True` exposes already decoded buffered bytes through `Response.raw`, rather than curl's compressed network stream. Stale content encoding and length headers are removed from decoded responses; HEAD/304 representation metadata is retained. Public web and GraphQL sessions keep their own existing transports.
+
 ## Shareable login diagnostics
 
 Download [examples/diagnose_login.py](https://github.com/subzeroid/instagrapi/blob/master/examples/diagnose_login.py) and run it in the same Python environment as the failing application, with its existing private settings and proxy:

@@ -1194,7 +1194,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         session_retry_statuses: list = None,
         public_transport: Optional[Literal["requests", "curl"]] = None,
         public_transport_impersonate: str = None,
-        private_transport: Optional[Literal["requests", "curl"]] = None,
+        private_transport: Optional[Literal["requests", "curl", "utls"]] = None,
     ) -> bool:
         if private_transport is not None:
             private_transport = self._normalize_private_transport(private_transport)
