@@ -2,6 +2,13 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.22 — 2026-10-12
+
+- Reuse one runtime `X-Pigeon-Session-Id` per `Client` and omit fabricated `X-IG-SALT-IDS` defaults. Preserve fresh timestamps, saved-settings boundaries and explicit header overrides (#2869).
+- Document consistent User-Agent selection for saved Android 448 profiles (#2864) and add insto to the related services (#2866).
+- Fix documentation builds with pymdown-extensions 12.2 while keeping test extras installable on Python 3.10 (#2867).
+- Document the separate MoviePy installation required by the regression suite.
+
 ## 3.0.21 — 2026-10-09
 
 - Require TLS 1.3 for private curl requests while retaining hybrid/classical groups, HTTP/2, certificate verification and proxy handling (#2862). HTTPS targets and TLS-intercepting proxies must support TLS 1.3; see the [private transport guide](https://subzeroid.github.io/instagrapi/usage-guide/interactions/#private-http2-transport).

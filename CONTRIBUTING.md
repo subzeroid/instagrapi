@@ -15,6 +15,7 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -e ".[test]"
+python -m pip install --no-deps "moviepy==2.2.1"
 pre-commit install
 ```
 
@@ -24,6 +25,7 @@ If you use `uv`, keep the same `pyproject.toml` source of truth:
 uv venv
 source .venv/bin/activate
 uv pip install -e ".[test]"
+uv pip install --no-deps "moviepy==2.2.1"
 pre-commit install
 ```
 
