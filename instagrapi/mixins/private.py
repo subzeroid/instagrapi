@@ -142,6 +142,7 @@ class PrivateRequestMixin:
     last_json = {}
 
     def __init__(self, *args, **kwargs):
+        self._pigeon_session_id = self.generate_uuid("UFS-", "-1")
         session = requests.Session()
         self.private = session
         self.private.verify = getattr(self, "tls_verify", True)
@@ -247,7 +248,7 @@ class PrivateRequestMixin:
             "X-IG-App-Locale": locale,
             "X-IG-Device-Locale": locale,
             "X-IG-Mapped-Locale": locale,
-            "X-Pigeon-Session-Id": self.generate_uuid("UFS-", "-1"),
+            "X-Pigeon-Session-Id": self._pigeon_session_id,
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
             "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
@@ -287,7 +288,6 @@ class PrivateRequestMixin:
             "X-FB-Server-Cluster": "True",
             "IG-INTENDED-USER-ID": str(self.user_id or 0),
             "X-IG-Nav-Chain": "9MV:self_profile:2,ProfileMediaTabFragment:self_profile:3,9Xf:self_following:4",
-            "X-IG-SALT-IDS": str(random.randint(1061162222, 1061262222)),
         }
         if self.user_id:
             next_year = time.time() + 31536000  # + 1 year in seconds
