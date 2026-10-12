@@ -1440,6 +1440,7 @@ and how to work with the code base.</p>
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 pre-commit<span class="w"> </span>install
 </code></pre></div>
 <p>This installs the library, runtime dependencies, test tools, lint tools, and documentation tooling in one environment.</p>
@@ -1447,6 +1448,7 @@ pre-commit<span class="w"> </span>install
 <div class="highlight"><pre><span></span><code>uv<span class="w"> </span>venv
 <span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[test]"</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 pre-commit<span class="w"> </span>install
 </code></pre></div>
 <p>If you prefer to keep <code>pre-commit</code> outside the project environment, install it with <a href="https://pipx.pypa.io/">pipx</a>:</p>
