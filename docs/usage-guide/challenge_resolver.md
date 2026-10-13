@@ -3,6 +3,28 @@
 
 Instagrapi lets you attach handlers for common login challenge flows such as code verification and password reset.
 
+## Controlling automatic resolution
+
+`Client()` keeps automatic challenge resolution enabled for compatibility. For a service or other unattended process, disable it explicitly:
+
+``` python
+from instagrapi import Client
+from instagrapi.exceptions import ChallengeRequired
+
+cl = Client(with_challenge_flow=False)
+try:
+    cl.login(IG_USERNAME, IG_PASSWORD)
+except ChallengeRequired:
+    # Pause this account and arrange manual verification.
+    raise
+```
+
+With `with_challenge_flow=False`, `private_request(...)` raises the original `ChallengeRequired` before calling the resolver, reading stdin, or replaying the request. You can also set `cl.with_challenge_flow = False` on an existing client. Explicit calls to challenge helpers remain available.
+
+A custom `handle_exception(client, error)` takes precedence over this policy. Raise the error from that handler to stop the request. Returning normally retains the existing request replay behavior. When automatic resolution succeeds, the original request may also be replayed.
+
+With automatic resolution enabled, the default code and password handlers read stdin. They accept valid piped input as well as terminal input. End of input raises `ChallengeRequired` with the current challenge context and a hint to configure `challenge_code_handler` or `change_password_handler`. An open input stream can still wait for input; use `with_challenge_flow=False` to prevent automatic stdin access. Exceptions raised by custom handlers are propagated unchanged.
+
 ## New password challenge
 
 You can automatically change your password to solve the challenge from Instagram.
@@ -102,6 +124,6 @@ def get_code_from_email(username):
     return False
 ```
 
-All challenges solved in the module [challenge.py](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/mixins/challenge.py)
+Challenge resolution helpers are implemented in [challenge.py](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/mixins/challenge.py).
 
 Automatic submission code from SMS/Email in examples [here](https://github.com/subzeroid/instagrapi/blob/master/examples/challenge_resolvers.py)
