@@ -57,6 +57,9 @@ class PublicRequestMixin:
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/605.1.15 "
         "(KHTML, like Gecko) Version/11.1.2 Safari/605.1.15"
     )
+    public_graphql_user_agent: Optional[str] = (
+        "Instagram 273.0.0.16.70 (iPhone15,2; iOS 17_5_1; en_US; en-US; scale=3.00; 1290x2796; 470085518)"
+    )
     public_curl_user_agents = {
         "chrome136": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
@@ -74,10 +77,12 @@ class PublicRequestMixin:
             "public_transport_impersonate",
             getattr(self, "public_transport_impersonate", self.public_transport_impersonate),
         )
+        self._public_user_agent_configured = "public_user_agent" in kwargs
         self.public_user_agent = kwargs.pop(
             "public_user_agent",
             self._default_public_user_agent(self.public_transport, self.public_transport_impersonate),
         )
+        self.public_graphql_user_agent = kwargs.pop("public_graphql_user_agent", self.public_graphql_user_agent)
         self.public_accept_language = kwargs.pop(
             "public_accept_language", getattr(self, "public_accept_language", self.public_accept_language)
         )
@@ -127,6 +132,15 @@ class PublicRequestMixin:
         )
         self._configure_public_session_retry()
         super().__init__(*args, **kwargs)
+
+    def set_public_user_agent(self, user_agent: str, graphql_user_agent: Optional[str] = None) -> bool:
+        """Set web and non-LSD GraphQL UAs; None makes GraphQL follow the web UA."""
+        self.public_user_agent = user_agent
+        self.public_graphql_user_agent = graphql_user_agent
+        self.public.headers["User-Agent"] = user_agent
+        if getattr(self, "settings", None) is not None:
+            self.settings.update({"public_user_agent": user_agent, "public_graphql_user_agent": graphql_user_agent})
+        return True
 
     @classmethod
     def _normalize_public_transport(cls, public_transport: Optional[PublicTransport]) -> PublicTransport:
@@ -536,7 +550,7 @@ class PublicRequestMixin:
             "Accept-Language": "en-US,en;q=0.8",
             "Referer": referer_url,
             "User-Agent": (
-                "Instagram 273.0.0.16.70 (iPhone15,2; iOS 17_5_1; en_US; en-US; scale=3.00; 1290x2796; 470085518)"
+                self.public_user_agent if self.public_graphql_user_agent is None else self.public_graphql_user_agent
             ),
         }
         if include_lsd:
@@ -555,7 +569,9 @@ class PublicRequestMixin:
         if csrftoken:
             merged_headers["X-CSRFToken"] = csrftoken
         if headers:
-            merged_headers.update(headers)
+            merged_headers.update(
+                {"User-Agent" if key.lower() == "user-agent" else key: value for key, value in headers.items()}
+            )
         body_json = self.public_request(
             query_url,
             data=data,
