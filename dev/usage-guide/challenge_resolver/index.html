@@ -568,6 +568,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#controlling-automatic-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling automatic resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#new-password-challenge" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1293,6 +1304,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#controlling-automatic-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controlling automatic resolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#new-password-challenge" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1349,6 +1371,21 @@
 
 <h2 id="challenge-resolver">Challenge Resolver</h2>
 <p>Instagrapi lets you attach handlers for common login challenge flows such as code verification and password reset.</p>
+<h2 id="controlling-automatic-resolution">Controlling automatic resolution</h2>
+<p><code>Client()</code> keeps automatic challenge resolution enabled for compatibility. For a service or other unattended process, disable it explicitly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChallengeRequired</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">with_challenge_flow</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">cl</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">IG_USERNAME</span><span class="p">,</span> <span class="n">IG_PASSWORD</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">ChallengeRequired</span><span class="p">:</span>
+    <span class="c1"># Pause this account and arrange manual verification.</span>
+    <span class="k">raise</span>
+</code></pre></div>
+<p>With <code>with_challenge_flow=False</code>, <code>private_request(...)</code> raises the original <code>ChallengeRequired</code> before calling the resolver, reading stdin, or replaying the request. You can also set <code>cl.with_challenge_flow = False</code> on an existing client. Explicit calls to challenge helpers remain available.</p>
+<p>A custom <code>handle_exception(client, error)</code> takes precedence over this policy. Raise the error from that handler to stop the request. Returning normally retains the existing request replay behavior. When automatic resolution succeeds, the original request may also be replayed.</p>
+<p>With automatic resolution enabled, the default code and password handlers read stdin. They accept valid piped input as well as terminal input. End of input raises <code>ChallengeRequired</code> with the current challenge context and a hint to configure <code>challenge_code_handler</code> or <code>change_password_handler</code>. An open input stream can still wait for input; use <code>with_challenge_flow=False</code> to prevent automatic stdin access. Exceptions raised by custom handlers are propagated unchanged.</p>
 <h2 id="new-password-challenge">New password challenge</h2>
 <p>You can automatically change your password to solve the challenge from Instagram.</p>
 <p>Declare <code>change_password_handler</code> which will return a new password.</p>
@@ -1431,7 +1468,7 @@
                 <span class="k">return</span> <span class="n">code</span>
     <span class="k">return</span> <span class="kc">False</span>
 </code></pre></div>
-<p>All challenges solved in the module <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/mixins/challenge.py">challenge.py</a></p>
+<p>Challenge resolution helpers are implemented in <a href="https://github.com/subzeroid/instagrapi/blob/master/instagrapi/mixins/challenge.py">challenge.py</a>.</p>
 <p>Automatic submission code from SMS/Email in examples <a href="https://github.com/subzeroid/instagrapi/blob/master/examples/challenge_resolvers.py">here</a></p>
 
 
