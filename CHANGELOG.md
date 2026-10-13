@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.23 — 2026-10-13
+
+- Deduplicate users across pages in `iter_user_followers_v1()` and `iter_user_following_v1()`, preserving the first occurrence and counting unique users toward `amount`. Continue across duplicate-only pages with an advancing cursor (#2876).
+
 ## 3.0.22 — 2026-10-12
 
 - Reuse one runtime `X-Pigeon-Session-Id` per `Client` and omit fabricated `X-IG-SALT-IDS` defaults. Preserve fresh timestamps, saved-settings boundaries and explicit header overrides (#2869).
