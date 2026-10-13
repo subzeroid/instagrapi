@@ -942,7 +942,7 @@ class UserMixin:
         user_id: str
             User id of an instagram account
         amount: int, optional
-            Maximum number of users to yield, default is 0 - Inf
+            Maximum number of unique users to yield, default is 0 - Inf
         page_size: int, optional
             Maximum number of users to fetch per page, default is 200
 
@@ -956,7 +956,9 @@ class UserMixin:
         def fetch_page(max_id: str, max_amount: int) -> Tuple[List[UserShort], str]:
             return self.user_following_v1_chunk(user_id, max_amount=max_amount, max_id=max_id)
 
-        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor="")
+        return iter_paginated(
+            fetch_page, amount=amount, page_size=page_size, initial_cursor="", item_key=lambda user: user.pk
+        )
 
     def user_following(self, user_id: str, use_cache: bool = True, amount: int = 0) -> Dict[str, UserShort]:
         """
@@ -1172,7 +1174,7 @@ class UserMixin:
         user_id: str
             User id of an instagram account
         amount: int, optional
-            Maximum number of users to yield, default is 0 - Inf
+            Maximum number of unique users to yield, default is 0 - Inf
         page_size: int, optional
             Maximum number of users to fetch per page, default is 200
         order: FOLLOWERS_ORDER, optional
@@ -1195,7 +1197,9 @@ class UserMixin:
                 )
             return self.user_followers_v1_chunk(user_id, max_amount=max_amount, max_id=max_id)
 
-        return iter_paginated(fetch_page, amount=amount, page_size=page_size, initial_cursor="")
+        return iter_paginated(
+            fetch_page, amount=amount, page_size=page_size, initial_cursor="", item_key=lambda user: user.pk
+        )
 
     @staticmethod
     def _private_graphql_root(data: Dict, root_field_name: str) -> Dict:

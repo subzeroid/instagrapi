@@ -178,6 +178,8 @@ earliest_followers = cl.user_followers_v1(cl.user_id, amount=50, order="date_fol
 
 Streaming followers/following:
 
+Both iterators yield each user ID once per invocation, keeping the first occurrence when pages overlap. `amount` limits unique users; `0` iterates until pagination ends. They retain seen user IDs in memory, while user objects can be processed incrementally. Deduplication preserves the order returned by Instagram and does not guarantee chronological ordering or a complete snapshot of a changing list.
+
 ``` python
 for follower in cl.iter_user_followers_v1(cl.user_id, amount=1000, page_size=100, order="date_followed_latest"):
     print(follower.pk, follower.username)

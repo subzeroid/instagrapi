@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Hashable, Iterator, Sequence
 from typing import TypeVar
 
 T = TypeVar("T")
@@ -11,11 +11,14 @@ def iter_paginated(
     amount: int = 0,
     page_size: int = 0,
     initial_cursor: Cursor = None,
+    *,
+    item_key: Callable[[T], Hashable] | None = None,
 ) -> Iterator[T]:
     amount = int(amount)
     page_size = int(page_size)
     cursor = initial_cursor
     yielded = 0
+    seen: set[Hashable] = set()
 
     while True:
         page_amount = page_size
@@ -32,6 +35,11 @@ def iter_paginated(
         for item in items:
             if amount and yielded >= amount:
                 return
+            if item_key is not None:
+                key = item_key(item)
+                if key in seen:
+                    continue
+                seen.add(key)
             yield item
             yielded += 1
 
