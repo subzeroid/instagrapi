@@ -953,6 +953,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#user-agent-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Agent configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-comparison" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1266,6 +1277,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#user-agent-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User-Agent configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#live-comparison" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1327,6 +1349,16 @@ transport-level retry behavior.</p>
 </code></pre></div>
 <p><code>public_transport</code> configures the public web session. Private mobile API requests
 use <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> by default.</p>
+<h2 id="user-agent-configuration">User-Agent configuration</h2>
+<p>Public web requests and the private Android API use separate profiles. The existing defaults are retained: the <code>requests</code> public session uses its Safari UA, the curl public session uses the UA selected by <code>public_transport_impersonate</code>, and non-LSD <code>doc_id</code> GraphQL uses the existing iOS UA. Some public helpers reuse authentication cookies; public does not always mean anonymous.</p>
+<p><code>public_user_agent</code> configures the ordinary public session, legacy <code>query_hash</code>/<code>query_id</code> requests, and the preparation GET and POST of <code>include_lsd=True</code> GraphQL. <code>public_graphql_user_agent</code> configures non-LSD <code>doc_id</code> requests, including high-level profile and comment helpers. Set it to <code>None</code> to make that path follow <code>public_user_agent</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+
+<span class="n">cl</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">public_transport</span><span class="o">=</span><span class="s2">"curl"</span><span class="p">,</span> <span class="n">public_graphql_user_agent</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+<p>For an existing client, <code>cl.set_public_user_agent(web_ua)</code> applies the supplied string to the web session and makes non-LSD GraphQL follow it. Use <code>cl.set_public_user_agent(web_ua, graphql_ua)</code> or the constructor's <code>public_user_agent</code> and <code>public_graphql_user_agent</code> arguments for independent strings. For <code>public_doc_id_graphql_request</code>, a <code>headers={"User-Agent": ...}</code> override takes precedence for its POST, is case-insensitive and does not change the session header. LSD preparation GET requests continue using the web profile, and their POST can be explicitly overridden. Legacy <code>public_request</code> and <code>public_graphql_request</code> retain their existing session-header update behavior.</p>
+<p>Both settings, including a shared <code>public_graphql_user_agent=None</code>, survive <code>get_settings()</code>/<code>set_settings()</code> and <code>dump_settings()</code>/<code>load_settings()</code> round trips. Saved UA fields take precedence over constructor values. Older settings without UA fields use the selected transport's default, except that an explicit constructor <code>public_user_agent</code> remains in effect. Selecting a public transport through <code>set_retry_config(...)</code> retains its existing behavior of resetting the web UA to that transport's default; apply a custom UA with <code>set_public_user_agent(...)</code> afterward. An independent GraphQL UA remains unchanged, while a shared one follows the new web UA.</p>
+<p>These controls do not change the private Android UA, TLS/browser impersonation, dependencies or retry policy. Changing a UA alone does not reproduce a different transport fingerprint, and arbitrary caller-supplied UA strings are not guaranteed to be accepted by Instagram. This configuration correction does not establish a cause of account restrictions or replace the legacy default strings.</p>
 <h2 id="live-comparison">Live Comparison</h2>
 <p>This is a point-in-time live comparison from May 15, 2026. Instagram public web behavior changes frequently, so treat
 these numbers as a practical signal, not a guarantee.</p>
