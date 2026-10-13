@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.24 — 2026-10-13
+
+- Honor `Client(with_challenge_flow=False)` by propagating the original challenge without automatic resolution or request replay; keep automatic handling enabled by default and custom exception hooks first (#2878).
+- Raise actionable `ChallengeRequired` errors when built-in code or password prompts reach EOF, preserving challenge context and valid piped input (#2878).
+
 ## 3.0.23 — 2026-10-13
 
 - Deduplicate users across pages in `iter_user_followers_v1()` and `iter_user_following_v1()`, preserving the first occurrence and counting unique users toward `amount`. Continue across duplicate-only pages with an advancing cursor (#2876).
