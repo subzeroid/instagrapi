@@ -2,6 +2,11 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.25 — 2026-10-14
+
+- Configure non-LSD public GraphQL User-Agent profiles with `public_graphql_user_agent`; use `None` to share the web UA or `set_public_user_agent(...)` to update both profiles. Keep existing route defaults (#2880).
+- Preserve public and GraphQL UA choices in saved settings and file round trips, retain explicit constructor UAs with older settings, and handle case-insensitive per-request doc_id UA overrides without changing the session (#2880).
+
 ## 3.0.24 — 2026-10-13
 
 - Honor `Client(with_challenge_flow=False)` by propagating the original challenge without automatic resolution or request replay; keep automatic handling enabled by default and custom exception hooks first (#2878).
