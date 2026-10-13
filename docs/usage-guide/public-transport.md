@@ -29,6 +29,24 @@ cl = Client(public_transport="curl", public_transport_impersonate="chrome136")
 `public_transport` configures the public web session. Private mobile API requests
 use [private HTTP/2 transport](interactions.md#private-http2-transport) by default.
 
+## User-Agent configuration
+
+Public web requests and the private Android API use separate profiles. The existing defaults are retained: the `requests` public session uses its Safari UA, the curl public session uses the UA selected by `public_transport_impersonate`, and non-LSD `doc_id` GraphQL uses the existing iOS UA. Some public helpers reuse authentication cookies; public does not always mean anonymous.
+
+`public_user_agent` configures the ordinary public session, legacy `query_hash`/`query_id` requests, and the preparation GET and POST of `include_lsd=True` GraphQL. `public_graphql_user_agent` configures non-LSD `doc_id` requests, including high-level profile and comment helpers. Set it to `None` to make that path follow `public_user_agent`:
+
+```python
+from instagrapi import Client
+
+cl = Client(public_transport="curl", public_graphql_user_agent=None)
+```
+
+For an existing client, `cl.set_public_user_agent(web_ua)` applies the supplied string to the web session and makes non-LSD GraphQL follow it. Use `cl.set_public_user_agent(web_ua, graphql_ua)` or the constructor's `public_user_agent` and `public_graphql_user_agent` arguments for independent strings. For `public_doc_id_graphql_request`, a `headers={"User-Agent": ...}` override takes precedence for its POST, is case-insensitive and does not change the session header. LSD preparation GET requests continue using the web profile, and their POST can be explicitly overridden. Legacy `public_request` and `public_graphql_request` retain their existing session-header update behavior.
+
+Both settings, including a shared `public_graphql_user_agent=None`, survive `get_settings()`/`set_settings()` and `dump_settings()`/`load_settings()` round trips. Saved UA fields take precedence over constructor values. Older settings without UA fields use the selected transport's default, except that an explicit constructor `public_user_agent` remains in effect. Selecting a public transport through `set_retry_config(...)` retains its existing behavior of resetting the web UA to that transport's default; apply a custom UA with `set_public_user_agent(...)` afterward. An independent GraphQL UA remains unchanged, while a shared one follows the new web UA.
+
+These controls do not change the private Android UA, TLS/browser impersonation, dependencies or retry policy. Changing a UA alone does not reproduce a different transport fingerprint, and arbitrary caller-supplied UA strings are not guaranteed to be accepted by Instagram. This configuration correction does not establish a cause of account restrictions or replace the legacy default strings.
+
 ## Live Comparison
 
 This is a point-in-time live comparison from May 15, 2026. Instagram public web behavior changes frequently, so treat

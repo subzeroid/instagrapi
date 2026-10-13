@@ -636,6 +636,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         country = self.settings.get("country", self.country)
         country_code = self.settings.get("country_code", self.country_code)
         self.set_tls_verify(self.settings.get("tls_verify", self.tls_verify))
+        public_user_agent = self.settings.get("public_user_agent", self.public_user_agent)
+        restore_public_user_agent = "public_user_agent" in self.settings or getattr(
+            self, "_public_user_agent_configured", False
+        )
+        public_graphql_user_agent = self.settings.get("public_graphql_user_agent", self.public_graphql_user_agent)
         self.set_retry_config(
             request_timeout=self.settings.get("request_timeout", self.request_timeout),
             public_request_retries_count=self.settings.get(
@@ -652,6 +657,11 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             public_transport=self.settings.get("public_transport"),
             private_transport=self.settings.get("private_transport"),
             public_transport_impersonate=self.settings.get("public_transport_impersonate"),
+        )
+
+        self.set_public_user_agent(
+            public_user_agent if restore_public_user_agent else self.public_user_agent,
+            public_graphql_user_agent,
         )
 
         self.set_timezone_offset(timezone_offset, timezone_name=timezone_name or None)
@@ -1103,6 +1113,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             "session_retry_backoff_factor": self.session_retry_backoff_factor,
             "session_retry_statuses": self.session_retry_statuses,
             "public_transport": self.public_transport,
+            "public_user_agent": self.public_user_agent,
+            "public_graphql_user_agent": self.public_graphql_user_agent,
             "private_transport": self.private_transport,
             "public_transport_impersonate": self.public_transport_impersonate,
             "tls_verify": self.tls_verify,
@@ -1233,6 +1245,8 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
                     "session_retry_backoff_factor": self.session_retry_backoff_factor,
                     "session_retry_statuses": self.session_retry_statuses,
                     "public_transport": self.public_transport,
+                    "public_user_agent": self.public_user_agent,
+                    "public_graphql_user_agent": self.public_graphql_user_agent,
                     "private_transport": self.private_transport,
                     "public_transport_impersonate": self.public_transport_impersonate,
                 }
