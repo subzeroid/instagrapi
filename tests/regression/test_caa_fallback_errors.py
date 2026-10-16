@@ -67,6 +67,7 @@ def login_responses(monkeypatch, *, entrypoint, legacy_error, caa_status, caa_bo
         (400, {"status": "fail", "error_type": "rate_limit_error", "message": "Request limited"}, RateLimitError),
         (400, {"status": "fail", "message": "feedback_required"}, FeedbackRequired),
         (400, {"status": "fail", "error_type": "field_exception", "message": "Different server error"}, UnknownError),
+        (400, {"status": "fail", "error_type": "needs_upgrade", "message": "CAA login requires upgrade"}, UnknownError),
     ],
 )
 def test_login_surfaces_caa_failure_after_legacy_rejection(
@@ -81,6 +82,10 @@ def test_login_surfaces_caa_failure_after_legacy_rejection(
 
     assert len(responses) == len(sequence)
     assert getattr(raised.value, "error_type", None) == caa_body.get("error_type")
+    if caa_body.get("error_type") == "needs_upgrade":
+        assert type(raised.value).__name__ == "ClientNeedsUpgradeError"
+        assert raised.value.response is responses[-1]
+        assert raised.value.message == caa_body["message"]
     assert client.last_response is responses[-1]
     assert client.last_json == caa_body
     assert not client.user_id
@@ -97,9 +102,10 @@ def test_login_surfaces_caa_failure_after_legacy_rejection(
             400,
             {"status": "fail", "error_type": "field_exception", "message": "Payload returned is null."},
         ),
+        (200, {"status": "ok", "layout": {"bloks_payload": {"data": []}}}),
     ],
 )
-def test_unavailable_caa_endpoint_keeps_legacy_failure(
+def test_caa_without_usable_session_keeps_legacy_failure(
     monkeypatch, entrypoint, legacy_error, expected, caa_status, caa_body
 ):
     client, responses, sequence = login_responses(
@@ -111,4 +117,36 @@ def test_unavailable_caa_endpoint_keeps_legacy_failure(
 
     assert len(responses) == len(sequence)
     assert raised.value.error_type == legacy_error
+    if legacy_error == "needs_upgrade":
+        assert type(raised.value).__name__ == "ClientNeedsUpgradeError"
+        assert raised.value.response is responses[-2]
+        assert raised.value.code == 400
+        assert raised.value.message == "Legacy login rejected"
+    assert client.last_response is responses[-1]
+    assert client.last_json == caa_body
+    assert not client.user_id
     client.login_flow.assert_not_called()
+
+
+@pytest.mark.parametrize("entrypoint", ["login", "login_legacy"])
+def test_needs_upgrade_still_completes_successful_caa_fallback(monkeypatch, entrypoint):
+    caa_body = {
+        "status": "ok",
+        "headers": {},
+        "cookies": {"sessionid": "synthetic-session", "ds_user_id": "123"},
+    }
+    client, responses, sequence = login_responses(
+        monkeypatch,
+        entrypoint=entrypoint,
+        legacy_error="needs_upgrade",
+        caa_status=200,
+        caa_body=caa_body,
+    )
+    client.login_flow = Mock(return_value=True)
+
+    assert getattr(client, entrypoint)("synthetic-user", "synthetic-password") is True
+
+    assert len(responses) == len(sequence)
+    assert client.user_id == 123
+    assert client.sessionid == "synthetic-session"
+    client.login_flow.assert_called_once_with()
