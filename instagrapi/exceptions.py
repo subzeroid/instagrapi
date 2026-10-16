@@ -253,6 +253,10 @@ class UnknownError(PrivateError):
     pass
 
 
+class ClientNeedsUpgradeError(UnknownError):
+    """Instagram returned HTTP 400 with error_type=needs_upgrade."""
+
+
 class AccountEditError(PrivateError):
     pass
 
