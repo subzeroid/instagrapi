@@ -174,6 +174,18 @@ cl.dump_settings("/tmp/dump.json")
 
 ### Manage device, proxy and other account settings
 
+`load_settings()` normally restores the saved app profile. In contrast, every explicit `set_device()` call starts from library defaults and overlays the supplied dictionary: a hardware-only dictionary resets omitted app fields to the defaults. To keep the current app profile when updating hardware fields, merge with `device_settings` first:
+
+```python
+cl.load_settings("session.json")
+hardware_updates = {"dpi": "480dpi", "resolution": "1080x2400"}
+cl.set_device({**cl.device_settings, **hardware_updates})
+cl.set_user_agent()
+cl.dump_settings("session.json")
+```
+
+This uses the default `override_app_version=False`. Loading with `override_app_version=True` intentionally replaces the saved app version, version code and Bloks hash with the current default profile; see [older-profile migration](login-migration.md#older-app-profiles-without-a-bloks-hash).
+
 New clients use the Instagram `449.0.0.52.84` app profile from [`config.py`](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/config.py). Saved settings for the previous `448.0.0.0.20` profile retain their version and receive the matching Bloks hash when it is missing. To select that profile explicitly, update the app settings and rebuild the User-Agent:
 
 ```python
