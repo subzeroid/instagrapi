@@ -56,10 +56,13 @@ For `ClientError` and its subclasses, the exception's `code` attribute contains 
 | BadPassword              | PrivateError | Raises when get message=bad_password. See [`BadPassword` troubleshooting](https://instagrapi.com/guides/errors/bad-password/) for proxy/IP/device/session trust cases where the password is correct but Instagram rejects the login context.
 | TwoFactorRequired        | PrivateError | Raises when get message=two_factor_required
 | UnknownError             | PrivateError | Raises when get unknown message (new message from instagram)
+| ClientNeedsUpgradeError   | UnknownError | HTTP 400 with exact `error_type=needs_upgrade`, after higher-priority error classifications
 | AccountEditError         | PrivateError | Raises when `accounts/edit_profile/` returns an account edit failure
 | AccountContactPointRequired | AccountEditError | Raises when profile editing requires an email or confirmed phone number
 | BadCredentials           | PrivateError | The login and password pair for your account have not been passed
 | IsRegulatedC18Error      | ClientBadRequestError | The user is limited to 18+
+
+`ClientNeedsUpgradeError` is available from `instagrapi.exceptions` and remains compatible with `except UnknownError`. It preserves Instagram's original nonempty `message` and `error_type`, exposes the actual HTTP `response` and `code=400`, and leaves `client.last_json` unchanged. Empty or missing messages use the existing `ClientError` fallback. Other HTTP statuses, including HTTP 200 with `status=fail`, keep their existing classifications. The existing legacy-login CAA fallback still applies; if CAA returns an actionable failure, that later error takes precedence. This exception does not guarantee that login recovery will succeed.
 
 ## Challenge Exceptions
 
