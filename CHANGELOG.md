@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.0.26 — 2026-10-17
+
+- Catch HTTP 400 `error_type=needs_upgrade` as `ClientNeedsUpgradeError`, an `UnknownError` subclass that preserves existing handlers, original response diagnostics and CAA fallback behavior (#2887). This improves error handling; it does not establish recovery from a CAA response without a session.
+- Clarify that `set_device()` replaces the saved device profile and show how to retain app fields when changing hardware settings (#2885).
+- Update development Ruff to 0.17.0 and CodeQL Action to 4.38.3 (#2883, #2884).
+
 ## 3.0.25 — 2026-10-14
 
 - Configure non-LSD public GraphQL User-Agent profiles with `public_graphql_user_agent`; use `None` to share the web UA or `set_public_user_agent(...)` to update both profiles. Keep existing route defaults (#2880).
