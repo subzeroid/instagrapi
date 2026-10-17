@@ -1994,6 +1994,11 @@
 <td>Raises when get unknown message (new message from instagram)</td>
 </tr>
 <tr>
+<td>ClientNeedsUpgradeError</td>
+<td>UnknownError</td>
+<td>HTTP 400 with exact <code>error_type=needs_upgrade</code>, after higher-priority error classifications</td>
+</tr>
+<tr>
 <td>AccountEditError</td>
 <td>PrivateError</td>
 <td>Raises when <code>accounts/edit_profile/</code> returns an account edit failure</td>
@@ -2015,6 +2020,7 @@
 </tr>
 </tbody>
 </table>
+<p><code>ClientNeedsUpgradeError</code> is available from <code>instagrapi.exceptions</code> and remains compatible with <code>except UnknownError</code>. It preserves Instagram's original nonempty <code>message</code> and <code>error_type</code>, exposes the actual HTTP <code>response</code> and <code>code=400</code>, and leaves <code>client.last_json</code> unchanged. Empty or missing messages use the existing <code>ClientError</code> fallback. Other HTTP statuses, including HTTP 200 with <code>status=fail</code>, keep their existing classifications. The existing legacy-login CAA fallback still applies; if CAA returns an actionable failure, that later error takes precedence. This exception does not guarantee that login recovery will succeed.</p>
 <h2 id="challenge-exceptions">Challenge Exceptions</h2>
 <table>
 <thead>
