@@ -13,7 +13,7 @@ function set_and_exit() {
 }
 
 function json_query() {
-  jq -e "${1}" "${GITHUB_EVENT_PATH}"
+  jq -er "${1}" "${GITHUB_EVENT_PATH}"
 }
 
 if [[ "${USER_NAME}" != "" && "${USER_EMAIL}" != "" ]]; then
@@ -21,9 +21,9 @@ if [[ "${USER_NAME}" != "" && "${USER_EMAIL}" != "" ]]; then
 fi
 
 echo "::debug::Attempting push event pusher"
-if json_query ".push.pusher" > /dev/null ; then
+if json_query '.pusher | select(.name != null and .email != null)' > /dev/null ; then
   echo "::debug::Found push event pusher"
-  set_and_exit "$(json_query '.push.pusher.name')" "$(json_query '.push.pusher.email')"
+  set_and_exit "$(json_query '.pusher.name')" "$(json_query '.pusher.email')"
 fi
 
 echo "::debug::Attempting merge merged by"

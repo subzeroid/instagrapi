@@ -30,8 +30,8 @@ runs:
     - run: "$GITHUB_ACTION_PATH/action.sh"
       shell: "bash"
       env:
-        USER_NAME: ${{ inputs.name }}
-        USER_EMAIL: ${{ inputs.email }}
+        USER_NAME: ${{ inputs.commit_user_name }}
+        USER_EMAIL: ${{ inputs.commit_user_email }}
         VERSION_NAME: ${{ inputs.version_name }}
         NEW_VERSION: ${{ inputs.new_version }}
         RELEASE_TAG: ${{ github.event.release.tag_name }}
