@@ -1,0 +1,126 @@
+[
+  {
+    "module": "tls-client",
+    "path": "roundtripper.go",
+    "before_sha256": "fd595e9ec9a9705a445a1e40e57104f4583eaea966b397cda68a7c905127c8b1",
+    "after_sha256": "6583f930a221100543e6f87c08cedd204dcbcbadba383f53af0cff55e9309cd5",
+    "replacements": [
+      {
+        "old": "\tnegotiatedProtocol := conn.ConnectionState().NegotiatedProtocol\n",
+        "new": "\tnegotiatedProtocol := conn.ConnectionState().NegotiatedProtocol\n\tif negotiatedProtocol != http2.NextProtoTLS {\n\t\t_ = conn.Close()\n\t\treturn nil, errors.New(\"instagrapi: HTTP/2 ALPN is required before sending a request\")\n\t}\n"
+      },
+      {
+        "old": "\t\t\tDialTLS:         rt.dialTLSHTTP2,",
+        "new": "\t\t\tDialTLSContext:  rt.dialTLSHTTP2,"
+      },
+      {
+        "old": "func (rt *roundTripper) dialTLSHTTP2(network, addr string, _ *tls.Config) (net.Conn, error) {\n\treturn rt.dialTLS(context.Background(), network, addr)\n}",
+        "new": "func (rt *roundTripper) dialTLSHTTP2(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {\n\treturn rt.dialTLS(ctx, network, addr)\n}"
+      }
+    ]
+  },
+  {
+    "module": "tls-client",
+    "path": "cffi_src/factory.go",
+    "before_sha256": "1f0f15b200b83442d85fed9e296d1783e1daeb2de4f8831e9f55033d736aa289",
+    "after_sha256": "cb0596a084406ab9e973323212151db5f6bade4ec25a4d658dab672d74105cc8",
+    "replacements": [
+      {
+        "old": "\tclient.CloseIdleConnections()\n\n\tdelete(clients, sessionId)",
+        "new": "\tif client != nil {\n\t\tclient.CloseIdleConnections()\n\t}\n\n\tdelete(clients, sessionId)"
+      },
+      {
+        "old": "\ttlsClient, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)\n\n\tif withSession {\n\t\tclients[sessionId] = tlsClient\n\t}",
+        "new": "\ttlsClient, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)\n\n\tif withSession && err == nil {\n\t\tclients[sessionId] = tlsClient\n\t}"
+      }
+    ]
+  },
+  {
+    "module": "fhttp",
+    "path": "http2/transport.go",
+    "before_sha256": "add01bda054c0d30e00f6675ef9d0be0b63190e84d1df5df0bd152acba4fdd50",
+    "after_sha256": "df919c819fe2804898ed2698dc80f730e8f365a9ff6ecef0d3fea97ea984fad0",
+    "replacements": [
+      {
+        "old": "\tmathrand \"math/rand\"\n",
+        "new": ""
+      },
+      {
+        "old": "func (t *Transport) RoundTripOpt(req *http.Request, opt RoundTripOpt) (*http.Response, error) {\n\tif !(req.URL.Scheme == \"https\" || (req.URL.Scheme == \"http\" && t.AllowHTTP)) {\n\t\treturn nil, errors.New(\"http2: unsupported scheme\")\n\t}\n\n\taddr := authorityAddr(req.URL.Scheme, req.URL.Host)\n\tfor retry := 0; ; retry++ {\n\t\tcc, err := t.connPool().GetClientConn(req, addr)\n\t\tif err != nil {\n\t\t\tt.vlogf(\"http2: Transport failed to get client conn for %s: %v\", addr, err)\n\n\t\t\treturn nil, err\n\t\t}\n\t\treused := !atomic.CompareAndSwapUint32(&cc.reused, 0, 1)\n\t\ttraceGotConn(req, cc, reused)\n\t\tres, gotErrAfterReqBodyWrite, err := cc.roundTrip(req)\n\t\tif err != nil && retry <= 6 {\n\t\t\tif req, err = shouldRetryRequest(req, err, gotErrAfterReqBodyWrite); err == nil {\n\t\t\t\t// After the first retry, do exponential backoff with 10% jitter.\n\t\t\t\tif retry == 0 {\n\t\t\t\t\tcontinue\n\t\t\t\t}\n\t\t\t\tbackoff := float64(uint(1) << (uint(retry) - 1))\n\t\t\t\tbackoff += backoff * (0.1 * mathrand.Float64())\n\t\t\t\tselect {\n\t\t\t\tcase <-time.After(time.Second * time.Duration(backoff)):\n\t\t\t\t\tcontinue\n\t\t\t\tcase <-req.Context().Done():\n\t\t\t\t\treturn nil, req.Context().Err()\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\tif err != nil {\n\t\t\tt.vlogf(\"RoundTrip failure: %v\", err)\n\n\t\t\treturn nil, err\n\t\t}\n\n\t\treturn res, nil\n\t}\n}\n",
+        "new": "func (t *Transport) RoundTripOpt(req *http.Request, opt RoundTripOpt) (*http.Response, error) {\n\tif !(req.URL.Scheme == \"https\" || (req.URL.Scheme == \"http\" && t.AllowHTTP)) {\n\t\treturn nil, errors.New(\"http2: unsupported scheme\")\n\t}\n\taddr := authorityAddr(req.URL.Scheme, req.URL.Host)\n\tcc, err := t.connPool().GetClientConn(req, addr)\n\tif err != nil {\n\t\treturn nil, err\n\t}\n\treused := !atomic.CompareAndSwapUint32(&cc.reused, 0, 1)\n\ttraceGotConn(req, cc, reused)\n\t// The dedicated instagrapi bridge never replays a prepared request.\n\tres, _, err := cc.roundTrip(req)\n\treturn res, err\n}\n"
+      },
+      {
+        "old": "\tDialTLS func(network, addr string, cfg *tls.Config) (net.Conn, error)\n",
+        "new": "\tDialTLS func(network, addr string, cfg *tls.Config) (net.Conn, error)\n\t// DialTLSContext preserves cancellation for the dedicated instagrapi bridge.\n\tDialTLSContext func(context.Context, string, string, *tls.Config) (net.Conn, error)\n"
+      },
+      {
+        "old": "func (t *Transport) dialClientConn(addr string, singleUse bool)",
+        "new": "func (t *Transport) dialClientConn(ctx context.Context, addr string, singleUse bool)"
+      },
+      {
+        "old": "\ttconn, err := t.dialTLS()(\"tcp\", addr, t.newTLSConfig(host))\n",
+        "new": "\tvar tconn net.Conn\n\tif t.DialTLSContext != nil {\n\t\ttconn, err = t.DialTLSContext(ctx, \"tcp\", addr, t.newTLSConfig(host))\n\t} else {\n\t\ttconn, err = t.dialTLS()(\"tcp\", addr, t.newTLSConfig(host))\n\t}\n"
+      }
+    ]
+  },
+  {
+    "module": "tls-client",
+    "path": "connect.go",
+    "before_sha256": "bc2e558e3098f3c541e9b05682c2b2a756e5ee4ffa38a3460323f212f911c26b",
+    "after_sha256": "e6a58a12e5ab5e2b7e256663b361639350d9d565302145b271f801bc0bdf0532",
+    "replacements": [
+      {
+        "old": "return s.socksDialer.Dial(network, address)",
+        "new": "dialer, ok := s.socksDialer.(proxy.ContextDialer)\n\tif !ok {\n\t\treturn nil, errors.New(\"instagrapi: proxy dialer does not support context cancellation\")\n\t}\n\treturn dialer.DialContext(ctx, network, address)"
+      },
+      {
+        "old": "\t\tdeadline := time.Now().Add(c.Timeout)\n",
+        "new": "\t\tdeadline := time.Now().Add(c.Timeout)\n\t\tif requestDeadline, ok := ctx.Deadline(); ok && requestDeadline.Before(deadline) {\n\t\t\tdeadline = requestDeadline\n\t\t}\n"
+      },
+      {
+        "old": "\t\t\ttlsConn, err := tls.Dial(network, c.ProxyUrl.Host, &tlsConf)\n\t\t\tif err != nil {\n\t\t\t\treturn nil, err\n\t\t\t}\n",
+        "new": "\t\t\tproxyConn, err := (&tls.Dialer{NetDialer: &c.Dialer, Config: &tlsConf}).DialContext(ctx, network, c.ProxyUrl.Host)\n\t\t\tif err != nil {\n\t\t\t\treturn nil, err\n\t\t\t}\n\t\t\ttlsConn := proxyConn.(*tls.Conn)\n"
+      }
+    ]
+  },
+  {
+    "module": "fhttp",
+    "path": "http2/client_conn_pool.go",
+    "before_sha256": "3902681b58b11ee5962f2cdd57cacba1f9778f619ab96a5667ff49723e7b8456",
+    "after_sha256": "29e4b4d28d11231b261075a6d8e00cb70e99cc4252e8c0c2d27538479a7c132b",
+    "replacements": [
+      {
+        "old": "import (\n\t\"sync\"",
+        "new": "import (\n\t\"context\"\n\t\"sync\""
+      },
+      {
+        "old": "cc, err := p.t.dialClientConn(addr, singleUse)",
+        "new": "cc, err := p.t.dialClientConn(req.Context(), addr, singleUse)"
+      },
+      {
+        "old": "call := p.getStartDialLocked(addr)",
+        "new": "call := p.getStartDialLocked(req.Context(), addr)"
+      },
+      {
+        "old": "\t<-call.done\n\treturn call.res, call.err",
+        "new": "\tselect {\n\tcase <-req.Context().Done():\n\t\treturn nil, req.Context().Err()\n\tcase <-call.done:\n\t\treturn call.res, call.err\n\t}"
+      },
+      {
+        "old": "func (p *clientConnPool) getStartDialLocked(addr string)",
+        "new": "func (p *clientConnPool) getStartDialLocked(ctx context.Context, addr string)"
+      },
+      {
+        "old": "go call.dial(addr)",
+        "new": "go call.dial(ctx, addr)"
+      },
+      {
+        "old": "func (c *dialCall) dial(addr string)",
+        "new": "func (c *dialCall) dial(ctx context.Context, addr string)"
+      },
+      {
+        "old": "c.p.t.dialClientConn(addr, singleUse)",
+        "new": "c.p.t.dialClientConn(ctx, addr, singleUse)"
+      }
+    ]
+  }
+]

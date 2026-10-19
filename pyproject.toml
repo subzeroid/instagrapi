@@ -115,6 +115,9 @@ include-package-data = true
 where = ["."]
 include = ["instagrapi*"]
 
+[tool.setuptools.package-data]
+instagrapi = ["native/*"]
+
 [tool.ruff]
 line-length = 120
 target-version = "py310"

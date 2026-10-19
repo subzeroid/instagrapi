@@ -62,7 +62,8 @@ print(cl.user_info(cl.user_id))
 | session\_retry\_total | Adapter retry count for Requests transports; private curl does not use this setting
 | session\_retry\_backoff\_factor | Backoff factor for Requests adapter retries; private curl does not use this setting
 | public\_transport | Public web transport: `requests` by default, or `curl` when `instagrapi[curl]` is installed
-| private\_transport | Private mobile API transport: `curl` by default for HTTP/2 with h2-only ALPN; `requests` for compatibility
+| private\_transport | Private mobile API transport: `curl` by default for HTTP/2 with h2-only ALPN; `requests` for compatibility; `utls` for the explicitly built experimental native transport
+| utls\_library\_path | Deployment path to the verified local native build when selecting `utls`; supplied to each client and kept outside account settings
 | public\_transport\_impersonate | Browser fingerprint used by the optional curl public transport
 | tls\_verify | TLS certificate verification: `True` by default, `False` for temporary trusted MITM debugging, or a CA bundle path
 
@@ -266,6 +267,8 @@ The private curl transport requires TLS 1.3 or newer and excludes older versions
 This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with `stream=True`. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a `(connect, read)` tuple of numbers supplies a connection budget and a total budget of their sum. Use `timeout=None` for no timeout; tuples containing `None` and `urllib3.util.Timeout` objects are rejected before sending a request.
 
 Private curl requests are sent once at the adapter level: `session_retry_total`, `session_retry_backoff_factor` and `session_retry_statuses` do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. `login()` uses CAA; `login_legacy()` explicitly selects the previous login flow. Transport selection does not remove account, proxy or verification restrictions.
+
+The experimental `private_transport="utls"` option uses a separately built native library, a private build cache and an explicit `utls_library_path`. Its native layer requires HTTP/2 before transmission and disables native protocol replay. See [optional uTLS setup](login-migration.md#optional-utls-transport-for-caa) for the Go/C toolchain, deployment cache, numeric deadline and platform-validation requirements.
 
 ### Private mobile headers
 

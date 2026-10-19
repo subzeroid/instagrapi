@@ -93,6 +93,37 @@ jobs:
           TEST_ACCOUNTS_URL: ""
         run: pytest -q tests/regression
 
+  test-utls-native:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.27.1"
+          cache-dependency-path: instagrapi/native/go.sum
+      - name: Install Python test dependencies
+        uses: ./.github/actions/install-dependencies
+        with:
+          test: "true"
+      - name: Build verified strict native transport
+        working-directory: ${{ runner.temp }}
+        env:
+          PYTHONPATH: ""
+        run: python -m instagrapi.utls_native "$GITHUB_WORKSPACE/.utls-native"
+      - name: Exercise actual native TLS and HTTP/2 on loopback
+        env:
+          PYTHON_DOTENV_DISABLED: "1"
+          TEST_ACCOUNTS_URL: ""
+        run: |
+          library=$(python -c 'from instagrapi.utls_native import native_library_asset; print(native_library_asset().name)')
+          INSTAGRAPI_UTLS_TEST_LIBRARY="$PWD/.utls-native/$library" pytest -q \
+            tests/regression/test_utls_transport_wire.py \
+            tests/regression/test_utls_failures_wire.py
+
   default-install:
     runs-on: ${{ matrix.os }}
     strategy:

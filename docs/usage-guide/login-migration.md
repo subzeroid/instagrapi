@@ -85,6 +85,39 @@ cl.dump_settings("session.json")
 
 Continue to pass `verification_code` for supported two-factor challenges. The CAA profile-code flow also supports `challenge_code_handler`; see [TOTP](totp.md). Native CAA exceptions propagate. If CAA returns neither a usable session, a supported verification context, nor an explicit fallback instruction, `login()` raises `ClientError` with the CAA failure reason. Curl does not automatically retry a failed password POST.
 
+## Optional uTLS transport for CAA
+
+Some accounts in [issue #2852](https://github.com/subzeroid/instagrapi/issues/2852) received provider errors or HTTP 429 during CAA login with curl. An explicitly selected `utls` private transport implements the TLS/HTTP2 candidate from that discussion using a dedicated build of `tls-client` v1.16.0 and `fhttp` v0.6.9. The build requires negotiated `h2` before writing HTTP and disables native HTTP/2 request replay. It offers TLS 1.3 with the candidate's cipher, extension order, key share, HTTP/2 settings and pseudo-header order. This is an experimental candidate, not a verified fingerprint capture of the official Instagram app or a guarantee against rate limits. The default remains `curl`; CAA request fields and error handling are unchanged.
+
+Install the native library explicitly before creating a client:
+
+```bash
+python -m instagrapi.utls_native ./native
+```
+
+The command requires Go 1.27.1 or newer and a working C compiler. It verifies pinned source-archive SHA-256 hashes, applies the [strict transport patches](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/native/patches.json), checks the locked Go modules, runs native construction/cleanup tests, and builds the shared library. It records the resulting checksum in a private per-user cache and prints the installed path. Subsequent installations reuse a matching verified build; add `--rebuild` to compile again after upgrading Go or the C toolchain. A failed rebuild preserves the last registered build and its previous deployment file. Each deployment filename includes the binary digest; use the path printed after a successful rebuild. `Client` loads an already registered library; installation is an explicit setup step.
+
+Build under the application's OS user and retain its private cache through deployment. The cache is under `$XDG_CACHE_HOME/instagrapi/utls-native`, or `~/.cache/instagrapi/utls-native` by default. Both the deployment file and the protected cache copy must match the registered checksum and the installed source inputs. The loader checks the native ABI and loads the protected cache copy. POSIX cache directories/files require modes `0700`/`0600`; Windows uses a cache inside the private user profile. Rebuild after changing the installed native build inputs, and restart application processes when upgrading the native library.
+
+```python
+from instagrapi import Client
+from instagrapi.utls_native import native_library_asset
+from pathlib import Path
+
+library = Path("native") / native_library_asset().name
+cl = Client(private_transport="utls", utls_library_path=library)
+cl.load_settings("session.json")
+cl.set_retry_config(private_transport="utls")  # override an explicitly saved transport
+cl.login(USERNAME, PASSWORD)
+cl.dump_settings("session.json")
+```
+
+`utls_library_path` is deployment configuration and is not saved in account settings. Pass it to each new client. Source builds target the local Python process's macOS, Linux or Windows architecture and require the corresponding CGO toolchain. Native wire validation must be run on each deployment platform; macOS arm64 is exercised locally and the native CI job exercises Linux. Android/Termux is not supported by this transport. The [build helper](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/utls_build.py), [module lockfile](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/native/go.sum) and [upstream licenses](https://github.com/subzeroid/instagrapi/blob/master/instagrapi/native/LICENSES.txt) are included in package artifacts.
+
+Requests continues to own prepared URLs, headers, bodies, cookies, redirects and proxy selection, including HTTP CONNECT and `socks5h` proxies. A native session pools connections until closed or its timeout, proxy or certificate policy changes. Failures are mapped to Requests connection, TLS and timeout exceptions without exposing provider error text. Each prepared request is attempted once by the native HTTP/2 transport, including when the peer sends `REFUSED_STREAM` or an applicable `GOAWAY`; ordinary Requests redirect handling remains in effect. A peer that omits `h2` ALPN receives no HTTP request. Normal system CA verification is enabled by default. Custom CA paths and client certificates are rejected before transmission. `timeout` accepts a positive numeric total deadline, defaulting to 30 seconds; queueing for a busy native session consumes that budget, and an expired queued request is rejected before transmission. Elapsed body-buffering time also consumes the budget, although user-provided body readers cannot be interrupted. Connect/read tuples are not supported.
+
+The native API buffers and decompresses response bodies. Consequently, `stream=True` exposes already decoded buffered bytes through `Response.raw`, rather than curl's compressed network stream. Stale content encoding and length headers are removed from decoded responses; HEAD/304 representation metadata is retained. Public web and GraphQL sessions keep their own existing transports.
+
 ## Shareable login diagnostics
 
 Download [examples/diagnose_login.py](https://github.com/subzeroid/instagrapi/blob/master/examples/diagnose_login.py) and run it in the same Python environment as the failing application, with its existing private settings and proxy:
@@ -95,6 +128,8 @@ python diagnose_login.py --settings session.json --report login-diagnostic.json 
 
 The script prompts privately for the proxy and password. Credentials can also come from `IG_USERNAME`, `IG_PASSWORD` and `IG_PROXY`. Add `--two-factor` to supply a current verification code, or `--relogin` to explicitly request password login even when settings contain an authorized session. Running the script performs a real login attempt; the library can make several requests or enter its existing fallback flow. The script disables transport retries for this run, bounds request timeouts, stops automatic checkpoint handling, and saves updated settings after failure or interruption. Share only the report after reviewing it; settings contain private session credentials.
 
+For settings that select `utls`, supply `--utls-library-path /path/to/the/built/library`. The diagnostic uses a numeric 30-second deadline for that private session and reports `utls` in the sanitized client profile. The library path stays outside saved settings and the shareable report.
+
 Each `responses` entry records the received HTTP status and a closed endpoint label. Labels distinguish USDID registration, CAA client-data preparation, Android keystore attestation, OAuth preparation and credential submission; `two_step/` labels identify entrypoint, method picker, method selection, TOTP or backup-code entry, code verification and the allowed-status step. `profile_code/` labels identify the separate AP entrypoint, code-entry and submission flow. A stage appears only if the installed library actually requested it. Unrecognized endpoints use the existing broad categories such as `bloks`, `challenge`, `attestation` or `usdid`. USDID registration is identified by the exact `IGUSDIDRegistrationMutation` request header, without inspecting or exporting its request body.
 
 Bloks response entries also contain a fixed `bloks` summary. `referenced_apps` contains only known app names; `continuation_reference_present` records a known verification-app reference. `fallback_reference_present` records `CAA_LOGIN_FALLBACK`, `login_success_reference_present` records the exact `login_success` or `two_fac_redirect` reference, and `error_reference_present` records a known error category or `CAA_LOGIN_OCL_ERROR` reference. These references can occur in unexecuted branches: none proves that Instagram executed the instruction, accepted a code or completed login. HTTP 200 alone does not establish success.
@@ -103,7 +138,7 @@ Bloks response entries also contain a fixed `bloks` summary. `referenced_apps` c
 
 `login_response_reference_present` distinguishes a payload reference from `login_response_decoded`, which means the installed pure Bloks parser actually decoded an embedded payload. `logged_in_user_present`, `authorization_present` and `sessionid_cookie_present` record nonempty material from that decoded response only. They do not inspect the client's old cookies, apply the payload, expose its values or verify the resulting identity. `inspection_error` marks unavailable or failing optional inspection; the observer preserves the original response and login outcome. Existing `caa_attempts` retain each CAA result and its response-index range before fallback replaces the last response.
 
-Response metadata includes only `server_category` (`proxygen-bolt`, `other` or absent), `proxy_error_category` (`http_request_error`, `other` or absent) and `retry_after_present`. The proxy category comes from the exact reported token or a separate `error=` parameter, without copying proxy details. These fields do not explain the cause of a 429. The client profile records only a catalogued app version, Bloks-hash presence and `private_transport` (`curl`, `requests`, `other` or absent); raw URLs, headers, response bodies, credentials, contexts and cookies are withheld.
+Response metadata includes only `server_category` (`proxygen-bolt`, `other` or absent), `proxy_error_category` (`http_request_error`, `other` or absent) and `retry_after_present`. The proxy category comes from the exact reported token or a separate `error=` parameter, without copying proxy details. These fields do not explain the cause of a 429. The client profile records only a catalogued app version, Bloks-hash presence and `private_transport` (`curl`, `requests`, `utls`, `other` or absent); raw URLs, headers, response bodies, credentials, contexts and cookies are withheld.
 
 Downloading the latest diagnostic script does not upgrade the installed package or change its login flow. Use it with a package exposing the existing CAA helpers; older installed parsers may provide less structural information or set `inspection_error`. Keep the package version in the report when comparing results.
 
