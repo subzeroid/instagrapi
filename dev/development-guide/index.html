@@ -1535,7 +1535,7 @@ pooled <code>TEST_ACCOUNTS_URL</code> secret.</p>
 builds the wheel and sdist, publishes through PyPI trusted publishing, and creates the GitHub release.</p>
 <h2 id="optional-native-utls-checks">Optional native uTLS checks</h2>
 <p>After installing the test dependencies and completing the <a href="../usage-guide/login-migration/#optional-utls-transport-for-caa">native setup</a> under the same OS user, run the real native loopback suites from the checkout. Set the variable to the library path printed by the installer; without it these optional wire tests are skipped.</p>
-<div class="highlight"><pre><span></span><code><span class="nv">INSTAGRAPI_UTLS_TEST_LIBRARY</span><span class="o">=</span>/path/to/the/built/library<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_utls_transport_wire.py<span class="w"> </span>tests/regression/test_utls_failures_wire.py
+<div class="highlight"><pre><span></span><code><span class="nv">INSTAGRAPI_UTLS_TEST_LIBRARY</span><span class="o">=</span>/path/to/the/built/library<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q<span class="w"> </span>tests/regression/test_utls_transport_wire.py<span class="w"> </span>tests/regression/test_utls_failures_wire.py<span class="w"> </span>tests/regression/test_utls_peer_wire.py
 </code></pre></div>
 <p>These controls use synthetic requests to local TLS/HTTP2 peers and proxy fixtures. They do not log in to Instagram or require account credentials. The native CI job builds the installed Python distribution on Linux and executes these same suites; verify a native build on each deployment platform.</p>
 
