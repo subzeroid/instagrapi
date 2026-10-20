@@ -39,7 +39,7 @@
     "module": "fhttp",
     "path": "http2/transport.go",
     "before_sha256": "add01bda054c0d30e00f6675ef9d0be0b63190e84d1df5df0bd152acba4fdd50",
-    "after_sha256": "df919c819fe2804898ed2698dc80f730e8f365a9ff6ecef0d3fea97ea984fad0",
+    "after_sha256": "240c1fd20f0795d6fb7d556852ee3004491aa2447888131e7afa1b184339ab7b",
     "replacements": [
       {
         "old": "\tmathrand \"math/rand\"\n",
@@ -60,6 +60,22 @@
       {
         "old": "\ttconn, err := t.dialTLS()(\"tcp\", addr, t.newTLSConfig(host))\n",
         "new": "\tvar tconn net.Conn\n\tif t.DialTLSContext != nil {\n\t\ttconn, err = t.DialTLSContext(ctx, \"tcp\", addr, t.newTLSConfig(host))\n\t} else {\n\t\ttconn, err = t.dialTLS()(\"tcp\", addr, t.newTLSConfig(host))\n\t}\n"
+      },
+      {
+        "old": "\twantSettingsAck bool                 // we sent a SETTINGS frame and haven't heard back\n",
+        "new": "\twantSettingsAck bool                 // we sent a SETTINGS frame and haven't heard back\n\tpushEnabled     bool                 // our initial wire settings permit server push\n"
+      },
+      {
+        "old": "\tcc.bw.Write(clientPreface)\n",
+        "new": "\t// SETTINGS_ENABLE_PUSH defaults to one when absent from the wire.\n\tcc.pushEnabled = true\n\tfor _, setting := range initialSettings {\n\t\tif setting.ID == SettingEnablePush {\n\t\t\tcc.pushEnabled = setting.Val != 0\n\t\t}\n\t}\n\n\tcc.bw.Write(clientPreface)\n"
+      },
+      {
+        "old": "\terr := f.ForeachSetting(func(s Setting) error {\n\t\tswitch s.ID {\n",
+        "new": "\t// Validate the whole frame before any peer value changes connection state.\n\tif err := f.ForeachSetting(func(s Setting) error { return s.Valid() }); err != nil {\n\t\treturn err\n\t}\n\n\terr := f.ForeachSetting(func(s Setting) error {\n\t\tswitch s.ID {\n"
+      },
+      {
+        "old": "\tif rl.cc.t.PushHandler == nil { // should not be receiving PUSH_PROMISE if ENABLE_PUSH is disabled\n",
+        "new": "\tif rl.cc.t.PushHandler == nil || !rl.cc.pushEnabled { // reject push disabled by our initial wire settings\n"
       }
     ]
   },

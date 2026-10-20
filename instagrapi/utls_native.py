@@ -14,7 +14,7 @@ from pathlib import Path
 
 NATIVE_ABI = 1
 _NATIVE_SOURCE = Path(__file__).with_name("native")
-_BUILD_INPUTS = ("bridge.go", "go.mod", "go.sum", "patches.json", "contracts_test.go")
+_BUILD_INPUTS = ("bridge.go", "go.mod", "go.sum", "patches.json", "contracts_test.go", "peer_contracts_test.go")
 
 
 class _BuildMissing(RuntimeError):

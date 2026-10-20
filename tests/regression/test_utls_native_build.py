@@ -178,10 +178,27 @@ def test_missing_go_fails_before_download_or_registration(monkeypatch, tmp_path)
     assert not list((tmp_path / "cache").rglob("build.json"))
 
 
+@pytest.mark.parametrize("version", ["1.26.9", "1.27.0", "1.27.1"])
+def test_vulnerable_go_toolchain_is_rejected_before_source_download(monkeypatch, tmp_path, version):
+    module = build_module()
+    monkeypatch.setattr(module.shutil, "which", Mock(return_value="/synthetic/go"))
+    monkeypatch.setattr(
+        module.subprocess,
+        "run",
+        Mock(return_value=Mock(returncode=0, stdout=f"go version go{version} fixture/fixture", stderr="")),
+    )
+    network = Mock(side_effect=AssertionError("Unsupported compiler reached source download"))
+    monkeypatch.setattr(module, "get", network)
+    with pytest.raises(RuntimeError, match="Go >= 1.27.2"):
+        module.build_native_library(tmp_path / "installed")
+    network.assert_not_called()
+    assert not list((tmp_path / "cache").rglob("build.json"))
+
+
 def test_installer_preserves_network_policy_and_omits_account_secrets(monkeypatch, tmp_path):
     module = build_module()
     monkeypatch.setattr(module.shutil, "which", Mock(return_value="/synthetic/go"))
-    compiler = Mock(return_value=Mock(returncode=0, stdout="go version go1.27.1 fixture/fixture", stderr=""))
+    compiler = Mock(return_value=Mock(returncode=0, stdout="go version go1.27.2 fixture/fixture", stderr=""))
     monkeypatch.setattr(module.subprocess, "run", compiler)
     monkeypatch.setattr(module, "get", Mock(return_value=downloaded(b"untrusted-archive")))
     monkeypatch.setenv("HTTPS_PROXY", "http://fixture.invalid:8080")
@@ -207,7 +224,7 @@ def test_explicit_rebuild_uses_toolchain_and_preserves_last_good_build_on_failur
     module = build_module()
     cached = record_build(b"synthetic-last-good-build")
     monkeypatch.setattr(module.shutil, "which", Mock(return_value="/synthetic/go"))
-    compiler = Mock(return_value=Mock(returncode=0, stdout="go version go1.27.1 fixture/fixture", stderr=""))
+    compiler = Mock(return_value=Mock(returncode=0, stdout="go version go1.27.2 fixture/fixture", stderr=""))
     monkeypatch.setattr(module.subprocess, "run", compiler)
     monkeypatch.setattr(module, "get", Mock(return_value=downloaded(b"untrusted-archive")))
     with pytest.raises(RuntimeError, match="checksum"):
@@ -227,10 +244,15 @@ def test_failed_export_preserves_last_registered_native_build(monkeypatch, tmp_p
 
     def fetch(source, destination):
         (destination / "cffi_src").mkdir(parents=True)
+        (destination / "http2").mkdir()
 
     def run(args, work, environment, stage):
         if stage == "toolchain check":
-            return "go version go1.27.1 fixture/fixture"
+            return "go version go1.27.2 fixture/fixture"
+        if stage == "peer test selection":
+            return (
+                '{"Dir": ' + __import__("json").dumps(str(work / "fhttp" / "http2")) + ', "GoFiles": ["transport.go"]}'
+            )
         if stage == "compilation":
             Path(args[args.index("-o") + 1]).write_bytes(b"synthetic-new-valid-code")
         return ""
