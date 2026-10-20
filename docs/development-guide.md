@@ -130,3 +130,13 @@ builds the wheel and sdist, publishes through PyPI trusted publishing, and creat
 [bandit-docs]: https://bandit.readthedocs.io/en/stable/
 [sem-ver]: https://semver.org/
 [pypi]: https://pypi.org/project/instagrapi/
+
+## Optional native uTLS checks
+
+After installing the test dependencies and completing the [native setup](usage-guide/login-migration.md#optional-utls-transport-for-caa) under the same OS user, run the real native loopback suites from the checkout. Set the variable to the library path printed by the installer; without it these optional wire tests are skipped.
+
+```bash
+INSTAGRAPI_UTLS_TEST_LIBRARY=/path/to/the/built/library python -m pytest -q tests/regression/test_utls_transport_wire.py tests/regression/test_utls_failures_wire.py
+```
+
+These controls use synthetic requests to local TLS/HTTP2 peers and proxy fixtures. They do not log in to Instagram or require account credentials. The native CI job builds the installed Python distribution on Linux and executes these same suites; verify a native build on each deployment platform.

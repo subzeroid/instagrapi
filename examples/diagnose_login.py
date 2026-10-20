@@ -332,7 +332,7 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
         "client_profile": {
             "app_version": allowed(client.device_settings.get("app_version"), APP_SETTINGS),
             "bloks_versioning_id_present": bool(client.bloks_versioning_id),
-            "private_transport": allowed(getattr(client, "private_transport", None), {"curl", "requests"}),
+            "private_transport": allowed(getattr(client, "private_transport", None), {"curl", "requests", "utls"}),
         },
     }
 
@@ -411,12 +411,12 @@ def write_private_json(path, data):
             temporary.unlink(missing_ok=True)
 
 
-def bound_requests(session):
+def bound_requests(session, *, total_timeout=None):
     original = session.request
 
     def request(*args, **kwargs):
         if kwargs.get("timeout") is None:
-            kwargs["timeout"] = (10, 30)
+            kwargs["timeout"] = total_timeout if total_timeout is not None else (10, 30)
         return original(*args, **kwargs)
 
     session.request = request
@@ -441,6 +441,9 @@ def main(argv=None):
     )
     parser.add_argument("--proxy", action="store_true", help="prompt privately for the same proxy used by your script")
     parser.add_argument("--two-factor", action="store_true", help="prompt privately for a current 2FA code")
+    parser.add_argument(
+        "--utls-library-path", type=Path, help="verified native library for settings using private_transport=utls"
+    )
     args = parser.parse_args(argv)
     settings_path, report_path = args.settings.resolve(), args.report.resolve()
     if settings_path == report_path:
@@ -463,6 +466,10 @@ def main(argv=None):
             "connect_timeout_seconds": 10,
             "read_timeout_seconds": 30,
         }
+        if settings.get("private_transport") == "utls":
+            report["environment"].pop("connect_timeout_seconds")
+            report["environment"].pop("read_timeout_seconds")
+            report["environment"]["total_timeout_seconds"] = 30
         # Check report destination and settings permissions before making requests.
         write_private_json(report_path, report)
         write_private_json(settings_path, settings)
@@ -474,12 +481,16 @@ def main(argv=None):
             raise ValueError("Credentials are required")
         with quiet_library():
             client = Client(
-                settings={**settings, "session_retry_total": 0, "public_request_retries_count": 1}, proxy=proxy
+                settings={**settings, "session_retry_total": 0, "public_request_retries_count": 1},
+                proxy=proxy,
+                utls_library_path=args.utls_library_path,
             )
         client.challenge_code_handler = manual_checkpoint
         client.change_password_handler = manual_checkpoint
         for session in (client.private, client.public):
-            bound_requests(session)
+            bound_requests(
+                session, total_timeout=30 if session is client.private and client.private_transport == "utls" else None
+            )
         report["environment"]["proxy_configured"] = bool(proxy)
         report["environment"]["two_factor_code_supplied"] = bool(code)
         print("Running one login attempt; please wait...")

@@ -65,9 +65,9 @@ to enter your usual proxy privately, or keep your existing `IG_PROXY`. Add `--tw
 current 2FA code. It stops at the original challenge response without automatically resolving
 email/SMS challenges or changing passwords.
 
-It calls `login()` once, disables transport retries, and applies 10-second connect / 30-second
-read timeouts. The normal library login flow can make several requests, including a CAA fallback.
-Each response is summarized immediately, before another request can overwrite `last_json`.
+It calls `login()` once and disables transport retries. Public/default sessions use 10-second connect / 30-second read timeouts; a private session selecting `utls` uses a numeric 30-second total deadline. The normal library login flow can make several requests, including a CAA fallback. Each response is summarized immediately, before another request can overwrite `last_json`.
+
+For saved settings that select `utls`, also pass `--utls-library-path /path/to/the/built/library`. Follow the [native setup guide](https://github.com/subzeroid/instagrapi/blob/master/docs/usage-guide/login-migration.md#optional-utls-transport-for-caa) first, using the same OS user and private build cache as the application. The library path is deployment configuration and stays outside the saved settings and shareable report.
 
 Each entry in `caa_attempts` records a CAA call before fallback replaces the last response. An attempt's `outcome: "returned"` means the CAA method returned; `logged_in` and the report's top-level `outcome` describe the login result. Marker/reference flags indicate content found in a response, while `profile_code_context_parsed` indicates extraction of a supported entrypoint context. These fields do not prove route execution or completed verification, and `last_json.status: "ok"` alone does not establish successful login.
 

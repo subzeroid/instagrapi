@@ -1,3 +1,7 @@
+# protects: The standalone diagnostic restores uTLS settings privately and supplies compatible bounded request timeouts.
+# fails_when: The native library path is lost/exported or the uTLS session receives an unsupported timeout tuple.
+# why_new: The existing diagnostic cases cover curl/Requests without the new native deployment configuration.
+# seam: none
 import importlib.util
 import json
 import logging
@@ -295,6 +299,55 @@ def test_main_saves_private_settings_and_sanitized_report_after_failure(diagnost
     assert stat.S_IMODE(output.stat().st_mode) == 0o600
     streams = capsys.readouterr()
     assert SECRET not in streams.out + streams.err
+
+
+def test_utls_diagnostic_restores_settings_with_explicit_library_path_and_numeric_deadline(
+    diagnostic, monkeypatch, tmp_path
+):
+    client = Client(private_transport="requests")
+    client.private_transport = "utls"
+    private_request, public_request = Mock(), Mock()
+    client.private.request = private_request
+    client.public.request = public_request
+
+    def stopped_login(*args, **kwargs):
+        client.private.request("POST", "https://fixture.invalid/private")
+        client.public.request("GET", "https://fixture.invalid/public")
+        raise RuntimeError("Synthetic stopped login")
+
+    client.login = stopped_login
+    factory = Mock(return_value=client)
+    monkeypatch.setattr(diagnostic, "Client", factory)
+    monkeypatch.setenv("IG_USERNAME", "synthetic-user")
+    monkeypatch.setenv("IG_PASSWORD", SECRET)
+    monkeypatch.delenv("IG_PROXY", raising=False)
+    settings, report = tmp_path / "session.json", tmp_path / "report.json"
+    library_path = tmp_path / "private-native-library"
+    settings.write_text(json.dumps({"private_transport": "utls"}))
+    assert (
+        diagnostic.main(
+            ["--settings", str(settings), "--report", str(report), "--utls-library-path", str(library_path)]
+        )
+        == 1
+    )
+    assert factory.call_args.kwargs["utls_library_path"] == library_path
+    assert private_request.call_args.kwargs["timeout"] == 30
+    assert public_request.call_args.kwargs["timeout"] == (10, 30)
+    assert str(library_path) not in report.read_text()
+    assert json.loads(report.read_text())["client_profile"]["private_transport"] == "utls"
+    assert json.loads(report.read_text())["environment"]["total_timeout_seconds"] == 30
+    assert "utls_library_path" not in json.loads(settings.read_text())
+
+
+def test_utls_request_bound_uses_numeric_timeout(diagnostic):
+    session = requests.Session()
+    original = Mock(return_value=object())
+    session.request = original
+    diagnostic.bound_requests(session, total_timeout=30)
+    session.request("POST", "https://fixture.invalid/")
+    assert original.call_args.kwargs["timeout"] == 30
+    session.request("POST", "https://fixture.invalid/", timeout=2)
+    assert original.call_args.kwargs["timeout"] == 2
 
 
 def test_report_cannot_overwrite_settings(diagnostic, monkeypatch, tmp_path):
