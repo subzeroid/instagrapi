@@ -109,7 +109,7 @@ def _run(args, work, environment, stage):
 def _compile_native_library():
     go = shutil.which("go")
     if go is None:
-        raise RuntimeError("Building uTLS requires Go >= 1.27.1 and a C compiler") from None
+        raise RuntimeError("Building uTLS requires Go >= 1.27.2 and a C compiler") from None
     fingerprint = _source_fingerprint()
     environment = {
         key: value
@@ -151,8 +151,8 @@ def _compile_native_library():
         work = Path(temporary)
         version = _run([go, "version"], work, environment, "toolchain check")
         match = re.search(r"\bgo(\d+)\.(\d+)\.(\d+)\b", version)
-        if match is None or tuple(map(int, match.groups())) < (1, 27, 1):
-            raise RuntimeError("Building uTLS requires Go >= 1.27.1 and a C compiler")
+        if match is None or tuple(map(int, match.groups())) < (1, 27, 2):
+            raise RuntimeError("Building uTLS requires Go >= 1.27.2 and a C compiler")
         for source in _SOURCES:
             _fetch_source(source, work / source["name"])
         _apply_patches(work)
@@ -162,7 +162,30 @@ def _compile_native_library():
         shutil.copyfile(
             _NATIVE_SOURCE / "contracts_test.go", work / "tls-client" / "cffi_src" / "instagrapi_contract_test.go"
         )
+        shutil.copyfile(_NATIVE_SOURCE / "peer_contracts_test.go", work / "fhttp" / "http2" / "instagrapi_peer_test.go")
         _run([go, "mod", "verify"], work, environment, "module verification")
+        # Select production files using Go's build constraints. The upstream
+        # package tests predate the pinned cancellation patch's method signature.
+        peer_package = json.loads(
+            _run([go, "list", "-json", "github.com/bogdanfinn/fhttp/http2"], work, environment, "peer test selection")
+        )
+        peer_directory = Path(peer_package["Dir"])
+        peer_files = [str(peer_directory / name) for name in peer_package["GoFiles"]]
+        _run(
+            [
+                go,
+                "test",
+                *peer_files,
+                str(peer_directory / "instagrapi_peer_test.go"),
+                "-run",
+                "TestInstagrapi",
+                "-count=1",
+                "-timeout=30s",
+            ],
+            work,
+            environment,
+            "peer protocol checks",
+        )
         _run(
             [go, "test", "github.com/bogdanfinn/tls-client/cffi_src", "-run", "TestInstagrapi", "-count=1"],
             work,
