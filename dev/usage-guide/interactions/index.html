@@ -1564,7 +1564,11 @@
 </tr>
 <tr>
 <td>private_transport</td>
-<td>Private mobile API transport: <code>curl</code> by default for HTTP/2 with h2-only ALPN; <code>requests</code> for compatibility</td>
+<td>Private mobile API transport: <code>curl</code> by default for HTTP/2 with h2-only ALPN; <code>requests</code> for compatibility; <code>utls</code> for the explicitly built experimental native transport</td>
+</tr>
+<tr>
+<td>utls_library_path</td>
+<td>Deployment path to the verified local native build when selecting <code>utls</code>; supplied to each client and kept outside account settings</td>
 </tr>
 <tr>
 <td>public_transport_impersonate</td>
@@ -1862,6 +1866,7 @@ See <a href="../public-transport/">Public Transport</a> for live comparison resu
 <p>The private curl transport requires TLS 1.3 or newer and excludes older versions from its ClientHello. HTTPS targets and TLS-intercepting proxies must support TLS 1.3; ordinary CONNECT proxies forward the target TLS handshake unchanged. The TLS offer includes the hybrid <code>X25519MLKEM768</code> group alongside <code>X25519</code>, <code>P-256</code> and <code>P-384</code> to address connection failures on some proxy paths. Servers without hybrid support can still select a classical group, while ALPN offers only <code>h2</code>.</p>
 <p>This transport preserves requests' cookie jar, proxy selection, TLS verification, client certificates and redirects. Responses and iterable request bodies are buffered in memory, including when a response is requested with <code>stream=True</code>. Response decompression is handled by requests/urllib3. A numeric timeout is curl's total transfer budget; a <code>(connect, read)</code> tuple of numbers supplies a connection budget and a total budget of their sum. Use <code>timeout=None</code> for no timeout; tuples containing <code>None</code> and <code>urllib3.util.Timeout</code> objects are rejected before sending a request.</p>
 <p>Private curl requests are sent once at the adapter level: <code>session_retry_total</code>, <code>session_retry_backoff_factor</code> and <code>session_retry_statuses</code> do not enable curl retries. HTTP 429 and connection failures reach the existing exception handling. <code>login()</code> uses CAA; <code>login_legacy()</code> explicitly selects the previous login flow. Transport selection does not remove account, proxy or verification restrictions.</p>
+<p>The experimental <code>private_transport="utls"</code> option uses a separately built native library, a private build cache and an explicit <code>utls_library_path</code>. Its native layer requires HTTP/2 before transmission and disables native protocol replay. See <a href="../login-migration/#optional-utls-transport-for-caa">optional uTLS setup</a> for the Go/C toolchain, deployment cache, numeric deadline and platform-validation requirements.</p>
 <h3 id="private-mobile-headers">Private mobile headers</h3>
 <p><code>base_headers</code> follows the current supported Android app profile for normal private API requests, including static transport/network hints such as <code>X-FB-HTTP-Engine</code>, <code>X-Tigon-Is-Retry</code>, and <code>X-Zero-*</code>.</p>
 <p><code>X-Pigeon-Session-Id</code> is generated once per <code>Client</code> instance and reused by private API requests and <code>private_headers()</code> upload helpers. It is runtime state, separate from persisted authentication settings: reapplying settings, clearing authorization, or switching transport on the same client preserves it, while a new client, including one restored from saved settings, receives a new ID. <code>X-Pigeon-Rawclienttime</code> is generated for each request.</p>
