@@ -2,6 +2,14 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.1.0 — 2026-10-20
+
+- Add opt-in private HTTP/2 through `Client(private_transport="utls", utls_library_path=...)`, with an explicitly built native component and the existing curl default preserved (#2892, based on #2861 by DazhongLee). See the [uTLS setup and limitations](https://subzeroid.github.io/instagrapi/usage-guide/login-migration/#optional-utls-transport-for-caa).
+- Enforce HTTP/2 before sending requests, numeric total deadlines and no native HTTP/2 request replay for the optional transport; preserve prepared bodies, cookies, proxy selection and explicit Host authority (#2892).
+- Document native build requirements, supported platforms and diagnostic transport selection; include the native build sources in wheel and source distributions (#2892).
+- Reject invalid native HTTP/2 peer settings before connection-state changes and reject server push when the client advertised it disabled. Refresh native dependency pins and require Go 1.27.2 or newer for source builds (#2895).
+- Correct Git identity selection for generated documentation commits (#2891).
+
 ## 3.0.26 — 2026-10-17
 
 - Catch HTTP 400 `error_type=needs_upgrade` as `ClientNeedsUpgradeError`, an `UnknownError` subclass that preserves existing handlers, original response diagnostics and CAA fallback behavior (#2887). This improves error handling; it does not establish recovery from a CAA response without a session.
