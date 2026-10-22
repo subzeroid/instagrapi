@@ -91,7 +91,7 @@ test = [
     "mike==2.2.0",
     # mike implicitly imports pkg_resources from setuptools — see
     # https://github.com/jimporter/mike/issues/148
-    "setuptools==84.0.0",
+    "setuptools==84.1.0",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.7",
     # 1.0.7 is the release that works with pymdown-extensions 12.2 (docs build
