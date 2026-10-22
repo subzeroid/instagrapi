@@ -796,6 +796,67 @@ def test_bloks_marker_references_are_narrow_and_not_outcomes(diagnostic, kind):
     assert SECRET not in json.dumps(bloks)
 
 
+@pytest.mark.parametrize(
+    "label",
+    ["Incorrect password", "Incorrect Password", "Can't find account", "CAN'T FIND ACCOUNT", "Can\u2019t find account"],
+)
+@pytest.mark.parametrize("location", ["value", "action", "escaped-action"])
+def test_bloks_error_dialog_references_are_private_and_not_login_outcomes(diagnostic, label, location):
+    payload = {"data": [label, SECRET]}
+    if location != "value":
+        literal = json.dumps(label, ensure_ascii=location == "escaped-action")
+        payload = {"action": f"(dialog {literal} {json.dumps(SECRET)})"}
+    body = {"status": "ok", "layout": {"bloks_payload": payload}}
+    before = json.dumps(body, sort_keys=True)
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+
+    summary = diagnostic.summarize_response(raw)
+
+    assert summary["bloks"]["error_reference_present"] is True
+    assert summary["json"]["status"] == "ok"
+    assert summary["json"]["error_type"] is None
+    assert summary["json"]["message_category"] is None
+    assert summary["bloks"]["login_response_decoded"] is False
+    assert summary["bloks"]["sessionid_cookie_present"] is False
+    assert summary["bloks"]["inspection_error"] is False
+    assert SECRET not in json.dumps(summary)
+    assert label not in json.dumps(summary, ensure_ascii=False)
+    assert json.dumps(body, sort_keys=True) == before
+
+
+@pytest.mark.parametrize(
+    "label",
+    ["Incorrect password" + SECRET, "Can't find account" + SECRET, "Reset password", "Account settings"],
+)
+def test_bloks_error_dialog_labels_require_an_exact_literal(diagnostic, label):
+    body = {"layout": {"bloks_payload": {"action": f"(dialog {json.dumps(label)})", "data": [label]}}}
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+
+    summary = diagnostic.summarize_response(raw)
+
+    assert summary["bloks"]["error_reference_present"] is False
+    assert SECRET not in json.dumps(summary)
+
+
+@pytest.mark.parametrize(
+    "label",
+    ["Incorrect password", "Incorrect Password", "Can't find account", "CAN'T FIND ACCOUNT", "Can\u2019t find account"],
+)
+def test_bloks_error_dialog_reference_does_not_override_session_material(diagnostic, label):
+    body = embedded_bloks(session=True, authorization=True, user=True)
+    body["dialog_label"] = label
+    raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
+
+    summary = diagnostic.summarize_response(raw)
+
+    assert summary["bloks"]["error_reference_present"] is True
+    assert summary["bloks"]["login_response_decoded"] is True
+    assert summary["bloks"]["logged_in_user_present"] is True
+    assert summary["bloks"]["authorization_present"] is True
+    assert summary["bloks"]["sessionid_cookie_present"] is True
+    assert SECRET not in json.dumps(summary)
+
+
 def test_bloks_extraction_failure_uses_fixed_schema_without_session_changes(diagnostic, monkeypatch):
     body = embedded_bloks(session=True, authorization=True, user=True)
     raw = response(requests.Request("POST", CAA).prepare(), 200, json.dumps(body).encode())
