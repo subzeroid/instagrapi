@@ -8,7 +8,8 @@ intended for sharing; the settings file contains private session credentials.
 
 The report records response stages and each CAA outcome before a fallback
 replaces the last response. Marker presence means a reference was found, not
-that Instagram executed it or accepted a verification code.
+that Instagram executed it or accepted a verification code. Fixed error-dialog
+labels also count as references; they do not establish credential validity.
 """
 
 import argparse
@@ -40,6 +41,10 @@ ERROR_TYPES = {
     "rate_limit_error",
     "sentry_block",
     "feedback_required",
+}
+ERROR_DIALOG_LABELS = {"incorrect password", "can't find account", "can\u2019t find account"}
+ERROR_DIALOG_LITERALS = {
+    json.dumps(label, ensure_ascii=escape) for label in ERROR_DIALOG_LABELS for escape in (True, False)
 }
 STEPS = {
     "select_verify_method",
@@ -226,6 +231,7 @@ def summarize_bloks(data):
         strings = []
         BLOKS_PARSER._bloks_collect_strings(data, strings)
         text = "\n".join(strings)
+        folded_text = text.casefold()
         apps = [app for app in BLOKS_APPS if re.search(r"(?<![\w.])" + re.escape(app) + r"(?![\w.])", text)]
         summary["referenced_apps"] = apps
         summary["continuation_reference_present"] = any(
@@ -239,6 +245,8 @@ def summarize_bloks(data):
             allowed(data.get("error_type"), ERROR_TYPES) not in {None, "other"}
             or message_category(data.get("message")) not in {None, "other"}
             or any(value.startswith("CAA_LOGIN_OCL_ERROR:") for value in strings)
+            or any(value.casefold() in ERROR_DIALOG_LABELS for value in strings)
+            or any(literal in folded_text for literal in ERROR_DIALOG_LITERALS)
         )
         summary["login_response_reference_present"] = bool(re.search(r"(?<![\w])login_response(?![\w])", text))
         summary["two_step_context_parsed"] = bool(BLOKS_PARSER.bloks_extract_two_step_verification_context(data))
