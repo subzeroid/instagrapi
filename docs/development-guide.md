@@ -111,9 +111,7 @@ maintainers cut a version tag only after the checks are green.
 
 ## Continuous Integration Pipeline
 
-The `Package` workflow runs Bandit, Ruff, compatibility regression tests on Python 3.10 through 3.14, and a strict docs
-build. Pull requests and pushes to `master` both build the docs; pushes to `master` also publish the `dev` docs with
-`mike`.
+The [`Package` workflow](https://github.com/subzeroid/instagrapi/blob/master/.github/workflows/python-package.yml) runs Bandit, Ruff, a strict runtime dependency audit with `pip-audit`, compatibility regression tests on Python 3.11 through 3.14, and a strict docs build. Pull requests and pushes to `master` both build the docs; pushes to `master` also publish the `dev` docs with `mike`.
 
 Live-account tests are kept in a separate manually triggered `Live Account Tests` workflow. It accepts a focused target
 such as `media`, `upload`, `direct`, `timeline`, `story-location`, `location`, `usertag`, `user`, or `all`, and uses the

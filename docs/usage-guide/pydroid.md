@@ -2,6 +2,8 @@
 
 Android/Pydroid can run many `instagrapi` flows, but video helpers need special care because Android apps often cannot execute arbitrary binaries from shared storage.
 
+The next instagrapi release requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see [Getting Started](../getting-started.md) for the migration requirements.
+
 ## What needs ffmpeg
 
 `instagrapi` does not need ffmpeg for login, reads, photo uploads, downloads, or normal API requests.
@@ -24,7 +26,7 @@ pip install "instagrapi[video]"
 pip install --no-deps "moviepy==2.2.1"
 ```
 
-The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi keeps `Pillow>=12.2.0` for security fixes; the `--no-deps` install keeps the safe Pillow version. MoviePy `1.x` is no longer supported by instagrapi's video helpers.
+The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes in the next release; install MoviePy with `--no-deps` to retain that dependency range. MoviePy `1.x` is no longer supported by instagrapi's video helpers.
 
 * automatic thumbnail generation when `thumbnail` is not provided
 * `StoryBuilder`

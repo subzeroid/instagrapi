@@ -180,7 +180,7 @@ pip install "instagrapi[video]"
 pip install --no-deps "moviepy==2.2.1"
 ```
 
-MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi keeps `Pillow>=12.2.0` for security fixes; the `--no-deps` install keeps the safe Pillow version. Older MoviePy `1.x` imports such as `moviepy.editor` and clip methods such as `set_duration`, `set_position`, `resize`, and `subclip` are not supported by instagrapi's video helpers.
+MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes in the next release; install MoviePy with `--no-deps` to retain that dependency range. Older MoviePy `1.x` imports such as `moviepy.editor` and clip methods such as `set_duration`, `set_position`, `resize`, and `subclip` are not supported by instagrapi's video helpers.
 
 | Method                                                | Return     | Description                              |
 | ----------------------------------------------------- | ---------- | ---------------------------------------- |

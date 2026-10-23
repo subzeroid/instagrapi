@@ -27,12 +27,12 @@ def test_runtime_dependencies_use_compatible_ranges():
 
     assert '"requests>=2.34.2,<3"' in required_dependencies
     assert '"PySocks>=1.7.1,<2"' in required_dependencies
-    assert '"Pillow>=12.2.0,<13"' in required_dependencies
+    assert '"Pillow>=13.0.0,<14"' in required_dependencies
     assert '"pycryptodomex>=3.23.0,<4"' in required_dependencies
 
     assert '"requests==2.34.2"' not in required_dependencies
     assert '"PySocks==1.7.1"' not in required_dependencies
-    assert '"Pillow==12.2.0"' not in required_dependencies
+    assert '"Pillow==13.0.0"' not in required_dependencies
     assert '"pycryptodomex==3.23.0"' not in required_dependencies
 
 
