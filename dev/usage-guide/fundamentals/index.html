@@ -432,6 +432,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#private-bandwidth-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private bandwidth metadata
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#detailed-sections" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1277,6 +1288,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#private-bandwidth-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private bandwidth metadata
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#detailed-sections" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1319,6 +1341,8 @@
 <p>Many high-level helpers try a public/web path first and then use a private/authenticated fallback when that makes sense for the current session.</p>
 <p>Not every high-level helper has a public and private twin. Some newer flows are private-only, while some lookup helpers
 use an internal fallback chain and choose the best currently working path for the session.</p>
+<h2 id="private-bandwidth-metadata">Private bandwidth metadata</h2>
+<p>Private requests default to <code>X-IG-Bandwidth-Speed-KBPS: -1.000</code>, <code>X-IG-Bandwidth-TotalBytes-B: 0</code> and <code>X-IG-Bandwidth-TotalTime-MS: 0</code> because the library does not measure download bandwidth. Speed represents an estimate; byte and time counters represent cumulative accepted download samples, so speed need not equal their ratio. Existing explicit <code>headers</code> on <code>private_request()</code> and <code>private_headers({...})</code> for uploads can override these defaults without changing later default requests. These values do not guarantee rate-limit avoidance or account recovery.</p>
 <h2 id="detailed-sections">Detailed Sections</h2>
 <ul>
 <li><a href="../../">Index</a></li>
