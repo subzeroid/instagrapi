@@ -276,9 +276,10 @@ class PrivateRequestMixin:
             "X-Pigeon-Session-Id": self._pigeon_session_id,
             "X-Pigeon-Rawclienttime": str(round(time.time(), 3)),
             # "X-IG-Connection-Speed": "-1kbps",
-            "X-IG-Bandwidth-Speed-KBPS": str(random.randint(2500000, 3000000) / 1000),  # "-1.000"
-            "X-IG-Bandwidth-TotalBytes-B": str(random.randint(5000000, 90000000)),  # "0"
-            "X-IG-Bandwidth-TotalTime-MS": str(random.randint(2000, 9000)),  # "0"
+            # No measured download samples: report unknown bandwidth.
+            "X-IG-Bandwidth-Speed-KBPS": "-1.000",
+            "X-IG-Bandwidth-TotalBytes-B": "0",
+            "X-IG-Bandwidth-TotalTime-MS": "0",
             # "X-IG-EU-DC-ENABLED": "true", # <- type of DC? Eu is euro, but we use US
             # "X-IG-Prefetch-Request": "foreground",  # OLD from instabot
             "X-IG-App-Startup-Country": self.country.upper(),
