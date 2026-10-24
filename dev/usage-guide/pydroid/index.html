@@ -1353,7 +1353,7 @@
 
 <h1 id="pydroid-and-ffmpeg">Pydroid and ffmpeg</h1>
 <p>Android/Pydroid can run many <code>instagrapi</code> flows, but video helpers need special care because Android apps often cannot execute arbitrary binaries from shared storage.</p>
-<p>The next instagrapi release requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see <a href="../../getting-started/">Getting Started</a> for the migration requirements.</p>
+<p>instagrapi 3.2.0+ requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see <a href="../../getting-started/">Getting Started</a> for the migration requirements.</p>
 <h2 id="what-needs-ffmpeg">What needs ffmpeg</h2>
 <p><code>instagrapi</code> does not need ffmpeg for login, reads, photo uploads, downloads, or normal API requests.</p>
 <p>For standard MP4 files, <code>instagrapi</code> can read video width, height, and duration with its built-in MP4 parser. If you also pass a thumbnail file, these upload helpers do not need MoviePy/ffmpeg just to analyze the upload:</p>
@@ -1368,7 +1368,7 @@
 <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[video]"</span>
 pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 </code></pre></div>
-<p>The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi requires <code>Pillow&gt;=13.0.0,&lt;14</code> for upstream security fixes in the next release; install MoviePy with <code>--no-deps</code> to retain that dependency range. MoviePy <code>1.x</code> is no longer supported by instagrapi's video helpers.</p>
+<p>The extra is intentionally not part of the default install, because it pulls in NumPy and ffmpeg-related packages that can be hard to build on Android. MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi requires <code>Pillow&gt;=13.0.0,&lt;14</code> for upstream security fixes; install MoviePy with <code>--no-deps</code> to retain that dependency range. MoviePy <code>1.x</code> is no longer supported by instagrapi's video helpers.</p>
 <ul>
 <li>automatic thumbnail generation when <code>thumbnail</code> is not provided</li>
 <li><code>StoryBuilder</code></li>
