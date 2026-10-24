@@ -8,9 +8,9 @@ Install `instagrapi` with pip:
 python -m pip install instagrapi
 ```
 
-The next release requires **Python 3.11+** and **Pillow 13+**.
+Requires **Python 3.11+** and **Pillow 13+**.
 
-Pillow 13 provides upstream security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7), and [requires Python 3.11 or newer](https://pypi.org/project/pillow/13.0.0/). `instagrapi==3.1.0` is the last release compatible with Python 3.10; its Pillow dependency range excludes these fixes. Upgrade to Python 3.11+ before installing the next instagrapi release once it is published.
+Pillow 13 provides upstream security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7), and [requires Python 3.11 or newer](https://pypi.org/project/pillow/13.0.0/). `instagrapi==3.1.0` is the last release compatible with Python 3.10; its Pillow dependency range excludes these fixes. Upgrade to Python 3.11+ before installing instagrapi 3.2.0 or newer.
 
 ## Introduction
 

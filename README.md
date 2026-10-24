@@ -20,9 +20,9 @@ The instagrapi project is best suited for testing, research, and controlled inte
 
 ✨ [aiograpi - Asynchronous Python library for Instagram Private API](https://github.com/subzeroid/aiograpi) ✨
 
-The next release requires **Python 3.11+** and **Pillow 13+**.
+Requires **Python 3.11+** and **Pillow 13+**.
 
-Pillow 13 provides upstream security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7), and [requires Python 3.11 or newer](https://pypi.org/project/pillow/13.0.0/). `instagrapi==3.1.0` is the last release compatible with Python 3.10; its Pillow dependency range excludes these fixes. Upgrade to Python 3.11+ before installing the next instagrapi release once it is published.
+Pillow 13 provides upstream security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7), and [requires Python 3.11 or newer](https://pypi.org/project/pillow/13.0.0/). `instagrapi==3.1.0` is the last release compatible with Python 3.10; its Pillow dependency range excludes these fixes. Upgrade to Python 3.11+ before installing instagrapi 3.2.0 or newer.
 
 ## Installation
 
@@ -69,7 +69,7 @@ pip install "instagrapi[video]"
 pip install --no-deps "moviepy==2.2.1"
 ```
 
-MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes in the next release; install MoviePy with `--no-deps` to retain that dependency range. If your project imports MoviePy directly, migrate any MoviePy `1.x` code from `moviepy.editor`, `set_*`, `resize`, and `subclip` APIs to the MoviePy `2.x` API before upgrading.
+MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes; install MoviePy with `--no-deps` to retain that dependency range. If your project imports MoviePy directly, migrate any MoviePy `1.x` code from `moviepy.editor`, `set_*`, `resize`, and `subclip` APIs to the MoviePy `2.x` API before upgrading.
 
 Android users should see [Pydroid and ffmpeg](docs/usage-guide/pydroid.md) and [Termux](docs/usage-guide/termux.md).
 

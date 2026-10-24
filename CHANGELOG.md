@@ -2,7 +2,7 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.0 — 2026-10-24
 
 - Require Python 3.11+ and Pillow 13+ to adopt upstream Pillow security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7). Python 3.10 users remain on instagrapi 3.1.0, whose Pillow dependency range excludes these fixes; upgrade Python before upgrading instagrapi.
 - Test Python 3.11 through 3.14 and audit runtime dependencies with `pip-audit` in CI. Retain the separate MoviePy 2.2.1 installation with `--no-deps` for optional video helpers.
