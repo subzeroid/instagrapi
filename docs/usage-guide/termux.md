@@ -2,7 +2,7 @@
 
 Termux can run many `instagrapi` flows, but Android does not use the same binary wheel ecosystem as desktop Linux. Keep the default install small and add media tooling only when the script really needs it.
 
-The next instagrapi release requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see [Getting Started](../getting-started.md) for the migration requirements.
+instagrapi 3.2.0+ requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see [Getting Started](../getting-started.md) for the migration requirements.
 
 ## Install
 
@@ -43,7 +43,7 @@ python -m pip install "instagrapi[video]"
 python -m pip install --no-deps "moviepy==2.2.1"
 ```
 
-MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes in the next release; install MoviePy with `--no-deps` to retain that dependency range. MoviePy `1.x` is no longer supported by instagrapi's optional video helpers.
+MoviePy `2.2.1` currently declares `Pillow<12`, but instagrapi requires `Pillow>=13.0.0,<14` for upstream security fixes; install MoviePy with `--no-deps` to retain that dependency range. MoviePy `1.x` is no longer supported by instagrapi's optional video helpers.
 
 If MoviePy cannot find ffmpeg, point ImageIO at the Termux binary before running the script:
 
