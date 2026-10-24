@@ -13,6 +13,11 @@ from instagrapi.mixins import private
 PIGEON = "X-Pigeon-Session-Id"
 RAWTIME = "X-Pigeon-Rawclienttime"
 SALT = "X-IG-SALT-IDS"
+UNKNOWN_BANDWIDTH = {
+    "X-IG-Bandwidth-Speed-KBPS": "-1.000",
+    "X-IG-Bandwidth-TotalBytes-B": "0",
+    "X-IG-Bandwidth-TotalTime-MS": "0",
+}
 ACCOUNT_SETTINGS = {"authorization_data": {"ds_user_id": "123", "sessionid": "synthetic-session"}}
 
 
@@ -73,6 +78,81 @@ def test_successive_get_and_post_reuse_pigeon_id(recording):
     assert [request.method for request in records] == ["GET", "POST"]
     same_pigeon = records[0].headers[PIGEON] == records[1].headers[PIGEON]
     assert same_pigeon, "A Client must reuse its runtime Pigeon ID"
+
+
+def test_successive_get_and_post_report_unknown_bandwidth(recording):
+    make_client, records = recording
+    client = make_client()
+    client.private_request("test/")
+    client.private_request("test/", data={"synthetic": "value"})
+
+    assert [request.method for request in records] == ["GET", "POST"]
+    for request in records:
+        assert {name: request.headers[name] for name in UNKNOWN_BANDWIDTH} == UNKNOWN_BANDWIDTH
+
+
+def test_restored_and_authorization_cleared_clients_report_unknown_bandwidth(recording):
+    make_client, records = recording
+    original = make_client(deepcopy(ACCOUNT_SETTINGS))
+    saved = deepcopy(original.get_settings())
+    saved_snapshot = deepcopy(saved)
+    restored = make_client(saved)
+    original.private_request("test/")
+    restored.private_request("test/")
+
+    assert restored.authorization_data == original.authorization_data
+    assert restored.get_settings()["uuids"] == saved["uuids"]
+    assert restored.get_settings()["device_settings"] == saved["device_settings"]
+    restored._clear_session_state(
+        clear_private_cookies=True, clear_authorization_data=True, clear_authorization_header=True
+    )
+    restored.private_request("test/", login=True)
+
+    assert "Authorization" in records[0].headers
+    assert records[1].headers["Authorization"] == records[0].headers["Authorization"]
+    assert "Authorization" not in records[2].headers
+    assert records[2].headers["IG-INTENDED-USER-ID"] == "0"
+    assert restored.get_settings()["uuids"] == saved_snapshot["uuids"]
+    assert restored.get_settings()["device_settings"] == saved_snapshot["device_settings"]
+    assert saved == saved_snapshot
+    for request in records:
+        assert {name: request.headers[name] for name in UNKNOWN_BANDWIDTH} == UNKNOWN_BANDWIDTH
+
+
+def test_explicit_request_bandwidth_overrides_do_not_mutate_or_leak(recording):
+    make_client, records = recording
+    client = make_client()
+    overrides = dict(zip(UNKNOWN_BANDWIDTH, ("123.456", "456789", "789"), strict=True))
+    original_overrides = overrides.copy()
+    client.private_request("test/", data={"synthetic": "value"}, headers=overrides)
+    client.private_request("test/")
+
+    assert [request.method for request in records] == ["POST", "GET"]
+    assert {name: records[0].headers[name] for name in UNKNOWN_BANDWIDTH} == original_overrides
+    assert overrides == original_overrides
+    assert {name: records[1].headers[name] for name in UNKNOWN_BANDWIDTH} == UNKNOWN_BANDWIDTH
+
+
+def test_upload_bandwidth_defaults_and_overrides_do_not_leak(recording):
+    make_client, records = recording
+    client = make_client(deepcopy(ACCOUNT_SETTINGS))
+    overrides = dict(zip(UNKNOWN_BANDWIDTH, ("123.456", "456789", "789"), strict=True))
+    upload_headers = {"X-Entity-Type": "image/jpeg", **overrides}
+    original_headers = upload_headers.copy()
+    for headers in ({"X-Entity-Type": "image/jpeg"}, upload_headers):
+        client.private.post(
+            "https://i.instagram.com/rupload_igphoto/synthetic",
+            data=b"synthetic",
+            headers=client.private_headers(headers),
+        )
+    client.private_request("test/")
+
+    assert [request.method for request in records] == ["POST", "POST", "GET"]
+    assert all("Authorization" in request.headers for request in records)
+    assert records[0].headers["X-Entity-Type"] == records[1].headers["X-Entity-Type"] == "image/jpeg"
+    assert upload_headers == original_headers
+    for request, expected in zip(records, (UNKNOWN_BANDWIDTH, overrides, UNKNOWN_BANDWIDTH), strict=True):
+        assert {name: request.headers[name] for name in UNKNOWN_BANDWIDTH} == expected
 
 
 def test_rawclienttime_is_fresh_for_each_request(recording):

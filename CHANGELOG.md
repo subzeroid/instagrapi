@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+- Report unmeasured private bandwidth as `-1.000` speed and zero byte/time counters instead of randomized values, preserving explicit request and upload header overrides.
+
 ## 3.2.0 — 2026-10-24
 
 - Require Python 3.11+ and Pillow 13+ to adopt upstream Pillow security fixes, including [CVE-2026-96778](https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7). Python 3.10 users remain on instagrapi 3.1.0, whose Pillow dependency range excludes these fixes; upgrade Python before upgrading instagrapi.
