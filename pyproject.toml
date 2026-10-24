@@ -11,12 +11,11 @@ authors = [
 description = "Fast and effective Instagram Private API wrapper"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -56,7 +55,7 @@ dependencies = [
     "PySocks>=1.7.1,<2",
     "pydantic==2.12.5; sys_platform == 'android'",
     "pydantic>=2.12.5,<2.14; sys_platform != 'android'",
-    "Pillow>=12.2.0,<13",
+    "Pillow>=13.0.0,<14",
     "pycryptodomex>=3.23.0,<4",
 ]
 
@@ -72,7 +71,7 @@ curl = [
     "curl-adapter>=1.2.3",
 ]
 video = [
-    # MoviePy 2.2.1 still declares pillow<12, while instagrapi requires Pillow 12.2.0
+    # MoviePy 2.2.1 still declares pillow<12, while instagrapi requires Pillow 13.0.0
     # for security fixes. Install MoviePy itself with --no-deps after this extra.
     "decorator>=4.0.2,<6.0",
     "imageio>=2.5,<3.0",
@@ -94,12 +93,10 @@ test = [
     "setuptools==84.2.1",
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.7",
-    # 1.0.7 is the release that works with pymdown-extensions 12.2 (docs build
-    # on PYTHON_VERSION 3.13); it requires Python >=3.11, and the 3.10 test job
-    # only needs the extras to install.
-    "mkdocstrings[python]==1.0.7; python_version >= '3.11'",
-    "mkdocstrings[python]==1.0.6; python_version < '3.11'",
+    # 1.0.7 supports pymdown-extensions 12.2 and requires Python >=3.11.
+    "mkdocstrings[python]==1.0.7",
     "numpy>=1.25.0",
+    "pip-audit==2.10.0",
     "pre-commit==4.6.2",
     "proglog<=1.0.0",
     "pytest-xdist==3.8.0",
@@ -120,7 +117,7 @@ instagrapi = ["native/*"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 exclude = [
     ".eggs",
     ".git",
