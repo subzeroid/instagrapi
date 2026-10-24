@@ -1525,9 +1525,7 @@ live in <code>tests/live/</code>.</p>
 <p>Publishing is handled by the tag-based <code>publish.yml</code> workflow. Pushes and pull requests run the package workflow first;
 maintainers cut a version tag only after the checks are green.</p>
 <h2 id="continuous-integration-pipeline">Continuous Integration Pipeline</h2>
-<p>The <code>Package</code> workflow runs Bandit, Ruff, compatibility regression tests on Python 3.10 through 3.14, and a strict docs
-build. Pull requests and pushes to <code>master</code> both build the docs; pushes to <code>master</code> also publish the <code>dev</code> docs with
-<code>mike</code>.</p>
+<p>The <a href="https://github.com/subzeroid/instagrapi/blob/master/.github/workflows/python-package.yml"><code>Package</code> workflow</a> runs Bandit, Ruff, a strict runtime dependency audit with <code>pip-audit</code>, compatibility regression tests on Python 3.11 through 3.14, and a strict docs build. Pull requests and pushes to <code>master</code> both build the docs; pushes to <code>master</code> also publish the <code>dev</code> docs with <code>mike</code>.</p>
 <p>Live-account tests are kept in a separate manually triggered <code>Live Account Tests</code> workflow. It accepts a focused target
 such as <code>media</code>, <code>upload</code>, <code>direct</code>, <code>timeline</code>, <code>story-location</code>, <code>location</code>, <code>usertag</code>, <code>user</code>, or <code>all</code>, and uses the
 pooled <code>TEST_ACCOUNTS_URL</code> secret.</p>

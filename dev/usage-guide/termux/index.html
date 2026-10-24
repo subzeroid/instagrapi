@@ -1331,6 +1331,7 @@
 
 <h1 id="termux">Termux</h1>
 <p>Termux can run many <code>instagrapi</code> flows, but Android does not use the same binary wheel ecosystem as desktop Linux. Keep the default install small and add media tooling only when the script really needs it.</p>
+<p>The next instagrapi release requires Python 3.11+ and Pillow 13+. Check the versions provided by your Android environment before upgrading; see <a href="../../getting-started/">Getting Started</a> for the migration requirements.</p>
 <h2 id="install">Install</h2>
 <div class="highlight"><pre><span></span><code>pkg<span class="w"> </span>update
 pkg<span class="w"> </span>install<span class="w"> </span>python<span class="w"> </span>python-pillow
@@ -1356,7 +1357,7 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"instagrapi[video]"</span>
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-deps<span class="w"> </span><span class="s2">"moviepy==2.2.1"</span>
 </code></pre></div>
-<p>MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi keeps <code>Pillow&gt;=12.2.0</code> for security fixes; the <code>--no-deps</code> install keeps the safe Pillow version. MoviePy <code>1.x</code> is no longer supported by instagrapi's optional video helpers.</p>
+<p>MoviePy <code>2.2.1</code> currently declares <code>Pillow&lt;12</code>, but instagrapi requires <code>Pillow&gt;=13.0.0,&lt;14</code> for upstream security fixes in the next release; install MoviePy with <code>--no-deps</code> to retain that dependency range. MoviePy <code>1.x</code> is no longer supported by instagrapi's optional video helpers.</p>
 <p>If MoviePy cannot find ffmpeg, point ImageIO at the Termux binary before running the script:</p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">IMAGEIO_FFMPEG_EXE</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span><span class="nb">command</span><span class="w"> </span>-v<span class="w"> </span>ffmpeg<span class="k">)</span><span class="s2">"</span>
 </code></pre></div>

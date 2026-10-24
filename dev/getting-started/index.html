@@ -1332,11 +1332,8 @@
 <p>Install <code>instagrapi</code> with pip:</p>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>instagrapi
 </code></pre></div>
-<p>Supported runtime:</p>
-<ul>
-<li><code>Python 3.10+</code></li>
-<li><code>Python 3.9</code> support was dropped in <code>2.5.0</code> — pin to <code>instagrapi==2.4.5</code> if you need it.</li>
-</ul>
+<p>The next release requires <strong>Python 3.11+</strong> and <strong>Pillow 13+</strong>.</p>
+<p>Pillow 13 provides upstream security fixes, including <a href="https://github.com/python-pillow/Pillow/security/advisories/GHSA-g7cr-3p24-7wf7">CVE-2026-96778</a>, and <a href="https://pypi.org/project/pillow/13.0.0/">requires Python 3.11 or newer</a>. <code>instagrapi==3.1.0</code> is the last release compatible with Python 3.10; its Pillow dependency range excludes these fixes. Upgrade to Python 3.11+ before installing the next instagrapi release once it is published.</p>
 <h2 id="introduction">Introduction</h2>
 <p><code>instagrapi</code> is an unofficial Instagram API wrapper for Python. It combines public web and private mobile flows, supports session persistence and challenge handling, and exposes a broad set of primitives for users, media, stories, direct messages, notes, uploads, and insights.</p>
 <p>A good first production habit is to avoid password login on every run. Prefer:</p>
