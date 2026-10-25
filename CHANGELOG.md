@@ -2,9 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.1 — 2026-10-25
 
 - Report unmeasured private bandwidth as `-1.000` speed and zero byte/time counters instead of randomized values, preserving explicit request and upload header overrides.
+- Pin the PyPI publishing action to the reviewed v1.14.3 commit instead of a mutable release branch.
 
 ## 3.2.0 — 2026-10-24
 
