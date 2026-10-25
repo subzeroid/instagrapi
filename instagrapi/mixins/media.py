@@ -911,6 +911,29 @@ class MediaMixin:
         """
         return self.media_like(media_id, revert=True)
 
+    def media_repost(self, media_id: str, text: str = "", extra_data: Optional[Dict] = None) -> Dict:
+        """Repost a post or Reel with Instagram's native two-arrow button.
+
+        Uses the media-note surface (audience 7, style 13), not a media
+        upload or a Story share. ``text`` is the optional repost comment.
+        ``media_id`` accepts the full media ID used by ``media_note_create``.
+        ``extra_data`` forwards additional app-surface context unchanged.
+
+        Returns the raw media-note creation response. Keep its note ID to
+        undo the repost with :meth:`media_unrepost`; do not pass the original
+        media ID to that method. Instagram controls repost eligibility.
+        """
+        return self.media_note_create(media_id, text=text, audience=7, note_style=13, extra_data=extra_data)
+
+    def media_unrepost(self, repost_id: str, extra_data: Optional[Dict] = None) -> bool:
+        """Remove a native repost using its media-note ID, not its media ID.
+
+        ``repost_id`` is the note ID returned by :meth:`media_repost`.
+        This removes the repost, preserving the original post or Reel.
+        ``extra_data`` forwards additional app-surface context unchanged.
+        """
+        return self.media_note_delete(repost_id, extra_data=extra_data)
+
     def media_note_create(
         self,
         media_id: str,

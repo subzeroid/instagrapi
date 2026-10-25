@@ -44,6 +44,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_like(media_id: str) | bool | Like media |
 | media_unlike(media_id: str) | bool | Unlike media |
 | media_share_to_story(media_id: str, background: Path = None, caption: str = "") | Story | Share an existing post to your story as a feed media sticker |
+| media_repost(media_id: str, text: str = "", extra_data: Optional[Dict] = None) | dict | Repost a post or Reel with the native two-arrow button; returns the media-note creation response |
+| media_unrepost(repost_id: str, extra_data: Optional[Dict] = None) | bool | Undo a native repost using its note ID, preserving the original media |
 | media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None) | dict | Create a note attached to a media item |
 | media_note_delete(note_id: str, extra_data: Optional[Dict] = None) | bool | Delete a note attached to a media item |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
@@ -68,6 +70,15 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_get_livestream_info(broadcast_id: str) | dict | Get livestream info |
 | media_get_livestream_comments(broadcast_id: str) | dict | Get livestream comments |
 | media_get_livestream_viewers(broadcast_id: str) | dict | Get livestream viewers |
+
+Native reposts use the media-note API with `audience=7` and `note_style=13`.
+`media_repost()` names that existing operation explicitly; it does not upload
+another copy or share to a Story. `text` is an optional repost comment.
+Keep the note ID from the creation response for `media_unrepost()`; the original
+media ID is not a repost ID. Instagram controls eligibility and may reject a
+request. These methods do not check existing repost state or retry mutations
+at the method level. An ambiguous network result must be reconciled before
+sending another mutation.
 
 Media notes are separate from Direct inbox Notes. Use `media_note_create()` and `media_note_delete()` for the note surface attached to a post or Reel; use the [Notes guide](notes.md) for Direct inbox Notes.
 
