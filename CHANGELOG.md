@@ -2,6 +2,10 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+- Allow Pydantic 2.14 on non-Android platforms while preserving the Android 2.12.5 pin and clarifying the Termux wheel and interpreter requirements.
+
 ## 3.2.1 — 2026-10-25
 
 - Report unmeasured private bandwidth as `-1.000` speed and zero byte/time counters instead of randomized values, preserving explicit request and upload header overrides.

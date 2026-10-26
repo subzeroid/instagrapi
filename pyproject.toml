@@ -53,7 +53,7 @@ dependencies = [
     "curl_cffi>=0.15.0",
     "requests>=2.34.2,<3",
     "PySocks>=1.7.1,<2",
-    "pydantic==2.14.1; sys_platform == 'android'",
+    "pydantic==2.12.5; sys_platform == 'android'",
     "pydantic>=2.12.5,<2.15; sys_platform != 'android'",
     "Pillow>=13.0.0,<14",
     "pycryptodomex>=3.23.0,<4",
@@ -94,15 +94,15 @@ test = [
     "markdown-include==0.8.1",
     "mkdocs-material==9.7.7",
     # 1.0.7 supports pymdown-extensions 12.2 and requires Python >=3.11.
-    "mkdocstrings[python]==1.0.7",
+    "mkdocstrings[python]==1.0.8",
     "numpy>=1.25.0",
-    "pip-audit==2.10.0",
-    "pre-commit==4.6.2",
+    "pip-audit==2.10.1",
+    "pre-commit==4.7.0",
     "proglog<=1.0.0",
     "pytest-xdist==3.8.0",
     "pytest==9.1.1",
     "python-dotenv>=0.10",
-    "ruff==0.17.1",
+    "ruff==0.17.2",
 ]
 
 [tool.setuptools]

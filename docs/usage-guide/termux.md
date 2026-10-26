@@ -15,7 +15,15 @@ python -m pip install --extra-index-url https://termux-user-repository.github.io
 
 `python-pillow` is recommended because photo uploads use Pillow through `instagrapi.image_util`. Installing it with `pkg` avoids a slow or fragile Pillow source build in pip.
 
-The Termux User Repository PyPI index provides Android wheels for native packages that PyPI may only publish as desktop Linux wheels. On Android, `instagrapi` uses `pydantic==2.12.5`, which depends on `pydantic-core==2.41.5`; that version has Android wheels for Python 3.13 in the Termux index. Newer `pydantic-core` releases may otherwise try to build with Rust and fail on-device.
+The Termux User Repository PyPI index provides Android wheels for native packages that PyPI may only publish as desktop Linux wheels. When the interpreter reports `sys.platform == "android"`, `instagrapi` uses `pydantic==2.12.5`, which depends on `pydantic-core==2.41.5`; that core version has Android wheels for Python 3.13 and 3.14 in the Termux index. Newer core versions may lack wheels for a particular Python version and require a Rust build on-device. Wheel availability does not establish runtime compatibility.
+
+Check the interpreter used to install and run the library:
+
+```bash
+python -c "import sys; print(sys.version); print(sys.platform)"
+```
+
+The dependency marker follows the interpreter value, rather than the device operating system. An interpreter reporting `linux`, including some custom or proot environments, selects the non-Android dependency range. Include the Python version and `sys.platform` value when reporting installation problems.
 
 ## Video Uploads
 
