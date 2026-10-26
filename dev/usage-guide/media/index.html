@@ -891,6 +891,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#native-reposts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native reposts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#download-media" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1439,6 +1450,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#native-reposts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Native reposts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#download-media" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1689,12 +1711,12 @@
 <tr>
 <td>media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None)</td>
 <td>dict</td>
-<td>Create a note attached to a media item</td>
+<td>Native repost of a post or Reel with the default audience/style; optionally include a text note</td>
 </tr>
 <tr>
 <td>media_note_delete(note_id: str, extra_data: Optional[Dict] = None)</td>
 <td>bool</td>
-<td>Delete a note attached to a media item</td>
+<td>Remove a media note or native repost using its note ID, preserving the original media</td>
 </tr>
 <tr>
 <td>media_seen(media_ids: List[str], skipped_media_ids: List[str] = [])</td>
@@ -2205,6 +2227,24 @@
 </tr>
 </tbody>
 </table>
+<h2 id="native-reposts">Native reposts</h2>
+<p>Instagram's native two-arrow Repost button is supported by
+<code>media_note_create()</code> with its default <code>audience=7</code> and <code>note_style=13</code>.
+This reposts an existing post or Reel; it does not upload a new copy or share
+it to a Story. These media notes are separate from Direct inbox Notes
+created with <code>create_note()</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># cl is an authenticated Client; media_pk identifies the post or Reel.</span>
+<span class="n">media_id</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_id</span><span class="p">(</span><span class="n">media_pk</span><span class="p">)</span>
+<span class="n">repost</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_note_create</span><span class="p">(</span><span class="n">media_id</span><span class="p">)</span>
+</code></pre></div>
+<p>To include text with the repost, pass <code>text</code> when creating it instead:</p>
+<div class="highlight"><pre><span></span><code><span class="n">repost</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_note_create</span><span class="p">(</span><span class="n">media_id</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">"Worth watching"</span><span class="p">)</span>
+</code></pre></div>
+<p>Keep the returned note ID to undo the repost later:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cl</span><span class="o">.</span><span class="n">media_note_delete</span><span class="p">(</span><span class="n">repost</span><span class="p">[</span><span class="s2">"id"</span><span class="p">])</span>
+</code></pre></div>
+<p>Pass the repost's note ID, not the original media ID. Removing a repost
+leaves the original post or Reel intact. Instagram controls repost eligibility.</p>
 <h2 id="download-media">Download media</h2>
 <table>
 <thead>
