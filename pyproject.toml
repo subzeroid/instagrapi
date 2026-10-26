@@ -97,7 +97,7 @@ test = [
     "mkdocstrings[python]==1.0.7",
     "numpy>=1.25.0",
     "pip-audit==2.10.1",
-    "pre-commit==4.6.2",
+    "pre-commit==4.7.0",
     "proglog<=1.0.0",
     "pytest-xdist==3.8.0",
     "pytest==9.1.1",
