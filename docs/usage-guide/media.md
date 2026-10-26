@@ -44,8 +44,8 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_like(media_id: str) | bool | Like media |
 | media_unlike(media_id: str) | bool | Unlike media |
 | media_share_to_story(media_id: str, background: Path = None, caption: str = "") | Story | Share an existing post to your story as a feed media sticker |
-| media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None) | dict | Create a note attached to a media item |
-| media_note_delete(note_id: str, extra_data: Optional[Dict] = None) | bool | Delete a note attached to a media item |
+| media_note_create(media_id: str, text: str = "", audience: int = 7, note_style: int = 13, extra_data: Optional[Dict] = None) | dict | Native repost of a post or Reel with the default audience/style; optionally include a text note |
+| media_note_delete(note_id: str, extra_data: Optional[Dict] = None) | bool | Remove a media note or native repost using its note ID, preserving the original media |
 | media_seen(media_ids: List[str], skipped_media_ids: List[str] = []) | bool | Mark media as seen |
 | media_likers(media_id: str) | List\[UserShort] | Return users who liked this post |
 | media_likers_gql(media_pk: str, amount: int = 0) | List\[dict] | Return users who liked this post through the web GraphQL doc_id endpoint |
@@ -301,6 +301,35 @@ Extended `Media` metadata fields:
 | `MediaInlineComment.is_restricted_pending` | `bool` or `None` | Restricted/pending state when Instagram sends it. |
 | `MediaInlineComment.replies_count` | `int` | Number of threaded replies reported inline. |
 | `MediaInlineComment.replies` | `List[MediaInlineComment]` | Inline threaded replies already present in the media payload. |
+
+## Native reposts
+
+Instagram's native two-arrow Repost button is supported by
+`media_note_create()` with its default `audience=7` and `note_style=13`.
+This reposts an existing post or Reel; it does not upload a new copy or share
+it to a Story. These media notes are separate from Direct inbox Notes
+created with `create_note()`.
+
+```python
+# cl is an authenticated Client; media_pk identifies the post or Reel.
+media_id = cl.media_id(media_pk)
+repost = cl.media_note_create(media_id)
+```
+
+To include text with the repost, pass `text` when creating it instead:
+
+```python
+repost = cl.media_note_create(media_id, text="Worth watching")
+```
+
+Keep the returned note ID to undo the repost later:
+
+```python
+cl.media_note_delete(repost["id"])
+```
+
+Pass the repost's note ID, not the original media ID. Removing a repost
+leaves the original post or Reel intact. Instagram controls repost eligibility.
 
 ## Download media
 
