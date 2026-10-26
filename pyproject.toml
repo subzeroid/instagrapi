@@ -53,8 +53,8 @@ dependencies = [
     "curl_cffi>=0.15.0",
     "requests>=2.34.2,<3",
     "PySocks>=1.7.1,<2",
-    "pydantic==2.12.5; sys_platform == 'android'",
-    "pydantic>=2.12.5,<2.14; sys_platform != 'android'",
+    "pydantic==2.14.1; sys_platform == 'android'",
+    "pydantic>=2.12.5,<2.15; sys_platform != 'android'",
     "Pillow>=13.0.0,<14",
     "pycryptodomex>=3.23.0,<4",
 ]
