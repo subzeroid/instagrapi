@@ -2,7 +2,7 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.2 — 2026-10-27
 
 - Allow Pydantic 2.14 on non-Android platforms while preserving the Android 2.12.5 pin and clarifying the Termux wheel and interpreter requirements.
 
