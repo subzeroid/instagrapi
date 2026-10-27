@@ -17,7 +17,7 @@ def test_pydantic_dependency_allows_termux_android_wheel_version():
     required_dependencies = pyproject.split("[project.optional-dependencies]", 1)[0]
 
     assert "\"pydantic==2.12.5; sys_platform == 'android'\"" in required_dependencies
-    assert "\"pydantic>=2.12.5,<2.14; sys_platform != 'android'\"" in required_dependencies
+    assert "\"pydantic>=2.12.5,<2.15; sys_platform != 'android'\"" in required_dependencies
     assert '"pydantic==2.13.4"' not in required_dependencies
 
 
