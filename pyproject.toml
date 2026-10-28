@@ -92,7 +92,7 @@ test = [
     # https://github.com/jimporter/mike/issues/148
     "setuptools==84.2.1",
     "markdown-include==0.8.1",
-    "mkdocs-material==9.7.7",
+    "mkdocs-material==9.8.0",
     # 1.0.7 supports pymdown-extensions 12.2 and requires Python >=3.11.
     "mkdocstrings[python]==1.0.8",
     "numpy>=1.25.0",
