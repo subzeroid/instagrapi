@@ -1,4 +1,4 @@
-# instagrapi
+https://www.instagram.com/wyz.amaral_?rpxt=aTFubzJteXl1aWlw# instagrapi
 
 > ⚠️ **Telegram support group moved to [aiograpi_support](https://t.me/aiograpi_support)** — the previous `@instagrapi` group has been restricted by Meta and is no longer maintained.
 
@@ -97,7 +97,7 @@ curl-backed public transport.
 from instagrapi import Client
 
 cl = Client()
-cl.login(USERNAME, PASSWORD)
+cl.login(USERNAME, PASSWORD)https://www.instagram.com/wyz.amaral_?rpxt=aTFubzJteXl1aWlw
 cl.dump_settings("session.json")
 
 # reload later; the saved session is validated before reuse
