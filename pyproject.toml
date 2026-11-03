@@ -100,7 +100,7 @@ test = [
     "pre-commit==4.7.0",
     "proglog<=1.0.0",
     "pytest-xdist==3.8.0",
-    "pytest==9.1.1",
+    "pytest==9.2.0",
     "python-dotenv>=0.10",
     "ruff==0.17.3",
 ]
