@@ -10,24 +10,50 @@ from tests.live.test_signup import SignUpTestCase
 
 
 class PasswordEncryptionRegressionTestCase(unittest.TestCase):
+    def key_response(self, status_code=200, headers=None):
+        response = requests.Response()
+        response.status_code = status_code
+        response.url = "https://i.instagram.com/api/v1/launcher/sync/"
+        response.request = requests.Request("POST", response.url).prepare()
+        response._content = b'{"status": "ok"}' if status_code == 200 else b'{"status": "fail"}'
+        response.headers.update(headers or {})
+        return response
+
+    def key_headers(self):
+        public_key = RSA.generate(2048).publickey().export_key()
+        return {
+            "ig-set-password-encryption-key-id": "123",
+            "ig-set-password-encryption-pub-key": base64.b64encode(public_key).decode(),
+        }
+
     def test_password_encrypt(self):
         cl = Client()
-        public_key = RSA.generate(2048).publickey().export_key()
-        response = requests.Response()
-        response.headers.update(
-            {
-                "ig-set-password-encryption-key-id": "123",
-                "ig-set-password-encryption-pub-key": base64.b64encode(public_key).decode(),
-            }
-        )
-        with mock.patch.object(cl.public, "get", return_value=response) as get_public_key:
+        response = self.key_response(headers=self.key_headers())
+        with mock.patch.object(cl.private, "post", return_value=response) as post:
             enc_password = cl.password_encrypt("test")
-        get_public_key.assert_called_once_with("https://i.instagram.com/api/v1/qe/sync/")
+        post.assert_called_once()
+        self.assertEqual(post.call_args.args[0], "https://i.instagram.com/api/v1/launcher/sync/")
         parts = enc_password.split(":")
         self.assertEqual(parts[0], "#PWD_INSTAGRAM")
         self.assertEqual(parts[1], "4")
         self.assertTrue(int(parts[2]) > 1607612345)
         self.assertTrue(len(parts[3]) == 392)
+
+    def test_password_publickeys_reads_headers_from_error_response(self):
+        cl = Client()
+        headers = self.key_headers()
+        response = self.key_response(status_code=404, headers=headers)
+        with mock.patch.object(cl.private, "post", return_value=response):
+            key_id, key = cl.password_publickeys()
+        self.assertEqual(key_id, 123)
+        self.assertEqual(key, headers["ig-set-password-encryption-pub-key"])
+
+    def test_password_publickeys_without_headers_raises_client_error(self):
+        cl = Client()
+        response = self.key_response(status_code=404)
+        with mock.patch.object(cl.private, "post", return_value=response):
+            with self.assertRaisesRegex(ClientError, "password encryption key"):
+                cl.password_publickeys()
 
 
 class SignupHelperRegressionTestCase(unittest.TestCase):
