@@ -1,9 +1,12 @@
 import base64
 import time
 
+import requests
 from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Random import get_random_bytes
+
+from instagrapi.exceptions import ClientError
 
 
 class PasswordMixin:
@@ -36,7 +39,29 @@ class PasswordMixin:
         return f"#PWD_INSTAGRAM:4:{timestamp}:{payload.decode()}"
 
     def password_publickeys(self):
-        resp = self.public.get("https://i.instagram.com/api/v1/qe/sync/")
-        publickeyid = int(resp.headers.get("ig-set-password-encryption-key-id"))
-        publickey = resp.headers.get("ig-set-password-encryption-pub-key")
-        return publickeyid, publickey
+        failure = None
+        try:
+            # Inspect the first response before retry/challenge handling can replace it.
+            self.private_requests_count += 1
+            self._send_private_request(
+                "launcher/sync/",
+                {"id": self.uuid, "server_config_retrieval": "1"},
+                login=True,
+                headers={"Authorization": self.authorization} if self.authorization else None,
+                return_response=True,
+            )
+        except ClientError as error:
+            failure = error
+        headers = self.last_response.headers if self.last_response is not None else {}
+        publickeyid = headers.get("ig-set-password-encryption-key-id")
+        publickey = headers.get("ig-set-password-encryption-pub-key")
+        if not publickeyid or not publickey:
+            if self.last_response is not None:
+                try:
+                    self.last_response.raise_for_status()
+                except requests.HTTPError as error:
+                    failure = error
+            raise ClientError(
+                "Instagram did not return the password encryption key", response=self.last_response
+            ) from failure
+        return int(publickeyid), publickey

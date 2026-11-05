@@ -25,6 +25,8 @@ class UploadRegressionTestCase(unittest.TestCase):
         client.with_default_data = lambda data: data
         client.request_log = lambda response: None
         client.expose = lambda: None
+        # Upload helpers inspect the current feed before configuration; keep the fixture offline.
+        client.user_medias_v1 = mock.Mock(return_value=[])
         return client
 
     def build_media_payload(self, media_type=2):

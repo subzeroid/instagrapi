@@ -8,6 +8,10 @@ Earlier release notes are available in [GitHub Releases](https://github.com/subz
 
 - Keep legacy web-profile lookup headers scoped to that request so later public requests retain their configured session headers.
 
+## 3.2.3 — 2026-11-05
+
+- Fetch the password encryption key from `launcher/sync/` instead of `qe/sync/`, which now returns 404 without the key headers. Read key headers from error responses before timeout retries or challenge handling, and raise `ClientError` instead of `TypeError` when Instagram omits them (#2920, #2923).
+
 ## 3.2.2 — 2026-10-27
 
 - Allow Pydantic 2.14 on non-Android platforms while preserving the Android 2.12.5 pin and clarifying the Termux wheel and interpreter requirements.

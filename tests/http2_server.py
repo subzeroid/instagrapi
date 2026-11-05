@@ -2,6 +2,7 @@
 
 import base64
 import gzip
+import ipaddress
 import socket
 import socketserver
 import ssl
@@ -187,7 +188,10 @@ def _write_certificates(artifacts):
         .not_valid_before(now - timedelta(minutes=5))
         .not_valid_after(now + timedelta(days=1))
         .add_extension(x509.BasicConstraints(ca=False, path_length=None), critical=True)
-        .add_extension(x509.SubjectAlternativeName([x509.DNSName(LAB_HOST)]), critical=False)
+        .add_extension(
+            x509.SubjectAlternativeName([x509.DNSName(LAB_HOST), x509.IPAddress(ipaddress.ip_address("127.0.0.1"))]),
+            critical=False,
+        )
         .add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]), critical=False)
         .add_extension(
             x509.KeyUsage(

@@ -14,7 +14,7 @@ curl_cffi = pytest.importorskip("curl_cffi", reason="curl_cffi is required for p
 pytest.importorskip("h2")
 pytest.importorskip("cryptography")
 
-from curl_cffi import CurlHttpVersion, CurlOpt, CurlSslVersion
+from curl_cffi import CurlHttpVersion, CurlOpt, CurlSslVersion, ffi, lib
 
 from instagrapi import Client
 from instagrapi.exceptions import ClientConnectionError, ClientThrottledError
@@ -47,8 +47,9 @@ def client(lab):
             session.close()
 
 
-def url(lab, path="/lab/ok"):
-    return f"https://{LAB_HOST}:{lab.port}{path}"
+def url(lab, path="/lab/ok", host="127.0.0.1"):
+    # A literal loopback address avoids curl's HTTPS-record DNS lookups.
+    return f"https://{host}:{lab.port}{path}"
 
 
 def test_actual_clienthello_h2_only_and_connection_reuse(client, lab):
@@ -166,7 +167,7 @@ def test_429_preserves_response_without_automatic_post_retry(client, lab):
 
 def test_private_request_maps_429_without_retrying_password(client, lab):
     with pytest.raises(ClientThrottledError):
-        client.private_request("lab/rate-limit", data={"synthetic_password": "test"}, domain=f"{LAB_HOST}:{lab.port}")
+        client.private_request("lab/rate-limit", data={"synthetic_password": "test"}, domain=f"127.0.0.1:{lab.port}")
     assert len(lab.records) == 1
 
 
@@ -184,7 +185,7 @@ def test_truncated_http2_stream_maps_to_requests_connection_error(client, lab):
 
 def test_private_request_preserves_http2_stream_failure(client, lab):
     with pytest.raises(ClientConnectionError):
-        client.private_request("lab/partial", domain=f"{LAB_HOST}:{lab.port}")
+        client.private_request("lab/partial", domain=f"127.0.0.1:{lab.port}")
     assert len(lab.records) == 1
 
 
@@ -209,6 +210,23 @@ def test_per_request_tls_verification_and_ca_path(client, lab):
         client.private.get(url(lab), verify=True, timeout=2)
     assert lab.records == []
     assert client.private.get(url(lab), verify=str(lab.ca_path), timeout=2).status_code == 200
+
+
+def test_loopback_ip_subject_alt_name_is_verified(client, lab):
+    assert (
+        client.private.get(f"https://127.0.0.1:{lab.port}/lab/ok", verify=str(lab.ca_path), timeout=2).status_code
+        == 200
+    )
+    adapter = client.private.get_adapter(url(lab))
+    targets = lib.curl_slist_append(ffi.NULL, f"127.0.0.2:{lab.port}:127.0.0.1:{lab.port}".encode())
+    adapter.client.curl_options[CurlOpt.CONNECT_TO] = targets
+    try:
+        with pytest.raises(requests.exceptions.SSLError):
+            client.private.get(f"https://127.0.0.2:{lab.port}/lab/ok", verify=str(lab.ca_path), timeout=2)
+    finally:
+        adapter.client.curl_options.pop(CurlOpt.CONNECT_TO)
+        lib.curl_slist_free_all(targets)
+    assert len(lab.records) == 1
 
 
 def test_insecure_request_does_not_disable_verification_for_later_requests(client, lab):
@@ -321,8 +339,9 @@ def test_hybrid_group_reaches_peer_through_proxy(client, hybrid_lab, proxy_schem
             proxy_type = LoopbackProxy if proxy_scheme == "http" else LoopbackSocksProxy
             proxy = stack.enter_context(proxy_type(lab))
             client.set_proxy(f"{proxy_scheme}://synthetic:password@127.0.0.1:{proxy.port}")
-        first = client.private.post(url(lab), data=b"synthetic-body", timeout=2)
-        second = client.private.get(url(lab), timeout=2)
+        target = url(lab, host=LAB_HOST) if proxy_scheme else url(lab)
+        first = client.private.post(target, data=b"synthetic-body", timeout=2)
+        second = client.private.get(target, timeout=2)
         assert first.content == second.content == LAB_JSON
         assert first.raw.version == second.raw.version == 20
         headers = dict(lab.records[0]["headers"])
@@ -345,10 +364,11 @@ def test_classical_group_control_fails_without_resubmitting(client, hybrid_lab):
     lab, hellos = hybrid_lab
     with LoopbackSocksProxy(lab) as proxy:
         client.set_proxy(f"socks5h://synthetic:password@127.0.0.1:{proxy.port}")
-        adapter = client.private.get_adapter(url(lab))
+        target = url(lab, host=LAB_HOST)
+        adapter = client.private.get_adapter(target)
         adapter.client.curl_options[CurlOpt.SSL_EC_CURVES] = "X25519:P-256:P-384"
         with pytest.raises(requests.exceptions.ConnectionError):
-            client.private.post(url(lab), data=b"synthetic-body", timeout=2)
+            client.private.post(target, data=b"synthetic-body", timeout=2)
         assert len(proxy.records) == len(hellos) == 1
         assert hellos[0]["supported_groups"] == [29, 23, 24]
         assert not lab.records
