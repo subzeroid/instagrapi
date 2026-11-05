@@ -1,119 +1,175 @@
-name: Live Account Tests
+name: Anonymous password-key release validation
 
 on:
   workflow_dispatch:
-    inputs:
-      test_target:
-        description: "Which live test target to run"
-        required: true
-        default: "media"
-        type: choice
-        options:
-          - media
-          - comment
-          - upload
-          - direct
-          - signup
-          - timeline
-          - fbsearch
-          - story-location
-          - location
-          - usertag
-          - user
-          - all
 
-env:
-  PYTHON_VERSION: "3.13.5"
+permissions:
+  contents: read
 
 jobs:
-  live-test:
+  sync-key:
     runs-on: ubuntu-latest
+    timeout-minutes: 4
     env:
-      TEST_ACCOUNTS_URL: ${{ secrets.TEST_ACCOUNTS_URL }}
-      IG_SIGNUP_EMAIL: ${{ secrets.IG_SIGNUP_EMAIL }}
-      IG_SIGNUP_EMAIL_COMMAND: ${{ secrets.IG_SIGNUP_EMAIL_COMMAND }}
-      IG_SIGNUP_EMAIL_CODE: ${{ secrets.IG_SIGNUP_EMAIL_CODE }}
-      IG_SIGNUP_EMAIL_CODE_COMMAND: ${{ secrets.IG_SIGNUP_EMAIL_CODE_COMMAND }}
-      IG_SIGNUP_PHONE_NUMBER: ${{ secrets.IG_SIGNUP_PHONE_NUMBER }}
-      IG_SIGNUP_SMS_CODE: ${{ secrets.IG_SIGNUP_SMS_CODE }}
-      IG_SIGNUP_SMS_CODE_COMMAND: ${{ secrets.IG_SIGNUP_SMS_CODE_COMMAND }}
+      PROBE_REPOSITORY: instagrapi
+      PROBE_COMMIT: 2c73e5d9185e537429e56de91a3852780062bbd0
+      PROBE_VERSION: 3.2.3
     steps:
-      - name: Validate live test configuration
-        env:
-          LIVE_TEST_TARGET: ${{ github.event.inputs.test_target }}
-        run: |
-          if [ "$LIVE_TEST_TARGET" != "signup" ] && [ -z "$TEST_ACCOUNTS_URL" ]; then
-            message="Live validation did not run: TEST_ACCOUNTS_URL is missing. Configure the repository Actions secret and rerun this job."
-            echo "::error::$message"
-            echo "$message" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-      - name: Check out code
-        uses: actions/checkout@v7
-
+      - uses: actions/checkout@v7
+        with:
+          repository: subzeroid/instagrapi
+          ref: 2c73e5d9185e537429e56de91a3852780062bbd0
+          persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.11"
+      - name: Install the exact candidate
+        run: python -m pip install --disable-pip-version-check . "curl_cffi==0.15.0"
+      - name: One anonymous launcher request
+        run: |
+          python - <<'PY'
+          import os,sys,json,logging,base64,hashlib,subprocess,time,asyncio,importlib
+          from pathlib import Path
+          from urllib.parse import parse_qs
+          for key in list(os.environ):
+           if key.upper().endswith('_PROXY') or key in ['CURL_CA_BUNDLE','REQUESTS_CA_BUNDLE','SSL_CERT_FILE','SSL_CERT_DIR','SSLKEYLOGFILE']:os.environ.pop(key,None)
+          os.environ.update(PYTHON_DOTENV_DISABLED='1',TEST_ACCOUNTS_URL='');logging.disable(logging.CRITICAL)
+          root=Path.cwd();sys.path.insert(0,str(root));repo=os.environ['PROBE_REPOSITORY'];expected=os.environ['PROBE_COMMIT'];version=os.environ['PROBE_VERSION'];assert repo in ('instagrapi','aiograpi')
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==expected
+          module=importlib.import_module(repo);assert Path(module.__file__).resolve()==root/repo/'__init__.py'
+          from importlib.metadata import version as installed_version
+          assert installed_version(repo)==version
+          from Cryptodome.PublicKey import RSA
+          class BudgetStop(Exception):pass
+          client=module.Client(with_challenge_flow=False,session_retry_total=0,session_retry_statuses=[],public_request_retries_count=0,request_timeout=0)
+          assert not client.user_id and not client.username and not client.password and not client.authorization
+          result={'repository':repo,'commit':expected,'version':version,'target':'https://i.instagram.com/api/v1/launcher/sync/','requests':0,'retries':0,'authentication_present':False,'password_sent':False,'provider_calls':0,'pass':False}
+          started=time.monotonic()
+          def payload_guard(url,kwargs):
+           if result['requests'] or url!=result['target']:raise BudgetStop('Request budget exceeded')
+           signed=parse_qs(kwargs['data'])['signed_body'];assert len(signed)==1
+           payload=json.loads(signed[0].split('.',1)[1]);assert set(payload)=={'id','server_config_retrieval'} and payload['server_config_retrieval']=='1'
+           result['requests']+=1;result['payload_fields']=sorted(payload)
+          def response_guard(response):
+           result.update(http_status=response.status_code,key_id_header_present=bool(response.headers.get('ig-set-password-encryption-key-id')),public_key_header_present=bool(response.headers.get('ig-set-password-encryption-pub-key')))
+           restricted=response.status_code==429 or any(x in response.content.lower() for x in [b'challenge_required',b'checkpoint_required',b'please wait a few minutes'])
+           result['restriction_detected']=restricted
+           if restricted:raise BudgetStop('Restricted response')
+           return response
+          def validate(pair):
+           key_id,key=pair;decoded=base64.b64decode(key,validate=True);rsa=RSA.import_key(decoded)
+           assert 0<=key_id<=255 and rsa.size_in_bits()>=2048 and not rsa.has_private()
+           result.update(key_id=key_id,rsa_bits=rsa.size_in_bits(),public_key_sha256=hashlib.sha256(decoded).hexdigest(),pass_=True)
+           result['pass']=result.pop('pass_')
+          async def async_probe():
+           client.last_response_ts=0;original=client.private.post
+           async def deny(*args,**kwargs):raise BudgetStop('Unexpected request')
+           async def post(url,**kwargs):
+            payload_guard(url,kwargs);kwargs.update(timeout=10,follow_redirects=False);return response_guard(await original(url,**kwargs))
+           client.private.post=post;client.private.get=deny;client.public.get=deny;client.public.post=deny;client.graphql.get=deny;client.graphql.post=deny
+           try:validate(await client.password_publickeys())
+           except Exception as error:result['exception']=type(error).__name__
+           finally:
+            for session in (client.private,client.public,client.graphql):await type(session)._close(session)
+            result['sessions_closed']=True
+          if repo=='aiograpi':asyncio.run(async_probe())
+          else:
+           for session in (client.private,client.public,client.graphql):session.trust_env=False
+           original=client.private.post
+           def deny(*args,**kwargs):raise BudgetStop('Unexpected request')
+           def post(url,**kwargs):
+            payload_guard(url,kwargs);kwargs.update(timeout=(5,10),allow_redirects=False,verify=True);return response_guard(original(url,**kwargs))
+           client.private.post=post;client.private.get=deny;client.public.get=deny;client.public.post=deny;client.graphql.get=deny;client.graphql.post=deny
+           try:validate(client.password_publickeys())
+           except Exception as error:result['exception']=type(error).__name__
+           finally:
+            for session in (client.private,client.public,client.graphql):session.close()
+            result['sessions_closed']=True
+          result['seconds']=round(time.monotonic()-started,3)
+          Path('live-key-result-'+repo+'.json').write_text(json.dumps(result,indent=2)+'\n');print('ANONYMOUS_KEY_RESULT '+json.dumps(result))
+          raise SystemExit(0 if result['pass'] else 1)
+          PY
 
-      - name: Install dependencies
-        uses: ./.github/actions/install-dependencies
+  async-key:
+    needs: sync-key
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PROBE_REPOSITORY: aiograpi
+      PROBE_COMMIT: fcb62de3dd2af575ba784be7ee18249462da0cf3
+      PROBE_VERSION: 2.1.3
+    steps:
+      - uses: actions/checkout@v7
         with:
-          test: "true"
-
-      - name: Run media test
-        if: github.event.inputs.test_target == 'media' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_media.py::ClientMediaTestCase tests/live/test_comments.py::ClientCommentRepliesLiveTestCase
-
-      - name: Run comment write test
-        if: github.event.inputs.test_target == 'comment' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_comments.py::ClientCommentExtendTestCase::test_media_comment
-
-      - name: Run upload live tests
-        if: github.event.inputs.test_target == 'upload' || github.event.inputs.test_target == 'all'
+          repository: subzeroid/aiograpi
+          ref: fcb62de3dd2af575ba784be7ee18249462da0cf3
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install the exact candidate
+        run: python -m pip install --disable-pip-version-check . "curl_cffi==0.15.0"
+      - name: One anonymous launcher request
         run: |
-          pytest -sv \
-            tests/live/test_upload.py::ClienUploadTestCase::test_clip_upload_show_preview_in_feed_false_live \
-            tests/live/test_upload.py::ClientFeedMusicUploadLiveTestCase \
-            tests/live/test_upload.py::ClientTrialReelUploadLiveTestCase \
-            tests/live/test_upload.py::ClientFacebookReelCrosspostLiveTestCase
-
-      - name: Run direct media test
-        if: github.event.inputs.test_target == 'direct' || github.event.inputs.test_target == 'all'
-        run: |
-          pytest -sv \
-            tests/live/test_direct.py::ClientDirectTestCase::test_direct_search_live \
-            tests/live/test_direct.py::ClientDirectTestCase::test_direct_media_live \
-            tests/live/test_direct.py::ClientDirectMediaLiveTestCase \
-            tests/live/test_direct.py::ClientDirectThreadLiveTestCase::test_direct_thread_add_users_live
-
-      - name: Run signup live tests
-        if: github.event.inputs.test_target == 'signup' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_signup.py::SignUpTestCase
-
-      - name: Run timeline test
-        if: github.event.inputs.test_target == 'timeline' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_timeline.py::ClientTimelineLiveTestCase
-
-      - name: Run fbsearch test
-        if: github.event.inputs.test_target == 'fbsearch' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_fbsearch.py::ClientFbSearchLiveTestCase
-
-      - name: Run story location sticker live test
-        if: github.event.inputs.test_target == 'story-location' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_story.py::ClientStoryLocationStickerLiveTestCase
-
-      - name: Run location test
-        if: github.event.inputs.test_target == 'location' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_location.py::ClientLocationPaginationLiveTestCase
-
-      - name: Run usertag pagination test
-        if: github.event.inputs.test_target == 'usertag' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_user.py::ClientUsertagPaginationLiveTestCase
-
-      - name: Run user test
-        if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_user.py::ClientUserTestCase tests/live/test_user.py::ClientGraphQLQueryLiveTestCase
-
-      - name: Run follow request live test
-        if: github.event.inputs.test_target == 'user' || github.event.inputs.test_target == 'all'
-        run: pytest -sv tests/live/test_user.py::ClientFollowRequestLiveTestCase
+          python - <<'PY'
+          import os,sys,json,logging,base64,hashlib,subprocess,time,asyncio,importlib
+          from pathlib import Path
+          from urllib.parse import parse_qs
+          for key in list(os.environ):
+           if key.upper().endswith('_PROXY') or key in ['CURL_CA_BUNDLE','REQUESTS_CA_BUNDLE','SSL_CERT_FILE','SSL_CERT_DIR','SSLKEYLOGFILE']:os.environ.pop(key,None)
+          os.environ.update(PYTHON_DOTENV_DISABLED='1',TEST_ACCOUNTS_URL='');logging.disable(logging.CRITICAL)
+          root=Path.cwd();sys.path.insert(0,str(root));repo=os.environ['PROBE_REPOSITORY'];expected=os.environ['PROBE_COMMIT'];version=os.environ['PROBE_VERSION'];assert repo in ('instagrapi','aiograpi')
+          assert subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()==expected
+          module=importlib.import_module(repo);assert Path(module.__file__).resolve()==root/repo/'__init__.py'
+          from importlib.metadata import version as installed_version
+          assert installed_version(repo)==version
+          from Cryptodome.PublicKey import RSA
+          class BudgetStop(Exception):pass
+          client=module.Client(with_challenge_flow=False,session_retry_total=0,session_retry_statuses=[],public_request_retries_count=0,request_timeout=0)
+          assert not client.user_id and not client.username and not client.password and not client.authorization
+          result={'repository':repo,'commit':expected,'version':version,'target':'https://i.instagram.com/api/v1/launcher/sync/','requests':0,'retries':0,'authentication_present':False,'password_sent':False,'provider_calls':0,'pass':False}
+          started=time.monotonic()
+          def payload_guard(url,kwargs):
+           if result['requests'] or url!=result['target']:raise BudgetStop('Request budget exceeded')
+           signed=parse_qs(kwargs['data'])['signed_body'];assert len(signed)==1
+           payload=json.loads(signed[0].split('.',1)[1]);assert set(payload)=={'id','server_config_retrieval'} and payload['server_config_retrieval']=='1'
+           result['requests']+=1;result['payload_fields']=sorted(payload)
+          def response_guard(response):
+           result.update(http_status=response.status_code,key_id_header_present=bool(response.headers.get('ig-set-password-encryption-key-id')),public_key_header_present=bool(response.headers.get('ig-set-password-encryption-pub-key')))
+           restricted=response.status_code==429 or any(x in response.content.lower() for x in [b'challenge_required',b'checkpoint_required',b'please wait a few minutes'])
+           result['restriction_detected']=restricted
+           if restricted:raise BudgetStop('Restricted response')
+           return response
+          def validate(pair):
+           key_id,key=pair;decoded=base64.b64decode(key,validate=True);rsa=RSA.import_key(decoded)
+           assert 0<=key_id<=255 and rsa.size_in_bits()>=2048 and not rsa.has_private()
+           result.update(key_id=key_id,rsa_bits=rsa.size_in_bits(),public_key_sha256=hashlib.sha256(decoded).hexdigest(),pass_=True)
+           result['pass']=result.pop('pass_')
+          async def async_probe():
+           client.last_response_ts=0;original=client.private.post
+           async def deny(*args,**kwargs):raise BudgetStop('Unexpected request')
+           async def post(url,**kwargs):
+            payload_guard(url,kwargs);kwargs.update(timeout=10,follow_redirects=False);return response_guard(await original(url,**kwargs))
+           client.private.post=post;client.private.get=deny;client.public.get=deny;client.public.post=deny;client.graphql.get=deny;client.graphql.post=deny
+           try:validate(await client.password_publickeys())
+           except Exception as error:result['exception']=type(error).__name__
+           finally:
+            for session in (client.private,client.public,client.graphql):await type(session)._close(session)
+            result['sessions_closed']=True
+          if repo=='aiograpi':asyncio.run(async_probe())
+          else:
+           for session in (client.private,client.public,client.graphql):session.trust_env=False
+           original=client.private.post
+           def deny(*args,**kwargs):raise BudgetStop('Unexpected request')
+           def post(url,**kwargs):
+            payload_guard(url,kwargs);kwargs.update(timeout=(5,10),allow_redirects=False,verify=True);return response_guard(original(url,**kwargs))
+           client.private.post=post;client.private.get=deny;client.public.get=deny;client.public.post=deny;client.graphql.get=deny;client.graphql.post=deny
+           try:validate(client.password_publickeys())
+           except Exception as error:result['exception']=type(error).__name__
+           finally:
+            for session in (client.private,client.public,client.graphql):session.close()
+            result['sessions_closed']=True
+          result['seconds']=round(time.monotonic()-started,3)
+          Path('live-key-result-'+repo+'.json').write_text(json.dumps(result,indent=2)+'\n');print('ANONYMOUS_KEY_RESULT '+json.dumps(result))
+          raise SystemExit(0 if result['pass'] else 1)
+          PY
