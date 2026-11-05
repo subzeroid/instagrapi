@@ -2,9 +2,9 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.3 — 2026-11-05
 
-- Fetch the password encryption key from `launcher/sync/` instead of `qe/sync/`, which now returns 404 without the key headers. Read key headers from error responses before timeout retries or challenge handling, and raise `ClientError` instead of `TypeError` when Instagram omits them (#2920).
+- Fetch the password encryption key from `launcher/sync/` instead of `qe/sync/`, which now returns 404 without the key headers. Read key headers from error responses before timeout retries or challenge handling, and raise `ClientError` instead of `TypeError` when Instagram omits them (#2920, #2923).
 
 ## 3.2.2 — 2026-10-27
 
