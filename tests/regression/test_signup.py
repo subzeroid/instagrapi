@@ -10,24 +10,160 @@ from tests.live.test_signup import SignUpTestCase
 
 
 class PasswordEncryptionRegressionTestCase(unittest.TestCase):
+    def key_response(self, status_code=200, headers=None):
+        response = requests.Response()
+        response.status_code = status_code
+        response.url = "https://i.instagram.com/api/v1/launcher/sync/"
+        response.request = requests.Request("POST", response.url).prepare()
+        response._content = b'{"status": "ok"}' if status_code == 200 else b'{"status": "fail"}'
+        response.headers.update(headers or {})
+        return response
+
+    def key_headers(self):
+        public_key = RSA.generate(2048).publickey().export_key()
+        return {
+            "ig-set-password-encryption-key-id": "123",
+            "ig-set-password-encryption-pub-key": base64.b64encode(public_key).decode(),
+        }
+
     def test_password_encrypt(self):
         cl = Client()
-        public_key = RSA.generate(2048).publickey().export_key()
-        response = requests.Response()
-        response.headers.update(
-            {
-                "ig-set-password-encryption-key-id": "123",
-                "ig-set-password-encryption-pub-key": base64.b64encode(public_key).decode(),
-            }
-        )
-        with mock.patch.object(cl.public, "get", return_value=response) as get_public_key:
+        response = self.key_response(headers=self.key_headers())
+        with mock.patch.object(cl.private, "post", return_value=response) as post:
             enc_password = cl.password_encrypt("test")
-        get_public_key.assert_called_once_with("https://i.instagram.com/api/v1/qe/sync/")
+        post.assert_called_once()
+        self.assertEqual(post.call_args.args[0], "https://i.instagram.com/api/v1/launcher/sync/")
         parts = enc_password.split(":")
         self.assertEqual(parts[0], "#PWD_INSTAGRAM")
         self.assertEqual(parts[1], "4")
         self.assertTrue(int(parts[2]) > 1607612345)
         self.assertTrue(len(parts[3]) == 392)
+
+    def test_password_publickeys_reads_headers_from_error_response(self):
+        cl = Client()
+        headers = self.key_headers()
+        response = self.key_response(status_code=404, headers=headers)
+        with mock.patch.object(cl.private, "post", return_value=response):
+            key_id, key = cl.password_publickeys()
+        self.assertEqual(key_id, 123)
+        self.assertEqual(key, headers["ig-set-password-encryption-pub-key"])
+
+    def test_password_publickeys_without_headers_raises_client_error(self):
+        cl = Client()
+        response = self.key_response(status_code=404)
+        with mock.patch.object(cl.private, "post", return_value=response):
+            with self.assertRaisesRegex(ClientError, "password encryption key"):
+                cl.password_publickeys()
+
+    def test_password_publickeys_keeps_timeout_response_keys_without_retry(self):
+        cl = Client()
+        headers = self.key_headers()
+        response = self.key_response(status_code=408, headers=headers)
+        with (
+            mock.patch.object(cl.private, "post", side_effect=[response, requests.ConnectionError()]) as post,
+            mock.patch("instagrapi.mixins.private.time.sleep") as sleep,
+        ):
+            key_id, key = cl.password_publickeys()
+        self.assertEqual((key_id, key), (123, headers["ig-set-password-encryption-pub-key"]))
+        post.assert_called_once()
+        sleep.assert_not_called()
+
+    def test_password_publickeys_reads_challenge_headers_without_handling_challenge(self):
+        headers = self.key_headers()
+        for custom_handler in (False, True):
+            with self.subTest(custom_handler=custom_handler):
+                cl = Client()
+                response = self.key_response(status_code=400, headers=headers)
+                response._content = b'{"status":"fail","message":"challenge_required"}'
+                handler = mock.Mock()
+                if custom_handler:
+                    cl.handle_exception = handler
+                with (
+                    mock.patch.object(cl.private, "post", side_effect=[response, requests.ConnectionError()]) as post,
+                    mock.patch.object(cl, "challenge_resolve") as resolve,
+                ):
+                    key_id, key = cl.password_publickeys()
+                self.assertEqual((key_id, key), (123, headers["ig-set-password-encryption-pub-key"]))
+                post.assert_called_once()
+                resolve.assert_not_called()
+                handler.assert_not_called()
+
+    def test_password_publickeys_missing_timeout_keys_preserves_http_error_without_retry(self):
+        cl = Client()
+        response = self.key_response(status_code=408)
+        with (
+            mock.patch.object(cl.private, "post", side_effect=[response, requests.ConnectionError()]) as post,
+            mock.patch("instagrapi.mixins.private.time.sleep") as sleep,
+        ):
+            with self.assertRaisesRegex(ClientError, "password encryption key") as caught:
+                cl.password_publickeys()
+        self.assertEqual(caught.exception.code, 408)
+        self.assertIs(caught.exception.response, response)
+        self.assertIsInstance(caught.exception.__cause__, requests.HTTPError)
+        self.assertIs(caught.exception.__cause__.response, response)
+        post.assert_called_once()
+        sleep.assert_not_called()
+
+    def test_password_publickeys_does_not_reuse_stale_response_on_connection_error(self):
+        cl = Client()
+        cl.last_response = self.key_response(headers=self.key_headers())
+        with mock.patch.object(cl.private, "post", side_effect=requests.ConnectionError()) as post:
+            with self.assertRaisesRegex(ClientError, "password encryption key") as caught:
+                cl.password_publickeys()
+        self.assertIsInstance(caught.exception.__cause__, ClientConnectionError)
+        self.assertIsNone(cl.last_response)
+        post.assert_called_once()
+
+    def test_password_publickeys_preserves_authorization_and_launcher_payload(self):
+        cl = Client()
+        cl.authorization_data = {"ds_user_id": "123", "sessionid": "test-session"}
+        authorization = cl.authorization
+        response = self.key_response(headers=self.key_headers())
+        with mock.patch.object(cl.private, "post", return_value=response) as post:
+            cl.password_publickeys()
+        post.assert_called_once()
+        self.assertEqual(post.call_args.kwargs["headers"]["Authorization"], authorization)
+        signed_body = dict(parse_qsl(post.call_args.kwargs["data"]))["signed_body"]
+        payload = json.loads(signed_body.split(".", 1)[1])
+        self.assertEqual(payload, {"id": cl.uuid, "server_config_retrieval": "1"})
+        self.assertEqual(cl.private_requests_count, 1)
+
+    def test_password_publickeys_reads_headers_independently_of_json_body(self):
+        headers = self.key_headers()
+        for status_code in (200, 400):
+            for body in (
+                b"[]",
+                b"null",
+                b'{"status":"fail","message":null}',
+                b'{"error_type":"two_factor_required"}',
+                b"not JSON",
+            ):
+                with self.subTest(status_code=status_code, body=body):
+                    cl = Client()
+                    response = self.key_response(status_code=status_code, headers=headers)
+                    response._content = body
+                    with mock.patch.object(cl.private, "post", return_value=response) as post:
+                        key_id, key = cl.password_publickeys()
+                    self.assertEqual((key_id, key), (123, headers["ig-set-password-encryption-pub-key"]))
+                    post.assert_called_once()
+
+    def test_password_publickeys_missing_headers_with_unexpected_body_raises_client_error(self):
+        for status_code in (200, 400):
+            for body in (
+                b"[]",
+                b"null",
+                b'{"status":"fail","message":null}',
+                b'{"error_type":"two_factor_required"}',
+                b"not JSON",
+            ):
+                with self.subTest(status_code=status_code, body=body):
+                    cl = Client()
+                    response = self.key_response(status_code=status_code)
+                    response._content = body
+                    with mock.patch.object(cl.private, "post", return_value=response) as post:
+                        with self.assertRaisesRegex(ClientError, "password encryption key"):
+                            cl.password_publickeys()
+                    post.assert_called_once()
 
 
 class SignupHelperRegressionTestCase(unittest.TestCase):
