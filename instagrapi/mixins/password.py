@@ -1,6 +1,7 @@
 import base64
 import time
 
+import requests
 from Cryptodome.Cipher import AES, PKCS1_v1_5
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Random import get_random_bytes
@@ -40,13 +41,27 @@ class PasswordMixin:
     def password_publickeys(self):
         failure = None
         try:
-            self.sync_launcher(login=True)
+            # Inspect the first response before retry/challenge handling can replace it.
+            self.private_requests_count += 1
+            self._send_private_request(
+                "launcher/sync/",
+                {"id": self.uuid, "server_config_retrieval": "1"},
+                login=True,
+                headers={"Authorization": self.authorization} if self.authorization else None,
+                return_response=True,
+            )
         except ClientError as error:
-            # Instagram also sends the key headers with error responses
             failure = error
         headers = self.last_response.headers if self.last_response is not None else {}
         publickeyid = headers.get("ig-set-password-encryption-key-id")
         publickey = headers.get("ig-set-password-encryption-pub-key")
         if not publickeyid or not publickey:
-            raise ClientError("Instagram did not return the password encryption key") from failure
+            if self.last_response is not None:
+                try:
+                    self.last_response.raise_for_status()
+                except requests.HTTPError as error:
+                    failure = error
+            raise ClientError(
+                "Instagram did not return the password encryption key", response=self.last_response
+            ) from failure
         return int(publickeyid), publickey
