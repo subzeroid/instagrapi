@@ -2,11 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.4 — 2026-11-06
 
 ### Fixed
 
 - Keep legacy web-profile lookup headers scoped to that request so later public requests retain their configured session headers.
+- This header-isolation fix does not resolve Instagram legacy profile rate limits; existing modern profile GraphQL methods and query IDs are unchanged.
 
 ## 3.2.3 — 2026-11-05
 

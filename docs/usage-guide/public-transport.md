@@ -45,6 +45,8 @@ For an existing client, `cl.set_public_user_agent(web_ua)` applies the supplied 
 
 The legacy `user_info_by_username_gql()` helper keeps its endpoint-specific Chrome 122 profile. Its request headers apply only to that call and do not replace the public session headers, including when the request fails.
 
+This isolation fix does not remove Instagram rate limits or restore legacy endpoint availability. The existing `user_info_v2_gql(user_id)` method uses a separate authenticated profile GraphQL route; this release does not change its query ID or add automatic fallback to it.
+
 Both settings, including a shared `public_graphql_user_agent=None`, survive `get_settings()`/`set_settings()` and `dump_settings()`/`load_settings()` round trips. Saved UA fields take precedence over constructor values. Older settings without UA fields use the selected transport's default, except that an explicit constructor `public_user_agent` remains in effect. Selecting a public transport through `set_retry_config(...)` retains its existing behavior of resetting the web UA to that transport's default; apply a custom UA with `set_public_user_agent(...)` afterward. An independent GraphQL UA remains unchanged, while a shared one follows the new web UA.
 
 These controls do not change the private Android UA, TLS/browser impersonation, dependencies or retry policy. Changing a UA alone does not reproduce a different transport fingerprint, and arbitrary caller-supplied UA strings are not guaranteed to be accepted by Instagram. This configuration correction does not establish a cause of account restrictions or replace the legacy default strings.
