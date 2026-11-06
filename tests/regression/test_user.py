@@ -251,7 +251,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(args[1]["render_surface"], "PROFILE")
         self.assertEqual(kwargs["referer"], "https://www.instagram.com/25025320/")
 
-    def test_user_info_by_username_gql_parses_web_profile_without_update_headers_kwarg(
+    def test_user_info_by_username_gql_parses_web_profile_with_request_headers(
         self,
     ):
         class DummyClient(UserMixin):
@@ -270,7 +270,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         self.assertEqual(user.pk, "123")
         self.assertEqual(user.username, "example")
         self.assertEqual(len(client.public_request_calls), 1)
-        self.assertEqual(client.public_request_calls[0]["kwargs"], {})
+        self.assertEqual(client.public_request_calls[0]["kwargs"], {"update_headers": False})
         self.assertIn("web_profile_info/?username=example", client.public_request_calls[0]["url"])
         self.assertEqual(client.public_request_calls[0]["headers"]["X-Asbd-Id"], PUBLIC_WEB_ASBD_ID)
         self.assertEqual(client.public_request_calls[0]["headers"]["X-Ig-App-Id"], PUBLIC_WEB_APP_ID)

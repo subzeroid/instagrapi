@@ -11,6 +11,7 @@ import requests
 from requests.adapters import HTTPAdapter
 
 from instagrapi import Client
+from instagrapi.exceptions import ClientBadRequestError
 from instagrapi.mixins import public as public_mixin
 
 LEGACY_GRAPHQL_UA = "Instagram 273.0.0.16.70 (iPhone15,2; iOS 17_5_1; en_US; en-US; scale=3.00; 1290x2796; 470085518)"
@@ -26,6 +27,18 @@ PROFILE = {
     "following_count": 3,
     "is_business": False,
 }
+
+WEB_PROFILE = {
+    "id": "123",
+    **{key: PROFILE[key] for key in ("username", "full_name", "is_private", "is_verified", "profile_pic_url")},
+    "edge_owner_to_timeline_media": {"count": 1},
+    "edge_followed_by": {"count": 2},
+    "edge_follow": {"count": 3},
+    "is_business_account": False,
+    "business_email": None,
+    "business_phone_number": None,
+}
+
 LSD_HTML = '<script>["LSD",[],{"token":"lsd-token"}]</script>'
 
 
@@ -53,11 +66,18 @@ class PublicUserAgentTestCase(unittest.TestCase):
 
         class RecordingAdapter(HTTPAdapter):
             def send(self, request, **kwargs):
-                client._recorded.append({"method": request.method, "agents": [request.headers["User-Agent"]]})
+                client._recorded.append(
+                    {
+                        "method": request.method,
+                        "agents": [request.headers["User-Agent"]],
+                        "headers": dict(request.headers),
+                    }
+                )
                 payload = queue.pop(0) if queue else {"status": "ok", "data": {"user": PROFILE, "ok": True}}
+                status, payload = payload if isinstance(payload, tuple) else (200, payload)
                 body = payload.encode() if isinstance(payload, str) else json.dumps(payload).encode()
                 response = requests.Response()
-                response.status_code = 200
+                response.status_code = status
                 response._content = body
                 response.raw = io.BytesIO(body)
                 response.url = request.url
@@ -66,6 +86,37 @@ class PublicUserAgentTestCase(unittest.TestCase):
 
         client.public.mount("https://", RecordingAdapter())
         client.last_response_ts = 0
+
+    def test_username_web_profile_headers_are_request_scoped(self):
+        client = self.build_client(payloads=[{"data": {"user": WEB_PROFILE}}], public_user_agent="fixture-web-agent")
+        before = dict(client.public.headers)
+        user = client.user_info_by_username_gql("example")
+        client.public_request("https://www.instagram.com/", return_json=True)
+        self.assertEqual(user.username, "example")
+        self.assertIn("Chrome/122.0.6261.112", client._recorded[0]["agents"][0])
+        self.assertEqual(
+            client._recorded[0]["headers"].get("Host", client._recorded[0]["headers"].get("host")), "www.instagram.com"
+        )
+        self.assertEqual(client._recorded[1]["agents"], ["fixture-web-agent"])
+        self.assertEqual(dict(client.public.headers), before)
+        self.assertEqual(client.public_user_agent, "fixture-web-agent")
+        self.assertNotIn("x-requested-with", {key.lower() for key in client._recorded[1]["headers"]})
+
+    def test_username_web_profile_error_preserves_session_headers(self):
+        client = self.build_client(
+            payloads=[(400, {"status": "fail", "message": "synthetic failure"})],
+            public_user_agent="fixture-web-agent",
+            public_request_retries_count=1,
+        )
+        before = dict(client.public.headers)
+        with self.assertRaises(ClientBadRequestError):
+            client.user_info_by_username_gql("example")
+        client.public_request("https://www.instagram.com/", return_json=True)
+        self.assertEqual(len(client._recorded), 2)
+        self.assertIn("Chrome/122.0.6261.112", client._recorded[0]["agents"][0])
+        self.assertEqual(client._recorded[1]["agents"], ["fixture-web-agent"])
+        self.assertEqual(dict(client.public.headers), before)
+        self.assertNotIn("x-requested-with", {key.lower() for key in client._recorded[1]["headers"]})
 
     def test_defaults_keep_the_existing_route_profiles(self):
         client = self.build_client()
