@@ -2,6 +2,14 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Fixed
+
+- Keep authenticated collection reads on private/mobile or existing app GraphQL routes; propagate restrictions and request failures instead of silently retrying legacy web queries.
+- Preserve pagination cursor ownership across endpoint failures, and report media fetch errors instead of empty or incomplete success.
+- Keep every response when fetching public stories for more than 50 users, and return an empty result without a request for an empty batch.
+
 ## 3.2.5 — 2026-11-06
 
 ### Changed
