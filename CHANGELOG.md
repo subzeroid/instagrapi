@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Changed
+
+- Use modern profile GraphQL for automatic public user lookups and direct ID lookups, preserving private-first routing and caches. Keep the explicit legacy username helper available.
+
 ## 3.2.4 — 2026-11-06
 
 ### Fixed

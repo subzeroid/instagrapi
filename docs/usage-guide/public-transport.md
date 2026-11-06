@@ -45,11 +45,44 @@ For an existing client, `cl.set_public_user_agent(web_ua)` applies the supplied 
 
 The legacy `user_info_by_username_gql()` helper keeps its endpoint-specific Chrome 122 profile. Its request headers apply only to that call and do not replace the public session headers, including when the request fails.
 
-This isolation fix does not remove Instagram rate limits or restore legacy endpoint availability. The existing `user_info_v2_gql(user_id)` method uses a separate authenticated profile GraphQL route; this release does not change its query ID or add automatic fallback to it.
+Header isolation does not remove Instagram rate limits or restore legacy endpoint availability. Modern profile queries use a separate route and retain their existing query IDs.
 
 Both settings, including a shared `public_graphql_user_agent=None`, survive `get_settings()`/`set_settings()` and `dump_settings()`/`load_settings()` round trips. Saved UA fields take precedence over constructor values. Older settings without UA fields use the selected transport's default, except that an explicit constructor `public_user_agent` remains in effect. Selecting a public transport through `set_retry_config(...)` retains its existing behavior of resetting the web UA to that transport's default; apply a custom UA with `set_public_user_agent(...)` afterward. An independent GraphQL UA remains unchanged, while a shared one follows the new web UA.
 
 These controls do not change the private Android UA, TLS/browser impersonation, dependencies or retry policy. Changing a UA alone does not reproduce a different transport fingerprint, and arbitrary caller-supplied UA strings are not guaranteed to be accepted by Instagram. This configuration correction does not establish a cause of account restrictions or replace the legacy default strings.
+
+## Modern profile routing and remaining legacy queries
+
+The public branch of `user_info()` uses the profile `doc_id` directly. The public branch of
+`user_info_by_username()` uses modern search to find an exact username match, then fetches
+that ID with the profile query. `user_id_from_username()` shares that route. Authenticated
+clients retain their private-first order, and existing caches and private fallbacks are preserved.
+`user_info_gql(user_id)` also uses the modern profile query directly, without an intermediate
+username lookup. These web queries can reuse saved session cookies; modern does not mean
+anonymous or unrestricted access.
+
+`user_info_by_username_gql(username)` remains the explicit legacy `web_profile_info` method
+for compatibility. Automatic profile routing does not fall back to it after a modern error.
+The query IDs, transport, User-Agent configuration and retry settings are unchanged.
+
+The remaining legacy web operations need their own query shapes and response validation:
+
+| Legacy operation | Existing alternative / migration status |
+| --- | --- |
+| `media_info_gql` | Has a modern `PolarisPostRootQuery` fallback with token preparation and multiple response shapes; private `media_info_v1` remains available. Its default order is unchanged. |
+| Public user media pagination | Private app GraphQL is already selected for authenticated clients; the anonymous `query_hash` fallback remains. |
+| Followers and following chunks | Private GraphQL alternatives exist and are already preferred in authenticated high-level lookups. Public pagination is a different query contract. |
+| Tagged media, including pagination | No equivalent modern web query is established here; private tagged-media methods remain available. |
+| Hashtag info and media pagination | No equivalent modern web query is established here; private hashtag methods remain available. |
+| Story batches | Private story methods exist; a modern profile response does not replace the reel response. |
+| Comment likers | No equivalent modern web query is established here; comments use a separate query from profile data. |
+| Related profiles and raw profile-related info | Separate recommendation queries; a modern profile response does not contain the same data. |
+| Raw location feed | Separate location-media pagination; a profile query is not an alternative. |
+
+The low-level `public_graphql_request()` keeps its `query_hash`/`query_id` interface for explicit
+callers. `user_web_profile_info_v1()` is a separate private raw-response helper, not the automatic
+public profile route. None of these remaining operations is declared broken merely because it
+uses an older request format, and successful profile reads do not validate their replacements.
 
 ## Live Comparison
 

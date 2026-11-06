@@ -334,7 +334,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             is_business=False,
         )
 
-        with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as gql:
+        with mock.patch.object(client, "user_info_by_username_v2_gql", return_value=user) as gql:
             with mock.patch.object(client, "user_info", return_value=user):
                 client.user_info_by_username("@Example")
                 client.user_info_by_username(" example ")
@@ -351,7 +351,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
             with mock.patch.object(
                 client,
-                "user_info_by_username_gql",
+                "user_info_by_username_v2_gql",
                 side_effect=AssertionError("authorized lookup should use private API first"),
             ) as public_lookup:
                 result = client.user_info_by_username("Example", use_cache=False)
@@ -369,7 +369,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
             with mock.patch.object(
                 client,
-                "user_info_by_username_gql",
+                "user_info_by_username_v2_gql",
                 side_effect=AssertionError("authorized lookup should use private API first"),
             ) as public_lookup:
                 user_id = client.user_id_from_username("Example")
@@ -388,7 +388,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         with mock.patch.object(client, "user_info_by_username_v1", return_value=user) as private_lookup:
             with mock.patch.object(
                 client,
-                "user_info_by_username_gql",
+                "user_info_by_username_v2_gql",
                 side_effect=AssertionError("cookie session lookup should use private API first"),
             ) as public_lookup:
                 result = client.user_info_by_username("Example", use_cache=False)
@@ -408,7 +408,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
             "user_info_by_username_v1",
             side_effect=ClientError("private lookup failed"),
         ) as private_lookup:
-            with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as public_lookup:
+            with mock.patch.object(client, "user_info_by_username_v2_gql", return_value=user) as public_lookup:
                 result = client.user_info_by_username("Example", use_cache=False)
 
         self.assertEqual(result.pk, "123")
@@ -471,7 +471,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         client._users_cache = {}
         user = self.build_user()
 
-        with mock.patch.object(client, "user_info_by_username_gql", return_value=user) as public_lookup:
+        with mock.patch.object(client, "user_info_by_username_v2_gql", return_value=user) as public_lookup:
             with mock.patch.object(
                 client,
                 "user_info_by_username_v1",
@@ -539,7 +539,7 @@ class UserMixinRegressionTestCase(unittest.TestCase):
 
         with mock.patch.object(
             client,
-            "user_info_by_username_gql",
+            "user_info_by_username_v2_gql",
             side_effect=RetryError("too many 429 error responses"),
         ):
             with mock.patch.object(client, "user_info_by_username_v1", return_value=fallback_user) as fallback:
