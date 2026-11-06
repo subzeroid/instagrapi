@@ -17,7 +17,7 @@ Common scripts:
 
 | Script | Purpose |
 | --- | --- |
-| [`public_lookup.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/public_lookup.py) | Public profile lookup with optional `public_transport="curl"`. |
+| [`public_lookup.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/public_lookup.py) | Modern public profile lookup with optional saved session and `public_transport="curl"`. |
 | [`download_user_media.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/download_user_media.py) | Login, list recent media for a username, and download photos/videos/albums. |
 | [`monitor_user_content.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/monitor_user_content.py) | Poll a small set of users for new posts and stories using a saved session. |
 | [`upload_media.py`](https://github.com/subzeroid/instagrapi/blob/master/examples/upload_media.py) | Upload a feed photo, feed video, Reel, or Trial Reel. |
@@ -28,8 +28,8 @@ Common scripts:
 Examples:
 
 ```bash
-python examples/public_lookup.py instagram
-IG_PUBLIC_TRANSPORT=curl python examples/public_lookup.py instagram
+python examples/public_lookup.py instagram --session-file ig_settings.json
+IG_PUBLIC_TRANSPORT=curl python examples/public_lookup.py instagram --session-file ig_settings.json
 python examples/download_user_media.py instagram --amount 5 --folder ./downloads
 python examples/monitor_user_content.py instagram --stories --interval 900
 python examples/upload_media.py reel ./reel.mp4 --thumbnail ./thumb.jpg --caption "Reel"

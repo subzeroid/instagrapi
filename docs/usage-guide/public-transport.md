@@ -77,6 +77,7 @@ The remaining legacy web operations need their own query shapes and response val
 | Story batches | Private story methods exist; a modern profile response does not replace the reel response. |
 | Comment likers | No equivalent modern web query is established here; comments use a separate query from profile data. |
 | Related profiles and raw profile-related info | Separate recommendation queries; a modern profile response does not contain the same data. |
+| Raw `top_search` | Its older web-search response differs from the exact-name modern resolver; explicit callers retain their existing raw schema. |
 | Raw location feed | Separate location-media pagination; a profile query is not an alternative. |
 
 The low-level `public_graphql_request()` keeps its `query_hash`/`query_id` interface for explicit

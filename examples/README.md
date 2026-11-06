@@ -33,7 +33,7 @@ export IG_PUBLIC_TRANSPORT_IMPERSONATE="chrome136"
 | [`_common.py`](_common.py) | Shared login, proxy, session, and environment helpers used by the examples. |
 | [`session_login.py`](session_login.py) | Minimal session persistence and `sessionid` login sample. |
 | [`diagnose_login.py`](diagnose_login.py) | Capture sanitized HTTP diagnostics for password login, CAA fallback, and challenges. |
-| [`public_lookup.py`](public_lookup.py) | Public profile lookup with optional `public_transport="curl"`. |
+| [`public_lookup.py`](public_lookup.py) | Modern public profile lookup with optional saved session and `public_transport="curl"`. |
 | [`download_user_media.py`](download_user_media.py) | Login, list recent media for a username, and download photos/videos/albums. |
 | [`monitor_user_content.py`](monitor_user_content.py) | Poll a small set of users for new posts and stories using a saved session. |
 | [`upload_media.py`](upload_media.py) | Upload a feed photo, feed video, Reel, or Trial Reel. |
@@ -76,8 +76,8 @@ Share **only `login-diagnostic.json`**, after reviewing it. It contains fixed en
 ## Public lookup
 
 ```bash
-python examples/public_lookup.py instagram
-IG_PUBLIC_TRANSPORT=curl python examples/public_lookup.py instagram
+python examples/public_lookup.py instagram --session-file ig_settings.json
+IG_PUBLIC_TRANSPORT=curl python examples/public_lookup.py instagram --session-file ig_settings.json
 ```
 
 ## Download media
