@@ -1364,7 +1364,7 @@
 <tr>
 <td>user_stories(user_id: str, amount: int = None)</td>
 <td>List[Story]</td>
-<td>Get list of stories by user_id; public/web first, private fallback when authenticated</td>
+<td>Get list of stories by user_id; private/mobile when authenticated; explicit public path otherwise</td>
 </tr>
 <tr>
 <td>story_info(story_pk: int, use_cache: bool = True)</td>

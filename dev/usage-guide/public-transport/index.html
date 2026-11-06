@@ -1395,6 +1395,25 @@ anonymous or unrestricted access.</p>
 for compatibility. Automatic profile routing does not fall back to it after a modern error.
 The query IDs, transport, User-Agent configuration and retry settings are unchanged.</p>
 <p><code>media_info_gql()</code> now sends the existing modern <code>PolarisPostRootQuery</code> directly, including its token preparation. It accepts the supported GraphQL and REST-shaped media responses; <code>media_info()</code> retains its private-first selection for authenticated clients. Modern media reads can require saved session cookies. Returned location metadata comes from the modern response; call <code>location_complete()</code> when you need additional private location details.</p>
+<p>Authenticated high-level follow-list, story, tagged-media and hashtag reads do not
+fall back to legacy web queries after a private failure. Follow lists and user
+media may restart collection retrieval through their existing private app GraphQL
+alternative when the primary endpoint is unavailable or returns an unsupported
+response. Paginated APIs only select a fallback without an incoming cursor.
+Authorization, throttling, challenge and transport errors propagate to the caller;
+they do not select another endpoint. Programming errors also propagate.</p>
+<p>Pagination cursors belong to the endpoint that returned them. A failed request
+with a nonempty cursor is not replayed against another endpoint. Keep the same
+method and authentication state for subsequent pages; previously saved cursors
+are not translated between public and private APIs. Unified media pagination wraps
+a cursor with its originating route when selecting an alternate endpoint; treat
+returned cursors as opaque strings and pass them back unchanged. Explicit v1 helpers and raw public GraphQL requests keep their endpoint cursor
+format. Media fetch failures now
+raise instead of appearing as an empty or successfully completed partial list.</p>
+<p>Explicit public helpers remain available for callers that deliberately choose
+those contracts. Their presence does not imply that Instagram currently accepts
+them. Batched public story reads preserve every 50-user response, including
+per-user limits; an empty batch returns an empty list without making a request.</p>
 <p>The remaining legacy web operations need their own query shapes and response validation:</p>
 <table>
 <thead>
@@ -1434,7 +1453,7 @@ The query IDs, transport, User-Agent configuration and retry settings are unchan
 </tr>
 <tr>
 <td>Raw <code>top_search</code></td>
-<td>Its older web-search response differs from the exact-name modern resolver; explicit callers retain their existing raw schema.</td>
+<td>Its places schema differs from modern user search. <code>location_search_name</code>, <code>location_search_pk</code>, <code>location_complete</code> and <code>location_build</code> still reach this route, including indirect upload/edit location handling. A matching replacement has not been live-validated.</td>
 </tr>
 <tr>
 <td>Raw location feed</td>
