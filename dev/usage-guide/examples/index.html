@@ -1240,7 +1240,7 @@
 <tbody>
 <tr>
 <td><a href="https://github.com/subzeroid/instagrapi/blob/master/examples/public_lookup.py"><code>public_lookup.py</code></a></td>
-<td>Public profile lookup with optional <code>public_transport="curl"</code>.</td>
+<td>Modern public profile lookup with optional saved session and <code>public_transport="curl"</code>.</td>
 </tr>
 <tr>
 <td><a href="https://github.com/subzeroid/instagrapi/blob/master/examples/download_user_media.py"><code>download_user_media.py</code></a></td>
@@ -1269,8 +1269,8 @@
 </tbody>
 </table>
 <p>Examples:</p>
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
-<span class="nv">IG_PUBLIC_TRANSPORT</span><span class="o">=</span>curl<span class="w"> </span>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram
+<div class="highlight"><pre><span></span><code>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram<span class="w"> </span>--session-file<span class="w"> </span>ig_settings.json
+<span class="nv">IG_PUBLIC_TRANSPORT</span><span class="o">=</span>curl<span class="w"> </span>python<span class="w"> </span>examples/public_lookup.py<span class="w"> </span>instagram<span class="w"> </span>--session-file<span class="w"> </span>ig_settings.json
 python<span class="w"> </span>examples/download_user_media.py<span class="w"> </span>instagram<span class="w"> </span>--amount<span class="w"> </span><span class="m">5</span><span class="w"> </span>--folder<span class="w"> </span>./downloads
 python<span class="w"> </span>examples/monitor_user_content.py<span class="w"> </span>instagram<span class="w"> </span>--stories<span class="w"> </span>--interval<span class="w"> </span><span class="m">900</span>
 python<span class="w"> </span>examples/upload_media.py<span class="w"> </span>reel<span class="w"> </span>./reel.mp4<span class="w"> </span>--thumbnail<span class="w"> </span>./thumb.jpg<span class="w"> </span>--caption<span class="w"> </span><span class="s2">"Reel"</span>

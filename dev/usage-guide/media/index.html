@@ -991,6 +991,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#modern-public-media-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modern public media lookup
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1544,6 +1555,17 @@
     <span class="md-ellipsis">
       
         Example:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modern-public-media-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modern public media lookup
       
     </span>
   </a>
@@ -2812,6 +2834,8 @@ configure, so keep upload-side error handling for backend eligibility decisions.
 <span class="n">media</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">photo_upload_to_cutout_sticker</span><span class="p">(</span><span class="s2">"photo.jpg"</span><span class="p">,</span> <span class="n">bypass_ai</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">media</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
 </code></pre></div>
+<h3 id="modern-public-media-lookup">Modern public media lookup</h3>
+<p><code>media_info_gql(media_pk)</code> uses the current web <code>doc_id</code> query directly and returns a typed <code>Media</code>. It no longer sends the legacy media <code>query_hash</code> first. It can reuse a saved session; anonymous availability is not guaranteed. The high-level <code>media_info()</code> keeps its private-first behavior for authenticated clients. See <a href="../public-transport/#modern-profile-routing-and-remaining-legacy-queries">public web routing</a> for the remaining legacy operations.</p>
 
 
 
