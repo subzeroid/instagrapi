@@ -65,6 +65,13 @@ class UserMixin:
     def _has_private_auth(self) -> bool:
         return bool(getattr(self, "authorization", "") or getattr(self, "sessionid", ""))
 
+    @staticmethod
+    def _can_use_private_graphql_fallback(error: Exception) -> bool:
+        """Allow endpoint/schema fallback, never restriction or transport recovery."""
+        return type(error) is ClientError or isinstance(
+            error, (ClientGraphqlError, ClientJSONDecodeError, ClientNotFoundError)
+        )
+
     def _user_info_by_username_public(self, username: str) -> User:
         try:
             return self.user_info_by_username_v2_gql(username)
@@ -984,19 +991,16 @@ class UserMixin:
             if self._has_private_auth():
                 try:
                     users = self.user_following_v1(user_id, amount)
-                except Exception as e:
-                    if not isinstance(e, ClientError):
-                        self.logger.exception(e)
-                    try:
-                        users = self.user_following_private_gql(user_id, amount)
-                    except Exception as e:
-                        if not isinstance(e, ClientError):
-                            self.logger.exception(e)
-                        users = self.user_following_gql(user_id, amount)
+                except Exception as error:
+                    if not self._can_use_private_graphql_fallback(error):
+                        raise
+                    users = self.user_following_private_gql(user_id, amount)
             else:
                 try:
                     users = self.user_following_gql(user_id, amount)
                 except Exception as e:
+                    if not self._can_use_private_graphql_fallback(e):
+                        raise
                     if not isinstance(e, ClientError):
                         self.logger.exception(e)
                     users = self.user_following_v1(user_id, amount)
@@ -1353,22 +1357,18 @@ class UserMixin:
                     limited = self.last_json.get("should_limit_list_of_followers") and (
                         not amount or len(users) < amount
                     )
-                except Exception as e:
-                    if not isinstance(e, ClientError):
-                        self.logger.exception(e)
-                    users = None
+                except Exception as error:
+                    if not self._can_use_private_graphql_fallback(error):
+                        raise
                     limited = True
                 if limited:
-                    try:
-                        users = self.user_followers_private_gql(user_id, amount)
-                    except Exception as e:
-                        if not isinstance(e, ClientError):
-                            self.logger.exception(e)
-                        users = self.user_followers_gql(user_id, amount)
+                    users = self.user_followers_private_gql(user_id, amount)
             else:
                 try:
                     users = self.user_followers_gql(user_id, amount)
                 except Exception as e:
+                    if not self._can_use_private_graphql_fallback(e):
+                        raise
                     if not isinstance(e, ClientError):
                         self.logger.exception(e)
                     users = self.user_followers_v1(user_id, amount)

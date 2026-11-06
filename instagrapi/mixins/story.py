@@ -129,6 +129,8 @@ class StoryMixin:
             A list of objects of UserShort for each user_id
         """
         assert isinstance(user_ids, list), "user_ids should be a list of user_id"
+        if user_ids is not None and not user_ids:
+            return []
         self.inject_sessionid_to_public()
 
         def _userid_chunks():
@@ -138,15 +140,15 @@ class StoryMixin:
                 end = i + user_ids_per_query
                 yield user_ids[i:end]
 
-        stories_un = {}
+        reels = []
         for userid_chunk in _userid_chunks():
             res = self.public_graphql_request(
                 query_hash="303a4ae99711322310f25250d988f3b7",
                 variables={"reel_ids": userid_chunk, "precomposed_overlay": False},
             )
-            stories_un.update(res)
+            reels.extend(res["reels_media"])
         users = []
-        for media in stories_un["reels_media"]:
+        for media in reels:
             user = extract_user_short(media["owner"])
             items = media["items"]
             if amount:
@@ -225,12 +227,7 @@ class StoryMixin:
             A list of objects of STory
         """
         if self._has_private_auth():
-            try:
-                return self.user_stories_v1(user_id, amount)
-            except Exception as e:
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
-                return self._user_stories_public(user_id, amount)
+            return self.user_stories_v1(user_id, amount)
         try:
             return self._user_stories_public(user_id, amount)
         except UserNotFound:

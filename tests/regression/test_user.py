@@ -793,25 +793,19 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         private_gql.assert_called_once_with("123", 1)
         self.assertEqual(list(followers), ["456"])
 
-    def test_authorized_user_followers_uses_legacy_public_after_private_gql_fails(self):
-        client = self.build_private_client()
-        follower = UserShort(pk="456", username="follower")
-
-        with mock.patch.object(
-            client,
-            "user_followers_v1",
-            side_effect=ClientError("private lookup failed"),
+    def test_authorized_user_followers_preserves_final_private_graphql_error(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "1"}
+        with (
+            unittest.mock.patch.object(client, "user_followers_v1", side_effect=ClientError("primary unavailable")),
+            unittest.mock.patch.object(
+                client, "user_followers_private_gql", side_effect=ClientError("modern unavailable")
+            ),
+            unittest.mock.patch.object(client, "user_followers_gql") as legacy,
         ):
-            with mock.patch.object(
-                client,
-                "user_followers_private_gql",
-                side_effect=ClientError("private graphql lookup failed"),
-            ):
-                with mock.patch.object(client, "user_followers_gql", return_value=[follower]) as public_lookup:
-                    followers = client.user_followers("123", use_cache=False, amount=1)
-
-        public_lookup.assert_called_once_with("123", 1)
-        self.assertEqual(list(followers), ["456"])
+            with self.assertRaisesRegex(ClientError, "modern unavailable"):
+                client.user_followers("123", use_cache=False, amount=1)
+        legacy.assert_not_called()
 
     def test_unauthorized_user_followers_keeps_public_first(self):
         client = Client()
@@ -866,25 +860,19 @@ class UserMixinRegressionTestCase(unittest.TestCase):
         private_gql.assert_called_once_with("123", 1)
         self.assertEqual(list(following), ["456"])
 
-    def test_authorized_user_following_uses_legacy_public_after_private_gql_fails(self):
-        client = self.build_private_client()
-        following_user = UserShort(pk="456", username="following")
-
-        with mock.patch.object(
-            client,
-            "user_following_v1",
-            side_effect=ClientError("private lookup failed"),
+    def test_authorized_user_following_preserves_final_private_graphql_error(self):
+        client = Client()
+        client.authorization_data = {"ds_user_id": "1"}
+        with (
+            unittest.mock.patch.object(client, "user_following_v1", side_effect=ClientError("primary unavailable")),
+            unittest.mock.patch.object(
+                client, "user_following_private_gql", side_effect=ClientError("modern unavailable")
+            ),
+            unittest.mock.patch.object(client, "user_following_gql") as legacy,
         ):
-            with mock.patch.object(
-                client,
-                "user_following_private_gql",
-                side_effect=ClientError("private graphql lookup failed"),
-            ):
-                with mock.patch.object(client, "user_following_gql", return_value=[following_user]) as public_lookup:
-                    following = client.user_following("123", use_cache=False, amount=1)
-
-        public_lookup.assert_called_once_with("123", 1)
-        self.assertEqual(list(following), ["456"])
+            with self.assertRaisesRegex(ClientError, "modern unavailable"):
+                client.user_following("123", use_cache=False, amount=1)
+        legacy.assert_not_called()
 
     def test_unauthorized_user_following_keeps_public_first(self):
         client = Client()

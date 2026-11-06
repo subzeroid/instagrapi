@@ -305,21 +305,14 @@ class HashtagMixin:
             return self.hashtag_medias_paginated_v1(name, amount=amount, tab_key=tab_key, end_cursor=end_cursor)
 
         if self._has_private_auth() or private_required:
-            try:
-                return private_lookup()
-            except PrivateError:
-                raise
-            except Exception as e:
-                if private_required:
-                    raise e
-                if not isinstance(e, ClientError):
-                    self.logger.exception(e)
-                return public_lookup()
+            return private_lookup()
         try:
             return public_lookup()
         except PrivateError:
             raise
         except Exception as e:
+            if end_cursor or not self._can_use_private_graphql_fallback(e):
+                raise
             if not isinstance(e, ClientError):
                 self.logger.exception(e)
             return private_lookup()

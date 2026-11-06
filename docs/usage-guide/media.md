@@ -77,11 +77,11 @@ Low level methods:
 
 | Method | Return | Description |
 | --- | --- | --- |
-| media_info_gql(media_pk: str) | Media | Get media from PK via public GraphQL API. Falls back from legacy `query_hash` to the newer `doc_id` media query when available. |
+| media_info_gql(media_pk: str) | Media | Get media info directly through the existing modern GraphQL query |
 | media_info_v1(media_pk: str) | Media | Get media from PK via private mobile API |
 | media_info_v2(media_id: str) | Media | Alternative source for media info via `discover/media_metadata/` (`media_or_ad` payload). Useful as fallback when `media_info_v1` fails on certain ad-tagged or sponsored media. Strips `_userid` suffix automatically. |
-| user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media from the private app GraphQL timeline, falling back to public GraphQL on a client error |
-| user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one page from the private app GraphQL timeline, falling back to public GraphQL on a client error |
+| user_medias_gql(user_id: str, amount: int = 0, sleep: int = 0) | List\[Media] | Get user media from the private app GraphQL timeline, with anonymous first-page public fallback on endpoint/schema errors |
+| user_medias_paginated_gql(user_id: str, amount: int = 0, sleep: int = 2, end_cursor=None) | Tuple[List\[Media], str] | Get one page from the private app GraphQL timeline, with anonymous first-page public fallback on endpoint/schema errors |
 | user_medias_chunk_gql(user_id: str, sleep: int = 2, end_cursor=None, amount: int = 0) | Tuple[List\[Media], str] | Compatibility alias for `user_medias_paginated_gql` |
 | user_medias_v1(user_id: str, amount: int = 0) | List\[Media] | Get user media via private mobile API |
 | user_medias_paginated_v1(user_id: str, amount: int = 0, end_cursor="") | Tuple[List\[Media], str] | Get one private API page of user media |
@@ -270,9 +270,9 @@ True
 Notes:
 
 * `media_info()` uses private/mobile lookup first when the client has authorization data or a saved `sessionid`, then falls back to public/web lookup. Without authorization, it keeps public/web-first behavior. Explicit `media_info_gql()` still calls the public/web path directly.
-* `user_medias()` and `user_medias_paginated()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit `user_medias*_gql()` methods use the private app GraphQL timeline first and fall back to public GraphQL on `ClientError`.
+* `user_medias()` and `user_medias_paginated()` use private/mobile lookup first when authorized and may use the existing app GraphQL alternative for eligible endpoint/schema failures. Authenticated reads do not fall back to legacy web queries. App GraphQL permits an anonymous first-page public fallback for eligible endpoint/schema errors. Treat unified pagination cursors as opaque strings and pass them unchanged to the same method; routed cursors preserve their originating endpoint. Restrictions, transport errors and programming errors propagate instead of returning empty or partial success.
 * Use `iter_user_medias()` for large profile media scans when you want each `Media` as soon as its page is fetched. Set `page_size` to control request size; leave it as `0` to keep the endpoint default.
-* `usertag_medias()` and `usertag_medias_paginated()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, they keep public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
+* `usertag_medias()` and `usertag_medias_paginated()` use private/mobile lookup when authorized and propagate failures without legacy web fallback. Without authorization, they keep public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * For Reels where Instagram hides like/view counts, the public GraphQL path can expose play/view counts but not hidden like totals; `like_count` can be `-1`.
 * Extended media metadata from Instagram payloads is available on `Media` when returned by the source API, including caption edit state, dimensions, audio presence, hidden count state, viewer save/reshare state, paid partnership/affiliate flags, DASH video info, clips music attribution, and inline comment previews.
 * `media_pk_from_url()` now also resolves `share/p/...` URLs before extracting the canonical shortcode.

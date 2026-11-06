@@ -456,24 +456,15 @@ class UsertagMediasPrivateFirstRegressionTestCase(unittest.TestCase):
         private_lookup.assert_called_once_with(456, 2, end_cursor="")
         public_lookup.assert_not_called()
 
-    def test_authorized_usertag_medias_paginated_falls_back_to_public(self):
+    def test_authorized_usertag_medias_paginated_preserves_private_error(self):
         client = self.build_private_client()
-        page = [self.build_media()]
-
-        with mock.patch.object(
-            client,
-            "usertag_medias_paginated_v1",
-            side_effect=ClientError("private lookup failed"),
-        ) as private_lookup:
-            with mock.patch.object(
-                client, "usertag_medias_paginated_gql", return_value=(page, "web-cursor")
-            ) as public_lookup:
-                medias, end_cursor = client.usertag_medias_paginated("456", amount=2)
-
-        self.assertEqual(medias, page)
-        self.assertEqual(end_cursor, "web-cursor")
-        private_lookup.assert_called_once_with(456, 2, end_cursor="")
-        public_lookup.assert_called_once_with(456, 2, end_cursor="")
+        with (
+            mock.patch.object(client, "usertag_medias_paginated_v1", side_effect=ClientError("primary unavailable")),
+            mock.patch.object(client, "usertag_medias_paginated_gql") as legacy,
+        ):
+            with self.assertRaisesRegex(ClientError, "primary unavailable"):
+                client.usertag_medias_paginated("456", amount=1)
+        legacy.assert_not_called()
 
     def test_unauthorized_usertag_medias_paginated_keeps_public_first(self):
         client = Client()
@@ -581,7 +572,7 @@ class UserMediasPrivateFirstRegressionTestCase(unittest.TestCase):
         private_lookup.assert_called_once_with("456", 2, end_cursor="")
         public_lookup.assert_not_called()
 
-    def test_authorized_user_medias_paginated_falls_back_to_public(self):
+    def test_authorized_user_medias_paginated_falls_back_to_app_graphql(self):
         client = self.build_private_client()
         page = [self.build_media()]
 
@@ -596,7 +587,7 @@ class UserMediasPrivateFirstRegressionTestCase(unittest.TestCase):
                 medias, end_cursor = client.user_medias_paginated("456", amount=2)
 
         self.assertEqual(medias, page)
-        self.assertEqual(end_cursor, "web-cursor")
+        self.assertEqual(end_cursor, "ig-route:timeline-app:web-cursor")
         private_lookup.assert_called_once_with("456", 2, end_cursor="")
         public_lookup.assert_called_once_with("456", 2, end_cursor="")
 
@@ -613,7 +604,7 @@ class UserMediasPrivateFirstRegressionTestCase(unittest.TestCase):
                 medias, end_cursor = client.user_medias_paginated("456", amount=2)
 
         self.assertEqual(medias, page)
-        self.assertEqual(end_cursor, "web-cursor")
+        self.assertEqual(end_cursor, "ig-route:timeline-app:web-cursor")
         public_lookup.assert_called_once_with("456", 2, end_cursor="")
         private_lookup.assert_not_called()
 
@@ -1078,7 +1069,7 @@ class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
         self.assertEqual(end_cursor, "next-page")
         self.assertEqual([media.pk for media in medias], ["1"])
 
-    def test_usertag_medias_paginated_falls_back_to_v1(self):
+    def test_usertag_medias_paginated_falls_back_to_v1_on_first_page(self):
         client = Client()
 
         with mock.patch.object(
@@ -1091,12 +1082,12 @@ class UsertagMediasPaginationRegressionTestCase(unittest.TestCase):
                 "usertag_medias_paginated_v1",
                 return_value=(["m1"], "next-page"),
             ) as v1:
-                medias, end_cursor = client.usertag_medias_paginated("123", amount=5, end_cursor="cursor-1")
+                medias, end_cursor = client.usertag_medias_paginated("123", amount=5, end_cursor="")
 
-        gql.assert_called_once_with(123, 5, end_cursor="cursor-1")
-        v1.assert_called_once_with(123, 5, end_cursor="cursor-1")
+        gql.assert_called_once_with(123, 5, end_cursor="")
+        v1.assert_called_once_with(123, 5, end_cursor="")
         self.assertEqual(medias, ["m1"])
-        self.assertEqual(end_cursor, "next-page")
+        self.assertEqual(end_cursor, "ig-route:tagged-v1:next-page")
 
 
 class UserMediasGraphQLRegressionTestCase(unittest.TestCase):

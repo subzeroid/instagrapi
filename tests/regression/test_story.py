@@ -25,21 +25,15 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         private_lookup.assert_called_once_with("123", 1)
         public_lookup.assert_not_called()
 
-    def test_authorized_user_stories_falls_back_to_public(self):
+    def test_authorized_user_stories_preserves_private_error(self):
         client = self.build_private_client()
-        stories = [object()]
-
-        with mock.patch.object(
-            client,
-            "user_stories_v1",
-            side_effect=ClientGraphqlError("private lookup failed"),
-        ) as private_lookup:
-            with mock.patch.object(client, "user_stories_gql", return_value=stories) as public_lookup:
-                result = client.user_stories("123", amount=1)
-
-        self.assertEqual(result, stories)
-        private_lookup.assert_called_once_with("123", 1)
-        public_lookup.assert_called_once_with("123", 1)
+        with (
+            mock.patch.object(client, "user_stories_v1", side_effect=ClientError("primary unavailable")),
+            mock.patch.object(client, "user_stories_gql") as legacy,
+        ):
+            with self.assertRaisesRegex(ClientError, "primary unavailable"):
+                client.user_stories("123", amount=1)
+        legacy.assert_not_called()
 
     def test_unauthorized_user_stories_keeps_public_first(self):
         client = Client()

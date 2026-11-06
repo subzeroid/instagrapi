@@ -206,7 +206,7 @@ followers = cl.user_followers_private_gql(cl.user_id, amount=50, order="date_fol
 following = cl.user_following_private_gql(cl.user_id, amount=50)
 ```
 
-When the account is authorized, `user_followers()` and `user_following()` prefer the private mobile API and automatically retry through the private mobile GraphQL follow-list surface (`FollowersList`/`FollowingList`) when the private endpoint fails or the followers list is limited. The legacy public GraphQL query is only used as the last resort, because Instagram returns an empty `edges` list for the legacy followers/following query hash.
+When authenticated, `user_followers()` and `user_following()` use the private mobile API and may restart through private GraphQL (`FollowersList`/`FollowingList`) for endpoint/schema failures or a limited followers response. They do not fall back to legacy public queries. Authorization, challenge, throttling, transport and programming errors propagate.
 
 Example: We go around the list of our followers and unfollow from them:
 
@@ -243,7 +243,7 @@ except InvalidTargetUser:
 Tip:
 
 * `user_info()`, `user_info_by_username()`, `user_id_from_username()`, and `username_from_user_id()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
-* `user_followers()` and `user_following()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
+* `user_followers()` and `user_following()` use private/mobile lookup first when authorized, with the existing private GraphQL alternative for eligible endpoint/schema failures. Authenticated failures do not fall back to legacy web queries. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * Use `iter_user_followers_v1()` and `iter_user_following_v1()` when you need to process large follow lists incrementally instead of keeping the full result in memory.
 
 ### Public profile routing

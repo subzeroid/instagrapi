@@ -67,6 +67,28 @@ The query IDs, transport, User-Agent configuration and retry settings are unchan
 
 `media_info_gql()` now sends the existing modern `PolarisPostRootQuery` directly, including its token preparation. It accepts the supported GraphQL and REST-shaped media responses; `media_info()` retains its private-first selection for authenticated clients. Modern media reads can require saved session cookies. Returned location metadata comes from the modern response; call `location_complete()` when you need additional private location details.
 
+Authenticated high-level follow-list, story, tagged-media and hashtag reads do not
+fall back to legacy web queries after a private failure. Follow lists and user
+media may restart collection retrieval through their existing private app GraphQL
+alternative when the primary endpoint is unavailable or returns an unsupported
+response. Paginated APIs only select a fallback without an incoming cursor.
+Authorization, throttling, challenge and transport errors propagate to the caller;
+they do not select another endpoint. Programming errors also propagate.
+
+Pagination cursors belong to the endpoint that returned them. A failed request
+with a nonempty cursor is not replayed against another endpoint. Keep the same
+method and authentication state for subsequent pages; previously saved cursors
+are not translated between public and private APIs. Unified media pagination wraps
+a cursor with its originating route when selecting an alternate endpoint; treat
+returned cursors as opaque strings and pass them back unchanged. Explicit v1 helpers and raw public GraphQL requests keep their endpoint cursor
+format. Media fetch failures now
+raise instead of appearing as an empty or successfully completed partial list.
+
+Explicit public helpers remain available for callers that deliberately choose
+those contracts. Their presence does not imply that Instagram currently accepts
+them. Batched public story reads preserve every 50-user response, including
+per-user limits; an empty batch returns an empty list without making a request.
+
 The remaining legacy web operations need their own query shapes and response validation:
 
 | Legacy operation | Existing alternative / migration status |
@@ -78,7 +100,7 @@ The remaining legacy web operations need their own query shapes and response val
 | Story batches | Private story methods exist; a modern profile response does not replace the reel response. |
 | Comment likers | No equivalent modern web query is established here; comments use a separate query from profile data. |
 | Related profiles and raw profile-related info | Separate recommendation queries; a modern profile response does not contain the same data. |
-| Raw `top_search` | Its older web-search response differs from the exact-name modern resolver; explicit callers retain their existing raw schema. |
+| Raw `top_search` | Its places schema differs from modern user search. `location_search_name`, `location_search_pk`, `location_complete` and `location_build` still reach this route, including indirect upload/edit location handling. A matching replacement has not been live-validated. |
 | Raw location feed | Separate location-media pagination; a profile query is not an alternative. |
 
 The low-level `public_graphql_request()` keeps its `query_hash`/`query_id` interface for explicit
