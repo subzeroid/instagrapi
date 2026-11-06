@@ -65,11 +65,12 @@ anonymous or unrestricted access.
 for compatibility. Automatic profile routing does not fall back to it after a modern error.
 The query IDs, transport, User-Agent configuration and retry settings are unchanged.
 
+`media_info_gql()` now sends the existing modern `PolarisPostRootQuery` directly, including its token preparation. It accepts the supported GraphQL and REST-shaped media responses; `media_info()` retains its private-first selection for authenticated clients. Modern media reads can require saved session cookies. Returned location metadata comes from the modern response; call `location_complete()` when you need additional private location details.
+
 The remaining legacy web operations need their own query shapes and response validation:
 
 | Legacy operation | Existing alternative / migration status |
 | --- | --- |
-| `media_info_gql` | Has a modern `PolarisPostRootQuery` fallback with token preparation and multiple response shapes; private `media_info_v1` remains available. Its default order is unchanged. |
 | Public user media pagination | Private app GraphQL is already selected for authenticated clients; the anonymous `query_hash` fallback remains. |
 | Followers and following chunks | Private GraphQL alternatives exist and are already preferred in authenticated high-level lookups. Public pagination is a different query contract. |
 | Tagged media, including pagination | No equivalent modern web query is established here; private tagged-media methods remain available. |
