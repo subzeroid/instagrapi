@@ -245,3 +245,7 @@ Tip:
 * `user_info()`, `user_info_by_username()`, `user_id_from_username()`, and `username_from_user_id()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * `user_followers()` and `user_following()` use private/mobile lookup first when the client has authorization data or a saved `sessionid`, then fall back to public/web lookup. Without authorization, these high-level helpers keep the public/web-first behavior. Explicit `_gql` methods still call the public/web path directly.
 * Use `iter_user_followers_v1()` and `iter_user_following_v1()` when you need to process large follow lists incrementally instead of keeping the full result in memory.
+
+### Public profile routing
+
+The public branches of `user_info()`, `user_info_by_username()` and `user_id_from_username()` use modern profile GraphQL. `user_info_gql(user_id)` fetches the profile directly by ID. Private-first selection and caches are preserved; `user_info_by_username_gql()` remains an explicit legacy method. See [public profile routing and remaining legacy queries](public-transport.md#modern-profile-routing-and-remaining-legacy-queries) for session requirements and migration limits.

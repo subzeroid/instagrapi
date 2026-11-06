@@ -47,3 +47,42 @@ def test_docs_examples_links_to_github_scripts():
 def test_practical_examples_compile():
     for filename in EXPECTED_EXAMPLE_SCRIPTS:
         py_compile.compile(str(EXAMPLES / filename), doraise=True)
+
+
+def test_public_lookup_uses_modern_with_explicit_saved_session(monkeypatch, capsys):
+    import runpy
+    import sys
+    from types import ModuleType, SimpleNamespace
+
+    events = []
+    user = SimpleNamespace(
+        pk="123",
+        username="example",
+        full_name="Example",
+        media_count=0,
+        follower_count=0,
+        following_count=0,
+        is_private=False,
+        is_verified=False,
+    )
+
+    def modern(username):
+        events.append(("modern", username))
+        return user
+
+    client = SimpleNamespace(
+        load_settings=lambda path: events.append(("load", path)), user_info_by_username_v2_gql=modern
+    )
+
+    def make_client(login=True):
+        assert login is False
+        return client
+
+    common = ModuleType("_common")
+    common.make_client = make_client
+    monkeypatch.setitem(sys.modules, "_common", common)
+    monkeypatch.setattr(sys, "argv", ["public_lookup.py", "example", "--session-file", "saved-session.json"])
+    namespace = runpy.run_path(str(EXAMPLES / "public_lookup.py"), run_name="example_test")
+    namespace["main"]()
+    assert events == [("load", "saved-session.json"), ("modern", "example")]
+    assert '"username": "example"' in capsys.readouterr().out

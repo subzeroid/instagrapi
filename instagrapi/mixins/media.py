@@ -552,7 +552,7 @@ class MediaMixin:
 
     def media_info_gql(self, media_pk: str) -> Media:
         """
-        Get Media from PK by Public Graphql API
+        Get Media from PK through the modern public GraphQL doc_id query
 
         Parameters
         ----------
@@ -566,51 +566,26 @@ class MediaMixin:
         """
         media_pk = self.media_pk(media_pk)
         shortcode = self.media_code_from_pk(media_pk)
-        """Use Client.media_info
-        """
-        variables = {
-            "shortcode": shortcode,
-            "child_comment_count": 3,
-            "fetch_comment_count": 40,
-            "parent_comment_count": 24,
-            "has_threaded_comments": False,
-        }
-        try:
-            data = self.public_graphql_request(variables, query_hash="477b65a610463740ccdb83135b2014db")
-        except (
-            ClientForbiddenError,
-            ClientGraphqlError,
-            ClientLoginRequired,
-            ClientNotFoundError,
-            ClientUnauthorizedError,
-        ):
-            data = self.public_doc_id_graphql_request(
-                MEDIA_INFO_DOC_ID,
-                {
-                    "shortcode": shortcode,
-                    "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": False,
-                    "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": True,
-                },
-                referer=f"https://www.instagram.com/p/{shortcode}/",
-                url=self.GRAPHQL_PUBLIC_WEB_API_URL,
-                include_lsd=True,
-                include_fb_dtsg=True,
-                headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
-            )
-            media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
-            if media:
-                return extract_media_gql(media)
-            media_items = json_value(data, "xdt_api__v1__media__shortcode__web_info", "items", default=[])
-            if not media_items:
-                raise MediaNotFound(media_pk=media_pk, **data)
-            return extract_media_v1(self._normalize_xdt_media_info(media_items[0]))
-        if not data.get("shortcode_media"):
+        data = self.public_doc_id_graphql_request(
+            MEDIA_INFO_DOC_ID,
+            {
+                "shortcode": shortcode,
+                "__relay_internal__pv__PolarisShortDramaEnabledrelayprovider": False,
+                "__relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider": True,
+            },
+            referer=f"https://www.instagram.com/p/{shortcode}/",
+            url=self.GRAPHQL_PUBLIC_WEB_API_URL,
+            include_lsd=True,
+            include_fb_dtsg=True,
+            headers={"X-FB-Friendly-Name": "PolarisPostRootQuery"},
+        )
+        media = data.get("xdt_shortcode_media") or data.get("shortcode_media")
+        if media:
+            return extract_media_gql(media)
+        media_items = json_value(data, "xdt_api__v1__media__shortcode__web_info", "items", default=[])
+        if not media_items:
             raise MediaNotFound(media_pk=media_pk, **data)
-        if data["shortcode_media"]["location"] and self.authorization:
-            data["shortcode_media"]["location"] = self.location_complete(
-                extract_location(data["shortcode_media"]["location"])
-            ).dict()
-        return extract_media_gql(data["shortcode_media"])
+        return extract_media_v1(self._normalize_xdt_media_info(media_items[0]))
 
     def _media_info_public(self, media_pk: str) -> Media:
         try:
