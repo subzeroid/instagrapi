@@ -6,7 +6,7 @@ Viewing location info and medias by location
 | ---------------------------------------------------------- | -------------- | ----------------------------------------------------
 | location_search(lat: float, lng: float)                    | List[Location] | Search Location by GEO coordinates
 | location_search_name(name: str)                            | List[Location] | Search Location by name
-| location_search_pk(location_pk: int)                       | Location       | Resolve a Location by exact pk using search results
+| location_search_pk(location_pk: int)                       | Location       | Resolve an exact pk from private info, with name-search fallback for incomplete identity
 | location_complete(location: Location)                      | Location       | Complete blank fields
 | location_build(location: Location)                         | String         | Serialized JSON
 | location_info(location_pk: int)                            | Location       | Return Location info (pk, name, address, lng, lat, external_id, external_id_source)
@@ -14,6 +14,20 @@ Viewing location info and medias by location
 | location_medias_recent(location_pk: int, amount: int = 24) | List[Media]    | Return Most recent posts by Location
 | fbsearch_places(query: str, lat: float = 40.74, lng: float = -73.94) | List[Location] | >Search places via Facebook Search (40.74/-73.94 - New York, default GEO)
 
+
+`location_info()` identifies `external_id_source` as `facebook_places` when its
+private response selects a positive integer or integer string `facebook_places_id`
+as the external ID and omits both `external_id_source` and `external_source`.
+A truthy generic `external_id` takes precedence and does not identify a provider.
+Explicit `external_id_source` takes precedence over `external_source`, including
+empty values.
+
+`location_search_pk()` returns matching private info directly when it includes a
+positive external ID and a nonempty source. This also avoids legacy name search
+when `location_build()` or `location_complete()` resolves that PK. Missing
+coordinates in private info stay `None`. Incomplete private
+identity still uses the existing name-search fallback. `location_search_name()`
+continues to use legacy `top_search`.
 
 Example:
 

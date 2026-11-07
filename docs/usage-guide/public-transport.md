@@ -100,7 +100,7 @@ The remaining legacy web operations need their own query shapes and response val
 | Story batches | Private story methods exist; a modern profile response does not replace the reel response. |
 | Comment likers | No equivalent modern web query is established here; comments use a separate query from profile data. |
 | Related profiles and raw profile-related info | Separate recommendation queries; a modern profile response does not contain the same data. |
-| Raw `top_search` | Its places schema differs from modern user search. `location_search_name`, `location_search_pk`, `location_complete` and `location_build` still reach this route, including indirect upload/edit location handling. A matching replacement has not been live-validated. |
+| Raw `top_search` | Its places schema differs from modern user search. `location_search_name` still uses this route. PK resolution in `location_search_pk`, `location_complete` and `location_build` skips it when matching private info has a positive external ID and nonempty source; incomplete identity still uses legacy name search, including indirect upload/edit location handling. A replacement for name-only search has not been live-validated. |
 | Raw location feed | Separate location-media pagination; a profile query is not an alternative. |
 
 The low-level `public_graphql_request()` keeps its `query_hash`/`query_id` interface for explicit

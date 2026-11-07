@@ -84,6 +84,13 @@ class LocationMixin:
         """
         location_pk = str(location_pk)
         info = self.location_info(location_pk)
+        if (
+            str(info.pk) == location_pk
+            and info.external_id is not None
+            and info.external_id > 0
+            and info.external_id_source
+        ):
+            return info
         for location in self.location_search_name(info.name):
             if str(location.pk) == location_pk:
                 return location
@@ -194,7 +201,19 @@ class LocationMixin:
         if not result.get("name"):
             # Sorry, this page isn't available.
             raise LocationNotFound(location_pk=location_pk, **result)
-        return extract_location(result)
+        # Only the explicit Facebook field identifies its provider. Generic
+        # external IDs and explicitly supplied source fields keep their meaning.
+        facebook_id = result.get("facebook_places_id")
+        infer_facebook_source = (
+            not result.get("external_id")
+            and type(facebook_id) in (str, int)
+            and "external_id_source" not in result
+            and "external_source" not in result
+        )
+        location = extract_location(result)
+        if infer_facebook_source and location.external_id is not None and location.external_id > 0:
+            location.external_id_source = "facebook_places"
+        return location
 
     def location_info(self, location_pk: int) -> Location:
         """
