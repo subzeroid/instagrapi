@@ -1453,7 +1453,7 @@ per-user limits; an empty batch returns an empty list without making a request.<
 </tr>
 <tr>
 <td>Raw <code>top_search</code></td>
-<td>Its places schema differs from modern user search. <code>location_search_name</code>, <code>location_search_pk</code>, <code>location_complete</code> and <code>location_build</code> still reach this route, including indirect upload/edit location handling. A matching replacement has not been live-validated.</td>
+<td>Its places schema differs from modern user search. <code>location_search_name</code> still uses this route. PK resolution in <code>location_search_pk</code>, <code>location_complete</code> and <code>location_build</code> skips it when matching private info has a positive external ID and nonempty source; incomplete identity still uses legacy name search, including indirect upload/edit location handling. A replacement for name-only search has not been live-validated.</td>
 </tr>
 <tr>
 <td>Raw location feed</td>
