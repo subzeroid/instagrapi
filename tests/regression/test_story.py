@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from instagrapi.exceptions import ClientGraphqlError, ClientNotFoundError, UserNotFound
 from instagrapi.extractors import extract_story_web
+from instagrapi.mixins.graphql import PrivateGraphQLRequestMixin
 from tests.helpers import *
 
 
@@ -396,6 +397,18 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
             with self.subTest(kind=kind):
                 with self.assertRaises(KeyError):
                     extract_story_web(payload)
+
+    def test_graphql_fetch_fb_dtsg_uses_instagram_homepage(self):
+        client = Client()
+        response = mock.Mock()
+        response.content = b'<html><script id="__eqmc">{"f":"synthetic-dtsg"}</script></html>'
+        with (
+            mock.patch.object(client, "inject_sessionid_to_public") as inject,
+            mock.patch.object(client.graphql, "get", return_value=response) as get,
+        ):
+            self.assertEqual(PrivateGraphQLRequestMixin.fetch_fb_dtsg(client), "synthetic-dtsg")
+        get.assert_called_once_with("https://www.instagram.com/", proxies=client.graphql.proxies)
+        inject.assert_called_once_with()
 
     def test_user_stories_web_uses_modern_query_and_typed_response(self):
         client = Client()

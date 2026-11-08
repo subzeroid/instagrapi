@@ -140,7 +140,7 @@ class PrivateGraphQLRequestMixin:
 
     def fetch_fb_dtsg(self):
         self.inject_sessionid_to_public()
-        response = self.graphql.get(GRAPHQL_API_URL, proxies=self.graphql.proxies)
+        response = self.graphql.get("https://www.instagram.com/", proxies=self.graphql.proxies)
         html = response.content.decode() if response.content else ""
         if html:
             s = html.find("__eqmc")
