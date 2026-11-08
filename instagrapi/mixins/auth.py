@@ -1552,6 +1552,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         if self.sessionid:
             self.public.cookies.set("sessionid", self.sessionid)
+            self.graphql.cookies.set("sessionid", self.sessionid)
             return True
         return False
 

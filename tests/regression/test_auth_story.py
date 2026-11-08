@@ -782,6 +782,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
         self.assertTrue(result)
         self.assertEqual(client.public.cookies.get("sessionid"), "auth-session")
+        self.assertEqual(client.graphql.cookies.get("sessionid"), "auth-session")
 
     def test_inject_sessionid_to_public_returns_false_without_sessionid(self):
         client = Client()
