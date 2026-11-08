@@ -1,5 +1,43 @@
-from instagrapi.exceptions import ClientNotFoundError, UserNotFound
+import json
+from copy import deepcopy
+
+from instagrapi.exceptions import ClientGraphqlError, ClientNotFoundError, UserNotFound
+from instagrapi.extractors import extract_story_web
 from tests.helpers import *
+
+
+def web_story_payload():
+    return {
+        "pk": 314159265358979,
+        "id": "314159265358979_271828182845904",
+        "code": "web-story-code",
+        "taken_at": 1700000000,
+        "media_type": 2,
+        "user": {
+            "pk": 271828182845904,
+            "username": "web-story-user",
+            "profile_pic_url": "https://example.com/profile.jpg",
+        },
+        "video_versions": [
+            {"type": 101, "url": "https://example.com/first.mp4"},
+            {"type": 102, "url": "https://example.com/second.mp4"},
+        ],
+        "image_versions2": {
+            "candidates": [
+                {
+                    "url": "https://example.com/thumb.jpg",
+                    "width": 720,
+                    "height": 1280,
+                }
+            ]
+        },
+        "story_locations": None,
+        "story_hashtags": None,
+        "story_cta": None,
+        "sponsor_tags": None,
+        "story_feed_media": None,
+        "story_link_stickers": None,
+    }
 
 
 class StoryMixinRegressionTestCase(unittest.TestCase):
@@ -329,3 +367,115 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         self.assertTrue(result)
         story_seen.assert_not_called()
         self.assertEqual(private_request.call_args.args[0], "story_interactions/unsend_story_like")
+
+    def test_extract_story_web_normalizes_capture_shape(self):
+        payload = web_story_payload()
+        original = deepcopy(payload)
+
+        story = extract_story_web(payload)
+
+        self.assertEqual(payload, original)
+        self.assertEqual(story.pk, str(payload["pk"]))
+        self.assertEqual(story.id, payload["id"])
+        self.assertEqual(int(story.taken_at.timestamp()), payload["taken_at"])
+        self.assertEqual(story.media_type, payload["media_type"])
+        self.assertEqual(story.user.pk, str(payload["user"]["pk"]))
+        self.assertEqual(str(story.video_url), "https://example.com/first.mp4")
+        self.assertEqual(str(story.thumbnail_url), "https://example.com/thumb.jpg")
+        for field in ("locations", "hashtags", "links", "sponsor_tags", "medias", "stickers"):
+            self.assertEqual(getattr(story, field), [])
+
+    def test_extract_story_web_requires_identifiers(self):
+        for kind in ("story", "user"):
+            payload = web_story_payload()
+            if kind == "story":
+                payload.pop("pk")
+            else:
+                payload["user"].pop("pk")
+                payload["user"].pop("id", None)
+            with self.subTest(kind=kind):
+                with self.assertRaises(KeyError):
+                    extract_story_web(payload)
+
+    def test_user_stories_web_uses_modern_query_and_typed_response(self):
+        client = Client()
+        client._fb_dtsg = "token"
+        body = {
+            "data": {
+                "xdt_api__v1__feed__reels_media": {
+                    "reels_media": [{"items": [web_story_payload(), web_story_payload()]}]
+                }
+            }
+        }
+
+        with mock.patch.object(client, "graphql_request", return_value=body) as request:
+            stories = client.user_stories_web("271828182845904", amount=1)
+
+        self.assertEqual(len(stories), 1)
+        self.assertEqual(stories[0].pk, "314159265358979")
+        request.assert_called_once_with(
+            data={
+                "variables": json.dumps(
+                    {
+                        "reel_ids_arr": ["271828182845904"],
+                        "__relay_internal__pv__PolarisCommunityNoteStoriesLabelEnabledrelayprovider": True,
+                    }
+                ),
+                "doc_id": "29184890191114309",
+                "fb_dtsg": "token",
+                "fb_api_caller_class": "RelayModern",
+                "fb_api_req_friendly_name": "PolarisStoriesV3ReelPageStandaloneQuery",
+                "server_timestamps": "true",
+            }
+        )
+
+    def test_user_stories_web_empty_and_malformed_roots(self):
+        client = Client()
+        client._fb_dtsg = "token"
+        empty = {"data": {"xdt_api__v1__feed__reels_media": {"reels_media": []}}}
+        with mock.patch.object(client, "graphql_request", return_value=empty):
+            self.assertEqual(client.user_stories_web("271828182845904"), [])
+
+        bodies = [
+            {"data": {}},
+            {"data": {"xdt_api__v1__feed__reels_media": None}},
+            {"data": {"xdt_api__v1__feed__reels_media": {"reels_media": None}}},
+            {"data": {"xdt_api__v1__feed__reels_media": {"reels_media": [{}]}}},
+        ]
+        for body in bodies:
+            with self.subTest(body=body):
+                with mock.patch.object(client, "graphql_request", return_value=body):
+                    with self.assertRaises(ClientGraphqlError):
+                        client.user_stories_web("271828182845904")
+
+    def test_extract_story_web_skips_empty_dimensionless_urls(self):
+        payload = web_story_payload()
+        payload["video_versions"][0]["url"] = ""
+
+        story = extract_story_web(payload)
+
+        self.assertEqual(str(story.video_url), "https://example.com/second.mp4")
+
+    def test_extract_story_web_keeps_dimensioned_video_selection(self):
+        payload = web_story_payload()
+        payload["video_versions"] = [
+            {"url": "https://example.com/small.mp4", "width": 320, "height": 480},
+            {"url": "https://example.com/large.mp4", "width": 720, "height": 1280},
+        ]
+
+        story = extract_story_web(payload)
+
+        self.assertEqual(str(story.video_url), "https://example.com/large.mp4")
+
+    def test_user_stories_web_preserves_request_errors_and_empty_items(self):
+        client = Client()
+        client._fb_dtsg = "token"
+        error = ClientGraphqlError("request failed")
+        with mock.patch.object(client, "graphql_request", side_effect=error):
+            with self.assertRaises(ClientGraphqlError) as caught:
+                client.user_stories_web("271828182845904")
+        self.assertIs(caught.exception, error)
+
+        empty = {"data": {"xdt_api__v1__feed__reels_media": {"reels_media": [{"items": []}]}}}
+        with mock.patch.object(client, "graphql_request", return_value=empty):
+            self.assertEqual(client.user_stories_web("271828182845904"), [])

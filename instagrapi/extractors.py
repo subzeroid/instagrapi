@@ -587,6 +587,30 @@ def extract_hashtag_v1(data):
     return Hashtag(**data)
 
 
+def extract_story_web(data):
+    story = deepcopy(data)
+    if story.get("pk") is None:
+        raise KeyError("pk")
+    user = story.get("user")
+    if not isinstance(user, dict) or (user.get("pk") is None and user.get("id") is None):
+        raise KeyError("user.pk")
+    for field in (
+        "story_locations",
+        "story_hashtags",
+        "story_cta",
+        "sponsor_tags",
+        "story_feed_media",
+        "story_link_stickers",
+    ):
+        if story.get(field) is None:
+            story[field] = []
+    versions = story.get("video_versions") or []
+    if versions and any("height" not in candidate or "width" not in candidate for candidate in versions):
+        story["video_url"] = next((candidate.get("url") for candidate in versions if candidate.get("url")), None)
+        story.pop("video_versions", None)
+    return extract_story_v1(story)
+
+
 def extract_story_v1(data):
     """Extract story from Private API"""
     story = deepcopy(data)
