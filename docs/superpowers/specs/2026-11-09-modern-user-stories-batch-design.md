@@ -32,6 +32,12 @@ Run each repository's complete regression suite and standard quality checks. Per
 
 After both libraries have successful live evidence, prepare their normal review and release flow. Port the proven contract to hiker-next only afterward, validate it separately on hapi4, and do not use this task to change hapi routes.
 
+## Final live findings
+
+A 50-ID request returned HTTP 200 with `data:null` and a GraphQL `field_exception`, while 10-ID and 25-ID requests returned usable data. The final implementation therefore uses batches of at most 25 IDs; a 51-ID acceptance call is split as 25+25+1. Live web responses also showed `story_feed_media` entries with `id` and `media_code` instead of private `media_id`; `extract_story_web` now decodes `media_code` or falls back to the numeric prefix of `id`, preserving an existing `media_id`.
+
+Both candidates passed saved-session identity, single-user, and 51-ID live checks with HTTP 200 for every GraphQL request. Each batch returned typed `UserShort` and photo/video `Story` objects with owners in the requested ID set. Runtime manifests matched all 73 instagrapi and 74 aiograpi files.
+
 ## Assumptions
 
 The already approved direction is to repair the existing batch API rather than add a second public batch API. The existing modern single-user helper is the reference implementation; multi-user acceptance still requires live validation. No current web `owner` object is assumed: typed story owner data is the source for the returned `UserShort`.

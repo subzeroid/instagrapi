@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11+, Pydantic models, unittest/mock, pytest, Ruff, MkDocs.
 
+**Final live-driven adjustments:** The server rejected 50-ID requests with HTTP 200 and `data:null`, while 25-ID requests succeeded. The final code and regressions use 25+25+1 for 51 IDs. `extract_story_web` additionally maps observed `story_feed_media.id` and `media_code` to `media_id`; this was added by a separate failing-first regression. The exact final live candidates are instagrapi `9fef5358` and aiograpi `b3374f7a`.
+
 ---
 
 ### Task 1: Modern request and batch regressions
