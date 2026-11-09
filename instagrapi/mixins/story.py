@@ -163,7 +163,7 @@ class StoryMixin:
                 if not items:
                     continue
                 stories = [extract_story_web(item) for item in items]
-                user = stories[0].user
+                user = deepcopy(stories[0].user)
                 user.stories = stories
                 users.append(user)
         return users
