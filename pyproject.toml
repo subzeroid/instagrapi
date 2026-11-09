@@ -102,7 +102,7 @@ test = [
     "pytest-xdist==3.8.0",
     "pytest==9.2.0",
     "python-dotenv>=0.10",
-    "ruff==0.17.3",
+    "ruff==0.17.4",
 ]
 
 [tool.setuptools]
