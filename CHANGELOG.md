@@ -2,6 +2,16 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.8 — 2026-11-09
+
+### Added
+
+- Add typed `user_stories_web()` results from the modern web stories GraphQL query, including authenticated `fb_dtsg` bootstrap and normalized media, owner, link and location metadata (#2934).
+
+### Fixed
+
+- Inject the saved session into GraphQL requests and clear it during session reset. Existing private/default story routes and explicit raw legacy helpers remain unchanged (#2934).
+
 ## 3.2.7 — 2026-11-07
 
 ### Fixed
