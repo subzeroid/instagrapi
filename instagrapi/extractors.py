@@ -604,6 +604,13 @@ def extract_story_web(data):
     ):
         if story.get(field) is None:
             story[field] = []
+    for feed_media in story["story_feed_media"]:
+        if "media_id" in feed_media:
+            continue
+        if feed_media.get("media_code"):
+            feed_media["media_id"] = InstagramIdCodec.decode(feed_media["media_code"])
+        elif feed_media.get("id") is not None:
+            feed_media["media_id"] = str(feed_media["id"]).split("_")[0]
     versions = story.get("video_versions") or []
     if versions and any("height" not in candidate or "width" not in candidate for candidate in versions):
         story["video_url"] = next((candidate.get("url") for candidate in versions if candidate.get("url")), None)
