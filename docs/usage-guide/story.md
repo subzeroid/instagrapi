@@ -4,7 +4,7 @@
 | ---------------------------------------------------------------------- | --------------- | ----------------------------------
 | user_stories(user_id: str, amount: int = None)                         | List[Story]     | Get list of stories by user_id; private/mobile when authenticated; explicit public path otherwise
 | user_stories_web(user_id: str, amount: int = None)                     | List[Story]     | Get typed stories through the modern web GraphQL path; does not change private-first `user_stories` routing
-| users_stories_gql(user_ids: List[int], amount: int = 0)                | List[UserShort] | Get users and their stories through the modern web GraphQL path in batches of up to 50 IDs
+| users_stories_gql(user_ids: List[int], amount: int = 0)                | List[UserShort] | Get users and their stories through the modern web GraphQL path in batches of up to 25 IDs
 | story_info(story_pk: int, use_cache: bool = True)                      | Story           | Return story info
 | story_delete(story_pk: int)                                            | bool            | Delete story
 | story_seen(story_pks: List[int], skipped_story_pks: List[int])         | bool            | Mark a story as seen

@@ -170,15 +170,15 @@ class LegacyRoutingRegressionTests(unittest.TestCase):
             patch.object(
                 self.client,
                 "graphql_request",
-                side_effect=[body(reel(1)), body(reel(51))],
+                side_effect=[body(reel(1)), body(reel(26)), body(reel(51))],
             ) as query,
         ):
             users = self.client.users_stories_gql(list(range(1, 52)), amount=1)
-        self.assertEqual([str(user.pk) for user in users], ["1", "51"])
-        self.assertEqual([len(user.stories) for user in users], [1, 1])
-        self.assertEqual(query.call_count, 2)
+        self.assertEqual([str(user.pk) for user in users], ["1", "26", "51"])
+        self.assertEqual([len(user.stories) for user in users], [1, 1, 1])
+        self.assertEqual(query.call_count, 3)
         batches = [json.loads(call.kwargs["data"]["variables"])["reel_ids_arr"] for call in query.call_args_list]
-        self.assertEqual([len(batch) for batch in batches], [50, 1])
+        self.assertEqual([len(batch) for batch in batches], [25, 25, 1])
 
     def test_empty_story_batch_is_empty_without_dispatch(self):
         with (
