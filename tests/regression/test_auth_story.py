@@ -782,6 +782,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
 
         self.assertTrue(result)
         self.assertEqual(client.public.cookies.get("sessionid"), "auth-session")
+        self.assertEqual(client.graphql.cookies.get("sessionid"), "auth-session")
 
     def test_inject_sessionid_to_public_returns_false_without_sessionid(self):
         client = Client()
@@ -799,6 +800,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         client.private.headers["Authorization"] = "Bearer stale"
         client.private.cookies.set("sessionid", "private-session")
         client.public.cookies.set("sessionid", "public-session")
+        client.graphql.cookies.set("sessionid", "graphql-session")
         client.private_request = Mock(return_value={"status": "ok"})
 
         result = client.logout()
@@ -810,6 +812,7 @@ class AuthAndStoryRegressionTestCase(unittest.TestCase):
         self.assertNotIn("Authorization", client.private.headers)
         self.assertEqual(client.private.cookies.get_dict(), {})
         self.assertEqual(client.public.cookies.get_dict(), {})
+        self.assertEqual(client.graphql.cookies.get_dict(), {})
 
     def test_parse_authorization_returns_empty_dict_for_missing_header(self):
         client = Client()

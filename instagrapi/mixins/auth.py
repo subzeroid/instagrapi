@@ -489,6 +489,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             self.private.cookies.clear()
         if clear_public_cookies:
             self.public.cookies.clear()
+            self.graphql.cookies.clear()
 
     def _find_login_response_value(self, data: Any, key: str) -> Any:
         if isinstance(data, dict):
@@ -1552,6 +1553,7 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
         """
         if self.sessionid:
             self.public.cookies.set("sessionid", self.sessionid)
+            self.graphql.cookies.set("sessionid", self.sessionid)
             return True
         return False
 
