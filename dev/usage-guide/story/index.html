@@ -1367,6 +1367,11 @@
 <td>Get list of stories by user_id; private/mobile when authenticated; explicit public path otherwise</td>
 </tr>
 <tr>
+<td>user_stories_web(user_id: str, amount: int = None)</td>
+<td>List[Story]</td>
+<td>Get typed stories through the modern web GraphQL path; does not change private-first <code>user_stories</code> routing</td>
+</tr>
+<tr>
 <td>story_info(story_pk: int, use_cache: bool = True)</td>
 <td>Story</td>
 <td>Return story info</td>
