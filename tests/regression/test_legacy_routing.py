@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch
 
@@ -150,34 +151,39 @@ class LegacyRoutingRegressionTests(unittest.TestCase):
                 "is_private": False,
             }
             story = {
-                "id": str(pk),
-                "owner": owner,
-                "display_url": "https://example.com/story",
-                "taken_at_timestamp": 1700000000,
-                "is_video": False,
-                "tappable_objects": [],
-                "edge_media_to_sponsor_user": {"edges": []},
+                "pk": pk,
+                "id": f"{pk}_{pk}",
+                "code": f"story-{pk}",
+                "taken_at": 1700000000,
+                "media_type": 1,
+                "user": owner,
+                "image_versions2": {"candidates": [{"url": "https://example.com/story", "width": 720, "height": 1280}]},
             }
-            return {"owner": owner, "items": [story, story]}
+            return {"id": str(pk), "items": [story, story]}
 
+        def body(*reels):
+            return {"data": {"xdt_api__v1__feed__reels_media": {"reels_media": list(reels)}}}
+
+        self.client._fb_dtsg = "token"
         with (
-            patch.object(self.client, "inject_sessionid_to_public"),
+            patch.object(self.client, "public_graphql_request", side_effect=AssertionError("legacy query")),
             patch.object(
                 self.client,
-                "public_graphql_request",
-                side_effect=[{"reels_media": [reel(1)]}, {"reels_media": [reel(51)]}],
+                "graphql_request",
+                side_effect=[body(reel(1)), body(reel(51))],
             ) as query,
         ):
             users = self.client.users_stories_gql(list(range(1, 52)), amount=1)
         self.assertEqual([str(user.pk) for user in users], ["1", "51"])
         self.assertEqual([len(user.stories) for user in users], [1, 1])
-        self.assertEqual(len(query.call_args_list[0].kwargs["variables"]["reel_ids"]), 50)
-        self.assertEqual(len(query.call_args_list[1].kwargs["variables"]["reel_ids"]), 1)
+        self.assertEqual(query.call_count, 2)
+        batches = [json.loads(call.kwargs["data"]["variables"])["reel_ids_arr"] for call in query.call_args_list]
+        self.assertEqual([len(batch) for batch in batches], [50, 1])
 
     def test_empty_story_batch_is_empty_without_dispatch(self):
         with (
             patch.object(self.client, "inject_sessionid_to_public") as inject,
-            patch.object(self.client, "public_graphql_request") as query,
+            patch.object(self.client, "graphql_request") as query,
         ):
             self.assertEqual(self.client.users_stories_gql([]), [])
         inject.assert_not_called()
