@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.9 — 2026-11-10
+
+### Fixed
+
+- Replace the rejected legacy `users_stories_gql()` query with modern XDT web GraphQL, cap requests at 25 user IDs per batch, preserve per-user limits, and normalize web story media identifiers without cyclic owner graphs (#2940).
+
 ## 3.2.8 — 2026-11-09
 
 ### Added
