@@ -1372,6 +1372,11 @@
 <td>Get typed stories through the modern web GraphQL path; does not change private-first <code>user_stories</code> routing</td>
 </tr>
 <tr>
+<td>users_stories_gql(user_ids: List[int], amount: int = 0)</td>
+<td>List[UserShort]</td>
+<td>Get users and their stories through the modern web GraphQL path in batches of up to 25 IDs</td>
+</tr>
+<tr>
 <td>story_info(story_pk: int, use_cache: bool = True)</td>
 <td>Story</td>
 <td>Return story info</td>
