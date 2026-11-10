@@ -14,11 +14,11 @@ The current `user_stories_web` already uses `PolarisStoriesV3ReelPageStandaloneQ
 
 ## API and request behavior
 
-Keep `users_stories_gql(user_ids, amount=0)` and `List[UserShort]`. An empty input returns `[]` without session injection or network activity. Convert every user ID to a string and preserve batches of at most 50 IDs.
+Keep `users_stories_gql(user_ids, amount=0)` and `List[UserShort]`. An empty input returns `[]` without session injection or network activity. Convert every user ID to a string and preserve batches of at most 25 IDs.
 
 Each batch sends one `graphql_request` with `doc_id=29184890191114309`, friendly name `PolarisStoriesV3ReelPageStandaloneQuery`, `reel_ids_arr`, the existing community-note Relay variable, `fb_dtsg`, `fb_api_caller_class=RelayModern`, and `server_timestamps=true`. There is no retry or fallback to the rejected legacy query.
 
-Apply `amount` independently to each reel's items, preserving response order. Extract stories with `extract_story_web`. Build each `UserShort` from the first typed story owner and attach that reel's typed stories. Skip reels with no selected items because they contain no owner from which to construct an honest `UserShort`; do not invent a user object or emit empty-story users.
+Apply `amount` independently to each reel's items, preserving response order. Extract stories with `extract_story_web`. Build each `UserShort` from a deep copy of the first typed story owner and attach that reel's typed stories without creating a cyclic owner graph. Skip reels with no selected items because they contain no owner from which to construct an honest `UserShort`; do not invent a user object or emit empty-story users.
 
 Leave `user_stories_web`, `user_stories_v1`, the default `user_stories` routing, method signatures, and package versions unchanged.
 
@@ -26,11 +26,11 @@ Leave `user_stories_web`, `user_stories_v1`, the default `user_stories` routing,
 
 Propagate transport and GraphQL exceptions unchanged. A missing or non-object XDT root, a non-list `reels_media`, or a reel with a non-list `items` value raises `ClientGraphqlError` rather than returning partial success. Extraction errors remain visible.
 
-Regression tests must fail against the legacy implementation and then verify the exact modern form, 50+1 batching, result accumulation across both responses, per-user amount limiting, typed photo and video stories, empty input without dispatch, skipped empty reels, malformed responses, and original exception propagation.
+Regression tests must fail against the legacy implementation and then verify the exact modern form, 25+25+1 batching, result accumulation across all responses, per-user amount limiting, typed photo and video stories, empty input without dispatch, skipped empty reels, malformed responses, and original exception propagation.
 
-Run each repository's complete regression suite and standard quality checks. Perform a relevant saved-session live test for each candidate without password, factor, account writes, retries, or account rotation. Validate one modern single-user call and a bounded 50+1 call, recording only HTTP outcomes, batch sizes, typed shapes, and counts. Do not claim that offline fixtures prove multi-user server behavior.
+Run each repository's complete regression suite and standard quality checks. Perform a relevant saved-session live test for each candidate without password, factor, account writes, retries, or account rotation. Validate one modern single-user call and a bounded 25+25+1 call, recording only HTTP outcomes, batch sizes, typed shapes, and counts. Do not claim that offline fixtures prove multi-user server behavior.
 
-After both libraries have successful live evidence, prepare their normal review and release flow. Port the proven contract to hiker-next only afterward, validate it separately on hapi4, and do not use this task to change hapi routes.
+After both libraries have successful live evidence, prepare their normal review and release flow. Port the proven contract to hiker-next only afterward and validate it separately in its own environment; do not use this task to change hapi routes.
 
 ## Final live findings
 
