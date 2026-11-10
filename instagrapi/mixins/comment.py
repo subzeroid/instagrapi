@@ -651,6 +651,16 @@ class CommentMixin:
         result = self.private_request(f"media/{media_id}/comment/bulk_delete/", self.with_action_data(data))
         return result["status"] == "ok"
 
+    def comment_likers_v1(self, comment_pk: str, amount: int = 0) -> List[dict]:
+        """Get users who liked a comment through the private mobile API."""
+        result = self.private_request(f"media/{comment_pk}/comment_likers/")
+        users = result.get("users") or []
+        return users[:amount] if amount else users
+
+    def comment_likers(self, comment_pk: str, amount: int = 0) -> List[dict]:
+        """Get users who liked a comment through the private mobile API."""
+        return self.comment_likers_v1(comment_pk, amount)
+
     def comment_likers_gql_chunk(self, comment_pk: str, end_cursor: str = "") -> Tuple[List[dict], str]:
         """
         Get likers of comment
