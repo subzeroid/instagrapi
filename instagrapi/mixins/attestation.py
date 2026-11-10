@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import ECC
-from Cryptodome.Random import get_random_bytes
 from Cryptodome.Signature import DSS
 
 from instagrapi.utils.serialization import dumps
@@ -67,7 +66,7 @@ class DeviceAttestationMixin:
         key = ECC.generate(curve="P-256")
         self.usdid_private_key = key.export_key(format="PEM")
         self.usdid = str(uuid4())
-        self.usdid_kid = _b64u(get_random_bytes(32))
+        self.usdid_kid = self._usdid_key_id()
         self.usdid_registered = False
         self._usdid_header_cache = ""
         self._usdid_header_expires_at = 0
@@ -87,6 +86,11 @@ class DeviceAttestationMixin:
         """DER SubjectPublicKeyInfo for the USDID P-256 public key."""
         return self._usdid_key().public_key().export_key(format="DER")
 
+    def _usdid_key_id(self) -> str:
+        """Bind the key ID to the standard Base64-encoded SPKI public key."""
+        public_key = base64.b64encode(self.usdid_public_key_der)
+        return _b64u(SHA256.new(public_key).digest())
+
     def usdid_header(self, ttl: int = USDID_TOKEN_TTL) -> str:
         """Build the app's three-part ``X-Meta-Usdid`` signed value."""
         now = int(time.time())
@@ -101,6 +105,7 @@ class DeviceAttestationMixin:
 
     def usdid_registration_token(self, ttl: int = USDID_TOKEN_TTL) -> str:
         """Build the ES256 registration token sent by the Android app."""
+        self.usdid_kid = self._usdid_key_id()
         now = int(time.time())
         payload = _b64u(
             dumps(
