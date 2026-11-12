@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.10 — 2026-11-12
+
+### Added
+
+- Add `comment_likers_v1()` and route `comment_likers()` through the private comment-likers endpoint, returning raw user dictionaries with optional amount truncation (#2944). Explicit GraphQL helpers and cursors remain available.
+
 ## 3.2.9 — 2026-11-10
 
 ### Fixed

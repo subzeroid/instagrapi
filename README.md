@@ -379,7 +379,6 @@ Maintainer release commands:
 ```bash
 git tag -a X.Y.Z -m "Release X.Y.Z"
 git push origin X.Y.Z
-git push codeberg X.Y.Z
 ```
 
 The tag-based `publish.yml` workflow publishes to PyPI via trusted publishing and creates the GitHub release.
