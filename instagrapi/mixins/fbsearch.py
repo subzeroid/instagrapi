@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Tuple, Union
 
+from instagrapi.exceptions import PrivateError
 from instagrapi.extractors import (
     extract_hashtag_v1,
     extract_location,
@@ -11,9 +12,35 @@ from instagrapi.types import Hashtag, Location, Media, Track, UserShort
 
 
 class FbSearchMixin:
+    def _validate_fbsearch_media_grid(self, result: object) -> dict:
+        response = getattr(self, "last_response", None)
+        if not isinstance(result, dict):
+            raise PrivateError("Malformed fbsearch/top_serp response", response=response)
+        media_grid = result.get("media_grid")
+        if media_grid is None:
+            raise PrivateError("Missing media_grid in fbsearch/top_serp response", response=response)
+        if not isinstance(media_grid, dict):
+            raise PrivateError("Malformed media_grid in fbsearch/top_serp response", response=response)
+        sections = media_grid.get("sections")
+        if sections is not None and not isinstance(sections, list):
+            raise PrivateError("Malformed media_grid sections in fbsearch/top_serp response", response=response)
+        return media_grid
+
     def _fbsearch_media_grid_nodes(self, media_grid: dict):
+        def _yield_media_items(items):
+            if not isinstance(items, list):
+                return
+            for item in items:
+                media = item.get("media") if isinstance(item, dict) else None
+                if isinstance(media, dict):
+                    yield media
+
         for section in media_grid.get("sections") or []:
+            if not isinstance(section, dict):
+                continue
             layout_content = section.get("layout_content") or {}
+            if not isinstance(layout_content, dict):
+                continue
             one_by_two_item = layout_content.get("one_by_two_item") or {}
             if isinstance(one_by_two_item, dict):
                 media = one_by_two_item.get("media")
@@ -21,15 +48,9 @@ class FbSearchMixin:
                     yield media
                 clips = one_by_two_item.get("clips") or {}
                 if isinstance(clips, dict):
-                    for item in clips.get("items") or []:
-                        media = item.get("media") if isinstance(item, dict) else None
-                        if isinstance(media, dict):
-                            yield media
+                    yield from _yield_media_items(clips.get("items"))
             for key in ("fill_items", "medias"):
-                for item in layout_content.get(key) or []:
-                    media = item.get("media") if isinstance(item, dict) else None
-                    if isinstance(media, dict):
-                        yield media
+                yield from _yield_media_items(layout_content.get(key))
 
     def fbsearch_places(self, query: str, lat: float = 40.74, lng: float = -73.94) -> List[Location]:
         params = {
@@ -334,11 +355,17 @@ class FbSearchMixin:
         -------
         List[Media]
             List of media results.
+
+        Raises
+        ------
+        PrivateError
+            If the response omits ``media_grid`` or returns a malformed grid payload.
         """
         medias: List[Media] = []
         next_max_id = None
         reels_max_id = None
         rank_token = None
+        seen_cursors = set()
         while True:
             kwargs: Dict[str, str] = {}
             if next_max_id:
@@ -348,7 +375,7 @@ class FbSearchMixin:
             if rank_token:
                 kwargs["rank_token"] = rank_token
             result = self.fbsearch_topsearch_v2(query, **kwargs)
-            media_grid = result.get("media_grid") or {}
+            media_grid = self._validate_fbsearch_media_grid(result)
             for node in self._fbsearch_media_grid_nodes(media_grid):
                 if amount and len(medias) >= amount:
                     break
@@ -364,6 +391,13 @@ class FbSearchMixin:
                 break
             reels_max_id = media_grid.get("reels_max_id") or result.get("reels_max_id")
             rank_token = media_grid.get("rank_token") or result.get("rank_token")
+            cursor_key = (
+                str(next_max_id),
+                str(reels_max_id) if reels_max_id is not None else None,
+            )
+            if cursor_key in seen_cursors:
+                break
+            seen_cursors.add(cursor_key)
         if amount:
             medias = medias[:amount]
         return medias

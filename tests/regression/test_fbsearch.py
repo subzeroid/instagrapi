@@ -207,6 +207,199 @@ class FbSearchRegressionTestCase(unittest.TestCase):
         self.assertEqual([media.pk for media in medias], ["1"])
         topsearch.assert_called_once_with("space")
 
+    def _media_payload(self, pk):
+        return {
+            "pk": pk,
+            "id": f"{pk}_2",
+            "code": f"code-{pk}",
+            "taken_at": 1710000000,
+            "media_type": 1,
+            "user": {
+                "pk": "2",
+                "username": "example",
+                "profile_pic_url": "https://example.com/profile.jpg",
+            },
+            "image_versions2": {
+                "candidates": [
+                    {
+                        "url": f"https://example.com/{pk}.jpg",
+                        "width": 100,
+                        "height": 100,
+                    }
+                ]
+            },
+            "caption": {"text": "space"},
+        }
+
+    def test_media_search_raises_when_media_grid_is_missing(self):
+        for payload in ({"status": "ok"}, {"status": "ok", "media_grid": None}):
+            with self.subTest(payload=payload):
+                client = self._build_client()
+                fake_response = mock.Mock(status_code=200)
+                client.last_response = fake_response
+                with mock.patch.object(client, "fbsearch_topsearch_v2", return_value=payload) as topsearch:
+                    with self.assertRaises(PrivateError) as caught:
+                        client.media_search("secret-query")
+
+                self.assertIsInstance(caught.exception, ClientError)
+                self.assertIs(caught.exception.response, fake_response)
+                self.assertEqual(caught.exception.code, 200)
+                self.assertNotIn("secret-query", str(caught.exception))
+                topsearch.assert_called_once_with("secret-query")
+
+    def test_media_search_raises_when_paginated_page_misses_media_grid(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "fbsearch_topsearch_v2",
+            side_effect=[
+                {
+                    "media_grid": {
+                        "sections": [{"layout_content": {"fill_items": [{"media": self._media_payload("1")}]}}],
+                        "has_more": True,
+                        "next_max_id": "page-2",
+                    }
+                },
+                {"status": "ok"},
+            ],
+        ) as topsearch:
+            with self.assertRaises(PrivateError):
+                client.media_search("space", amount=5)
+
+        self.assertEqual(topsearch.call_count, 2)
+        self.assertEqual(topsearch.call_args_list[1].kwargs, {"next_max_id": "page-2"})
+
+    def test_media_search_raises_on_malformed_response_or_grid(self):
+        malformed_payloads = [
+            None,
+            [],
+            {"status": "ok", "media_grid": []},
+            {"status": "ok", "media_grid": "invalid"},
+            {"status": "ok", "media_grid": {"sections": "invalid"}},
+            {"status": "ok", "media_grid": {"sections": 123}},
+            {"status": "ok", "media_grid": {"sections": {}}},
+        ]
+        for payload in malformed_payloads:
+            with self.subTest(payload=payload):
+                client = self._build_client()
+                with mock.patch.object(client, "fbsearch_topsearch_v2", return_value=payload):
+                    with self.assertRaises(PrivateError):
+                        client.media_search("space")
+
+    def test_media_search_returns_empty_list_for_valid_empty_media_grid(self):
+        empty_payloads = [
+            {"status": "ok", "media_grid": {"sections": [], "has_more": False}},
+            {"status": "ok", "media_grid": {}},
+            {"status": "ok", "media_grid": {"sections": None, "has_more": False}},
+        ]
+        for payload in empty_payloads:
+            with self.subTest(payload=payload):
+                client = self._build_client()
+                with mock.patch.object(client, "fbsearch_topsearch_v2", return_value=payload) as topsearch:
+                    medias = client.media_search("space")
+
+                self.assertEqual(medias, [])
+                topsearch.assert_called_once_with("space")
+
+    def test_media_search_extracts_all_grid_section_shapes_without_pagination_metadata(self):
+        client = self._build_client()
+        payload = {
+            "media_grid": {
+                "sections": [
+                    {
+                        "layout_content": {
+                            "one_by_two_item": {
+                                "media": self._media_payload("1"),
+                                "clips": {"items": [{"media": self._media_payload("2")}]},
+                            },
+                            "fill_items": [{"media": self._media_payload("3")}],
+                            "medias": [{"media": self._media_payload("4")}],
+                        }
+                    }
+                ]
+            }
+        }
+        with mock.patch.object(client, "fbsearch_topsearch_v2", return_value=payload) as topsearch:
+            medias = client.media_search("space", amount=10)
+
+        self.assertEqual([media.pk for media in medias], ["1", "2", "3", "4"])
+        self.assertTrue(all(isinstance(media, Media) for media in medias))
+        topsearch.assert_called_once_with("space")
+
+    def test_media_search_skips_malformed_nodes_and_sections(self):
+        client = self._build_client()
+        client.logger = mock.Mock()
+        payload = {
+            "media_grid": {
+                "sections": [
+                    "invalid-section",
+                    {"layout_content": "invalid-layout"},
+                    {
+                        "layout_content": {
+                            "fill_items": [
+                                "invalid-item",
+                                {"media": {"pk": "broken"}},
+                                {"media": self._media_payload("10")},
+                            ]
+                        }
+                    },
+                ],
+                "has_more": False,
+            }
+        }
+        with mock.patch.object(client, "fbsearch_topsearch_v2", return_value=payload):
+            medias = client.media_search("space", amount=5)
+
+        self.assertEqual([media.pk for media in medias], ["10"])
+        client.logger.warning.assert_called_once()
+
+    def test_media_search_stops_on_repeated_cursor_and_missing_next_cursor(self):
+        client = self._build_client()
+        with mock.patch.object(
+            client,
+            "fbsearch_topsearch_v2",
+            side_effect=[
+                {
+                    "media_grid": {
+                        "sections": [{"layout_content": {"fill_items": [{"media": self._media_payload("1")}]}}],
+                        "has_more": True,
+                        "next_max_id": "cursor-1",
+                    }
+                },
+                {
+                    "media_grid": {
+                        "sections": [{"layout_content": {"fill_items": [{"media": self._media_payload("2")}]}}],
+                        "has_more": True,
+                        "next_max_id": "cursor-1",
+                    }
+                },
+                AssertionError("repeated cursor should not trigger another request"),
+            ],
+        ) as topsearch:
+            medias = client.media_search("space", amount=0)
+
+        self.assertEqual([media.pk for media in medias], ["1", "2"])
+        self.assertEqual(topsearch.call_count, 2)
+
+        with mock.patch.object(
+            client,
+            "fbsearch_topsearch_v2",
+            side_effect=[
+                {
+                    "media_grid": {
+                        "sections": [{"layout_content": {"fill_items": [{"media": self._media_payload("3")}]}}],
+                        "has_more": True,
+                        "next_max_id": "",
+                    }
+                },
+                AssertionError("empty cursor should not trigger another request"),
+            ],
+        ) as topsearch_empty_cursor:
+            medias = client.media_search("space", amount=0)
+
+        self.assertEqual([media.pk for media in medias], ["3"])
+        self.assertEqual(topsearch_empty_cursor.call_count, 1)
+
     def test_fbsearch_typehead_flattens_stream_rows(self):
         client = self._build_client()
         with mock.patch.object(
