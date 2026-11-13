@@ -2,7 +2,7 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.12 — 2026-11-14
 
 ### Fixed
 
