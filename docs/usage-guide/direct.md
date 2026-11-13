@@ -15,7 +15,7 @@
 | direct_messages(thread_id: int, amount: int = 20)                         | List[DirectMessage]     | Get only Messages in Thread
 | direct_message(thread_id: int, message_id: int, amount: int = 20)         | DirectMessage           | Get one Message from Thread by id
 | direct_answer(thread_id: int, text: str)                                  | DirectMessage           | Add Message to exist Thread
-| direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], reply_to_message: Optional[DirectMessage] = None) | DirectMessage | Send Message to Users or Threads, optionally as a reply
+| direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE = "message_button", reply_to_message: Optional[DirectMessage] = None, *, nav_chain: Optional[str] = None) | DirectMessage | Send a text or link message, optionally as a reply, with request-specific navigation metadata |
 | direct_send_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None) | bool | Send an emoji reaction to a message
 | direct_delete_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None) | bool | Delete your emoji reaction from a message
 | direct_message_like(thread_id: int, message_id: int, client_context: Optional[str] = None) | bool | Like a message with a heart reaction
@@ -40,6 +40,24 @@
 | direct_send_video(path: Path, user_ids: List[int], thread_ids: List[int]) | DirectMessage           | Send a direct video (.mp4 / H.264 + AAC) to list of users or threads
 | direct_send_voice(path: Path, user_ids: List[int], thread_ids: List[int], waveform: Optional[List[float]]) | DirectMessage | Send a direct voice (audio) message; path must be m4a/AAC
 | video_upload_to_direct(path: Path, caption: str, thumbnail: Path, mentions: List[StoryMention], thread_ids: List[int] = [], extra_data: Dict[str, str] = {}) | DirectMessage | Upload video to direct thread as a story and configure it
+
+### Navigation metadata for text and link messages
+
+`direct_send()` uses the same navigation chain in the `X-IG-Nav-Chain` header and the request body. Its keyword-only `nav_chain` argument applies to that send, including link messages and replies, and does not change session headers or later requests. Omitting it (or passing `None`) preserves the existing Direct body chain as the default; the SDK does not track application screen transitions.
+
+Use `send_attribute="message_button"` (the default), `"inbox_search"`, or `"inbox"`. The Python argument is named `send_attribute`; the wire field is `send_attribution`. When providing a custom chain, choose the attribution that matches your entry path. The chain is preserved verbatim and must be a nonempty string without leading whitespace or control characters. Invalid values raise `ValueError` before sending.
+
+```python
+# navigation_chain is the current chain supplied by your application.
+cl.direct_send(
+    "Hello",
+    thread_ids=[thread.id],
+    send_attribute="inbox",
+    nav_chain=navigation_chain,
+)
+```
+
+These options cover `direct_send()` text/link requests. They do not establish that navigation metadata causes or resolves Direct restrictions or error 1404006.
 
 ### Option types
 
