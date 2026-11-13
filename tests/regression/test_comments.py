@@ -290,3 +290,41 @@ class CommentRepliesRegressionTestCase(unittest.TestCase):
             ],
         )
         self.assertEqual([reply.pk for reply in replies], ["101", "102"])
+
+
+class CommentLikersRegressionTestCase(unittest.TestCase):
+    def test_v1_fetches_private_comment_likers(self):
+        client = Client()
+        users = [{"pk": "1", "username": "alice"}]
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": users, "status": "ok"},
+        ) as private_request:
+            result = client.comment_likers_v1("100")
+
+        self.assertEqual(result, users)
+        private_request.assert_called_once_with("media/100/comment_likers/")
+
+    def test_v1_applies_amount_to_one_shot_users(self):
+        client = Client()
+        users = [
+            {"pk": "1", "username": "alice"},
+            {"pk": "2", "username": "bob"},
+        ]
+        with mock.patch.object(
+            client,
+            "private_request",
+            return_value={"users": users, "status": "ok"},
+        ):
+            result = client.comment_likers_v1("100", amount=1)
+
+        self.assertEqual(result, users[:1])
+
+    def test_unsuffixed_helper_delegates_to_v1(self):
+        client = Client()
+        with mock.patch.object(client, "comment_likers_v1", return_value=[{"pk": "1"}]) as v1:
+            result = client.comment_likers("100", amount=1)
+
+        self.assertEqual(result, [{"pk": "1"}])
+        v1.assert_called_once_with("100", 1)

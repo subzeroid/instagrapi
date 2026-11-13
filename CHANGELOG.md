@@ -2,6 +2,31 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.12 — 2026-11-14
+
+### Fixed
+
+- Keep `direct_send()` navigation metadata identical in the request header and body, including text, links and replies. Add an optional request-local `nav_chain` argument and support `send_attribute="inbox"` while preserving existing values and the historical default body chain (related to instagrapi #2870).
+
+## 3.2.11 — 2026-11-13
+
+### Fixed
+
+- Derive the USDID registration key ID from the public key and repair legacy random IDs without rotating the saved UUID or key pair (#2939).
+- Raise `PrivateError` when `media_search()` receives a missing, null or malformed media grid instead of silently returning empty or partial results. Preserve valid empty results, skip malformed individual nodes, and stop repeated pagination cursors (#2946). This improves response validation; it does not restore server-side search availability.
+
+## 3.2.10 — 2026-11-12
+
+### Added
+
+- Add `comment_likers_v1()` and route `comment_likers()` through the private comment-likers endpoint, returning raw user dictionaries with optional amount truncation (#2944). Explicit GraphQL helpers and cursors remain available.
+
+## 3.2.9 — 2026-11-10
+
+### Fixed
+
+- Replace the rejected legacy `users_stories_gql()` query with modern XDT web GraphQL, cap requests at 25 user IDs per batch, preserve per-user limits, and normalize web story media identifiers without cyclic owner graphs (#2940).
+
 ## 3.2.8 — 2026-11-09
 
 ### Added

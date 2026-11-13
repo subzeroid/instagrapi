@@ -38,6 +38,8 @@ users = cl.fbsearch_typehead("py")
 medias = cl.media_search("python", amount=3)
 ```
 
+`media_search()` raises `PrivateError` when the response omits `media_grid`, returns `null`, or has a malformed grid or sections payload. A valid empty grid still returns `[]`. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.
+
 ## Other search helpers
 
 | Method | Return | Description |

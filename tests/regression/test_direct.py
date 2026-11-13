@@ -407,6 +407,7 @@ class DirectMixinRegressionTestCase(unittest.TestCase):
             "direct_v2/threads/broadcast/text/",
             data=mock.ANY,
             with_signature=False,
+            headers={"X-IG-Nav-Chain": private.call_args.kwargs["data"]["nav_chain"]},
         )
         data = private.call_args.kwargs["data"]
         self.assertEqual(json.loads(data["thread_ids"]), [123])
