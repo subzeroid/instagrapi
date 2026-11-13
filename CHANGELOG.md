@@ -2,6 +2,13 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.11 — 2026-11-13
+
+### Fixed
+
+- Derive the USDID registration key ID from the public key and repair legacy random IDs without rotating the saved UUID or key pair (#2939).
+- Raise `PrivateError` when `media_search()` receives a missing, null or malformed media grid instead of silently returning empty or partial results. Preserve valid empty results, skip malformed individual nodes, and stop repeated pagination cursors (#2946). This improves response validation; it does not restore server-side search availability.
+
 ## 3.2.10 — 2026-11-12
 
 ### Added
