@@ -673,6 +673,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#navigation-metadata-for-text-and-link-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation metadata for text and link messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#option-types" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1266,6 +1277,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#navigation-metadata-for-text-and-link-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation metadata for text and link messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#option-types" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1383,9 +1405,9 @@
 <td>Add Message to exist Thread</td>
 </tr>
 <tr>
-<td>direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], reply_to_message: Optional[DirectMessage] = None)</td>
+<td>direct_send(text: str, user_ids: List[int] = [], thread_ids: List[int] = [], send_attribute: SEND_ATTRIBUTE = "message_button", reply_to_message: Optional[DirectMessage] = None, *, nav_chain: Optional[str] = None)</td>
 <td>DirectMessage</td>
-<td>Send Message to Users or Threads, optionally as a reply</td>
+<td>Send a text or link message, optionally as a reply, with request-specific navigation metadata</td>
 </tr>
 <tr>
 <td>direct_send_reaction(thread_id: int, message_id: int, emoji: str = "❤", client_context: Optional[str] = None)</td>
@@ -1509,6 +1531,18 @@
 </tr>
 </tbody>
 </table>
+<h3 id="navigation-metadata-for-text-and-link-messages">Navigation metadata for text and link messages</h3>
+<p><code>direct_send()</code> uses the same navigation chain in the <code>X-IG-Nav-Chain</code> header and the request body. Its keyword-only <code>nav_chain</code> argument applies to that send, including link messages and replies, and does not change session headers or later requests. Omitting it (or passing <code>None</code>) preserves the existing Direct body chain as the default; the SDK does not track application screen transitions.</p>
+<p>Use <code>send_attribute="message_button"</code> (the default), <code>"inbox_search"</code>, or <code>"inbox"</code>. The Python argument is named <code>send_attribute</code>; the wire field is <code>send_attribution</code>. When providing a custom chain, choose the attribution that matches your entry path. The chain is preserved verbatim and must be a nonempty printable ASCII string without leading or trailing whitespace. Invalid values raise <code>ValueError</code> before sending.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># navigation_chain is the current chain supplied by your application.</span>
+<span class="n">cl</span><span class="o">.</span><span class="n">direct_send</span><span class="p">(</span>
+    <span class="s2">"Hello"</span><span class="p">,</span>
+    <span class="n">thread_ids</span><span class="o">=</span><span class="p">[</span><span class="n">thread</span><span class="o">.</span><span class="n">id</span><span class="p">],</span>
+    <span class="n">send_attribute</span><span class="o">=</span><span class="s2">"inbox"</span><span class="p">,</span>
+    <span class="n">nav_chain</span><span class="o">=</span><span class="n">navigation_chain</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>These options cover <code>direct_send()</code> text/link requests. They do not establish that navigation metadata causes or resolves Direct restrictions or error 1404006.</p>
 <h3 id="option-types">Option types</h3>
 <p>Direct media type is exposed as <code>DirectMediaType = Literal["photo", "video"]</code>.</p>
 <table>
