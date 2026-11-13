@@ -538,10 +538,10 @@ class DirectMixin:
         elif (
             not isinstance(nav_chain, str)
             or not nav_chain
-            or nav_chain[0].isspace()
-            or any(ord(char) < 32 or ord(char) == 127 for char in nav_chain)
+            or nav_chain != nav_chain.strip()
+            or any(not 32 <= ord(char) <= 126 for char in nav_chain)
         ):
-            raise ValueError("nav_chain must be a non-empty string without leading whitespace or control characters")
+            raise ValueError("nav_chain must be non-empty printable ASCII without leading or trailing whitespace")
         method = "text"
         token = self.generate_mutation_token()
 

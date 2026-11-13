@@ -45,7 +45,7 @@
 
 `direct_send()` uses the same navigation chain in the `X-IG-Nav-Chain` header and the request body. Its keyword-only `nav_chain` argument applies to that send, including link messages and replies, and does not change session headers or later requests. Omitting it (or passing `None`) preserves the existing Direct body chain as the default; the SDK does not track application screen transitions.
 
-Use `send_attribute="message_button"` (the default), `"inbox_search"`, or `"inbox"`. The Python argument is named `send_attribute`; the wire field is `send_attribution`. When providing a custom chain, choose the attribution that matches your entry path. The chain is preserved verbatim and must be a nonempty string without leading whitespace or control characters. Invalid values raise `ValueError` before sending.
+Use `send_attribute="message_button"` (the default), `"inbox_search"`, or `"inbox"`. The Python argument is named `send_attribute`; the wire field is `send_attribution`. When providing a custom chain, choose the attribution that matches your entry path. The chain is preserved verbatim and must be a nonempty printable ASCII string without leading or trailing whitespace. Invalid values raise `ValueError` before sending.
 
 ```python
 # navigation_chain is the current chain supplied by your application.

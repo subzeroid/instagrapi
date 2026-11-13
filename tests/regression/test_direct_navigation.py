@@ -137,7 +137,25 @@ def test_positional_reply_and_link_keep_fields_with_custom_chain():
 
 
 @pytest.mark.parametrize(
-    "chain", ["", " ", " leading", "x\rInjected: yes", "x\nInjected: yes", "x\x00", "x\t", "x\x7f", 123, False, []]
+    "chain",
+    [
+        "",
+        " ",
+        " leading",
+        "x\rInjected: yes",
+        "x\nInjected: yes",
+        "x\x00",
+        "x\t",
+        "x\x7f",
+        "trailing ",
+        "x\x85",
+        "x\xa0",
+        "xé",
+        "x\u2014",
+        123,
+        False,
+        [],
+    ],
 )
 def test_invalid_chain_is_rejected_before_dispatch(chain):
     with recording() as (client, recorder):
