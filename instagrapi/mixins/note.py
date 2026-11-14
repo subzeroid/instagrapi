@@ -99,11 +99,13 @@ class NoteMixin:
     @staticmethod
     def _note_dict_from_create_inbox_tray_item(result: Dict) -> Dict:
         for payload in (result.get("data") or {}).values():
-            if payload and payload.get("success"):
-                note_dict = payload.get("inbox_tray_item", {}).get("note_dict") or {}
-                if note_dict:
-                    return note_dict
-        raise ClientGraphqlError("Failed to create music Note")
+            if not isinstance(payload, dict) or not payload.get("success"):
+                continue
+            item = payload.get("inbox_tray_item")
+            note_dict = item.get("note_dict") if isinstance(item, dict) else None
+            if isinstance(note_dict, dict) and note_dict:
+                return note_dict
+        raise ClientGraphqlError("Failed to create Note")
 
     @staticmethod
     def _inbox_tray_from_graphql_result(result: Dict) -> Dict:
@@ -256,11 +258,35 @@ class NoteMixin:
         assert self.user_id, "Login required"
         audience_value = self._note_audience_value(audience)
 
-        data = {"note_style": 0, "text": text, "_uuid": self.uuid, "audience": audience_value}
-        result = self.private_request("notes/create_note", data=data)
-
-        assert result.pop("status", "") == "ok", "Failed to create new Note"
-        return Note(**result)
+        variables = {
+            "should_fetch_content_note_stack_video_info": False,
+            "request": {
+                "inbox_tray_item_type": "note",
+                "audience": audience_value,
+                "additional_params": {"note_create_params": {"text": text, "note_style": 0}},
+            },
+        }
+        data = {
+            "client_doc_id": CREATE_INBOX_TRAY_ITEM_CLIENT_DOC_ID,
+            "method": "post",
+            "pretty": "false",
+            "format": "json",
+            "server_timestamps": "true",
+            "fb_api_req_friendly_name": CREATE_INBOX_TRAY_ITEM_FRIENDLY_NAME,
+            "variables": dumps(variables),
+            "enable_canonical_naming": "true",
+            "enable_canonical_variable_overrides": "true",
+            "enable_canonical_naming_ambiguous_type_prefixing": "true",
+            "locale": self.locale,
+        }
+        result = self.private_graphql_request(
+            data,
+            headers={
+                "X-Root-Field-Name": "xdt_create_inbox_tray_item",
+                "X-GraphQL-Client-Library": "pando",
+            },
+        )
+        return self._note_from_note_dict(self._note_dict_from_create_inbox_tray_item(result))
 
     def create_music_note(
         self,

@@ -69,16 +69,27 @@ class NoteMixinRegressionTestCase(unittest.TestCase):
 
     def test_create_note_posts_note_audience_enum_wire_value(self):
         client = Client()
-        client.uuid = "uuid-1"
         client.private.cookies.set("ds_user_id", "123")
-
-        with mock.patch.object(client, "private_request", return_value=self._note_response(audience=1)) as request:
+        response = {
+            "data": {
+                "mutation": {
+                    "success": True,
+                    "inbox_tray_item": {
+                        "note_dict": {
+                            "note_id": "42",
+                            "text": "hello",
+                            "author_id": "123",
+                            "audience": 1,
+                            "created_at": 1710000000,
+                        }
+                    },
+                }
+            }
+        }
+        with mock.patch.object(client, "private_graphql_request", return_value=response) as request:
             note = client.create_note("hello", audience=NoteAudience.CLOSE_FRIENDS)
-
-        request.assert_called_once_with(
-            "notes/create_note",
-            data={"note_style": 0, "text": "hello", "_uuid": "uuid-1", "audience": 1},
-        )
+        request.assert_called_once()
+        self.assertEqual(json.loads(request.call_args.args[0]["variables"])["request"]["audience"], 1)
         self.assertEqual(note.audience, 1)
 
     def test_create_note_rejects_raw_int_audience(self):
