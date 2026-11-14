@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.13 — 2026-11-14
+
+### Fixed
+
+- Restore `create_music_note()` by sending the root-field and pando headers with the existing operation and payload (instagrapi #2949). Keep private GraphQL headers local to each request so music Note metadata does not leak into later calls.
+
 ## 3.2.12 — 2026-11-14
 
 ### Fixed
