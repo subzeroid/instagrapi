@@ -354,6 +354,12 @@ class NoteMixin:
             "enable_canonical_naming_ambiguous_type_prefixing": "true",
             "locale": self.locale,
         }
-        result = self.private_graphql_request(data)
+        result = self.private_graphql_request(
+            data,
+            headers={
+                "X-Root-Field-Name": "xdt_create_inbox_tray_item",
+                "X-GraphQL-Client-Library": "pando",
+            },
+        )
         note_dict = self._note_dict_from_create_inbox_tray_item(result)
         return self._note_from_note_dict(note_dict)

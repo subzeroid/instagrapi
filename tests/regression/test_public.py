@@ -581,6 +581,7 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
             "fb_api_req_friendly_name": "ExampleQuery",
             "variables": "{}",
         }
+        original_headers = dict(client.private.headers)
         response = Mock()
         response.url = "https://i.instagram.com/graphql/query"
         response.json.return_value = {"data": {"ok": True}}
@@ -594,12 +595,15 @@ class PrivateGraphQLRequestRegressionTestCase(unittest.TestCase):
         post.assert_called_once_with(
             "https://i.instagram.com/graphql/query",
             data=data,
+            headers=mock.ANY,
             proxies=client.private.proxies,
         )
         request_log.assert_called_once_with(response)
-        self.assertEqual(client.private.headers["X-FB-Friendly-Name"], "ExampleQuery")
+        self.assertEqual(dict(client.private.headers), original_headers)
+        headers = post.call_args.kwargs["headers"]
+        self.assertEqual(headers["X-FB-Friendly-Name"], "ExampleQuery")
         self.assertEqual(
-            client.private.headers["Content-Type"],
+            headers["Content-Type"],
             "application/x-www-form-urlencoded; charset=UTF-8",
         )
 
