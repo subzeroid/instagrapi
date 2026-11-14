@@ -1,0 +1,54 @@
+{
+  "source": "Request shape based on Android 428 capture and issue2949 reproduction. Note/user identifiers and session values are synthetic; track IDs are public sample values.",
+  "variables": {
+    "should_fetch_content_note_stack_video_info": false,
+    "request": {
+      "inbox_tray_item_type": "note",
+      "audience": 0,
+      "additional_params": {
+        "note_create_params": {
+          "text": "",
+          "note_style": 1,
+          "note_create_info": {
+            "music_note_create_info": {
+              "start_time": 61000,
+              "is_reshare_eligible": false,
+              "selected_lyrics": null,
+              "audio_asset_id": "1349366503352513",
+              "duration": 30000,
+              "original_note_id": null,
+              "original_author_id": null,
+              "audio_cluster_id": "2081445788764469",
+              "browse_session_id": "browse-test",
+              "alacorn_session_id": "alacorn-test"
+            }
+          }
+        }
+      }
+    }
+  },
+  "response": {
+    "data": {
+      "1$xdt_create_inbox_tray_item(request:$request)": {
+        "inbox_tray_item": {
+          "inbox_tray_item_type": "note",
+          "inbox_tray_item_id": "42",
+          "note_dict": {
+            "note_id": "42",
+            "text": "",
+            "note_style": 1,
+            "audience": 0,
+            "author_id": "123",
+            "created_at": 1710000000
+          }
+        },
+        "success": true,
+        "exception_message": null,
+        "exception_cause": null
+      }
+    },
+    "extensions": {
+      "is_final": true
+    }
+  }
+}
