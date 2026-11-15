@@ -11,6 +11,11 @@
 | delete_note(note_id: int)   | bool              | Delete a posted Note            |
 | last_seen_update_note()     | bool              | Update the last seen time |
 
+Text Notes use the Inbox Tray GraphQL creation operation and preserve Unicode text,
+including emoji. `create_note()` still defaults to `NoteAudience.MUTUAL_FOLLOWERS`;
+pass `NoteAudience.CLOSE_FRIENDS` to choose that audience. A failed creation raises
+an API error; the client does not retry it through the legacy Notes endpoint.
+
 Example:
 
 ``` python

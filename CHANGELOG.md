@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Fixed
+
+- Preserve emoji in `create_note()` by using the text-only Inbox Tray GraphQL mutation instead of the legacy REST endpoint (instagrapi #2886). Preserve the audience argument and typed `Note` return; reject unsuccessful or malformed creation responses without retrying the mutation.
+
 ## 3.2.13 — 2026-11-14
 
 ### Fixed
