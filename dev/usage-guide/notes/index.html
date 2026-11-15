@@ -1337,6 +1337,10 @@
 </tr>
 </tbody>
 </table>
+<p>Text Notes use the Inbox Tray GraphQL creation operation and preserve Unicode text,
+including emoji. <code>create_note()</code> still defaults to <code>NoteAudience.MUTUAL_FOLLOWERS</code>;
+pass <code>NoteAudience.CLOSE_FRIENDS</code> to choose that audience. A failed creation raises
+an API error; the client does not retry it through the legacy Notes endpoint.</p>
 <p>Example:</p>
 <div class="highlight"><pre><span></span><code><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.mixins.note</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoteAudience</span>
 <span class="o">&gt;&gt;&gt;</span> <span class="n">note</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">create_note</span><span class="p">(</span><span class="s2">"Hello from Instagrapi!"</span><span class="p">,</span> <span class="n">audience</span><span class="o">=</span><span class="n">NoteAudience</span><span class="o">.</span><span class="n">MUTUAL_FOLLOWERS</span><span class="p">)</span>
