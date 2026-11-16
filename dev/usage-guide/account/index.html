@@ -1070,6 +1070,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Account
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1086,6 +1104,36 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#create-an-additional-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create an additional profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1199,6 +1247,25 @@
   
     
   
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#create-an-additional-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create an additional profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1456,6 +1523,50 @@
   <span class="o">...</span>
 <span class="p">}</span>
 </code></pre></div>
+<h2 id="create-an-additional-profile">Create an additional profile</h2>
+<p><code>client.create_secondary_account(username, *, link_to_main_account=True)</code>
+uses an authenticated main account to create an additional Instagram profile in
+its Accounts Center, without a separate email address, phone number or password.
+Calling this method accepts Instagram's terms for the new account. Instagram can
+require verification or reject creation; unsupported screens stop the flow.
+Only the linked Accounts Center flow is supported. Passing
+<code>link_to_main_account=False</code> raises <code>ValueError</code> before sending a request.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">instagrapi.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SecondaryAccountError</span>
+
+<span class="n">main</span> <span class="o">=</span> <span class="n">Client</span><span class="p">()</span>
+<span class="n">main</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">MAIN_USERNAME</span><span class="p">,</span> <span class="n">MAIN_PASSWORD</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">main</span><span class="o">.</span><span class="n">create_secondary_account</span><span class="p">(</span><span class="s2">"new_additional_profile"</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">SecondaryAccountError</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">exc</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span> <span class="n">exc</span><span class="o">.</span><span class="n">creation_may_have_succeeded</span><span class="p">)</span>
+    <span class="c1"># Never retry automatically: a timeout after submission can still create</span>
+    <span class="c1"># an account. Check the main account's Accounts Center first.</span>
+    <span class="k">raise</span>
+
+<span class="n">additional</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span> <span class="n">proxy</span><span class="o">=</span><span class="n">main</span><span class="o">.</span><span class="n">proxy</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">)</span>
+<span class="c1"># main still uses its original identity and cookies.</span>
+</code></pre></div>
+<p>The returned <code>SecondaryAccount</code> contains <code>user: UserShort</code> and <code>settings: dict</code>.
+Settings contain credentials for the new session: keep them private and persist
+with the same care as <code>Client.get_settings()</code>. They are omitted from the result's
+representation, but included when explicitly serializing the result. Proxy
+credentials are not included; pass the intended proxy to the new client.
+Temporary connections used by creation are closed before returning.
+The main client's <code>read_timeout</code> must be a finite positive number; invalid values
+are rejected before a temporary client or network request is created.</p>
+<p>Creation does not retry automatically or follow HTTP redirects. If the final
+submission fails or its response cannot be validated,
+<code>SecondaryAccountError.creation_may_have_succeeded</code> is true. Interruption after
+submission can also leave an uncertain result. Do not call the method again as
+a recovery step without checking the account first. No automatic onboarding,
+contact upload, follows, or legacy account-family mutation is performed.</p>
+<p>Accounts Center linkage and the legacy <code>get_account_family_v1()</code> lists are
+separate observations: <code>child_accounts</code> and <code>main_accounts</code> can remain empty
+after successful creation. Validate the returned identity/session; an empty
+legacy list alone does not mean that creation failed. An "additional profile"
+here is not a child-age or parental-supervision account.</p>
 
 
 

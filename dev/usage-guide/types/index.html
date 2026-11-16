@@ -577,6 +577,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#instagrapi.types.SecondaryAccount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecondaryAccount
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#instagrapi.types.User" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2300,6 +2311,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#instagrapi.types.SecondaryAccount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecondaryAccount
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#instagrapi.types.User" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3435,6 +3457,61 @@
         <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"http"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"://"</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">v</span>
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s2">"external_url must be a URL or string"</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="instagrapi.types.SecondaryAccount"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="instagrapi.types.TypesBaseModel">TypesBaseModel</span></code></p>
+
+
+
+        <p>A new additional profile and its separate, confidential session settings.</p>
+
+
+
+
+
+
+
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>instagrapi/types.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1131</span>
+<span class="normal">1132</span>
+<span class="normal">1133</span>
+<span class="normal">1134</span>
+<span class="normal">1135</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SecondaryAccount</span><span class="p">(</span><span class="n">TypesBaseModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A new additional profile and its separate, confidential session settings."""</span>
+
+    <span class="n">user</span><span class="p">:</span> <span class="n">UserShort</span>
+    <span class="n">settings</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="nb">repr</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
