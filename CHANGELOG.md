@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Added
+
+- Add `create_secondary_account()` for the observed linked Accounts Center flow, returning a typed user and separate session settings while preserving the main client. Port the API from aiograpi 2.1.15 (aiograpi #528, #561). Creation does not automatically retry or follow redirects; uncertain outcomes are reported explicitly.
+
 ## 3.2.14 — 2026-11-15
 
 ### Fixed

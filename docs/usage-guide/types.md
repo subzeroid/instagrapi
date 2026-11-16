@@ -34,6 +34,8 @@ Required fields have no default value. `Optional[...]` fields may be absent from
 
 ::: instagrapi.types.Account
 
+::: instagrapi.types.SecondaryAccount
+
 ::: instagrapi.types.User
 
 ::: instagrapi.types.UserShort
