@@ -364,6 +364,9 @@ class PrivateGraphQLRequestMixin:
         domain: str = PRIVATE_GRAPHQL_WWW_DOMAIN,
         extra_headers: Optional[Dict] = None,
         purpose: Optional[str] = "fetch",
+        *,
+        allow_redirects: Optional[bool] = None,
+        timeout: Optional[float] = None,
     ) -> Dict:
         data = {
             "method": "post",
@@ -397,10 +400,17 @@ class PrivateGraphQLRequestMixin:
         if self.request_timeout:
             time.sleep(self.request_timeout)
         url = f"https://{domain}/graphql_www"
+        request_options = {}
+        if allow_redirects is not None:
+            request_options["allow_redirects"] = allow_redirects
+        if timeout is not None:
+            request_options["timeout"] = timeout
         response = None
         try:
             self.private_requests_count += 1
-            response = self.private.post(url, data=data, headers=merged, proxies=self.private.proxies)
+            response = self.private.post(
+                url, data=data, headers=merged, proxies=self.private.proxies, **request_options
+            )
             self.request_log(response)
             self.last_response = response
             response.raise_for_status()

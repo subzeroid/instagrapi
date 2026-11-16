@@ -1126,3 +1126,10 @@ class Note(TypesBaseModel):
     is_emoji_only: bool
     has_translation: bool
     note_style: int
+
+
+class SecondaryAccount(TypesBaseModel):
+    """A new additional profile and its separate, confidential session settings."""
+
+    user: UserShort
+    settings: Dict = Field(repr=False)
