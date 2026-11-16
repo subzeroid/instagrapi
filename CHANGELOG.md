@@ -2,11 +2,19 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
-## Unreleased
+## 3.2.15 — 2026-11-16
 
 ### Added
 
 - Add `create_secondary_account()` for the observed linked Accounts Center flow, returning a typed user and separate session settings while preserving the main client. Port the API from aiograpi 2.1.15 (aiograpi #528, #561). Creation does not automatically retry or follow redirects; uncertain outcomes are reported explicitly.
+
+### Known limitations
+
+- Synchronous live attempts created profiles with usernames different from those requested, and the returned sessions required a challenge. The client rejects these mismatched results; successful synchronous creation and session handoff have not been established. The related async flow was previously validated in aiograpi.
+
+### Changed
+
+- Select an available Python 3.13 patch release in CI instead of pinning 3.13.5, which is unavailable on Ubuntu 26.04.
 
 ## 3.2.14 — 2026-11-15
 
