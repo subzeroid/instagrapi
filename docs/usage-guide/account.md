@@ -152,6 +152,12 @@ Example:
 
 ## Create an additional profile
 
+**Validation status (3.2.15):** the related async flow was validated in aiograpi,
+but synchronous live attempts returned a different username and the resulting
+sessions required a challenge. Successful synchronous creation and session
+handoff have not been established. The method rejects mismatched results; do
+not automatically retry creation after such an error.
+
 `client.create_secondary_account(username, *, link_to_main_account=True)`
 uses an authenticated main account to create an additional Instagram profile in
 its Accounts Center, without a separate email address, phone number or password.
