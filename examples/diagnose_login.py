@@ -210,6 +210,7 @@ def empty_bloks_summary():
         "fallback_reference_present": False,
         "login_success_reference_present": False,
         "continuation_reference_present": False,
+        "account_recovery_reference_present": False,
         "two_step_context_parsed": False,
         "profile_code_context_parsed": False,
         "error_reference_present": False,
@@ -237,6 +238,8 @@ def summarize_bloks(data):
         summary["continuation_reference_present"] = any(
             BLOKS_APPS[app].startswith(("two_step/", "profile_code/")) for app in apps
         )
+        # A reference can occur in an inactive branch; it is not a password verdict.
+        summary["account_recovery_reference_present"] = "account_recovery" in strings or '"account_recovery"' in text
         summary["fallback_reference_present"] = any(value.startswith("CAA_LOGIN_FALLBACK:") for value in strings)
         summary["login_success_reference_present"] = any(
             marker in strings or f'"{marker}"' in text for marker in ("login_success", "two_fac_redirect")
@@ -393,6 +396,13 @@ def diagnose(client, username, password, *, relogin=False, verification_code="")
                 report["outcome"] = "success" if result else "false_return"
             except (Exception, KeyboardInterrupt) as exc:
                 report["exception"] = {**summarize_json(vars(exc)), "type": type(exc).__name__}
+                initial = getattr(exc, "caa_initial_outcome", None)
+                if isinstance(initial, dict):
+                    try:
+                        report["initial_caa"] = summarize_caa_outcome(client, initial)
+                        report["initial_caa"]["bloks"] = summarize_bloks(initial.get("result"))
+                    except Exception:
+                        report["initial_caa"] = {"inspection_error": True}
     finally:
         client.handle_exception = previous_handler
         if previous_caa_override is missing:

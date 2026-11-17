@@ -828,9 +828,21 @@ class LoginMixin(PreLoginFlowMixin, PostLoginFlowMixin):
             if not logged:
                 markers = self._caa_result_action_markers(outcome)
                 if any(marker.startswith("CAA_LOGIN_FALLBACK:") for marker in markers):
-                    # Instagram routed this login back to the legacy accounts
-                    # flow; that endpoint carries the typed failure reason.
-                    return self.login_legacy(verification_code=verification_code)
+                    # Keep the first CAA evidence even if legacy login or its
+                    # CAA retry replaces last_response/last_json before failing.
+                    initial_outcome = deepcopy(outcome)
+                    initial_response = self.last_response
+                    try:
+                        return self.login_legacy(verification_code=verification_code)
+                    except ClientError as exc:
+                        exc.caa_initial_outcome = initial_outcome
+                        exc.caa_initial_response = initial_response
+                        exc.add_note(
+                            "The initial CAA attempt returned no session. Its private response is retained "
+                            "in caa_initial_outcome/caa_initial_response; the later error may describe "
+                            "a different login stage. Do not publish these raw attributes."
+                        )
+                        raise
                 exc_context = self._exception_context(outcome)
                 if markers:
                     exc_context["caa_actions"] = markers

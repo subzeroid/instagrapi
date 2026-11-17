@@ -147,3 +147,22 @@ Downloading the latest diagnostic script does not upgrade the installed package 
 Private HTTP/2 requires `curl_cffi>=0.15.0` and libcurl 8.10 or newer. `curl_cffi` normally supplies libcurl in its wheels; a system `curl` executable and the Python `h2` package are not required for this transport. A compatible wheel or a supported native build is required for your platform. Android/Termux has not been verified.
 
 The optional `instagrapi[curl]` extra remains available for public web browser impersonation through `curl-adapter`. It is not required for private HTTP/2. See [private HTTP/2 transport](interactions.md#private-http2-transport) for TLS, proxy and timeout behavior.
+
+
+### Retained CAA evidence after a fallback error
+
+When an initial CAA response does not establish a session and the existing
+legacy fallback raises `ClientError`, the same exception retains
+`caa_initial_outcome` and `caa_initial_response`. These describe the initial CAA
+stage, even if a later attempt replaces the client's `last_json` or
+`last_response`. The exception's original type, message and `response` still
+refer to the later failure. A traceback note points to the retained evidence.
+
+These attributes can contain tokens and account data: keep them private and do
+not dump the exception's `__dict__`. The standalone login diagnostic exports an
+allowlisted `initial_caa` summary instead. Its
+`account_recovery_reference_present` flag reports only a reference in the
+response; it does not establish an incorrect password or an executed recovery
+step. A later `needs_upgrade` does not identify the cause of the initial CAA
+outcome. This diagnostic enrichment does not change fallback decisions, add
+requests, or implement notification polling.
