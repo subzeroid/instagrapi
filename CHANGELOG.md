@@ -2,6 +2,16 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.16 — 2026-11-17
+
+### Fixed
+
+- Preserve the initial CAA outcome and response when the existing legacy fallback raises a login error. The standalone diagnostic exports a shareable summary of the initial stage; raw exception attributes remain private (instagrapi #2881).
+
+### Changed
+
+- Update the development Ruff pin to 0.17.5 (#2958).
+
 ## 3.2.15 — 2026-11-16
 
 ### Added
