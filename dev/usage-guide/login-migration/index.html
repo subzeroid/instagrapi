@@ -562,6 +562,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#retained-caa-evidence-after-a-fallback-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retained CAA evidence after a fallback error
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1417,6 +1434,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installation requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#retained-caa-evidence-after-a-fallback-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retained CAA evidence after a fallback error
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1526,6 +1560,21 @@
 <h2 id="installation-requirements">Installation requirements</h2>
 <p>Private HTTP/2 requires <code>curl_cffi&gt;=0.15.0</code> and libcurl 8.10 or newer. <code>curl_cffi</code> normally supplies libcurl in its wheels; a system <code>curl</code> executable and the Python <code>h2</code> package are not required for this transport. A compatible wheel or a supported native build is required for your platform. Android/Termux has not been verified.</p>
 <p>The optional <code>instagrapi[curl]</code> extra remains available for public web browser impersonation through <code>curl-adapter</code>. It is not required for private HTTP/2. See <a href="../interactions/#private-http2-transport">private HTTP/2 transport</a> for TLS, proxy and timeout behavior.</p>
+<h3 id="retained-caa-evidence-after-a-fallback-error">Retained CAA evidence after a fallback error</h3>
+<p>When an initial CAA response does not establish a session and the existing
+legacy fallback raises <code>ClientError</code>, the same exception retains
+<code>caa_initial_outcome</code> and <code>caa_initial_response</code>. These describe the initial CAA
+stage, even if a later attempt replaces the client's <code>last_json</code> or
+<code>last_response</code>. The exception's original type, message and <code>response</code> still
+refer to the later failure. A traceback note points to the retained evidence.</p>
+<p>These attributes can contain tokens and account data: keep them private and do
+not dump the exception's <code>__dict__</code>. The standalone login diagnostic exports an
+allowlisted <code>initial_caa</code> summary instead. Its
+<code>account_recovery_reference_present</code> flag reports only a reference in the
+response; it does not establish an incorrect password or an executed recovery
+step. A later <code>needs_upgrade</code> does not identify the cause of the initial CAA
+outcome. This diagnostic enrichment does not change fallback decisions, add
+requests, or implement notification polling.</p>
 
 
 
