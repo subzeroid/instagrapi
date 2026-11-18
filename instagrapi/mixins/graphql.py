@@ -117,6 +117,9 @@ class PrivateGraphQLRequestMixin:
         if isinstance(target, list):
             if not isinstance(key, int):
                 return
+            if key == len(target):
+                target.append(value)
+                return
             try:
                 current = target[key]
             except IndexError:
@@ -161,7 +164,10 @@ class PrivateGraphQLRequestMixin:
                 raise
             body = chunks[0]
             for chunk in chunks[1:]:
-                self._merge_incremental_graphql_payload(body, chunk)
+                updates = chunk if isinstance(chunk, list) else (chunk,)
+                for update in updates:
+                    if isinstance(update, dict):
+                        self._merge_incremental_graphql_payload(body, update)
             return body
 
     def graphql_request(

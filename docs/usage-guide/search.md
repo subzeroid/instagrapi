@@ -16,6 +16,7 @@ The `*_v2` methods hit the same `fbsearch/<tab>_serp/` endpoints the official In
 | `fbsearch_typeahead_stream(query: str, timezone_offset: int = 0, count: int = 30)` | `dict` | Raw streaming typeahead payload via `fbsearch/typeahead_stream/`. |
 | `fbsearch_typehead(query: str)` | `List[dict]` | Typeahead user suggestions, flattened from the `stream_rows` envelope returned by `fbsearch/typeahead_stream/`. |
 | `media_search(query: str, amount: int = 27)` | `List[Media]` | Typed media search from the private Top blended fbsearch SERP, including media-grid cursor pagination. |
+| `media_search_top_gql(query: str, amount: int = 0)` | `List[Media]` | Media from the first page of the mobile Top GraphQL search. `amount=0` returns all media on that page. |
 
 Example:
 
@@ -36,6 +37,7 @@ users = cl.fbsearch_typehead("py")
 
 # Top media — typed Media objects
 medias = cl.media_search("python", amount=3)
+top_medias = cl.media_search_top_gql("python", amount=3)
 ```
 
 `media_search()` raises `PrivateError` when the response omits `media_grid`, returns `null`, or has a malformed grid or sections payload. A valid empty grid still returns `[]`. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.

@@ -2,6 +2,16 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Added
+
+- Add `media_search_top_gql()` to return typed media from the first page of mobile Top GraphQL search (#2961).
+
+### Fixed
+
+- Assemble batched GraphQL updates and append streamed list items in response order.
+
 ## 3.2.16 — 2026-11-17
 
 ### Fixed
