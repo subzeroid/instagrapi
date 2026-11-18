@@ -106,3 +106,86 @@ def test_media_search_top_gql_rejects_malformed_response_containers(data):
 
     with pytest.raises(PrivateError, match="Missing TopSerpQuery edges"):
         client.media_search_top_gql("Istanbul")
+
+
+def _top_serp_page(*ids, after=None, has_next_page=True):
+    items = [
+        {
+            "__typename": "XDTMediaDict",
+            "pk": pk,
+            "code": "example",
+            "taken_at": 1_700_000_000,
+            "media_type": 1,
+            "user": {"id": "456", "username": "example"},
+        }
+        for pk in ids
+    ]
+    connection = {
+        "edges": [{"node": {"__typename": "XDTTopSerpMediaGridUnit", "items": items}}],
+        "page_info": {"has_next_page": has_next_page, "end_cursor": after},
+    }
+    return {"data": {"manual_pagination_query": connection}}
+
+
+def test_media_search_top_gql_chunk_preserves_search_session_and_filters_duplicates():
+    client = Client()
+    client.private_graphql_request = Mock(
+        side_effect=[
+            _top_serp_page("123", "123", after="next"),
+            _top_serp_page("123", "124", after="ignored", has_next_page=False),
+        ]
+    )
+
+    first, cursor = client.media_search_top_gql_chunk("Istanbul")
+    assert cursor is not None
+    second, next_cursor = client.media_search_top_gql_chunk("Istanbul", cursor)
+
+    assert [media.pk for media in first] == ["123"]
+    assert [media.pk for media in second] == ["124"]
+    assert next_cursor is None
+    first_request, second_request = client.private_graphql_request.call_args_list
+    first_variables = json.loads(first_request.args[0]["variables"])
+    second_variables = json.loads(second_request.args[0]["variables"])
+    assert "after" not in first_variables
+    assert first_variables["is_pagination_request"] is False
+    assert second_variables == dict(first_variables, after="next", is_pagination_request=True)
+
+
+@pytest.mark.parametrize("cursors", [("a", "a"), ("a", "b", "a")])
+def test_media_search_top_gql_chunk_stops_on_repeated_cursor(cursors):
+    client = Client()
+    client.private_graphql_request = Mock(side_effect=[_top_serp_page("123", after=after) for after in cursors])
+
+    first, cursor = client.media_search_top_gql_chunk("Istanbul")
+    assert first and cursor is not None
+    for _ in cursors[1:]:
+        media, cursor = client.media_search_top_gql_chunk("Istanbul", cursor)
+        assert media == []
+    assert cursor is None
+    assert client.private_graphql_request.call_count == len(cursors)
+
+
+def test_media_search_top_gql_chunk_rejects_a_cursor_from_another_query_before_request():
+    client = Client()
+    client.private_graphql_request = Mock(return_value=_top_serp_page("123", after="next"))
+    _, cursor = client.media_search_top_gql_chunk("Istanbul")
+    assert cursor is not None
+
+    with pytest.raises(ValueError, match="query"):
+        client.media_search_top_gql_chunk("Rome", cursor)
+    with pytest.raises(TypeError, match="cursor"):
+        client.media_search_top_gql_chunk("Istanbul", "next")
+    assert client.private_graphql_request.call_count == 1
+
+
+@pytest.mark.parametrize("page_info", [None, {}, {"has_next_page": True}, {"has_next_page": True, "end_cursor": 17}])
+def test_media_search_top_gql_chunk_requires_usable_page_info(page_info):
+    client = Client()
+    response = _top_serp_page("123")
+    response["data"]["manual_pagination_query"]["page_info"] = page_info
+    client.private_graphql_request = Mock(return_value=response)
+
+    page, cursor = client.media_search_top_gql_chunk("Istanbul")
+
+    assert [media.pk for media in page] == ["123"]
+    assert cursor is None

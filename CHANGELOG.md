@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Added
+
+- Continue mobile Top GraphQL media search with `media_search_top_gql_chunk()`. Each call returns one page and a cursor for the next page, with duplicate media filtered across pages (instagrapi #2961).
+
 ## 3.2.17 — 2026-11-18
 
 ### Added
