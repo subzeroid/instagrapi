@@ -1360,6 +1360,11 @@
 <td><code>List[Media]</code></td>
 <td>Typed media search from the private Top blended fbsearch SERP, including media-grid cursor pagination.</td>
 </tr>
+<tr>
+<td><code>media_search_top_gql(query: str, amount: int = 0)</code></td>
+<td><code>List[Media]</code></td>
+<td>Media from the first page of the mobile Top GraphQL search. <code>amount=0</code> returns all media on that page.</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1379,6 +1384,7 @@
 
 <span class="c1"># Top media — typed Media objects</span>
 <span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">top_medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search_top_gql</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 </code></pre></div>
 <p><code>media_search()</code> raises <code>PrivateError</code> when the response omits <code>media_grid</code>, returns <code>null</code>, or has a malformed grid or sections payload. A valid empty grid still returns <code>[]</code>. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.</p>
 <h2 id="other-search-helpers">Other search helpers</h2>
