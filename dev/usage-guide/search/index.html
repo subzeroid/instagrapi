@@ -1365,6 +1365,11 @@
 <td><code>List[Media]</code></td>
 <td>Media from the first page of the mobile Top GraphQL search. <code>amount=0</code> returns all media on that page.</td>
 </tr>
+<tr>
+<td><code>media_search_top_gql_chunk(query, cursor=None)</code></td>
+<td><code>Tuple[List[Media], Optional[cursor]]</code></td>
+<td>One page of mobile Top GraphQL media and a continuation cursor.</td>
+</tr>
 </tbody>
 </table>
 <p>Example:</p>
@@ -1385,6 +1390,12 @@
 <span class="c1"># Top media — typed Media objects</span>
 <span class="n">medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">top_medias</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search_top_gql</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+<p>Top GraphQL pagination returns media and an opaque cursor. Pass the cursor with the same query and authenticated session. A page can be empty when more pages are available. Stop when the cursor is <code>None</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">medias</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search_top_gql_chunk</span><span class="p">(</span><span class="s2">"python"</span><span class="p">)</span>
+<span class="k">while</span> <span class="n">cursor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">page</span><span class="p">,</span> <span class="n">cursor</span> <span class="o">=</span> <span class="n">cl</span><span class="o">.</span><span class="n">media_search_top_gql_chunk</span><span class="p">(</span><span class="s2">"python"</span><span class="p">,</span> <span class="n">cursor</span><span class="p">)</span>
+    <span class="n">medias</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
 </code></pre></div>
 <p><code>media_search()</code> raises <code>PrivateError</code> when the response omits <code>media_grid</code>, returns <code>null</code>, or has a malformed grid or sections payload. A valid empty grid still returns <code>[]</code>. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.</p>
 <h2 id="other-search-helpers">Other search helpers</h2>
