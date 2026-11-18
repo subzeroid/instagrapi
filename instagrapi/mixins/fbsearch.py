@@ -368,7 +368,7 @@ class FbSearchMixin:
                 "serp_origination": "keyboard",
                 "session_state": "typeahead",
                 "keyword_context": "null",
-                "cdd_ranking_token": None,
+                "cdd_ranking_token": None,  # nosec B105 - This protocol field is null.
             },
             "is_incremental_delivery_enabled": False,
             "enable_clips_metadata_in_light_media": False,
