@@ -105,9 +105,11 @@ Low level methods:
 | user_info_v2_gql(user_id: str)                                                      | User                        | Profile lookup through current doc_id GraphQL                              |
 | user_info_by_username_v2_gql(username: str)                                         | User                        | Resolve username through doc_id search, then fetch profile                 |
 | private_graphql_followers_list(user_id: str, rank_token: str, ..., order: Optional[FOLLOWERS_ORDER] = None) | dict | Raw private mobile GraphQL followers list. Supports `date_followed_latest` and `date_followed_earliest` |
-| private_graphql_following_list(user_id: str, rank_token: str, ..., order: Optional[FOLLOWERS_ORDER] = None) | dict | Raw private mobile GraphQL following list. Supports mobile `order` when accepted by Instagram |
+| private_graphql_following_list(user_id: str, rank_token: str, ..., order: Optional[FOLLOWERS_ORDER] = None) | dict | Raw private mobile GraphQL following list. Accepts the mobile `order` option |
 | private_graphql_clips_profile(target_user_id: str, ...)                             | dict                        | Raw private mobile GraphQL profile Reels stream                            |
 | private_graphql_inbox_tray_for_user(user_id: str, ...)                              | dict                        | Raw private mobile GraphQL inbox tray query                                |
+
+Use `order="date_followed_latest"` or `order="date_followed_earliest"` with `FollowingList` to request chronological sorting for your own following list. When you request another account’s list, Instagram may ignore both values and return the same viewer-ranked order. The raw and typed GraphQL helpers preserve the order returned by Instagram. [See issue #2857](https://github.com/subzeroid/instagrapi/issues/2857).
 
 `user_short_gql()` and `user_info_v2_gql()` use the same current web profile GraphQL query and return `UserShort` and `User`, respectively. `user_info_by_username_v2_gql()` resolves the username before fetching that profile. These methods copy an available mobile session into the public request session.
 
