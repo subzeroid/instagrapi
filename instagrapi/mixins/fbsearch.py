@@ -1,8 +1,9 @@
 import json
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
-from instagrapi.exceptions import PrivateError
+from instagrapi.exceptions import ClientGraphqlError, PrivateError
 from instagrapi.extractors import (
     extract_hashtag_v1,
     extract_location,
@@ -77,6 +78,51 @@ class FbSearchMixin:
         for item in result["items"]:
             locations.append(extract_location(item["location"]))
         return locations
+
+    def web_search_users(self, query: str) -> List[UserShort]:
+        """Return account results from Instagram's web search on a saved session.
+
+        The query must contain at least one non-whitespace character.
+        """
+        if not query.strip():
+            raise ValueError("query must not be blank")
+        data = self.public_doc_id_graphql_request(
+            "27706427925724183",
+            {
+                "data": {
+                    "context": "blended",
+                    "include_reel": "true",
+                    "query": query,
+                    "rank_token": "",  # nosec B105 - This initial search ranking field is empty.
+                    "search_session_id": self.generate_uuid(),
+                    "search_surface": "web_top_search",
+                },
+                "hasQuery": True,
+            },
+            referer="https://www.instagram.com/explore/",
+            headers={"X-FB-Friendly-Name": "PolarisSearchBoxRefetchableQuery"},
+            url=self.GRAPHQL_PUBLIC_WEB_API_URL,
+            include_lsd=True,
+            include_fb_dtsg=True,
+        )
+        connection = data.get("xdt_api__v1__fbsearch__topsearch_connection") if isinstance(data, dict) else None
+        entries = connection.get("users") if isinstance(connection, dict) else None
+        error = "Malformed web account search response"
+        if not isinstance(entries, list):
+            raise ClientGraphqlError(error)
+        users: List[UserShort] = []
+        for entry in entries:
+            user = entry.get("user") if isinstance(entry, dict) else None
+            if not isinstance(user, dict):
+                raise ClientGraphqlError(error)
+            pk = str(user.get("pk") or user.get("id") or "")
+            if not pk.isdecimal():
+                raise ClientGraphqlError(error)
+            try:
+                users.append(extract_user_short(deepcopy(dict(user, id=pk))))
+            except (TypeError, ValueError) as exc:
+                raise ClientGraphqlError(error) from exc
+        return users
 
     def web_search_topsearch(self, query: str) -> dict:
         params = {
