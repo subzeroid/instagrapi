@@ -1736,7 +1736,7 @@ Pass <code>None</code> to keep Instagram's default follower order.</p>
 <tr>
 <td>private_graphql_following_list(user_id: str, rank_token: str, ..., order: Optional[FOLLOWERS_ORDER] = None)</td>
 <td>dict</td>
-<td>Raw private mobile GraphQL following list. Supports mobile <code>order</code> when accepted by Instagram</td>
+<td>Raw private mobile GraphQL following list. Accepts the mobile <code>order</code> option</td>
 </tr>
 <tr>
 <td>private_graphql_clips_profile(target_user_id: str, ...)</td>
@@ -1750,6 +1750,7 @@ Pass <code>None</code> to keep Instagram's default follower order.</p>
 </tr>
 </tbody>
 </table>
+<p>Use <code>order="date_followed_latest"</code> or <code>order="date_followed_earliest"</code> with <code>FollowingList</code> to request chronological sorting for your own following list. When you request another account’s list, Instagram may ignore both values and return the same viewer-ranked order. The raw and typed GraphQL helpers preserve the order returned by Instagram. <a href="https://github.com/subzeroid/instagrapi/issues/2857">See issue #2857</a>.</p>
 <p><code>user_short_gql()</code> and <code>user_info_v2_gql()</code> use the same current web profile GraphQL query and return <code>UserShort</code> and <code>User</code>, respectively. <code>user_info_by_username_v2_gql()</code> resolves the username before fetching that profile. These methods copy an available mobile session into the public request session.</p>
 <p>The batch follow request helpers call the single-user approve/decline endpoints for
 each <code>user_id</code>; they do not implement an auto-approval policy.</p>
