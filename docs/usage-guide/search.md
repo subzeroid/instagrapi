@@ -60,6 +60,7 @@ while cursor is not None:
 | `search_hashtags(query: str)` | `List[Hashtag]` | Hashtag search via `tags/search/`. |
 | `search_music(query: str)` | `List[Track]` | Music/audio search via `music/audio_global_search/`. |
 | `fbsearch_topsearch_flat(query: str)` | `List[dict]` | Legacy flat top-search via `fbsearch/topsearch_flat/`. |
+| `web_search_users(query: str)` | `List[UserShort]` | Accounts from the web search box through GraphQL with an authenticated session. |
 | `web_search_topsearch(query: str)` | `dict` | Raw web top-search payload via `web/search/topsearch/`. |
 | `web_search_topsearch_hashtags(query: str)` | `List[Hashtag]` | Extract hashtags from the web top-search payload. |
 | `fbsearch_suggested_profiles(user_id: str)` | `List[UserShort]` | Suggested profiles via `fbsearch/accounts_recs/`. |
