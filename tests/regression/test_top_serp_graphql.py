@@ -127,6 +127,54 @@ def _top_serp_page(*ids, after=None, has_next_page=True):
     return {"data": {"manual_pagination_query": connection}}
 
 
+@pytest.mark.parametrize("paginated", [False, True], ids=["first-page", "chunk"])
+@pytest.mark.parametrize("on_child", [False, True], ids=["parent-tag", "child-tag"])
+@pytest.mark.parametrize(
+    "invalid_coordinates",
+    [
+        {"x": None, "y": None},
+        {"position": [0.5, None]},
+        {},
+        {"position": None},
+        {"position": [0.5, "invalid"]},
+    ],
+    ids=["null-fields", "partial-position", "missing-fields", "null-position", "nonnumeric-position"],
+)
+def test_top_serp_keeps_carousel_with_invalid_usertag_coordinates(paginated, on_child, invalid_coordinates):
+    response = _top_serp_page("123", after="next")
+    carousel = response["data"]["manual_pagination_query"]["edges"][0]["node"]["items"][0]
+    child = {"id": "124", "media_type": 1}
+    carousel.update(media_type=8, carousel_media=[child])
+    tagged_item = child if on_child else carousel
+    tagged_item["usertags"] = {
+        "in": [
+            {"user": {"pk": "701", "username": "invalid"}, **invalid_coordinates},
+            {"user": {"pk": "702", "username": "valid_position"}, "position": [0.25, 0.75]},
+            {"user": {"pk": "703", "username": "valid_fields"}, "x": "0.5", "y": 0.5},
+            {"user": {"pk": "704", "username": "fallback_fields"}, "position": None, "x": "0.75", "y": 0},
+        ]
+    }
+    client = Client()
+    client.private_graphql_request = Mock(return_value=response)
+
+    if paginated:
+        result, cursor = client.media_search_top_gql_chunk("example")
+        assert cursor is not None
+    else:
+        result = client.media_search_top_gql("example")
+
+    assert [media.pk for media in result] == ["123"]
+    assert [resource.pk for resource in result[0].resources] == ["124"]
+    parsed_item = result[0].resources[0] if on_child else result[0]
+    assert [(tag.user.pk, tag.x, tag.y) for tag in parsed_item.usertags] == [
+        ("702", 0.25, 0.75),
+        ("703", 0.5, 0.5),
+        ("704", 0.75, 0.0),
+    ]
+    assert len(tagged_item["usertags"]["in"]) == 4
+    assert tagged_item["usertags"]["in"][-1]["position"] is None
+
+
 def test_media_search_top_gql_chunk_preserves_search_session_and_filters_duplicates():
     client = Client()
     client.private_graphql_request = Mock(

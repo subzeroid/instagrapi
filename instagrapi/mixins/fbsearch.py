@@ -3,6 +3,8 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
+from pydantic import TypeAdapter, ValidationError
+
 from instagrapi.exceptions import ClientGraphqlError, PrivateError
 from instagrapi.extractors import (
     extract_hashtag_v1,
@@ -12,6 +14,8 @@ from instagrapi.extractors import (
     extract_user_short,
 )
 from instagrapi.types import Hashtag, Location, Media, Track, UserShort
+
+_TOP_SERP_USERTAG_POSITION = TypeAdapter(tuple[float, float])
 
 
 @dataclass(frozen=True, repr=False)
@@ -520,6 +524,38 @@ class FbSearchMixin:
             raise PrivateError("Missing TopSerpQuery edges", response=self.last_response)
         return connection
 
+    @staticmethod
+    def _without_invalid_top_serp_usertag_positions(media: dict) -> dict:
+        usertags = media.get("usertags")
+        if not isinstance(usertags, dict):
+            return media
+        tags = usertags.get("in")
+        if not isinstance(tags, list):
+            return media
+
+        positioned_tags = []
+        changed = False
+        for tag in tags:
+            if isinstance(tag, dict):
+                fields = (tag.get("x"), tag.get("y"))
+                position = tag.get("position", fields)
+                try:
+                    _TOP_SERP_USERTAG_POSITION.validate_python(position)
+                except ValidationError:
+                    changed = True
+                    if "position" not in tag:
+                        continue
+                    try:
+                        _TOP_SERP_USERTAG_POSITION.validate_python(fields)
+                    except ValidationError:
+                        continue
+                    tag = dict(tag)
+                    tag.pop("position")
+            positioned_tags.append(tag)
+        if not changed:
+            return media
+        return dict(media, usertags={**usertags, "in": positioned_tags})
+
     def _extract_top_serp_media(self, connection: dict, seen: set[str], amount: int = 0) -> List[Media]:
         medias: List[Media] = []
         for edge in connection["edges"]:
@@ -542,10 +578,11 @@ class FbSearchMixin:
                 if not user_pk:
                     continue
                 normalized = dict(item, pk=media_pk, id=f"{media_pk}_{user_pk}", user=dict(user, id=user_pk))
+                normalized = self._without_invalid_top_serp_usertag_positions(normalized)
                 children = item.get("carousel_media")
                 if isinstance(children, list):
                     normalized["carousel_media"] = [
-                        dict(child, pk=child_pk)
+                        self._without_invalid_top_serp_usertag_positions(dict(child, pk=child_pk))
                         for child in children
                         if isinstance(child, dict) and (child_pk := self._top_serp_media_pk(child))
                     ]
