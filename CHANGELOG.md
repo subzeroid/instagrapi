@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.20 — 2026-11-24
+
+### Fixed
+
+- Keep carousels and their child media in Top GraphQL search when an individual user tag has invalid coordinates. Preserve a tag's valid `x` and `y` fields when `position` is unusable ([instagrapi #2973](https://github.com/subzeroid/instagrapi/issues/2973)).
+
 ## 3.2.19 — 2026-11-19
 
 ### Added
