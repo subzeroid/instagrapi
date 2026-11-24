@@ -71,6 +71,7 @@ BLOKS_APPS = {
     "com.bloks.www.bloks.caa.login.process_client_data_and_redirect": "caa/process_client_data_and_redirect",
     "com.bloks.www.caa.login.oauth.token.fetch.async": "caa/oauth_token_fetch",
     "com.bloks.www.bloks.caa.login.async.send_login_request": "caa/send_login_request",
+    "com.bloks.www.caa.ar.authentication_confirmation.async": "caa/authentication_confirmation",
     "com.bloks.www.two_step_verification.entrypoint": "two_step/entrypoint",
     "com.bloks.www.two_step_verification.method_picker": "two_step/method_picker",
     "com.bloks.www.two_step_verification.method_picker.navigation.async": "two_step/select_method",
