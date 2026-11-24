@@ -52,6 +52,8 @@ while cursor is not None:
 
 `media_search()` raises `PrivateError` when the response omits `media_grid`, returns `null`, or has a malformed grid or sections payload. A valid empty grid still returns `[]`. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.
 
+If `media_search()` fails with `Missing media_grid in fbsearch/top_serp response`, use `media_search_top_gql()` for the first page of mobile Top search. To paginate, start a separate search with `media_search_top_gql_chunk(query, cursor=None)`. The original REST response is tracked in [instagrapi #2961](https://github.com/subzeroid/instagrapi/issues/2961).
+
 ## Other search helpers
 
 | Method | Return | Description |
