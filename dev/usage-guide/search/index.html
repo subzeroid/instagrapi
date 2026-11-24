@@ -1398,6 +1398,7 @@
     <span class="n">medias</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">page</span><span class="p">)</span>
 </code></pre></div>
 <p><code>media_search()</code> raises <code>PrivateError</code> when the response omits <code>media_grid</code>, returns <code>null</code>, or has a malformed grid or sections payload. A valid empty grid still returns <code>[]</code>. The exception also propagates on later pages instead of returning partial results. Repeated pagination cursor pairs stop further requests. These checks do not guarantee that Instagram will return search results.</p>
+<p>If <code>media_search()</code> fails with <code>Missing media_grid in fbsearch/top_serp response</code>, use <code>media_search_top_gql()</code> for the first page of mobile Top search. To paginate, start a separate search with <code>media_search_top_gql_chunk(query, cursor=None)</code>. The original REST response is tracked in <a href="https://github.com/subzeroid/instagrapi/issues/2961">instagrapi #2961</a>.</p>
 <h2 id="other-search-helpers">Other search helpers</h2>
 <table>
 <thead>
