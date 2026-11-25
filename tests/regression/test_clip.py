@@ -21,6 +21,7 @@ class ClipPinRegressionTestCase(unittest.TestCase):
         self.assertEqual(json.loads(payload["blend_impressions"]), ["3917361171492779702"])
         self.assertEqual(payload["_uid"], "29060001803")
         self.assertEqual(payload["_uuid"], "uuid")
+        self.assertNotIn("progress_impressions", payload)
 
     def test_clip_info_for_creation_sends_device_status(self):
         client = Client()
@@ -39,6 +40,61 @@ class ClipPinRegressionTestCase(unittest.TestCase):
         device_status = json.loads(private_request.call_args.kwargs["params"]["device_status"])
         self.assertEqual(device_status["chip_vendor"], "others")
         self.assertFalse(device_status["hw_av1_dec"])
+
+    def test_clip_seen_posts_reported_progress(self):
+        client = Client()
+        client.private.cookies.set("ds_user_id", "42")
+        with (
+            mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request,
+            mock.patch("instagrapi.mixins.clip.time.time", return_value=1_700_000_000.125),
+        ):
+            result = client.clip_seen(
+                ["3917361171492779700_25025320"],
+                ["3917361171492779701"],
+                progress=[
+                    ("3917361171492779700_25025320", 1_000),
+                    ("3917361171492779701", 2**31),
+                    ("3917361171492779702", 1_234),
+                    ("3917361171492779700_25025320", 0),
+                ],
+            )
+
+        assert result is True
+        private_request.assert_called_once()
+        assert private_request.call_args.args == ("clips/write_seen_state/",)
+        data = private_request.call_args.kwargs["data"]
+        assert json.loads(data["impressions"]) == ["3917361171492779700"]
+        assert json.loads(data["blend_impressions"]) == ["3917361171492779701"]
+        expected = [
+            {"media_id": "3917361171492779700_25025320", "position_ms": 0, "updated_at_ms": 1_700_000_000_125},
+            {"media_id": "3917361171492779701", "position_ms": 2**31 - 1, "updated_at_ms": 1_700_000_000_125},
+            {"media_id": "3917361171492779702", "position_ms": 1_234, "updated_at_ms": 1_700_000_000_125},
+        ]
+        assert data["progress_impressions"] == json.dumps(expected, separators=(",", ":"))
+
+    def test_clip_seen_omits_empty_progress(self):
+        client = Client()
+        client.private.cookies.set("ds_user_id", "42")
+        with mock.patch.object(client, "private_request", return_value={"status": "ok"}) as private_request:
+            assert client.clip_seen(["3917361171492779700"], progress=[])
+
+        assert "progress_impressions" not in private_request.call_args.kwargs["data"]
+
+    def test_clip_seen_rejects_invalid_progress_before_dispatch(self):
+        client = Client()
+        client.private.cookies.set("ds_user_id", "42")
+        with mock.patch.object(client, "private_request") as private_request:
+            for row in (
+                ("", 0),
+                (12, 0),
+                ("3917361171492779700", -1),
+                ("3917361171492779700", 1.5),
+                ("3917361171492779700", True),
+            ):
+                with self.subTest(row=row), self.assertRaises(ValueError):
+                    client.clip_seen([], progress=[row])
+
+        private_request.assert_not_called()
 
     def test_clip_mashup_info_posts_media_id_and_identity(self):
         client = Client()
