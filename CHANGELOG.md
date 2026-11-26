@@ -2,6 +2,12 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## Unreleased
+
+### Fixed
+
+- Keep web stories with location stickers that supply a location ID and omit its name. Use an empty string for the missing or null name.
+
 ## 3.2.21 — 2026-11-26
 
 ### Added

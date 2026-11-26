@@ -1,6 +1,8 @@
 import json
 from copy import deepcopy
 
+from pydantic import ValidationError
+
 from instagrapi.exceptions import ClientGraphqlError, ClientNotFoundError, UserNotFound
 from instagrapi.extractors import extract_story_web
 from instagrapi.mixins.graphql import PrivateGraphQLRequestMixin
@@ -446,6 +448,32 @@ class StoryMixinRegressionTestCase(unittest.TestCase):
         story = extract_story_web(payload)
 
         self.assertEqual([media.media_pk for media in story.medias], [media_pk, 123])
+
+    def test_extract_story_web_accepts_location_without_name(self):
+        payload = web_story_payload()
+        payload["story_locations"] = [
+            {"location": {"pk": 123}, "x": 0.5, "y": 0.4, "width": 0.3, "height": 0.1, "rotation": 0},
+            {"location": {"pk": 124, "name": None}, "x": 0.5, "y": 0.6},
+            {"location": {"pk": 125, "name": "Sao Paulo"}, "x": 0.5, "y": 0.6},
+        ]
+        original = deepcopy(payload)
+
+        story = extract_story_web(payload)
+
+        self.assertEqual(payload, original)
+        self.assertEqual(
+            [(sticker.location.pk, sticker.location.name) for sticker in story.locations],
+            [(123, ""), (124, ""), (125, "Sao Paulo")],
+        )
+
+    def test_extract_story_web_rejects_unnamed_location_without_pk(self):
+        for location in ({}, {"pk": None, "name": None}):
+            with self.subTest(location=location):
+                payload = web_story_payload()
+                payload["story_locations"] = [{"location": location, "x": 0.5, "y": 0.4}]
+
+                with self.assertRaises(ValidationError):
+                    extract_story_web(payload)
 
     def test_extract_story_web_requires_identifiers(self):
         for kind in ("story", "user"):
