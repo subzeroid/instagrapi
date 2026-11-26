@@ -59,6 +59,25 @@ cl.direct_send(
 
 These options cover `direct_send()` text/link requests. They do not establish that navigation metadata causes or resolves Direct restrictions or error 1404006.
 
+### Inspect an HTTP 403 from `direct_send()`
+
+When `direct_send()` raises `ClientForbiddenError`, record the HTTP status and any numeric API error code, then leave the send stopped. The example prints only these two fields.
+
+```python
+from instagrapi.exceptions import ClientForbiddenError
+
+try:
+    cl.direct_send(text, thread_ids=[thread_id])
+except ClientForbiddenError as exc:
+    payload = getattr(exc, "payload", None)
+    error_code = payload.get("error_code") if isinstance(payload, dict) else None
+    if type(error_code) is not int:
+        error_code = None
+    print(f"Direct send returned HTTP {exc.code}, API error code {error_code}")
+```
+
+The meaning of Direct error `1404006` remains unverified.
+
 ### Option types
 
 Direct media type is exposed as `DirectMediaType = Literal["photo", "video"]`.
