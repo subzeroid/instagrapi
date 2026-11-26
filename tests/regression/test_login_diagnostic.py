@@ -679,7 +679,93 @@ def test_usdid_registration_uses_only_exact_friendly_name(diagnostic, friendly_n
     raw = response(request, 200, b"{}")
     summary = diagnostic.summarize_response(raw)
     assert summary["endpoint"] == ("usdid/registration" if friendly_name_kind == "exact" else "other")
+    assert ("usdid" in summary) is (friendly_name_kind == "exact")
     assert SECRET not in json.dumps(summary)
+
+
+@pytest.mark.parametrize(
+    ("data", "errors", "expected"),
+    [
+        ({"usdid_registration": {"success": True}}, [], (True, False, None, None, None)),
+        ({"xdt_usdid_registration": {"success": False}}, None, (False, False, None, None, None)),
+        ({"usdid_registration": {"success": 1}}, None, (None, False, None, None, None)),
+        (None, [{"code": 4789001.0, "is_transient": 1, "allow_user_retry": "false"}], (None, True, None, None, None)),
+        (None, [{"code": 1234567, "is_transient": True, "allow_user_retry": False}], (None, True, None, True, False)),
+        (None, [SECRET, {"code": 4789001}], (None, True, None, None, None)),
+        (None, {"code": 4789001}, (None, False, None, None, None)),
+    ],
+)
+def test_usdid_summary_only_reports_typed_registration_and_first_error_fields(diagnostic, data, errors, expected):
+    content = json.dumps({"data": data, "errors": errors, "device_id": SECRET}).encode()
+    headers = {"X-FB-Friendly-Name": "IGUSDIDRegistrationMutation"}
+    raw = response(
+        requests.Request("POST", "https://b.i.instagram.com/graphql_www", headers=headers).prepare(), 200, content
+    )
+    summary = diagnostic.summarize_response(raw)
+
+    assert summary["usdid"] == dict(
+        zip(
+            (
+                "registration_success",
+                "graphql_errors_present",
+                "graphql_error_code",
+                "is_transient",
+                "allow_user_retry",
+            ),
+            expected,
+        )
+    )
+    assert SECRET not in json.dumps(summary)
+
+
+def test_usdid_report_records_graphql_refusal_before_password_submission(diagnostic, monkeypatch):
+    client = Client(private_transport="requests", session_retry_total=0, request_timeout=0)
+    client.password_encrypt = Mock()
+    calls = []
+
+    def send(adapter, request, **kwargs):
+        calls.append(request.url)
+        assert calls == ["https://b.i.instagram.com/graphql_www"]
+        assert request.method == "POST"
+        assert request.headers["X-FB-Friendly-Name"] == "IGUSDIDRegistrationMutation"
+        return response(
+            request,
+            200,
+            json.dumps(
+                {
+                    "errors": [
+                        {
+                            "code": 4789001,
+                            "message": SECRET,
+                            "is_transient": False,
+                            "allow_user_retry": False,
+                        }
+                    ],
+                }
+            ).encode(),
+        )
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", send)
+    try:
+        report = diagnostic.diagnose(client, "synthetic-user", SECRET)
+    finally:
+        for session in (client.private, client.public, client.graphql):
+            session.close()
+
+    assert len(calls) == 1
+    client.password_encrypt.assert_not_called()
+    assert report["outcome"] == "error"
+    assert report["exception"]["type"] == "ClientGraphqlError"
+    (received,) = report["responses"]
+    assert (received["endpoint"], received["http_status"]) == ("usdid/registration", 200)
+    assert received["usdid"] == {
+        "registration_success": None,
+        "graphql_errors_present": True,
+        "graphql_error_code": 4789001,
+        "is_transient": False,
+        "allow_user_retry": False,
+    }
+    assert SECRET not in json.dumps(report)
 
 
 @pytest.mark.parametrize(

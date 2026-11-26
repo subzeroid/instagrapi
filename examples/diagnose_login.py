@@ -273,6 +273,31 @@ def summarize_bloks(data):
     return summary
 
 
+def summarize_usdid(data):
+    """Keep only typed status fields from a USDID registration response."""
+    payload = data if isinstance(data, dict) else {}
+    result = payload.get("data")
+    registrations = result.items() if isinstance(result, dict) else ()
+    registration = next(
+        (value for key, value in registrations if "usdid_registration" in key and isinstance(value, dict)),
+        {},
+    )
+    success = registration.get("success")
+    errors = payload.get("errors")
+    errors_present = isinstance(errors, list) and bool(errors)
+    first_error = errors[0] if errors_present and isinstance(errors[0], dict) else {}
+    code = first_error.get("code")
+    is_transient = first_error.get("is_transient")
+    allow_retry = first_error.get("allow_user_retry")
+    return {
+        "registration_success": success if isinstance(success, bool) else None,
+        "graphql_errors_present": errors_present,
+        "graphql_error_code": 4789001 if isinstance(code, int) and code == 4789001 else None,
+        "is_transient": is_transient if isinstance(is_transient, bool) else None,
+        "allow_user_retry": allow_retry if isinstance(allow_retry, bool) else None,
+    }
+
+
 def summarize_response(response):
     url = urlsplit(response.url)
     data = None
@@ -293,6 +318,8 @@ def summarize_response(response):
         "proxy_error_category": proxy_error_category(response.headers.get("Proxy-Status")),
         "retry_after_present": "Retry-After" in response.headers,
     }
+    if summary["endpoint"] == "usdid/registration":
+        summary["usdid"] = summarize_usdid(data)
     if "/bloks/" in url.path:
         try:
             summary["bloks"] = summarize_bloks(data)
