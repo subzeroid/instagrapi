@@ -2,6 +2,18 @@
 
 Earlier release notes are available in [GitHub Releases](https://github.com/subzeroid/instagrapi/releases).
 
+## 3.2.22 — 2026-11-26
+
+### Fixed
+
+- Keep web stories with location stickers that supply a location ID and omit its name. Use an empty string for the missing or null name.
+
+## 3.2.21 — 2026-11-26
+
+### Added
+
+- Accept optional playback progress in `clip_seen()` for Reels and Clips ([instagrapi #2974](https://github.com/subzeroid/instagrapi/issues/2974)).
+
 ## 3.2.20 — 2026-11-24
 
 ### Fixed

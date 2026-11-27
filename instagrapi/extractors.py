@@ -611,6 +611,11 @@ def extract_story_web(data):
             feed_media["media_id"] = InstagramIdCodec.decode(feed_media["media_code"])
         elif feed_media.get("id") is not None:
             feed_media["media_id"] = str(feed_media["id"]).split("_")[0]
+    for sticker in story["story_locations"]:
+        location = sticker.get("location") if isinstance(sticker, dict) else None
+        # Web stories can send a location sticker with only the location pk.
+        if isinstance(location, dict) and location.get("pk") is not None and location.get("name") is None:
+            location["name"] = ""
     versions = story.get("video_versions") or []
     if versions and any("height" not in candidate or "width" not in candidate for candidate in versions):
         story["video_url"] = next((candidate.get("url") for candidate in versions if candidate.get("url")), None)

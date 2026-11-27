@@ -58,7 +58,7 @@ In terms of Instagram, this is called Media, usually users call it publications 
 | media_upload_status(post_client_id: str) | dict | Poll the processing status of an async upload by its client-side upload id until `COMPLETED` |
 | video_refresh_resources(media_id: str, should_fetch_all_language_variants: bool = False) | dict | Refresh expired video URLs and get a fresh `video_versions` list (and DASH manifest) |
 | clip_mashup_info(media_pk: str) | dict | Fetch Reel remix/reuse availability metadata |
-| clip_seen(media_ids: List[str], blend_media_ids: List[str] = None) | bool | Mark Reels/Clips as seen through the Clips seen-state endpoint |
+| clip_seen(media_ids, blend_media_ids=None, *, progress=None) | bool | Mark Reels/Clips as seen through the Clips seen-state endpoint |
 | clip_pin(media_pk: str) | bool | Pin Reel to the Reels tab/profile Reels grid |
 | clip_unpin(media_pk: str) | bool | Unpin Reel from the Reels tab/profile Reels grid |
 | clip_change_cover(media_pk: str, cover_path: Path) | bool | Change the cover image for a published Reel |
@@ -72,6 +72,11 @@ In terms of Instagram, this is called Media, usually users call it publications 
 Media notes are separate from Direct inbox Notes. Use `media_note_create()` and `media_note_delete()` for the note surface attached to a post or Reel; use the [Notes guide](notes.md) for Direct inbox Notes.
 
 Use `clip_seen()` for Reels/Clips. `media_seen()` keeps the older story/reel-tray seen payload. Instagram still decides whether a seen-state event is counted in view analytics.
+
+Pass `progress=[(media_id, position_ms)]` to include playback progress you measured. The SDK
+preserves each media ID as supplied, uses the last position for repeated IDs, and adds the
+current Unix timestamp in milliseconds. Each position must be a non-negative integer.
+Omit `progress` or pass an empty sequence to send a seen-state request without progress.
 
 Low level methods:
 
