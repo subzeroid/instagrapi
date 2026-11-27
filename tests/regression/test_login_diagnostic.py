@@ -431,6 +431,7 @@ def test_diagnostic_retry_overrides_do_not_change_saved_preferences(diagnostic, 
 
 
 def test_caa_legacy_caa_records_each_outcome_before_state_changes(diagnostic, monkeypatch):
+    confirmation_app = "com.bloks.www.caa.ar.authentication_confirmation.async"
     client = Client(private_transport="requests", settings={"session_retry_total": 0, "request_timeout": 0})
     client.caa_aac = '{"aaccs":"synthetic-context"}'
     client.bloks_caa_login_prepare = Mock(return_value=True)
@@ -450,6 +451,8 @@ def test_caa_legacy_caa_records_each_outcome_before_state_changes(diagnostic, mo
             "layout": {"bloks_payload": {"action": SECRET}},
             "markers": ["CAA_LOGIN_FALLBACK:fallback_triggered", SECRET],
         }
+        if calls == [CAA]:
+            body["layout"]["bloks_payload"]["action"] = f"(f4i {json.dumps(confirmation_app)} {json.dumps(SECRET)})"
         return response(request, 200, json.dumps(body).encode())
 
     monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", send)
@@ -459,6 +462,9 @@ def test_caa_legacy_caa_records_each_outcome_before_state_changes(diagnostic, mo
     assert report["exception"]["error_type"] == "needs_upgrade"
     assert report["last_json"]["status"] == "ok"
     assert [(a["response_start"], a["response_end"]) for a in report["caa_attempts"]] == [(0, 1), (2, 3)]
+    assert report["responses"][0]["bloks"]["referenced_apps"] == [confirmation_app]
+    assert report["responses"][0]["bloks"]["continuation_reference_present"] is False
+    assert report["responses"][2]["bloks"]["referenced_apps"] == []
     for attempt in report["caa_attempts"]:
         assert attempt["outcome"] == "returned"
         assert attempt["logged_in"] is False
@@ -629,6 +635,7 @@ STAGE_APPS = [
     ("com.bloks.www.bloks.caa.login.process_client_data_and_redirect", "caa/process_client_data_and_redirect"),
     ("com.bloks.www.caa.login.oauth.token.fetch.async", "caa/oauth_token_fetch"),
     ("com.bloks.www.bloks.caa.login.async.send_login_request", "caa/send_login_request"),
+    ("com.bloks.www.caa.ar.authentication_confirmation.async", "caa/authentication_confirmation"),
     ("com.bloks.www.two_step_verification.entrypoint", "two_step/entrypoint"),
     ("com.bloks.www.two_step_verification.method_picker", "two_step/method_picker"),
     ("com.bloks.www.two_step_verification.method_picker.navigation.async", "two_step/select_method"),
@@ -846,8 +853,14 @@ def test_bloks_summary_distinguishes_references_and_current_session_material(dia
     assert json.dumps(body, sort_keys=True) == before
 
 
-def test_bloks_referenced_apps_are_exact_and_closed(diagnostic):
-    app = "com.bloks.www.two_step_verification.entrypoint"
+@pytest.mark.parametrize(
+    ("app", "continuation"),
+    [
+        ("com.bloks.www.two_step_verification.entrypoint", True),
+        ("com.bloks.www.caa.ar.authentication_confirmation.async", False),
+    ],
+)
+def test_bloks_referenced_apps_are_exact_and_closed(diagnostic, app, continuation):
     payload = {
         "layout": {"bloks_payload": {"action": f"{json.dumps(app)} {json.dumps(app + SECRET)}"}},
         "private": SECRET,
@@ -855,6 +868,7 @@ def test_bloks_referenced_apps_are_exact_and_closed(diagnostic):
     request = requests.Request("POST", CAA).prepare()
     summary = diagnostic.summarize_response(response(request, 200, json.dumps(payload).encode()))
     assert summary["bloks"]["referenced_apps"] == [app]
+    assert summary["bloks"]["continuation_reference_present"] is continuation
     assert SECRET not in json.dumps(summary)
     payload["layout"]["bloks_payload"]["action"] = json.dumps(app + SECRET)
     summary = diagnostic.summarize_response(response(request, 200, json.dumps(payload).encode()))
